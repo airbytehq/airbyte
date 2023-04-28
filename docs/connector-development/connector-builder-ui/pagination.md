@@ -267,3 +267,16 @@ The following APIs implement cursor pagination in various ways:
 - [Twitter API](https://developer.twitter.com/en/docs/twitter-api/pagination) - includes `next_token` IDs in its responses which are passed in as request parameters to subsequent requests
 - [GitHub API](https://docs.github.com/en/rest/guides/using-pagination-in-the-rest-api?apiVersion=2022-11-28) - includes full-URL `link`s to subsequent pages of results
 - [FourSquare API](https://location.foursquare.com/developer/reference/pagination) - includes full-URL `link`s to subsequent pages of results
+
+## Custom parameter injection
+
+Using the "Inject page size / limit / offset into outgoing HTTP request" option in the pagination form works for most cases, but sometimes the API has special requirements that can't be handled this way:
+* The API requires to add a prefix or a suffix to the actual value
+* Multiple values need to be put together in a single parameter
+* The value needs to be injected into the URL path
+* Some conditional logic needs to be applied
+
+To handle these cases, disable injection in the pagination form and use the generic parameter section at the bottom of the stream configuration form to freely configure query parameters, headers and properties of the JSON body, by using jinja expressions and [available variables](/connector-development/config-based/understanding-the-yaml-file/reference/#/variables). You can also use these variables as part of the URL path.
+
+For example the [Prestashop API](https://devdocs.prestashop-project.org/8/webservice/cheat-sheet/#list-options) requires to set offset and limit separated by a comma into a single request parameter (`?limit=<offset>,<limit>`)
+For this case, you can use the `next_page_token` variable to configure a request parameter with key `limit` and value `{{ next_page_token['next_page_token'] or '0' }},50` to inject the offset from the pagination strategy and a hardcoded limit of 50 into the same parameter.

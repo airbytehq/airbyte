@@ -1,0 +1,22 @@
+name: Require Connector Checklist
+on:
+  pull_request:
+    types: [opened, edited, synchronize, labeled, unlabeled, reopened, ready_for_review]
+    paths:
+      - "airbyte-integrations/connectors/source-**"
+      - "airbyte-integrations/connectors/destination-**"
+      - "airbyte-integrations/connectors/third-party/**"
+jobs:
+  check_for_required:
+    name: Require Connector Merge Checklist Job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure All Checklist Checked
+        uses: mheap/require-checklist-action@v2
+        with:
+          requireChecklist: false # TODO (ben) reenable in one week once pull request templates have been updated
+      - name: Send Error Message
+        if: failure()
+        run: |
+          echo "::error::All checklist items not checked. Review your PR description and comments for unchecked items."
+          exit 1
