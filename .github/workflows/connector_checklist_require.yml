@@ -11,6 +11,12 @@ jobs:
     name: Require Connector Merge Checklist Job
     runs-on: ubuntu-latest
     steps:
-      - uses: mheap/require-checklist-action@v2
+      - name: Ensure All Checklist Checked
+        uses: mheap/require-checklist-action@v2
         with:
           requireChecklist: false # TODO (ben) reenable in one week once pull request templates have been updated
+      - name: Send Error Message
+        if: failure()
+        run: |
+          echo "::error::All checklist items not checked. Review your PR description and comments for unchecked items."
+          exit 1
