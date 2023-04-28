@@ -1,5 +1,5 @@
 connector_image: airbyte/source-smartsheets:dev
-acceptance_tests:
+tests:
   spec:
     - spec_path: "source_smartsheets/spec.json"
       backward_compatibility_tests_config:
@@ -12,25 +12,20 @@ acceptance_tests:
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
   discovery:
-    tests:
-      - config_path: "secrets/config.json"
+    - config_path: "secrets/config.json"
   basic_read:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          extra_fields: yes
-          exact_order: yes
-          extra_records: no
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      empty_streams: []
+      expect_records:
+        path: "integration_tests/expected_records.jsonl"
+        extra_fields: yes
+        exact_order: yes
+        extra_records: no
   full_refresh:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
   incremental:
-    tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        future_state:
-          future_state_path: "integration_tests/abnormal_state.json"
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      future_state_path: "integration_tests/abnormal_state.json"
