@@ -16,6 +16,7 @@ GA_BYPASS_REASON_REVIEWERS = {"connector-operations"}
 GA_CONNECTOR_REVIEWERS = {"gl-python"}
 REVIEW_REQUIREMENTS_FILE_PATH = ".github/connector_org_review_requirements.yaml"
 
+
 def find_connectors_with_bad_strictness_level() -> List[utils.Connector]:
     """Check if changed connectors have the expected connector acceptance test strictness level according to their release stage.
     1. Identify changed connectors
@@ -40,6 +41,7 @@ def find_connectors_with_bad_strictness_level() -> List[utils.Connector]:
                 connectors_with_bad_strictness_level.append(connector)
     return connectors_with_bad_strictness_level
 
+
 def find_changed_ga_connectors() -> Set[utils.Connector]:
     """Find GA connectors modified on the current branch.
 
@@ -49,6 +51,7 @@ def find_changed_ga_connectors() -> Set[utils.Connector]:
     changed_connectors = utils.get_changed_connectors()
     return {connector for connector in changed_connectors if connector.release_stage == "generally_available"}
 
+
 def get_ga_bypass_reason_changes() -> Set[utils.Connector]:
     """Find GA connectors that have modified bypass_reasons.
 
@@ -57,6 +60,7 @@ def get_ga_bypass_reason_changes() -> Set[utils.Connector]:
     """
     bypass_reason_changes = utils.get_changed_acceptance_test_config(diff_regex="bypass_reason")
     return bypass_reason_changes.intersection(find_changed_ga_connectors())
+
 
 def find_mandatory_reviewers() -> List[Union[str, Dict[str, List]]]:
     ga_connector_changes = find_changed_ga_connectors()
@@ -74,6 +78,7 @@ def find_mandatory_reviewers() -> List[Union[str, Dict[str, List]]]:
         return list(GA_CONNECTOR_REVIEWERS)
     return []
 
+
 def check_test_strictness_level():
     connectors_with_bad_strictness_level = find_connectors_with_bad_strictness_level()
     if connectors_with_bad_strictness_level:
@@ -84,20 +89,20 @@ def check_test_strictness_level():
     else:
         sys.exit(0)
 
+
 def write_review_requirements_file():
     mandatory_reviewers = find_mandatory_reviewers()
 
     if mandatory_reviewers:
-        requirements_file_content = [{
-            "name": "Required reviewers from the connector org teams",
-            "paths": "unmatched",
-            "teams": mandatory_reviewers
-        }]
+        requirements_file_content = [
+            {"name": "Required reviewers from the connector org teams", "paths": "unmatched", "teams": mandatory_reviewers}
+        ]
         with open(REVIEW_REQUIREMENTS_FILE_PATH, "w") as requirements_file:
             yaml.safe_dump(requirements_file_content, requirements_file)
         print("CREATED_REQUIREMENTS_FILE=true")
     else:
         print("CREATED_REQUIREMENTS_FILE=false")
+
 
 def print_mandatory_reviewers():
     teams = []

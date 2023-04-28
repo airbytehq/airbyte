@@ -12,7 +12,7 @@ import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.TRUST_K
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.debezium.internals.PostgresConverter;
+import io.airbyte.integrations.debezium.internals.postgres.PostgresConverter;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import java.net.URI;
 import java.nio.file.Path;

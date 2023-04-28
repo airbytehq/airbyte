@@ -386,3 +386,12 @@ class Flows(ReverseIncrementalKlaviyoStreamV1):
 
     def path(self, **kwargs) -> str:
         return "flows"
+
+
+class EmailTemplates(KlaviyoStreamV1):
+    """
+    Docs: https://developers.klaviyo.com/en/v1-2/reference/get-templates
+    """
+
+    def path(self, **kwargs) -> str:
+        return "email-templates"

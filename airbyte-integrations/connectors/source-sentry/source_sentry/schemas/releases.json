@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "authors": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "email": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "commitCount": {
+      "type": ["null", "integer"]
+    },
+    "data": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "dateCreated": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "dateReleased": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "deployCount": {
+      "type": ["null", "integer"]
+    },
+    "firstEvent": {
+      "type": ["null", "string"]
+    },
+    "lastCommit": {
+      "type": ["null", "object"]
+    },
+    "lastDeploy": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "lastEvent": {
+      "type": ["null", "string"]
+    },
+    "newGroups": {
+      "type": ["null", "integer"]
+    },
+    "owner": {
+      "type": ["null", "string"]
+    },
+    "projects": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "slug": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "ref": {
+      "type": ["null", "string"]
+    },
+    "shortVersion": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "string"]
+    }
+  }
+}

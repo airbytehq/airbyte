@@ -1,7 +1,7 @@
-# Intercom Source
+# Intercom Yaml Source
 
-This is the repository for the Intercom source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/intercom).
+This is the repository for the Intercom Yaml configuration based source connector.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/intercom).
 
 ## Local development
 
@@ -13,7 +13,7 @@ For information about how to use this connector within Airbyte, see [the documen
 #### Build & Activate Virtual Environment and install dependencies
 From this connector directory, create a virtual environment:
 ```
-python -m venv .venv
+python3 -m venv .venv
 ```
 
 This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
@@ -38,13 +38,15 @@ To build using Gradle, from the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/intercom)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_intercom/spec.json` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/intercom)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_intercom/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source intercom test creds`
 and place them into `secrets/config.json`.
+
+### Locally running the connector docker image
 
 ### Locally running the connector
 ```
@@ -53,8 +55,6 @@ python main.py check --config secrets/config.json
 python main.py discover --config secrets/config.json
 python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
-
-### Locally running the connector docker image
 
 #### Build
 First, make sure you build the latest Docker image:
@@ -78,32 +78,21 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-intercom:dev discover 
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-intercom:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
-Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
-First install test dependencies into your virtual environment:
-```
-pip install .[tests]
-```
-### Unit Tests
-To run unit tests locally, from the connector directory run:
-```
-python -m pytest unit_tests
-```
 
-### Integration Tests
-There are two types of integration tests: Acceptance Tests (Airbyte's test suite for all source connectors) and custom integration tests (which are specific to this connector).
-#### Custom Integration tests
-Place custom tests inside `integration_tests/` folder, then, from the connector root, run
-```
-python -m pytest integration_tests
-```
 #### Acceptance Tests
-Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
+Customize `acceptance-test-config.yml` file to configure tests. See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
+
 To run your integration tests with acceptance tests, from the connector root, run
 ```
-python -m pytest integration_tests -p integration_tests.acceptance
+docker build . --no-cache -t airbyte/source-intercom:dev \
+&& python -m pytest -p connector_acceptance_test.plugin
 ```
-To run your integration tests with docker
+
+To run your integration tests with Docker, run:
+```
+./acceptance-test-docker.sh
+```
 
 ### Using gradle to run tests
 All commands should be run from airbyte project root.

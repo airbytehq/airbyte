@@ -49,9 +49,10 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends AbstractPo
   private final SshBastionContainer bastion = new SshBastionContainer();
   private PostgreSQLContainer<?> db;
 
-  private static void populateDatabaseTestData() throws Exception {
+  private void populateDatabaseTestData() throws Exception {
+    final var outerConfig = bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, List.of("public")), false);
     SshTunnel.sshWrap(
-        config,
+        outerConfig,
         JdbcUtils.HOST_LIST_KEY,
         JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
@@ -85,7 +86,7 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends AbstractPo
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     startTestContainers();
-    config = bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, List.of("public")));
+    config = bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, List.of("public")), true);
     populateDatabaseTestData();
 
   }
