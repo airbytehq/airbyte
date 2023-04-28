@@ -845,7 +845,7 @@ class DatetimeBasedCursor(BaseModel):
         examples=["created_at", "{{ config['record_cursor'] }}"],
         title="Cursor Field",
     )
-    datetime_format: str = Field(..., description="The format of the datetime")
+    datetime_format: str = Field(
         ...,
         description="The format of the datetime value.",
         examples=["%Y-%m-%dT%H:%M:%S.%f%z"],
