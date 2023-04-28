@@ -106,7 +106,7 @@ export default function ConnectorRegistry({ type }) {
                 <td>
                   <small>
                     <code>
-                      {connector.dockerRepository}:${connector.dockerImageTag}
+                      {connector.dockerRepository}:{connector.dockerImageTag}
                     </code>
                   </small>
                 </td>
