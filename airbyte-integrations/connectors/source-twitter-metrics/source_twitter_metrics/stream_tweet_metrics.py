@@ -69,9 +69,9 @@ class TwitterTweetMetrics(HttpStream, ABC):
 
         print("request_params \n", type(next_page_token), next_page_token)
         if not next_page_token:
-            return {'tweet.fields': 'public_metrics,created_at', 'max_results': 100}
+            return {'tweet.fields': 'public_metrics,created_at', 'max_results': 10}
         else:
-            return {'tweet.fields': 'public_metrics,created_at', "pagination_token": next_page_token["pagination_token"], 'max_results': 100}
+            return {'tweet.fields': 'public_metrics,created_at', "pagination_token": next_page_token["pagination_token"], 'max_results': 10}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         result = response.json()
