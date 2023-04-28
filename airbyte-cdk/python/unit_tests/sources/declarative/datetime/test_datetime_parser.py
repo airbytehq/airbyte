@@ -34,7 +34,7 @@ from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimePar
 )
 def test_parse_date(test_name, input_date, date_format, expected_output_date):
     parser = DatetimeParser()
-    output_date = parser.parse(input_date, date_format, datetime.timezone.utc)
+    output_date = parser.parse(input_date, date_format)
     assert expected_output_date == output_date
 
 
