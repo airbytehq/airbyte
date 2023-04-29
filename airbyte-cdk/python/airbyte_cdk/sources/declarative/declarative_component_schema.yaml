@@ -561,8 +561,11 @@ definitions:
         enum: [DatetimeBasedCursor]
       cursor_field:
         title: Cursor Field
-        description: The location of the value on a record that will be used as a bookmark during sync.
+        description: The location of the value on a record that will be used as a bookmark during sync. To ensure no data loss, the API must return records in ascending order based on the cursor field. Nested fields are not supported, so the field must be at the top level of the record. You can use a combination of Add Field and Remove Field transformations to move the nested field to the top.
         type: string
+        interpolation_context:
+          - config
+          - stream_state
         examples:
           - "created_at"
           - "{{ config['record_cursor'] }}"
@@ -589,6 +592,7 @@ definitions:
         examples:
           - "2021-01-1T00:00:00Z"
           - "{{ now_utc() }}"
+          - "{{ day_delta(-1) }}"
       start_datetime:
         title: Start Datetime
         description: The datetime that determines the earliest record that should be synced.
@@ -2076,7 +2080,6 @@ interpolation:
       examples:
         - "{{ day_delta(25) }}"
         - "{{ day_delta(25, format='%Y-%m-%d') }}"
-        - "{{ config['start_time'] + day_delta(2) }}"
     - title: Duration
       description: Converts an ISO8601 duratioin to datetime.timedelta.
       arguments:
