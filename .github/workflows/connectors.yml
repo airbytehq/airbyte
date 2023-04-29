@@ -157,6 +157,7 @@ jobs:
           - name: source-zendesk-chat
           - name: source-twilio
           - name: source-paypal-transaction
+          - name: greenhouse
 
     steps:
       - uses: actions/checkout@v2
