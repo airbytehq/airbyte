@@ -159,6 +159,7 @@ jobs:
           - name: source-paypal-transaction
           - name: greenhouse
           - name: iterable
+          - name: sendgrid
 
     steps:
       - uses: actions/checkout@v2
