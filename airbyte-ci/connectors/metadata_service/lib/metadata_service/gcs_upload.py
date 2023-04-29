@@ -83,7 +83,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, service_a
     # upload if md5_hash is different
     if metadata_file_md5_hash != version_blob_md5_hash:
         print(f"Uploading {metadata_file_path} to {version_path}...")
-        version_blob.upload_from_filename(str(metadata_file_path), if_metageneration_not_match=version_blob.metadata)
+        version_blob.upload_from_filename(str(metadata_file_path))
         uploaded = True
 
     if metadata_file_md5_hash != latest_blob_md5_hash:

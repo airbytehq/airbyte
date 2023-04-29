@@ -105,14 +105,7 @@ def metadata_to_registry_entry(metadata_definition: dict, connector_type: str, o
 
 
 def is_metadata_registry_enabled(metadata_definition: dict, registry_name: str) -> bool:
-    try:
-        # use pydash
-        return get(metadata_definition, f"data.registries.{registry_name}.enabled", False)
-        # return metadata_definition["data"]["registries"][registry_name]["enabled"]
-    except Exception as e:
-        print(f"Error: {e}")
-        print(f"Metadata definition: {metadata_definition}")
-        raise e;
+    return get(metadata_definition, f"data.registries.{registry_name}.enabled", False)
 
 
 def is_metadata_connector_type(metadata_definition: dict, connector_type: str) -> bool:
@@ -283,7 +276,6 @@ def oss_destinations_dataframe(oss_registry_from_metadata: ConnectorRegistryV0) 
     oss_registry_from_metadata_dict = to_json_sanitized_dict(oss_registry_from_metadata)
     destinations = oss_registry_from_metadata_dict["destinations"]
     return output_dataframe(pd.DataFrame(destinations))
-
 
 
 # Registry from JSON
