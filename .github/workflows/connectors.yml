@@ -160,6 +160,7 @@ jobs:
           - name: greenhouse
           - name: iterable
           - name: sendgrid
+          - name: sentry
 
     steps:
       - uses: actions/checkout@v2
