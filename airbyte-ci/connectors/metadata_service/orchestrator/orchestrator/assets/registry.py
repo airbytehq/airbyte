@@ -2,7 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import copy
+import json
 from typing import List
+from pydash.objects import get
 
 import pandas as pd
 from dagster import asset, OpExecutionContext, MetadataValue, Output
@@ -103,7 +105,14 @@ def metadata_to_registry_entry(metadata_definition: dict, connector_type: str, o
 
 
 def is_metadata_registry_enabled(metadata_definition: dict, registry_name: str) -> bool:
-    return metadata_definition["data"]["registries"][registry_name]["enabled"]
+    try:
+        # use pydash
+        return get(metadata_definition, f"data.registries.{registry_name}.enabled", False)
+        # return metadata_definition["data"]["registries"][registry_name]["enabled"]
+    except Exception as e:
+        print(f"Error: {e}")
+        print(f"Metadata definition: {metadata_definition}")
+        raise e;
 
 
 def is_metadata_connector_type(metadata_definition: dict, connector_type: str) -> bool:
@@ -209,7 +218,7 @@ def generate_and_persist_registry(
     return Output(metadata=metadata, value=registry_model)
 
 
-# New Registry
+# New Registry Generation
 
 
 @asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)
@@ -274,3 +283,33 @@ def oss_destinations_dataframe(oss_registry_from_metadata: ConnectorRegistryV0) 
     oss_registry_from_metadata_dict = to_json_sanitized_dict(oss_registry_from_metadata)
     destinations = oss_registry_from_metadata_dict["destinations"]
     return output_dataframe(pd.DataFrame(destinations))
+
+
+
+# Registry from JSON
+
+
+@asset(required_resource_keys={"latest_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
+def latest_cloud_registry(latest_cloud_registry_dict: dict) -> ConnectorRegistryV0:
+    return ConnectorRegistryV0.parse_obj(latest_cloud_registry_dict)
+
+
+@asset(required_resource_keys={"latest_oss_registry_gcs_blob"}, group_name=GROUP_NAME)
+def latest_oss_registry(latest_oss_registry_dict: dict) -> ConnectorRegistryV0:
+    return ConnectorRegistryV0.parse_obj(latest_oss_registry_dict)
+
+
+@asset(required_resource_keys={"latest_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
+def latest_cloud_registry_dict(context: OpExecutionContext) -> dict:
+    oss_registry_file = context.resources.latest_cloud_registry_gcs_blob
+    json_string = oss_registry_file.download_as_string().decode("utf-8")
+    oss_registry_dict = json.loads(json_string)
+    return oss_registry_dict
+
+
+@asset(required_resource_keys={"latest_oss_registry_gcs_blob"}, group_name=GROUP_NAME)
+def latest_oss_registry_dict(context: OpExecutionContext) -> dict:
+    oss_registry_file = context.resources.latest_oss_registry_gcs_blob
+    json_string = oss_registry_file.download_as_string().decode("utf-8")
+    oss_registry_dict = json.loads(json_string)
+    return oss_registry_dict

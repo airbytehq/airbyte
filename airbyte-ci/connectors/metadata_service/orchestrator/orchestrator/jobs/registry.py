@@ -5,7 +5,7 @@ registries_inclusive = AssetSelection.keys(
 ).upstream()
 generate_registry = define_asset_job(name="generate_registry", selection=registries_inclusive)
 
-registry_reports_inclusive = AssetSelection.keys("connector_registry_report").upstream()
+registry_reports_inclusive = AssetSelection.keys("connector_registry_report", "oss_registry_diff_report", "cloud_registry_diff_report").upstream()
 generate_registry_reports = define_asset_job(name="generate_registry_reports", selection=registry_reports_inclusive)
 
 metadata_inclusive = AssetSelection.keys("persist_metadata_definitions").upstream()
