@@ -54,7 +54,7 @@ properties:
       githubIssueLabel:
         type: string
       maxSecondsBetweenMessages:
-        description: Number of seconds allowed between 2 airbyte protocol messages. The source will timeout if this delay is reach
+        description: Maximum delay between 2 airbyte protocol messages, in second. The source will timeout if this delay is reached
         type: integer
       releaseDate:
         description: The date when this connector was first released, in yyyy-mm-dd format.
