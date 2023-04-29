@@ -158,6 +158,7 @@ jobs:
           - name: source-twilio
           - name: source-paypal-transaction
           - name: greenhouse
+          - name: iterable
 
     steps:
       - uses: actions/checkout@v2
