@@ -17,18 +17,29 @@ from metadata_service.constants import METADATA_FILE_NAME
         pytest.param(None, "same_md5_hash", "same_md5_hash", id="Version blob does not exist: Version blob should be uploaded."),
         pytest.param("same_md5_hash", None, "same_md5_hash", id="Latest blob does not exist: Latest blob should be uploaded."),
         pytest.param(None, None, "same_md5_hash", id="Latest blob and Version blob does not exist: both should be uploaded."),
-        pytest.param("different_md5_hash", "same_md5_hash", "same_md5_hash", id="Version blob does not match: Version blob should be uploaded."),
+        pytest.param(
+            "different_md5_hash", "same_md5_hash", "same_md5_hash", id="Version blob does not match: Version blob should be uploaded."
+        ),
         pytest.param(
             "same_md5_hash",
             "same_md5_hash",
             "same_md5_hash",
             id="Version blob and Latest blob match: no upload should happen.",
         ),
-        pytest.param("same_md5_hash", "different_md5_hash", "same_md5_hash", id="Latest blob does not match: Latest blob should be uploaded."),
-        pytest.param("same_md5_hash", "same_md5_hash", "different_md5_hash", id="Latest blob and Version blob does not match: both should be uploaded."),
+        pytest.param(
+            "same_md5_hash", "different_md5_hash", "same_md5_hash", id="Latest blob does not match: Latest blob should be uploaded."
+        ),
+        pytest.param(
+            "same_md5_hash",
+            "same_md5_hash",
+            "different_md5_hash",
+            id="Latest blob and Version blob does not match: both should be uploaded.",
+        ),
     ],
 )
-def test_upload_metadata_to_gcs_valid_metadata(mocker, valid_metadata_yaml_files, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash):
+def test_upload_metadata_to_gcs_valid_metadata(
+    mocker, valid_metadata_yaml_files, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash
+):
     metadata_file_path = pathlib.Path(valid_metadata_yaml_files[0])
     metadata = ConnectorMetadataDefinitionV0.parse_obj(yaml.safe_load(metadata_file_path.read_text()))
     expected_version_key = f"metadata/{metadata.data.dockerRepository}/{metadata.data.dockerImageTag}/{METADATA_FILE_NAME}"
@@ -37,8 +48,8 @@ def test_upload_metadata_to_gcs_valid_metadata(mocker, valid_metadata_yaml_files
     mock_credentials = mocker.Mock()
     mock_storage_client = mocker.Mock()
 
-    latest_blob_exists = latest_blob_md5_hash is not None;
-    version_blob_exists = version_blob_md5_hash is not None;
+    latest_blob_exists = latest_blob_md5_hash is not None
+    version_blob_exists = version_blob_md5_hash is not None
 
     mock_version_blob = mocker.Mock(exists=mocker.Mock(return_value=version_blob_exists), md5_hash=version_blob_md5_hash)
     mock_latest_blob = mocker.Mock(exists=mocker.Mock(return_value=latest_blob_exists), md5_hash=latest_blob_md5_hash)

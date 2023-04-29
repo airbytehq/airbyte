@@ -15,6 +15,7 @@ from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import Conn
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 from metadata_service.validators.metadata_validator import validate_metadata_images_in_dockerhub
 
+
 def get_metadata_file_path(dockerRepository: str, version: str) -> str:
     """Get the path to the metadata file for a specific version of a connector.
 
@@ -26,13 +27,15 @@ def get_metadata_file_path(dockerRepository: str, version: str) -> str:
     """
     return f"{METADATA_FOLDER}/{dockerRepository}/{version}/{METADATA_FILE_NAME}"
 
-def compute_gcs_md5(file_name):
-        hash_md5 = hashlib.md5()
-        with open(file_name, "rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""):
-                hash_md5.update(chunk)
 
-        return base64.b64encode(hash_md5.digest()).decode("utf8")
+def compute_gcs_md5(file_name):
+    hash_md5 = hashlib.md5()
+    with open(file_name, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+
+    return base64.b64encode(hash_md5.digest()).decode("utf8")
+
 
 def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, service_account_file_path: Path) -> Tuple[bool, str]:
     """Upload a metadata file to a GCS bucket.
@@ -68,7 +71,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, service_a
 
     # reload the blobs to get the md5_hash
     if version_blob.exists():
-         version_blob.reload()
+        version_blob.reload()
     if latest_blob.exists():
         latest_blob.reload()
 

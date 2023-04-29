@@ -276,7 +276,9 @@ def oss_registry_diff_report(context: OpExecutionContext, oss_registry_diff: str
 @asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
 def cloud_registry_diff_report(context: OpExecutionContext, cloud_registry_diff: str):
     registry_report_directory_manager = context.resources.registry_report_directory_manager
-    file_handle = registry_report_directory_manager.write_data(cloud_registry_diff.encode(), ext="json", key="dev/cloud_registry_diff_report")
+    file_handle = registry_report_directory_manager.write_data(
+        cloud_registry_diff.encode(), ext="json", key="dev/cloud_registry_diff_report"
+    )
 
     metadata = {
         "link": MetadataValue.url(file_handle.public_url),
