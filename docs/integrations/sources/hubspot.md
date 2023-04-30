@@ -137,6 +137,7 @@ Now that you have set up the Hubspot source connector, check out the following H
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.2   | 2023-04-28 | [25667](https://github.com/airbytehq/airbyte/pull/25667) | Fixed bug with `Invalid Date` like `2000-00-00T00:00:00Z` while settip up the connector  |
 | 0.6.1   | 2023-04-10 | [21423](https://github.com/airbytehq/airbyte/pull/21423) | Update scope for `DealPipelines` stream to only `crm.objects.contacts.read`                                                                                |
 | 0.6.0   | 2023-04-07 | [24980](https://github.com/airbytehq/airbyte/pull/24980) | Add new stream `DealsArchived`                                                                                                                             |
 | 0.5.2   | 2023-04-07 | [24915](https://github.com/airbytehq/airbyte/pull/24915) | Fix field key parsing (replace whitespace with uderscore)                                                                                                  |
