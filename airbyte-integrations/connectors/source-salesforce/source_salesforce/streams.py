@@ -663,8 +663,6 @@ class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
 
 class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSalesforceStream):
     def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
-        if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            return {"next_token": last_record[self.cursor_field], "primary_key": last_record.get(self.primary_key)}
         return None
 
     def request_params(
@@ -683,11 +681,8 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSales
         order_by_clause = ""
 
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            last_primary_key = (next_page_token or {}).get("primary_key", "")
-            if last_primary_key:
-                where_conditions.append(f"{self.primary_key} > '{last_primary_key}'")
             order_by_fields = ", ".join([self.cursor_field, self.primary_key] if self.primary_key else [self.cursor_field])
-            order_by_clause = f"ORDER BY {order_by_fields} ASC LIMIT {self.page_size}"
+            order_by_clause = f"ORDER BY {order_by_fields} ASC"
 
         where_clause = f"WHERE {' AND '.join(where_conditions)}"
         query = f"SELECT {select_fields} FROM {table_name} {where_clause} {order_by_clause}"
