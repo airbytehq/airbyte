@@ -39,6 +39,7 @@ def metadata_updated_sensor(job, resources_def) -> SensorDefinition:
             serialized_new_etags_cursor = serialize_composite_etags_cursor(list(new_etags_cursor_set))
             context.update_cursor(serialized_new_etags_cursor)
             context.log.info("New updated_metadata_files in GCS bucket")
-            return RunRequest(run_key="updated_metadata_files")
+            run_key = f"updated_metadata_files:{serialized_new_etags_cursor}"
+            return RunRequest(run_key=run_key)
 
     return metadata_updated_sensor_definition

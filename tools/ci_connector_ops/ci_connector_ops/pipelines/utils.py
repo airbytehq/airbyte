@@ -162,9 +162,14 @@ async def get_modified_files_in_branch_remote(
 
 
 def get_modified_files_in_branch_local(current_git_revision: str, diffed_branch: str = "master") -> Set[str]:
-    """Use git diff to spot the modified files on the local branch."""
+    """Use git diff and git status to spot the modified files on the local branch."""
     airbyte_repo = git.Repo()
     modified_files = airbyte_repo.git.diff("--diff-filter=MA", "--name-only", f"{diffed_branch}...{current_git_revision}").split("\n")
+    status_output = airbyte_repo.git.status("--porcelain")
+    for not_committed_change in status_output.split("\n"):
+        file_path = not_committed_change.strip().split(" ")[-1]
+        if file_path:
+            modified_files.append(file_path)
     return set(modified_files)
 
 
@@ -215,13 +220,17 @@ def get_modified_files_in_commit(current_git_branch: str, current_git_revision: 
         return anyio.run(get_modified_files_in_commit_remote, current_git_branch, current_git_revision)
 
 
-def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> Set[Connector]:
-    """Create a set of modified connectors according to the modified files on the branch."""
-    modified_connectors = []
+def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict[Connector, List[str]]:
+    """Create a mapping of modified connectors (key) and modified files (value)."""
+    modified_connectors = {}
     for file_path in modified_files:
         if str(file_path).startswith(SOURCE_CONNECTOR_PATH_PREFIX) or str(file_path).startswith(DESTINATION_CONNECTOR_PATH_PREFIX):
-            modified_connectors.append(Connector(get_connector_name_from_path(str(file_path))))
-    return set(modified_connectors)
+            modified_connector = Connector(get_connector_name_from_path(str(file_path)))
+            if modified_connector in modified_connectors:
+                modified_connectors[modified_connector].append(file_path)
+            else:
+                modified_connectors[modified_connector] = [file_path]
+    return modified_connectors
 
 
 def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
@@ -278,13 +287,6 @@ async def get_version_from_dockerfile(dockerfile: File) -> str:
         return dockerfile_labels["io.airbyte.version"]
     except KeyError:
         raise Exception("Could not get the version from the Dockerfile labels.")
-
-
-async def should_enable_sentry(dockerfile: File) -> bool:
-    for line in await dockerfile.contents():
-        if "ENV ENABLE_SENTRY true" in line:
-            return True
-    return False
 
 
 class DaggerPipelineCommand(click.Command):
