@@ -151,6 +151,14 @@ definitions:
     primary_key: "id"
     name: "ivr_prompts"
 
+  fax_cover_stream:
+    $parameters:
+      path: "/dictionary/fax-cover-page"
+      extractorPath: "records"
+    $ref: "#/definitions/base_stream"
+    primary_key: "id"
+    name: "fax_cover"
+
 streams:
   - "#/definitions/user_business_hours_stream"
   - "#/definitions/company_business_hours_stream"
@@ -165,6 +173,7 @@ streams:
   - "#/definitions/call_record_settings_stream"
   - "#/definitions/greetings_stream"
   - "#/definitions/ivr_prompts_stream"
+  - "#/definitions/fax_cover_stream"
 
 check:
   type: CheckStream
@@ -182,3 +191,4 @@ check:
     - "call_record_settings"
     - "greetings"
     - "ivr_prompts"
+    - "fax_cover"
