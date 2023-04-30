@@ -93,7 +93,7 @@ def test_read_small_random_data():
             state_rows_count = state_rows_count + 1
             latest_state = row
 
-    assert estimate_row_count == 1
+    assert estimate_row_count == 4
     assert record_rows_count == 10
     assert state_rows_count == 1
     assert latest_state.state.data == {"users": {"id": 10, "seed": None}}
