@@ -19,7 +19,6 @@ Auth Token (which acts as bearer token), account id and extension id are mandate
         \ Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
     - extension_id: Could be seen at response to basic api call to an endpoint with ~ operator. \
         \ Example- (https://platform.devtest.ringcentral.com/restapi/v1.0/account/~/extension/~/business-hours)
-    - start_date: Date filter for eligible streams
 
 ## Step 2: Set up the RingCentral connector in Airbyte
 
@@ -28,14 +27,14 @@ Auth Token (which acts as bearer token), account id and extension id are mandate
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the RingCentral connector and select **RingCentral** from the Source type dropdown.
-4. Enter your `auth_token, account_id, extension_id and start_date`.
+4. Enter your `auth_token, account_id, extension_id`.
 5. Click **Set up source**.
 
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
-3. Enter your `auth_token, account_id, extension_id and start_date`.
+3. Enter your `auth_token, account_id, extension_id`.
 5. Click **Set up source**.
 
 ## Supported sync modes
@@ -45,14 +44,27 @@ The RingCentral source connector supports the following [sync modes](https://doc
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
 | Full Refresh Sync             | Yes        |
-| Incremental Sync              | Yes        |
+| Incremental Sync              | No         |
 | Replicate Incremental Deletes | No         |
 | SSL connection                | Yes        |
 | Namespaces                    | No         |
 
 ## Supported Streams
 
-- account_details
+- user_business_hours
+- company_business_hours
+- callblock_settings
+- blocked_allowed_phonenumbers
+- forwarding_numbers
+- company_call_handling_rules
+- user_call_records
+- user_active_calls
+- call_monitoring_groups
+- call_queues
+- call_record_settings
+- greetings
+- ivr_prompts
+
 
 ## API method example
 

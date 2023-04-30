@@ -32,7 +32,7 @@ definitions:
           field_name: "perPage"
         pagination_strategy:
           type: "PageIncrement"
-          page_size: 1
+          page_size: 100
         page_token_option:
           type: "RequestOption"
           inject_into: "request_parameter"
@@ -77,6 +77,7 @@ definitions:
       path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/caller-blocking/phone-numbers"
       extractorPath: "records"
     $ref: "#/definitions/base_stream_without_pagination"
+    primary_key: "id"
     name: "blocked_allowed_phonenumbers"
 
   forwarding_numbers_stream:
@@ -84,6 +85,7 @@ definitions:
       path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/forwarding-number"
       extractorPath: "records"
     $ref: "#/definitions/base_stream"
+    primary_key: "id"
     name: "forwarding_numbers"
 
   company_call_handling_rules_stream:
@@ -91,6 +93,7 @@ definitions:
       path: "/account/{{ config['account_id'] }}/answering-rule"
       extractorPath: "records"
     $ref: "#/definitions/base_stream"
+    primary_key: "id"
     name: "company_call_handling_rules"
 
   user_call_records_stream:
@@ -98,6 +101,7 @@ definitions:
       path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/call-log"
       extractorPath: "records"
     $ref: "#/definitions/base_stream"
+    primary_key: "id"
     name: "user_call_records"
 
   user_active_calls_stream:
@@ -105,6 +109,7 @@ definitions:
       path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/active-calls"
       extractorPath: "records"
     $ref: "#/definitions/base_stream"
+    primary_key: "id"
     name: "user_active_calls"
 
   call_monitoring_groups_stream:
@@ -112,6 +117,7 @@ definitions:
       path: "/account/{{ config['account_id'] }}/call-monitoring-groups"
       extractorPath: "records"
     $ref: "#/definitions/base_stream"
+    primary_key: "id"
     name: "call_monitoring_groups"
 
   call_queues_stream:
@@ -119,6 +125,7 @@ definitions:
       path: "/account/{{ config['account_id'] }}/call-queues"
       extractorPath: "records"
     $ref: "#/definitions/base_stream"
+    primary_key: "id"
     name: "call_queues"
 
   call_record_settings_stream:
@@ -127,6 +134,22 @@ definitions:
       extractorPath: "greetings"
     $ref: "#/definitions/base_stream_without_pagination"
     name: "call_record_settings"
+  
+  greetings_stream:
+    $parameters:
+      path: "/dictionary/greeting"
+      extractorPath: "records"
+    $ref: "#/definitions/base_stream"
+    primary_key: "id"
+    name: "greetings"
+
+  ivr_prompts_stream:
+    $parameters:
+      path: "/dictionary/greeting"
+      extractorPath: "records"
+    $ref: "#/definitions/base_stream"
+    primary_key: "id"
+    name: "ivr_prompts"
 
 streams:
   - "#/definitions/user_business_hours_stream"
@@ -140,6 +163,8 @@ streams:
   - "#/definitions/call_monitoring_groups_stream"
   - "#/definitions/call_queues_stream"
   - "#/definitions/call_record_settings_stream"
+  - "#/definitions/greetings_stream"
+  - "#/definitions/ivr_prompts_stream"
 
 check:
   type: CheckStream
@@ -155,3 +180,5 @@ check:
     - "call_monitoring_groups"
     - "call_queues"
     - "call_record_settings"
+    - "greetings"
+    - "ivr_prompts"
