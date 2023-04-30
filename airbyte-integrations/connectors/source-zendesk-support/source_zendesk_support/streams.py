@@ -534,6 +534,10 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
                     yield event
 
 
+class UserFields(SourceZendeskSupportStream):
+    """UserFields stream: https://developer.zendesk.com/api-reference/ticketing/users/user_fields/"""
+
+
 class Users(SourceZendeskIncrementalExportStream):
     """Users stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export"""
 

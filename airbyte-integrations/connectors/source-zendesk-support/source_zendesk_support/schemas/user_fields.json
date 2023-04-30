@@ -1,0 +1,56 @@
+{
+  "properties": {
+    "active": {
+      "type": ["null", "boolean"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "custom_field_options": {},
+    "description": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "key": {
+      "type": ["null", "string"]
+    },
+    "position": {
+      "type": ["null", "integer"]
+    },
+    "raw_description": {
+      "type": ["null", "string"]
+    },
+    "raw_title": {
+      "type": ["null", "string"]
+    },
+    "regexp_for_validation": {
+      "type": ["null", "string"]
+    },
+    "relationship_target_type": {
+      "type": ["null", "string"]
+    },
+    "system": {
+      "type": ["null", "boolean"]
+    },
+    "tag": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "type": ["null", "string"]
+    }
+  },
+  "type": ["null", "object"]
+}
