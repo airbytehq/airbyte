@@ -943,7 +943,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.6.1
+  dockerImageTag: 0.6.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -1338,7 +1338,7 @@
 - name: News API
   sourceDefinitionId: df38991e-f35b-4af2-996d-36817f614587
   dockerRepository: airbyte/source-news-api
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/news-api
   icon: newsapi.svg
   sourceType: api
