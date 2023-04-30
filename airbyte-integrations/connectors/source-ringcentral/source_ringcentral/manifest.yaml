@@ -25,7 +25,6 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
       paginator:
-        # type: "NoPagination"
         type: "DefaultPaginator"
         page_size_option:
           type: "RequestOption"
@@ -94,6 +93,40 @@ definitions:
     $ref: "#/definitions/base_stream"
     name: "company_call_handling_rules"
 
+  user_call_records_stream:
+    $parameters:
+      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/call-log"
+      extractorPath: "records"
+    $ref: "#/definitions/base_stream"
+    name: "user_call_records"
+
+  user_active_calls_stream:
+    $parameters:
+      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/active-calls"
+      extractorPath: "records"
+    $ref: "#/definitions/base_stream"
+    name: "user_active_calls"
+
+  call_monitoring_groups_stream:
+    $parameters:
+      path: "/account/{{ config['account_id'] }}/call-monitoring-groups"
+      extractorPath: "records"
+    $ref: "#/definitions/base_stream"
+    name: "call_monitoring_groups"
+
+  call_queues_stream:
+    $parameters:
+      path: "/account/{{ config['account_id'] }}/call-queues"
+      extractorPath: "records"
+    $ref: "#/definitions/base_stream"
+    name: "call_queues"
+
+  call_record_settings_stream:
+    $parameters:
+      path: "/account/{{ config['account_id'] }}/call-recording"
+      extractorPath: "greetings"
+    $ref: "#/definitions/base_stream_without_pagination"
+    name: "call_record_settings"
 
 streams:
   - "#/definitions/user_business_hours_stream"
@@ -102,6 +135,11 @@ streams:
   - "#/definitions/blocked_allowed_phonenumbers_stream"
   - "#/definitions/forwarding_numbers_stream"
   - "#/definitions/company_call_handling_rules_stream"
+  - "#/definitions/user_call_records_stream"
+  - "#/definitions/user_active_calls_stream"
+  - "#/definitions/call_monitoring_groups_stream"
+  - "#/definitions/call_queues_stream"
+  - "#/definitions/call_record_settings_stream"
 
 check:
   type: CheckStream
@@ -112,3 +150,8 @@ check:
     - "blocked_allowed_phonenumbers"
     - "forwarding_numbers"
     - "company_call_handling_rules"
+    - "user_call_records"
+    - "user_active_calls"
+    - "call_monitoring_groups"
+    - "call_queues"
+    - "call_record_settings"

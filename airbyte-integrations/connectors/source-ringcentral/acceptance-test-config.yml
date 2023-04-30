@@ -27,6 +27,14 @@ acceptance_tests:
             bypass_reason: "Sandbox Account has no priviledges to seed the stream"
           - name: "blocked_allowed_phonenumbers"
             bypass_reason: "Sandbox Account has no priviledges to seed the stream"
+          - name: "user_call_records"
+            bypass_reason: "Sandbox Account has no priviledges to seed the stream"
+          - name: "user_active_calls"
+            bypass_reason: "Sandbox Account has no priviledges to seed the stream"
+          - name: "call_monitoring_groups"
+            bypass_reason: "Sandbox Account has no priviledges to seed the stream"
+          - name: "call_queues"
+            bypass_reason: "Sandbox Account has no priviledges to seed the stream"
 # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
 #        expect_records:
 #          path: "integration_tests/expected_records.jsonl"
