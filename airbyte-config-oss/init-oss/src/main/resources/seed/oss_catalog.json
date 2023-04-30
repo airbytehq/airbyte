@@ -15437,7 +15437,7 @@
     "sourceDefinitionId": "36c891d9-4bd9-43ac-bad2-10e12756272c",
     "name": "HubSpot",
     "dockerRepository": "airbyte/source-hubspot",
-    "dockerImageTag": "0.6.1",
+    "dockerImageTag": "0.6.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/hubspot",
     "icon": "hubspot.svg",
     "sourceType": "api",
