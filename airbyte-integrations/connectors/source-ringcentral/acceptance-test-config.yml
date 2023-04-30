@@ -18,7 +18,15 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
+        empty_streams: 
+          - name: "user_business_hours"
+            bypass_reason: "Sandbox Account has no priviledges to seed the stream"
+          - name: "company_business_hours"
+            bypass_reason: "Sandbox Account has no priviledges to seed the stream"
+          - name: "forwarding_numbers"
+            bypass_reason: "Sandbox Account has no priviledges to seed the stream"
+          - name: "blocked_allowed_phonenumbers"
+            bypass_reason: "Sandbox Account has no priviledges to seed the stream"
 # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
 #        expect_records:
 #          path: "integration_tests/expected_records.jsonl"

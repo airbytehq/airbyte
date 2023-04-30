@@ -2,77 +2,22 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Company call handling rules",
   "additionalProperties": true,
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "uri": {
       "type": ["null", "string"]
     },
-    "records": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "uri": {
-            "type": ["null", "string"]
-          },
-          "id": {
-            "type": ["null", "string"]
-          },
-          "type": {
-            "type": ["null", "string"]
-          },
-          "name": {
-            "type": ["null", "string"]
-          },
-          "enabled": {
-            "type": ["null", "boolean"]
-          }
-        }
-      }
+    "id": {
+      "type": ["null", "string"]
     },
-    "paging": {
-      "type": ["null", "object"],
-      "properties": {
-        "page": {
-          "type": ["null", "number"]
-        },
-        "totalPages": {
-          "type": ["null", "number"]
-        },
-        "perPage": {
-          "type": ["null", "number"]
-        },
-        "totalElements": {
-          "type": ["null", "number"]
-        },
-        "pageStart": {
-          "type": ["null", "number"]
-        },
-        "pageEnd": {
-          "type": ["null", "number"]
-        }
-      }
+    "type": {
+      "type": ["null", "string"]
     },
-    "navigation": {
-      "type": ["null", "object"],
-      "properties": {
-        "firstPage": {
-          "type": ["null", "object"],
-          "properties": {
-            "uri": {
-              "type": ["null", "string"]
-            }
-          }
-        },
-        "lastPage": {
-          "type": ["null", "object"],
-          "properties": {
-            "uri": {
-              "type": ["null", "string"]
-            }
-          }
-        }
-      }
+    "name": {
+      "type": ["null", "string"]
+    },
+    "enabled": {
+      "type": ["null", "boolean"]
     }
   }
 }

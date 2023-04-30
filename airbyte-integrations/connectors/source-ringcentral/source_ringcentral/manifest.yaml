@@ -1,11 +1,14 @@
 version: "0.29.0"
 
 definitions:
+  ringcentral_extractor:
+    type: DpathExtractor
+    field_path: ["{{ parameters['extractorPath'] }}"]
+
   selector:
     type: RecordSelector
     extractor:
-      type: DpathExtractor
-      field_path: []
+      $ref: "#/definitions/ringcentral_extractor"
 
   requester:
     type: HttpRequester
@@ -22,19 +25,19 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
       paginator:
-        type: "NoPagination"
-        # type: "DefaultPaginator"
-        # page_size_option:
-        #   type: "RequestOption"
-        #   inject_into: "request_parameter"
-        #   field_name: "perPage"
-        # pagination_strategy:
-        #   type: "PageIncrement"
-        #   page_size: 1
-        # page_token_option:
-        #   type: "RequestOption"
-        #   inject_into: "request_parameter"
-        #   field_name: "page"
+        # type: "NoPagination"
+        type: "DefaultPaginator"
+        page_size_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "perPage"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 1
+        page_token_option:
+          type: "RequestOption"
+          inject_into: "request_parameter"
+          field_name: "page"
       requester:
         $ref: "#/definitions/requester"
 
@@ -50,40 +53,47 @@ definitions:
         $ref: "#/definitions/requester"
 
   user_business_hours_stream:
-    $ref: "#/definitions/base_stream_without_pagination"
-    name: "user_business_hours"
     $parameters:
       path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/business-hours"
+      extractorPath: "schedule"
+    $ref: "#/definitions/base_stream_without_pagination"
+    name: "user_business_hours"
 
   company_business_hours_stream:
-    $ref: "#/definitions/base_stream_without_pagination"
-    name: "company_business_hours"
     $parameters:
       path: "/account/{{ config['account_id'] }}/business-hours"
+      extractorPath: "schedule"
+    $ref: "#/definitions/base_stream_without_pagination"
+    name: "company_business_hours"
 
   callblock_settings_stream:
-    $ref: "#/definitions/base_stream_without_pagination"
-    name: "callblock_settings"
     $parameters:
       path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/caller-blocking"
+      extractorPath: "greetings"
+    $ref: "#/definitions/base_stream_without_pagination"
+    name: "callblock_settings"
 
   blocked_allowed_phonenumbers_stream:
-    $ref: "#/definitions/base_stream_without_pagination"
-    name: "blocked_allowed_phonenumbers"
     $parameters:
       path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/caller-blocking/phone-numbers"
+      extractorPath: "records"
+    $ref: "#/definitions/base_stream_without_pagination"
+    name: "blocked_allowed_phonenumbers"
 
   forwarding_numbers_stream:
-    $ref: "#/definitions/base_stream"
-    name: "forwarding_numbers"
     $parameters:
       path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/forwarding-number"
+      extractorPath: "records"
+    $ref: "#/definitions/base_stream"
+    name: "forwarding_numbers"
 
   company_call_handling_rules_stream:
-    $ref: "#/definitions/base_stream"
-    name: "company_call_handling_rules"
     $parameters:
       path: "/account/{{ config['account_id'] }}/answering-rule"
+      extractorPath: "records"
+    $ref: "#/definitions/base_stream"
+    name: "company_call_handling_rules"
+
 
 streams:
   - "#/definitions/user_business_hours_stream"

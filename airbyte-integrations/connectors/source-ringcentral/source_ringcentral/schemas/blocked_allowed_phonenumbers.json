@@ -1,79 +1,23 @@
-
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Blocked_Allowed phoneNumber Schema",
   "additionalProperties": true,
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "uri": {
       "type": ["null", "string"]
     },
-    "records": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "uri": {
-            "type": ["null", "string"]
-          },
-          "id": {
-            "type": ["null", "string"]
-          },
-          "phoneNumber": {
-            "type": ["null", "string"]
-          },
-          "status": {
-            "type": ["null", "string"]
-          },
-          "label": {
-            "type": ["null", "string"]
-          }
-        }
-      }
+    "id": {
+      "type": ["null", "string"]
     },
-    "paging": {
-      "type": ["null", "object"],
-      "properties": {
-        "page": {
-          "type": ["null", "number"]
-        },
-        "totalPages": {
-          "type": ["null", "number"]
-        },
-        "perPage": {
-          "type": ["null", "number"]
-        },
-        "totalElements": {
-          "type": ["null", "number"]
-        },
-        "pageStart": {
-          "type": ["null", "number"]
-        },
-        "pageEnd": {
-          "type": ["null", "number"]
-        }
-      }
+    "phoneNumber": {
+      "type": ["null", "string"]
     },
-    "navigation": {
-      "type": ["null", "object"],
-      "properties": {
-        "firstPage": {
-          "type": ["null", "object"],
-          "properties": {
-            "uri": {
-              "type": ["null", "string"]
-            }
-          }
-        },
-        "lastPage": {
-          "type": ["null", "object"],
-          "properties": {
-            "uri": {
-              "type": ["null", "string"]
-            }
-          }
-        }
-      }
+    "status": {
+      "type": ["null", "string"]
+    },
+    "label": {
+      "type": ["null", "string"]
     }
   }
 }
