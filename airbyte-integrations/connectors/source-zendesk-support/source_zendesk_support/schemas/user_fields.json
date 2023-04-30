@@ -7,7 +7,26 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "custom_field_options": {},
+    "custom_field_options": {
+      "items": {
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "raw_name": {
+            "type": ["null", "string"]
+          }
+        },
+        "type": ["null", "object"]
+      },
+      "type": ["null", "array"]
+    },
     "description": {
       "type": ["null", "string"]
     },
@@ -29,6 +48,7 @@
     "regexp_for_validation": {
       "type": ["null", "string"]
     },
+    "relationship_filter": {},
     "relationship_target_type": {
       "type": ["null", "string"]
     },
