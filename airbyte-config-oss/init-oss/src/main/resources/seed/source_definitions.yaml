@@ -1775,6 +1775,14 @@
   icon: retently.svg
   sourceType: api
   releaseStage: alpha
+- name: RingCentral
+  sourceDefinitionId: <To-be-given>
+  dockerRepository: airbyte/source-ringcentral
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/ringcentral
+  icon: ringcentral.svg
+  sourceType: api
+  releaseStage: alpha
 - name: RD Station Marketing
   sourceDefinitionId: fb141f29-be2a-450b-a4f2-2cd203a00f84
   dockerRepository: airbyte/source-rd-station-marketing

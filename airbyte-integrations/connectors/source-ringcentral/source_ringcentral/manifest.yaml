@@ -1,0 +1,104 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
+  requester:
+    type: HttpRequester
+    url_base: "https://platform.devtest.ringcentral.com/restapi/v1.0"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['auth_token'] }}"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: "NoPagination"
+        # type: "DefaultPaginator"
+        # page_size_option:
+        #   type: "RequestOption"
+        #   inject_into: "request_parameter"
+        #   field_name: "perPage"
+        # pagination_strategy:
+        #   type: "PageIncrement"
+        #   page_size: 1
+        # page_token_option:
+        #   type: "RequestOption"
+        #   inject_into: "request_parameter"
+        #   field_name: "page"
+      requester:
+        $ref: "#/definitions/requester"
+
+  base_stream_without_pagination:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: "NoPagination"
+      requester:
+        $ref: "#/definitions/requester"
+
+  user_business_hours_stream:
+    $ref: "#/definitions/base_stream_without_pagination"
+    name: "user_business_hours"
+    $parameters:
+      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/business-hours"
+
+  company_business_hours_stream:
+    $ref: "#/definitions/base_stream_without_pagination"
+    name: "company_business_hours"
+    $parameters:
+      path: "/account/{{ config['account_id'] }}/business-hours"
+
+  callblock_settings_stream:
+    $ref: "#/definitions/base_stream_without_pagination"
+    name: "callblock_settings"
+    $parameters:
+      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/caller-blocking"
+
+  blocked_allowed_phonenumbers_stream:
+    $ref: "#/definitions/base_stream_without_pagination"
+    name: "blocked_allowed_phonenumbers"
+    $parameters:
+      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/caller-blocking/phone-numbers"
+
+  forwarding_numbers_stream:
+    $ref: "#/definitions/base_stream"
+    name: "forwarding_numbers"
+    $parameters:
+      path: "/account/{{ config['account_id'] }}/extension/{{ config['extension_id'] }}/forwarding-number"
+
+  company_call_handling_rules_stream:
+    $ref: "#/definitions/base_stream"
+    name: "company_call_handling_rules"
+    $parameters:
+      path: "/account/{{ config['account_id'] }}/answering-rule"
+
+streams:
+  - "#/definitions/user_business_hours_stream"
+  - "#/definitions/company_business_hours_stream"
+  - "#/definitions/callblock_settings_stream"
+  - "#/definitions/blocked_allowed_phonenumbers_stream"
+  - "#/definitions/forwarding_numbers_stream"
+  - "#/definitions/company_call_handling_rules_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "user_business_hours"
+    - "company_business_hours"
+    - "callblock_settings"
+    - "blocked_allowed_phonenumbers"
+    - "forwarding_numbers"
+    - "company_call_handling_rules"
