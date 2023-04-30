@@ -47,6 +47,7 @@ To enable user-configurable static partitions for the [Woocommerce API](https://
 * "Inject partition value into outgoing HTTP request" is disabled, because the order id needs to be injected into the path
 * In the general section of the stream configuration, the "Path URL" is set to `/orders/{{ stream_partition.order }}/notes`
 
+<iframe width="640" height="777" src="https://www.loom.com/embed/df5d437eeaf545a9be25a1e7649217dc" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 When order IDs were set to `123`, `456` and `789` in the testing values, the following requests will be executed:
 ```
@@ -70,6 +71,8 @@ To enable dynamic partition routing for the [Woocommerce API](https://woocommerc
 * "Parent key" is set to `id`
 * "Current partition value identifier" is set to `order`
 * In the general section of the stream configuration, the "Path URL" is set to `/orders/{{ stream_partition.order }}/notes`
+
+<iframe width="640" height="765" src="https://www.loom.com/embed/41bb2ffba45644bbbda43f7e679f2754" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 When triggering a sync, the connector will first fetch all records of the orders stream. The records will look like this:
 ```
