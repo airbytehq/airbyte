@@ -22,13 +22,13 @@ import pandas as pd
 import smart_open
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import AirbyteStream, FailureType, SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
 from azure.storage.blob import BlobServiceClient
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
 from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
-from utils import AirbyteTracedException
 from yaml import safe_load
 
 from .utils import backoff_handler
