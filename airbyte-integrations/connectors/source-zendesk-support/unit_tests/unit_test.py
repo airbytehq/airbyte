@@ -39,6 +39,7 @@ from source_zendesk_support.streams import (
     TicketMetricEvents,
     TicketMetrics,
     Tickets,
+    UserFields,
     Users,
     UserSettingsStream,
 )
@@ -138,8 +139,8 @@ def test_check(response, start_date, check_passed):
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings",
     [
-        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 18, []),
-        ({"error": "Not sufficient permissions"}, 403, 17, [
+        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 19, []),
+        ({"error": "Not sufficient permissions"}, 403, 18, [
             "Skipping stream ticket_forms: Check permissions, error message: Not sufficient permissions."
         ]),
     ],
@@ -262,6 +263,7 @@ class TestAllStreams:
             (TicketMetrics),
             (TicketMetricEvents),
             (Tickets),
+            (UserFields),
             (Users),
             (Brands),
             (CustomRoles),
@@ -282,6 +284,7 @@ class TestAllStreams:
             "TicketMetrics",
             "TicketMetricEvents",
             "Tickets",
+            "UserFields",
             "Users",
             "Brands",
             "CustomRoles",
@@ -313,6 +316,7 @@ class TestAllStreams:
             (TicketMetrics, "ticket_metrics"),
             (TicketMetricEvents, "incremental/ticket_metric_events"),
             (Tickets, "incremental/tickets.json"),
+            (UserFields, "user_fields"),
             (Users, "incremental/users.json"),
             (Brands, "brands"),
             (CustomRoles, "custom_roles"),
@@ -333,6 +337,7 @@ class TestAllStreams:
             "TicketMetrics",
             "TicketMetricEvents",
             "Tickets",
+            "UseFields",
             "Users",
             "Brands",
             "CustomRoles",
@@ -355,6 +360,7 @@ class TestSourceZendeskSupportStream:
             (SatisfactionRatings),
             (TicketFields),
             (TicketMetrics),
+            (UserFields),
         ],
         ids=[
             "Macros",
@@ -363,6 +369,7 @@ class TestSourceZendeskSupportStream:
             "SatisfactionRatings",
             "TicketFields",
             "TicketMetrics",
+            "UserFields",
         ],
     )
     def test_parse_response(self, requests_mock, stream_cls):
@@ -383,6 +390,7 @@ class TestSourceZendeskSupportStream:
             (SatisfactionRatings),
             (TicketFields),
             (TicketMetrics),
+            (UserFields),
         ],
         ids=[
             "Macros",
@@ -391,6 +399,7 @@ class TestSourceZendeskSupportStream:
             "SatisfactionRatings",
             "TicketFields",
             "TicketMetrics",
+            "UserFields",
         ],
     )
     def test_url_base(self, stream_cls):
@@ -412,6 +421,7 @@ class TestSourceZendeskSupportStream:
             (SatisfactionRatings, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketFields, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketMetrics, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
+            (UserFields, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
         ],
         ids=[
             "Macros",
@@ -420,6 +430,7 @@ class TestSourceZendeskSupportStream:
             "SatisfactionRatings",
             "TicketFields",
             "TicketMetrics",
+            "UserFields",
         ],
     )
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):
@@ -434,12 +445,14 @@ class TestSourceZendeskSupportStream:
             (Organizations, None),
             (Groups, None),
             (TicketFields, None),
+            (UserFields, None),
         ],
         ids=[
             "Macros",
             "Organizations",
             "Groups",
             "TicketFields",
+            "UserFields",
         ],
     )
     def test_next_page_token(self, stream_cls, expected):
@@ -454,12 +467,14 @@ class TestSourceZendeskSupportStream:
             (Organizations, {"start_time": 1622505600}),
             (Groups, {"start_time": 1622505600}),
             (TicketFields, {"start_time": 1622505600}),
+            (UserFields, {"start_time": 1622505600}),
         ],
         ids=[
             "Macros",
             "Organizations",
             "Groups",
             "TicketFields",
+            "UserFields",
         ],
     )
     def test_request_params(self, stream_cls, expected):
