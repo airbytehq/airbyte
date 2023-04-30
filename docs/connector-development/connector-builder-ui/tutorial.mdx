@@ -44,6 +44,10 @@ Besides an Exchange Rates API key, only a browser and an up-to-date running Airb
 
 ## Step 2 - Basic configuration
 
+:::caution
+**The connector builder does not yet have a link in the sidebar, to navigate to it manually change the URL path in your browser's address bar to `/<your workspace id>/connector-builder`**
+:::
+
 ### Creating a connector builder project
 
 <div style={{ position: "relative", paddingBottom: "59.66850828729282%", height: 0 }}><iframe src="https://www.loom.com/embed/c21f7b421f954e0a82b931446dda3d51" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%"}}></iframe></div>
@@ -131,7 +135,8 @@ To do so, follow these steps:
 * Set the name to "Base"
 * Click "Create"
 
-The value input is now set to `{{ config['base'] }}`. When making requests, the connector will replace this placeholder by the user supplied value. This syntax can be used in all fields that have a user icon on the right side.
+The value input is now set to `{{ config['base'] }}`. When making requests, the connector will replace this placeholder by the user supplied value. This syntax can be used in all fields that have a user icon on the right side, see the full reference [here](/connector-development/config-based/understanding-the-yaml-file/reference#variables).
+
 
 Now your connector has a second configuration input. To test it, click the "Testing values" button again, set the "Base" to `USD`. Then, click the "Test" button again to issue a new test read.
 
@@ -160,7 +165,7 @@ In this section, we'll update the source to read historical data instead of only
 According to the API documentation, we can read the exchange rate for a specific date range by querying the `"/exchangerates_data/{date}"` endpoint instead of `"/exchangerates_data/latest"`.
 
 To configure your connector to request every day individually, follow these steps:
-* On top of the form, change the "Path URL" input to `/exchangerates_data/{{ stream_interval.start_time }}` to inject the date to fetch data for into the path of the request
+* On top of the form, change the "Path URL" input to `/exchangerates_data/{{ stream_interval.start_time }}` to [inject](/connector-development/config-based/understanding-the-yaml-file/reference#variables) the date to fetch data for into the path of the request
 * Enable "Incremental sync" for the Rates stream
 * Set the "Cursor field" to `date` - this is the property in our records to check what date got synced last
 * Set the "Datetime format" to `%Y-%m-%d` to match the format of the date in the record returned from the API
