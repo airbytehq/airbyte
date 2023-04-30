@@ -841,7 +841,7 @@ class DatetimeBasedCursor(BaseModel):
     type: Literal["DatetimeBasedCursor"]
     cursor_field: str = Field(
         ...,
-        description="The location of the value on a record that will be used as a bookmark during sync.",
+        description="The location of the value on a record that will be used as a bookmark during sync. To ensure no data loss, the API must return records in ascending order based on the cursor field. Nested fields are not supported, so the field must be at the top level of the record. You can use a combination of Add Field and Remove Field transformations to move the nested field to the top.",
         examples=["created_at", "{{ config['record_cursor'] }}"],
         title="Cursor Field",
     )
@@ -860,7 +860,7 @@ class DatetimeBasedCursor(BaseModel):
     end_datetime: Union[str, MinMaxDatetime] = Field(
         ...,
         description="The datetime that determines the last record that should be synced.",
-        examples=["2021-01-1T00:00:00Z", "{{ now_utc() }}"],
+        examples=["2021-01-1T00:00:00Z", "{{ now_utc() }}", "{{ day_delta(-1) }}"],
         title="End Datetime",
     )
     start_datetime: Union[str, MinMaxDatetime] = Field(
