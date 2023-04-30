@@ -64,6 +64,7 @@ The RingCentral source connector supports the following [sync modes](https://doc
 - call_record_settings
 - greetings
 - ivr_prompts
+- fax_cover
 
 
 ## API method example
