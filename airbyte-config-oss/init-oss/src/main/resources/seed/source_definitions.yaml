@@ -2558,7 +2558,7 @@
     hosts:
       - api-metrica.yandex.net
 - name: Yotpo
-  sourceDefinitionId: <To-be-given>
+  sourceDefinitionId: 18139f00-b1ba-4971-8f80-8387b617cfd8
   dockerRepository: airbyte/source-yotpo
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/yotpo
