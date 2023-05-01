@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 from airbyte_cdk.logger import AirbyteLogger
 from source_sentry.source import SourceSentry
-from source_sentry.streams import Projects
+from source_sentry.streams import Events
 
 
 def test_source_wrong_credentials(requests_mock):
@@ -18,7 +18,7 @@ def test_source_wrong_credentials(requests_mock):
 def test_check_connection(mocker):
     source = SourceSentry()
     logger_mock, config_mock = MagicMock(), MagicMock()
-    mocker.patch.object(Projects, "read_records", return_value=iter([{"id": "1", "name": "test"}]))
+    mocker.patch.object(Events, "read_records", return_value=iter([{"id": "1", "name": "test"}]))
     assert source.check_connection(logger_mock, config_mock) == (True, None)
 
 
