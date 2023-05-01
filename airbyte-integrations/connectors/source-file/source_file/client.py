@@ -29,6 +29,7 @@ from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
 from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
+from urllib3.exceptions import ProtocolError
 from yaml import safe_load
 
 from .utils import backoff_handler
@@ -406,6 +407,12 @@ class Client:
             except ConnectionResetError:
                 logger.info(f"Catched `connection reset error - 104`, stream: {self.stream_name} ({self.reader.full_url})")
                 raise ConnectionResetError
+            except ProtocolError as err:
+                error_msg = (
+                    f"File {fp} can not be opened due to connection issues on provider side. Please check provided links and options"
+                )
+                logger.error(f"{error_msg}\n{traceback.format_exc()}")
+                raise ConfigurationError(error_msg) from err
 
     def _cache_stream(self, fp):
         """cache stream to file"""
