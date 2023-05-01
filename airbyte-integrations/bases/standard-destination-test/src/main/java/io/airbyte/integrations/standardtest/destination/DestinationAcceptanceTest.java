@@ -133,6 +133,8 @@ public abstract class DestinationAcceptanceTest {
   protected static Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(
                                                                                                         final String imageNameWithoutTag) {
     final LocalDefinitionsProvider provider = new LocalDefinitionsProvider();
+    provider.getDestinationDefinitions().stream().map(StandardDestinationDefinition::getDockerRepository).forEach(System.out::println);
+    System.out.println("IMAGE NAME: " + imageNameWithoutTag);
     return provider.getDestinationDefinitions().stream()
         .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
         .findFirst();
@@ -245,6 +247,7 @@ public abstract class DestinationAcceptanceTest {
   }
 
   protected String getNormalizationIntegrationType() {
+    System.out.println("FROM PROVIDER: " + getOptionalDestinationDefinitionFromProvider(getDestinationDefinitionKey()).orElse(null));
     return getOptionalDestinationDefinitionFromProvider(getDestinationDefinitionKey())
         .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
         .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationIntegrationType())
@@ -1356,6 +1359,7 @@ public abstract class DestinationAcceptanceTest {
       return destinationOutput;
     }
 
+    System.out.println("NORM TYPE: " + getNormalizationIntegrationType());
     final NormalizationRunner runner = new DefaultNormalizationRunner(
         processFactory,
         getNormalizationImageName(),
