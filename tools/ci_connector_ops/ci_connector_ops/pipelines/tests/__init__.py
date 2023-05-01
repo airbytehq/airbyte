@@ -3,12 +3,15 @@
 #
 """This module groups factory like functions to dispatch tests steps according to the connector under test language."""
 
+import itertools
 from typing import List
 
-from ci_connector_ops.pipelines.bases import StepResult
+import anyio
+import asyncer
+from ci_connector_ops.pipelines.bases import ConnectorReport, StepResult
 from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.tests import java_connectors, python_connectors
-from ci_connector_ops.pipelines.tests.common import AcceptanceTests, QaChecks  # noqa
+from ci_connector_ops.pipelines.tests.common import QaChecks, VersionFollowsSemverCheck, VersionIncrementCheck
 from ci_connector_ops.utils import ConnectorLanguage
 
 LANGUAGE_MAPPING = {
@@ -23,6 +26,19 @@ LANGUAGE_MAPPING = {
         # ConnectorLanguage.JAVA: java_connectors.run_code_format_checks
     },
 }
+
+
+async def run_version_checks(context: ConnectorContext) -> List[StepResult]:
+    """Run the version checks on a connector.
+
+    Args:
+        context (ConnectorContext): The current connector context.
+
+    Returns:
+        List[StepResult]: The results of the version checks steps.
+    """
+    context.logger.info("Run version checks.")
+    return [await VersionFollowsSemverCheck(context).run(), await VersionIncrementCheck(context).run()]
 
 
 async def run_qa_checks(context: ConnectorContext) -> List[StepResult]:
@@ -69,3 +85,29 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     else:
         context.logger.warning(f"No tests defined for connector language {context.connector.language}!")
         return []
+
+
+async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
+    """Run a test pipeline for a single connector.
+
+    A visual DAG can be found on the README.md file of the pipelines modules.
+
+    Args:
+        context (ConnectorContext): The initialized connector context.
+
+    Returns:
+        ConnectorReport: The test reports holding tests results.
+    """
+    async with semaphore:
+        async with context:
+            async with asyncer.create_task_group() as task_group:
+                tasks = [
+                    task_group.soonify(run_version_checks)(context),
+                    task_group.soonify(run_qa_checks)(context),
+                    task_group.soonify(run_code_format_checks)(context),
+                    task_group.soonify(run_all_tests)(context),
+                ]
+            results = list(itertools.chain(*(task.value for task in tasks)))
+            context.report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
+
+        return context.report

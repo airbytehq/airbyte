@@ -143,12 +143,36 @@ def test_request_params(config, stream, expected):
     assert stream(config).request_params() == expected
 
 
-def test_get_updated_state(config):
-    current_stream_state = {"created_at": ""}
-    latest_record = {"created_at": "2022-10-10T06:21:53-07:00"}
-    updated_state = {"created_at": "2022-10-10T06:21:53-07:00", "orders": None}
+@pytest.mark.parametrize(
+    "last_record, current_state, expected",
+    [
+        # no init state
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {}, {'created_at': '2022-10-10T06:21:53-07:00', 'orders': None}),
+        # state is empty str
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": ""},  {'created_at': '2022-10-10T06:21:53-07:00', 'orders': None}),
+        # state is None
+        ({"created_at": "2022-10-10T06:21:53-07:00"}, {"created_at": None}, {'created_at': '2022-10-10T06:21:53-07:00', 'orders': None}),
+        # last rec cursor is None
+        ({"created_at": None}, {"created_at": None}, {'created_at': '', 'orders': None}),
+        # last rec cursor is empty str
+        ({"created_at": ""}, {"created_at": "null"}, {'created_at': 'null', 'orders': None}),
+        # no values at all
+        ({}, {}, {'created_at': '', 'orders': None})
+    ],
+    ids=[
+        "no init state",
+        "state is empty str",
+        "state is None",
+        "last rec cursor is None",
+        "last rec cursor is empty str",
+        "no values at all",
+    ]
+)
+def test_get_updated_state(config, last_record, current_state, expected):
     stream = OrderRefunds(config)
-    assert (
-        stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record)
-        == updated_state
-    )
+    assert stream.get_updated_state(current_state, last_record) == expected
+
+
+def test_parse_response_with_bad_json(config, response_with_bad_json):
+    stream = Customers(config)
+    assert list(stream.parse_response(response_with_bad_json)) == [{}]

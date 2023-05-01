@@ -4,10 +4,10 @@
 
 """This module groups steps made to run tests for a specific Python connector given a test context."""
 
-from typing import List, Tuple
+from typing import List
 
 import asyncer
-from ci_connector_ops.pipelines.actions import environments, secrets
+from ci_connector_ops.pipelines.actions import environments, run_steps, secrets
 from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.builds import LOCAL_BUILD_PLATFORM
 from ci_connector_ops.pipelines.builds.python_connectors import BuildConnectorImage
@@ -40,7 +40,7 @@ class CodeFormatChecks(Step):
         Returns:
             StepResult: Failure or success of the code format checks with stdout and stderr.
         """
-        connector_under_test = environments.with_airbyte_connector(self.context)
+        connector_under_test = environments.with_python_connector_installed(self.context)
         formatter = (
             connector_under_test.with_exec(["echo", "Running black"])
             .with_exec(self.RUN_BLACK_CMD)
@@ -57,14 +57,14 @@ class ConnectorPackageInstall(Step):
 
     title = "Connector package install"
 
-    async def _run(self) -> Tuple[StepResult, Container]:
+    async def _run(self) -> StepResult:
         """Install the connector under test package in a Python container.
 
         Returns:
-            Tuple[StepResult, Container]: Failure or success of the package installation and the connector under test container (with the connector package installed).
+            StepResult: Failure or success of the package installation and the connector under test container (with the connector package installed).
         """
         connector_under_test = await environments.with_installed_airbyte_connector(self.context)
-        return (await self.get_step_result(connector_under_test)), connector_under_test
+        return await self.get_step_result(connector_under_test)
 
 
 class UnitTests(PytestStep):
@@ -81,7 +81,10 @@ class UnitTests(PytestStep):
         Returns:
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
-        return await self._run_tests_in_directory(connector_under_test, "unit_tests")
+        connector_under_test_with_secrets = connector_under_test.with_directory(
+            f"{self.context.connector.code_directory}/secrets", self.context.secrets_dir
+        )
+        return await self._run_tests_in_directory(connector_under_test_with_secrets, "unit_tests")
 
 
 class IntegrationTests(PytestStep):
@@ -114,50 +117,32 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     Returns:
         List[StepResult]: The results of all the steps that ran or were skipped.
     """
-    connector_package_install_step = ConnectorPackageInstall(context)
-    unit_tests_step = UnitTests(context)
-    build_connector_image_step = BuildConnectorImage(context, LOCAL_BUILD_PLATFORM)
-    integration_tests_step = IntegrationTests(context)
-    acceptance_test_step = AcceptanceTests(context)
 
-    context.logger.info("Run the connector package install step.")
-    package_install_results, connector_under_test = await connector_package_install_step.run()
-    context.logger.info("Successfully ran the connector package install step.")
+    step_results = await run_steps(
+        [
+            ConnectorPackageInstall(context),
+            BuildConnectorImage(context, LOCAL_BUILD_PLATFORM),
+        ]
+    )
+    if any([step_result.status is StepStatus.FAILURE for step_result in step_results]):
+        return step_results
+    connector_package_install_results, build_connector_image_results = step_results[0], step_results[1]
+    connector_image_tar_file, _ = await export_container_to_tarball(context, build_connector_image_results.output_artifact)
+    connector_container = connector_package_install_results.output_artifact
 
-    context.logger.info("Run the unit tests step.")
-    unit_tests_results = await unit_tests_step.run(connector_under_test)
-
-    results = [
-        package_install_results,
-        unit_tests_results,
-    ]
-
-    if unit_tests_results.status is StepStatus.FAILURE:
-        return results + [build_connector_image_step.skip(), integration_tests_step.skip(), acceptance_test_step.skip()]
-    context.logger.info("Successfully ran the unit tests step.")
-
-    if not context.connector.acceptance_test_config["connector_image"].endswith(":dev"):
-        context.logger.info("Not building the connector image as CAT is run with a non dev version of the connector.")
-        connector_image_tar_file = None
-    else:
-        context.logger.info("Run the build connector image step.")
-        build_connector_image_results, connector_container = await build_connector_image_step.run()
-        results.append(build_connector_image_results)
-        if build_connector_image_results.status is StepStatus.FAILURE:
-            return results + [integration_tests_step.skip(), acceptance_test_step.skip()]
-        connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
-        context.logger.info("Successfully ran the build connector image step.")
-
-    context.logger.info("Retrieve the connector secrets.")
     context.secrets_dir = await secrets.get_connector_secret_dir(context)
-    context.logger.info("Run integration tests and acceptance tests in parallel.")
+
+    unit_test_results = await UnitTests(context).run(connector_container)
+    if unit_test_results.status is StepStatus.FAILURE:
+        return step_results + [unit_test_results]
+
     async with asyncer.create_task_group() as task_group:
         tasks = [
-            task_group.soonify(IntegrationTests(context).run)(connector_under_test),
+            task_group.soonify(IntegrationTests(context).run)(connector_container),
             task_group.soonify(AcceptanceTests(context).run)(connector_image_tar_file),
         ]
 
-    return results + [task.value for task in tasks]
+    return step_results + [task.value for task in tasks]
 
 
 async def run_code_format_checks(context: ConnectorContext) -> List[StepResult]:

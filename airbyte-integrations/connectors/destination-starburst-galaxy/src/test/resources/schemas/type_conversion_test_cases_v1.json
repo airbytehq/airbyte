@@ -1,0 +1,613 @@
+[
+  {
+    "schemaName": "simple_schema",
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "$ref": "WellKnownTypes.json#/definitions/String"
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"node_id\"" : "varchar",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "nested_record",
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "$ref": "WellKnownTypes.json#/definitions/String"
+        },
+        "user": {
+          "type": "object",
+          "properties": {
+            "first_name": {
+              "$ref": "WellKnownTypes.json#/definitions/String"
+            },
+            "last_name": {
+              "$ref": "WellKnownTypes.json#/definitions/String"
+            }
+          }
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"node_id\"" : "varchar",
+      "\"user\"" : "row(first_name varchar, last_name varchar, _airbyte_additional_properties map(varchar, varchar))",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "record_with_union_type",
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "identifier": {
+          "oneOf": [
+            { "$ref": "WellKnownTypes.json#/definitions/Number" },
+            { "$ref": "WellKnownTypes.json#/definitions/String" }
+          ]
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"identifier\"" : "row(member0 double, member1 varchar)",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "array_with_same_type",
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "identifier": {
+          "type": "array",
+          "items": {
+            "$ref": "WellKnownTypes.json#/definitions/String"
+          }
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"identifier\"" : "array(varchar)",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "array_with_union_type",
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "identifiers": {
+          "type": "array",
+          "items": [
+            { "$ref": "WellKnownTypes.json#/definitions/String" },
+            { "$ref": "WellKnownTypes.json#/definitions/Integer" },
+            { "$ref": "WellKnownTypes.json#/definitions/String" },
+            { "$ref": "WellKnownTypes.json#/definitions/Boolean" }
+          ]
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"identifiers\"" : "array(row(member0 varchar, member1 bigint, member2 boolean))",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "field_with_combined_restriction",
+    "jsonSchema": {
+      "properties": {
+        "created_at": {
+          "anyOf": [
+            {
+              "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
+            },
+            {
+              "$ref": "WellKnownTypes.json#/definitions/String"
+            },
+            {
+              "$ref": "WellKnownTypes.json#/definitions/Integer"
+            }
+          ]
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"created_at\"" : "row(member0 varchar, member1 bigint)",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "record_with_combined_restriction_field",
+    "jsonSchema": {
+      "properties": {
+        "user": {
+          "type": "object",
+          "properties": {
+            "created_at": {
+              "anyOf": [
+                {
+                  "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
+                },
+                {
+                  "$ref": "WellKnownTypes.json#/definitions/String"
+                },
+                {
+                  "$ref": "WellKnownTypes.json#/definitions/Integer"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"user\"" : "row(created_at row(member0 varchar, member1 bigint), _airbyte_additional_properties map(varchar, varchar))",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "array_with_combined_restriction_field",
+    "jsonSchema": {
+      "properties": {
+        "identifiers": {
+          "type": "array",
+          "items": [
+            {
+              "oneOf": [
+                {
+                  "$ref": "WellKnownTypes.json#/definitions/Integer"
+                },
+                {
+                  "$ref": "WellKnownTypes.json#/definitions/String"
+                }
+              ]
+            },
+            {
+              "$ref": "WellKnownTypes.json#/definitions/Boolean"
+            }
+          ]
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"identifiers\"" : "array(row(member0 bigint, member1 varchar, member2 boolean))",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "record_with_airbyte_additional_properties",
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "$ref": "WellKnownTypes.json#/definitions/String"
+        },
+        "_airbyte_additional_properties": {
+          "type": "object"
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"node_id\"" : "varchar",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "record_with_ab_additional_properties",
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "$ref": "WellKnownTypes.json#/definitions/String"
+        },
+        "_ab_additional_properties": {
+          "type": "object"
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"node_id\"" : "varchar",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "record_without_properties",
+    "jsonSchema": {
+      "type": "object"
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "schema_with_same_object_name",
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "WellKnownTypes.json#/definitions/Integer"
+            }
+          }
+        },
+        "commit": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "$ref": "WellKnownTypes.json#/definitions/String"
+            },
+            "author": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "$ref": "WellKnownTypes.json#/definitions/String"
+                },
+                "pr": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "$ref": "WellKnownTypes.json#/definitions/String"
+                    },
+                    "message": {
+                      "$ref": "WellKnownTypes.json#/definitions/String"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"author\"" : "row(id bigint, _airbyte_additional_properties map(varchar, varchar))",
+      "\"commit\"" : "row(message varchar, author row(name varchar, pr row(id varchar, message varchar, _airbyte_additional_properties map(varchar, varchar)), _airbyte_additional_properties map(varchar, varchar)), _airbyte_additional_properties map(varchar, varchar))",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "array_without_items_in_schema",
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "identifier": {
+          "type": "array"
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"identifier\"" : "array(varchar)",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "array_with_same_object_name",
+    "jsonSchema": {
+      "properties": {
+        "parent_object": {
+          "type": "object",
+          "properties": {
+            "object_array": {
+              "type": "array",
+              "items": [
+                { "$ref": "WellKnownTypes.json#/definitions/Integer" },
+                { "$ref": "WellKnownTypes.json#/definitions/Boolean" },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "object",
+                      "properties": {
+                        "id_part_1": {
+                          "$ref": "WellKnownTypes.json#/definitions/Integer"
+                        },
+                        "id_part_2": {
+                          "$ref": "WellKnownTypes.json#/definitions/String"
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "object",
+                      "properties": {
+                        "id_part_1": {
+                          "$ref": "WellKnownTypes.json#/definitions/String"
+                        },
+                        "id_part_2": {
+                          "$ref": "WellKnownTypes.json#/definitions/Integer"
+                        }
+                      }
+                    },
+                    ":message": {
+                      "$ref": "WellKnownTypes.json#/definitions/String"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"parent_object\"" : "row(object_array array(row(member0 bigint, member1 boolean, member2 row(id row(id_part_1 row(member0 bigint, member1 varchar), id_part_2 row(member0 varchar, member1 bigint), _airbyte_additional_properties map(varchar, varchar)), _message varchar, _airbyte_additional_properties map(varchar, varchar)))), _airbyte_additional_properties map(varchar, varchar))",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "object_inside_array_inside_array",
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "filters": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "filterFamily": {
+                  "$ref": "WellKnownTypes.json#/definitions/String"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"filters\"" : "array(array(row(filterFamily varchar, _airbyte_additional_properties map(varchar, varchar))))",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "array_field_with_empty_items",
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "array_field": {
+          "type": "array",
+          "items": {}
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"array_field\"" : "array(varchar)",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "nullable_value",
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "node_id": {
+          "$ref": "WellKnownTypes.json#/definitions/Number"
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"node_id\"" : "double",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "any_of_with_same_name",
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "same_record_name_field": {
+          "type": "object",
+          "properties": {
+            "sub_field_1": {
+              "$ref": "WellKnownTypes.json#/definitions/String"
+            }
+          }
+        },
+        "any_of_field": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "same_record_name_field": {
+                  "type": "object",
+                  "properties": {
+                    "sub_field_2": {
+                      "$ref": "WellKnownTypes.json#/definitions/String"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"same_record_name_field\"" : "row(sub_field_1 varchar, _airbyte_additional_properties map(varchar, varchar))",
+      "\"any_of_field\"" : "row(same_record_name_field row(sub_field_2 varchar, _airbyte_additional_properties map(varchar, varchar)), _airbyte_additional_properties map(varchar, varchar))",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "all_of_with_same_name",
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "same_record_name_field": {
+          "type": "object",
+          "properties": {
+            "sub_field_1": {
+              "$ref": "WellKnownTypes.json#/definitions/String"
+            }
+          }
+        },
+        "all_of_field": {
+          "allOf": [
+            {
+              "type": "object",
+              "properties": {
+                "same_record_name_field": {
+                  "type": "object",
+                  "properties": {
+                    "sub_field_2": {
+                      "$ref": "WellKnownTypes.json#/definitions/String"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"same_record_name_field\"" : "row(sub_field_1 varchar, _airbyte_additional_properties map(varchar, varchar))",
+      "\"all_of_field\"" : "row(same_record_name_field row(sub_field_2 varchar, _airbyte_additional_properties map(varchar, varchar)), _airbyte_additional_properties map(varchar, varchar))",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "one_of_with_same_name",
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "same_record_name_field": {
+          "type": "object",
+          "properties": {
+            "sub_field_1": {
+              "$ref": "WellKnownTypes.json#/definitions/String"
+            }
+          }
+        },
+        "any_of_field": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "same_record_name_field": {
+                  "type": "object",
+                  "properties": {
+                    "sub_field_2": {
+                      "$ref": "WellKnownTypes.json#/definitions/String"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"same_record_name_field\"" : "row(sub_field_1 varchar, _airbyte_additional_properties map(varchar, varchar))",
+      "\"any_of_field\"" : "row(same_record_name_field row(sub_field_2 varchar, _airbyte_additional_properties map(varchar, varchar)), _airbyte_additional_properties map(varchar, varchar))",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  },
+  {
+    "schemaName": "other_types",
+    "jsonSchema": {
+      "type": "object",
+      "properties": {
+        "string_type": {
+          "$ref": "WellKnownTypes.json#/definitions/String"
+        },
+        "integer_type": {
+          "$ref": "WellKnownTypes.json#/definitions/Integer"
+        },
+        "number_type": {
+          "$ref": "WellKnownTypes.json#/definitions/Number"
+        },
+        "boolean_type": {
+          "$ref": "WellKnownTypes.json#/definitions/Boolean"
+        },
+        "binary_type": {
+          "$ref": "WellKnownTypes.json#/definitions/BinaryData"
+        },
+        "date_type": {
+          "$ref": "WellKnownTypes.json#/definitions/Date"
+        },
+        "timestamp_with_tz_type": {
+          "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
+        },
+        "timestamp_without_tz_type": {
+          "$ref": "WellKnownTypes.json#/definitions/TimestampWithoutTimezone"
+        },
+        "time_with_tz_type": {
+          "$ref": "WellKnownTypes.json#/definitions/TimeWithTimezone"
+        },
+        "time_without_tz_type": {
+          "$ref": "WellKnownTypes.json#/definitions/TimeWithoutTimezone"
+        }
+      }
+    },
+    "galaxyIcebergSchema" : {
+      "\"_airbyte_ab_id\"" : "varchar",
+      "\"_airbyte_emitted_at\"" : "timestamp(6) with time zone",
+      "\"string_type\"" : "varchar",
+      "\"integer_type\"" : "bigint",
+      "\"number_type\"" : "double",
+      "\"boolean_type\"" : "boolean",
+      "\"binary_type\"" : "varbinary",
+      "\"date_type\"" : "date",
+      "\"timestamp_with_tz_type\"" : "timestamp(6) with time zone",
+      "\"timestamp_without_tz_type\"" : "timestamp(6) with time zone",
+      "\"time_with_tz_type\"" : "varchar",
+      "\"time_without_tz_type\"" : "time(6)",
+      "\"_airbyte_additional_properties\"" : "map(varchar, varchar)"
+    }
+  }
+]

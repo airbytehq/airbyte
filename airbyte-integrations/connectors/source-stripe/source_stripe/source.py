@@ -34,6 +34,7 @@ from source_stripe.streams import (
     Products,
     PromotionCodes,
     Refunds,
+    SetupIntents,
     SubscriptionItems,
     Subscriptions,
     SubscriptionSchedule,
@@ -87,4 +88,5 @@ class SourceStripe(AbstractSource):
             Transfers(**incremental_args),
             ExternalAccountBankAccounts(**args),
             ExternalAccountCards(**args),
+            SetupIntents(**incremental_args),
         ]
