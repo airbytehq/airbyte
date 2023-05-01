@@ -27,6 +27,8 @@ class NotionStream(HttpStream, ABC):
 
     page_size = 100  # set by Notion API spec
 
+    raise_on_http_errors = True
+
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
         self.start_date = config["start_date"]
@@ -250,9 +252,11 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         # pages and databases blocks are already fetched in their streams, so no
         # need to do it again
+        # fetching of `ai_block` type is unsupported by API
+        # https://github.com/airbytehq/oncall/issues/1927
         records = super().parse_response(response, stream_state=stream_state, **kwargs)
         for record in records:
-            if record["type"] not in ("child_page", "child_database"):
+            if record["type"] not in ("child_page", "child_database", "ai_block"):
                 yield record
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
@@ -269,3 +273,17 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
             yield record
 
         self.block_id_stack.pop()
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 400:
+            error_code = response.json().get("code")
+            error_msg = response.json().get("message")
+            if "validation_error" in error_code and "ai_block is not supported" in error_msg:
+                setattr(self, "raise_on_http_errors", False)
+                self.logger.error(
+                    f"Stream {self.name}: `ai_block` type is not supported, skipping. See https://developers.notion.com/reference/block for available block type."
+                )
+                return False
+            else:
+                return super().should_retry(response)
+        return super().should_retry(response)
