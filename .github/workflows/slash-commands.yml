@@ -20,6 +20,7 @@ jobs:
         uses: peter-evans/slash-command-dispatch@v2
         with:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          permission: write
           commands: |
             test
             test-performance
