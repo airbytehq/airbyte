@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
+import logging
 import math
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -11,6 +11,8 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
+
+logger = logging.getLogger("airbyte")
 
 
 class MailChimpStream(HttpStream, ABC):
@@ -189,11 +191,18 @@ class EmailActivity(IncrementalMailChimpStream):
         return current_stream_state
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
+        try:
+            response_json = response.json()
+        except requests.exceptions.JSONDecodeError:
+            logger.error(
+                f"Unknown error while reading stream {self.name}. Response cannot be read properly. "
+                f"Response returned with {response.status_code=}, {response.content=}"
+            )
+            response_json = {}
         # transform before save
         # [{'campaign_id', 'list_id', 'list_is_active', 'email_id', 'email_address', 'activity[array[object]]', '_links'}] ->
         # -> [[{'campaign_id', 'list_id', 'list_is_active', 'email_id', 'email_address', '**activity[i]', '_links'}, ...]]
-        data = response_json[self.data_field]
+        data = response_json.get(self.data_field, [])
         for item in data:
             for activity_item in item.pop("activity", []):
                 yield {**item, **activity_item}
