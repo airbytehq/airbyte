@@ -11,8 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Integration test testing the {@link RedshiftInsertDestination}. As the Redshift test credentials
- * contain S3 credentials by default, we remove these credentials.
+ * Integration test testing the {@link RedshiftInsertDestination}.
  */
 public class RedshiftInsertDestinationAcceptanceTest extends RedshiftStagingS3DestinationAcceptanceTest {
 
