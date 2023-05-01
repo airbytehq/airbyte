@@ -48,7 +48,44 @@
     "regexp_for_validation": {
       "type": ["null", "string"]
     },
-    "relationship_filter": {},
+    "relationship_filter": {
+      "properties": {
+        "all" : {
+          "type" : ["null", "array"],
+          "items" : {
+            "properties" : {
+              "field" : {
+                "type" : ["null", "string"]
+              },
+              "operator" : {
+                "type" : ["null", "string"]
+              },
+              "value" : {
+                "type" : ["null", "string"]
+              }
+            },
+            "type" : ["object"]
+          }
+        },
+        "any" : {
+          "type" : ["null", "array"],
+          "items" : {
+            "properties" : {
+              "field" : {
+                "type" : ["null", "string"]
+              },
+              "operator" : {
+                "type" : ["null", "string"]
+              },
+              "value" : {
+                "type" : ["null", "string"]
+              }
+            },
+            "type" : ["object"]
+          }
+        }
+      }
+    },
     "relationship_target_type": {
       "type": ["null", "string"]
     },
