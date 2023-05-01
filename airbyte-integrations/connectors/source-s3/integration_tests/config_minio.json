@@ -6,7 +6,7 @@
     "aws_access_key_id": "123456",
     "aws_secret_access_key": "123456key",
     "path_prefix": "",
-    "endpoint": "http://10.0.80.203:9000"
+    "endpoint": "http://10.0.89.80:9000"
   },
   "format": {
     "filetype": "csv",
