@@ -11,7 +11,6 @@ import urllib
 from os import environ
 from typing import Iterable
 from urllib.parse import urlparse
-from urllib3.exceptions import ProtocolError
 from zipfile import BadZipFile
 
 import backoff
@@ -30,6 +29,7 @@ from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
 from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
+from urllib3.exceptions import ProtocolError
 from yaml import safe_load
 
 from .utils import backoff_handler

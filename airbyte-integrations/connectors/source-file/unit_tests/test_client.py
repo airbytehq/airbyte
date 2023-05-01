@@ -7,8 +7,8 @@ from unittest.mock import patch
 
 import pytest
 from pandas import read_csv, read_excel
-from urllib3.exceptions import ProtocolError
 from source_file.client import Client, ConfigurationError, URLFile
+from urllib3.exceptions import ProtocolError
 
 
 @pytest.fixture
