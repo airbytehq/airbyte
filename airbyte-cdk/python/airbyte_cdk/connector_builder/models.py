@@ -3,7 +3,6 @@
 #
 
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 
@@ -31,23 +30,10 @@ class StreamReadPages:
 
 
 @dataclass
-class StreamReadSlicesInnerPagesInner:
-    records: List[object]
-    request: Optional[HttpRequest]
-    response: Optional[HttpResponse]
-
-
-@dataclass
-class StreamReadSlicesInnerSliceDescriptor:
-    start_datetime: Optional[datetime]
-    list_item: Optional[str]
-
-
-@dataclass
-class StreamReadSlicesInner:
-    pages: List[StreamReadSlicesInnerPagesInner]
-    slice_descriptor: Optional[StreamReadSlicesInnerSliceDescriptor]
-    state: Optional[Dict[str, Any]]
+class StreamReadSlices:
+    pages: List[StreamReadPages]
+    slice_descriptor: Dict[str, Any]
+    state: Optional[Dict[str, Any]] = None
 
 
 @dataclass
@@ -59,7 +45,7 @@ class LogMessage:
 @dataclass
 class StreamRead(object):
     logs: List[LogMessage]
-    slices: List[StreamReadSlicesInner]
+    slices: List[StreamReadSlices]
     test_read_limit_reached: bool
     inferred_schema: Optional[Dict[str, Any]]
 
@@ -71,16 +57,3 @@ class StreamReadRequestBody:
     config: Dict[str, Any]
     state: Optional[Dict[str, Any]]
     record_limit: Optional[int]
-
-
-@dataclass
-class StreamReadSliceDescriptor:
-    start_datetime: Optional[datetime] = None
-    list_item: Optional[str] = None
-
-
-@dataclass
-class StreamReadSlices:
-    pages: List[StreamReadPages]
-    slice_descriptor: Optional[StreamReadSliceDescriptor] = None
-    state: Optional[Dict[str, Any]] = None

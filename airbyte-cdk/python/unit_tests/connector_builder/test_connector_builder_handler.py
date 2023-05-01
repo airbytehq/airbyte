@@ -23,7 +23,7 @@ from airbyte_cdk.connector_builder.connector_builder_handler import (
     resolve_manifest,
 )
 from airbyte_cdk.connector_builder.main import handle_connector_builder_request, handle_request, read_stream
-from airbyte_cdk.connector_builder.models import LogMessage, StreamRead, StreamReadSlicesInner, StreamReadSlicesInnerPagesInner
+from airbyte_cdk.connector_builder.models import LogMessage, StreamRead, StreamReadPages, StreamReadSlices
 from airbyte_cdk.models import (
     AirbyteLogMessage,
     AirbyteMessage,
@@ -346,8 +346,8 @@ def test_read():
     stream_read = StreamRead(
         logs=[{"message": "here be a log message"}],
         slices=[
-            StreamReadSlicesInner(
-                pages=[StreamReadSlicesInnerPagesInner(records=[real_record], request=None, response=None)],
+            StreamReadSlices(
+                pages=[StreamReadPages(records=[real_record], request=None, response=None)],
                 slice_descriptor=None,
                 state=None,
             )
@@ -403,8 +403,8 @@ def test_read_returns_error_response(mock_from_exception):
     response = read_stream(source, TEST_READ_CONFIG, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), limits)
 
     expected_stream_read = StreamRead(logs=[LogMessage("error_message - a stack trace", "ERROR")],
-                                      slices=[StreamReadSlicesInner(
-                                          pages=[StreamReadSlicesInnerPagesInner(records=[], request=None, response=None)],
+                                      slices=[StreamReadSlices(
+                                          pages=[StreamReadPages(records=[], request=None, response=None)],
                                           slice_descriptor=None, state=None)],
                                       test_read_limit_reached=False,
                                       inferred_schema=None)

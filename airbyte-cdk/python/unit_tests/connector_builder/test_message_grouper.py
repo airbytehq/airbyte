@@ -445,11 +445,11 @@ def test_get_grouped_messages_with_many_slices(mock_entrypoint_read):
 
     mock_source = make_mock_source(mock_entrypoint_read, iter(
             [
-                slice_message(),
+                slice_message('{"descriptor": "first_slice"}'),
                 request_log_message(request),
                 response_log_message(response),
                 record_message("hashiras", {"name": "Muichiro Tokito"}),
-                slice_message(),
+                slice_message('{"descriptor": "second_slice"}'),
                 request_log_message(request),
                 response_log_message(response),
                 record_message("hashiras", {"name": "Shinobu Kocho"}),
@@ -472,9 +472,11 @@ def test_get_grouped_messages_with_many_slices(mock_entrypoint_read):
     assert not stream_read.test_read_limit_reached
     assert len(stream_read.slices) == 2
 
+    assert stream_read.slices[0].slice_descriptor == {"descriptor": "first_slice"}
     assert len(stream_read.slices[0].pages) == 1
     assert len(stream_read.slices[0].pages[0].records) == 1
 
+    assert stream_read.slices[1].slice_descriptor == {"descriptor": "second_slice"}
     assert len(stream_read.slices[1].pages) == 3
     assert len(stream_read.slices[1].pages[0].records) == 2
     assert len(stream_read.slices[1].pages[1].records) == 1
@@ -546,5 +548,5 @@ def record_message(stream: str, data: dict) -> AirbyteMessage:
     return AirbyteMessage(type=MessageType.RECORD, record=AirbyteRecordMessage(stream=stream, data=data, emitted_at=1234))
 
 
-def slice_message() -> AirbyteMessage:
-    return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"key": "value"}'))
+def slice_message(slice_descriptor: str = '{"key": "value"}') -> AirbyteMessage:
+    return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message="slice:" + slice_descriptor))

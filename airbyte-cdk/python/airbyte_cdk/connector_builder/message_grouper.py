@@ -6,19 +6,12 @@ import json
 import logging
 from copy import deepcopy
 from json import JSONDecodeError
-from typing import Any, Iterable, Iterator, List, Mapping, Optional, Union
+from typing import Any, Dict, Iterable, Iterator, List, Mapping, Optional, Union
 from urllib.parse import parse_qs, urlparse
 
-from airbyte_cdk.connector_builder.models import (
-    HttpRequest,
-    HttpResponse,
-    LogMessage,
-    StreamRead,
-    StreamReadPages,
-    StreamReadSlices,
-    StreamReadSlicesInner,
-)
+from airbyte_cdk.connector_builder.models import HttpRequest, HttpResponse, LogMessage, StreamRead, StreamReadPages, StreamReadSlices
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
+from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
@@ -104,6 +97,7 @@ class MessageGrouper:
         records_count = 0
         at_least_one_page_in_group = False
         current_page_records = []
+        current_slice_descriptor: Dict[str, Any] = None
         current_slice_pages = []
         current_page_request: Optional[HttpRequest] = None
         current_page_response: Optional[HttpResponse] = None
@@ -115,10 +109,14 @@ class MessageGrouper:
                 current_page_request = None
                 current_page_response = None
 
-            if at_least_one_page_in_group and message.type == MessageType.LOG and message.log.message.startswith("slice:"):
-                yield StreamReadSlices(pages=current_slice_pages)
+            if at_least_one_page_in_group and message.type == MessageType.LOG and message.log.message.startswith(AbstractSource.SLICE_LOG_PREFIX):
+                yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor)
+                current_slice_descriptor = self._parse_slice_description(message.log.message)
                 current_slice_pages = []
                 at_least_one_page_in_group = False
+            elif message.type == MessageType.LOG and message.log.message.startswith(AbstractSource.SLICE_LOG_PREFIX):
+                # parsing the first slice
+                current_slice_descriptor = self._parse_slice_description(message.log.message)
             elif message.type == MessageType.LOG and message.log.message.startswith("request:"):
                 if not at_least_one_page_in_group:
                     at_least_one_page_in_group = True
@@ -139,7 +137,7 @@ class MessageGrouper:
                 schema_inferrer.accumulate(message.record)
         else:
             self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records, validate_page_complete=not had_error)
-            yield StreamReadSlices(pages=current_slice_pages)
+            yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor)
 
     @staticmethod
     def _need_to_close_page(at_least_one_page_in_group: bool, message: AirbyteMessage) -> bool:
@@ -207,7 +205,7 @@ class MessageGrouper:
             self.logger.warning(f"Failed to parse log message into response object with error: {error}")
             return None
 
-    def _has_reached_limit(self, slices: List[StreamReadSlicesInner]):
+    def _has_reached_limit(self, slices: List[StreamReadPages]):
         if len(slices) >= self._max_slices:
             return True
 
@@ -215,6 +213,9 @@ class MessageGrouper:
             if len(slice.pages) >= self._max_pages_per_slice:
                 return True
         return False
+
+    def _parse_slice_description(self, log_message):
+        return json.loads(log_message.replace(AbstractSource.SLICE_LOG_PREFIX, "", 1))
 
     @classmethod
     def _create_configure_catalog(cls, stream_name: str) -> ConfiguredAirbyteCatalog:
