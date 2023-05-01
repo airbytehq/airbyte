@@ -13,6 +13,5 @@
     "metric": {
       "type": "string"
     }
-  },
-  "required": ["id", "name", "channel", "metric"]
+  }
 }
