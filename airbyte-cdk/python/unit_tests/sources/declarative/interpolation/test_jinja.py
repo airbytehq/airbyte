@@ -114,7 +114,6 @@ def test_positive_day_delta():
 
 def test_positive_day_delta_with_format():
     delta_template = "{{ day_delta(25,format='%Y-%m-%d') }}"
-    interpolation = JinjaInterpolation()
 
     with freeze_time("2021-01-01 03:04:05"):
         val = interpolation.eval(delta_template, {})
@@ -123,7 +122,6 @@ def test_positive_day_delta_with_format():
 
 def test_negative_day_delta():
     delta_template = "{{ day_delta(-25) }}"
-    interpolation = JinjaInterpolation()
     val = interpolation.eval(delta_template, {})
 
     assert val <= (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=25)).strftime("%Y-%m-%dT%H:%M:%S.%f%z")
@@ -139,7 +137,6 @@ def test_negative_day_delta():
     ],
 )
 def test_macros(s, expected_value):
-    interpolation = JinjaInterpolation()
     config = {}
     val = interpolation.eval(s, config)
     assert val == expected_value
@@ -152,7 +149,6 @@ def test_macros(s, expected_value):
     ]
 )
 def test_invalid_jinja_statements(template_string):
-    interpolation = JinjaInterpolation()
     config = {"key": "value"}
     with pytest.raises(TemplateSyntaxError):
         interpolation.eval(template_string, config=config)
@@ -174,7 +170,6 @@ def test_invalid_jinja_statements(template_string):
     pytest.param("{{ eval ('2+2') }}", id="test_jinja_with_eval"),
 ])
 def test_restricted_builtin_functions_are_not_executed(template_string):
-    interpolation = JinjaInterpolation()
     config = {"key": JinjaInterpolation}
     result = interpolation.eval(template_string, config=config)
     assert result is None
