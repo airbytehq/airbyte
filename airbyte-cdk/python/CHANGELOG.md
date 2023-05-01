@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.36.2
+Support parsing non UTC dates and Connector Builder set slice descriptor
+
 ## 0.36.1
 low-code: fix add field transformation when running from the connector builder
 
