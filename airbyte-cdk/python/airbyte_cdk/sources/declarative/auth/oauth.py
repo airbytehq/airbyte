@@ -37,11 +37,11 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     token_refresh_endpoint: Union[InterpolatedString, str]
     client_id: Union[InterpolatedString, str]
     client_secret: Union[InterpolatedString, str]
-    refresh_token: Union[InterpolatedString, str]
     config: Mapping[str, Any]
     parameters: InitVar[Mapping[str, Any]]
     scopes: Optional[List[str]] = None
     token_expiry_date: Optional[Union[InterpolatedString, str]] = None
+    refresh_token: Union[InterpolatedString, str] = field(default=None)
     _token_expiry_date: pendulum.DateTime = field(init=False, repr=False, default=None)
     token_expiry_date_format: str = None
     access_token_name: Union[InterpolatedString, str] = "access_token"
