@@ -1,11 +1,9 @@
 #!/bin/bash
 
+VERSION=0.44.3
 # Run away from anything even a little scary
 set -o nounset # -u exit if a variable is not set
-set -o errexit # -f exit for any command failure
-
-# Get the version specified in the .env file
-version_tag="v$(cat .env | grep ^VERSION | cut -d '=' -f 2)"
+set -o errexit # -f exit for any command failure"
 
 # text color escape codes (please note \033 == \e but OSX doesn't respect the \e)
 blue_text='\033[94m'
@@ -43,7 +41,8 @@ docker_compose_debug_yaml="docker-compose.debug.yaml"
                      flags="flags.yml"
 # any string is an array to POSIX shell. Space seperates values
 all_files="$docker_compose_yaml $docker_compose_debug_yaml $dot_env $dot_env_dev $flags"
-base_github_url="https://raw.githubusercontent.com/airbytehq/airbyte-platform/$version_tag/"
+
+base_github_url="https://raw.githubusercontent.com/airbytehq/airbyte-platform/v$VERSION/"
 
 ############################################################
 # Download                                                 #

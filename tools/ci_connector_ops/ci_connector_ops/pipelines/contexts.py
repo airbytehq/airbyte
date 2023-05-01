@@ -12,12 +12,13 @@ from glob import glob
 from types import TracebackType
 from typing import List, Optional
 
+import yaml
 from anyio import Path
 from asyncer import asyncify
 from ci_connector_ops.pipelines.actions import remote_storage, secrets
 from ci_connector_ops.pipelines.bases import ConnectorReport, Report
 from ci_connector_ops.pipelines.github import update_commit_status_check
-from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL
+from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME
 from ci_connector_ops.utils import Connector
 from dagger import Client, Directory
 
@@ -234,6 +235,7 @@ class ConnectorContext(PipelineContext):
         is_local: bool,
         git_branch: bool,
         git_revision: bool,
+        modified_files: List[str],
         use_remote_secrets: bool = True,
         connector_acceptance_test_image: Optional[str] = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
         gha_workflow_run_url: Optional[str] = None,
@@ -258,7 +260,7 @@ class ConnectorContext(PipelineContext):
         self.connector = connector
         self.use_remote_secrets = use_remote_secrets
         self.connector_acceptance_test_image = connector_acceptance_test_image
-
+        self.modified_files = modified_files
         self._secrets_dir = None
         self._updated_secrets_dir = None
 
@@ -301,6 +303,18 @@ class ConnectorContext(PipelineContext):
     @property
     def host_image_export_dir_path(self) -> str:
         return "." if self.is_ci else "/tmp"
+
+    @property
+    def metadata_path(self) -> Path:
+        return self.connector.code_directory / METADATA_FILE_NAME
+
+    @property
+    def metadata(self) -> dict:
+        return yaml.safe_load(self.metadata_path.read_text())["data"]
+
+    @property
+    def docker_image_from_metadata(self) -> str:
+        return f"{self.metadata['dockerRepository']}:{self.metadata['dockerImageTag']}"
 
     def get_connector_dir(self, exclude=None, include=None) -> Directory:
         """Get the connector under test source code directory.

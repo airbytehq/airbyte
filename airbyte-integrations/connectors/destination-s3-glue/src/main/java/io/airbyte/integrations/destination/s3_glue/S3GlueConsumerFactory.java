@@ -7,8 +7,6 @@ package io.airbyte.integrations.destination.s3_glue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.functional.CheckedBiConsumer;
-import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -16,7 +14,8 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
+import io.airbyte.integrations.destination.record_buffer.FlushBufferFunction;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.integrations.destination.s3.BlobStorageOperations;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
@@ -45,13 +44,13 @@ public class S3GlueConsumerFactory {
   private static final DateTime SYNC_DATETIME = DateTime.now(DateTimeZone.UTC);
 
   public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
-                                       final BlobStorageOperations storageOperations,
-                                       final MetastoreOperations metastoreOperations,
-                                       final NamingConventionTransformer namingResolver,
-                                       final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
-                                       final S3DestinationConfig s3Config,
-                                       final GlueDestinationConfig glueConfig,
-                                       final ConfiguredAirbyteCatalog catalog) {
+      final BlobStorageOperations storageOperations,
+      final MetastoreOperations metastoreOperations,
+      final NamingConventionTransformer namingResolver,
+      final BufferCreateFunction onCreateBuffer,
+      final S3DestinationConfig s3Config,
+      final GlueDestinationConfig glueConfig,
+      final ConfiguredAirbyteCatalog catalog) {
     final List<S3GlueWriteConfig> writeConfigs = createWriteConfigs(storageOperations, s3Config, catalog);
     return new BufferedStreamConsumer(
         outputRecordCollector,
@@ -66,8 +65,8 @@ public class S3GlueConsumerFactory {
   }
 
   private static List<S3GlueWriteConfig> createWriteConfigs(final BlobStorageOperations storageOperations,
-                                                            final S3DestinationConfig config,
-                                                            final ConfiguredAirbyteCatalog catalog) {
+      final S3DestinationConfig config,
+      final ConfiguredAirbyteCatalog catalog) {
     return catalog.getStreams()
         .stream()
         .map(toWriteConfig(storageOperations, config))
@@ -75,8 +74,8 @@ public class S3GlueConsumerFactory {
   }
 
   private static Function<ConfiguredAirbyteStream, S3GlueWriteConfig> toWriteConfig(
-                                                                                    final BlobStorageOperations storageOperations,
-                                                                                    final S3DestinationConfig s3Config) {
+      final BlobStorageOperations storageOperations,
+      final S3DestinationConfig s3Config) {
     return stream -> {
       Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");
       final AirbyteStream abStream = stream.getStream();
@@ -123,9 +122,10 @@ public class S3GlueConsumerFactory {
     return new AirbyteStreamNameNamespacePair(config.getStreamName(), config.getNamespace());
   }
 
-  private CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> flushBufferFunction(final BlobStorageOperations storageOperations,
-                                                                                                               final List<S3GlueWriteConfig> writeConfigs,
-                                                                                                               final ConfiguredAirbyteCatalog catalog) {
+  private FlushBufferFunction flushBufferFunction(
+      final BlobStorageOperations storageOperations,
+      final List<S3GlueWriteConfig> writeConfigs,
+      final ConfiguredAirbyteCatalog catalog) {
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig =
         writeConfigs.stream()
             .collect(Collectors.toUnmodifiableMap(S3GlueConsumerFactory::toNameNamespacePair, Function.identity()));
@@ -153,10 +153,10 @@ public class S3GlueConsumerFactory {
   }
 
   private OnCloseFunction onCloseFunction(final BlobStorageOperations storageOperations,
-                                          final MetastoreOperations metastoreOperations,
-                                          final List<S3GlueWriteConfig> writeConfigs,
-                                          GlueDestinationConfig glueDestinationConfig,
-                                          S3DestinationConfig s3DestinationConfig) {
+      final MetastoreOperations metastoreOperations,
+      final List<S3GlueWriteConfig> writeConfigs,
+      GlueDestinationConfig glueDestinationConfig,
+      S3DestinationConfig s3DestinationConfig) {
     return (hasFailed) -> {
       if (hasFailed) {
         LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
