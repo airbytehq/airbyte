@@ -1,48 +1,156 @@
 {
   "type": "object",
   "properties": {
-      "id": { "type": "string" },
-      "customerId": { "type": "string" },
-      "email": { "type": "string" },
-      "firstName": { "type": "string" },
-      "lastName": { "type": "string" },
-      "companyName": { "type": "string" },
-      "jobTitle": { "type": "string" },
-      "country": { "type": "string" },
-      "state": { "type": "string" },
-      "city": { "type": "string" },
-      "tags": {
-        "type": "array",
-        "items": { "type": "string" }
-      },
-      "customProps": {
-         "type": "array",
-         "items": { "type": "object" }
-       },
-      "campaignId": { "type": "string" },
-      "campaignName": { "type": "string" },
-      "createdDate": { "type": "string" },
-      "score": { "type": "number" },
-      "comment": { "type": "string" },
-      "checkbox": { "type": "boolean" },
-      "additionalQuestions": {
-        "type": "array",
-        "items": { "type": "object" }
-      },
-      "feedbackTags":  {
-        "type": "array",
-        "items": { "type": "string" }
-      },
-      "notes": {
-        "type": "array",
-        "items": { "type": "object" }
-      },
-      "status": { "type": "string" },
-      "assigned": { "type": "string" },
-      "ratingCategory": { "type": "string" },
-      "resolved": { "type": "boolean" },
-      "channel": { "type": "string" },
-      "metricsType": { "type": "string" },
-      "isBogus": { "type": "boolean" }
+    "id": {
+      "type": "string"
+    },
+    "customerId": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "companyName": {
+      "type": "string"
+    },
+    "companyId": {
+      "type": "string"
+    },
+    "jobTitle": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "customProps": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "value": {
+              "type": ["string", "integer", "number", "boolean"]
+            }
+          }
+        }
+      ]
+    },
+    "campaignName": {
+      "type": "string"
+    },
+    "campaignId": {
+      "type": "string"
+    },
+    "createdDate": {
+      "type": "string"
+    },
+    "score": {
+      "type": "integer"
+    },
+    "comment": {
+      "type": "string"
+    },
+    "checkbox": {
+      "type": "boolean"
+    },
+    "additionalQuestions": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "questionText": {
+              "type": "string"
+            },
+            "metricsType": {
+              "type": "string"
+            },
+            "answer": {
+              "type": ["string", "integer", "number", "boolean"]
+            }
+          }
+        }
+      ]
+    },
+    "feedbackTags": {
+      "type": "array",
+      "items": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "notes": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "author": {
+              "type": "string"
+            },
+            "content": {
+              "type": "string"
+            },
+            "metricsType": {
+              "type": "string"
+            },
+            "date": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "status": {
+      "type": "string"
+    },
+    "assigned": {
+      "type": "string"
+    },
+    "ratingCategory": {
+      "type": "string"
+    },
+    "resolved": {
+      "type": "boolean"
+    },
+    "channel": {
+      "type": "string"
+    },
+    "metricsType": {
+      "type": "string"
+    },
+    "isBogus": {
+      "type": "boolean"
     }
+  }
 }

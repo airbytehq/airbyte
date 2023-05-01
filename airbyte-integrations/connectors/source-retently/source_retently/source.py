@@ -76,11 +76,16 @@ class RetentlyStream(HttpStream):
         response: requests.Response,
         **kwargs,
     ) -> Iterable[Mapping]:
+        resp = response.json()
+        data = resp
+        # not all streams have a data key, for example campaigns
+        if "data" in resp:
+            data = resp.get("data", {})
 
-        data = response.json().get("data")
         stream_data = data.get(self.json_path) if self.json_path else data
-        for d in stream_data:
-            yield d
+        # not all streams return a list of results
+        stream_data = stream_data if isinstance(stream_data, list) else [stream_data]
+        yield from stream_data
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json = response.json().get("data", dict())
@@ -114,7 +119,10 @@ class Campaigns(RetentlyStream):
         return "campaigns"
 
     # does not support pagination
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(
+        self,
+        response: requests.Response,
+    ) -> Optional[Mapping[str, Any]]:
         return None
 
 
@@ -166,20 +174,36 @@ class Reports(RetentlyStream):
         **kwargs,
     ) -> str:
         return "reports"
+
     # does not support pagination
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(
+        self,
+        response: requests.Response,
+    ) -> Optional[Mapping[str, Any]]:
         return None
+
 
 class Nps(RetentlyStream):
     json_path = None
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+        self,
+        **kwargs,
+    ):
         return "nps/score"
 
     # does not support pagination
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(
+        self,
+        response: requests.Response,
+    ) -> Optional[Mapping[str, Any]]:
+        return None
+
+    # does not support limit
+    def request_params(
+        self,
+        **kwargs,
+    ) -> MutableMapping[str, Any]:
         return None
 
 
@@ -192,41 +216,29 @@ class Templates(RetentlyStream):
     ) -> str:
         return "templates"
 
-    def parse_response(
+    # does not support pagination
+    def next_page_token(
         self,
         response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        data = response.json().get("data")
-        yield data
+    ) -> Optional[Mapping[str, Any]]:
+        return None
+
 
 class Campaigns(RetentlyStream):
     json_path = "campaigns"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        **kwargs,
     ) -> str:
         return "campaigns"
 
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        data = response.json()
-        stream_data = data.get(self.json_path) if self.json_path else data
-        for d in stream_data:
-            yield d
 
 class Feedback(RetentlyStream):
     json_path = "responses"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        **kwargs,
     ) -> str:
         return "feedback"
-
