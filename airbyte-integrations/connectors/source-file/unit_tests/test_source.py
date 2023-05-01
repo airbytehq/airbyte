@@ -53,7 +53,7 @@ def test_csv_with_utf16_encoding(absolute_path, test_files):
             "header2": {"type": ["number", "null"]},
             "header3": {"type": ["number", "null"]},
             "header4": {"type": ["boolean", "null"]},
-            "header5": {"type": ["string", "null"], "format": "datetime"},
+            "header5": {"type": ["string", "null"], "format": "date-time"},
         },
         "type": "object",
     }
