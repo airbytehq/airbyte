@@ -7,8 +7,10 @@ This is especially important if there are a large number of records to sync and/
 Incremental syncs are usually implemented using a cursor value (like a timestamp) that delineates which data was pulled and which data is new. A very common cursor value is an `updated_at` timestamp. This cursor means that records whose `updated_at` value is less than or equal than that cursor value have been synced already, and that the next sync should only export records whose `updated_at` value is greater than the cursor value.
 
 To use incremental syncs, the API endpoint needs to fullfil the following requirements:
-* Records contain a date/time field that defines when this record was last updated (the "cursor field")
+* Records contain a top-level date/time field that defines when this record was last updated (the "cursor field")
+  * If the record's cursor field is nested, you can use an "Add Field" transformation to copy it to the top-level, and a Remove Field to remove it from the object. This will effectively move the field to the top-level of the record
 * It's possible to filter/request records by the cursor field
+* The records are sorted in ascending order based on their cursor field
 
 The knowledge of a cursor value also allows the Airbyte system to automatically keep a history of changes to records in the destination. To learn more about how different modes of incremental syncs, check out the [Incremental Sync - Append](/understanding-airbyte/connections/incremental-append/) and [Incremental Sync - Deduped History](/understanding-airbyte/connections/incremental-deduped-history) pages.
 
@@ -52,6 +54,8 @@ As this fulfills the requirements for incremental syncs, we can configure the "I
 * "Inject start time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `from-date`
 * "Inject end time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `to-date`
 
+<iframe width="640" height="835" src="https://www.loom.com/embed/78eb5da26e2e4f4aa9c3a48573d9ed3b" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
 This API orders records by default from new to old, which is not optimal for a reliable sync as the last encountered cursor value will be the most recent date even if some older records did not get synced (for example if a sync fails halfway through). It's better to start with the oldest records and work your way up to make sure that all older records are synced already once a certain date is encountered on a record. In this case the API can be configured to behave like this by setting an additional parameter:
 * At the bottom of the stream configuration page, add a new "Request parameter"
 * Set the key to `order-by`
@@ -81,7 +85,7 @@ curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-
 The `from-date` is set to the cutoff date of articles synced already and the `to-date` is set to the current date.
 
 :::info
-In some cases, it's helpful to reference the start and end date of the interval that's currently synced, for example if it needs to be injected into the URL path of the current stream. In these cases it can be referenced using the `{{ stream_interval.start_date }}` and `{{ stream_interval.end_date }}` placeholders. Check out [the tutorial](./tutorial.mdx#adding-incremental-reads) for such a case.
+In some cases, it's helpful to reference the start and end date of the interval that's currently synced, for example if it needs to be injected into the URL path of the current stream. In these cases it can be referenced using the `{{ stream_interval.start_date }}` and `{{ stream_interval.end_date }}` [placeholders](/connector-development/config-based/understanding-the-yaml-file/reference#variables). Check out [the tutorial](./tutorial.mdx#adding-incremental-reads) for such a case.
 :::
 
 ## Advanced settings
@@ -131,3 +135,16 @@ Then when a sync is triggered for the same connection the next day, the followin
 <pre>
 curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-04-13T07:30:58Z</b>&to-date={`<now>`}'
 </pre>
+
+## Custom parameter injection
+
+Using the "Inject start time / end time into outgoing HTTP request" option in the incremental sync form works for most cases, but sometimes the API has special requirements that can't be handled this way:
+* The API requires adding a prefix or a suffix to the actual value
+* Multiple values need to be put together in a single parameter
+* The value needs to be injected into the URL path
+* Some conditional logic needs to be applied
+
+To handle these cases, disable injection in the incremental sync form and use the generic parameter section at the bottom of the stream configuration form to freely configure query parameters, headers and properties of the JSON body, by using jinja expressions and [available variables](/connector-development/config-based/understanding-the-yaml-file/reference/#/variables). You can also use these variables as part of the URL path.
+
+For example the [Sendgrid API](https://docs.sendgrid.com/api-reference/e-mail-activity/filter-all-messages) requires setting both start and end time in a `query` parameter.
+For this case, you can use the `stream_interval` variable to configure a request parameter with "key" `query` and "value" `last_event_time BETWEEN TIMESTAMP "{{stream_interval.start_time}}" AND TIMESTAMP "{{stream_interval.end_time}}"` to filter down to the right window in time.
