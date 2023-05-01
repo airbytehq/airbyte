@@ -90,7 +90,7 @@ class JinjaInterpolation(Interpolation):
 
     def _eval(self, s: str, context):
         try:
-            return self._environment.from_string(s).render(context, func=lambda: None)
+            return self._environment.from_string(s).render(context)
         except TypeError:
             # The string is a static value, not a jinja template
             # It can be returned as is
