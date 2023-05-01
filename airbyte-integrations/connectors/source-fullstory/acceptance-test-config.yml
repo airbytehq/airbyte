@@ -19,12 +19,19 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
-        # expect_records:
-        #   path: "integration_tests/expected_records.jsonl"
-        #   extra_fields: no
-        #   exact_order: no
-        #   extra_records: yes
+        empty_streams:
+          - name: sessionTargetingRules
+            bypass_reason: "no data"
+          - name: webhooks
+            bypass_reason: "no data"
+          - name: geosettings
+            bypass_reason: "no data"
+          - name: domainsettings
+            bypass_reason: "no data"
+          - name: recordingfeatures
+            bypass_reason: "no data"
+          - name: blockrules
+            bypass_reason: "no data"
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
 

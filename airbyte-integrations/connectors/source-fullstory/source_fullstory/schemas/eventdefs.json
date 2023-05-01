@@ -4,13 +4,13 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "event_name": {
+    "eventName": {
       "type": ["null", "string"]
     },
-    "display_name": {
+    "displayName": {
       "type": ["null", "string"]
     },
-    "has_subcategories": {
+    "hasSubcategories": {
       "type": ["null", "boolean"]
     }
   }
