@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "attachments": {
       "type": [
@@ -210,6 +211,18 @@
       ]
     },
     "impact": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "workspace_id": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "requested_for_id": {
       "type": [
         "null",
         "integer"
