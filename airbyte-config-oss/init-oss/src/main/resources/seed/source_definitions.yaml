@@ -1221,6 +1221,14 @@
   allowedHosts:
     hosts:
       - "*.mktorest.com"
+- name: Merge
+  sourceDefinitionId: 23240e9e-d14a-43bc-899f-72ea304d1994
+  dockerRepository: airbyte/source-merge
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/merge
+  icon: merge.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Metabase
   sourceDefinitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
   dockerRepository: airbyte/source-metabase
@@ -1809,7 +1817,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 2.1.3
+  dockerImageTag: 2.1.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   icon: s3.svg
   sourceType: file
