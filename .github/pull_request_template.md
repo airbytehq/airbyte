@@ -65,7 +65,7 @@ If this is a community PR, the Airbyte engineer reviewing this PR is responsible
 <details><summary><strong>Connector Generator</strong></summary>
 
 - Issue acceptance criteria met
-- PR name follows [PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/issues-and-pull-requests)
+- PR name follows [PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/issues-and-pull-requests#pull-request-title-convention)
 - If adding a new generator, add it to the [list of scaffold modules being tested](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/generator/build.gradle#L41)
 - The generator test modules (all connectors with `-scaffold` in their name) have been updated with the latest scaffold by running `./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates` then checking in your changes
 - Documentation which references the generator is updated as needed
