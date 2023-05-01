@@ -1,0 +1,60 @@
+{
+  "properties": {
+    "friendly_name": {
+      "type": ["null", "string"]
+    },
+    "phone_number": {
+      "type": ["null", "string"]
+    },
+    "lata": {
+      "type": ["null", "string"]
+    },
+    "rate_center": {
+      "type": ["null", "string"]
+    },
+    "latitude": {
+      "type": ["null", "string"]
+    },
+    "longitude": {
+      "type": ["null", "string"]
+    },
+    "locality": {
+      "type": ["null", "string"]
+    },
+    "region": {
+      "type": ["null", "string"]
+    },
+    "postal_code": {
+      "type": ["null", "string"]
+    },
+    "iso_country": {
+      "type": ["null", "string"]
+    },
+    "address_requirements": {
+      "type": ["null", "string"]
+    },
+    "beta": {
+      "type": ["null", "boolean"]
+    },
+    "capabilities": {
+      "properties": {
+        "voice": {
+          "type": ["null", "boolean"]
+        },
+        "SMS": {
+          "type": ["null", "boolean"]
+        },
+        "MMS": {
+          "type": ["null", "boolean"]
+        },
+        "fax": {
+          "type": ["null", "boolean"]
+        }
+      },
+      "type": ["null", "object"],
+      "additionalProperties": true
+    }
+  },
+  "type": "object",
+  "additionalProperties": true
+}
