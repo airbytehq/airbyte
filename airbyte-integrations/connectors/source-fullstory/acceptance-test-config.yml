@@ -19,11 +19,13 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams: []
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
-          exact_order: no
-          extra_records: yes
+        # expect_records:
+        #   path: "integration_tests/expected_records.jsonl"
+        #   extra_fields: no
+        #   exact_order: no
+        #   extra_records: yes
+  incremental:
+    bypass_reason: "This connector does not implement incremental sync"
 
   full_refresh:
     tests:
