@@ -40,10 +40,29 @@ const buildAConnector = {
     },
     {
       type: 'category',
+      label: 'Connector Builder',
+      items: [
+        'connector-development/connector-builder-ui/overview',
+        'connector-development/connector-builder-ui/connector-builder-compatibility',
+        'connector-development/connector-builder-ui/tutorial',
+        {
+          type: 'category',
+          label: 'Concepts',
+          items: [
+            'connector-development/connector-builder-ui/authentication',
+            'connector-development/connector-builder-ui/record-processing',
+            'connector-development/connector-builder-ui/pagination',
+            'connector-development/connector-builder-ui/incremental-sync',
+            'connector-development/connector-builder-ui/partitioning',
+            'connector-development/connector-builder-ui/error-handling',
+          ]
+        },
+      ],
+    },
+    {
+      type: 'category',
       label: 'Low-code connector development',
       items: [
-        'connector-development/config-based/connector-builder-ui',
-        'connector-development/config-based/connector-builder-compatibility',
         {
           label: 'Low-code CDK Intro',
           type: 'doc',

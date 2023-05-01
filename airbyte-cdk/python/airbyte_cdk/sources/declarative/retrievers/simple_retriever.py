@@ -50,6 +50,8 @@ class SimpleRetriever(Retriever, HttpStream):
         parameters (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
+    _DEFAULT_MAX_RETRY = 5
+
     requester: Requester
     record_selector: HttpSelector
     config: Config
@@ -61,6 +63,7 @@ class SimpleRetriever(Retriever, HttpStream):
     paginator: Optional[Paginator] = None
     stream_slicer: Optional[StreamSlicer] = SinglePartitionRouter(parameters={})
     emit_connector_builder_messages: bool = False
+    disable_retries: bool = False
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.paginator = self.paginator or NoPagination(parameters=parameters)
@@ -94,6 +97,14 @@ class SimpleRetriever(Retriever, HttpStream):
     def raise_on_http_errors(self) -> bool:
         # never raise on http_errors because this overrides the error handler logic...
         return False
+
+    @property
+    def max_retries(self) -> Union[int, None]:
+        if self.disable_retries:
+            return 0
+        if hasattr(self.requester.error_handler, "max_retries"):
+            return self.requester.error_handler.max_retries
+        return self._DEFAULT_MAX_RETRY
 
     def should_retry(self, response: requests.Response) -> bool:
         """
