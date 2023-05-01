@@ -15437,7 +15437,7 @@
     "sourceDefinitionId": "36c891d9-4bd9-43ac-bad2-10e12756272c",
     "name": "HubSpot",
     "dockerRepository": "airbyte/source-hubspot",
-    "dockerImageTag": "0.6.1",
+    "dockerImageTag": "0.6.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/hubspot",
     "icon": "hubspot.svg",
     "sourceType": "api",
@@ -19017,7 +19017,7 @@
     "sourceDefinitionId": "df38991e-f35b-4af2-996d-36817f614587",
     "name": "News API",
     "dockerRepository": "airbyte/source-news-api",
-    "dockerImageTag": "0.1.0",
+    "dockerImageTag": "0.1.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/news-api",
     "icon": "newsapi.svg",
     "sourceType": "api",
@@ -19077,13 +19077,15 @@
           },
           "start_date": {
             "type": "string",
-            "description": "A date and optional time for the oldest article allowed. This should\nbe in ISO 8601 format (e.g. 2021-01-01 or 2021-01-01T12:00:00).\n",
+            "description": "A date and optional time for the oldest article allowed. This should\nbe in ISO 8601 format.\n",
+            "examples": [ "2021-01-01", "2021-01-01T12:00:00" ],
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$",
             "order": 6
           },
           "end_date": {
             "type": "string",
-            "description": "A date and optional time for the newest article allowed. This should\nbe in ISO 8601 format (e.g. 2021-01-01 or 2021-01-01T12:00:00).\n",
+            "description": "A date and optional time for the newest article allowed. This should\nbe in ISO 8601 format.\n",
+            "examples": [ "2021-01-01", "2021-01-01T12:00:00" ],
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$",
             "order": 7
           },
