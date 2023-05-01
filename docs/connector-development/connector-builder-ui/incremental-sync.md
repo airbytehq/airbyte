@@ -7,8 +7,10 @@ This is especially important if there are a large number of records to sync and/
 Incremental syncs are usually implemented using a cursor value (like a timestamp) that delineates which data was pulled and which data is new. A very common cursor value is an `updated_at` timestamp. This cursor means that records whose `updated_at` value is less than or equal than that cursor value have been synced already, and that the next sync should only export records whose `updated_at` value is greater than the cursor value.
 
 To use incremental syncs, the API endpoint needs to fullfil the following requirements:
-* Records contain a date/time field that defines when this record was last updated (the "cursor field")
+* Records contain a top-level date/time field that defines when this record was last updated (the "cursor field")
+  * If the record's cursor field is nested, you can use an "Add Field" transformation to copy it to the top-level, and a Remove Field to remove it from the object. This will effectively move the field to the top-level of the record
 * It's possible to filter/request records by the cursor field
+* The records are sorted in ascending order based on their cursor field
 
 The knowledge of a cursor value also allows the Airbyte system to automatically keep a history of changes to records in the destination. To learn more about how different modes of incremental syncs, check out the [Incremental Sync - Append](/understanding-airbyte/connections/incremental-append/) and [Incremental Sync - Deduped History](/understanding-airbyte/connections/incremental-deduped-history) pages.
 
@@ -51,6 +53,8 @@ As this fulfills the requirements for incremental syncs, we can configure the "I
 * "End datetime" is set to "now" to fetch all articles up to the current date
 * "Inject start time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `from-date`
 * "Inject end time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `to-date`
+
+<iframe width="640" height="835" src="https://www.loom.com/embed/78eb5da26e2e4f4aa9c3a48573d9ed3b" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 This API orders records by default from new to old, which is not optimal for a reliable sync as the last encountered cursor value will be the most recent date even if some older records did not get synced (for example if a sync fails halfway through). It's better to start with the oldest records and work your way up to make sure that all older records are synced already once a certain date is encountered on a record. In this case the API can be configured to behave like this by setting an additional parameter:
 * At the bottom of the stream configuration page, add a new "Request parameter"
