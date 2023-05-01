@@ -7,11 +7,11 @@ const getSuccessMessage = function(connectorName, outputPath, additionalMessage)
     return `
 🚀 🚀 🚀 🚀 🚀 🚀
 
-Success! 
+Success!
 
 Your ${connectorName} connector has been created at .${path.resolve(outputPath)}.
 
-Follow the TODOs in the generated module to implement your connector. 
+Follow the TODOs in the generated module to implement your connector.
 
 Questions, comments, or concerns? Let us know in our connector development forum:
 https://discuss.airbyte.io/c/connector-development/16
@@ -53,6 +53,12 @@ module.exports = function (plop) {
 
   plop.setHelper('capitalCase', function(name) {
     return capitalCase.capitalCase(name);
+  });
+
+  plop.setHelper('todayISODate', function() {
+    const today = new Date(Date.now())
+    today.toISOString()
+    return today.toISOString();
   });
 
   plop.setHelper('connectorImage', function() {
