@@ -1,5 +1,3 @@
 {
-  "account_sid": "<your account SID>",
-  "auth_token": "<your auth token>",
-  "start_date": "2019-01-01T00:00:00Z"
+  "fix-me": "TODO"
 }

@@ -1,22 +1,19 @@
 data:
   allowedHosts:
     hosts:
-      - api.twilio.com
-      - monitor.twilio.com
+      - "*" # Please change to the hostname of the source.
   registries:
-    cloud:
-      enabled: true
     oss:
-      enabled: true
+      enabled: false
   connectorSubtype: api
   connectorType: source
-  definitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
-  dockerImageTag: 0.2.0
+  definitionId: d90e0192-b847-4255-8790-f48d06b1f5d1
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-twilio
   githubIssueLabel: source-twilio
   icon: twilio.svg
   license: MIT
-  name: Twilio
-  releaseStage: generally_available
+  name: Twilio 
+  releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/twilio
 metadataSpecVersion: "1.0"
