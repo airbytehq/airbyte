@@ -1,3 +1,5 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "account_sid": "wrong_sid",
+  "auth_token": "wrong_token",
+  "start_date": "2019-01-01T00:00:00Z"
 }
