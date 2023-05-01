@@ -54,6 +54,12 @@ public class PostgresUtils {
     return isCdc;
   }
 
+  public static boolean isXmin(final JsonNode config) {
+    final boolean isXmin = config.hasNonNull("replication_method")
+        && config.get("replication_method").asText().equals("Xmin");
+    LOGGER.info("using Xmin: {}", isXmin);
+    return isXmin;
+  }
 
   public static boolean shouldFlushAfterSync(final JsonNode config) {
     final boolean shouldFlushAfterSync = config.hasNonNull("replication_method")
