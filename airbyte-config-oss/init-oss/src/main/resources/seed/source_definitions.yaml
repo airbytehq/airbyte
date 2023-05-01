@@ -2557,6 +2557,14 @@
   allowedHosts:
     hosts:
       - api-metrica.yandex.net
+- name: Yotpo
+  sourceDefinitionId: 18139f00-b1ba-4971-8f80-8387b617cfd8
+  dockerRepository: airbyte/source-yotpo
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/yotpo
+  icon: yotpo.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Younium
   sourceDefinitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
   dockerRepository: airbyte/source-younium
