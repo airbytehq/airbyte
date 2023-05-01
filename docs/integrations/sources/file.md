@@ -191,6 +191,8 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
+| 0.3.2   | 2023-05-01 | [25641](https://github.com/airbytehq/airbyte/pull/25641) | Handle network errors                                                                                   |
+| 0.3.1   | 2023-04-27 | [25575](https://github.com/airbytehq/airbyte/pull/25575) | Fix OOM; read Excel files in chunks using `openpyxl`                                                    |
 | 0.3.0   | 2023-04-24 | [25445](https://github.com/airbytehq/airbyte/pull/25445) | Add datatime format parsing support for csv files                                                       |
 | 0.2.38  | 2023-04-12 | [23759](https://github.com/airbytehq/airbyte/pull/23759) | Fix column data types for numerical values                                                              |
 | 0.2.37  | 2023-04-06 | [24525](https://github.com/airbytehq/airbyte/pull/24525) | Fix examples in spec                                                                                    |
