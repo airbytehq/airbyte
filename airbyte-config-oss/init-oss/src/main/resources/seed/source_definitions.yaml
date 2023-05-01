@@ -698,6 +698,14 @@
   icon: freshservice.svg
   sourceType: api
   releaseStage: alpha
+- name: Fullstory
+  sourceDefinitionId: 263fd456-02d1-4a26-a35e-52ccaedad778
+  dockerRepository: airbyte/source-fullstory
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/fullstory
+  icon: fullstory.svg
+  sourceType: api
+  releaseStage: alpha
 - name: GCS
   sourceDefinitionId: 2a8c41ae-8c23-4be0-a73f-2ab10ca1a820
   dockerRepository: airbyte/source-gcs
