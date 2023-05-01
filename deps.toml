@@ -1,5 +1,5 @@
 [versions]
-airbyte-protocol = "1.0.0"
+airbyte-protocol = "0.3.6"
 commons_io = "2.7"
 connectors-destination-testcontainers-clickhouse = "1.17.3"
 connectors-destination-testcontainers-elasticsearch = "1.17.3"
@@ -32,7 +32,7 @@ reactor = "3.5.2"
 segment = "2.1.1"
 slf4j = "1.7.36"
 temporal = "1.17.0"
-debezium = "2.1.2.Final"
+debezium = "2.2.0.Final"
 
 [libraries]
 airbyte-protocol = { module = "io.airbyte.airbyte-protocol:protocol-models", version.ref = "airbyte-protocol" }
@@ -111,7 +111,7 @@ postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" 
 quartz-scheduler = { module = "org.quartz-scheduler:quartz", version = "2.3.2" }
 reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "reactor" }
 reactor-test = { module = "io.projectreactor:reactor-test", version.ref = "reactor" }
-s3 = { module = "software.amazon.awssdk:s3", version = "2.16.84" }
+s3 = { module = "software.amazon.awssdk:s3", version = "2.20.20" }
 segment-java-analytics = { module = "com.segment.analytics.java:analytics", version.ref = "segment" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version = "4.7.3" }

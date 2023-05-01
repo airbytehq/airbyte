@@ -108,27 +108,18 @@ public class AirbyteFileOffsetBackingStore {
 
   /**
    * See FileOffsetBackingStore#load - logic is mostly borrowed from here. duplicated because this
-   * method is not public.
+   * method is not public. Reduced the try catch block to only the read operation from original code
+   * to reduce errors when reading the file.
    */
   @SuppressWarnings("unchecked")
   private Map<ByteBuffer, ByteBuffer> load() {
+    Object obj;
     try (final SafeObjectInputStream is = new SafeObjectInputStream(Files.newInputStream(offsetFilePath))) {
       // todo (cgardens) - we currently suppress a security warning for this line. use of readObject from
       // untrusted sources is considered unsafe. Since the source is controlled by us in this case it
       // should be safe. That said, changing this implementation to not use readObject would remove some
       // headache.
-      final Object obj = is.readObject();
-      if (!(obj instanceof HashMap))
-        throw new ConnectException("Expected HashMap but found " + obj.getClass());
-      final Map<byte[], byte[]> raw = (Map<byte[], byte[]>) obj;
-      final Map<ByteBuffer, ByteBuffer> data = new HashMap<>();
-      for (final Map.Entry<byte[], byte[]> mapEntry : raw.entrySet()) {
-        final ByteBuffer key = (mapEntry.getKey() != null) ? ByteBuffer.wrap(mapEntry.getKey()) : null;
-        final ByteBuffer value = (mapEntry.getValue() != null) ? ByteBuffer.wrap(mapEntry.getValue()) : null;
-        data.put(key, value);
-      }
-
-      return data;
+      obj = is.readObject();
     } catch (final NoSuchFileException | EOFException e) {
       // NoSuchFileException: Ignore, may be new.
       // EOFException: Ignore, this means the file was missing or corrupt
@@ -136,6 +127,18 @@ public class AirbyteFileOffsetBackingStore {
     } catch (final IOException | ClassNotFoundException e) {
       throw new ConnectException(e);
     }
+
+    if (!(obj instanceof HashMap))
+      throw new ConnectException("Expected HashMap but found " + obj.getClass());
+    final Map<byte[], byte[]> raw = (Map<byte[], byte[]>) obj;
+    final Map<ByteBuffer, ByteBuffer> data = new HashMap<>();
+    for (final Map.Entry<byte[], byte[]> mapEntry : raw.entrySet()) {
+      final ByteBuffer key = (mapEntry.getKey() != null) ? ByteBuffer.wrap(mapEntry.getKey()) : null;
+      final ByteBuffer value = (mapEntry.getValue() != null) ? ByteBuffer.wrap(mapEntry.getValue()) : null;
+      data.put(key, value);
+    }
+
+    return data;
   }
 
   /**

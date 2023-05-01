@@ -69,7 +69,9 @@ class FTPStream(Stream, IncrementalMixin):
             most_recent_only=self._only_most_recent_file,
         )
 
-        for cursor, records in self.connection.fetch_files(files, self.config["file_type"]):
+        for cursor, records in self.connection.fetch_files(
+            files=files, file_type=self.config["file_type"], separator=self.config.get("separator")
+        ):
             if cursor and sync_mode == SyncMode.incremental:
                 if self._cursor_value and cursor > self._cursor_value:
                     self._cursor_value = cursor

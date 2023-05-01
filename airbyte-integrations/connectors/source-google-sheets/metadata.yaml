@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - "*.googleapis.com"
-  catalogs:
+  registries:
     cloud:
       dockerImageTag: 0.2.21
       enabled: true
