@@ -17,11 +17,9 @@ public class CatalogDefinitionsConfig {
   public static String getLocalConnectorCatalogPath() {
     final Optional<String> customCatalogPath = new EnvConfigs().getLocalCatalogPath();
     if (customCatalogPath.isPresent()) {
-      System.out.println("IS PRESENT");
       return customCatalogPath.get();
     }
 
-    System.out.println("NOT PRESENT: " + DEFAULT_LOCAL_CONNECTOR_CATALOG_PATH);
     return DEFAULT_LOCAL_CONNECTOR_CATALOG_PATH;
 
   }
