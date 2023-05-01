@@ -60,7 +60,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         breakdowns: List[str] = None,
         action_breakdowns: List[str] = None,
         action_breakdowns_allow_empty: bool = False,
-        time_increment: Optional[int] = None,
+        time_increment: Optional[Union[int,str]] = None,
+        date_preset: str = "maximum",
         insights_lookback_window: int = None,
         level: str = "ad",
         **kwargs,
@@ -78,6 +79,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         if breakdowns is not None:
             self.breakdowns = breakdowns
         self.time_increment = time_increment or self.time_increment
+        self.date_preset = date_preset
         self._new_class_name = name
         self._insights_lookback_window = insights_lookback_window
         self.level = level
@@ -175,11 +177,18 @@ class AdsInsights(FBMarketingIncrementalStream):
         return self.state
 
     def _date_intervals(self) -> Iterator[pendulum.Date]:
-        """Get date period to sync"""
+        """
+        Get date period to sync.
+        If self.time_increment is "monthly", increment over date range by month;
+        if an integer, increment over date range by days.
+        """
         if self._end_date < self._next_cursor_value:
             return
         date_range = self._end_date - self._next_cursor_value
-        yield from date_range.range("days", self.time_increment)
+        if self.time_increment == "monthly":
+            yield from date_range.range("months")
+        else:
+            yield from date_range.range("days", self.time_increment)
 
     def _advance_cursor(self):
         """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state"""
@@ -198,10 +207,15 @@ class AdsInsights(FBMarketingIncrementalStream):
         """
 
         self._next_cursor_value = self._get_start_date()
+        if self.time_increment == "all_days":
+            pass
         for ts_start in self._date_intervals():
             if ts_start in self._completed_slices:
                 continue
-            ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
+            if self.time_increment == "monthly":
+                ts_end = ts_start.add(months=1)
+            else:
+                ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
             interval = pendulum.Period(ts_start, ts_end)
             yield InsightAsyncJob(api=self._api.api, edge_object=self._api.account, interval=interval, params=params)
 
@@ -256,7 +270,10 @@ class AdsInsights(FBMarketingIncrementalStream):
         oldest_date = today - self.INSIGHTS_RETENTION_PERIOD
         refresh_date = today - self.insights_lookback_period
         if self._cursor_value:
-            start_date = self._cursor_value + pendulum.duration(days=self.time_increment)
+            if self.time_increment == "monthly":
+                start_date = self._cursor_value.add(months=1)
+            else:
+                start_date = self._cursor_value + pendulum.duration(days=self.time_increment)
             if start_date > refresh_date:
                 logger.info(
                     f"The cursor value within refresh period ({self.insights_lookback_period}), start sync from {refresh_date} instead."
@@ -279,6 +296,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             "breakdowns": self.breakdowns,
             "fields": self.fields,
             "time_increment": self.time_increment,
+            "date_preset": self.date_preset,
             "action_attribution_windows": self.action_attribution_windows,
         }
 

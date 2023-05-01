@@ -5,7 +5,7 @@
 import logging
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Type, Union
 
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
@@ -52,13 +52,17 @@ class InsightConfig(BaseModel):
         default=[],
     )
 
-    time_increment: Optional[PositiveInt] = Field(
+    time_increment: Optional[Union[PositiveInt, str]] = Field(
         title="Time Increment",
         description=(
-            "Time window in days by which to aggregate statistics. The sync will be chunked into N day intervals, where N is the number of days you specified. "
+            "Can be a positive integer or a string. "
+            "If string, only values `monthly` or `all_days` are allowed: `monthly` to aggregate statistics by calendar month, `all_days` to aggregate over the entire specified period. "
+            "If integer, time window in days by which to aggregate statistics. The sync will be chunked into N day intervals, where N is the number of days you specified. "
             "For example, if you set this value to 7, then all statistics will be reported as 7-day aggregates by starting from the start_date. If the start and end dates are October 1st and October 30th, then the connector will output 5 records: 01 - 06, 07 - 13, 14 - 20, 21 - 27, and 28 - 30 (3 days only)."
         ),
+        exclusiveMinimum=0,
         exclusiveMaximum=90,
+        pattern="^all_days|^monthly$",
         default=1,
     )
 
