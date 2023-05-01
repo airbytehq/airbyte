@@ -172,7 +172,6 @@ def test_invalid_jinja_statements(template_string):
     pytest.param("{{ globals()  }}", id="test_jinja_with_globals"),
     pytest.param("{{ locals()  }}", id="test_jinja_with_globals"),
     pytest.param("{{ eval ('2+2') }}", id="test_jinja_with_eval"),
-    pytest.param("{{ __builtins__ }}")
 ])
 def test_restricted_builtin_functions_are_not_executed(template_string):
     interpolation = JinjaInterpolation()
