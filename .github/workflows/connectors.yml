@@ -157,10 +157,10 @@ jobs:
           - name: source-zendesk-chat
           - name: source-twilio
           - name: source-paypal-transaction
-          - name: greenhouse
-          - name: iterable
-          - name: sendgrid
-          - name: sentry
+          - name: source-greenhouse
+          - name: source-iterable
+          - name: source-sendgrid
+          - name: source-sentry
 
     steps:
       - uses: actions/checkout@v2
