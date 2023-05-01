@@ -26,7 +26,7 @@ class NotionStream(HttpStream, ABC):
     primary_key = "id"
 
     page_size = 100  # set by Notion API spec
-    
+
     raise_on_http_errors = True
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
@@ -280,7 +280,9 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
             error_msg = response.json().get("message")
             if "validation_error" in error_code and "ai_block is not supported" in error_msg:
                 setattr(self, "raise_on_http_errors", False)
-                self.logger.error(f"Stream {self.name}: `ai_block` type is not supported, skipping. See https://developers.notion.com/reference/block for available block type.")
+                self.logger.error(
+                    f"Stream {self.name}: `ai_block` type is not supported, skipping. See https://developers.notion.com/reference/block for available block type."
+                )
                 return False
             else:
                 return super().should_retry(response)

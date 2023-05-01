@@ -9,7 +9,7 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
-from source_notion.streams import NotionStream, Users, Blocks
+from source_notion.streams import Blocks, NotionStream, Users
 
 
 @pytest.fixture
@@ -83,7 +83,7 @@ def test_should_not_retry_with_ai_block(requests_mock):
     }
     requests_mock.get("https://api.notion.com/v1/blocks/123", json=json_response, status_code=400)
     test_response = requests.get("https://api.notion.com/v1/blocks/123")
-    assert stream.should_retry(test_response) == False
+    assert not stream.should_retry(test_response)
 
 
 def test_backoff_time(patch_base_class):
