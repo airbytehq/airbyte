@@ -11,6 +11,18 @@ definitions:
       type: BasicHttpAuthenticator
       username: "{{ config['account_sid'] }}"
       password: "{{ config['auth_token'] }}"
+  datetime_cursor:
+    type: "DatetimeBasedCursor"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      datetime: "{{ now_utc() }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+    step: "P1D"
+    datetime_format: "%Y-%m-%d"
+    cursor_granularity: "P1D"
+    cursor_field: "date"
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
