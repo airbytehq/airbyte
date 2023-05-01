@@ -325,6 +325,9 @@ class TransformConfig:
             "port": config["port"],
             "schema": config["database"],
             "user": config["username"],
+            "custom_settings": {
+                "allow_nondeterministic_mutations": True,
+            }
         }
         if "password" in config:
             dbt_config["password"] = config["password"]
