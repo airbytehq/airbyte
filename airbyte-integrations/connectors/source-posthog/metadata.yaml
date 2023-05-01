@@ -3,7 +3,7 @@ data:
     hosts:
       - ${base_url}
       - app.posthog.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:

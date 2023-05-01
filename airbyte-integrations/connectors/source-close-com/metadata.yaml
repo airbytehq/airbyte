@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - api.close.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:

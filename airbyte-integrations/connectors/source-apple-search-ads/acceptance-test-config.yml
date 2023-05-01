@@ -1,0 +1,51 @@
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-apple-search-ads:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_apple_search_ads/spec.yaml"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams: []
+        timeout_seconds: 3600
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+        timeout_seconds: 3600
+        threshold_days: 30 # Reduce this if you have many data to retrieve
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        ignored_fields:
+          adgroups_report_daily:
+            - name: granularity
+              bypass_reason: "Can't be idempotent by nature"
+            - name: metadata
+              bypass_reason: "Can't be idempotent by nature"
+          campaigns_report_daily: 
+            - name: granularity
+              bypass_reason: "Can't be idempotent by nature"
+            - name: metadata
+              bypass_reason: "Can't be idempotent by nature"
+          keywords_report_daily:
+            - name: granularity
+              bypass_reason: "Can't be idempotent by nature"
+            - name: metadata
+              bypass_reason: "Can't be idempotent by nature"
+        timeout_seconds: 3600

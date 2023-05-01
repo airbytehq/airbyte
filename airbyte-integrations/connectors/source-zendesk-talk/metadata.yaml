@@ -3,7 +3,7 @@ data:
     hosts:
       - ${subdomain}.zendesk.com
       - zendesk.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:

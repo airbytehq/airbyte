@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - api.nasa.gov
-  catalogs:
+  registries:
     cloud:
       enabled: false
     oss:

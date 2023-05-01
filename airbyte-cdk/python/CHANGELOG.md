@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.36.1
+low-code: fix add field transformation when running from the connector builder
+
+## 0.36.0
+Emit stream status messages
+
+## 0.35.4
+low-code: remove now_local() macro because it's too unpredictable
+
+## 0.35.3
+low-code: alias stream_interval and stream_partition to stream_slice in jinja context
+
+## 0.35.2
+Connector builder scrubs secrets from raw request and response
+
+## 0.35.1
+low-code: Add title, description, and examples for all fields in the manifest schema
+
 ## 0.35.0
 low-code: simplify session token authenticator interface
 

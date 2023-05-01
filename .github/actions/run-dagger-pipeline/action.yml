@@ -38,6 +38,13 @@ runs:
       shell: bash
       run: |
         export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
+        DAGGER_CLI_COMMIT="9155662d51313ae5b6761e681a306dee8f1736f2"
+        DAGGER_TMP_BINDIR="/tmp/dagger_${DAGGER_CLI_COMMIT}"
+        export _EXPERIMENTAL_DAGGER_CLI_BIN="$DAGGER_TMP_BINDIR/dagger"
+        if [ ! -f  "$_EXPERIMENTAL_DAGGER_CLI_BIN" ]; then
+          mkdir -p "$DAGGER_TMP_BINDIR"
+          curl "https://dl.dagger.io/dagger/main/${DAGGER_CLI_COMMIT}/dagger_${DAGGER_CLI_COMMIT}_$(uname -s | tr A-Z a-z)_$(uname -m | sed s/x86_64/amd64/).tar.gz" | tar xvz -C "$DAGGER_TMP_BINDIR"
+        fi
         airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
 
       env:
