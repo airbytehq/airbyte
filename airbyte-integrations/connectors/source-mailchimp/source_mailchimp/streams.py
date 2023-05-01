@@ -10,6 +10,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 
 logger = logging.getLogger("airbyte")
@@ -65,6 +66,20 @@ class MailChimpStream(HttpStream, ABC):
     def data_field(self) -> str:
         """The responce entry that contains useful data"""
         pass
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[StreamData]:
+        try:
+            yield from super().read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+        except requests.exceptions.JSONDecodeError:
+            logger.error(f"Unknown error while reading stream {self.name}. Response cannot be read properly. ")
 
 
 class IncrementalMailChimpStream(MailChimpStream, ABC):
@@ -194,10 +209,7 @@ class EmailActivity(IncrementalMailChimpStream):
         try:
             response_json = response.json()
         except requests.exceptions.JSONDecodeError:
-            logger.error(
-                f"Unknown error while reading stream {self.name}. Response cannot be read properly. "
-                f"Response returned with {response.status_code=}, {response.content=}"
-            )
+            logger.error(f"Response returned with {response.status_code=}, {response.content=}")
             response_json = {}
         # transform before save
         # [{'campaign_id', 'list_id', 'list_is_active', 'email_id', 'email_address', 'activity[array[object]]', '_links'}] ->
