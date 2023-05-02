@@ -267,10 +267,6 @@ public class StagingConsumerFactory {
                                           final List<WriteConfig> writeConfigs,
                                           final boolean purgeStagingData) {
     return (hasFailed) -> {
-      if (!hasFailed) {
-        stagingOperations.onDestinationCloseOperations(database, writeConfigs);
-        LOGGER.info("Finalizing tables in destination completed.");
-      }
       // After moving data from staging area to the target table (airybte_raw) clean up the staging
       // area (if user configured)
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
