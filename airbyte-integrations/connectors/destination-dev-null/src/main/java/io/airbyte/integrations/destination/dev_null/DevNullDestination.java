@@ -45,7 +45,7 @@ public class DevNullDestination extends SpecModifyingDestination implements Dest
     final Iterator<JsonNode> typesIterator = types.elements();
     while (typesIterator.hasNext()) {
       final JsonNode typeNode = typesIterator.next();
-      if (!typeNode.get("properties").get("type").get("const").asText().equalsIgnoreCase("silent")) {
+      if (!typeNode.get("properties").get("testDestinationType").get("const").asText().equalsIgnoreCase("silent")) {
         typesIterator.remove();
       }
     }
