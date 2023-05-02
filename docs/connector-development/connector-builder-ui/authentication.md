@@ -8,6 +8,8 @@ In the "Authentication" section on the "Global Configuration" page in the connec
 
 If your API doesn't need authentication, leave it set at "No auth". This means the connector will be able to make requests to the API without providing any credentials which might be the case for some public open APIs or private APIs only available in local networks.
 
+<iframe width="640" height="430" src="https://www.loom.com/embed/4e65a2090134478d920764b43d1eaef4" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
 ## Authentication methods
 
 Check the documentation of the API you want to integrate for the used authentication method. The following ones are supported in the connector builder:
@@ -136,7 +138,9 @@ Some APIs require to include the access token in different parts of the request 
 * Add a user input as secret field on the "User inputs" page (e.g. named `api_key`)
 * On the stream page, add a new "Request parameter"
 * As key, configure the name of the query parameter the API requires (e.g. named `key`)
-* As value, configure a placeholder for the created user input (e.g. `{{ config['api_key'] }}`)
+* As value, configure a [placeholder](/connector-development/config-based/understanding-the-yaml-file/reference#variables) for the created user input (e.g. `{{ config['api_key'] }}`)
+
+<iframe width="640" height="396" src="https://www.loom.com/embed/1d62a8cce4304ee7ac45e748bd9c29be" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 The same approach can be used to add the token to the request body.
 
