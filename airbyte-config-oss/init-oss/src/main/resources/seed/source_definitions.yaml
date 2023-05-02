@@ -698,6 +698,14 @@
   icon: freshservice.svg
   sourceType: api
   releaseStage: alpha
+- name: Fullstory
+  sourceDefinitionId: 263fd456-02d1-4a26-a35e-52ccaedad778
+  dockerRepository: airbyte/source-fullstory
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/fullstory
+  icon: fullstory.svg
+  sourceType: api
+  releaseStage: alpha
 - name: GCS
   sourceDefinitionId: 2a8c41ae-8c23-4be0-a73f-2ab10ca1a820
   dockerRepository: airbyte/source-gcs
@@ -2413,7 +2421,7 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.28
+  dockerImageTag: 0.2.29
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   icon: zendesk-support.svg
   sourceType: api
@@ -2457,7 +2465,7 @@
 - sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
   name: Sentry
   dockerRepository: airbyte/source-sentry
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
   icon: sentry.svg
   sourceType: api
@@ -2557,6 +2565,14 @@
   allowedHosts:
     hosts:
       - api-metrica.yandex.net
+- name: Yotpo
+  sourceDefinitionId: 18139f00-b1ba-4971-8f80-8387b617cfd8
+  dockerRepository: airbyte/source-yotpo
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/yotpo
+  icon: yotpo.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Younium
   sourceDefinitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
   dockerRepository: airbyte/source-younium
