@@ -9,7 +9,6 @@ from typing import Optional
 import asyncer
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import PytestStep, Step, StepResult, StepStatus
-from ci_connector_ops.utils import DESTINATION_DEFINITIONS_FILE_PATH, SOURCE_DEFINITIONS_FILE_PATH
 from dagger import File
 
 
@@ -35,8 +34,6 @@ class QaChecks(Step):
                 str(self.context.connector.code_directory),
                 str(self.context.connector.documentation_file_path),
                 str(self.context.connector.icon_path),
-                SOURCE_DEFINITIONS_FILE_PATH,
-                DESTINATION_DEFINITIONS_FILE_PATH,
             ],
         )
         qa_checks = (

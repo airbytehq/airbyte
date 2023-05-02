@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from enum import Enum
 from functools import cached_property
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import List, Optional, Set, Tuple
 
 import git
 import requests
@@ -16,24 +16,15 @@ import yaml
 from ci_credentials import SecretsManager
 from rich.console import Console
 
-try:
-    from yaml import CLoader as Loader
-# Some environments do not have a system C Yaml loader
-except ImportError:
-    from yaml import Loader
-
 console = Console()
 
 DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")
-OSS_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json"
+OSS_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
 SOURCE_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/source-"
 DESTINATION_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/destination-"
 ACCEPTANCE_TEST_CONFIG_FILE_NAME = "acceptance-test-config.yml"
 AIRBYTE_DOCKER_REPO = "airbyte"
-SOURCE_DEFINITIONS_FILE_PATH = "airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml"
-DESTINATION_DEFINITIONS_FILE_PATH = "airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml"
-DEFINITIONS_FILE_PATH = {"source": SOURCE_DEFINITIONS_FILE_PATH, "destination": DESTINATION_DEFINITIONS_FILE_PATH}
 
 
 def download_catalog(catalog_url):
@@ -50,11 +41,6 @@ class ConnectorInvalidNameError(Exception):
 
 class ConnectorVersionNotFound(Exception):
     pass
-
-
-def read_definitions(definitions_file_path: str) -> Dict:
-    with open(definitions_file_path) as definitions_file:
-        return yaml.load(definitions_file, Loader=Loader)
 
 
 def get_connector_name_from_path(path):
@@ -169,7 +155,8 @@ class Connector:
             assert definition_type in ["source", "destination"]
         except AssertionError:
             return None
-        definitions = read_definitions(DEFINITIONS_FILE_PATH[definition_type])
+        plural_key = f"{definition_type}s"
+        definitions = OSS_CATALOG[plural_key]
         for definition in definitions:
             if definition["dockerRepository"].replace(f"{AIRBYTE_DOCKER_REPO}/", "") == self.technical_name:
                 return definition
