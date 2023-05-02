@@ -12871,7 +12871,7 @@
     "sourceDefinitionId": "778daa7c-feaf-4db6-96f3-70fd645acc77",
     "name": "File (CSV, JSON, Excel, Feather, Parquet)",
     "dockerRepository": "airbyte/source-file",
-    "dockerImageTag": "0.3.0",
+    "dockerImageTag": "0.3.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/file",
     "icon": "file.svg",
     "sourceType": "file",
@@ -17472,6 +17472,53 @@
     "allowedHosts": {
       "hosts": [ "*.mktorest.com" ]
     }
+  }, {
+    "sourceDefinitionId": "23240e9e-d14a-43bc-899f-72ea304d1994",
+    "name": "Merge",
+    "dockerRepository": "airbyte/source-merge",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/merge",
+    "icon": "merge.svg",
+    "sourceType": "api",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/merge",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Merge Spec",
+        "type": "object",
+        "additionalProperties": true,
+        "required": [ "account_token", "api_token", "start_date" ],
+        "properties": {
+          "account_token": {
+            "title": "Account Token",
+            "type": "string",
+            "description": "Link your other integrations with account credentials on accounts section to get account token (ref - https://app.merge.dev/linked-accounts/accounts)",
+            "airbyte_secret": true
+          },
+          "api_token": {
+            "title": "Api token",
+            "type": "string",
+            "description": "API token can be seen at  https://app.merge.dev/keys",
+            "airbyte_secret": true
+          },
+          "start_date": {
+            "title": "Date-From Filter",
+            "type": "string",
+            "description": "Date time filter for incremental filter, Specify which date to extract from.",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$",
+            "examples": [ "2022-03-01T00:00:00.000Z" ],
+            "format": "date-time"
+          }
+        }
+      },
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
   }, {
     "sourceDefinitionId": "c7cb421b-942e-4468-99ee-e369bcabaec5",
     "name": "Metabase",
@@ -22730,7 +22777,7 @@
     "sourceDefinitionId": "69589781-7828-43c5-9f63-8925b1c1ccc2",
     "name": "S3",
     "dockerRepository": "airbyte/source-s3",
-    "dockerImageTag": "2.1.2",
+    "dockerImageTag": "2.1.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/s3",
     "icon": "s3.svg",
     "sourceType": "file",
@@ -28088,7 +28135,7 @@
     "sourceDefinitionId": "cdaf146a-9b75-49fd-9dd2-9d64a0bb4781",
     "name": "Sentry",
     "dockerRepository": "airbyte/source-sentry",
-    "dockerImageTag": "0.2.0",
+    "dockerImageTag": "0.2.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/sentry",
     "icon": "sentry.svg",
     "sourceType": "api",
