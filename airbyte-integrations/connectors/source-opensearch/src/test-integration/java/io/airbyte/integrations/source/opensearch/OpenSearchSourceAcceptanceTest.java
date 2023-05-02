@@ -55,7 +55,7 @@ public class OpenSearchSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
-    container = new OpenSearchContainer("opensearchproject/opensearch:2.0.0")
+    container = new OpensearchContainer("opensearchproject/opensearch:2.0.0")
         .withEnv("ES_JAVA_OPTS", "-Xms512m -Xms512m")
         .withEnv("discovery.type", "single-node")
         .withEnv("network.host", "0.0.0.0")
@@ -92,7 +92,7 @@ public class OpenSearchSourceAcceptanceTest extends SourceAcceptanceTest {
     return Jsons.jsonNode(new HashMap<>());
   }
 
-  private void getRestHighLevelClient(OpenSearchContainer container) {
+  private void getRestHighLevelClient(OpensearchContainer container) {
     RestClientBuilder restClientBuilder =
         RestClient.builder(HttpHost.create(container.getHttpHostAddress())).setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder);
     client = new RestHighLevelClient(restClientBuilder);
