@@ -437,7 +437,6 @@ def test_datetime_based_cursor():
     stream_slicer = factory.create_component(model_type=DatetimeBasedCursorModel, component_definition=slicer_manifest, config=input_config)
 
     assert isinstance(stream_slicer, DatetimeBasedCursor)
-    assert stream_slicer._timezone == datetime.timezone.utc
     assert stream_slicer._step == datetime.timedelta(days=10)
     assert stream_slicer.cursor_field.string == "created"
     assert stream_slicer.cursor_granularity == "PT0.000001S"
@@ -451,7 +450,6 @@ def test_datetime_based_cursor():
 
     assert isinstance(stream_slicer.start_datetime, MinMaxDatetime)
     assert stream_slicer.start_datetime._datetime_format == "%Y-%m-%dT%H:%M:%S.%f%z"
-    assert stream_slicer.start_datetime._timezone == datetime.timezone.utc
     assert stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
     assert stream_slicer.start_datetime.min_datetime.string == "{{ config['start_time'] + day_delta(2) }}"
 

@@ -637,7 +637,7 @@
 - name: File (CSV, JSON, Excel, Feather, Parquet)
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/file
   icon: file.svg
   sourceType: file
@@ -696,6 +696,14 @@
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshservice
   icon: freshservice.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Fullstory
+  sourceDefinitionId: 263fd456-02d1-4a26-a35e-52ccaedad778
+  dockerRepository: airbyte/source-fullstory
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/fullstory
+  icon: fullstory.svg
   sourceType: api
   releaseStage: alpha
 - name: GCS
@@ -943,7 +951,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.6.1
+  dockerImageTag: 0.6.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -1221,6 +1229,14 @@
   allowedHosts:
     hosts:
       - "*.mktorest.com"
+- name: Merge
+  sourceDefinitionId: 23240e9e-d14a-43bc-899f-72ea304d1994
+  dockerRepository: airbyte/source-merge
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/merge
+  icon: merge.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Metabase
   sourceDefinitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
   dockerRepository: airbyte/source-metabase
@@ -1338,7 +1354,7 @@
 - name: News API
   sourceDefinitionId: df38991e-f35b-4af2-996d-36817f614587
   dockerRepository: airbyte/source-news-api
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/news-api
   icon: newsapi.svg
   sourceType: api
@@ -1353,7 +1369,7 @@
 - name: Notion
   sourceDefinitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
   dockerRepository: airbyte/source-notion
-  dockerImageTag: 1.0.4
+  dockerImageTag: 1.0.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/notion
   icon: notion.svg
   sourceType: api
@@ -1809,7 +1825,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 2.1.2
+  dockerImageTag: 2.1.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   icon: s3.svg
   sourceType: file
@@ -2405,7 +2421,7 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.27
+  dockerImageTag: 0.2.29
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   icon: zendesk-support.svg
   sourceType: api
@@ -2449,7 +2465,7 @@
 - sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
   name: Sentry
   dockerRepository: airbyte/source-sentry
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
   icon: sentry.svg
   sourceType: api
@@ -2549,6 +2565,14 @@
   allowedHosts:
     hosts:
       - api-metrica.yandex.net
+- name: Yotpo
+  sourceDefinitionId: 18139f00-b1ba-4971-8f80-8387b617cfd8
+  dockerRepository: airbyte/source-yotpo
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/yotpo
+  icon: yotpo.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Younium
   sourceDefinitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
   dockerRepository: airbyte/source-younium
