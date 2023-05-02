@@ -1,4 +1,9 @@
 {
   "properties": {
+    "discover_fields": {
+      "item": {
+        "type": "string"
+      }
+    }
   }
 }
