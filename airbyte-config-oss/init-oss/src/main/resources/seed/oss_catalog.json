@@ -694,7 +694,7 @@
     "destinationDefinitionId": "22f6c74f-5699-40ff-833c-4a879ea40133",
     "name": "BigQuery",
     "dockerRepository": "airbyte/destination-bigquery",
-    "dockerImageTag": "1.3.3",
+    "dockerImageTag": "1.3.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/bigquery",
     "icon": "bigquery.svg",
     "spec": {
@@ -864,7 +864,7 @@
     },
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "bigquery"
     },
     "supportsDbt": true
@@ -1380,7 +1380,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-clickhouse",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "clickhouse"
     },
     "supportsDbt": false
@@ -3843,7 +3843,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-mssql",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "mssql"
     },
     "supportsDbt": true
@@ -4312,7 +4312,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-mysql",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "mysql"
     },
     "supportsDbt": true
@@ -4549,7 +4549,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-oracle",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "oracle"
     },
     "supportsDbt": true
@@ -4873,7 +4873,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "postgres"
     },
     "supportsDbt": true
@@ -5611,7 +5611,7 @@
     },
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-redshift",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "redshift"
     },
     "supportsDbt": true
@@ -6832,7 +6832,7 @@
     },
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-snowflake",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "snowflake"
     },
     "supportsDbt": true
@@ -7382,7 +7382,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-tidb",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "tidb"
     },
     "supportsDbt": true
@@ -12871,7 +12871,7 @@
     "sourceDefinitionId": "778daa7c-feaf-4db6-96f3-70fd645acc77",
     "name": "File (CSV, JSON, Excel, Feather, Parquet)",
     "dockerRepository": "airbyte/source-file",
-    "dockerImageTag": "0.3.0",
+    "dockerImageTag": "0.3.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/file",
     "icon": "file.svg",
     "sourceType": "file",
@@ -13388,6 +13388,45 @@
             "description": "UTC date and time in the format 2020-10-01T00:00:00Z. Any data before this date will not be replicated.",
             "examples": [ "2020-10-01T00:00:00Z" ],
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          }
+        }
+      },
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
+  }, {
+    "sourceDefinitionId": "263fd456-02d1-4a26-a35e-52ccaedad778",
+    "name": "Fullstory",
+    "dockerRepository": "airbyte/source-fullstory",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/fullstory",
+    "icon": "fullstory.svg",
+    "sourceType": "api",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/fullstory",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "fullstory.com Source Spec",
+        "type": "object",
+        "required": [ "api_key", "uid" ],
+        "additionalProperties": true,
+        "properties": {
+          "api_key": {
+            "title": "API Key",
+            "type": "string",
+            "description": "API Key for the fullstory.com API.",
+            "airbyte_secret": true
+          },
+          "uid": {
+            "title": "User ID",
+            "type": "string",
+            "description": "User ID for the fullstory.com API.",
+            "airbyte_secret": true
           }
         }
       },
@@ -15437,7 +15476,7 @@
     "sourceDefinitionId": "36c891d9-4bd9-43ac-bad2-10e12756272c",
     "name": "HubSpot",
     "dockerRepository": "airbyte/source-hubspot",
-    "dockerImageTag": "0.6.1",
+    "dockerImageTag": "0.6.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/hubspot",
     "icon": "hubspot.svg",
     "sourceType": "api",
@@ -17473,6 +17512,53 @@
       "hosts": [ "*.mktorest.com" ]
     }
   }, {
+    "sourceDefinitionId": "23240e9e-d14a-43bc-899f-72ea304d1994",
+    "name": "Merge",
+    "dockerRepository": "airbyte/source-merge",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/merge",
+    "icon": "merge.svg",
+    "sourceType": "api",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/merge",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Merge Spec",
+        "type": "object",
+        "additionalProperties": true,
+        "required": [ "account_token", "api_token", "start_date" ],
+        "properties": {
+          "account_token": {
+            "title": "Account Token",
+            "type": "string",
+            "description": "Link your other integrations with account credentials on accounts section to get account token (ref - https://app.merge.dev/linked-accounts/accounts)",
+            "airbyte_secret": true
+          },
+          "api_token": {
+            "title": "Api token",
+            "type": "string",
+            "description": "API token can be seen at  https://app.merge.dev/keys",
+            "airbyte_secret": true
+          },
+          "start_date": {
+            "title": "Date-From Filter",
+            "type": "string",
+            "description": "Date time filter for incremental filter, Specify which date to extract from.",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$",
+            "examples": [ "2022-03-01T00:00:00.000Z" ],
+            "format": "date-time"
+          }
+        }
+      },
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
+  }, {
     "sourceDefinitionId": "c7cb421b-942e-4468-99ee-e369bcabaec5",
     "name": "Metabase",
     "dockerRepository": "airbyte/source-metabase",
@@ -19017,7 +19103,7 @@
     "sourceDefinitionId": "df38991e-f35b-4af2-996d-36817f614587",
     "name": "News API",
     "dockerRepository": "airbyte/source-news-api",
-    "dockerImageTag": "0.1.0",
+    "dockerImageTag": "0.1.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/news-api",
     "icon": "newsapi.svg",
     "sourceType": "api",
@@ -19077,13 +19163,15 @@
           },
           "start_date": {
             "type": "string",
-            "description": "A date and optional time for the oldest article allowed. This should\nbe in ISO 8601 format (e.g. 2021-01-01 or 2021-01-01T12:00:00).\n",
+            "description": "A date and optional time for the oldest article allowed. This should\nbe in ISO 8601 format.\n",
+            "examples": [ "2021-01-01", "2021-01-01T12:00:00" ],
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$",
             "order": 6
           },
           "end_date": {
             "type": "string",
-            "description": "A date and optional time for the newest article allowed. This should\nbe in ISO 8601 format (e.g. 2021-01-01 or 2021-01-01T12:00:00).\n",
+            "description": "A date and optional time for the newest article allowed. This should\nbe in ISO 8601 format.\n",
+            "examples": [ "2021-01-01", "2021-01-01T12:00:00" ],
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$",
             "order": 7
           },
@@ -19211,7 +19299,7 @@
     "sourceDefinitionId": "6e00b415-b02e-4160-bf02-58176a0ae687",
     "name": "Notion",
     "dockerRepository": "airbyte/source-notion",
-    "dockerImageTag": "1.0.4",
+    "dockerImageTag": "1.0.5",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/notion",
     "icon": "notion.svg",
     "sourceType": "api",
@@ -22728,7 +22816,7 @@
     "sourceDefinitionId": "69589781-7828-43c5-9f63-8925b1c1ccc2",
     "name": "S3",
     "dockerRepository": "airbyte/source-s3",
-    "dockerImageTag": "2.1.2",
+    "dockerImageTag": "2.1.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/s3",
     "icon": "s3.svg",
     "sourceType": "file",
@@ -27710,7 +27798,7 @@
     "sourceDefinitionId": "79c1aa37-dae3-42ae-b333-d1c105477715",
     "name": "Zendesk Support",
     "dockerRepository": "airbyte/source-zendesk-support",
-    "dockerImageTag": "0.2.27",
+    "dockerImageTag": "0.2.29",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/zendesk-support",
     "icon": "zendesk-support.svg",
     "sourceType": "api",
@@ -28086,7 +28174,7 @@
     "sourceDefinitionId": "cdaf146a-9b75-49fd-9dd2-9d64a0bb4781",
     "name": "Sentry",
     "dockerRepository": "airbyte/source-sentry",
-    "dockerImageTag": "0.2.0",
+    "dockerImageTag": "0.2.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/sentry",
     "icon": "sentry.svg",
     "sourceType": "api",
@@ -28916,6 +29004,58 @@
     "allowedHosts": {
       "hosts": [ "api-metrica.yandex.net" ]
     }
+  }, {
+    "sourceDefinitionId": "18139f00-b1ba-4971-8f80-8387b617cfd8",
+    "name": "Yotpo",
+    "dockerRepository": "airbyte/source-yotpo",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/yotpo",
+    "icon": "yotpo.svg",
+    "sourceType": "api",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/yotpo",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Yotpo Spec",
+        "type": "object",
+        "required": [ "access_token", "app_key", "start_date", "email" ],
+        "additionalProperties": true,
+        "properties": {
+          "access_token": {
+            "title": "Access Token",
+            "type": "string",
+            "description": "Access token recieved as a result of API call to https://api.yotpo.com/oauth/token (Ref- https://apidocs.yotpo.com/reference/yotpo-authentication)",
+            "airbyte_secret": true
+          },
+          "app_key": {
+            "title": "App Key",
+            "type": "string",
+            "description": "App key found at settings (Ref- https://settings.yotpo.com/#/general_settings)"
+          },
+          "start_date": {
+            "title": "Date-From Filter",
+            "type": "string",
+            "description": "Date time filter for incremental filter, Specify which date to extract from.",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$",
+            "examples": [ "2022-03-01T00:00:00.000Z" ],
+            "format": "date-time"
+          },
+          "email": {
+            "title": "Registered email address",
+            "type": "string",
+            "description": "Email address registered with yotpo.",
+            "default": "example@gmail.com"
+          }
+        }
+      },
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
   }, {
     "sourceDefinitionId": "9c74c2d7-531a-4ebf-b6d8-6181f805ecdc",
     "name": "Younium",
