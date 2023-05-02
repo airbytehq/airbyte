@@ -146,7 +146,7 @@ Our goal is to keep our docs comprehensive and updated. If you would like to hel
 * Fix errors in existing docs
 * Help us in adding to the docs
 
-The contributing guide for docs can be found [here](updating-documentation.md).
+The contributing guide for docs can be found [here](contribute-documentation.md).
 
 ## Contributing community content
 

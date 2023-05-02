@@ -211,16 +211,19 @@ const connectorCatalog = {
 const contributeToAirbyte = {
   type: 'category',
   label: 'Contribute to Airbyte',
+  link: {
+    type: 'doc',
+    id: 'contributing-to-airbyte/README',
+  },
   items: [
-    'contributing-to-airbyte/README',
     'contributing-to-airbyte/code-of-conduct',
     'contributing-to-airbyte/maintainer-code-of-conduct',
+    'contributing-to-airbyte/issues-and-pull-requests',
     'contributing-to-airbyte/developing-locally',
     'contributing-to-airbyte/developing-on-docker',
     'contributing-to-airbyte/developing-on-kubernetes',
     'contributing-to-airbyte/python-gradle-setup',
     'contributing-to-airbyte/code-style',
-    'contributing-to-airbyte/issues-and-pull-requests',
     'contributing-to-airbyte/gradle-cheatsheet',
     'contributing-to-airbyte/gradle-dependency-update',
     {
@@ -228,7 +231,7 @@ const contributeToAirbyte = {
       label: 'Updating documentation',
       link: {
         type: 'doc',
-        id: 'contributing-to-airbyte/updating-documentation',
+        id: 'contributing-to-airbyte/contribute-documentation',
       },
       items: [
         {
