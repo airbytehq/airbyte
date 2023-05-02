@@ -2,7 +2,7 @@
 
 The connector builder UI provides an intuitive UI on top of the [low-code YAML format](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/yaml-overview) and to use built connectors for syncs within the same workspace directly from within the UI. We recommend using it to iterate on your low-code connectors.
 
-:::caution
+:::note
 The connector builder UI is in beta, which means it’s still in active development and may include backward-incompatible changes. Share feedback and requests with us on our Slack channel or email us at feedback@airbyte.io
 
 **The connector builder does not yet have a link in the sidebar, to navigate to it manually change the URL path in your browser's address bar to `/<your workspace id>/connector-builder`**
