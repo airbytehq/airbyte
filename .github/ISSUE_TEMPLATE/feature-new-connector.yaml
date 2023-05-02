@@ -1,4 +1,4 @@
-name: New Connector Request
+name: New Connector
 description: Use this to request a new connector
 title: "New Connector: "
 labels: [area/connectors, new-connector]
