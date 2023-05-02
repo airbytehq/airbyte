@@ -39,15 +39,7 @@ public class PostgresRdsDestinationAcceptanceTest extends JdbcDestinationAccepta
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, jsonNode.get(JdbcUtils.HOST_KEY).asText())
-        .put(JdbcUtils.USERNAME_KEY, jsonNode.get(JdbcUtils.USERNAME_KEY).asText())
-        .put(JdbcUtils.PASSWORD_KEY, jsonNode.get(JdbcUtils.PASSWORD_KEY).asText())
-        .put(JdbcUtils.SCHEMA_KEY, "public")
-        .put(JdbcUtils.PORT_KEY, jsonNode.get(JdbcUtils.PORT_KEY).asInt())
-        .put(JdbcUtils.DATABASE_KEY, jsonNode.get(JdbcUtils.DATABASE_KEY).asText())
-        .put(JdbcUtils.SSL_KEY, false)
-        .build());
+   return jsonNode;
   }
 
   @Override
@@ -55,7 +47,6 @@ public class PostgresRdsDestinationAcceptanceTest extends JdbcDestinationAccepta
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, jsonNode.get(JdbcUtils.HOST_KEY).asText())
         .put(JdbcUtils.USERNAME_KEY, jsonNode.get(JdbcUtils.USERNAME_KEY).asText())
-        .put(JdbcUtils.PASSWORD_KEY, "wrong password")
         .put(JdbcUtils.SCHEMA_KEY, "public")
         .put(JdbcUtils.PORT_KEY, jsonNode.get(JdbcUtils.PORT_KEY).asInt())
         .put(JdbcUtils.DATABASE_KEY, jsonNode.get(JdbcUtils.DATABASE_KEY).asText())
@@ -149,15 +140,11 @@ public class PostgresRdsDestinationAcceptanceTest extends JdbcDestinationAccepta
   private DSLContext getDslContext() {
     return DSLContextFactory.create(
         jsonNode.get(JdbcUtils.USERNAME_KEY).asText(),
-        jsonNode.get(JdbcUtils.PASSWORD_KEY).asText(),
+        jsonNode.get(PostgresRdsDestination.CREDENTIALS_KEY).get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        getJdbcUrl(),
+        "jdbc:postgresql://" + jsonNode.get(JdbcUtils.HOST_KEY).asText() + ":" + jsonNode.get(JdbcUtils.PORT_KEY).asInt()
+            + "/" + jsonNode.get(JdbcUtils.DATABASE_KEY).asText(),
         SQLDialect.POSTGRES);
-  }
-
-  private String getJdbcUrl() {
-    return "jdbc:postgresql://" + jsonNode.get(JdbcUtils.HOST_KEY).asText() + ":" + jsonNode.get(JdbcUtils.PORT_KEY).asInt()
-        + "/" + jsonNode.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
 }

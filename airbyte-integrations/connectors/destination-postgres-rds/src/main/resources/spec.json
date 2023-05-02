@@ -47,12 +47,81 @@
         "type": "string",
         "order": 4
       },
-      "password": {
-        "title": "Password",
-        "description": "Password associated with the username.",
-        "type": "string",
+      "credentials": {
+        "title": "Credentials",
+        "type": "object",
         "airbyte_secret": true,
-        "order": 5
+        "description": "Credentials to access the database",
+        "oneOf": [
+          {
+            "title": "Password",
+            "required": ["password"],
+            "properties": {
+              "password": {
+                "title": "Password",
+                "description": "Password associated with the username.",
+                "type": "string",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "title": "IAM credentials",
+            "required": [
+              "access_key_id",
+              "secret_access_key",
+              "rds_region"
+            ],
+            "properties": {
+              "access_key_id": {
+                "type": "string",
+                "description": "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>.",
+                "title": "S3 Key ID",
+                "airbyte_secret": true
+              },
+              "secret_access_key": {
+                "type": "string",
+                "description": "The corresponding secret to the access key ID. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>",
+                "title": "S3 Access Key",
+                "airbyte_secret": true
+              },
+              "rds_region": {
+                "type": "string",
+                "title": "S3 Bucket Region",
+                "default": "",
+                "description": "The region of the S3 bucket. See <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions\">here</a> for all region codes.",
+                "enum": [
+                  "",
+                  "us-east-1",
+                  "us-east-2",
+                  "us-west-1",
+                  "us-west-2",
+                  "af-south-1",
+                  "ap-east-1",
+                  "ap-south-1",
+                  "ap-northeast-1",
+                  "ap-northeast-2",
+                  "ap-northeast-3",
+                  "ap-southeast-1",
+                  "ap-southeast-2",
+                  "ca-central-1",
+                  "cn-north-1",
+                  "cn-northwest-1",
+                  "eu-central-1",
+                  "eu-north-1",
+                  "eu-south-1",
+                  "eu-west-1",
+                  "eu-west-2",
+                  "eu-west-3",
+                  "sa-east-1",
+                  "me-south-1",
+                  "us-gov-east-1",
+                  "us-gov-west-1"
+                ]
+              }
+            }
+          }
+        ]
       },
       "ssl": {
         "title": "SSL Connection",

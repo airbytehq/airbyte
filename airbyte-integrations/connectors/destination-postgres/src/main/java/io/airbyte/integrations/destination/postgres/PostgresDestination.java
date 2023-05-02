@@ -19,8 +19,8 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -65,12 +65,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
     String encodedDatabase = config.get(JdbcUtils.DATABASE_KEY).asText();
     if (encodedDatabase != null) {
-      try {
-        encodedDatabase = URLEncoder.encode(encodedDatabase, "UTF-8");
-      } catch (UnsupportedEncodingException e) {
-        // Should never happen
-        e.printStackTrace();
-      }
+      encodedDatabase = URLEncoder.encode(encodedDatabase, StandardCharsets.UTF_8);
     }
     final String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?",
         config.get(JdbcUtils.HOST_KEY).asText(),
