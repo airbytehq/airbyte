@@ -28,8 +28,8 @@ Each record is a [document](https://docs.convex.dev/using/types) in Convex and i
 
 ### Performance considerations
 
-Take care to use the appropriate sync method and frequency for the quantity of data streaming from the source. Performance may suffer with large, frequent syncs with Full Refresh. Prefer Incremental modes when possible.
-If you see performance issues,please reach via email to [Convex support](mailto:support@convex.dev) or on [Discord](https://convex.dev/community).
+Take care to use the appropriate sync method and frequency for the quantity of data streaming from the source. Performance may suffer with large, frequent syncs with Full Refresh. Prefer Incremental modes when they are supported and especially for large tables.
+If you see performance issues, please reach via email to [Convex support](mailto:support@convex.dev) or on [Discord](https://convex.dev/community).
 
 ## Getting started
 
@@ -52,6 +52,6 @@ On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the projec
 
 ## Changelog
 
-| Version | Date       | Pull Request          | Subject                    |
-| :------ | :--------- | :-------------------- | :------------------------- |
+| Version | Date       | Pull Request                                             | Subject                    |
+| :------ | :--------- | :------------------------------------------------------- | :------------------------- |
 | 0.1.0   | 2023-01-05 | [21287](https://github.com/airbytehq/airbyte/pull/21287) | 🎉 New Destination: Convex |
