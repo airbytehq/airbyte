@@ -28,6 +28,7 @@ import org.opensearch.client.indices.CreateIndexRequest;
 import org.opensearch.client.indices.CreateIndexResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.opensearch.testcontainers.OpensearchContainer;
 
 public class OpenSearchSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -36,7 +37,7 @@ public class OpenSearchSourceAcceptanceTest extends SourceAcceptanceTest {
   private static final String index = "sample";
 
   // TODO -> OpenSearchContainer -> Add depenency
-  private static OpenSearchContia container;
+  private static OpensearchContainer container;
   private RestHighLevelClient client;
   private JsonNode config;
 

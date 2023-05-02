@@ -33,20 +33,10 @@ dependencies {
 
     //  MIT
     //  https://www.testcontainers.org/
-    testImplementation libs.connectors.testcontainers.elasticsearch
-    integrationTestJavaImplementation libs.connectors.testcontainers.elasticsearch
+    testImplementation libs.connectors.testcontainers
+    testImplementation libs.connectors.testcontainers.opensearch
+    integrationTestJavaImplementation libs.connectors.testcontainers.opensearch
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-opensearch')
-}
-
-repositories {
-    maven {
-        name = "ESSnapshots"
-        url = "https://snapshots.elastic.co/maven/"
-    }
-    maven {
-        name = "ESJavaGithubPackages"
-        url = "https://maven.pkg.github.com/elastic/elasticsearch-java"
-    }
 }
