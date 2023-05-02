@@ -8,7 +8,7 @@ To set up the Freshdesk source connector, you'll need the Freshdesk [domain URL]
 
 ## Set up the Freshdesk connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Freshdesk** from the Source type dropdown.
 4. Enter the name for the Freshdesk connector.
@@ -20,7 +20,7 @@ To set up the Freshdesk source connector, you'll need the Freshdesk [domain URL]
 
 ## Supported sync modes 
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 * [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 * [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)

@@ -90,3 +90,11 @@ DROP USER IF EXISTS INTEGRATION_TEST_USER_DESTINATION;
 DROP ROLE IF EXISTS INTEGRATION_TESTER_DESTINATION;
 DROP WAREHOUSE IF EXISTS INTEGRATION_TEST_WAREHOUSE_DESTINATION;
 ```
+
+## Setting up the Azure Blob Storage test infra
+1. Follow the [Destination Azure Blob Storage](../destination-azure-blob-storage/README.md#infra-setup) setup guide, with these differences:
+  1. The container name is `snowflake-staging`
+  1. Instead of getting an access key, you need a `Shared access token`. This belongs to the container (NOT the storage account).
+    1. Give the key the appropriate permissions (which I believe is all of them)
+    1. And a distant-future expiry - there's no way to generate a non-expiring token.
+    1. The `Blob SAS token` is the `azure_blob_storage_sas_token` config field.

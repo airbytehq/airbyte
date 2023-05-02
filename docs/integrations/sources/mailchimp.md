@@ -8,7 +8,7 @@ You can use [OAuth](https://mailchimp.com/developer/marketing/guides/access-user
 
 ## Set up the Mailchimp source connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**. 
 3. On the Set up the source page, select **Mailchimp** from the Source type dropdown.
 4. Enter a name for your source.
@@ -230,6 +230,8 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
+| 0.4.0   | 2023-04-11 | [23290](https://github.com/airbytehq/airbyte/pull/23290) | Add Automations stream                                                         |
+| 0.3.5   | 2023-02-28 | [23464](https://github.com/airbytehq/airbyte/pull/23464) | Add Reports stream                                                         |
 | 0.3.4   | 2023-02-06 | [22405](https://github.com/airbytehq/airbyte/pull/22405) | Revert extra logging                                                       |
 | 0.3.3   | 2023-02-01 | [22228](https://github.com/airbytehq/airbyte/pull/22228) | Add extra logging                                                          |
 | 0.3.2   | 2023-01-27 | [22014](https://github.com/airbytehq/airbyte/pull/22014) | Set `AvailabilityStrategy` for streams explicitly to `None`                |
@@ -252,4 +254,3 @@ Now that you have set up the Mailchimp source connector, check out the following
 | 0.2.1   | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726)   | Fix base connector versioning                                              |
 | 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238)   | Protocol allows future/unknown properties                                  |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                    |
-

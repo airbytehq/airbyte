@@ -1,5 +1,5 @@
 {
-  "type": ["null", "object"],
+  "type": "object",
   "properties": {
     "advertiser_id": {
       "type": "integer"
@@ -53,10 +53,10 @@
     "card_id": {
       "type": ["null", "integer"]
     },
-    "status": {
+    "secondary_status": {
       "type": "string"
     },
-    "opt_status": {
+    "operation_status": {
       "type": ["null", "string"]
     },
     "is_aco": {
@@ -107,7 +107,7 @@
     "display_name": {
       "type": ["null", "string"]
     },
-    "profile_image": {
+    "profile_image_url": {
       "type": ["null", "string"]
     },
     "impression_tracking_url": {
@@ -116,10 +116,10 @@
     "click_tracking_url": {
       "type": ["null", "string"]
     },
-    "open_url": {
+    "deeplink": {
       "type": ["null", "string"]
     },
-    "open_url_type": {
+    "deeplink_type": {
       "type": ["null", "string"]
     },
     "fallback_type": {
@@ -128,31 +128,35 @@
     "playable_url": {
       "type": ["null", "string"]
     },
-    "vast_moat": {
+    "vast_moat_enabled": {
       "type": ["null", "boolean"]
     },
     "page_id": {
-      "type": ["number", "null"]
+      "type": ["null", "number"]
     },
-    "is_creative_authorized": {
+    "creative_authorized": {
       "type": ["null", "boolean"]
     },
     "is_new_structure": {
       "type": ["null", "boolean"]
     },
     "create_time": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "modify_time": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
-    "dpa_fallback_type": {
+    "shopping_ads_fallback_type": {
       "type": ["null", "string"]
     },
-    "dpa_open_url_type": {
+    "shopping_deeplink_type": {
       "type": ["null", "string"]
     },
-    "dpa_video_tpl_id": {
+    "shopping_ads_video_package_id": {
       "type": ["null", "string"]
     },
     "promotional_music_disabled": {
@@ -162,6 +166,33 @@
       "type": ["null", "string"]
     },
     "item_stitch_status": {
+      "type": ["null", "string"]
+    },
+    "avatar_icon_web_uri": {
+      "type": ["null", "string"]
+    },
+    "brand_safety_postbid_partner": {
+      "type": ["null", "string"]
+    },
+    "brand_safety_vast_url": {
+      "type": ["null", "string"]
+    },
+    "creative_type": {
+      "type": ["null", "string"]
+    },
+    "identity_id": {
+      "type": ["null", "string"]
+    },
+    "identity_type": {
+      "type": ["null", "string"]
+    },
+    "optimization_event": {
+      "type": ["null", "string"]
+    },
+    "viewability_postbid_partner": {
+      "type": ["null", "string"]
+    },
+    "viewability_vast_url": {
       "type": ["null", "string"]
     }
   }

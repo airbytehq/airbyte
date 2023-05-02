@@ -22,7 +22,7 @@ class RechargeTokenAuthenticator(TokenAuthenticator):
 class SourceRecharge(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         auth = RechargeTokenAuthenticator(token=config["access_token"])
-        stream = Shop(authenticator=auth)
+        stream = Shop(config, authenticator=auth)
         try:
             result = list(stream.read_records(SyncMode.full_refresh))[0]
             if stream.name in result.keys():
@@ -33,15 +33,15 @@ class SourceRecharge(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = RechargeTokenAuthenticator(token=config["access_token"])
         return [
-            Addresses(authenticator=auth, start_date=config["start_date"]),
-            Charges(authenticator=auth, start_date=config["start_date"]),
-            Collections(authenticator=auth),
-            Customers(authenticator=auth, start_date=config["start_date"]),
-            Discounts(authenticator=auth, start_date=config["start_date"]),
-            Metafields(authenticator=auth),
-            Onetimes(authenticator=auth, start_date=config["start_date"]),
-            Orders(authenticator=auth, start_date=config["start_date"]),
-            Products(authenticator=auth),
-            Shop(authenticator=auth),
-            Subscriptions(authenticator=auth, start_date=config["start_date"]),
+            Addresses(config, authenticator=auth),
+            Charges(config, authenticator=auth),
+            Collections(config, authenticator=auth),
+            Customers(config, authenticator=auth),
+            Discounts(config, authenticator=auth),
+            Metafields(config, authenticator=auth),
+            Onetimes(config, authenticator=auth),
+            Orders(config, authenticator=auth),
+            Products(config, authenticator=auth),
+            Shop(config, authenticator=auth),
+            Subscriptions(config, authenticator=auth),
         ]

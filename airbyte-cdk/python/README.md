@@ -132,7 +132,7 @@ To run acceptance tests for multiple connectors using the local CDK, from the ro
 #### Publishing a new version to PyPi
 
 1. Open a PR
-2. Once it is approved and merge, an Airbyte member must run the `Publish CDK Manually` workflow using `release-type=major|manor|patch` and setting the changelog message.
+2. Once it is approved and **merged**, an Airbyte member must run the `Publish CDK Manually` workflow from master using `release-type=major|manor|patch` and setting the changelog message.
 
 ## Coming Soon
 

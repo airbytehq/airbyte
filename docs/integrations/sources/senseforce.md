@@ -28,7 +28,7 @@ The Senseforce Airbyte connector allows to export custom datasets built bei Sens
 
 ## Set up the Senseforce source connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**. 
 3. On the Set up the source page, select **Senseforce** from the Source type dropdown.
 4. Enter a name for your source.

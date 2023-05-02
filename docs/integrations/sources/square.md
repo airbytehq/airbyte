@@ -17,7 +17,7 @@ To set up the Square source connector with Airbyte, you'll need to create your S
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, enter the name for the Square connector and select **Square** from the Source type dropdown.
 4. Choose authentication method:
@@ -47,7 +47,7 @@ To set up the Square source connector with Airbyte, you'll need to create your S
 ## Supported sync modes
 
 The Square source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 * [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 * [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
@@ -97,6 +97,8 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
+| 0.2.2   | 2023-03-22 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Specified date formatting in specification |
+| 0.2.1   | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version                                    |
 | 0.2.0   | 2022-11-14 | [19369](https://github.com/airbytehq/airbyte/pull/19369) | Migrate to low code (YAML); update API to version  2022-10-19; update docs |
 | 0.1.4   | 2021-12-02 | [6842](https://github.com/airbytehq/airbyte/pull/6842)   | Added oauth support                                                        |
 | 0.1.3   | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425)   | Update title, description fields in spec                                   |

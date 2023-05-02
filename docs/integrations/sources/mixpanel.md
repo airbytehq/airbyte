@@ -4,11 +4,11 @@ This page contains the setup guide and reference information for the Mixpanel so
 
 ## Prerequisites
 
-To set up the Harvest source connector, you'll need a Mixpanel [Service Account](https://developer.mixpanel.com/reference/service-accounts) and it's [Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id), the [Project Timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel), and the Project region (`US` or `EU`).
+To set up the Mixpanel source connector, you'll need a Mixpanel [Service Account](https://developer.mixpanel.com/reference/service-accounts) and it's [Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id), the [Project Timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel), and the Project region (`US` or `EU`).
 
 ## Set up the Mixpanel connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Mixpanel** from the Source type dropdown.
 4. Enter the name for the Mixpanel connector.
@@ -25,7 +25,7 @@ To set up the Harvest source connector, you'll need a Mixpanel [Service Account]
 ## Supported sync modes
 The Mixpanel source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 * [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 * [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
@@ -50,6 +50,7 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
 |:--------| :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| 0.1.31  | 2023-02-13 | [22936](https://github.com/airbytehq/airbyte/pull/22936) | Specified date formatting in specification                                                     |
 | 0.1.30  | 2023-01-27 | [22017](https://github.com/airbytehq/airbyte/pull/22017) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
 | 0.1.29  | 2022-11-02 | [18846](https://github.com/airbytehq/airbyte/pull/18846) | For "export" stream make line parsing more robust                                                    |
 | 0.1.28  | 2022-10-06 | [17699](https://github.com/airbytehq/airbyte/pull/17699) | Fix discover step issue cursor field None                                                            |

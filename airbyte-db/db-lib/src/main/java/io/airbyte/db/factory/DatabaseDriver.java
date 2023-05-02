@@ -10,8 +10,9 @@ package io.airbyte.db.factory;
 public enum DatabaseDriver {
 
   CLICKHOUSE("com.clickhouse.jdbc.ClickHouseDriver", "jdbc:clickhouse:%s://%s:%d/%s"),
-  DATABRICKS("com.databricks.client.jdbc.Driver", "jdbc:databricks://%s;HttpPath=%s;SSL=1;UserAgentEntry=Airbyte"),
+  DATABRICKS("com.databricks.client.jdbc.Driver", "jdbc:databricks://%s:%s;HttpPath=%s;SSL=1;UserAgentEntry=Airbyte"),
   DB2("com.ibm.db2.jcc.DB2Driver", "jdbc:db2://%s:%d/%s"),
+  STARBURST("io.trino.jdbc.TrinoDriver", "jdbc:trino://%s:%s/%s?SSL=true&source=airbyte"),
   MARIADB("org.mariadb.jdbc.Driver", "jdbc:mariadb://%s:%d/%s"),
   MSSQLSERVER("com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://%s:%d/%s"),
   MYSQL("com.mysql.cj.jdbc.Driver", "jdbc:mysql://%s:%d/%s"),
