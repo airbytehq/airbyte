@@ -3,7 +3,7 @@ data:
     hosts:
       - ${host}
       - ${tunnel_method.tunnel_host}
-  catalogs:
+  registries:
     cloud:
       dockerImageTag: 2.0.16
       dockerRepository: airbyte/source-postgres-strict-encrypt

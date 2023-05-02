@@ -14,9 +14,9 @@ import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -36,8 +36,8 @@ import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsNameTransformer;
 import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.integrations.destination.gcs.util.GcsUtils;
+import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -305,12 +305,22 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         keepStagingFiles);
     final S3AvroFormatConfig avroFormatConfig = (S3AvroFormatConfig) gcsConfig.getFormatConfig();
     final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator = getRecordFormatterCreator(namingResolver);
-    final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer =
-        BigQueryAvroSerializedBuffer.createFunction(
+    final int numberOfFileBuffers = getNumberOfFileBuffers(config);
+
+    if (numberOfFileBuffers > FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER) {
+      LOGGER.warn("""
+                  Increasing the number of file buffers past {} can lead to increased performance but
+                  leads to increased memory usage. If the number of file buffers exceeds the number
+                  of streams {} this will create more buffers than necessary, leading to nonexistent gains
+                  """, FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER, catalog.getStreams().size());
+    }
+
+    final BufferCreateFunction onCreateBuffer =
+        BigQueryAvroSerializedBuffer.createBufferFunction(
             avroFormatConfig,
             recordFormatterCreator,
             getAvroSchemaCreator(),
-            () -> new FileBuffer(S3AvroFormatConfig.DEFAULT_SUFFIX));
+            () -> new FileBuffer(S3AvroFormatConfig.DEFAULT_SUFFIX, numberOfFileBuffers));
 
     LOGGER.info("Creating BigQuery staging message consumer with staging ID {} at {}", stagingId, syncDatetime);
     return new BigQueryStagingConsumerFactory().create(
@@ -334,6 +344,26 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   protected Function<String, String> getTargetTableNameTransformer(final BigQuerySQLNameTransformer namingResolver) {
     return namingResolver::getRawTableName;
+  }
+
+  /**
+   * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number
+   * of file buffers and sets the minimum number to the default
+   *
+   * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit
+   * has not been thoroughly load tested across all instance sizes
+   *
+   * @param config user configurations
+   * @return number of file buffers if configured otherwise default
+   */
+  @VisibleForTesting
+  public int getNumberOfFileBuffers(final JsonNode config) {
+    int numOfFileBuffers = FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
+    if (config.has(FileBuffer.FILE_BUFFER_COUNT_KEY)) {
+      numOfFileBuffers = Math.min(config.get(FileBuffer.FILE_BUFFER_COUNT_KEY).asInt(), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
+    }
+    // Only allows for values 10 <= numOfFileBuffers <= 50
+    return Math.max(numOfFileBuffers, FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
   }
 
   public static void main(final String[] args) throws Exception {

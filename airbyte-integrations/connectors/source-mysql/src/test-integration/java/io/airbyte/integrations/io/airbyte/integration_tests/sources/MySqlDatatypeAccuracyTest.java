@@ -326,13 +326,12 @@ public class MySqlDatatypeAccuracyTest extends AbstractMySqlSourceDatatypeTest {
                   .build());
         }
         case YEAR -> {
-          /* https://github.com/airbytehq/airbyte/issues/8722 */
-//          addDataTypeTestData(
-//              TestDataHolder.builder()
-//                  .sourceType(mst.name())
-//                  .airbyteType(JsonSchemaType.INTEGER)
-//                  .fullSourceDataType("%s".formatted(mst.getName()))
-//                  .build());
+          addDataTypeTestData(
+              TestDataHolder.builder()
+                  .sourceType(mst.name())
+                  .airbyteType(JsonSchemaType.INTEGER)
+                  .fullSourceDataType("%s".formatted(mst.getName()))
+                  .build());
         }
         case VARCHAR -> {
           for (final Entry entry : charsetsCollationsMap.entrySet()) {

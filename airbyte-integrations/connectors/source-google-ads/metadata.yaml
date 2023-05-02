@@ -3,7 +3,7 @@ data:
     hosts:
       - accounts.google.com
       - googleads.googleapis.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:
