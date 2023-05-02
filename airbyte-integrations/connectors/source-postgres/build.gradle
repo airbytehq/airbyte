@@ -7,7 +7,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.postgres.PostgresSourceRunner'
+    mainClass = 'io.airbyte.integrations.source.postgres.PostgresSource'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
@@ -21,6 +21,7 @@ dependencies {
 
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation libs.postgresql
+    implementation libs.bundles.datadog
 
     testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))

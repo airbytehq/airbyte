@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "required": ["id"],
+  "additionalProperties": true,
   "properties": {
     "id": { "type": ["null", "integer"] },
     "title": { "type": ["null", "string"] },
@@ -16,6 +17,9 @@
     "created_at": { "type": ["null", "string"] },
     "updated_at": { "type": ["null", "string"] },
     "outcome_id": { "type": ["null", "integer"] },
-    "task_type_id": { "type": ["null", "integer"] }
+    "task_type_id": { "type": ["null", "integer"] },
+    "updater_id": { "type": ["null", "integer"] },
+    "targetables": { "type": ["null", "string"] },
+    "completed_date": { "type": ["null", "string"] }
   }
 }

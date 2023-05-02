@@ -27,6 +27,11 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
+  public boolean isCdcCheckpointEnabled() {
+    return true;
+  }
+
+  @Override
   public AirbyteMessage saveState(final Map<String, String> offset, final String dbHistory) {
     final JsonNode asJson = Jsons.jsonNode(offset);
     LOGGER.info("debezium state: {}", asJson);
@@ -60,5 +65,4 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
     final AirbyteStateMessage stateMessage = stateManager.emit(Optional.empty());
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
   }
-
 }

@@ -331,7 +331,7 @@ This interim patch period mostly contained stability changes for Airbyte Cloud, 
 * Normalization now supports union data types
 * Support longform text inputs in the UI for cases where you need to preserve formatting on connector inputs like .pem keys
 * Expose the latest available connector versions in the API
-* Airflow: published a new [tutorial](https://docs.airbyte.com/tutorials/using-the-airflow-airbyte-operator) for how to use the Airbyte operator. Thanks [@Marcos Marx](https://github.com/marcosmarxm) for writing the tutorial! 
+* Airflow: published a new [tutorial](https://docs.airbyte.com/operator-guides/using-the-airflow-airbyte-operator/) for how to use the Airbyte operator. Thanks [@Marcos Marx](https://github.com/marcosmarxm) for writing the tutorial! 
 * Connector Contributions: All connectors now describe how to contribute to them without having to touch Airbyte’s monorepo build system -- just work on the connector in your favorite dev setup!
 
 ## [03-08-2021 - 0.17](https://github.com/airbytehq/airbyte/releases/tag/v0.17.0-alpha)

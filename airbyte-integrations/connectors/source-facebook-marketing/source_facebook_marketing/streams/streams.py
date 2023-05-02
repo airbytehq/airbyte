@@ -63,7 +63,9 @@ class AdCreatives(FBMarketingStream):
         """Read with super method and append thumbnail_data_url if enabled"""
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             if self._fetch_thumbnail_images:
-                record["thumbnail_data_url"] = fetch_thumbnail_data_url(record.get("thumbnail_url"))
+                thumbnail_url = record.get("thumbnail_url")
+                if thumbnail_url:
+                    record["thumbnail_data_url"] = fetch_thumbnail_data_url(thumbnail_url)
             yield record
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:

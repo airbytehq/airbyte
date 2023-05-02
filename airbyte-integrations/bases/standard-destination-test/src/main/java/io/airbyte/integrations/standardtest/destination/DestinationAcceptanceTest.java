@@ -26,14 +26,14 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.config.JobGetSpecConfig;
-import io.airbyte.config.OperatorDbt;
-import io.airbyte.config.StandardCheckConnectionInput;
-import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.WorkerDestinationConfig;
-import io.airbyte.config.init.LocalDefinitionsProvider;
+import io.airbyte.configoss.JobGetSpecConfig;
+import io.airbyte.configoss.OperatorDbt;
+import io.airbyte.configoss.StandardCheckConnectionInput;
+import io.airbyte.configoss.StandardCheckConnectionOutput;
+import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
+import io.airbyte.configoss.StandardDestinationDefinition;
+import io.airbyte.configoss.WorkerDestinationConfig;
+import io.airbyte.configoss.init.LocalDefinitionsProvider;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
@@ -130,7 +130,8 @@ public abstract class DestinationAcceptanceTest {
     return getImageName().contains(":") ? getImageName().split(":")[0] : getImageName();
   }
 
-  private Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(final String imageNameWithoutTag) {
+  protected static Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(
+                                                                                                        final String imageNameWithoutTag) {
     final LocalDefinitionsProvider provider = new LocalDefinitionsProvider();
     return provider.getDestinationDefinitions().stream()
         .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
@@ -138,7 +139,7 @@ public abstract class DestinationAcceptanceTest {
   }
 
   protected String getNormalizationImageName() {
-    return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
+    return getOptionalDestinationDefinitionFromProvider(getDestinationDefinitionKey())
         .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
         .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository() + ":"
             + NORMALIZATION_VERSION)
@@ -239,8 +240,12 @@ public abstract class DestinationAcceptanceTest {
         .orElse(false);
   }
 
+  protected String getDestinationDefinitionKey() {
+    return getImageNameWithoutTag();
+  }
+
   protected String getNormalizationIntegrationType() {
-    return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
+    return getOptionalDestinationDefinitionFromProvider(getDestinationDefinitionKey())
         .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
         .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationIntegrationType())
         .orElse(null);
@@ -630,7 +635,7 @@ public abstract class DestinationAcceptanceTest {
   @Test
   public void testIncrementalSyncWithNormalizationDropOneColumn()
       throws Exception {
-    if (!normalizationFromDefinition()) {
+    if (!normalizationFromDefinition() || !supportIncrementalSchemaChanges()) {
       return;
     }
 
@@ -1430,7 +1435,7 @@ public abstract class DestinationAcceptanceTest {
    * @param record - record that will be pruned.
    * @return pruned json node.
    */
-  private AirbyteRecordMessage safePrune(final AirbyteRecordMessage record) {
+  private static AirbyteRecordMessage safePrune(final AirbyteRecordMessage record) {
     final AirbyteRecordMessage clone = Jsons.clone(record);
     pruneMutate(clone.getData());
     return clone;
@@ -1443,7 +1448,7 @@ public abstract class DestinationAcceptanceTest {
    *
    * @param json - json that will be pruned. will be mutated in place!
    */
-  private void pruneMutate(final JsonNode json) {
+  private static void pruneMutate(final JsonNode json) {
     for (final String key : Jsons.keys(json)) {
       final JsonNode node = json.get(key);
       // recursively prune all airbyte internal fields.
@@ -1634,6 +1639,10 @@ public abstract class DestinationAcceptanceTest {
     return false;
   }
 
+  protected boolean supportIncrementalSchemaChanges() {
+    return false;
+  }
+
   /**
    * NaN and Infinity test are not supported by default. Please override this method to specify
    * NaN/Infinity types support example:
@@ -1650,7 +1659,7 @@ public abstract class DestinationAcceptanceTest {
    *
    * @return SpecialNumericTypes with support flags
    */
-  protected SpecialNumericTypes getSpecialNumericTypesSupportTest() {
+  protected static SpecialNumericTypes getSpecialNumericTypesSupportTest() {
     return SpecialNumericTypes.builder().build();
   }
 
@@ -1765,11 +1774,11 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
-  private AirbyteCatalog readCatalogFromFile(final String catalogFilename) throws IOException {
+  private static AirbyteCatalog readCatalogFromFile(final String catalogFilename) throws IOException {
     return Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
   }
 
-  private List<AirbyteMessage> readMessagesFromFile(final String messagesFilename)
+  private static List<AirbyteMessage> readMessagesFromFile(final String messagesFilename)
       throws IOException {
     return MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))

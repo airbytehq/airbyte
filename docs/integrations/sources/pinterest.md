@@ -36,7 +36,7 @@ To set up the Pinterest source connector with Airbyte Open Source, you'll need y
 
 The Pinterest source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 * [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 * [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
@@ -70,12 +70,15 @@ The connector is restricted by the Pinterest [requests limitation](https://devel
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
-|:--------| :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
-| 0.2.3   | 2023-03-01 | [23649](https://github.com/airbytehq/airbyte/pull/23649) | Fix for `HTTP - 400 Bad Request` when requesting data >= 90 days  |
-| 0.2.2   | 2023-01-27 | [22020](https://github.com/airbytehq/airbyte/pull/22020) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
-| 0.2.1   | 2022-12-15 | [20532](https://github.com/airbytehq/airbyte/pull/20532) | Bump CDK version|
-| 0.2.0   | 2022-12-13 | [20242](https://github.com/airbytehq/airbyte/pull/20242) | Added data-type normalization up to the schemas declared |
-| 0.1.9   | 2022-09-06 | [15074](https://github.com/airbytehq/airbyte/pull/15074) | Added filter based on statuses |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
+| 0.2.6   | 2023-04-26 | [25548](https://github.com/airbytehq/airbyte/pull/25548) |  Fixed `format` issue for `boards` stream schema for fields with `date-time`                                                  |
+| 0.2.5   | 2023-04-19 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Update `AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP` to 89 days                                                   |
+| 0.2.4   | 2023-02-25 | [23457](https://github.com/airbytehq/airbyte/pull/23457) | Adding missing columns for analytics streams for pinterest source                                       |
+| 0.2.3   | 2023-03-01 | [23649](https://github.com/airbytehq/airbyte/pull/23649) | Fix for `HTTP - 400 Bad Request` when requesting data >= 90 days                                        |
+| 0.2.2   | 2023-01-27 | [22020](https://github.com/airbytehq/airbyte/pull/22020) | Set `AvailabilityStrategy` for streams explicitly to `None`                                             |
+| 0.2.1   | 2022-12-15 | [20532](https://github.com/airbytehq/airbyte/pull/20532) | Bump CDK version                                                                                        |
+| 0.2.0   | 2022-12-13 | [20242](https://github.com/airbytehq/airbyte/pull/20242) | Added data-type normalization up to the schemas declared                                                |
+| 0.1.9   | 2022-09-06 | [15074](https://github.com/airbytehq/airbyte/pull/15074) | Added filter based on statuses                                                                          |
 | 0.1.8   | 2022-10-21 | [18285](https://github.com/airbytehq/airbyte/pull/18285) | Fix type of `start_date`                                                                                |
 | 0.1.7   | 2022-09-29 | [17387](https://github.com/airbytehq/airbyte/pull/17387) | Set `start_date` dynamically based on API restrictions.                                                 |
 | 0.1.6   | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Use CDK 0.1.89                                                                                          |

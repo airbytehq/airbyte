@@ -1,5 +1,65 @@
 # Changelog
 
+## 0.36.2
+Support parsing non UTC dates and Connector Builder set slice descriptor
+
+## 0.36.1
+low-code: fix add field transformation when running from the connector builder
+
+## 0.36.0
+Emit stream status messages
+
+## 0.35.4
+low-code: remove now_local() macro because it's too unpredictable
+
+## 0.35.3
+low-code: alias stream_interval and stream_partition to stream_slice in jinja context
+
+## 0.35.2
+Connector builder scrubs secrets from raw request and response
+
+## 0.35.1
+low-code: Add title, description, and examples for all fields in the manifest schema
+
+## 0.35.0
+low-code: simplify session token authenticator interface
+
+## 0.34.3
+low-code: fix typo in ManifestDeclarativeSource
+
+## 0.34.2
+Emit slice log messages when running the connector builder
+
+## 0.34.1
+set slice and pages limit when reading from the connector builder module
+
+## 0.34.0
+Low-Code CDK: Enable use of SingleUseRefreshTokenAuthenticator
+
+## 0.33.2
+low-code: fix duplicate stream slicer update
+
+## 0.33.1
+Low-Code CDK: make RecordFilter.filter_records as generator
+
+## 0.33.0
+Enable oauth flow for low-code connectors
+
+## 0.32.0
+Remove unexpected error swallowing on abstract source's check method
+
+## 0.31.1
+connector builder: send stacktrace when error on read
+
+## 0.31.0
+Add connector builder module for handling Connector Builder server requests
+
+## 0.30.4
+CDK's read command handler supports Connector Builder list_streams requests
+
+## 0.30.3
+Fix reset pagination issue on test reads
+
 ## 0.30.2
 * Low-code CDK: Override refresh_access_token logic DeclarativeOAuthAuthenticator
 

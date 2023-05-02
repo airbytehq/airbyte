@@ -76,8 +76,8 @@ class SourceMixpanel(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        config = self._validate_and_transform(config)
         try:
+            config = self._validate_and_transform(config)
             auth = self.get_authenticator(config)
             FunnelsList.max_retries = 0
             funnels = FunnelsList(authenticator=auth, **config)

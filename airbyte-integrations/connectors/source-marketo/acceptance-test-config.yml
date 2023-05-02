@@ -11,10 +11,12 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
-        status: "failed"
+        status: "exception"
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.2"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -69,8 +71,19 @@ acceptance_tests:
             bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
           - name: "activities_open_email"
             bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_calltoactionclickedinwebinar"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_hasattendedevent"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_asksquestionsinwebinar"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_assetdownloadsinwebinar"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
+          - name: "activities_respondedtoapollinwebinar"
+            bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
         # 52 streams, most of them use BULK API therefore it takes much time to run a sync
         timeout_seconds: 9000
+        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"
