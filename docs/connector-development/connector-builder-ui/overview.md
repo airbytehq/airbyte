@@ -73,3 +73,25 @@ From this point on your connector is a regular low-code CDK connector and can be
 Follow the instructions in the connector README to build the Docker image. Typically this will be something like `docker build . -t airbyte/source-<name>:<version>`.
 
 Once you've built the connector image, [follow these instructions](https://docs.airbyte.com/integrations/custom-connectors#adding-your-connectors-in-the-ui) to add your connector to your Airbyte instance.
+
+## Examples
+
+A lot of [Airbyte-managed connectors](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors) are based on the low-code CDK. They can be identified by the `manifest.yaml` file in place of python files.
+
+These `manifest.yaml` files can easily be imported and explored in the builder.
+
+To do so, follow these steps:
+* Navigate to a `manifest.yaml` file of a connector on Github
+* Download the raw file
+* Go to the connector builder
+* Create a new connector with the button in the top right
+* Pick the "Import a YAML manifest" option
+* Select the downloaded file
+* Change and test the connector
+
+The following connectors are good showcases for real-world use cases:
+* The [Pendo.io API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-pendo/source_pendo/manifest.yaml) is a simple connector implementing multiple streams and api-key based authentication
+* The [News API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-news-api/source_news_api/manifest.yaml) implements pagination and user-configurable request parameters
+* The [CoinGecko API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-coingecko-coins/source_coingecko_coins/manifest.yaml) implements incremental syncs
+
+Note: Not all `manifest.yaml` files can be edited and tested in the connector builder because some are using [custom python classes](https://docs.airbyte.com/connector-development/config-based/advanced-topics#custom-components) which isn't supported yet.
