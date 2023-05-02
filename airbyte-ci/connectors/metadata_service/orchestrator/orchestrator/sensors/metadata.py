@@ -26,8 +26,8 @@ def metadata_updated_sensor(job, resources_def) -> SensorDefinition:
 
             context.log.info(f"Old etag cursor: {etags_cursor}")
 
-            metadata_file_blobs = resources.metadata_file_blobs
-            new_etags_cursor_set = {blob.etag for blob in metadata_file_blobs}
+            latest_metadata_file_blobs = resources.latest_metadata_file_blobs
+            new_etags_cursor_set = {blob.etag for blob in latest_metadata_file_blobs}
             context.log.info(f"New etag cursor: {new_etags_cursor_set}")
 
             # Note: ETAGs are GCS's way of providing a version number for a file
@@ -39,6 +39,7 @@ def metadata_updated_sensor(job, resources_def) -> SensorDefinition:
             serialized_new_etags_cursor = serialize_composite_etags_cursor(list(new_etags_cursor_set))
             context.update_cursor(serialized_new_etags_cursor)
             context.log.info("New updated_metadata_files in GCS bucket")
-            return RunRequest(run_key="updated_metadata_files")
+            run_key = f"updated_metadata_files:{serialized_new_etags_cursor}"
+            return RunRequest(run_key=run_key)
 
     return metadata_updated_sensor_definition

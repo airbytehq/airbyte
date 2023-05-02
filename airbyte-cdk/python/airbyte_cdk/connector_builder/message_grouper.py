@@ -18,6 +18,7 @@ from airbyte_cdk.connector_builder.models import (
     StreamReadSlices,
     StreamReadSlicesInner,
 )
+from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
@@ -167,7 +168,7 @@ class MessageGrouper:
         # the generator can raise an exception
         # iterate over the generated messages. if next raise an exception, catch it and yield it as an AirbyteLogMessage
         try:
-            yield from source.read(logger=self.logger, config=config, catalog=configured_catalog, state={})
+            yield from AirbyteEntrypoint(source).read(source.spec(self.logger), config, configured_catalog, {})
         except Exception as e:
             error_message = f"{e.args[0] if len(e.args) > 0 else str(e)}"
             yield AirbyteTracedException.from_exception(e, message=error_message).as_airbyte_message()

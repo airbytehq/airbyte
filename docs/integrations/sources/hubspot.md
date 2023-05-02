@@ -13,7 +13,7 @@ You can use OAuth, API key, or Private App to authenticate your HubSpot account.
 | `contact_lists`             | `crm.objects.lists.read`                                                                                     |
 | `contacts`                  | `crm.objects.contacts.read`                                                                                  |
 | `contacts_list_memberships` | `crm.objects.contacts.read`                                                                                  |
-| `deal_pipelines`            | either the `crm.objects.contacts.read` scope \(to fetch deals pipelines\) or the `tickets` scope.            |
+| `deal_pipelines`            | `crm.objects.contacts.read`                                                                                  |
 | `deals`                     | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
 | `deals_archived`            | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
 | `email_events`              | `content`                                                                                                    |
@@ -137,6 +137,8 @@ Now that you have set up the Hubspot source connector, check out the following H
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.2   | 2023-04-28 | [25667](https://github.com/airbytehq/airbyte/pull/25667) | Fixed bug with `Invalid Date` like `2000-00-00T00:00:00Z` while settip up the connector  |
+| 0.6.1   | 2023-04-10 | [21423](https://github.com/airbytehq/airbyte/pull/21423) | Update scope for `DealPipelines` stream to only `crm.objects.contacts.read`                                                                                |
 | 0.6.0   | 2023-04-07 | [24980](https://github.com/airbytehq/airbyte/pull/24980) | Add new stream `DealsArchived`                                                                                                                             |
 | 0.5.2   | 2023-04-07 | [24915](https://github.com/airbytehq/airbyte/pull/24915) | Fix field key parsing (replace whitespace with uderscore)                                                                                                  |
 | 0.5.1   | 2023-04-05 | [22982](https://github.com/airbytehq/airbyte/pull/22982) | Specified date formatting in specification                                                                                                                 |
