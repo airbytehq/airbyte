@@ -56,7 +56,11 @@ module.exports = function (plop) {
   });
 
   plop.setHelper('generateDefinitionId', function() {
-    return uuid.v4();
+    // if the env var CI is set then return a fixed FAKE uuid  so that the tests are deterministic
+    if (process.env.CI) {
+      return 'FAKE-UUID-0000-0000-000000000000';
+    }
+    return uuid.v4().toLowerCase();
   });
 
   plop.setHelper('connectorImage', function() {

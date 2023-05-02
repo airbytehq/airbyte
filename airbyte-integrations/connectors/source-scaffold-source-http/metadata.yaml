@@ -7,7 +7,7 @@ data:
       enabled: false
   connectorSubtype: api
   connectorType: source
-  definitionId: c2010649-ad01-44a4-a683-f738f6cee9f9
+  definitionId: FAKE-UUID-0000-0000-000000000000
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-scaffold-source-http
   githubIssueLabel: source-scaffold-source-http

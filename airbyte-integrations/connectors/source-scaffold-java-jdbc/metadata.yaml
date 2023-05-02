@@ -7,7 +7,7 @@ data:
       enabled: false
   connectorSubtype: database
   connectorType: source
-  definitionId: e7f8a54a-2f6f-40ba-afd6-e728a394786e
+  definitionId: FAKE-UUID-0000-0000-000000000000
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-scaffold-java-jdbc
   githubIssueLabel: source-scaffold-java-jdbc

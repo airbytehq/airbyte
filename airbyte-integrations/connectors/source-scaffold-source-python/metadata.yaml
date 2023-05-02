@@ -7,7 +7,7 @@ data:
       enabled: false
   connectorSubtype: api
   connectorType: source
-  definitionId: ac2d5c25-f494-41c0-8736-94ce5767f4a8
+  definitionId: FAKE-UUID-0000-0000-000000000000
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-scaffold-source-python
   githubIssueLabel: source-scaffold-source-python
