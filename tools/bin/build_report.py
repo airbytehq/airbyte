@@ -264,3 +264,7 @@ LABEL io.airbyte.name=airbyte/source-salesforce"""
             registry_data = download_and_parse_registry_json()
             assert len(registry_data["sources"]) > 20
             assert len(registry_data["destinations"]) > 20
+
+            # Assert that the dockerRepository is not empty
+            assert registry_data["sources"][0]["dockerRepository"]
+            assert registry_data["destinations"][0]["dockerRepository"]
