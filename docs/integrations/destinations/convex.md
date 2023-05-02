@@ -7,7 +7,7 @@ See your data on the [Convex dashboard](https://dashboard.convex.dev/).
 
 ## Overview
 
-The Convex destination connector supports Full Refresh Overwrite, Full Refresh Append, Incremental Append, and Incremental Append Dedup.
+The Convex destination connector supports Full Refresh Overwrite, Full Refresh Append, Incremental Append, and Incremental Dedup. Note that for Incremental Dedup, Convex does not store a history table like some other destinations that use DBT, but Convex does store a deduped snapshot.
 
 ### Output schema
 
@@ -54,4 +54,4 @@ On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the projec
 
 | Version | Date       | Pull Request          | Subject                    |
 | :------ | :--------- | :-------------------- | :------------------------- |
-| 0.1.0   | 2023-01-05 | TODO: link to PR here | 🎉 New Destination: Convex |
+| 0.1.0   | 2023-01-05 | [21287](https://github.com/airbytehq/airbyte/pull/21287) | 🎉 New Destination: Convex |
