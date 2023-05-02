@@ -6,7 +6,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.opensearch.OpenSearchSource'
+    mainClass = 'io.airbyte.integrations.source.elasticsearch.ElasticsearchSource'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
@@ -16,7 +16,7 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
-    implementation 'org.opensearch.client:opensearch-java:2.0.0'
+    implementation 'co.elastic.clients:elasticsearch-java:7.15.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
 
     // EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
@@ -30,9 +30,20 @@ dependencies {
 
     //  MIT
     //  https://www.testcontainers.org/
-    testImplementation libs.connectors.testcontainers.opensearch
-    integrationTestJavaImplementation libs.connectors.testcontainers.opensearch
+    testImplementation libs.connectors.testcontainers.elasticsearch
+    integrationTestJavaImplementation libs.connectors.testcontainers.elasticsearch
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-openserch')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-elasticsearch')
+}
+
+repositories {
+    maven {
+        name = "ESSnapshots"
+        url = "https://snapshots.elastic.co/maven/"
+    }
+    maven {
+        name = "ESJavaGithubPackages"
+        url = "https://maven.pkg.github.com/elastic/elasticsearch-java"
+    }
 }

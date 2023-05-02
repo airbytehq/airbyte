@@ -40,9 +40,9 @@ public class OpenSearchTypeMapper {
       put("boolean", Arrays.asList("boolean", "array"));
 
       // String
-      put("keyword", Arrays.asList("string", "array", "number", "integer"));
-      put("text", Arrays.asList("string", "array", "number", "integer"));
-      put("token_count", Arrays.asList("string", "array", "number", "integer"));
+      put("keyword", Arrays.asList("string", "array"));
+      put("text", Arrays.asList("string", "array"));
+      put("token_count", Arrays.asList("string", "array"));
 
       // Numeric
       put("long", Arrays.asList("integer", "array"));
@@ -56,7 +56,7 @@ public class OpenSearchTypeMapper {
       put("scaled_float", Arrays.asList("number", "array"));
 
       // DATE
-      put("date", Arrays.asList("string","long", "integer"));
+      put("date", Arrays.asList("string", "array"));
 
       // Autocomplete
       put("completion", Arrays.asList("string"));

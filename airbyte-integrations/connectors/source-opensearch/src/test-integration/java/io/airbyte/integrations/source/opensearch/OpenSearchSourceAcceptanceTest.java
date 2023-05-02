@@ -39,7 +39,6 @@ public class OpenSearchSourceAcceptanceTest extends SourceAcceptanceTest {
   // TODO -> OpenSearchContainer -> Add depenency
   private static OpensearchContainer container;
   private RestHighLevelClient client;
-  private JsonNode config;
 
   @Override
   protected String getImageName() {

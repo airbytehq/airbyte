@@ -5,8 +5,11 @@
       "properties": {
         "binary": { "type": ["string", "array"] },
         "boolean": { "type": ["boolean", "array"] },
-        "keyword": { "type": ["string", "array", "number", "integer"] },
+        "keyword": { "type": ["string", "array"] },
+        "text": { "type": ["string", "array"] },
+        "token_count": { "type": ["string", "array"] },
         "long": { "type": ["integer", "array"] },
+        "unsigned_long": { "type": ["integer", "array"] },
         "integer": { "type": ["integer", "array"] },
         "short": { "type": ["integer", "array"] },
         "byte": { "type": ["integer", "array"] },
@@ -15,10 +18,21 @@
         "half_float": { "type": ["number", "array"] },
         "scaled_float": { "type": ["number", "array"] },
         "date": { "type": ["string", "array"] },
-        "date_nanos": { "type": ["string", "array"] },
         "object": { "type": ["object", "array"] },
         "nested": { "type": ["object", "string"] },
-        "text": { "type": ["string", "array"] }
+        "join": { "type": ["object", "string"] },
+        "integer_range": { "type": ["object", "array"] },
+        "float_range": { "type": ["object", "array"] },
+        "long_range": { "type": ["object", "array"] },
+        "double_range": { "type": ["object", "array"] },
+        "date_range": { "type": ["object", "array"] },
+        "ip_range": { "type": ["object", "array"] },
+        "ip": { "type": ["string", "array"] },
+        "alias": { "type": ["string", "array"] },
+        "rank_feature": { "type": "integer"},
+        "rank_features": { "type": "array"},
+        "geo_point": { "type": ["object", "array"] },
+        "geo_shape": { "type": ["object", "array"] }
       }
     }
   },

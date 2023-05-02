@@ -6,8 +6,8 @@
         "binary": { "type": "binary" },
         "boolean": { "type": "boolean" },
         "keyword": { "type": "keyword" },
-        "constant_keyword": { "type": "constant_keyword" },
-        "wildcard": { "type": "wildcard" },
+        "text": { "type":  "text"},
+        "token_count": { "type": "token_count" },
         "long": { "type": "long" },
         "unsigned_long": { "type": "unsigned_long" },
         "integer": { "type": "integer" },
@@ -18,16 +18,21 @@
         "half_float": { "type": "half_float" },
         "scaled_float": { "type": "scaled_float" },
         "date": { "type": "date" },
-        "date_nanos": { "type": "date_nanos" },
         "object": { "type": "object" },
-        "flattened": { "type": "flattened" },
         "nested": { "type": "nested" },
         "join": { "type": "join" },
-        "text": { "type": "text" },
+        "integer_range": { "type": "integer_range" },
+        "float_range": { "type": "float_range" },
+        "long_range": { "type": "long_range" },
+        "double_range": { "type": "double_range" },
+        "date_range": { "type": "date_range" },
+        "ip_range": { "type": "ip_range" },
+        "ip": { "type":  "ip"},
+        "alias": { "type":  "alias"},
+        "rank_feature": { "type": "rank_feature"},
+        "rank_features": { "type": "rank_features"},
         "geo_point": { "type": "geo_point" },
-        "geo_shape": { "type": "geo_shape" },
-        "shape": { "type": "shape" },
-        "point": { "type": "point" }
+        "geo_shape": { "type": "geo_shape" }
       }
     }
   }
