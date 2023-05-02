@@ -6,20 +6,16 @@ import logging
 from typing import List
 
 import requests
-import json
 
 logging.basicConfig(level=logging.DEBUG)
 
 CONNECTOR_REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 
+
 def download_and_parse_registry_json():
     response = requests.get(CONNECTOR_REGISTRY_URL)
-
-    if response.status_code == 200:
-        json_data = json.loads(response.text)
-        return json_data
-    else:
-        raise Exception(f"Error: Unable to download registry file from {CONNECTOR_REGISTRY_URL}. HTTP status code {response.status_code}")
+    response.raise_for_status()
+    return response.json()
 
 
 def read_source_definitions():

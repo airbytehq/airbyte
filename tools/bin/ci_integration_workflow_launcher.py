@@ -15,7 +15,6 @@ from functools import lru_cache
 from urllib.parse import parse_qsl, urljoin, urlparse
 
 import requests
-import json
 
 ORGANIZATION = "airbytehq"
 REPOSITORY = "airbyte"
@@ -37,12 +36,9 @@ if not GITHUB_TOKEN:
 
 def download_and_parse_registry_json():
     response = requests.get(CONNECTOR_REGISTRY_URL)
+    response.raise_for_status()
+    return response.json()
 
-    if response.status_code == 200:
-        json_data = json.loads(response.text)
-        return json_data
-    else:
-        raise Exception(f"Error: Unable to download registry file from {CONNECTOR_REGISTRY_URL}. HTTP status code {response.status_code}")
 
 def check_start_aws_runner_failed(jobs):
     """

@@ -25,7 +25,6 @@ import sys
 from typing import Dict, List, Optional
 
 import requests
-import json
 from slack_sdk import WebhookClient
 from slack_sdk.errors import SlackApiError
 
@@ -45,14 +44,11 @@ NO_TESTS = []
 FAILED_LAST = []
 FAILED_2_LAST = []
 
+
 def download_and_parse_registry_json():
     response = requests.get(CONNECTOR_REGISTRY_URL)
-
-    if response.status_code == 200:
-        json_data = json.loads(response.text)
-        return json_data
-    else:
-        raise Exception(f"Error: Unable to download registry file from {CONNECTOR_REGISTRY_URL}. HTTP status code {response.status_code}")
+    response.raise_for_status()
+    return response.json()
 
 
 def get_status_page(connector) -> str:
