@@ -1,7 +1,8 @@
 {
   "properties": {
     "discover_fields": {
-      "item": {
+      "item": null,
+      "items": {
         "type": "string"
       }
     }
