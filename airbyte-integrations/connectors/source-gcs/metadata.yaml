@@ -8,6 +8,7 @@ data:
   icon: gcs.svg
   license: MIT
   name: GCS
+  releaseStage: alpha
   registries:
     cloud:
       enabled: true
