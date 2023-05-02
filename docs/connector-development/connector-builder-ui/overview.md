@@ -94,4 +94,4 @@ The following connectors are good showcases for real-world use cases:
 * The [News API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-news-api/source_news_api/manifest.yaml) implements pagination and user-configurable request parameters
 * The [CoinGecko API](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-coingecko-coins/source_coingecko_coins/manifest.yaml) implements incremental syncs
 
-Note: Not all `manifest.yaml` files can be edited and tested in the connector builder because they are using [custom python classes](https://docs.airbyte.com/connector-development/config-based/advanced-topics#custom-components) which isn't supported yet.
+Note: Not all `manifest.yaml` files can be edited and tested in the connector builder because some are using [custom python classes](https://docs.airbyte.com/connector-development/config-based/advanced-topics#custom-components) which isn't supported yet.
