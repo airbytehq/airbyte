@@ -1,5 +1,5 @@
 name: New Connector Request
-about: Use this to request a new connector
+description: Use this to request a new connector
 title: "New Connector: "
 labels: [area/connectors, new-connector]
 body:
