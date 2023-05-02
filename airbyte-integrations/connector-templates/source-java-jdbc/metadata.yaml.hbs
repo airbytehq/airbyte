@@ -1,13 +1,13 @@
 data:
   allowedHosts:
     hosts:
-      - "*" # Please change to the hostname of the source.
+      - TODO # Please change to the hostname of the source.
   registries:
     oss:
       enabled: false
   connectorSubtype: database
   connectorType: source
-  definitionId: {{lowerCase definitionId}}
+  definitionId: {{generateDefinitionId}}
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-{{dashCase name}}
   githubIssueLabel: source-{{dashCase name}}

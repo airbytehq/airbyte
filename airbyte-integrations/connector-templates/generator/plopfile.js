@@ -55,8 +55,8 @@ module.exports = function (plop) {
     return capitalCase.capitalCase(name);
   });
 
-  plop.setHelper('generateUUID', function() {
-      return uuid.v4();
+  plop.setHelper('generateDefinitionId', function() {
+    return uuid.v4();
   });
 
   plop.setHelper('connectorImage', function() {
@@ -302,7 +302,7 @@ module.exports = function (plop) {
         type: 'input',
         name: 'name',
         message: 'Destination name, without the "destination-" prefix e.g: "google-pubsub"',
-      },,
+      },
     ],
     actions: [
       // Gradle
