@@ -5311,7 +5311,7 @@
     "destinationDefinitionId": "f7a7d195-377f-cf5b-70a5-be6b819019dc",
     "name": "Redshift",
     "dockerRepository": "airbyte/destination-redshift",
-    "dockerImageTag": "0.4.6",
+    "dockerImageTag": "0.4.7",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/redshift",
     "icon": "redshift.svg",
     "spec": {
@@ -13357,7 +13357,7 @@
     "sourceDefinitionId": "9bb85338-ea95-4c93-b267-6be89125b267",
     "name": "Freshservice",
     "dockerRepository": "airbyte/source-freshservice",
-    "dockerImageTag": "0.1.1",
+    "dockerImageTag": "1.0.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/freshservice",
     "icon": "freshservice.svg",
     "sourceType": "api",
@@ -13368,7 +13368,7 @@
         "title": "Freshservice Spec",
         "type": "object",
         "required": [ "domain_name", "api_key", "start_date" ],
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "domain_name": {
             "type": "string",
@@ -13388,6 +13388,45 @@
             "description": "UTC date and time in the format 2020-10-01T00:00:00Z. Any data before this date will not be replicated.",
             "examples": [ "2020-10-01T00:00:00Z" ],
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          }
+        }
+      },
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
+  }, {
+    "sourceDefinitionId": "263fd456-02d1-4a26-a35e-52ccaedad778",
+    "name": "Fullstory",
+    "dockerRepository": "airbyte/source-fullstory",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/fullstory",
+    "icon": "fullstory.svg",
+    "sourceType": "api",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/fullstory",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "fullstory.com Source Spec",
+        "type": "object",
+        "required": [ "api_key", "uid" ],
+        "additionalProperties": true,
+        "properties": {
+          "api_key": {
+            "title": "API Key",
+            "type": "string",
+            "description": "API Key for the fullstory.com API.",
+            "airbyte_secret": true
+          },
+          "uid": {
+            "title": "User ID",
+            "type": "string",
+            "description": "User ID for the fullstory.com API.",
+            "airbyte_secret": true
           }
         }
       },
@@ -19260,7 +19299,7 @@
     "sourceDefinitionId": "6e00b415-b02e-4160-bf02-58176a0ae687",
     "name": "Notion",
     "dockerRepository": "airbyte/source-notion",
-    "dockerImageTag": "1.0.4",
+    "dockerImageTag": "1.0.5",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/notion",
     "icon": "notion.svg",
     "sourceType": "api",
@@ -27759,7 +27798,7 @@
     "sourceDefinitionId": "79c1aa37-dae3-42ae-b333-d1c105477715",
     "name": "Zendesk Support",
     "dockerRepository": "airbyte/source-zendesk-support",
-    "dockerImageTag": "0.2.27",
+    "dockerImageTag": "0.2.29",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/zendesk-support",
     "icon": "zendesk-support.svg",
     "sourceType": "api",
@@ -28135,7 +28174,7 @@
     "sourceDefinitionId": "cdaf146a-9b75-49fd-9dd2-9d64a0bb4781",
     "name": "Sentry",
     "dockerRepository": "airbyte/source-sentry",
-    "dockerImageTag": "0.2.1",
+    "dockerImageTag": "0.2.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/sentry",
     "icon": "sentry.svg",
     "sourceType": "api",
@@ -28965,6 +29004,58 @@
     "allowedHosts": {
       "hosts": [ "api-metrica.yandex.net" ]
     }
+  }, {
+    "sourceDefinitionId": "18139f00-b1ba-4971-8f80-8387b617cfd8",
+    "name": "Yotpo",
+    "dockerRepository": "airbyte/source-yotpo",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/yotpo",
+    "icon": "yotpo.svg",
+    "sourceType": "api",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/yotpo",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Yotpo Spec",
+        "type": "object",
+        "required": [ "access_token", "app_key", "start_date", "email" ],
+        "additionalProperties": true,
+        "properties": {
+          "access_token": {
+            "title": "Access Token",
+            "type": "string",
+            "description": "Access token recieved as a result of API call to https://api.yotpo.com/oauth/token (Ref- https://apidocs.yotpo.com/reference/yotpo-authentication)",
+            "airbyte_secret": true
+          },
+          "app_key": {
+            "title": "App Key",
+            "type": "string",
+            "description": "App key found at settings (Ref- https://settings.yotpo.com/#/general_settings)"
+          },
+          "start_date": {
+            "title": "Date-From Filter",
+            "type": "string",
+            "description": "Date time filter for incremental filter, Specify which date to extract from.",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$",
+            "examples": [ "2022-03-01T00:00:00.000Z" ],
+            "format": "date-time"
+          },
+          "email": {
+            "title": "Registered email address",
+            "type": "string",
+            "description": "Email address registered with yotpo.",
+            "default": "example@gmail.com"
+          }
+        }
+      },
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
   }, {
     "sourceDefinitionId": "9c74c2d7-531a-4ebf-b6d8-6181f805ecdc",
     "name": "Younium",
