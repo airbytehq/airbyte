@@ -56,9 +56,8 @@ module.exports = function (plop) {
   });
 
   plop.setHelper('todayISODate', function() {
-    const today = new Date(Date.now())
-    today.toISOString()
-    return today.toISOString();
+    // today's date in ISO format (YYYY-MM-DD)
+    return new Date().toISOString().split('T')[0];
   });
 
   plop.setHelper('connectorImage', function() {
