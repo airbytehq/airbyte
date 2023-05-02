@@ -9,7 +9,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from requests.exceptions import HTTPError
 
 from .streams import Events, Issues, ProjectDetail, Projects, Releases
 
