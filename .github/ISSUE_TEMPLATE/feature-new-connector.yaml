@@ -1,6 +1,6 @@
-name: New Connector Request
-about: Use this to request a new connector
-title: ""
+name: New Connector
+description: Use this to request a new connector
+title: "New Connector: "
 labels: [area/connectors, new-connector]
 body:
   - type: input
@@ -33,5 +33,5 @@ body:
       label: Contribute
       description: Are you willing to submit the fix?
       options:
-        - label: Yes
-          required: true
+        - label: Yes, I want to contribute
+          required: false
