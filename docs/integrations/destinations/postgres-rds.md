@@ -163,7 +163,7 @@ Now that you have set up the Postgres RDS destination connector, check out the f
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject       |
-|:--------|:-----------|:----------------------------------------------------------|:--------------|
-| 0.1.0   | 2023-05-01 |                                                           | Project setup |
+| Version | Date       | Pull Request                                    | Subject       |
+|:--------|:-----------|:------------------------------------------------|:--------------|
+| 0.1.0   | 2023-05-01 | https://github.com/airbytehq/airbyte/pull/25719 | Project setup |
 
