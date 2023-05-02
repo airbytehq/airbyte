@@ -519,7 +519,6 @@ class TestIncrementalFileStream:
             path_pattern="**/prefix*.csv"
         )
         assert stream_instance._schema == {
-            "_ab_additional_properties": {"type": "object"},
             "_ab_source_file_last_modified": {"type": "string"},
             "_ab_source_file_url": {"type": "string"},
             "column_A": "string",
@@ -559,7 +558,6 @@ class TestIncrementalFileStream:
         )
         assert stream_instance.get_json_schema() == {
             "properties": {
-                "_ab_additional_properties": {"type": "object"},
                 "_ab_source_file_last_modified": {"format": "date-time", "type": "string"},
                 "_ab_source_file_url": {"type": "string"},
                 "column_A": {"type": ["null", "string"]},
@@ -579,7 +577,6 @@ class TestIncrementalFileStream:
         mocker.patch.object(stream_instance, "filepath_iterator", MagicMock(return_value=[]))
         assert stream_instance.get_json_schema() == {
             "properties": {
-                "_ab_additional_properties": {"type": "object"},
                 "_ab_source_file_last_modified": {"format": "date-time", "type": "string"},
                 "_ab_source_file_url": {"type": "string"}
             },
