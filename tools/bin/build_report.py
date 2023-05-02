@@ -259,3 +259,8 @@ ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 LABEL io.airbyte.version=1.0.8
 LABEL io.airbyte.name=airbyte/source-salesforce"""
             assert "airbyte/source-salesforce" == parse_dockerfile_repository_label(mock_dockerfile)
+
+        def test_download_and_parse_registry_json(self):
+            registry_data = download_and_parse_registry_json()
+            assert len(registry_data["sources"]) > 20
+            assert len(registry_data["destinations"]) > 20
