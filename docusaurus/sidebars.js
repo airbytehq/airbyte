@@ -224,8 +224,7 @@ const contributeToAirbyte = {
     'contributing-to-airbyte/developing-on-kubernetes',
     'contributing-to-airbyte/python-gradle-setup',
     'contributing-to-airbyte/code-style',
-    'contributing-to-airbyte/gradle-cheatsheet',
-    'contributing-to-airbyte/gradle-dependency-update',
+    'contributing-to-airbyte/gradle',
     {
       type: 'category',
       label: 'Updating documentation',
