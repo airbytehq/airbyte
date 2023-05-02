@@ -28,20 +28,21 @@ import org.opensearch.client.indices.CreateIndexRequest;
 import org.opensearch.client.indices.CreateIndexResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
-public class ElasticsearchSourceAcceptanceTest extends SourceAcceptanceTest {
+public class OpenSearchSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchSourceAcceptanceTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OpenSearchSourceAcceptanceTest.class);
   private static final ObjectMapper mapper = MoreMappers.initMapper();
   private static final String index = "sample";
-  private static ElasticsearchContainer container;
+
+  // TODO -> OpenSearchContainer -> Add depenency
+  private static OpenSearchContia container;
   private RestHighLevelClient client;
   private JsonNode config;
 
   @Override
   protected String getImageName() {
-    return "airbyte/source-elasticsearch:dev";
+    return "airbyte/source-opensearch:dev";
   }
 
   @Override
@@ -53,7 +54,7 @@ public class ElasticsearchSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
-    container = new ElasticsearchContainer("opensearchproject/opensearch:2.0.0")
+    container = new OpenSearchContainer("opensearchproject/opensearch:2.0.0")
         .withEnv("ES_JAVA_OPTS", "-Xms512m -Xms512m")
         .withEnv("discovery.type", "single-node")
         .withEnv("network.host", "0.0.0.0")
@@ -90,7 +91,7 @@ public class ElasticsearchSourceAcceptanceTest extends SourceAcceptanceTest {
     return Jsons.jsonNode(new HashMap<>());
   }
 
-  private void getRestHighLevelClient(ElasticsearchContainer container) {
+  private void getRestHighLevelClient(OpenSearchContainer container) {
     RestClientBuilder restClientBuilder =
         RestClient.builder(HttpHost.create(container.getHttpHostAddress())).setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder);
     client = new RestHighLevelClient(restClientBuilder);
@@ -109,7 +110,7 @@ public class ElasticsearchSourceAcceptanceTest extends SourceAcceptanceTest {
         .id("1")
         .source("user", "kimchy",
             "postDate", new Date(),
-            "message", "trying out Elasticsearch");
+            "message", "trying out OpenSearch");
     IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
     LOGGER.info("Index response status: {}", indexResponse.status());
   }

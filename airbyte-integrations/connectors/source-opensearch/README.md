@@ -1,6 +1,6 @@
-# Source Opensearch
+# Source OpenSearch
 
-This is the repository for the Opensearch source connector in Java.
+This is the repository for the OpenSearch source connector in Java.
 For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.com/integrations/sources/opensearch).
 
 ## Local development
