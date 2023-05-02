@@ -13357,7 +13357,7 @@
     "sourceDefinitionId": "9bb85338-ea95-4c93-b267-6be89125b267",
     "name": "Freshservice",
     "dockerRepository": "airbyte/source-freshservice",
-    "dockerImageTag": "0.1.1",
+    "dockerImageTag": "1.0.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/freshservice",
     "icon": "freshservice.svg",
     "sourceType": "api",
@@ -13368,7 +13368,7 @@
         "title": "Freshservice Spec",
         "type": "object",
         "required": [ "domain_name", "api_key", "start_date" ],
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "domain_name": {
             "type": "string",
