@@ -34,11 +34,11 @@ class OpenSearchSourcesTest {
   @DisplayName("Actual mapper keyset should contain expected keyset")
   public void actualMapperKeySetShouldContainExpectedKeySet() {
     final Set<String> expectedKeySet = new HashSet<>(Arrays.asList(
-        "binary", "boolean", "keyword", "constant_keyword",
-        "wildcard", "long", "unsigned_long",
+        "binary", "boolean", "keyword",
+        "long", "unsigned_long",
         "integer", "short", "byte", "double", "float",
         "half_float", "scaled_float", "date", "date_nanos", "ip",
-        "text", "geo_point", "geo_shape", "shape", "point"));
+        "text", "geo_point", "geo_shape"));
     Set<String> actualKeySet = new HashSet<>(OpenSearchTypeMapper.getMapper().keySet());
 
     assertTrue(actualKeySet.containsAll(expectedKeySet));

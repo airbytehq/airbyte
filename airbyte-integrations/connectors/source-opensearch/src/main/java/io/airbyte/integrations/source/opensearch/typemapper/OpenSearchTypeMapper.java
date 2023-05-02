@@ -21,14 +21,15 @@ public class OpenSearchTypeMapper {
 
   private static final ObjectMapper mapper = new ObjectMapper();
   /*
-   * Mapping from elasticsearch to Airbyte types Elasticsearch data types:
-   * https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html Airbyte data
+   * Mapping from OpenSearch to Airbyte types OpenSearch data types:
+   * https://opensearch.org/docs/2.1/opensearch/supported-field-types/index/
    * types: https://docs.airbyte.com/understanding-airbyte/supported-data-types/
    *
-   * In Elasticsearch, there is no dedicated array data type. Any field can contain zero or more
+   * In OpenSearch, there is no dedicated array data type. Any field can contain zero or more
    * values by default, however, all values in the array must be of the same data type
    */
   private static final Map<String, Object> OpenSearchToAirbyte = new HashMap<>() {
+
 
     {
 
@@ -38,12 +39,12 @@ public class OpenSearchTypeMapper {
       // BOOLEAN
       put("boolean", Arrays.asList("boolean", "array"));
 
-      // KEYWORD FAMILY
+      // String
       put("keyword", Arrays.asList("string", "array", "number", "integer"));
-      put("constant_keyword", Arrays.asList("string", "array", "number", "integer"));
-      put("wildcard", Arrays.asList("string", "array", "number", "integer"));
+      put("text", Arrays.asList("string", "array", "number", "integer"));
+      put("token_count", Arrays.asList("string", "array", "number", "integer"));
 
-      // NUMBERS
+      // Numeric
       put("long", Arrays.asList("integer", "array"));
       put("unsigned_long", Arrays.asList("integer", "array"));
       put("integer", Arrays.asList("integer", "array"));
@@ -54,16 +55,15 @@ public class OpenSearchTypeMapper {
       put("half_float", Arrays.asList("number", "array"));
       put("scaled_float", Arrays.asList("number", "array"));
 
-      // ALIAS
-      /* Writes to alias field not supported by ES. Can be safely ignored */
+      // DATE
+      put("date", Arrays.asList("string","long", "integer"));
 
-      // DATES
-      put("date", Arrays.asList("string", "array"));
-      put("date_nanos", Arrays.asList("number", "array"));
+      // Autocomplete
+      put("completion", Arrays.asList("string"));
+      put("search_as_you_type", Arrays.asList("string"));
 
-      // OBJECTS AND RELATIONAL TYPES
+      // OBJECTS
       put("object", Arrays.asList("object", "array"));
-      put("flattened", Arrays.asList("object", "array"));
       put("nested", Arrays.asList("object", "string"));
       put("join", Arrays.asList("object", "string"));
 
@@ -74,30 +74,22 @@ public class OpenSearchTypeMapper {
       put("double_range", Arrays.asList("object", "array"));
       put("date_range", Arrays.asList("object", "array"));
       put("ip_range", Arrays.asList("object", "array"));
+
+      // IP
       put("ip", Arrays.asList("string", "array"));
-      put("version", Arrays.asList("string", "array"));
-      put("murmur3", Arrays.asList("object", "array"));
-
-      // AGGREGATE METRIC FIELD TYPES
-      put("aggregate_metric_double", Arrays.asList("object", "array"));
-      put("histogram", Arrays.asList("object", "array"));
-
-      // TEXT SEARCH TYPES
-      put("text", Arrays.asList("string", "array"));
+      // Alias
       put("alias", Arrays.asList("string", "array"));
-      put("search_as_you_type", Arrays.asList("string", "array"));
-      put("token_count", Arrays.asList("integer", "array"));
 
-      // DOCUMENT RANKING
-      put("dense_vector", "array");
-      // put("rank_feature", "integer"); THEY ARE PUTTING OBJECTS HERE AS WELL????
+
+      // RANK
+      put("rank_feature", "integer");
+      put("rank_features", "array");
 
       // SPATIAL DATA TYPES (HARD TO HANDLE AS QUERYING MECHANISM IS BASED ON SHAPE, which has multiple
       // fields)
       put("geo_point", Arrays.asList("object", "array"));
       put("geo_shape", Arrays.asList("object", "array"));
-      put("shape", Arrays.asList("object", "array"));
-      put("point", Arrays.asList("object", "array"));
+
     }
 
   };
