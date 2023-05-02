@@ -33,5 +33,5 @@ body:
       label: Contribute
       description: Are you willing to submit the fix?
       options:
-        - label: Yes
-          required: true
+        - label: Yes, I want to contribute
+          required: false
