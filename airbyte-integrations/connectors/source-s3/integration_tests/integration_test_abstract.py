@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Iterator, List, Mapping
 from uuid import uuid4
 
+import jsonschema
 import pytest
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -36,7 +37,11 @@ class AbstractTestIncrementalFileStream(ABC):
 
     @pytest.fixture(scope="session")
     def airbyte_system_columns(self) -> Mapping[str, str]:
-        return {FileStream.ab_additional_col: "object", FileStream.ab_last_mod_col: "string", FileStream.ab_file_name_col: "string"}
+        return {
+            FileStream.ab_additional_col: {"type": "object"},
+            FileStream.ab_last_mod_col: {"type": "string", "format": "date-time"},
+            FileStream.ab_file_name_col: {"type": "string"}
+        }
 
     @property
     @abstractmethod
@@ -108,7 +113,11 @@ class AbstractTestIncrementalFileStream(ABC):
         if (user_schema is None) and ("schema" in current_state.keys()):
             user_schema = current_state["schema"]
 
-        full_expected_schema = {**expected_schema, **airbyte_system_columns}
+        full_expected_schema = {
+            "type": "object",
+            "properties": {**expected_schema, **airbyte_system_columns},
+        }
+
         str_user_schema = str(user_schema).replace("'", '"') if user_schema is not None else None
         total_num_columns = num_columns + len(airbyte_system_columns.keys())
         provider = {**self.provider(cloud_bucket_name), **self.credentials} if private else self.provider(cloud_bucket_name)
@@ -118,7 +127,7 @@ class AbstractTestIncrementalFileStream(ABC):
             LOGGER.info(f"Testing stream_records() in SyncMode:{sync_mode.value}")
 
             # check we return correct schema from get_json_schema()
-            assert fs._schema == full_expected_schema
+            assert fs.get_json_schema() == full_expected_schema
 
             records = []
             for stream_slice in fs.stream_slices(sync_mode=sync_mode, stream_state=current_state):
@@ -135,12 +144,7 @@ class AbstractTestIncrementalFileStream(ABC):
 
                     for record in fs.read_records(sync_mode, stream_slice=stream_slice):
                         # check actual record values match expected schema
-                        assert all(
-                            [
-                                isinstance(record[col], JSONTYPE_TO_PYTHONTYPE[typ]) or record[col] is None
-                                for col, typ in full_expected_schema.items()
-                            ]
-                        )
+                        jsonschema.validate(record, full_expected_schema)
                         records.append(record)
 
             assert all([len(r.keys()) == total_num_columns for r in records])
@@ -477,6 +481,7 @@ class AbstractTestIncrementalFileStream(ABC):
         incremental: bool,
         fails: List[bool],
     ) -> None:
+        expected_schema = {k: {"type": ["null", v]} for k, v in expected_schema.items()}
         try:
             if not incremental:  # we expect matching behaviour here in either sync_mode
                 for sync_mode in [
