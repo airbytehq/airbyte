@@ -24,9 +24,6 @@ connectionSpecification:
             auth_type:
               type: string
               const: Oauth
-              enum:
-                - Oauth
-              default: Oauth
               order: 0
             client_id:
               type: string
@@ -52,9 +49,6 @@ connectionSpecification:
             auth_type:
               type: string
               const: Apikey
-              enum:
-                - Apikey
-              default: Apikey
               order: 1
             api_key:
               type: string
