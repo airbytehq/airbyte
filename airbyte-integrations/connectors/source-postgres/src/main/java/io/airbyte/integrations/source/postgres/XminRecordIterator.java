@@ -8,6 +8,8 @@ import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Map;
 import javax.annotation.CheckForNull;
@@ -35,7 +37,12 @@ public class XminRecordIterator<T> extends AbstractIterator<AirbyteMessage>
   @CheckForNull
   @Override
   protected AirbyteMessage computeNext() {
-    //database.
+    try (final Connection connection = database.getRawConnection()) {
+      //PreparedStatement statement = new;
+    }
+    catch (final SQLException e) {
+      throw new RuntimeException(e);
+    }
     return null;
   }
 

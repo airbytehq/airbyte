@@ -230,7 +230,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           //.map(PostgresCdcCatalogHelper::overrideSyncModes)
           //.map(PostgresCdcCatalogHelper::removeIncrementalWithoutPk)
           .map(PostgresCdcCatalogHelper::setIncrementalToSourceDefined)
-          .map(PostgresXminUtils::addXminMetadataColumn)
+          //.map(PostgresXminUtils::addXminMetadataColumn)
           .collect(toList());
     }
 
@@ -411,7 +411,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)));
 
     } else if (PostgresXminUtils.isXmin(sourceConfig) && /*change this to is incremental*/shouldUseCDC(catalog)) {
-      return PostgresXminUtils.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+      return PostgresXminUtils.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt, sourceOperations);
     } else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }

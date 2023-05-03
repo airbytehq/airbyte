@@ -230,6 +230,9 @@ public abstract class JdbcDatabase extends SqlDatabase {
     }
   }
 
+  @MustBeClosed
+  public abstract Connection getRawConnection() throws SQLException;
+
   public abstract DatabaseMetaData getMetaData() throws SQLException;
 
 }

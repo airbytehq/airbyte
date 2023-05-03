@@ -11,9 +11,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.DbSourceDiscoverUtil;
-import io.airbyte.integrations.source.relationaldb.StateDecoratingIterator;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.CommonField;
@@ -21,6 +19,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -40,8 +39,9 @@ public class PostgresXminUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresXminUtils.class);
 
   public static boolean isXmin(final JsonNode config) {
-    final boolean isXmin = config.hasNonNull("replication_method") && config.get("replication_method").asText().equals("Xmin");
-    LOGGER.info("Using Xmin replication: {}", isXmin);
+    final boolean isXmin = config.hasNonNull("replication_method")
+        && config.get("replication_method").get("method").asText().equals("Xmin");
+    LOGGER.info("using Xmin: {}", isXmin);
     return isXmin;
   }
 
@@ -71,6 +71,8 @@ public class PostgresXminUtils {
       final AirbyteStream stream = airbyteStream.getStream();
       final String streamName = airbyteStream.getStream().getName();
       final String namespace = airbyteStream.getStream().getNamespace();
+      final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName,
+          namespace);
 
       // Skip syncing the stream if it doesn't exist in the source.
       final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(stream.getNamespace(),
@@ -94,7 +96,9 @@ public class PostgresXminUtils {
       final AutoCloseableIterator<JsonNode> queryStream =
           queryTableXmin(database, selectedDatabaseFields, table.getNameSpace(),
               table.getName(), sourceOperations);
-      iteratorList.add(getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli()));
+      final AutoCloseableIterator<AirbyteMessage> airbyteMessageIterator =
+          getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
+      final AutoCloseableIterator<AirbyteMessage> iterator;
       iterator = AutoCloseableIterators.transform(
           autoCloseableIterator -> new XminStateIterator(
               autoCloseableIterator,
@@ -102,8 +106,8 @@ public class PostgresXminUtils {
               pair),
           airbyteMessageIterator,
           AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()));
-      // Add a state decorator;
-      }
+      iteratorList.add(iterator);
+    }
 
     return iteratorList;
   }

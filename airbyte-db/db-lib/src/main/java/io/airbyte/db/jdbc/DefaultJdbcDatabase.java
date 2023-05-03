@@ -120,4 +120,9 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
         });
   }
 
+  @Override
+  public Connection getRawConnection() throws SQLException {
+    return this.dataSource.getConnection();
+  }
+
 }
