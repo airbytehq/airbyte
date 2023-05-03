@@ -12,6 +12,7 @@ from source_hubspot.streams import (
     Contacts,
     DealPipelines,
     Deals,
+    DealsArchived,
     EmailEvents,
     EmailSubscriptions,
     EngagementsCalls,
@@ -75,33 +76,34 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
 
 
 @pytest.mark.parametrize(
-    "stream, endpoint",
+    "stream, endpoint, cursor_value",
     [
-        (Campaigns, "campaigns"),
-        (Companies, "company"),
-        (ContactLists, "contact"),
-        (Contacts, "contact"),
-        (Deals, "deal"),
-        (DealPipelines, "deal"),
-        (EmailEvents, ""),
-        (EmailSubscriptions, ""),
-        (EngagementsCalls, "calls"),
-        (EngagementsEmails, "emails"),
-        (EngagementsMeetings, "meetings"),
-        (EngagementsNotes, "notes"),
-        (EngagementsTasks, "tasks"),
-        (Forms, "form"),
-        (FormSubmissions, "form"),
-        (LineItems, "line_item"),
-        (MarketingEmails, ""),
-        (Owners, ""),
-        (Products, "product"),
-        (TicketPipelines, ""),
-        (Tickets, "ticket"),
-        (Workflows, ""),
+        (Campaigns, "campaigns", {"lastUpdatedTime": 1675121674226}),
+        (Companies, "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (ContactLists, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (DealsArchived, "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
+        (DealPipelines, "deal", {"updatedAt": 1675121674226}),
+        (EmailEvents, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (EmailSubscriptions, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (EngagementsCalls, "calls", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (EngagementsEmails, "emails", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (EngagementsMeetings, "meetings", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (EngagementsNotes, "notes", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (EngagementsTasks, "tasks", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (Forms, "form", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (FormSubmissions, "form", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (LineItems, "line_item", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (MarketingEmails, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (Owners, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (Products, "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (TicketPipelines, "", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (Tickets, "ticket", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (Workflows, "", {"updatedAt": 1675121674226}),
     ],
 )
-def test_streams_read(stream, endpoint, requests_mock, common_params, fake_properties_list):
+def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_params, fake_properties_list):
     stream = stream(**common_params)
     responses = [
         {
@@ -110,9 +112,7 @@ def test_streams_read(stream, endpoint, requests_mock, common_params, fake_prope
                     {
                         "id": "test_id",
                         "created": "2022-02-25T16:43:11Z",
-                        "updatedAt": "2022-02-25T16:43:11Z",
-                        "lastUpdatedTime": "2022-02-25T16:43:11Z",
-                    }
+                    } | cursor_value
                 ],
             }
         }
@@ -218,3 +218,49 @@ def test_contact_lists_transform(requests_mock, common_params):
     assert records[1]["filters"][0][0]["value"] == "True"
     assert records[1]["filters"][0][1]["value"] == "FORM_ABUSE"
     assert records[2]["filters"][0][0]["value"] == "1000"
+
+
+def test_client_side_incremental_stream(requests_mock, common_params, fake_properties_list):
+    stream = Forms(**common_params)
+    latest_cursor_value = "2030-01-30T23:46:36.287Z"
+    responses = [
+        {
+            "json": {
+                stream.data_field: [
+                    {
+                        "id": "test_id_1",
+                        "createdAt": "2022-03-25T16:43:11Z",
+                        "updatedAt": "2023-01-30T23:46:36.287Z"
+                    },
+                    {
+                        "id": "test_id_2",
+                        "createdAt": "2022-03-25T16:43:11Z",
+                        "updatedAt": latest_cursor_value
+                    },
+                    {
+                        "id": "test_id_3",
+                        "createdAt": "2022-03-25T16:43:11Z",
+                        "updatedAt": "2023-02-20T23:46:36.287Z"
+                    },
+                ],
+            }
+        }
+    ]
+    properties_response = [
+        {
+            "json": [
+                {"name": property_name, "type": "string",
+                 "createdAt": "2023-01-30T23:46:24.355Z",
+                 "updatedAt": "2023-01-30T23:46:36.287Z"
+                 }
+                for property_name in fake_properties_list
+            ],
+            "status_code": 200,
+        }
+    ]
+
+    requests_mock.register_uri("GET", stream.url, responses)
+    requests_mock.register_uri("GET", "/properties/v2/form/properties", properties_response)
+
+    list(stream.read_records(SyncMode.incremental))
+    assert stream.state == {stream.cursor_field: pendulum.parse(latest_cursor_value).to_rfc3339_string()}

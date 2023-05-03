@@ -41,7 +41,7 @@ public class DebeziumPropertiesManager {
     this.schemaHistoryManager = schemaHistoryManager;
   }
 
-  protected Properties getDebeziumProperties() {
+  public Properties getDebeziumProperties() {
     final Properties props = new Properties();
     props.putAll(properties);
 
@@ -55,7 +55,9 @@ public class DebeziumPropertiesManager {
     props.setProperty("max.queue.size", "8192");
 
     props.setProperty("errors.max.retries", "10");
-    props.setProperty("errors.retry.delay.initial.ms", "300");
+    // This property must be strictly less than errors.retry.delay.max.ms
+    // (https://github.com/debezium/debezium/blob/bcc7d49519a4f07d123c616cfa45cd6268def0b9/debezium-core/src/main/java/io/debezium/util/DelayStrategy.java#L135)
+    props.setProperty("errors.retry.delay.initial.ms", "299");
     props.setProperty("errors.retry.delay.max.ms", "300");
 
     if (schemaHistoryManager.isPresent()) {

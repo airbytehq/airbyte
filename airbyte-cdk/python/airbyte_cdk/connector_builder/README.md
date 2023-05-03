@@ -1,6 +1,6 @@
 # Connector Builder Backend
 
-This is the backend for requests from the [Connector Builder](https://docs.airbyte.com/connector-development/config-based/connector-builder-ui/).
+This is the backend for requests from the [Connector Builder](https://docs.airbyte.com/connector-development/connector-builder-ui/overview/).
 
 ## Local development
 
@@ -16,7 +16,7 @@ Note:
 {
   "config": <normal config>,
   "__injected_declarative_manifest": {...},
-  "__command": <"resolve_manifest" | "list_streams" | "stream_read">
+  "__command": <"resolve_manifest" | "list_streams" | "test_read">
 }
 ```
 *See [ConnectionSpecification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#actor-specification) for details on the `"config"` key if needed.

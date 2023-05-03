@@ -28,8 +28,10 @@ from source_stripe.streams import (
     Products,
     PromotionCodes,
     Refunds,
+    SetupIntents,
     SubscriptionItems,
     Subscriptions,
+    SubscriptionSchedule,
     Transfers,
 )
 
@@ -168,6 +170,7 @@ def config_fixture():
         (Products, {}, "products"),
         (Subscriptions, {}, "subscriptions"),
         (SubscriptionItems, {}, "subscription_items"),
+        (SubscriptionSchedule, {}, "subscription_schedules"),
         (Transfers, {}, "transfers"),
         (Refunds, {}, "refunds"),
         (PaymentIntents, {}, "payment_intents"),
@@ -176,6 +179,7 @@ def config_fixture():
         (CheckoutSessionsLineItems, {"stream_slice": {"checkout_session_id": "CS1"}}, "checkout/sessions/CS1/line_items"),
         (PromotionCodes, {}, "promotion_codes"),
         (ExternalAccount, {}, "accounts/<account_id>/external_accounts"),
+        (SetupIntents, {}, "setup_intents"),
     ],
 )
 def test_path(

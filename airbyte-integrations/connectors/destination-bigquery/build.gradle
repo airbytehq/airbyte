@@ -18,7 +18,7 @@ dependencies {
     implementation group: 'com.google.cloud', name: 'google-cloud-storage', version: '2.4.5'
     implementation group: 'com.codepoetics', name: 'protonpack', version: '1.13'
 
-    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config-oss:config-models-oss')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java-s3')
@@ -33,6 +33,12 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-db:db-lib')
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+}
+
+tasks.named("airbyteDocker") {
+    // this is really inefficent (because base-normalization:airbyteDocker builds 9 docker images)
+    // but it's also just simple to implement
+    dependsOn project(':airbyte-integrations:bases:base-normalization').airbyteDocker
 }
 
 configurations.all {

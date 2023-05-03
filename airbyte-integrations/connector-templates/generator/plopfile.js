@@ -25,7 +25,7 @@ ${additionalMessage || ""}
 
 module.exports = function (plop) {
   const docRoot = '../../../docs/integrations';
-  const definitionRoot = '../../../airbyte-config/init/src/main/resources';
+  const definitionRoot = '../../../airbyte-config-oss/init-oss/src/main/resources';
 
   const connectorAcceptanceTestFilesInputRoot = '../connector_acceptance_test_files';
 

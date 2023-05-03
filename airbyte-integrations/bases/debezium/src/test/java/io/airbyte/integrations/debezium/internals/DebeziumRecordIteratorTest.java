@@ -7,7 +7,6 @@ package io.airbyte.integrations.debezium.internals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.debezium.engine.ChangeEvent;
 import java.time.Duration;
@@ -25,7 +24,7 @@ public class DebeziumRecordIteratorTest {
         new CdcTargetPosition<>() {
 
           @Override
-          public boolean reachedTargetPosition(JsonNode valueAsJson) {
+          public boolean reachedTargetPosition(final ChangeEventWithMetadata changeEventWithMetadata) {
             return false;
           }
 

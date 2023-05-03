@@ -4,7 +4,7 @@
 
 
 from abc import ABC
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qs, urlparse
 
@@ -185,8 +185,7 @@ class IncrementalInsightlyStream(InsightlyStream, ABC):
             else:
                 start_datetime = pendulum.parse(stream_state[self.cursor_field])
 
-        # Add one second to avoid duplicate records and ensure greater than
-        params.update({"updated_after_utc": (start_datetime + timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%SZ")})
+        params.update({"updated_after_utc": start_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")})
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
