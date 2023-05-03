@@ -23,7 +23,7 @@ connectionSpecification:
           properties:
             auth_type:
               type: string
-              const: Oauth
+              const: OAuth
               order: 0
             client_id:
               type: string
@@ -91,7 +91,7 @@ advanced_auth:
   predicate_key:
     - credentials
     - auth_type
-  predicate_value: Oauth
+  predicate_value: OAuth
   oauth_config_specification:
     complete_oauth_output_specification:
       type: object
