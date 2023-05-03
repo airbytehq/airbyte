@@ -5,6 +5,7 @@ data:
       - zendesk.com
   connectorSubtype: api
   connectorType: source
+  maxSecondsBetweenMessages: 10800
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerImageTag: 0.2.27
   dockerRepository: airbyte/source-zendesk-support

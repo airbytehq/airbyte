@@ -4,6 +4,7 @@ data:
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/destination-cumulio
   githubIssueLabel: destination-cumulio
+  connectorSubtype: api
   icon: cumulio.svg
   license: MIT
   name: Cumul.io
