@@ -45,7 +45,7 @@ pub fn stream_airbyte_responses(
                     catalog: None,
                     log: Some(Log {
                         level: LogLevel::Debug,
-                        message: format!("Encountered error while trying to parse Airbyte Message: {:?} in line {:?}", e, line)
+                        message: format!("Encountered error while trying to parse ATF Message: {:?} in line {:?}", e, line)
                     })
                 }
             }

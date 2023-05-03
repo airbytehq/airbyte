@@ -48,8 +48,8 @@ pub enum Error {
     #[error("go.estuary.dev/E014: Executing and joining a concurrent task failed")]
     TokioTaskExecutionError(#[from] tokio::task::JoinError),
 
-    #[error("go.estuary.dev/E015: Airbyte connector's pending checkpoint was not committed, this can happen if the connector exits abruptly")]
-    AirbyteCheckpointPending,
+    #[error("go.estuary.dev/E015: ATF Connector's pending checkpoint was not committed, this can happen if the connector exits abruptly")]
+    CheckpointPending,
 
     #[error("go.estuary.dev/E016: Stream is empty, expected to find a message but could not find any")]
     EmptyStream,
@@ -75,10 +75,10 @@ pub enum Error {
     #[error("go.estuary.dev/E032: Invalid socket specification: {0}")]
     InvalidSocketSpecification(String),
 
-    #[error("go.estuary.dev/E033: Adapting airbyte schema to flow: {0}")]
-    InvalidAirbyteSchema(String),
+    #[error("go.estuary.dev/E033: Adapting atf schema to flow: {0}")]
+    InvalidSchema(String),
 
-    #[error("go.estuary.dev/E035: Adapting airbyte schema to flow: {0}")]
+    #[error("go.estuary.dev/E035: Adapting atf schema to flow: {0}")]
     InvalidMapping(String),
 
     #[error("go.estuary.dev/E036: Invalid primary key patch file: {0}")]

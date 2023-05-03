@@ -23,7 +23,7 @@ pub fn fix_document_schema_keys(mut doc: serde_json::Value, key_ptrs: Vec<String
                      *
                     let parent = doc.pointer_mut(&current.to_string()).unwrap();
                     let min_items_required = idx as u64 + 1;
-                    let parent_map = parent.as_object_mut().ok_or(Error::InvalidAirbyteSchema("expected array schema specification to be an object".to_string()))?;
+                    let parent_map = parent.as_object_mut().ok_or(Error::InvalidSchema("expected array schema specification to be an object".to_string()))?;
                     parent_map.entry("minItems").and_modify(|e| {
                         if e.as_u64().unwrap_or(0) < min_items_required {
                             *e = json!(min_items_required)
@@ -31,14 +31,14 @@ pub fn fix_document_schema_keys(mut doc: serde_json::Value, key_ptrs: Vec<String
                     }).or_insert(json!(min_items_required));
 
                     current.push(Token::Property("items"));*/
-                    return Err(Error::InvalidAirbyteSchema(format!("cannot use JSONPointer index pointer /{}/ in key pointer at {}", idx, current)))
+                    return Err(Error::InvalidSchema(format!("cannot use JSONPointer index pointer /{}/ in key pointer at {}", idx, current)))
                 },
                 // Add "required" and ensure the property and its parent's type do not include null
                 doc::ptr::Token::Property(prop) => {
                     let mut parent_map = doc.pointer_mut(&current.to_string())
                         .unwrap()
                         .as_object_mut()
-                        .ok_or(Error::InvalidAirbyteSchema("expected object schema specification to be an object".to_string()))?;
+                        .ok_or(Error::InvalidSchema("expected object schema specification to be an object".to_string()))?;
 
                     // These advanced cases are not supported at the moment as we don't expect
                     // there to be many cases of them
@@ -54,7 +54,7 @@ pub fn fix_document_schema_keys(mut doc: serde_json::Value, key_ptrs: Vec<String
                             .and_then(|defs| defs.as_object_mut())
                             .and_then(|defs| defs.get_mut(&refr))
                             .and_then(|resolved_ref| resolved_ref.as_object_mut())
-                            .ok_or(Error::InvalidAirbyteSchema(format!("expected to find $ref: {:?} in $defs", refr)))?;
+                            .ok_or(Error::InvalidSchema(format!("expected to find $ref: {:?} in $defs", refr)))?;
                     }
                     let jprop = json!(prop);
 
@@ -79,7 +79,7 @@ pub fn fix_document_schema_keys(mut doc: serde_json::Value, key_ptrs: Vec<String
                         .get_mut("properties")
                         .and_then(|props| props.get_mut(prop))
                         .and_then(|schema| schema.as_object_mut())
-                        .ok_or(Error::InvalidAirbyteSchema(format!("expected key {:?} to exist in 'properties' of \"{}\" in {}", prop, current, original)))?;
+                        .ok_or(Error::InvalidSchema(format!("expected key {:?} to exist in 'properties' of \"{}\" in {}", prop, current, original)))?;
 
                     prop_schema.entry("type").and_modify(|e| {
                         if let Some(vec) = e.as_array_mut() {
@@ -92,7 +92,7 @@ pub fn fix_document_schema_keys(mut doc: serde_json::Value, key_ptrs: Vec<String
                     current.push(Token::Property("properties".to_string()));
                     current.push(Token::Property(prop.to_string()));
                 },
-                doc::ptr::Token::NextIndex => return Err(Error::InvalidAirbyteSchema(format!("cannot use JSONPointer next index pointer /-/ in key pointer at {:?} in {:?}", current, original))),
+                doc::ptr::Token::NextIndex => return Err(Error::InvalidSchema(format!("cannot use JSONPointer next index pointer /-/ in key pointer at {:?} in {:?}", current, original))),
             }
         }
     }

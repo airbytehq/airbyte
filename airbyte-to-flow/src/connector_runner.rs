@@ -73,7 +73,7 @@ pub async fn run_airbyte_source_connector(
                         (msg, bytes)
                     }
                     None => {
-                        sender.send(transaction_pending).map_err(|_| Error::AirbyteCheckpointPending)?;
+                        sender.send(transaction_pending).map_err(|_| Error::CheckpointPending)?;
                         return Ok(None);
                     }
                 };
@@ -130,13 +130,13 @@ pub async fn run_airbyte_source_connector(
 
     let cloned_op = op.clone();
     let exit_status_task = async move {
-        let exit_status_result = check_exit_status("airbyte-to-flow:", child.wait().await);
+        let exit_status_result = check_exit_status("atf:", child.wait().await);
 
         // There are some Airbyte connectors that write records, and exit successfully, without ever writing
         // a state (checkpoint). In those cases, we want to provide a default empty checkpoint. It's important that
         // this only happens if the connector exit successfully, otherwise we risk double-writing data.
         if exit_status_result.is_ok() && cloned_op == Operation::Capture {
-            tracing::debug!("airbyte-to-flow: waiting for tp_receiver");
+            tracing::debug!("atf: waiting for tp_receiver");
             // the received value (transaction_pending) is true if the connector writes output messages and exits _without_ writing
             // a final state checkpoint.
             if tp_receiver.await.unwrap() {
@@ -181,7 +181,7 @@ pub async fn run_airbyte_source_connector(
         Err(_) = ping_timeout_task => Ok(())
     }?;
 
-    tracing::debug!("airbyte-to-flow: connector_runner done");
+    tracing::debug!("atf: connector_runner done");
     Ok(())
 }
 
@@ -199,7 +199,7 @@ async fn streaming_all(
 
     let request_stream_copy = async move {
         copy(&mut request_stream_reader, &mut request_stream_writer).await?;
-        tracing::debug!("airbyte-to-flow: request_stream_copy done");
+        tracing::debug!("atf: request_stream_copy done");
         Ok::<(), std::io::Error>(())
     };
 
@@ -207,7 +207,7 @@ async fn streaming_all(
         let mut writer = response_stream_writer.lock().await;
         copy(&mut response_stream_reader, writer.deref_mut()).await?;
         response_finished_sender.send(true).expect("send write finished signal twice");
-        tracing::debug!("airbyte-to-flow: response_stream_copy done");
+        tracing::debug!("atf: response_stream_copy done");
         Ok(())
     };
 
@@ -216,6 +216,6 @@ async fn streaming_all(
         response_stream_copy
     )?;
 
-    tracing::debug!("airbyte-to-flow: streaming_all finished");
+    tracing::debug!("atf: streaming_all finished");
     Ok(())
 }
