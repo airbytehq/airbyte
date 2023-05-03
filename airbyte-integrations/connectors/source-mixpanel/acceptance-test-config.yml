@@ -29,7 +29,6 @@ acceptance_tests:
         extra_fields: no
         exact_order: no
         extra_records: yes
-      fail_on_extra_columns: false
   full_refresh:
     tests:
     - config_path: "secrets/config_old.json"
