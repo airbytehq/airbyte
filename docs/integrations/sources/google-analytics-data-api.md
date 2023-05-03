@@ -2,6 +2,14 @@
 
 This page contains the setup guide and reference information for the Google Analytics 4 source connector.
 
+:::note
+
+[Google Analytics Universal Analytics (UA) connector](https://docs.airbyte.com/integrations/sources/google-analytics-v4), uses the older version of Google Analytics, which has been the standard for tracking website and app user behavior since 2012. 
+
+Google Analytics 4 (GA4) connector is the latest version of Google Analytics, which was introduced in 2020. It offers a new data model that emphasizes events and user properties, rather than pageviews and sessions. This new model allows for more flexible and customizable reporting, as well as more accurate measurement of user behavior across devices and platforms.
+
+:::
+
 ## Prerequisites
 
 * JSON credentials for the service account that has access to Google Analytics. For more details check [instructions](https://support.google.com/analytics/answer/1009702)
