@@ -18,8 +18,6 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.JDBC_INDEX_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.JDBC_INDEX_NON_UNIQUE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
@@ -444,24 +442,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     LOGGER.info("Data source product recognized as {}:{}",
         database.getMetaData().getDatabaseProductName(),
         database.getMetaData().getDatabaseProductVersion());
-
-    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final String streamName = stream.getStream().getName();
-      final String schemaName = stream.getStream().getNamespace();
-      final ResultSet indexInfo = database.getMetaData().getIndexInfo(null,
-          schemaName,
-          streamName,
-          false,
-          false);
-      LOGGER.info("Discovering indexes for schema \"{}\", table \"{}\"", schemaName, streamName);
-      while (indexInfo.next()) {
-        LOGGER.info("Index name: {}, Column: {}, Unique: {}",
-            indexInfo.getString(JDBC_INDEX_NAME),
-            indexInfo.getString(JDBC_COLUMN_COLUMN_NAME),
-            !indexInfo.getBoolean(JDBC_INDEX_NON_UNIQUE));
-      }
-      indexInfo.close();
-    }
   }
 
   @Override
