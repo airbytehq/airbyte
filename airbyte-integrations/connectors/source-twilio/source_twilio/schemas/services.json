@@ -11,10 +11,12 @@
       "type": ["null", "number"]
     },
     "date_created": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "date_updated": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "default_channel_creator_role_sid": {
       "type": ["null", "string"]
