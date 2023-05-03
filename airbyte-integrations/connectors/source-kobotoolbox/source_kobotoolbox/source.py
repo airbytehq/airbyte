@@ -30,7 +30,7 @@ stream_json_schema = {
 
 class KoboToolStream(HttpStream, IncrementalMixin):
     primary_key = "_id"
-    cursor_field = "endtime"
+    cursor_field = "_submission_time"
     # submission_date_format = "%Y-%m-%dT%H:%M:%S"
     # end_time_format = "%Y-%m-%dT%H:%M:%S.%.3f%z"
 
