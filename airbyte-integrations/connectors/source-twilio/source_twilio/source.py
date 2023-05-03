@@ -37,6 +37,7 @@ from source_twilio.streams import (
     Queues,
     Recordings,
     Transcriptions,
+    Trunks,
     UsageRecords,
     UsageTriggers,
 )
@@ -111,6 +112,7 @@ class SourceTwilio(AbstractSource):
             Queues(**full_refresh_stream_kwargs),
             Recordings(**incremental_stream_kwargs),
             Transcriptions(**full_refresh_stream_kwargs),
+            Trunks(**full_refresh_stream_kwargs),
             UsageRecords(**incremental_stream_kwargs),
             UsageTriggers(**full_refresh_stream_kwargs),
         ]
