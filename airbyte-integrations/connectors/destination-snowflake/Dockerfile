@@ -18,6 +18,7 @@ FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
 
 ENV APPLICATION destination-snowflake
+ENV AIRBYTE_NORMALIZATION_INTEGRATION snowflake
 
 # Needed for JDK17 (in turn, needed on M1 macs) - see https://github.com/snowflakedb/snowflake-jdbc/issues/589#issuecomment-983944767
 ENV DESTINATION_SNOWFLAKE_OPTS "--add-opens java.base/java.nio=ALL-UNNAMED"
@@ -30,3 +31,6 @@ ENV ENABLE_SENTRY true
 
 LABEL io.airbyte.version=1.0.4
 LABEL io.airbyte.name=airbyte/destination-snowflake
+
+ENV AIRBYTE_ENTRYPOINT "/airbyte/run_with_normalization.sh"
+ENTRYPOINT ["/airbyte/run_with_normalization.sh"]
