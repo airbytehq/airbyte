@@ -94,10 +94,6 @@ class ConnectorConfig(BaseConfig):
     class Config:
         title = "Source Facebook Marketing"
 
-        @staticmethod
-        def schema_extra(schema: Dict[str, Any], model: Type["ConnectorConfig"]) -> None:
-            schema["properties"]["end_date"].pop("format")
-
     account_id: str = Field(
         title="Account ID",
         order=0,
