@@ -48,7 +48,7 @@ connectionSpecification:
           properties:
             auth_type:
               type: string
-              const: Apikey
+              const: API Key
               order: 1
             api_key:
               type: string
