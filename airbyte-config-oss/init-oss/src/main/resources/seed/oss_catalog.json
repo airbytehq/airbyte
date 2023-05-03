@@ -5311,7 +5311,7 @@
     "destinationDefinitionId": "f7a7d195-377f-cf5b-70a5-be6b819019dc",
     "name": "Redshift",
     "dockerRepository": "airbyte/destination-redshift",
-    "dockerImageTag": "0.4.6",
+    "dockerImageTag": "0.4.7",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/redshift",
     "icon": "redshift.svg",
     "spec": {
@@ -13357,7 +13357,7 @@
     "sourceDefinitionId": "9bb85338-ea95-4c93-b267-6be89125b267",
     "name": "Freshservice",
     "dockerRepository": "airbyte/source-freshservice",
-    "dockerImageTag": "0.1.1",
+    "dockerImageTag": "1.0.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/freshservice",
     "icon": "freshservice.svg",
     "sourceType": "api",
@@ -13368,7 +13368,7 @@
         "title": "Freshservice Spec",
         "type": "object",
         "required": [ "domain_name", "api_key", "start_date" ],
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "domain_name": {
             "type": "string",
@@ -28174,7 +28174,7 @@
     "sourceDefinitionId": "cdaf146a-9b75-49fd-9dd2-9d64a0bb4781",
     "name": "Sentry",
     "dockerRepository": "airbyte/source-sentry",
-    "dockerImageTag": "0.2.1",
+    "dockerImageTag": "0.2.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/sentry",
     "icon": "sentry.svg",
     "sourceType": "api",
