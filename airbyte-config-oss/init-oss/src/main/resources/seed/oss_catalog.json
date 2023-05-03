@@ -24556,7 +24556,7 @@
     "sourceDefinitionId": "77225a51-cd15-4a13-af02-65816bd0ecf4",
     "name": "Square",
     "dockerRepository": "airbyte/source-square",
-    "dockerImageTag": "1.0.0",
+    "dockerImageTag": "1.0.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/square",
     "icon": "square.svg",
     "sourceType": "api",
@@ -24610,7 +24610,7 @@
               "properties": {
                 "auth_type": {
                   "type": "string",
-                  "const": "Apikey",
+                  "const": "API Key",
                   "order": 1
                 },
                 "api_key": {
