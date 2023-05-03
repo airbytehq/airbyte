@@ -59,22 +59,10 @@ def test_literals(s, value):
             "hello",
             id="test_get_value_from_stream_slice"),
         pytest.param(
-            {},
-            "{{ stream_slice['stream_slice_key'] }}",
-            None,
-            id="test_get_value_from_stream_slice_no_slice"
-        ),
-        pytest.param(
             {"stream_slice": {"stream_slice_key": "hello"}},
             "{{ stream_partition['stream_slice_key'] }}",
             "hello",
             id="test_get_value_from_stream_slicer"
-        ),
-        pytest.param(
-            {},
-            "{{ stream_partition['stream_slice_key'] }}",
-            None,
-            id="test_get_value_from_stream_partition_no_stream_slice"
         ),
         pytest.param(
             {"stream_slice": {"stream_slice_key": "hello"}},
@@ -168,8 +156,9 @@ def test_invalid_jinja_statements(template_string):
     pytest.param("{{ globals()  }}", id="test_jinja_with_globals"),
     pytest.param("{{ locals()  }}", id="test_jinja_with_globals"),
     pytest.param("{{ eval ('2+2') }}", id="test_jinja_with_eval"),
+    pytest.param("{{ eval }}", id="test_jinja_with_eval"),
 ])
 def test_restricted_builtin_functions_are_not_executed(template_string):
     config = {"key": JinjaInterpolation}
-    result = interpolation.eval(template_string, config=config)
-    assert result is None
+    with pytest.raises(ValueError):
+        interpolation.eval(template_string, config=config)

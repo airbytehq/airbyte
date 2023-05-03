@@ -9,6 +9,7 @@ from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
 from airbyte_cdk.sources.declarative.types import Config
+from jinja2 import StrictUndefined, meta
 from jinja2.exceptions import UndefinedError
 from jinja2.sandbox import Environment
 
@@ -90,6 +91,11 @@ class JinjaInterpolation(Interpolation):
 
     def _eval(self, s: str, context):
         try:
+            ast = self._environment.parse(s)
+            undeclared = meta.find_undeclared_variables(ast)
+            undeclared_not_in_context = {var for var in undeclared if var not in context}
+            if undeclared_not_in_context:
+                raise ValueError(f"Jinja macro has undeclared variables: {undeclared}. Context: {context}")
             return self._environment.from_string(s).render(context)
         except TypeError:
             # The string is a static value, not a jinja template
