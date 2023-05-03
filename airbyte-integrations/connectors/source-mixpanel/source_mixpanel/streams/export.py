@@ -9,6 +9,7 @@ from typing import Any, Iterable, Mapping, MutableMapping
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from ..property_transformation import transform_property_names
 from .base import DateSlicesMixin, IncrementalMixpanelStream, MixpanelStream
@@ -76,6 +77,8 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
 
     primary_key: str = None
     cursor_field: str = "time"
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     @property
     def url_base(self):
