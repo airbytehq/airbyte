@@ -67,7 +67,8 @@ class WinningtempStream(HttpStream, ABC):
             return data
         elif isinstance(data, dict):
             if self.dict_unnest:
-                unnested_data = [{**{"identifier": k}, **v} for k, v in data.items()]
+                unnested_data = [{**{"identifier": k}, **v}
+                                 for k, v in data.items()]
                 return unnested_data
             else:
                 return [data]
@@ -76,7 +77,6 @@ class WinningtempStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         print(response.url)
-        print(response)
         records = self.unify_response(response)
         yield from records
 
@@ -87,22 +87,24 @@ class WinningtempIncrementalStream(WinningtempStream, ABC):
     def __init__(self, config: Mapping[str, Any], dict_unnest=False):
         super().__init__(config, dict_unnest)
         self.is_monthly = config.get('is_monthly', True)
+        self.date_from = None
+        self.date_to = None
 
     @property
     def cursor_field(self) -> str:
         return "date"
 
-    def get_week_start(self, date):
+    def get_week_start(self, date: pendulum.Date):
         return date.add(days=-((date.day_of_week - 1) % 7))
 
-    def get_week_end(self, date):
+    def get_week_end(self, date: pendulum.Date):
         return self.get_week_start(date).add(days=6)
 
-    def get_month_start(self, date):
+    def get_month_start(self, date: pendulum.Date):
         return pendulum.date(date.year, date.month, 1)
 
-    def get_month_end(self, date):
-        return date.add(months=1).add(days=-1)
+    def get_month_end(self, date: pendulum.Date):
+        return self.get_month_start(date).add(months=1).add(days=-1)
 
     def get_max_date(self):
         today = pendulum.today().date()
@@ -111,7 +113,7 @@ class WinningtempIncrementalStream(WinningtempStream, ABC):
         return self.get_week_end(today)
 
     def get_step(self) -> Dict[str, int]:
-        return {"months": 1} if self.is_monthly else {"days": 7}
+        return {"months": 1, "days": -1} if self.is_monthly else {"days": 6}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -120,26 +122,37 @@ class WinningtempIncrementalStream(WinningtempStream, ABC):
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
 
-        body = {key: value for key, value in stream_slice.items() if key in ["start", "end"]}
+        start = pendulum.parse(stream_slice.get("start"))
+        end = pendulum.parse(stream_slice.get("end"))
+        body = {
+            "start": str(pendulum.date(year=start.year, month=start.month, day=start.day)),
+            "end": str(pendulum.datetime(year=end.year, month=end.month, day=end.day, hour=23, minute=59, second=59))
+        }
         body = {**body, "showIndexByGrade": True, "indexDecimals": 2}
+        print(body)
         return json.dumps(body)
 
     def stream_slices(
             self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        start_date = stream_state.get(self.cursor_field, self.start_date)
+        start_date = stream_state.get(
+            self.cursor_field, self.start_date) if stream_state is not None else self.start_date
+
         if isinstance(start_date, str):
             start_date = pendulum.parse(start_date)
-        start_date = self.get_month_start(start_date)
+        start_date = self.get_month_start(
+            start_date) if self.is_monthly else self.get_week_start(start_date)
+        if isinstance(start_date, pendulum.DateTime):
+            start_date = start_date.date()
         for start, end in self.chunk_dates(start_date):
             yield {"start": str(start), "end": str(end)}
 
-    def chunk_dates(self, start_date):
+    def chunk_dates(self, start_date: pendulum.Date) -> Iterable[Tuple[pendulum.Date, pendulum.Date]]:
         stop = self.get_max_date()
         step = self.get_step()
         after_date = start_date
         while after_date < stop:
-            before_date = min(stop, after_date.add(**step))
+            before_date = after_date.add(**step)
             yield after_date, before_date
             after_date = before_date.add(days=1)
 
@@ -147,9 +160,17 @@ class WinningtempIncrementalStream(WinningtempStream, ABC):
     def http_method(self) -> str:
         return "POST"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(
+            self,
+            response: requests.Response,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        print(response.url)
         records = self.unify_response(response)
-        meta_data = {"date_from": self.date_from, "date_to": self.date_to}
+        meta_data = {"date_from": stream_slice.get(
+            "start"), "date_to": stream_slice.get("end")}
         data = [{**d, **meta_data} for d in records]
         yield from data
 
