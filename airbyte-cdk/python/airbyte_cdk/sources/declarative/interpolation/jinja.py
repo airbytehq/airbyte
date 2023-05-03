@@ -9,7 +9,7 @@ from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
 from airbyte_cdk.sources.declarative.types import Config
-from jinja2 import StrictUndefined, meta
+from jinja2 import meta
 from jinja2.exceptions import UndefinedError
 from jinja2.sandbox import Environment
 
