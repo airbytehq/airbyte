@@ -88,8 +88,10 @@ class SourceGithub(AbstractSource):
         # removing spaces
         config_repositories = {repo.strip() for repo in config_repositories}
         # removing redundant / in the end
-        config_repositories = {repo[:-1] if repo.endswith("/") else repo for repo in config_repositories}
+        config_repositories = {repo.removesuffix("/") for repo in config_repositories}
 
+        config_repositories = {repo.removeprefix("http://github.com/") for repo in config_repositories}
+        config_repositories = {repo.removeprefix("https://github.com/") for repo in config_repositories}
         return config_repositories
 
     @staticmethod
