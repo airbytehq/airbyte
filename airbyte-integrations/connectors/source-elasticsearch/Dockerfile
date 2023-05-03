@@ -13,7 +13,6 @@ FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
 
 ENV APPLICATION source-elasticsearch
-ENV ENABLE_SENTRY true
 
 COPY --from=build /airbyte /airbyte
 

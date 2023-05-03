@@ -22,7 +22,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenti
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
-from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
+from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
 
 # we got this when provided API Token has incorrect format
@@ -254,7 +254,10 @@ class Stream(HttpStream, ABC):
 
         self._start_date = start_date
         if isinstance(self._start_date, str):
-            self._start_date = pendulum.parse(self._start_date)
+            try:
+                self._start_date = pendulum.parse(self._start_date)
+            except pendulum.parsing.exceptions.ParserError as e:
+                raise InvalidStartDateConfigError(self._start_date, e)
         creds_title = self._credentials["credentials_title"]
         if creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
             self._authenticator = api.get_authenticator()
@@ -1230,6 +1233,29 @@ class Deals(CRMSearchStream):
     scopes = {"contacts", "crm.objects.deals.read"}
 
 
+class DealsArchived(ClientSideIncrementalStream):
+    """Archived Deals, API v3"""
+
+    url = "/crm/v3/objects/deals"
+    entity = "deal"
+    updated_at_field = "archivedAt"
+    created_at_field = "createdAt"
+    associations = ["contacts", "companies", "line_items"]
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
+    primary_key = "id"
+    scopes = {"contacts", "crm.objects.deals.read"}
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update({"archived": "true", "associations": self.associations})
+        return params
+
+
 class DealPipelines(ClientSideIncrementalStream):
     """Deal pipelines, API v1,
     This endpoint requires the contacts scope the tickets scope.
@@ -1241,7 +1267,7 @@ class DealPipelines(ClientSideIncrementalStream):
     created_at_field = "createdAt"
     cursor_field_datetime_format = "x"
     primary_key = "pipelineId"
-    scopes = {"contacts", "tickets"}
+    scopes = {"crm.objects.contacts.read"}
 
 
 class TicketPipelines(ClientSideIncrementalStream):

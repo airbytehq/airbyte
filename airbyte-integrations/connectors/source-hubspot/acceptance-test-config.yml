@@ -57,6 +57,9 @@ acceptance_tests:
         deals:
         - name: properties/hs_time_*
           bypass_reason: Hubspot time depend on current time
+        deals_archived:
+          - name: properties/hs_time_*
+            bypass_reason: Hubspot time depend on current time
         tickets:
         - name: properties/hs_time_*
           bypass_reason: Hubspot time depend on current time

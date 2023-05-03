@@ -129,7 +129,9 @@ public class GlueOperations implements MetastoreOperations {
         if (jsonNode.has("airbyte_type") && jsonNode.get("airbyte_type").asText().equals("integer")) {
           yield "int";
         }
-        yield "decimal";  // Default to use decimal as it is a more precise type and allows for large values
+        // Default to use decimal as it is a more precise type and allows for large values
+        // Set the default scale and precision to 38 to allow or the widest range of values
+        yield "decimal(38,38)";
       }
       case "boolean" -> "boolean";
       case "integer" -> "int";
