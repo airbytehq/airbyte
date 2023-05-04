@@ -47,6 +47,7 @@ definitions:
       $ref: "#/definitions/retriever"
       paginator:
         $ref: "#/definitions/default_paginator"
+
   accounts_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
@@ -59,7 +60,7 @@ definitions:
     parent_stream_configs:
       - stream: "#/definitions/accounts_stream"
         parent_key: sid
-        partition_field: id
+        partition_field: account_id
   
   addresses_stream:
     $ref: "#/definitions/base_stream_with_pagination"
@@ -76,7 +77,7 @@ definitions:
     parent_stream_configs:
       - stream: "#/definitions/addresses_stream"
         parent_key: sid
-        partition_field: id
+        partition_field: address_id
 
   alerts_stream:
     $ref: "#/definitions/base_stream_with_pagination"
@@ -86,159 +87,245 @@ definitions:
       primary_key: "sid"
     requester:
       url_base: "https://monitor.twilio.com/v1"
+
   applications_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "applications"
-      path: "Accounts/{{stream_slice.id}}/Applications.json"
+      path: "Accounts/{{stream_slice.account_id}}/Applications.json"
       primary_key: "sid"
     retriever:
       partition_router:
         $ref: "#/definitions/accounts_partition_router"
-  available_phone_numbers_countries_stream:
+
+  available_phone_number_countries_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
-      name: "available_phone_numbers_countries"
-      path: "/2010-04-01/Accounts/{{stream_ slice.id}}/AvailablePhoneNumbers.json"
+      name: "available_phone_number_countries"
+      path: "/Accounts/{{stream_ slice.account_.id}}/AvailablePhoneNumbers.json"
       primary_key: null
     requester:
       partition_router:
         $ref: "#/definitions/accounts_partition_router"
+
+  available_phone_numbers_countries_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/available_phone_number_countries_stream"
+        parent_key: null
+        partition_field: subresource_uris
+
   available_phone_numbers_local_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "available_phone_numbers_local"
-      path: "/2010-04-01/Accounts.json"
-      primary_key: "sid"
+      path: "/Accounts/{{stream_slice.account_id}}/AvailablePhoneNumbers/{{stream_slice.phone_number}}/Local.json"
+      primary_key: null
+    requester:
+      partition_router:
+        $ref: "#/definitions/available_phone_numbers_countries_partition_router"
+
   available_phone_numbers_mobile_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "available_phone_numbers_mobile"
       path: "/2010-04-01/Accounts.json"
       primary_key: "sid"
+
   available_phone_numbers_toll_free_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "available_phone_numbers"
       path: "/2010-04-01/Accounts.json"
       primary_key: "sid"
+
   calls_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "calls"
       path: "/2010-04-01/Accounts.json"
       primary_key: "sid"
+
   conference_participants_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "conference_participants"
       path: "/2010-04-01/Accounts.json"
       primary_key: "sid"
+
   conferences_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "conferences"
       path: "/2010-04-01/Accounts.json"
       primary_key: "sid"
-  conversation_messages_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "conversation_messages"
-      path: "/2010-04-01/Accounts.json"
-      primary_key: "sid"
-  conversation_participants_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "conversation_participants"
-      path: "/2010-04-01/Accounts.json"
-      primary_key: "sid"
+
   conversations_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "conversations"
-      path: "/2010-04-01/Accounts.json"
+      path: "/Conversations"
       primary_key: "sid"
+    requester:
+      url_base: "https://conversations.twilio.com/v1"
+
+  conversations_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/conversations_stream"
+        parent_key: sid
+        partition_field: conversations_id
+
+  conversation_messages_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "conversation_messages"
+      path: "/Conversations/{{stream_slice.conversations_id}}/Messages"
+      primary_key: "sid"
+    requester:
+      url_base: "https://conversations.twilio.com/v1"
+    retriever:
+      partition_router:
+        $ref: "#/definitions/conversations_partition_router"
+
+  conversation_participants_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "conversation_messages"
+      path: "/Conversations/{{stream_slice.conversations_id}}/Participants"
+      primary_key: "sid"
+    requester:
+      url_base: "https://conversations.twilio.com/v1"
+    retriever:
+      partition_router:
+        $ref: "#/definitions/conversations_partition_router"
+
   dependent_phone_numbers_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "dependent_phone_numbers"
-      path: "/2010-04-01/Accounts/{{stream_slice.accountid}}/Addresses/{{stream_slice.id}}/DependentPhoneNumbers.json"
+      path: "/2010-04-01/Accounts/{{stream_slice.account_id}}/Addresses/{{stream_slice.address_id}}/DependentPhoneNumbers.json"
       primary_key: "sid"
     retriever:
       partition_router:
         $ref: "#/definitions/addresses_partition_router"
-  executions_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "executions"
-      path: "/2010-04-01/Accounts.json"
-      primary_key: "sid"
+  
   flows_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "flows"
-      path: "/2010-04-01/Accounts.json"
+      path: "/Flows"
       primary_key: "sid"
+    requester:
+      url_base: "https://studio.twilio.com/v1"
+
+  flows_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+    - stream: "#/definitions/flows_stream"
+      parent_key: sid
+      partition_field: flow_id
+  
+  executions_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "executions"
+      path: "/Flows/{{stream_slice.flow_id}}/Executions"
+      primary_key: "sid"
+    requester:
+      url_base: "https://studio.twilio.com/v1"
+    retriever:
+      partition_router:
+        $ref: "#/definitions/flows_partition_router"
+
   incoming_phone_numbers_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "incoming_phone_numbers"
-      path: "/2010-04-01/Accounts.json"
+      path: "/Accounts/{{stream_slice.account_id}}/IncomingPhoneNUmbers.json"
       primary_key: "sid"
+    retriever:
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+
   keys_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "keys"
-      path: "/2010-04-01/Accounts.json"
+      path: "/Accounts/{{stream_slice.account_id}}/Keys.json"
       primary_key: "sid"
+    retriever:
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+
   message_media_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "message_media"
       path: "/2010-04-01/Accounts.json"
       primary_key: "sid"
+  
   messages_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "messages"
       path: "/2010-04-01/Accounts.json"
       primary_key: "sid"
+  
   outgoing_caller_ids_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "outgoing_caller_ids"
-      path: "/2010-04-01/Accounts.json"
-      primary_key: "sid"
+      path: "/Accounts/{{stream_slice.account_id}}/OutgoingCallerIds"
+      primary_key: null
+    retriever:
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+
   queues_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "queues"
-      path: "/2010-04-01/Accounts.json"
+      path: "/Accounts/{{stream_slice.account_id}}/Queues.json"
       primary_key: "sid"
+    retriever:
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+  
   recordings_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "recordings"
       path: "/2010-04-01/Accounts.json"
       primary_key: "sid"
+  
   transcriptions_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "transcriptions"
-      path: "/2010-04-01/Accounts.json"
+      path: "/Accounts/{{stream_slice.account_id}}/Transcriptions.json"
       primary_key: "sid"
+    retriever:
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+  
   usage_records_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "usage_records"
       path: "/2010-04-01/Accounts.json"
       primary_key: "sid"
+      
+  
   usage_triggers_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
-      name: "usage_triggers"
-      path: "/2010-04-01/Accounts.json"
+      name: "usage_records"
+      path: "/Accounts/{{stream_slice.account_id}}/Usage/Triggers.json"
       primary_key: "sid"
+    retriever:
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
 
 streams:
   - "#/definitions/accounts_stream"
@@ -256,8 +343,8 @@ streams:
   - "#/definitions/conversation_participants_stream"
   - "#/definitions/conversations_stream"
   - "#/definitions/dependent_phone_numbers_stream"
+  - "#/definitions/flows_stream"
   - "#/definitions/executions_stream"
-  - "#/definitions/flows_tream"
   - "#/definitions/incoming_phone_numbers_stream"
   - "#/definitions/keys_stream"
   - "#/definitions/message_media_stream"
