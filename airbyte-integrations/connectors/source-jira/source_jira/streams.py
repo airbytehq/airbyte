@@ -1072,7 +1072,7 @@ class Sprints(JiraStream):
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for board in read_full_refresh(self.boards_stream):
-            if board["type"] == "scrum":
+            if board["type"] in ["scrum", "simple"]:
                 yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
 
 
