@@ -25,6 +25,8 @@ WORKDIR /airbyte/normalization_code
 RUN pip3 install .
 WORKDIR /airbyte/normalization_code/dbt-template/
 # Download external dbt dependencies
+# amazon linux 2 isn't compatible with urllib3 2.x, so force 1.26.15
+RUN pip3 install "urllib3<2"
 RUN dbt deps
 
 WORKDIR /airbyte
