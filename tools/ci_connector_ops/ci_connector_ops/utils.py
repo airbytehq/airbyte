@@ -25,7 +25,7 @@ except ImportError:
 console = Console()
 
 DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")
-OSS_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json"
+OSS_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
 SOURCE_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/source-"
 DESTINATION_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/destination-"
