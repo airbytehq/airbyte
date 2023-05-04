@@ -121,21 +121,21 @@ class TwitterTweetMetrics(TwitterFollowersStream):
 
         print("request_params \n", type(next_page_token), next_page_token)
         if not next_page_token:
-            return {'tweet.fields': 'public_metrics,created_at', 'max_results': 100}
+            return {'tweet.fields': 'public_metrics,created_at', 'max_results': 10}
         else:
-            return {'tweet.fields': 'public_metrics,created_at', "pagination_token": next_page_token["pagination_token"], 'max_results': 100}
+            return {'tweet.fields': 'public_metrics,created_at', "pagination_token": next_page_token["pagination_token"], 'max_results': 10}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
         result = response.json()
         meta = result['meta']
-
         # api 限制 15 calls/min,所以要sleep 一下
-        if 'next_token' in meta.keys():
-            print("next_page_token find next page,sleep 60 seconds!")
-            time.sleep(60)
-            return {"pagination_token": meta["next_token"]}
-        else:
-            return None
+        # if 'next_token' in meta.keys():
+        #     print("next_page_token find next page,sleep 60 seconds!")
+        #     time.sleep(60)
+        #     return {"pagination_token": meta["next_token"]}
+        # else:
+        #     return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         result = response.json()
