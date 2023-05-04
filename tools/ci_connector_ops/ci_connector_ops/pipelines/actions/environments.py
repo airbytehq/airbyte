@@ -620,8 +620,8 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         .with_workdir("/airbyte/normalization_code")
         .with_exec(["pip3", "install", "."])
         .with_workdir("/airbyte/normalization_code/dbt-template/")
-        # amazon linux 2 isn't compatible with urllib3 2.x, so force 1.26.15
-        .with_exec(["pip3", "install", "urllib3==1.26.15"])
+        # amazon linux 2 isn't compatible with urllib3 2.x, so force 1.x
+        .with_exec(["pip3", "install", "urllib3<2"])
         .with_exec(["dbt", "deps"])
         .with_workdir("/airbyte")
         .with_file("run_with_normalization.sh", context.get_repo_dir("airbyte-integrations/bases/base-java", include=["run_with_normalization.sh"]).file("run_with_normalization.sh"))
