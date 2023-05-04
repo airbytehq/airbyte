@@ -1,46 +1,69 @@
 {
   "required": [
-    "credentials"  
+    "credentials",  
+    "start_date"
     ],
     "properties": {
-      "client_id": null,
-      "client_secret": null,
-      "refresh_token": null,
-      "access_token": null,
       "credentials": {
-      "x-oauth2-provider": "zendesk",
-      "required": [
-        "client_id",
-        "client_secret",
-        "refresh_token",
-        "access_token"
-        ],
-      "properties": {
-        "client_id": {
-          "type": "string",
-          "title": "Client ID",
-          "description": "The Client ID of your OAuth application",
-          "airbyte_secret": true
-        },
-        "client_secret": {
-          "type": "string",
-          "title": "Client Secret",
-          "description": "The Client Secret of your OAuth application.",
-          "airbyte_secret": true
-        },
-        "access_token": {
-          "type": "string",
-          "title": "Access Token",
-          "description": "Access Token for making authenticated requests.",
-          "airbyte_secret": true
-        },
-        "refresh_token": {
-          "type": "string",
-          "title": "Refresh Token",
-          "description": "Refresh Token to obtain new Access Token, when it's expired.",
-          "airbyte_secret": true
-        }
-      }
+        "title": "Authorization Method",
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "OAuth2.0",
+            "x-oauth2-provider": "zendesk",
+            "required": [
+              "client_id",
+              "client_secret",
+              "refresh_token",
+              "access_token"
+              ],
+            "properties": {
+              "client_id": {
+                "type": "string",
+                "title": "Client ID",
+                "description": "The Client ID of your OAuth application",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client Secret",
+                "description": "The Client Secret of your OAuth application.",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access Token",
+                "description": "Access Token for making authenticated requests.",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "type": "string",
+                "title": "Refresh Token",
+                "description": "Refresh Token to obtain new Access Token, when it's expired.",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Access Token",
+            "required": ["credentials", "access_token"],
+            "properties": {
+              "credentials": {
+                "type": "string",
+                "const": "access_token",
+                "order": 0
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access Token",
+                "description": "The Access Token to make authenticated requests.",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
     },
     "start_date": {
         "type": "string",
