@@ -1,6 +1,6 @@
 name: CLI Issue
 description: Use this when you're using the Octavia CLI.
-title: "Octavia CLI Issue: "
+title: "Octavia CLI Issue: <REMOVE WITH THE ISSUE TITLE>"
 labels: [type/bug, area/octavia-cli, needs-triage]
 body:
   - type: input
