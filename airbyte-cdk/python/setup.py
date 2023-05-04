@@ -57,7 +57,7 @@ setup(
         "pydantic~=1.9.2",
         "python-dateutil",
         "PyYAML~=5.4",
-        "requests",
+        "requests==2.29.0",
         "requests_cache",
         "Deprecated~=1.2",
         "Jinja2~=3.1.2",
