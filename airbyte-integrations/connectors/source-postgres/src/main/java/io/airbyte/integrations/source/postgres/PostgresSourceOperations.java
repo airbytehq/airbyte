@@ -8,8 +8,10 @@ import static io.airbyte.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_DECIMAL_DIGITS;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
+import static io.airbyte.integrations.source.postgres.PostgresType.BIGINT;
 import static io.airbyte.integrations.source.postgres.PostgresType.safeGetJdbcType;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -194,7 +196,14 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
             case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
             case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
             case REAL -> putFloat(json, columnName, resultSet, colIndex);
-            case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
+            case NUMERIC -> {
+              if (metadata.getScale(colIndex) == 0) {
+                putBigInt(json, columnName, resultSet, colIndex);
+              } else {
+                putBigDecimal(json, columnName, resultSet, colIndex);
+              }
+            }
+            case DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
             // BIT is a bit string in Postgres, e.g. '0100'
             case BIT, CHAR, VARCHAR, LONGVARCHAR -> json.put(columnName, value);
             case DATE -> putDate(json, columnName, resultSet, colIndex);
@@ -370,8 +379,8 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText().toLowerCase();
       // Postgres boolean is mapped to JDBCType.BIT, but should be BOOLEAN
+      final PostgresType defaultType = PostgresType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt(), POSTGRES_TYPE_DICT);
       return switch (typeName) {
-
         case "_bit" -> PostgresType.BIT_ARRAY;
         case "_bool" -> PostgresType.BOOL_ARRAY;
         case "_name" -> PostgresType.NAME_ARRAY;
@@ -398,9 +407,16 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         // It should not be converted to base64 binary string. So it is represented as JDBC VARCHAR.
         // https://www.postgresql.org/docs/14/datatype-binary.html
         case "bytea" -> PostgresType.VARCHAR;
+        case "numeric" -> {
+          if (field.get(INTERNAL_DECIMAL_DIGITS) != null && field.get(INTERNAL_DECIMAL_DIGITS).asInt() == 0) {
+            yield BIGINT;
+          } else {
+            yield defaultType;
+          }
+        }
         case TIMESTAMPTZ -> PostgresType.TIMESTAMP_WITH_TIMEZONE;
         case TIMETZ -> PostgresType.TIME_WITH_TIMEZONE;
-        default -> PostgresType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt(), POSTGRES_TYPE_DICT);
+        default -> defaultType;
       };
     } catch (final IllegalArgumentException ex) {
       LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",

@@ -293,6 +293,17 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                 "08:00:2b:01:02:03:04:07")
             .build());
 
+    // Edge case of a column type being a NUMERIC data type
+    // with no decimal precision
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("numeric")
+            .fullSourceDataType("NUMERIC(38,0)")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .addInsertValues("'33'")
+            .addExpectedValues("33")
+            .build());
+
     // Blocked by https://github.com/airbytehq/airbyte/issues/8902
     for (final String type : Set.of("numeric", "decimal")) {
       addDataTypeTestData(
