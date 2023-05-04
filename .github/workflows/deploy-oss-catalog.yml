@@ -32,6 +32,7 @@ jobs:
         run: SUB_BUILD=ALL_CONNECTORS ./gradlew :airbyte-config-oss:specs-oss:generateOssConnectorCatalog
       - name: Upload catalog to GCS
         shell: bash
+        # TODO remove once new registry in use
         run: |
           gcs_bucket_name="prod-airbyte-cloud-connector-metadata-service"
           catalog_path="airbyte-config-oss/init-oss/src/main/resources/seed/oss_catalog.json"
