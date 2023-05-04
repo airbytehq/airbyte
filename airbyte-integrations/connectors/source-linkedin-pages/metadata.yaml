@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: af54297c-e8f8-4d63-a00d-a94695acc9d3
@@ -13,6 +8,11 @@ data:
   icon: linkedin.svg
   license: MIT
   name: LinkedIn Pages
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/linkedin-pages
 metadataSpecVersion: "1.0"

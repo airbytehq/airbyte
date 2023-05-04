@@ -1,10 +1,4 @@
 data:
-  registries:
-    cloud:
-      dockerRepository: airbyte/destination-oracle-strict-encrypt
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 3986776d-2319-4de9-8af8-db14c0996e72
@@ -18,6 +12,12 @@ data:
     normalizationIntegrationType: oracle
     normalizationRepository: airbyte/normalization-oracle
     normalizationTag: 0.4.0
+  registries:
+    cloud:
+      dockerRepository: airbyte/destination-oracle-strict-encrypt
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/oracle
   supportsDbt: true

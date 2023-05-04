@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: df38991e-f35b-4af2-996d-36817f614587
@@ -13,6 +8,11 @@ data:
   icon: newsapi.svg
   license: MIT
   name: News API
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/news-api
 metadataSpecVersion: "1.0"

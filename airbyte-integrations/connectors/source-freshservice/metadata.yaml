@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 9bb85338-ea95-4c93-b267-6be89125b267
@@ -13,6 +8,11 @@ data:
   icon: freshservice.svg
   license: MIT
   name: Freshservice
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/freshservice
 metadataSpecVersion: "1.0"

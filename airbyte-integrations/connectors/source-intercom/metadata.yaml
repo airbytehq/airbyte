@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - api.intercom.io
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
@@ -16,6 +11,11 @@ data:
   icon: intercom.svg
   license: MIT
   name: Intercom
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
   supportUrl: https://docs.airbyte.com/integrations/sources/intercom
 metadataSpecVersion: "1.0"

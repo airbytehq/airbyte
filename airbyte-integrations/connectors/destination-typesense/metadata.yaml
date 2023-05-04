@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 36be8dc6-9851-49af-b776-9d4c30e4ab6a
@@ -13,6 +8,11 @@ data:
   icon: typesense.svg
   license: MIT
   name: Typesense
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/typesense
 metadataSpecVersion: "1.0"

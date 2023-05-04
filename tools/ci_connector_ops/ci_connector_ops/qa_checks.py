@@ -179,6 +179,10 @@ def check_connector_has_no_critical_vulnerabilities(connector: Connector) -> boo
     return True
 
 
+def check_metadata_version_matches_dockerfile_label(connector: Connector) -> bool:
+    return connector.version_in_dockerfile_label == connector.version
+
+
 QA_CHECKS = [
     check_documentation_file_exists,
     # Disabling the following check because it's likely to not pass on a lot of connectors.
@@ -190,6 +194,7 @@ QA_CHECKS = [
     # https://github.com/airbytehq/airbyte/issues/21606
     check_connector_https_url_only,
     check_connector_has_no_critical_vulnerabilities,
+    check_metadata_version_matches_dockerfile_label,
 ]
 
 

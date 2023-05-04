@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 81ca39dc-4534-4dd2-b848-b0cfd2c11fce
@@ -13,6 +8,11 @@ data:
   icon: aha.svg
   license: MIT
   name: Aha
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/aha
 metadataSpecVersion: "1.0"

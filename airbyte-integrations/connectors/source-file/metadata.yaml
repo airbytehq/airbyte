@@ -2,12 +2,6 @@ data:
   allowedHosts:
     hosts:
       - "*"
-  registries:
-    cloud:
-      dockerRepository: airbyte/source-file-secure
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: file
   connectorType: source
   definitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
@@ -17,6 +11,12 @@ data:
   icon: file.svg
   license: MIT
   name: File (CSV, JSON, Excel, Feather, Parquet)
+  registries:
+    cloud:
+      dockerRepository: airbyte/source-file-secure
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
   supportUrl: https://docs.airbyte.com/integrations/sources/file
 metadataSpecVersion: "1.0"

@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - "*.mktorest.com"
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
@@ -16,6 +11,11 @@ data:
   icon: marketo.svg
   license: MIT
   name: Marketo
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
   supportUrl: https://docs.airbyte.com/integrations/sources/marketo
 metadataSpecVersion: "1.0"

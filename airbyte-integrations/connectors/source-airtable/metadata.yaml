@@ -3,11 +3,6 @@ data:
     hosts:
       - api.airtable.com
       - airtable.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
@@ -17,6 +12,11 @@ data:
   icon: airtable.svg
   license: MIT
   name: Airtable
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
   supportUrl: https://docs.airbyte.com/integrations/sources/airtable
 metadataSpecVersion: "1.0"

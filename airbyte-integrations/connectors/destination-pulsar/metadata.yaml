@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 2340cbba-358e-11ec-8d3d-0242ac130203
@@ -13,6 +8,11 @@ data:
   icon: pulsar.svg
   license: MIT
   name: Pulsar
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/pulsar
 metadataSpecVersion: "1.0"

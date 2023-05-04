@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - graph.facebook.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
@@ -16,6 +11,11 @@ data:
   icon: instagram.svg
   license: MIT
   name: Instagram
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
   supportUrl: https://docs.airbyte.com/integrations/sources/instagram
 metadataSpecVersion: "1.0"

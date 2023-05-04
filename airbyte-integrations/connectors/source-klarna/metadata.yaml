@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 60c24725-00ae-490c-991d-55b78c3197e0
@@ -13,6 +8,11 @@ data:
   icon: klarna.svg
   license: MIT
   name: Klarna
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/klarna
 metadataSpecVersion: "1.0"
