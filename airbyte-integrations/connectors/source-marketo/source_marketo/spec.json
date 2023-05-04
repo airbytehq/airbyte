@@ -11,21 +11,17 @@
         "title": "Domain URL",
         "type": "string",
         "order": 3,
-        "description": "Your Marketo Base URL. See <a href=\"https://docs.airbyte.com/integrations/sources/marketo\"> the docs </a> for info on how to obtain this.",
-        "examples": ["https://000-AAA-000.mktorest.com"],
-        "airbyte_secret": true
+        "examples": ["https://000-AAA-000.mktorest.com"]
       },
       "client_id": {
         "title": "Client ID",
         "type": "string",
-        "description": "The Client ID of your Marketo developer application. See <a href=\"https://docs.airbyte.com/integrations/sources/marketo\"> the docs </a> for info on how to obtain this.",
         "order": 0,
         "airbyte_secret": true
       },
       "client_secret": {
         "title": "Client Secret",
         "type": "string",
-        "description": "The Client Secret of your Marketo developer application. See <a href=\"https://docs.airbyte.com/integrations/sources/marketo\"> the docs </a> for info on how to obtain this.",
         "order": 1,
         "airbyte_secret": true
       },
@@ -33,7 +29,6 @@
         "title": "Start Date",
         "type": "string",
         "order": 2,
-        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "examples": ["2020-09-25T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       }
