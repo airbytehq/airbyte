@@ -1,6 +1,6 @@
 name: Others
 description: Use this when the request doesn't fit other category.
-title: " "
+title: "Other: "
 labels: [needs-triage]
 body:
   - type: input
