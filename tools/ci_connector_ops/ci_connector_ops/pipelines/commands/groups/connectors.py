@@ -162,7 +162,7 @@ def test(
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
             modified_files=modified_files,
-            s3_report_key="python-poc/test/history/",
+            s3_report_key="python-poc/tests/history/",
             use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
