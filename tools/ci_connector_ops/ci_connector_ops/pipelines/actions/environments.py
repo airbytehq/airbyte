@@ -509,60 +509,72 @@ def with_integration_base_java(context: PipelineContext, build_platform: Platfor
     )
 
 
-BASE_DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING = {
-    "destination-clickhouse": "clickhouse.Dockerfile",
-    "destination-duckdb": "duckdb.Dockerfile",
-    "destination-mssql": "mssql.Dockerfile",
-    "destination-mysql": "mysql.Dockerfile",
-    "destination-oracle": "oracle.Dockerfile",
-    "destination-tidb": "tidb.Dockerfile",
-    "destination-bigquery": "Dockerfile",
-    "destination-redshift": "redshift.Dockerfile",
-    "destination-snowflake": "snowflake.Dockerfile",
+BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
+    "destination-bigquery": {
+        "dockerfile": "Dockerfile",
+        "dbt_adapter": "dbt-bigquery==1.0.0",
+        "integration_name": "bigquery",
+        "supports_in_connector_normalization": True
+    },
+    "destination-clickhouse": {
+        "dockerfile": "clickhouse.Dockerfile",
+        "dbt_adapter": "dbt-clickhouse>=1.4.0",
+        "integration_name": "clickhouse",
+        "supports_in_connector_normalization": False
+    },
+    "destination-duckdb": {
+        "dockerfile": "duckdb.Dockerfile",
+        "dbt_adapter": "dbt-duckdb==1.0.1",
+        "integration_name": "duckdb",
+        "supports_in_connector_normalization": False
+    },
+    "destination-mssql": {
+        "dockerfile": "mssql.Dockerfile",
+        "dbt_adapter": "dbt-sqlserver==1.0.0",
+        "integration_name": "mssql",
+        "supports_in_connector_normalization": False
+    },
+    "destination-mysql": {
+        "dockerfile": "mysql.Dockerfile",
+        "dbt_adapter": "dbt-mysql==1.0.0",
+        "integration_name": "mysql",
+        "supports_in_connector_normalization": False
+    },
+    "destination-oracle": {
+        "dockerfile": "oracle.Dockerfile",
+        "dbt_adapter": "dbt-oracle==0.4.3",
+        "integration_name": "oracle",
+        "supports_in_connector_normalization": False
+    },
+    "destination-postgres": {
+        "dockerfile": "Dockerfile",
+        "dbt_adapter": "dbt-postgres==1.0.0",
+        "integration_name": "postgres",
+        "supports_in_connector_normalization": False
+    },
+    "destination-redshift": {
+        "dockerfile": "redshift.Dockerfile",
+        "dbt_adapter": "dbt-redshift==1.0.0",
+        "integration_name": "redshift",
+        "supports_in_connector_normalization": False
+    },
+    "destination-snowflake": {
+        "dockerfile": "snowflake.Dockerfile",
+        "dbt_adapter": "dbt-snowflake==1.0.0",
+        "integration_name": "snowflake",
+        "supports_in_connector_normalization": False
+    },
+    "destination-tidb": {
+        "dockerfile": "tidb.Dockerfile",
+        "dbt_adapter": "dbt-tidb==1.0.1",
+        "integration_name": "tidb",
+        "supports_in_connector_normalization": False
+    },
 }
 
-BASE_DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING = {
-    "destination-clickhouse": "dbt-clickhouse>=1.4.0",
-    "destination-duckdb": "duckdb.Dockerfile",
-    "destination-mssql": "dbt-sqlserver==1.0.0",
-    "destination-mysql": "dbt-mysql==1.0.0",
-    "destination-oracle": "dbt-oracle==0.4.3",
-    "destination-tidb": "dbt-tidb==1.0.1",
-    "destination-bigquery": "dbt-bigquery==1.0.0",
-}
-
-BASE_DESTINATION_SPECIFIC_NORMALIZATION_INTEGRATION_MAPPING = {
-    "destination-clickhouse": "clickhouse",
-    "destination-duckdb": "duckdb",
-    "destination-mssql": "sqlserver",
-    "destination-mysql": "mysql",
-    "destination-oracle": "oracle",
-    "destination-tidb": "tidb",
-    "destination-bigquery": "bigquery",
-}
-
-BASE_DESTINATIONS_SUPPORTING_IN_CONNECTOR_NORMALIZATION = {
-    "destination-bigquery"
-}
-
-DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING = {
-    **BASE_DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING,
-    **{f"{k}-strict-encrypt": v for k, v in BASE_DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING.items()},
-}
-
-DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING = {
-    **BASE_DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING,
-    **{f"{k}-strict-encrypt": v for k, v in BASE_DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING.items()},
-}
-
-DESTINATION_SPECIFIC_NORMALIZATION_INTEGRATION_MAPPING = {
-    **BASE_DESTINATION_SPECIFIC_NORMALIZATION_INTEGRATION_MAPPING,
-    **{f"{k}-strict-encrypt": v for k, v in BASE_DESTINATION_SPECIFIC_NORMALIZATION_INTEGRATION_MAPPING.items()},
-}
-
-DESTINATIONS_SUPPORTING_IN_CONNECTOR_NORMALIZATION = {
-    *BASE_DESTINATIONS_SUPPORTING_IN_CONNECTOR_NORMALIZATION,
-    *{f"{conn}-strict-encrypt" for conn in BASE_DESTINATIONS_SUPPORTING_IN_CONNECTOR_NORMALIZATION}
+DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
+    **BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION,
+    **{f"{k}-strict-encrypt": v for k, v in BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION.items()},
 }
 
 
@@ -573,9 +585,7 @@ def with_normalization(context: ConnectorContext) -> Container:
     ).file("sshtunneling.sh")
     normalization_directory_with_build = normalization_directory.with_new_directory("build")
     normalization_directory_with_sshtunneling = normalization_directory_with_build.with_file("build/sshtunneling.sh", sshtunneling_file)
-    normalization_dockerfile_name = DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING.get(
-        context.connector.technical_name, "Dockerfile"
-    )
+    normalization_dockerfile_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dockerfile"]
     return normalization_directory_with_sshtunneling.docker_build(normalization_dockerfile_name)
 
 
@@ -588,8 +598,8 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         "git",
     ]
 
-    dbt_adapter_package = DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING.get(context.connector.technical_name, "dbt-bigquery==1.0.0")
-    normalization_integration_name = DESTINATION_SPECIFIC_NORMALIZATION_INTEGRATION_MAPPING.get(context.connector.technical_name, "bigquery")
+    dbt_adapter_package = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dbt_adapter"]
+    normalization_integration_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["integration_name"]
 
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
 
@@ -630,7 +640,7 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         .with_exec(["rm", "-rf", f"{application}.tar"])
     )
 
-    if context.connector.supports_normalization and context.connector.technical_name in DESTINATIONS_SUPPORTING_IN_CONNECTOR_NORMALIZATION:
+    if context.connector.supports_normalization and DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["supports_in_connector_normalization"]:
         base = with_integration_base_java_and_normalization(context, build_platform)
         entrypoint = ["/airbyte/run_with_normalization.sh"]
     else:
