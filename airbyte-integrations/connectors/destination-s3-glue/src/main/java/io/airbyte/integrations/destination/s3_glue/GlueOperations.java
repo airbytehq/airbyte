@@ -130,8 +130,8 @@ public class GlueOperations implements MetastoreOperations {
           yield "int";
         }
         // Default to use decimal as it is a more precise type and allows for large values
-        // Set the default scale and precision to 38 to allow or the widest range of values
-        yield "decimal(38,38)";
+        // Set the default scale 38 to allow for the widest range of values
+        yield "decimal(38)";
       }
       case "boolean" -> "boolean";
       case "integer" -> "int";
