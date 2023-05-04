@@ -222,6 +222,26 @@ class FileStream(Stream, ABC):
         for file_info in self.get_time_ordered_file_infos():
             yield {"files": [{"storage_file": self.storagefile_class(file_info, self._provider)}]}
 
+    def _match_target_schema(self, record: Dict[str, Any], target_columns: List) -> Dict[str, Any]:
+        """
+        This method handles missing or additional fields in each record, according to the provided target_columns.
+        All missing fields are added, with a value of None (null)
+        All additional fields are packed into the _ab_additional_properties object column
+        We start off with a check to see if we're already lined up to target in order to avoid unnecessary iterations (useful if many columns)
+
+        :param record: json-like representation of a data row {column:value}
+        :param target_columns: list of column names to mutate this record into (obtained via self._schema.keys() as of now)
+        :return: mutated record with columns lining up to target_columns
+        """
+        compare_columns = [c for c in target_columns if c not in [self.ab_last_mod_col, self.ab_file_name_col]]        # missing columns
+        for c in compare_columns:
+            if c not in record.keys():
+                record[c] = None
+        for c in record.copy():
+            if c not in compare_columns:
+                del record[c]
+        return record
+
     def _add_extra_fields_from_map(self, record: Dict[str, Any], extra_map: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Simple method to take a mapping of columns:values and add them to the provided record
@@ -251,8 +271,9 @@ class FileStream(Stream, ABC):
                 with storage_file.open(file_reader.is_binary) as f:
                     # TODO: make this more efficient than mutating every record one-by-one as they stream
                     for record in file_reader.stream_records(f, storage_file.file_info):
+                        schema_matched_record = self._match_target_schema(record, list(self._schema.keys()))
                         complete_record = self._add_extra_fields_from_map(
-                            record,
+                            schema_matched_record,
                             {
                                 self.ab_last_mod_col: datetime.strftime(storage_file.last_modified, self.datetime_format_string),
                                 self.ab_file_name_col: storage_file.url,
