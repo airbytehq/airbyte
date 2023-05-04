@@ -126,7 +126,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
-| 0.3.8   | 2023-05-04 |                                                            | Add sprint info to `sprint_issues` and `sprints` streams for team-managed projects                                      |
+| 0.3.8   | 2023-05-04 | [\#25798](https://github.com/airbytehq/airbyte/pull/25798) | Add sprint info to `sprint_issues` and `sprints` streams for team-managed projects                                      |
 | 0.3.7   | 2023-04-18 | [\#25275](https://github.com/airbytehq/airbyte/pull/25275) | Add missing types to issues json schema                                                                                 |
 | 0.3.6   | 2023-04-10 | [\#24636](https://github.com/airbytehq/airbyte/pull/24636) | Removed Connector Domain Pattern from Spec                                                                              |
 | 0.3.5   | 2023-04-05 | [\#24890](https://github.com/airbytehq/airbyte/pull/24890) | Fix streams "IssuePropertyKeys", "ScreenTabFields"                                                                      |
