@@ -6,10 +6,7 @@ FROM airbyte/source-facebook-marketing:0.3.3
 COPY --from=airbyte-to-flow /airbyte-to-flow ./
 ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint", "python /airbyte/integration_code/main.py"]
 
-COPY spec.patch.json ./
-COPY spec.map.json ./
-COPY documentation_url.patch.json ./
-COPY oauth2.patch.json ./
+COPY *.json ./
 COPY streams/* ./streams/
 
 LABEL io.airbyte.version=v4
