@@ -127,6 +127,10 @@ characters.
     :::
 12. Click **Set up destination**.
 
+## ⚠️ Warning
+
+Postgres is not a data warehouse, and is likely to perform poorly with large data volumes.  Even postgres-compatible destinations (e.g. AWS Aurora) are not immune to slowdowns when dealing with large writes or updates over ~500GB.  Especially when using normalization with `destination-postgres`, be sure to monitor your database's memory and CPU usage during your syncs.  It is possible for your destination to 'lock up', and incur high usage costs with large sync volumes. 
+
 ## Supported sync modes
 
 The Postgres destination connector supports the
