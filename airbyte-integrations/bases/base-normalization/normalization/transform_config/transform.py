@@ -325,6 +325,7 @@ class TransformConfig:
             "port": config["port"],
             "schema": config["database"],
             "user": config["username"],
+            "use_lw_deletes": True,
             "custom_settings": {
                 "allow_nondeterministic_mutations": True,
             }
