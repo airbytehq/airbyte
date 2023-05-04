@@ -8,6 +8,8 @@ import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.jdbc.JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER;
+import static io.airbyte.integrations.source.jdbc.JdbcDataSourceUtils.assertCustomParametersDontOverwriteDefaultParameters;
 import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SSL_MODE;
 import static java.util.stream.Collectors.toList;
 
@@ -21,6 +23,7 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.factory.DatabaseDriver;
@@ -35,6 +38,7 @@ import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcPosition;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.jdbc.JdbcDataSourceUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
@@ -55,6 +59,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -380,6 +385,36 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       default -> throw new IllegalArgumentException("unexpected ssl mode");
     };
     return result;
+  }
+
+  @Override
+  public Map<String, String> getConnectionProperties(final JsonNode config) {
+    final Map<String, String> customProperties =
+        config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)
+            ? parseJdbcParameters(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText(), DEFAULT_JDBC_PARAMETERS_DELIMITER) : new HashMap<>();
+    final Map<String, String> defaultProperties = JdbcDataSourceUtils.getDefaultConnectionProperties(config);
+    assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
+    return MoreMaps.merge(customProperties, defaultProperties);
+  }
+
+  public static Map<String, String> parseJdbcParameters(final String jdbcPropertiesString, final String delimiter) {
+    final Map<String, String> parameters = new HashMap<>();
+    if (!jdbcPropertiesString.isBlank()) {
+      final String[] keyValuePairs = jdbcPropertiesString.split(delimiter);
+      for (final String kv : keyValuePairs) {
+        final String[] split = kv.split("=");
+        if (split.length == 2) {
+          parameters.put(split[0], split[1]);
+        } else if (split.length == 3 && kv.contains("sessionVariables")) {
+          parameters.put(split[0], split[1] + "=" + split[2]);
+        } else {
+          throw new IllegalArgumentException(
+              "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got "
+                  + jdbcPropertiesString);
+        }
+      }
+    }
+    return parameters;
   }
 
   public static void main(final String[] args) throws Exception {

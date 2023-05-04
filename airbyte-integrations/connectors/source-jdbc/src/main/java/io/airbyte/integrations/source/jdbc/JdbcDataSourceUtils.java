@@ -47,7 +47,7 @@ public class JdbcDataSourceUtils {
    * @param config A configuration used to check Jdbc connection
    * @return A mapping of the default connection properties
    */
-  private static Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+  public static Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     // NOTE that Postgres returns an empty map for some reason?
     return JdbcUtils.parseJdbcParameters(config, "connection_properties", DEFAULT_JDBC_PARAMETERS_DELIMITER);
   };

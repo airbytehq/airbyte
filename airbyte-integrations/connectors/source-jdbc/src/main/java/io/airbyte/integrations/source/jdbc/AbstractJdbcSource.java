@@ -417,7 +417,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        JdbcDataSourceUtils.getConnectionProperties(sourceConfig));
+        this.getConnectionProperties(sourceConfig));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
 
@@ -430,6 +430,10 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(jdbcConfig);
     return database;
+  }
+
+  public Map<String, String> getConnectionProperties(final JsonNode config) {
+    return JdbcDataSourceUtils.getConnectionProperties(config);
   }
 
   /**

@@ -32,6 +32,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.jooq.DSLContext;
@@ -195,6 +196,15 @@ public class MySqlSourceTests {
                     .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
                     .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
 
+  }
+
+
+  @Test
+  void testParseJdbcParameters() {
+    Map<String, String> parameters = MySqlSource.parseJdbcParameters("theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar", "&");
+    assertEquals("max_execution_time=10000", parameters.get("sessionVariables"));
+    assertEquals("42", parameters.get("theAnswerToLiveAndEverything"));
+    assertEquals("bar", parameters.get("foo"));
   }
 
 }
