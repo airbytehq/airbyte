@@ -1,7 +1,6 @@
 *
-!*.patch.json
 !selected_streams.json
-!*.map.json
+!*.json
 !streams
 !Dockerfile
 !main.py

@@ -1,4 +1,4 @@
-use std::{pin::Pin, sync::{Arc}, ops::DerefMut};
+use std::{pin::Pin, sync::{Arc}, ops::DerefMut, time::{Instant, Duration}};
 
 use flow_cli_common::LogArgs;
 use futures::{channel::{oneshot,mpsc}, stream, StreamExt, TryStreamExt};
@@ -12,6 +12,7 @@ use proto_flow::flow::ConnectorState;
 use crate::{apis::InterceptorStream, interceptors::airbyte_source_interceptor::{AirbyteSourceInterceptor, Operation}, errors::{Error, io_stream_to_interceptor_stream, interceptor_stream_to_io_stream}, libs::{command::{invoke_connector_delayed, check_exit_status}}};
 
 const NEWLINE: u8 = 10;
+const RUN_INTERVAL_FILE_NAME: &str = "run_interval_minutes.json";
 
 async fn flow_read_stream() -> InterceptorStream {
     Box::pin(io_stream_to_interceptor_stream(ReaderStream::new(tokio::io::stdin())))
@@ -128,14 +129,14 @@ pub async fn run_airbyte_source_connector(
         response_finished_sender,
     );
 
-    let cloned_op = op.clone();
+    let op_ref = &op;
     let exit_status_task = async move {
         let exit_status_result = check_exit_status("atf:", child.wait().await);
 
         // There are some Airbyte connectors that write records, and exit successfully, without ever writing
         // a state (checkpoint). In those cases, we want to provide a default empty checkpoint. It's important that
         // this only happens if the connector exit successfully, otherwise we risk double-writing data.
-        if exit_status_result.is_ok() && cloned_op == Operation::Capture {
+        if exit_status_result.is_ok() && *op_ref == Operation::Capture {
             tracing::debug!("atf: waiting for tp_receiver");
             // the received value (transaction_pending) is true if the connector writes output messages and exits _without_ writing
             // a final state checkpoint.
@@ -169,6 +170,30 @@ pub async fn run_airbyte_source_connector(
         exit_status_result
     };
 
+    let start_time = Instant::now();
+
+    // Some airbyte connectors are known for exhausting rate-limits of customers
+    // So we allow connectors to be configured with a run_interval_minutes.json file
+    // which specifies how frequently should the connector run
+    let run_interval = async move {
+        if *op_ref != Operation::Capture {
+            return Ok(())
+        };
+
+        let run_interval_minutes = std::fs::read_to_string(RUN_INTERVAL_FILE_NAME).ok().map(|f| f.parse::<u64>()).transpose()?;
+
+        // Make sure the process stays up for at least run_interval_minutes
+        if let Some(interval_minutes) = run_interval_minutes {
+            let elapsed = Instant::now().duration_since(start_time);
+            let total_duration = tokio::time::Duration::from_secs(60 * interval_minutes);
+            tracing::debug!("atf: sleeping for {:?}", total_duration - elapsed);
+            tokio::time::sleep(total_duration - elapsed).await;
+        }
+
+        let r : Result<(), Error> = Ok(());
+        r
+    };
+    
     // If streaming_all_task errors out, we error out and don't wait for exit_status, on the other
     // hand once the connector has exit (exit_status_task completes), we don't wait for streaming
     // task anymore
@@ -180,6 +205,8 @@ pub async fn run_airbyte_source_connector(
         // is not always an error.
         Err(_) = ping_timeout_task => Ok(())
     }?;
+
+    run_interval.await?;
 
     tracing::debug!("atf: connector_runner done");
     Ok(())

@@ -1,3 +1,5 @@
+use std::num::ParseIntError;
+
 use bytes::Bytes;
 use futures::{TryStream, Stream, TryStreamExt};
 use validator::ValidationErrors;
@@ -56,6 +58,9 @@ pub enum Error {
 
     #[error("Connector has been idle")]
     IdleConnector,
+
+    #[error("Could not parse run interval")]
+    ParseIntError(#[from] ParseIntError)
 }
 
 pub fn raise_err<T>(message: &str) -> Result<T, std::io::Error> {

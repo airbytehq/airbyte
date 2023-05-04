@@ -12,9 +12,7 @@ WORKDIR /airbyte/integration_code
 COPY source_salesforce ./source_salesforce
 COPY setup.py ./
 COPY main.py ./
-COPY *.patch.json ./
-COPY *.map.json ./
-COPY selected_streams.json ./
+COPY *.json ./
 RUN pip install .
 
 COPY --from=airbyte-to-flow /airbyte-to-flow ./
