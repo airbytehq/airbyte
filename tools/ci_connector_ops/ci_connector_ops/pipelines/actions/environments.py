@@ -346,6 +346,7 @@ async def with_connector_acceptance_test(context: ConnectorContext, connector_un
         with_bound_docker_host(context, cat_container, shared_tmp_volume, docker_service_name="cat")
         .with_entrypoint([])
         .with_exec(["pip", "install", "pytest-custom_exit_code"])
+        .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
         .with_mounted_directory("/test_input", context.get_connector_dir(exclude=["secrets", ".venv"]))
         .with_directory("/test_input/secrets", context.secrets_dir)
         .with_workdir("/test_input")

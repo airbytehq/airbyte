@@ -40,7 +40,7 @@ const buildAConnector = {
     },
     {
       type: 'category',
-      label: 'Connector builder',
+      label: 'Connector Builder',
       items: [
         'connector-development/connector-builder-ui/overview',
         'connector-development/connector-builder-ui/connector-builder-compatibility',
@@ -49,6 +49,7 @@ const buildAConnector = {
           type: 'category',
           label: 'Concepts',
           items: [
+            'connector-development/connector-builder-ui/authentication',
             'connector-development/connector-builder-ui/record-processing',
             'connector-development/connector-builder-ui/pagination',
             'connector-development/connector-builder-ui/incremental-sync',
@@ -210,24 +211,25 @@ const connectorCatalog = {
 const contributeToAirbyte = {
   type: 'category',
   label: 'Contribute to Airbyte',
+  link: {
+    type: 'doc',
+    id: 'contributing-to-airbyte/README',
+  },
   items: [
-    'contributing-to-airbyte/README',
     'contributing-to-airbyte/code-of-conduct',
     'contributing-to-airbyte/maintainer-code-of-conduct',
+    'contributing-to-airbyte/issues-and-pull-requests',
     'contributing-to-airbyte/developing-locally',
     'contributing-to-airbyte/developing-on-docker',
-    'contributing-to-airbyte/developing-on-kubernetes',
     'contributing-to-airbyte/python-gradle-setup',
     'contributing-to-airbyte/code-style',
-    'contributing-to-airbyte/issues-and-pull-requests',
-    'contributing-to-airbyte/gradle-cheatsheet',
-    'contributing-to-airbyte/gradle-dependency-update',
+    'contributing-to-airbyte/gradle',
     {
       type: 'category',
       label: 'Updating documentation',
       link: {
         type: 'doc',
-        id: 'contributing-to-airbyte/updating-documentation',
+        id: 'contributing-to-airbyte/contribute-documentation',
       },
       items: [
         {
