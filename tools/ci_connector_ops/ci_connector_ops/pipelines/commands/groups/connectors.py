@@ -157,12 +157,13 @@ def test(
 
     connectors_tests_contexts = [
         ConnectorContext(
-            connector,
-            ctx.obj["is_local"],
-            ctx.obj["git_branch"],
-            ctx.obj["git_revision"],
-            modified_files,
-            ctx.obj["use_remote_secrets"],
+            connector=connector,
+            is_local=ctx.obj["is_local"],
+            git_branch=ctx.obj["git_branch"],
+            git_revision=ctx.obj["git_revision"],
+            modified_files=modified_files,
+            s3_report_key="python-poc/test/history/",
+            use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
@@ -201,12 +202,13 @@ def build(ctx: click.Context) -> bool:
     click.secho(f"Will build the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
     connectors_contexts = [
         ConnectorContext(
-            connector,
-            ctx.obj["is_local"],
-            ctx.obj["git_branch"],
-            ctx.obj["git_revision"],
-            modified_files,
-            ctx.obj["use_remote_secrets"],
+            connector=connector,
+            is_local=ctx.obj["is_local"],
+            git_branch=ctx.obj["git_branch"],
+            git_revision=ctx.obj["git_revision"],
+            modified_files=modified_files,
+            s3_report_key="python-poc/build/history/",
+            use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
@@ -276,12 +278,13 @@ def publish(
 
     connectors_contexts = [
         ConnectorContext(
-            connector,
-            ctx.obj["is_local"],
-            ctx.obj["git_branch"],
-            ctx.obj["git_revision"],
-            modified_files,
-            ctx.obj["use_remote_secrets"],
+            connector=connector,
+            is_local=ctx.obj["is_local"],
+            git_branch=ctx.obj["git_branch"],
+            git_revision=ctx.obj["git_revision"],
+            modified_files=modified_files,
+            s3_report_key="python-poc/publish/history/",
+            use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
