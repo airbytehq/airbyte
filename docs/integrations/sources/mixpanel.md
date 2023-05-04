@@ -50,6 +50,7 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
+| 0.1.33  | 2023-04-25 | [25543](https://github.com/airbytehq/airbyte/pull/25543) | Set should_retry for 104 error in stream export                                                             |
 | 0.1.32  | 2023-04-11 | [25056](https://github.com/airbytehq/airbyte/pull/25056) | Set HttpAvailabilityStrategy, add exponential backoff, streams export and annotations add undeclared fields |
 | 0.1.31  | 2023-02-13 | [22936](https://github.com/airbytehq/airbyte/pull/22936) | Specified date formatting in specification                                                                  |
 | 0.1.30  | 2023-01-27 | [22017](https://github.com/airbytehq/airbyte/pull/22017) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                 |
