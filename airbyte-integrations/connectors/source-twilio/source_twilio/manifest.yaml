@@ -3,7 +3,8 @@ version: "0.29.0"
 definitions:
   selector:
     extractor:
-      field_path: []
+      field_path:
+        - "{{ parameters['name'] }}"
   requester:
     url_base: "https://api.twilio.com/2010-04-01"
     http_method: "GET"
@@ -35,7 +36,7 @@ definitions:
       field_name: "PageSize"
     pagination_strategy:
       type: "CursorPagination"
-      cursor_value: "{{response['meta']['next_page_url']}}"
+      cursor_value: "{{response['next_page_uri']}}"
       page_size: 50
     page_token_option:
       type: RequestPath
@@ -54,31 +55,29 @@ definitions:
       name: "accounts"
       path: "/Accounts.json"
       primary_key: "sid"
-
+  
   accounts_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/accounts_stream"
         parent_key: sid
-        partition_field: account_id
-  
+        partition_field: id
+
   addresses_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
       name: "addresses"
-      path: "/Accounts/{{stream_slice.id}}/Addresses.json"
+      path: "/Accounts/{{ stream_slice.id }}/Addresses.json"
       primary_key: "sid"
     retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
       partition_router:
         $ref: "#/definitions/accounts_partition_router"
-
-  addresses_partition_router:
-    type: SubstreamPartitionRouter
-    parent_stream_configs:
-      - stream: "#/definitions/addresses_stream"
-        parent_key: sid
-        partition_field: address_id
-
+  
   alerts_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
@@ -87,7 +86,7 @@ definitions:
       primary_key: "sid"
     requester:
       url_base: "https://monitor.twilio.com/v1"
-
+  
   applications_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
@@ -95,6 +94,11 @@ definitions:
       path: "Accounts/{{stream_slice.account_id}}/Applications.json"
       primary_key: "sid"
     retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
       partition_router:
         $ref: "#/definitions/accounts_partition_router"
 
@@ -103,63 +107,23 @@ definitions:
     $parameters:
       name: "available_phone_number_countries"
       path: "/Accounts/{{stream_ slice.account_.id}}/AvailablePhoneNumbers.json"
-      primary_key: null
-    requester:
+      primary_key: ""
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
       partition_router:
         $ref: "#/definitions/accounts_partition_router"
-
+    
   available_phone_numbers_countries_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/available_phone_number_countries_stream"
-        parent_key: null
+        parent_key: ""
         partition_field: subresource_uris
-
-  available_phone_numbers_local_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "available_phone_numbers_local"
-      path: "/Accounts/{{stream_slice.account_id}}/AvailablePhoneNumbers/{{stream_slice.phone_number}}/Local.json"
-      primary_key: null
-    requester:
-      partition_router:
-        $ref: "#/definitions/available_phone_numbers_countries_partition_router"
-
-  available_phone_numbers_mobile_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "available_phone_numbers_mobile"
-      path: "/2010-04-01/Accounts.json"
-      primary_key: "sid"
-
-  available_phone_numbers_toll_free_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "available_phone_numbers"
-      path: "/2010-04-01/Accounts.json"
-      primary_key: "sid"
-
-  calls_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "calls"
-      path: "/2010-04-01/Accounts.json"
-      primary_key: "sid"
-
-  conference_participants_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "conference_participants"
-      path: "/2010-04-01/Accounts.json"
-      primary_key: "sid"
-
-  conferences_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "conferences"
-      path: "/2010-04-01/Accounts.json"
-      primary_key: "sid"
-
+  
   conversations_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
@@ -168,7 +132,7 @@ definitions:
       primary_key: "sid"
     requester:
       url_base: "https://conversations.twilio.com/v1"
-
+  
   conversations_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -185,6 +149,11 @@ definitions:
     requester:
       url_base: "https://conversations.twilio.com/v1"
     retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
       partition_router:
         $ref: "#/definitions/conversations_partition_router"
 
@@ -197,19 +166,14 @@ definitions:
     requester:
       url_base: "https://conversations.twilio.com/v1"
     retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
       partition_router:
         $ref: "#/definitions/conversations_partition_router"
 
-  dependent_phone_numbers_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "dependent_phone_numbers"
-      path: "/2010-04-01/Accounts/{{stream_slice.account_id}}/Addresses/{{stream_slice.address_id}}/DependentPhoneNumbers.json"
-      primary_key: "sid"
-    retriever:
-      partition_router:
-        $ref: "#/definitions/addresses_partition_router"
-  
   flows_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
@@ -225,7 +189,7 @@ definitions:
     - stream: "#/definitions/flows_stream"
       parent_key: sid
       partition_field: flow_id
-  
+
   executions_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
@@ -235,97 +199,14 @@ definitions:
     requester:
       url_base: "https://studio.twilio.com/v1"
     retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
       partition_router:
         $ref: "#/definitions/flows_partition_router"
-
-  incoming_phone_numbers_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "incoming_phone_numbers"
-      path: "/Accounts/{{stream_slice.account_id}}/IncomingPhoneNUmbers.json"
-      primary_key: "sid"
-    retriever:
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
-
-  keys_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "keys"
-      path: "/Accounts/{{stream_slice.account_id}}/Keys.json"
-      primary_key: "sid"
-    retriever:
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
-
-  message_media_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "message_media"
-      path: "/2010-04-01/Accounts.json"
-      primary_key: "sid"
   
-  messages_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "messages"
-      path: "/2010-04-01/Accounts.json"
-      primary_key: "sid"
-  
-  outgoing_caller_ids_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "outgoing_caller_ids"
-      path: "/Accounts/{{stream_slice.account_id}}/OutgoingCallerIds"
-      primary_key: null
-    retriever:
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
-
-  queues_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "queues"
-      path: "/Accounts/{{stream_slice.account_id}}/Queues.json"
-      primary_key: "sid"
-    retriever:
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
-  
-  recordings_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "recordings"
-      path: "/2010-04-01/Accounts.json"
-      primary_key: "sid"
-  
-  transcriptions_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "transcriptions"
-      path: "/Accounts/{{stream_slice.account_id}}/Transcriptions.json"
-      primary_key: "sid"
-    retriever:
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
-  
-  usage_records_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "usage_records"
-      path: "/2010-04-01/Accounts.json"
-      primary_key: "sid"
-      
-  
-  usage_triggers_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "usage_records"
-      path: "/Accounts/{{stream_slice.account_id}}/Usage/Triggers.json"
-      primary_key: "sid"
-    retriever:
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
 
 streams:
   - "#/definitions/accounts_stream"
@@ -333,29 +214,12 @@ streams:
   - "#/definitions/alerts_stream"
   - "#/definitions/applications_stream"
   - "#/definitions/available_phone_number_countries_stream"
-  - "#/definitions/available_phone_numbers_local_stream"
-  - "#/definitions/available_phone_numbers_mobile_stream"
-  - "#/definitions/available_phone_numbers_toll_free_stream"
-  - "#/definitions/calls_stream"
-  - "#/definitions/conference_participants_stream"
-  - "#/definitions/conferences_stream"
   - "#/definitions/conversation_messages_stream"
   - "#/definitions/conversation_participants_stream"
   - "#/definitions/conversations_stream"
-  - "#/definitions/dependent_phone_numbers_stream"
   - "#/definitions/flows_stream"
   - "#/definitions/executions_stream"
-  - "#/definitions/incoming_phone_numbers_stream"
-  - "#/definitions/keys_stream"
-  - "#/definitions/message_media_stream"
-  - "#/definitions/messages_stream"
-  - "#/definitions/outgoing_caller_ids_stream"
-  - "#/definitions/queues_stream"
-  - "#/definitions/recordings_stream"
-  - "#/definitions/transcriptions_stream"
-  - "#/definitions/usage_records_stream"
-  - "#/definitions/usage_triggers_stream"
-
+  
 
 check:
   stream_names:
@@ -364,25 +228,9 @@ check:
     - "alerts"
     - "applications"
     - "available_phone_number_countries"
-    - "available_phone_numbers_local"
-    - "available_phone_numbers_mobile"
-    - "available_phone_numbers_toll_free"
-    - "calls"
-    - "conference_participants"
-    - "conferences"
+    - "flows"
+    - "executions"
     - "conversation_messages"
     - "conversation_participants"
     - "conversations"
-    - "dependent_phone_numbers"
-    - "executions"
-    - "flows"
-    - "incoming_phone_numbers"
-    - "keys"
-    - "message_media"
-    - "messages"
-    - "outgoing_caller_ids"
-    - "queues"
-    - "recordings"
-    - "transcriptions"
-    - "usage_records"
-    - "usage_triggers"
+    
