@@ -1,0 +1,23 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Nettbutikk24 Customer Spec
+  type: object
+  required:
+    - email
+    - password
+    - shop_name
+  properties:
+    shop_name:
+      type: string
+      description: Shop name
+      example:
+        - brewshop.no
+    email:
+      type: string
+      description: Login email
+      airbyte_secret: true
+    password:
+      type: string
+      description: Login password
+      airbyte_secret: true
