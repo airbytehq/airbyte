@@ -500,7 +500,7 @@
     "destinationDefinitionId": "99878c90-0fbd-46d3-9d98-ffde879d17fc",
     "name": "AWS Datalake",
     "dockerRepository": "airbyte/destination-aws-datalake",
-    "dockerImageTag": "0.1.2",
+    "dockerImageTag": "0.1.3",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/aws-datalake",
     "icon": "awsdatalake.svg",
     "spec": {
@@ -694,7 +694,7 @@
     "destinationDefinitionId": "22f6c74f-5699-40ff-833c-4a879ea40133",
     "name": "BigQuery",
     "dockerRepository": "airbyte/destination-bigquery",
-    "dockerImageTag": "1.2.19",
+    "dockerImageTag": "1.3.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/bigquery",
     "icon": "bigquery.svg",
     "spec": {
@@ -717,7 +717,7 @@
             "description": "The location of the dataset. Warning: Changes made after creation will not be applied. Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\">here</a>.",
             "title": "Dataset Location",
             "order": 1,
-            "enum": [ "US", "EU", "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast2", "asia-northeast3", "asia-south1", "asia-south2", "asia-southeast1", "asia-southeast2", "australia-southeast1", "australia-southeast2", "europe-central2", "europe-north1", "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "northamerica-northeast1", "northamerica-northeast2", "southamerica-east1", "southamerica-west1", "us-central1", "us-east1", "us-east4", "us-west1", "us-west2", "us-west3", "us-west4" ]
+            "enum": [ "US", "EU", "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast2", "asia-northeast3", "asia-south1", "asia-south2", "asia-southeast1", "asia-southeast2", "australia-southeast1", "australia-southeast2", "europe-central1", "europe-central2", "europe-north1", "europe-southwest1", "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "europe-west7", "europe-west8", "europe-west9", "me-west1", "northamerica-northeast1", "northamerica-northeast2", "southamerica-east1", "southamerica-west1", "us-central1", "us-east1", "us-east2", "us-east3", "us-east4", "us-east5", "us-west1", "us-west2", "us-west3", "us-west4" ]
           },
           "dataset_id": {
             "type": "string",
@@ -802,6 +802,16 @@
                   "default": "Delete all tmp files from GCS",
                   "enum": [ "Delete all tmp files from GCS", "Keep all tmp files in GCS" ],
                   "order": 4
+                },
+                "file_buffer_count": {
+                  "title": "File Buffer Count",
+                  "type": "integer",
+                  "minimum": 10,
+                  "maximum": 50,
+                  "default": 10,
+                  "description": "Number of file buffers allocated for writing data. Increasing this number is beneficial for connections using Change Data Capture (CDC) and up to the number of streams within a connection. Increasing the number of file buffers past the maximum number of streams has deteriorating effects",
+                  "examples": [ "10" ],
+                  "order": 5
                 }
               }
             } ]
@@ -854,7 +864,7 @@
     },
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "bigquery"
     },
     "supportsDbt": true
@@ -862,7 +872,7 @@
     "destinationDefinitionId": "079d5540-f236-4294-ba7c-ade8fd918496",
     "name": "BigQuery (denormalized typed struct)",
     "dockerRepository": "airbyte/destination-bigquery-denormalized",
-    "dockerImageTag": "1.2.19",
+    "dockerImageTag": "1.3.3",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/bigquery",
     "icon": "bigquery.svg",
     "spec": {
@@ -965,6 +975,16 @@
                   "default": "Delete all tmp files from GCS",
                   "enum": [ "Delete all tmp files from GCS", "Keep all tmp files in GCS" ],
                   "order": 4
+                },
+                "file_buffer_count": {
+                  "title": "File Buffer Count",
+                  "type": "integer",
+                  "minimum": 10,
+                  "maximum": 50,
+                  "default": 10,
+                  "description": "Number of file buffers allocated for writing data. Increasing this number is beneficial for connections using Change Data Capture (CDC) and up to the number of streams within a connection. Increasing the number of file buffers past the maximum number of streams has deteriorating effects",
+                  "examples": [ "10" ],
+                  "order": 5
                 }
               }
             } ]
@@ -983,7 +1003,7 @@
             "title": "Dataset Location",
             "default": "US",
             "order": 4,
-            "enum": [ "US", "EU", "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast2", "asia-northeast3", "asia-south1", "asia-south2", "asia-southeast1", "asia-southeast2", "australia-southeast1", "australia-southeast2", "europe-central2", "europe-north1", "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "northamerica-northeast1", "northamerica-northeast2", "southamerica-east1", "southamerica-west1", "us-central1", "us-east1", "us-east4", "us-west1", "us-west2", "us-west3", "us-west4" ]
+            "enum": [ "US", "EU", "asia-east1", "asia-east2", "asia-northeast1", "asia-northeast2", "asia-northeast3", "asia-south1", "asia-south2", "asia-southeast1", "asia-southeast2", "australia-southeast1", "australia-southeast2", "europe-central1", "europe-central2", "europe-north1", "europe-southwest1", "europe-west1", "europe-west2", "europe-west3", "europe-west4", "europe-west6", "europe-west7", "europe-west8", "europe-west9", "me-west1", "northamerica-northeast1", "northamerica-northeast2", "southamerica-east1", "southamerica-west1", "us-central1", "us-east1", "us-east2", "us-east3", "us-east4", "us-east5", "us-west1", "us-west2", "us-west3", "us-west4" ]
           },
           "big_query_client_buffer_size_mb": {
             "title": "Google BigQuery Client Chunk Size",
@@ -1079,6 +1099,54 @@
             "description": "Indicates to how many nodes the data should be replicated to.",
             "default": 1,
             "order": 6
+          }
+        }
+      },
+      "supportsIncremental": true,
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ "overwrite", "append" ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
+  }, {
+    "destinationDefinitionId": "e088acb6-9780-4568-880c-54c2dd7f431b",
+    "name": "Cumul.io",
+    "dockerRepository": "airbyte/destination-cumulio",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/destinations/cumulio",
+    "icon": "cumulio.svg",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/cumulio",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Destination Cumulio",
+        "type": "object",
+        "required": [ "api_host", "api_key", "api_token" ],
+        "additionalProperties": true,
+        "properties": {
+          "api_host": {
+            "title": "Cumul.io API Host URL",
+            "description": "URL of the Cumul.io API (e.g. 'https://api.cumul.io', 'https://api.us.cumul.io', or VPC-specific API url). Defaults to 'https://api.cumul.io'.",
+            "default": "https://api.cumul.io",
+            "type": "string",
+            "order": 0
+          },
+          "api_key": {
+            "title": "Cumul.io API Key",
+            "description": "An API key generated in Cumul.io's platform (can be generated here: https://app.cumul.io/start/profile/integration).",
+            "type": "string",
+            "airbyte_secret": true,
+            "order": 1
+          },
+          "api_token": {
+            "title": "Cumul.io API Token",
+            "description": "The corresponding API token generated in Cumul.io's platform (can be generated here: https://app.cumul.io/start/profile/integration).",
+            "type": "string",
+            "airbyte_secret": true,
+            "order": 2
           }
         }
       },
@@ -1312,7 +1380,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-clickhouse",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "clickhouse"
     },
     "supportsDbt": false
@@ -1627,10 +1695,151 @@
     "custom": false,
     "releaseStage": "alpha"
   }, {
+    "destinationDefinitionId": "4528e960-6f7b-4412-8555-7e0097e1da17",
+    "name": "Starburst Galaxy",
+    "dockerRepository": "airbyte/destination-starburst-galaxy",
+    "dockerImageTag": "0.0.1",
+    "documentationUrl": "https://docs.airbyte.com/integrations/destinations/starburst-galaxy",
+    "icon": "starburst-galaxy.svg",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/destinations/starburst-galaxy",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Starburst Galaxy Destination Spec",
+        "type": "object",
+        "required": [ "accept_terms", "server_hostname", "username", "password", "catalog", "staging_object_store" ],
+        "properties": {
+          "accept_terms": {
+            "title": "Agree to the Starburst Galaxy terms & conditions",
+            "type": "boolean",
+            "description": "You must agree to the Starburst Galaxy <a href=\"https://www.starburst.io/terms/\">terms & conditions</a> to use this connector.",
+            "default": false,
+            "order": 1
+          },
+          "server_hostname": {
+            "title": "Hostname",
+            "type": "string",
+            "description": "Starburst Galaxy cluster hostname.",
+            "examples": [ "abc-12345678-wxyz.trino.galaxy-demo.io" ],
+            "order": 2
+          },
+          "port": {
+            "title": "Port",
+            "type": "string",
+            "description": "Starburst Galaxy cluster port.",
+            "default": "443",
+            "examples": [ "443" ],
+            "order": 3
+          },
+          "username": {
+            "title": "User",
+            "type": "string",
+            "description": "Starburst Galaxy user.",
+            "examples": [ "user@example.com" ],
+            "order": 4
+          },
+          "password": {
+            "title": "Password",
+            "type": "string",
+            "description": "Starburst Galaxy password for the specified user.",
+            "examples": [ "password" ],
+            "airbyte_secret": true,
+            "order": 5
+          },
+          "catalog": {
+            "title": "Amazon S3 catalog",
+            "type": "string",
+            "description": "Name of the Starburst Galaxy Amazon S3 catalog.",
+            "examples": [ "sample_s3_catalog" ],
+            "order": 6
+          },
+          "catalog_schema": {
+            "title": "Amazon S3 catalog schema",
+            "type": "string",
+            "description": "The default Starburst Galaxy Amazon S3 catalog schema where tables are written to if the source does not specify a namespace. Defaults to \"public\".",
+            "default": "public",
+            "examples": [ "public" ],
+            "order": 7
+          },
+          "staging_object_store": {
+            "title": "Staging object store",
+            "type": "object",
+            "description": "Temporary storage on which temporary Iceberg table is created.",
+            "oneOf": [ {
+              "title": "Amazon S3",
+              "required": [ "object_store_type", "s3_bucket_name", "s3_bucket_path", "s3_bucket_region", "s3_access_key_id", "s3_secret_access_key" ],
+              "properties": {
+                "object_store_type": {
+                  "type": "string",
+                  "enum": [ "S3" ],
+                  "default": "S3",
+                  "order": 1
+                },
+                "s3_bucket_name": {
+                  "title": "S3 bucket name",
+                  "type": "string",
+                  "description": "Name of the S3 bucket",
+                  "examples": [ "airbyte_staging" ],
+                  "order": 1
+                },
+                "s3_bucket_path": {
+                  "title": "S3 bucket path",
+                  "type": "string",
+                  "description": "Directory in the S3 bucket where staging data is stored.",
+                  "examples": [ "temp_airbyte__sync/test" ],
+                  "order": 2
+                },
+                "s3_bucket_region": {
+                  "title": "S3 bucket region",
+                  "type": "string",
+                  "default": "us-east-1",
+                  "description": "The region of the S3 bucket.",
+                  "enum": [ "ap-northeast-1", "ap-southeast-1", "ap-southeast-2", "ca-central-1", "eu-central-1", "eu-west-1", "eu-west-2", "eu-west-3", "us-east-1", "us-east-2", "us-west-1", "us-west-2" ],
+                  "order": 3
+                },
+                "s3_access_key_id": {
+                  "title": "Access key",
+                  "type": "string",
+                  "description": "Access key with access to the bucket. Airbyte requires read and write permissions to a given bucket.",
+                  "examples": [ "A012345678910EXAMPLE" ],
+                  "airbyte_secret": true,
+                  "order": 4
+                },
+                "s3_secret_access_key": {
+                  "title": "Secret key",
+                  "type": "string",
+                  "description": "Secret key used with the specified access key.",
+                  "examples": [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ],
+                  "airbyte_secret": true,
+                  "order": 5
+                }
+              }
+            } ],
+            "order": 8
+          },
+          "purge_staging_table": {
+            "title": "Purge staging Iceberg table",
+            "type": "boolean",
+            "description": "Defaults to 'true'. Switch to 'false' for debugging purposes.",
+            "default": true,
+            "order": 9
+          }
+        }
+      },
+      "supportsIncremental": true,
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ "overwrite", "append" ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
+  }, {
     "destinationDefinitionId": "072d5540-f236-4294-ba7c-ade8fd918496",
     "name": "Databricks Lakehouse",
     "dockerRepository": "airbyte/destination-databricks",
-    "dockerImageTag": "1.0.0",
+    "dockerImageTag": "1.0.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/databricks",
     "icon": "databricks.svg",
     "spec": {
@@ -2442,7 +2651,7 @@
     "destinationDefinitionId": "ca8f6566-e555-4b40-943a-545bf123117a",
     "name": "Google Cloud Storage (GCS)",
     "dockerRepository": "airbyte/destination-gcs",
-    "dockerImageTag": "0.2.16",
+    "dockerImageTag": "0.2.17",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/gcs",
     "icon": "googlecloudstorage.svg",
     "spec": {
@@ -3634,7 +3843,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-mssql",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "mssql"
     },
     "supportsDbt": true
@@ -4103,7 +4312,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-mysql",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "mysql"
     },
     "supportsDbt": true
@@ -4340,7 +4549,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-oracle",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "oracle"
     },
     "supportsDbt": true
@@ -4664,7 +4873,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "postgres"
     },
     "supportsDbt": true
@@ -5102,7 +5311,7 @@
     "destinationDefinitionId": "f7a7d195-377f-cf5b-70a5-be6b819019dc",
     "name": "Redshift",
     "dockerRepository": "airbyte/destination-redshift",
-    "dockerImageTag": "0.4.5",
+    "dockerImageTag": "0.4.7",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/redshift",
     "icon": "redshift.svg",
     "spec": {
@@ -5402,7 +5611,7 @@
     },
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-redshift",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "redshift"
     },
     "supportsDbt": true
@@ -5542,7 +5751,7 @@
     "destinationDefinitionId": "4816b78f-1489-44c1-9060-4b19d5fa9362",
     "name": "S3",
     "dockerRepository": "airbyte/destination-s3",
-    "dockerImageTag": "0.3.23",
+    "dockerImageTag": "0.3.25",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/s3",
     "icon": "s3.svg",
     "spec": {
@@ -5893,7 +6102,7 @@
     "destinationDefinitionId": "471e5cab-8ed1-49f3-ba11-79c687784737",
     "name": "S3 Glue",
     "dockerRepository": "airbyte/destination-s3-glue",
-    "dockerImageTag": "0.1.4",
+    "dockerImageTag": "0.1.6",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/s3-glue",
     "icon": "s3-glue.svg",
     "spec": {
@@ -5982,11 +6191,12 @@
                     }
                   } ]
                 },
-                "flatten_data": {
-                  "title": "Flatten Data",
-                  "description": "If true data will be flattened and won't be nested in the _airbyte_data field",
-                  "type": "boolean",
-                  "default": true
+                "flattening": {
+                  "type": "string",
+                  "title": "Flattening",
+                  "description": "Whether the input json data should be normalized (flattened) in the output JSON Lines. Please refer to docs for details.",
+                  "default": "Root level flattening",
+                  "enum": [ "No flattening", "Root level flattening" ]
                 }
               }
             } ],
@@ -6170,7 +6380,7 @@
     "destinationDefinitionId": "424892c4-daac-4491-b35d-c6688ba547ba",
     "name": "Snowflake",
     "dockerRepository": "airbyte/destination-snowflake",
-    "dockerImageTag": "0.4.61",
+    "dockerImageTag": "0.4.63",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/snowflake",
     "icon": "snowflake.svg",
     "spec": {
@@ -6622,7 +6832,7 @@
     },
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-snowflake",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "snowflake"
     },
     "supportsDbt": true
@@ -7172,7 +7382,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-tidb",
-      "normalizationTag": "0.4.0",
+      "normalizationTag": "0.4.1",
       "normalizationIntegrationType": "tidb"
     },
     "supportsDbt": true
@@ -7766,6 +7976,53 @@
     "custom": false,
     "releaseStage": "alpha"
   }, {
+    "sourceDefinitionId": "912eb6b7-a893-4a5b-b1c0-36ebbe2de8cd",
+    "name": "Aircall",
+    "dockerRepository": "airbyte/source-aircall",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/aircall",
+    "icon": "aircall.svg",
+    "sourceType": "api",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/aircall",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Aircall Spec",
+        "type": "object",
+        "required": [ "api_id", "api_token", "start_date" ],
+        "additionalProperties": true,
+        "properties": {
+          "api_id": {
+            "title": "API ID",
+            "type": "string",
+            "description": "App ID found at settings https://dashboard.aircall.io/integrations/api-keys",
+            "airbyte_secret": true
+          },
+          "api_token": {
+            "title": "API Token",
+            "type": "string",
+            "description": "App token found at settings (Ref- https://dashboard.aircall.io/integrations/api-keys)",
+            "airbyte_secret": true
+          },
+          "start_date": {
+            "title": "Date-From Filter",
+            "type": "string",
+            "description": "Date time filter for incremental filter, Specify which date to extract from.",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$",
+            "examples": [ "2022-03-01T00:00:00.000Z" ],
+            "format": "date-time"
+          }
+        }
+      },
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
+  }, {
     "sourceDefinitionId": "14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212",
     "name": "Airtable",
     "dockerRepository": "airbyte/source-airtable",
@@ -8007,7 +8264,7 @@
     "sourceDefinitionId": "1fa90628-2b9e-11ed-a261-0242ac120002",
     "name": "AlloyDB for PostgreSQL",
     "dockerRepository": "airbyte/source-alloydb",
-    "dockerImageTag": "2.0.17",
+    "dockerImageTag": "2.0.28",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/alloydb",
     "icon": "alloydb.svg",
     "sourceType": "database",
@@ -8081,15 +8338,6 @@
             "group": "advanced",
             "pattern_descriptor": "key1=value1&key2=value2"
           },
-          "ssl": {
-            "title": "Connect using SSL",
-            "description": "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
-            "type": "boolean",
-            "default": false,
-            "order": 7,
-            "group": "security",
-            "always_show": true
-          },
           "ssl_mode": {
             "title": "SSL Modes",
             "description": "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
@@ -8157,7 +8405,7 @@
                 },
                 "ca_certificate": {
                   "type": "string",
-                  "title": "CA certificate",
+                  "title": "CA Certificate",
                   "description": "CA certificate",
                   "airbyte_secret": true,
                   "multiline": true,
@@ -8169,7 +8417,8 @@
                   "description": "Client certificate",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -8177,7 +8426,8 @@
                   "description": "Client key",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",
@@ -8212,7 +8462,8 @@
                   "description": "Client certificate",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -8220,7 +8471,8 @@
                   "description": "Client key",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",
@@ -8480,7 +8732,7 @@
     "sourceDefinitionId": "c6b0a29e-1da9-4512-9002-7bfd0cba2246",
     "name": "Amazon Ads",
     "dockerRepository": "airbyte/source-amazon-ads",
-    "dockerImageTag": "1.0.2",
+    "dockerImageTag": "1.0.3",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-ads",
     "icon": "amazonads.svg",
     "sourceType": "api",
@@ -8632,7 +8884,7 @@
     "sourceDefinitionId": "e55879a8-0ef8-4557-abcf-ab34c53ec460",
     "name": "Amazon Seller Partner",
     "dockerRepository": "airbyte/source-amazon-seller-partner",
-    "dockerImageTag": "1.0.1",
+    "dockerImageTag": "1.1.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-seller-partner",
     "icon": "amazonsellerpartner.svg",
     "sourceType": "api",
@@ -8924,14 +9176,14 @@
     "sourceDefinitionId": "fa9f58c6-2d03-4237-aaa4-07d75e0c1396",
     "name": "Amplitude",
     "dockerRepository": "airbyte/source-amplitude",
-    "dockerImageTag": "0.1.24",
+    "dockerImageTag": "0.2.3",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/amplitude",
     "icon": "amplitude.svg",
     "sourceType": "api",
     "spec": {
       "documentationUrl": "https://docs.airbyte.com/integrations/sources/amplitude",
       "connectionSpecification": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
+        "$schema": "https://json-schema.org/draft-07/schema#",
         "title": "Amplitude Spec",
         "type": "object",
         "required": [ "api_key", "secret_key", "start_date" ],
@@ -8963,26 +9215,13 @@
             "description": "UTC date and time in the format 2021-01-25T00:00:00Z. Any data before this date will not be replicated.",
             "examples": [ "2021-01-25T00:00:00Z" ]
           },
-          "event_time_interval": {
-            "type": "object",
-            "title": "Event Stream Time Interval",
-            "description": "Amplitude event stream time interval",
-            "required": [ "size_unit", "size" ],
-            "properties": {
-              "size_unit": {
-                "type": "string",
-                "title": "Events Time Interval Size Unit",
-                "description": "Amplitude event stream's interval size unit",
-                "enum": [ "days", "hours", "weeks", "months" ],
-                "default": "days"
-              },
-              "size": {
-                "type": "integer",
-                "title": "Events Time Interval Size",
-                "description": "Amplitude event stream's interval size unit",
-                "default": 1
-              }
-            }
+          "request_time_range": {
+            "type": "integer",
+            "title": "Request time range",
+            "description": "According to <a href=\"https://www.docs.developers.amplitude.com/analytics/apis/export-api/#considerations\">Considerations</a> too big time range in request can cause a timeout error. In this case, set shorter time interval in hours.",
+            "default": 24,
+            "minimum": 1,
+            "maximum": 8760
           }
         }
       },
@@ -8995,7 +9234,7 @@
     "custom": false,
     "releaseStage": "generally_available",
     "allowedHosts": {
-      "hosts": [ "*.amplitude.com" ]
+      "hosts": [ "amplitude.com", "analytics.eu.amplitude.com" ]
     }
   }, {
     "sourceDefinitionId": "47f17145-fe20-4ef5-a548-e29b048adf84",
@@ -9071,6 +9310,64 @@
             "type": "string",
             "title": "country",
             "description": "getting data by Country"
+          }
+        }
+      },
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
+  }, {
+    "sourceDefinitionId": "e59c8416-c2fa-4bd3-9e95-52677ea281c1",
+    "name": "Apple Search Ads",
+    "dockerRepository": "airbyte/source-apple-search-ads",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/apple-search-ads",
+    "icon": "apple.svg",
+    "sourceType": "api",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.io/integrations/sources/apple-search-ads",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Apple Search Ads Spec",
+        "type": "object",
+        "required": [ "org_id", "client_id", "client_secret", "start_date" ],
+        "additionalProperties": true,
+        "properties": {
+          "org_id": {
+            "type": "integer",
+            "title": "Org Id",
+            "description": "The identifier of the organization that owns the campaign. Your Org Id is the same as your account in the Apple Search Ads UI."
+          },
+          "client_id": {
+            "type": "string",
+            "title": "Client Id",
+            "description": "A user identifier for the token request. See <a href=\"https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api\">here</a>",
+            "airbyte_secret": true
+          },
+          "client_secret": {
+            "type": "string",
+            "title": "Client Secret",
+            "description": "A string that authenticates the user’s setup request. See <a href=\"https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api\">here</a>",
+            "airbyte_secret": true
+          },
+          "start_date": {
+            "type": "string",
+            "title": "Start Date",
+            "description": "Start getting data from that date.",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "examples": [ "2020-01-01" ]
+          },
+          "end_date": {
+            "type": "string",
+            "title": "End Date",
+            "description": "Data is retrieved until that date (included)",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "examples": [ "2021-01-01" ]
           }
         }
       },
@@ -9732,7 +10029,7 @@
     "sourceDefinitionId": "47f25999-dd5e-4636-8c39-e7cea2453331",
     "name": "Bing Ads",
     "dockerRepository": "airbyte/source-bing-ads",
-    "dockerImageTag": "0.1.18",
+    "dockerImageTag": "0.1.20",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/bing-ads",
     "icon": "bingads.svg",
     "sourceType": "api",
@@ -9793,6 +10090,15 @@
             "default": "2020-01-01",
             "description": "The start date from which to begin replicating report data. Any data generated before this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format.",
             "order": 5
+          },
+          "lookback_window": {
+            "title": "Lookback window",
+            "description": "Also known as attribution or conversion window. How far into the past to look for records (in days). If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. Used only for performance report streams in incremental mode.",
+            "type": "integer",
+            "default": 0,
+            "minimum": 0,
+            "maximum": 90,
+            "order": 6
           }
         }
       },
@@ -11076,7 +11382,7 @@
     "sourceDefinitionId": "44f3002f-2df9-4f6d-b21c-02cd3b47d0dc",
     "name": "Copper",
     "dockerRepository": "airbyte/source-copper",
-    "dockerImageTag": "0.1.0",
+    "dockerImageTag": "0.2.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/copper",
     "icon": "copper.svg",
     "sourceType": "api",
@@ -11252,7 +11558,7 @@
     "sourceDefinitionId": "1cfc30c7-82db-43f4-9fd7-ac1b42312cda",
     "name": "Datadog",
     "dockerRepository": "airbyte/source-datadog",
-    "dockerImageTag": "0.1.0",
+    "dockerImageTag": "0.1.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/datadog",
     "icon": "datadog.svg",
     "sourceType": "api",
@@ -12090,7 +12396,7 @@
     "sourceDefinitionId": "e7778cfc-e97c-4458-9ecb-b4f2bba8946c",
     "name": "Facebook Marketing",
     "dockerRepository": "airbyte/source-facebook-marketing",
-    "dockerImageTag": "0.3.2",
+    "dockerImageTag": "0.3.6",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/facebook-marketing",
     "icon": "facebook.svg",
     "sourceType": "api",
@@ -12123,7 +12429,8 @@
             "order": 2,
             "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
             "examples": [ "2017-01-26T00:00:00Z" ],
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
           },
           "access_token": {
             "title": "Access Token",
@@ -12298,7 +12605,7 @@
     "sourceDefinitionId": "010eb12f-837b-4685-892d-0a39f76a98f5",
     "name": "Facebook Pages",
     "dockerRepository": "airbyte/source-facebook-pages",
-    "dockerImageTag": "0.2.3",
+    "dockerImageTag": "0.2.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/facebook-pages",
     "icon": "facebook.svg",
     "sourceType": "api",
@@ -12565,7 +12872,7 @@
     "sourceDefinitionId": "778daa7c-feaf-4db6-96f3-70fd645acc77",
     "name": "File (CSV, JSON, Excel, Feather, Parquet)",
     "dockerRepository": "airbyte/source-file",
-    "dockerImageTag": "0.2.36",
+    "dockerImageTag": "0.3.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/file",
     "icon": "file.svg",
     "sourceType": "file",
@@ -12594,11 +12901,7 @@
             "type": "string",
             "title": "Reader Options",
             "description": "This should be a string in JSON format. It depends on the chosen file format to provide additional options and tune its behavior.",
-            "examples": [ "{}", "{\"sep\": \" \"}", {
-              "sep": "\t",
-              "header": 0,
-              "names": "column1, column2"
-            } ]
+            "examples": [ "{}", "{\"sep\": \" \"}", "{\"sep\": \"\t\", \"header\": 0, \"names\": [\"column1\", \"column2\"] }" ]
           },
           "url": {
             "type": "string",
@@ -13055,7 +13358,7 @@
     "sourceDefinitionId": "9bb85338-ea95-4c93-b267-6be89125b267",
     "name": "Freshservice",
     "dockerRepository": "airbyte/source-freshservice",
-    "dockerImageTag": "0.1.1",
+    "dockerImageTag": "1.0.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/freshservice",
     "icon": "freshservice.svg",
     "sourceType": "api",
@@ -13066,7 +13369,7 @@
         "title": "Freshservice Spec",
         "type": "object",
         "required": [ "domain_name", "api_key", "start_date" ],
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "domain_name": {
             "type": "string",
@@ -13086,6 +13389,45 @@
             "description": "UTC date and time in the format 2020-10-01T00:00:00Z. Any data before this date will not be replicated.",
             "examples": [ "2020-10-01T00:00:00Z" ],
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          }
+        }
+      },
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
+  }, {
+    "sourceDefinitionId": "263fd456-02d1-4a26-a35e-52ccaedad778",
+    "name": "Fullstory",
+    "dockerRepository": "airbyte/source-fullstory",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/fullstory",
+    "icon": "fullstory.svg",
+    "sourceType": "api",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/fullstory",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "fullstory.com Source Spec",
+        "type": "object",
+        "required": [ "api_key", "uid" ],
+        "additionalProperties": true,
+        "properties": {
+          "api_key": {
+            "title": "API Key",
+            "type": "string",
+            "description": "API Key for the fullstory.com API.",
+            "airbyte_secret": true
+          },
+          "uid": {
+            "title": "User ID",
+            "type": "string",
+            "description": "User ID for the fullstory.com API.",
+            "airbyte_secret": true
           }
         }
       },
@@ -13264,7 +13606,7 @@
     "sourceDefinitionId": "ef69ef6e-aa7f-4af1-a01d-ef775033524e",
     "name": "GitHub",
     "dockerRepository": "airbyte/source-github",
-    "dockerImageTag": "0.4.7",
+    "dockerImageTag": "0.4.8",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/github",
     "icon": "github.svg",
     "sourceType": "api",
@@ -13411,12 +13753,13 @@
     },
     "suggestedStreams": {
       "streams": [ "branches", "comments", "issues", "organizations", "pull_requests", "repositories", "stargazers", "tags", "teams", "users" ]
-    }
+    },
+    "maxSecondsBetweenMessages": 5400
   }, {
     "sourceDefinitionId": "5e6175e5-68e1-4c17-bff9-56103bbb0d80",
     "name": "Gitlab",
     "dockerRepository": "airbyte/source-gitlab",
-    "dockerImageTag": "1.0.3",
+    "dockerImageTag": "1.0.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/gitlab",
     "icon": "gitlab.svg",
     "sourceType": "api",
@@ -13839,7 +14182,7 @@
     "sourceDefinitionId": "253487c0-2246-43ba-a21f-5116b20a2c50",
     "name": "Google Ads",
     "dockerRepository": "airbyte/source-google-ads",
-    "dockerImageTag": "0.2.13",
+    "dockerImageTag": "0.2.14",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-ads",
     "icon": "google-adwords.svg",
     "sourceType": "api",
@@ -14116,7 +14459,7 @@
     "sourceDefinitionId": "3cc2eafd-84aa-4dca-93af-322d9dfeec1a",
     "name": "Google Analytics 4 (GA4)",
     "dockerRepository": "airbyte/source-google-analytics-data-api",
-    "dockerImageTag": "0.1.3",
+    "dockerImageTag": "0.2.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-analytics-data-api",
     "icon": "google-analytics.svg",
     "sourceType": "api",
@@ -14202,7 +14545,7 @@
           "date_ranges_start_date": {
             "type": "string",
             "title": "Start Date",
-            "description": "The start date from which to replicate report data in the format YYYY-MM-DD. Data generated before this date will not be included in the report.",
+            "description": "The start date from which to replicate report data in the format YYYY-MM-DD. Data generated before this date will not be included in the report. Not applied to custom Cohort reports.",
             "format": "date",
             "order": 2
           },
@@ -14215,7 +14558,7 @@
           "window_in_days": {
             "type": "integer",
             "title": "Data request time increment in days",
-            "description": "The time increment used by the connector when requesting data from the Google Analytics API. More information is available in the <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4/#sampling-in-reports\">the docs</a>. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364.",
+            "description": "The time increment used by the connector when requesting data from the Google Analytics API. More information is available in the <a href=\"https://docs.airbyte.com/integrations/sources/google-analytics-v4/#sampling-in-reports\">the docs</a>. The bigger this value is, the faster the sync will be, but the more likely that sampling will be applied to your data, potentially causing inaccuracies in the returned results. We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364. Not applied to custom Cohort reports.",
             "examples": [ 30, 60, 90, 120, 200, 364 ],
             "minimum": 1,
             "maximum": 364,
@@ -14742,7 +15085,7 @@
     "sourceDefinitionId": "59f1e50a-331f-4f09-b3e8-2e8d4d355f44",
     "name": "Greenhouse",
     "dockerRepository": "airbyte/source-greenhouse",
-    "dockerImageTag": "0.3.1",
+    "dockerImageTag": "0.4.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/greenhouse",
     "icon": "greenhouse.svg",
     "sourceType": "api",
@@ -15134,7 +15477,7 @@
     "sourceDefinitionId": "36c891d9-4bd9-43ac-bad2-10e12756272c",
     "name": "HubSpot",
     "dockerRepository": "airbyte/source-hubspot",
-    "dockerImageTag": "0.6.0",
+    "dockerImageTag": "0.6.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/hubspot",
     "icon": "hubspot.svg",
     "sourceType": "api",
@@ -15696,7 +16039,7 @@
     "sourceDefinitionId": "68e63de2-bb83-4c7e-93fa-a8a9051e3993",
     "name": "Jira",
     "dockerRepository": "airbyte/source-jira",
-    "dockerImageTag": "0.3.5",
+    "dockerImageTag": "0.3.7",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/jira",
     "icon": "jira.svg",
     "sourceType": "api",
@@ -15719,9 +16062,8 @@
           "domain": {
             "type": "string",
             "title": "Domain",
-            "examples": [ "domainname.atlassian.net" ],
-            "pattern": "^[a-zA-Z0-9._-]*\\.atlassian\\.net$",
-            "description": "The Domain for your Jira account, e.g. airbyteio.atlassian.net",
+            "examples": [ "<your-domain>.atlassian.net", "<your-domain>.jira.com", "jira.<your-domain>.com" ],
+            "description": "The Domain for your Jira account, e.g. airbyteio.atlassian.net, airbyteio.jira.com, jira.your-domain.com",
             "order": 1
           },
           "email": {
@@ -16264,6 +16606,7 @@
     "dockerRepository": "airbyte/source-lemlist",
     "dockerImageTag": "0.1.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/lemlist",
+    "icon": "lemlist.svg",
     "sourceType": "api",
     "spec": {
       "documentationUrl": "https://docs.airbyte.io/integrations/sources/lemlist",
@@ -16778,7 +17121,7 @@
     "sourceDefinitionId": "b03a9f3e-22a5-11eb-adc1-0242ac120002",
     "name": "Mailchimp",
     "dockerRepository": "airbyte/source-mailchimp",
-    "dockerImageTag": "0.3.5",
+    "dockerImageTag": "0.4.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mailchimp",
     "icon": "mailchimp.svg",
     "sourceType": "api",
@@ -16907,7 +17250,7 @@
     "sourceDefinitionId": "56582331-5de2-476b-b913-5798de77bbdf",
     "name": "Mailjet Mail",
     "dockerRepository": "airbyte/source-mailjet-mail",
-    "dockerImageTag": "0.1.0",
+    "dockerImageTag": "0.1.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mailjet-mail",
     "icon": "mailjetmail.svg",
     "sourceType": "api",
@@ -17112,7 +17455,7 @@
     "sourceDefinitionId": "9e0556f4-69df-4522-a3fb-03264d36b348",
     "name": "Marketo",
     "dockerRepository": "airbyte/source-marketo",
-    "dockerImageTag": "1.0.3",
+    "dockerImageTag": "1.0.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/marketo",
     "icon": "marketo.svg",
     "sourceType": "api",
@@ -17170,6 +17513,53 @@
       "hosts": [ "*.mktorest.com" ]
     }
   }, {
+    "sourceDefinitionId": "23240e9e-d14a-43bc-899f-72ea304d1994",
+    "name": "Merge",
+    "dockerRepository": "airbyte/source-merge",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/merge",
+    "icon": "merge.svg",
+    "sourceType": "api",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/merge",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Merge Spec",
+        "type": "object",
+        "additionalProperties": true,
+        "required": [ "account_token", "api_token", "start_date" ],
+        "properties": {
+          "account_token": {
+            "title": "Account Token",
+            "type": "string",
+            "description": "Link your other integrations with account credentials on accounts section to get account token (ref - https://app.merge.dev/linked-accounts/accounts)",
+            "airbyte_secret": true
+          },
+          "api_token": {
+            "title": "Api token",
+            "type": "string",
+            "description": "API token can be seen at  https://app.merge.dev/keys",
+            "airbyte_secret": true
+          },
+          "start_date": {
+            "title": "Date-From Filter",
+            "type": "string",
+            "description": "Date time filter for incremental filter, Specify which date to extract from.",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$",
+            "examples": [ "2022-03-01T00:00:00.000Z" ],
+            "format": "date-time"
+          }
+        }
+      },
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
+  }, {
     "sourceDefinitionId": "c7cb421b-942e-4468-99ee-e369bcabaec5",
     "name": "Metabase",
     "dockerRepository": "airbyte/source-metabase",
@@ -17223,7 +17613,7 @@
     "sourceDefinitionId": "b5ea17b1-f170-46dc-bc31-cc744ca984c1",
     "name": "Microsoft SQL Server (MSSQL)",
     "dockerRepository": "airbyte/source-mssql",
-    "dockerImageTag": "1.0.10",
+    "dockerImageTag": "1.0.16",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mssql",
     "icon": "mssql.svg",
     "sourceType": "database",
@@ -17721,7 +18111,7 @@
     "sourceDefinitionId": "12928b32-bf0a-4f1e-964f-07e12e37153a",
     "name": "Mixpanel",
     "dockerRepository": "airbyte/source-mixpanel",
-    "dockerImageTag": "0.1.31",
+    "dockerImageTag": "0.1.33",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mixpanel",
     "icon": "mixpanel.svg",
     "sourceType": "api",
@@ -17860,7 +18250,7 @@
     "sourceDefinitionId": "80a54ea2-9959-4040-aac1-eee42423ec9b",
     "name": "Monday",
     "dockerRepository": "airbyte/source-monday",
-    "dockerImageTag": "0.2.3",
+    "dockerImageTag": "0.2.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/monday",
     "icon": "monday.svg",
     "sourceType": "api",
@@ -18191,7 +18581,7 @@
     "sourceDefinitionId": "435bb9a5-7887-4809-aa58-28c27df0d7ad",
     "name": "MySQL",
     "dockerRepository": "airbyte/source-mysql",
-    "dockerImageTag": "2.0.13",
+    "dockerImageTag": "2.0.20",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mysql",
     "icon": "mysql.svg",
     "sourceType": "database",
@@ -18302,7 +18692,8 @@
                   "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the <b>Client key</b> as well)",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -18310,7 +18701,8 @@
                   "description": "Client key (this is not a required field, but if you want to use it, you will need to add the <b>Client certificate</b> as well)",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",
@@ -18344,7 +18736,8 @@
                   "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the <b>Client key</b> as well)",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -18352,7 +18745,8 @@
                   "description": "Client key (this is not a required field, but if you want to use it, you will need to add the <b>Client certificate</b> as well)",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",
@@ -18710,7 +19104,7 @@
     "sourceDefinitionId": "df38991e-f35b-4af2-996d-36817f614587",
     "name": "News API",
     "dockerRepository": "airbyte/source-news-api",
-    "dockerImageTag": "0.1.0",
+    "dockerImageTag": "0.1.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/news-api",
     "icon": "newsapi.svg",
     "sourceType": "api",
@@ -18770,13 +19164,15 @@
           },
           "start_date": {
             "type": "string",
-            "description": "A date and optional time for the oldest article allowed. This should\nbe in ISO 8601 format (e.g. 2021-01-01 or 2021-01-01T12:00:00).\n",
+            "description": "A date and optional time for the oldest article allowed. This should\nbe in ISO 8601 format.\n",
+            "examples": [ "2021-01-01", "2021-01-01T12:00:00" ],
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$",
             "order": 6
           },
           "end_date": {
             "type": "string",
-            "description": "A date and optional time for the newest article allowed. This should\nbe in ISO 8601 format (e.g. 2021-01-01 or 2021-01-01T12:00:00).\n",
+            "description": "A date and optional time for the newest article allowed. This should\nbe in ISO 8601 format.\n",
+            "examples": [ "2021-01-01", "2021-01-01T12:00:00" ],
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$",
             "order": 7
           },
@@ -18904,7 +19300,7 @@
     "sourceDefinitionId": "6e00b415-b02e-4160-bf02-58176a0ae687",
     "name": "Notion",
     "dockerRepository": "airbyte/source-notion",
-    "dockerImageTag": "1.0.3",
+    "dockerImageTag": "1.0.5",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/notion",
     "icon": "notion.svg",
     "sourceType": "api",
@@ -20069,7 +20465,7 @@
     "sourceDefinitionId": "d913b0f2-cc51-4e55-a44c-8ba1697b9239",
     "name": "Paypal Transaction",
     "dockerRepository": "airbyte/source-paypal-transaction",
-    "dockerImageTag": "0.1.12",
+    "dockerImageTag": "0.1.13",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/paypal-transaction",
     "icon": "paypal.svg",
     "sourceType": "api",
@@ -20104,8 +20500,9 @@
             "type": "string",
             "title": "Start Date",
             "description": "Start Date for data extraction in <a href=\"https://datatracker.ietf.org/doc/html/rfc3339#section-5.6\">ISO format</a>. Date must be in range from 3 years till 12 hrs before present time.",
-            "examples": [ "2021-06-11T23:59:59-00:00" ],
-            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{2}:[0-9]{2}$"
+            "examples": [ "2021-06-11T23:59:59", "2021-06-11T23:59:59+00:00" ],
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(|Z|[+-][0-9]{2}:[0-9]{2})$",
+            "format": "date-time"
           },
           "is_sandbox": {
             "title": "Sandbox",
@@ -20308,7 +20705,7 @@
     "sourceDefinitionId": "5cb7e5fe-38c2-11ec-8d3d-0242ac130003",
     "name": "Pinterest",
     "dockerRepository": "airbyte/source-pinterest",
-    "dockerImageTag": "0.2.4",
+    "dockerImageTag": "0.2.6",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/pinterest",
     "icon": "pinterest.svg",
     "sourceType": "api",
@@ -20324,7 +20721,7 @@
           "start_date": {
             "type": "string",
             "title": "Start Date",
-            "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by api (914 days from today).",
+            "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by api (89 days from today).",
             "examples": [ "2022-07-28" ]
           },
           "status": {
@@ -20863,7 +21260,7 @@
     "sourceDefinitionId": "af6d50ee-dddf-4126-a8ee-7faee990774f",
     "name": "PostHog",
     "dockerRepository": "airbyte/source-posthog",
-    "dockerImageTag": "0.1.9",
+    "dockerImageTag": "0.1.10",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/posthog",
     "icon": "posthog.svg",
     "sourceType": "api",
@@ -20913,7 +21310,7 @@
     "sourceDefinitionId": "decd338e-5647-4c0b-adf4-da0e75f5a750",
     "name": "Postgres",
     "dockerRepository": "airbyte/source-postgres",
-    "dockerImageTag": "2.0.18",
+    "dockerImageTag": "2.0.28",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres",
     "icon": "postgresql.svg",
     "sourceType": "database",
@@ -20987,15 +21384,6 @@
             "group": "advanced",
             "pattern_descriptor": "key1=value1&key2=value2"
           },
-          "ssl": {
-            "title": "Connect using SSL",
-            "description": "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
-            "type": "boolean",
-            "default": false,
-            "order": 7,
-            "group": "security",
-            "always_show": true
-          },
           "ssl_mode": {
             "title": "SSL Modes",
             "description": "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
@@ -21063,7 +21451,7 @@
                 },
                 "ca_certificate": {
                   "type": "string",
-                  "title": "CA certificate",
+                  "title": "CA Certificate",
                   "description": "CA certificate",
                   "airbyte_secret": true,
                   "multiline": true,
@@ -21075,7 +21463,8 @@
                   "description": "Client certificate",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -21083,7 +21472,8 @@
                   "description": "Client key",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",
@@ -21118,7 +21508,8 @@
                   "description": "Client certificate",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 2
+                  "order": 2,
+                  "always_show": true
                 },
                 "client_key": {
                   "type": "string",
@@ -21126,7 +21517,8 @@
                   "description": "Client key",
                   "airbyte_secret": true,
                   "multiline": true,
-                  "order": 3
+                  "order": 3,
+                  "always_show": true
                 },
                 "client_key_password": {
                   "type": "string",
@@ -21328,7 +21720,8 @@
     "releaseStage": "generally_available",
     "allowedHosts": {
       "hosts": [ "${host}", "${tunnel_method.tunnel_host}" ]
-    }
+    },
+    "maxSecondsBetweenMessages": 7200
   }, {
     "sourceDefinitionId": "cde75ca1-1e28-4a0f-85bb-90c546de9f1f",
     "name": "Postmark App",
@@ -21693,58 +22086,84 @@
     "custom": false,
     "releaseStage": "alpha"
   }, {
-    "sourceDefinitionId": "29b409d9-30a5-4cc8-ad50-886eb846fea3",
+    "sourceDefinitionId": "cf9c4355-b171-4477-8f2d-6c5cc5fc8b7e",
     "name": "QuickBooks",
-    "dockerRepository": "airbyte/source-quickbooks-singer",
-    "dockerImageTag": "0.1.5",
-    "documentationUrl": "https://docs.airbyte.com/integrations/sources/quickbooks-singer",
-    "icon": "qb.svg",
+    "dockerRepository": "airbyte/source-quickbooks",
+    "dockerImageTag": "2.0.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/quickbooks",
+    "icon": "quickbooks.svg",
     "sourceType": "api",
     "spec": {
-      "documentationUrl": "https://docs.airbyte.com/integrations/sources/quickbooks-singer",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/quickbooks",
       "connectionSpecification": {
         "$schema": "http://json-schema.org/draft-07/schema#",
-        "title": "Source QuickBooks Singer Spec",
+        "title": "Source QuickBooks Spec",
         "type": "object",
-        "required": [ "client_id", "client_secret", "refresh_token", "realm_id", "user_agent", "start_date", "sandbox" ],
-        "additionalProperties": false,
+        "required": [ "credentials", "start_date", "sandbox" ],
+        "additionalProperties": true,
         "properties": {
-          "client_id": {
-            "type": "string",
-            "title": "Client ID",
-            "description": "Identifies which app is making the request. Obtain this value from the Keys tab on the app profile via My Apps on the developer site. There are two versions of this key: development and production."
-          },
-          "client_secret": {
-            "description": " Obtain this value from the Keys tab on the app profile via My Apps on the developer site. There are two versions of this key: development and production.",
-            "title": "Client Secret",
-            "type": "string",
-            "airbyte_secret": true
-          },
-          "refresh_token": {
-            "description": "A token used when refreshing the access token.",
-            "title": "Refresh Token",
-            "type": "string",
-            "airbyte_secret": true
-          },
-          "realm_id": {
-            "description": "Labeled Company ID. The Make API Calls panel is populated with the realm id and the current access token.",
-            "title": "Realm ID",
-            "type": "string",
-            "airbyte_secret": true
-          },
-          "user_agent": {
-            "type": "string",
-            "title": "User Agent",
-            "description": "Process and email for API logging purposes. Example: tap-quickbooks <api_user_email@your_company.com>."
+          "credentials": {
+            "title": "Authorization Method",
+            "type": "object",
+            "order": 0,
+            "oneOf": [ {
+              "type": "object",
+              "title": "OAuth2.0",
+              "required": [ "client_id", "client_secret", "refresh_token", "access_token", "token_expiry_date", "realm_id" ],
+              "properties": {
+                "auth_type": {
+                  "type": "string",
+                  "const": "oauth2.0"
+                },
+                "client_id": {
+                  "type": "string",
+                  "title": "Client ID",
+                  "description": "Identifies which app is making the request. Obtain this value from the Keys tab on the app profile via My Apps on the developer site. There are two versions of this key: development and production."
+                },
+                "client_secret": {
+                  "description": " Obtain this value from the Keys tab on the app profile via My Apps on the developer site. There are two versions of this key: development and production.",
+                  "title": "Client Secret",
+                  "type": "string",
+                  "airbyte_secret": true
+                },
+                "refresh_token": {
+                  "description": "A token used when refreshing the access token.",
+                  "title": "Refresh Token",
+                  "type": "string",
+                  "airbyte_secret": true
+                },
+                "access_token": {
+                  "description": "Access token fot making authenticated requests.",
+                  "title": "Access Token",
+                  "type": "string",
+                  "airbyte_secret": true
+                },
+                "token_expiry_date": {
+                  "type": "string",
+                  "title": "Token Expiry Date",
+                  "description": "The date-time when the access token should be refreshed.",
+                  "format": "date-time"
+                },
+                "realm_id": {
+                  "description": "Labeled Company ID. The Make API Calls panel is populated with the realm id and the current access token.",
+                  "title": "Realm ID",
+                  "type": "string",
+                  "airbyte_secret": true
+                }
+              }
+            } ]
           },
           "start_date": {
-            "description": "The default value to use if no bookmark exists for an endpoint (rfc3339 date string). E.g, 2021-03-20T00:00:00Z. Any data before this date will not be replicated.",
+            "order": 1,
+            "description": "The default value to use if no bookmark exists for an endpoint (rfc3339 date string). E.g, 2021-03-20T00:00:00+00:00. Any data before this date will not be replicated.",
             "title": "Start Date",
             "type": "string",
+            "format": "date-time",
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-            "examples": [ "2021-03-20T00:00:00Z" ]
+            "examples": [ "2021-03-20T00:00:00+00:00" ]
           },
           "sandbox": {
+            "order": 2,
             "description": "Determines whether to use the sandbox or production environment.",
             "title": "Sandbox",
             "type": "boolean",
@@ -21759,7 +22178,10 @@
     "tombstone": false,
     "public": true,
     "custom": false,
-    "releaseStage": "alpha"
+    "releaseStage": "alpha",
+    "allowedHosts": {
+      "hosts": [ "sandbox-quickbooks.api.intuit.com", "quickbooks.api.intuit.com", "oauth.platform.intuit.com" ]
+    }
   }, {
     "sourceDefinitionId": "9b6cc0c0-da81-4103-bbfd-5279e18a849a",
     "name": "Railz",
@@ -21810,7 +22232,7 @@
     "sourceDefinitionId": "45d2e135-2ede-49e1-939f-3e3ec357a65e",
     "name": "Recharge",
     "dockerRepository": "airbyte/source-recharge",
-    "dockerImageTag": "0.2.8",
+    "dockerImageTag": "0.2.9",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/recharge",
     "icon": "recharge.svg",
     "sourceType": "api",
@@ -22395,7 +22817,7 @@
     "sourceDefinitionId": "69589781-7828-43c5-9f63-8925b1c1ccc2",
     "name": "S3",
     "dockerRepository": "airbyte/source-s3",
-    "dockerImageTag": "2.0.4",
+    "dockerImageTag": "2.1.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/s3",
     "icon": "s3.svg",
     "sourceType": "file",
@@ -22633,6 +23055,15 @@
                 "default": "",
                 "order": 4,
                 "type": "string"
+              },
+              "start_date": {
+                "title": "Start Date",
+                "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
+                "examples": [ "2021-01-01T00:00:00Z" ],
+                "format": "date-time",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+                "order": 5,
+                "type": "string"
               }
             },
             "required": [ "bucket" ],
@@ -22756,7 +23187,7 @@
     "sourceDefinitionId": "b117307c-14b6-41aa-9422-947e34922962",
     "name": "Salesforce",
     "dockerRepository": "airbyte/source-salesforce",
-    "dockerImageTag": "2.0.9",
+    "dockerImageTag": "2.0.12",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/salesforce",
     "icon": "salesforce.svg",
     "sourceType": "api",
@@ -23167,7 +23598,7 @@
     "sourceDefinitionId": "9da77001-af33-4bcd-be46-6252bf9342b9",
     "name": "Shopify",
     "dockerRepository": "airbyte/source-shopify",
-    "dockerImageTag": "0.3.2",
+    "dockerImageTag": "0.3.3",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/shopify",
     "icon": "shopify.svg",
     "sourceType": "api",
@@ -23251,6 +23682,7 @@
             "description": "The date you would like to replicate data from. Format: YYYY-MM-DD. Any data before this date will not be replicated.",
             "examples": [ "2021-01-01" ],
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "format": "date",
             "order": 3
           }
         }
@@ -23595,7 +24027,7 @@
     "sourceDefinitionId": "374ebc65-6636-4ea0-925c-7d35999a8ffc",
     "name": "Smartsheets",
     "dockerRepository": "airbyte/source-smartsheets",
-    "dockerImageTag": "1.0.0",
+    "dockerImageTag": "1.0.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/smartsheets",
     "icon": "smartsheet.svg",
     "sourceType": "api",
@@ -23748,7 +24180,7 @@
     "sourceDefinitionId": "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b",
     "name": "Snapchat Marketing",
     "dockerRepository": "airbyte/source-snapchat-marketing",
-    "dockerImageTag": "0.1.15",
+    "dockerImageTag": "0.1.16",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/snapchat-marketing",
     "icon": "snapchat.svg",
     "sourceType": "api",
@@ -24124,7 +24556,7 @@
     "sourceDefinitionId": "77225a51-cd15-4a13-af02-65816bd0ecf4",
     "name": "Square",
     "dockerRepository": "airbyte/source-square",
-    "dockerImageTag": "0.2.2",
+    "dockerImageTag": "1.0.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/square",
     "icon": "square.svg",
     "sourceType": "api",
@@ -24147,9 +24579,9 @@
               "type": "object",
               "required": [ "auth_type", "client_id", "client_secret", "refresh_token" ],
               "properties": {
-                "credentials_title": {
+                "auth_type": {
                   "type": "string",
-                  "const": "OAuth Credentials",
+                  "const": "OAuth",
                   "order": 0
                 },
                 "client_id": {
@@ -24176,10 +24608,10 @@
               "type": "object",
               "required": [ "auth_type", "api_key" ],
               "properties": {
-                "credentials_title": {
+                "auth_type": {
                   "type": "string",
                   "const": "API Key",
-                  "order": 0
+                  "order": 1
                 },
                 "api_key": {
                   "type": "string",
@@ -24229,7 +24661,7 @@
       "advanced_auth": {
         "auth_flow_type": "oauth2.0",
         "predicate_key": [ "credentials", "auth_type" ],
-        "predicate_value": "Oauth",
+        "predicate_value": "OAuth",
         "oauth_config_specification": {
           "complete_oauth_output_specification": {
             "type": "object",
@@ -24435,7 +24867,7 @@
     "sourceDefinitionId": "e094cb9a-26de-4645-8761-65c0c425d1de",
     "name": "Stripe",
     "dockerRepository": "airbyte/source-stripe",
-    "dockerImageTag": "3.0.5",
+    "dockerImageTag": "3.4.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/stripe",
     "icon": "stripe.svg",
     "sourceType": "api",
@@ -24503,7 +24935,7 @@
     "sourceDefinitionId": "dd4632f4-15e0-4649-9b71-41719fb1fdee",
     "name": "SurveyCTO",
     "dockerRepository": "airbyte/source-surveycto",
-    "dockerImageTag": "0.1.0",
+    "dockerImageTag": "0.1.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/surveycto",
     "icon": "surveycto.svg",
     "sourceType": "api",
@@ -24537,7 +24969,7 @@
           "form_id": {
             "type": "array",
             "title": "Form's Id",
-            "description": "Unique identifier for one of the forms",
+            "description": "Unique identifier for one of your forms",
             "order": 3
           },
           "start_date": {
@@ -24547,7 +24979,7 @@
             "examples": [ "Jan 09, 2022 00:00:00 AM" ],
             "default": "Jan 09, 2022 00:00:00 AM",
             "order": 4,
-            "pattern": "^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dic) [0-9]{2}, [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} (AM|PM)$"
+            "pattern": "^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{2}, [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} (AM|PM)$"
           }
         }
       },
@@ -24563,7 +24995,7 @@
     "sourceDefinitionId": "badc5925-0485-42be-8caa-b34096cb71b5",
     "name": "SurveyMonkey",
     "dockerRepository": "airbyte/source-surveymonkey",
-    "dockerImageTag": "0.1.15",
+    "dockerImageTag": "0.2.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/surveymonkey",
     "icon": "surveymonkey.svg",
     "sourceType": "api",
@@ -24867,6 +25299,186 @@
     "releaseStage": "beta",
     "allowedHosts": {
       "hosts": [ "api.tempo.io" ]
+    }
+  }, {
+    "sourceDefinitionId": "aa8ba6fd-4875-d94e-fc8d-4e1e09aa2503",
+    "name": "Teradata",
+    "dockerRepository": "airbyte/source-teradata",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/teradata",
+    "icon": "teradata.svg",
+    "sourceType": "database",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/teradata",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Teradata Source Spec",
+        "type": "object",
+        "required": [ "host", "database", "username" ],
+        "properties": {
+          "host": {
+            "title": "Host",
+            "description": "Hostname of the database.",
+            "type": "string",
+            "order": 0
+          },
+          "port": {
+            "title": "Port",
+            "description": "Port of the database.",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65536,
+            "default": 3306,
+            "examples": [ "3306" ],
+            "order": 1
+          },
+          "database": {
+            "title": "Database",
+            "description": "Name of the database.",
+            "type": "string",
+            "order": 2
+          },
+          "username": {
+            "title": "Username",
+            "description": "Username to use to access the database.",
+            "type": "string",
+            "order": 3
+          },
+          "password": {
+            "title": "Password",
+            "description": "Password associated with the username.",
+            "type": "string",
+            "airbyte_secret": true,
+            "order": 4
+          },
+          "jdbc_url_params": {
+            "title": "JDBC URL params",
+            "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)",
+            "type": "string",
+            "order": 5
+          },
+          "replication_method": {
+            "title": "Replication method",
+            "description": "Replication method to use for extracting data from the database. STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally. CDC uses the Binlog to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
+            "type": "string",
+            "order": 6,
+            "default": "STANDARD",
+            "enum": [ "STANDARD", "CDC" ]
+          },
+          "ssl": {
+            "title": "SSL Connection",
+            "description": "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
+            "type": "boolean",
+            "default": false,
+            "order": 7
+          },
+          "ssl_mode": {
+            "title": "SSL Modes",
+            "description": "SSL connection modes. \n <b>disable</b> - Chose this mode to disable encryption of communication between Airbyte and destination database\n <b>allow</b> - Chose this mode to enable encryption only when required by the destination database\n <b>prefer</b> - Chose this mode to allow unencrypted connection only if the destination database does not support encryption\n <b>require</b> - Chose this mode to always require encryption. If the destination database server does not support encryption, connection will fail\n  <b>verify-ca</b> - Chose this mode to always require encryption and to verify that the destination database server has a valid SSL certificate\n  <b>verify-full</b> - This is the most secure mode. Chose this mode to always require encryption and to verify the identity of the destination database server\n See more information - <a href=\"https://teradata-docs.s3.amazonaws.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#URL_SSLMODE\"> in the docs</a>.",
+            "type": "object",
+            "order": 8,
+            "oneOf": [ {
+              "title": "disable",
+              "additionalProperties": true,
+              "description": "Disable SSL.",
+              "required": [ "mode" ],
+              "properties": {
+                "mode": {
+                  "type": "string",
+                  "const": "disable",
+                  "order": 0
+                }
+              }
+            }, {
+              "title": "allow",
+              "additionalProperties": true,
+              "description": "Allow SSL mode.",
+              "required": [ "mode" ],
+              "properties": {
+                "mode": {
+                  "type": "string",
+                  "const": "allow",
+                  "order": 0
+                }
+              }
+            }, {
+              "title": "prefer",
+              "additionalProperties": true,
+              "description": "Prefer SSL mode.",
+              "required": [ "mode" ],
+              "properties": {
+                "mode": {
+                  "type": "string",
+                  "const": "prefer",
+                  "order": 0
+                }
+              }
+            }, {
+              "title": "require",
+              "additionalProperties": true,
+              "description": "Require SSL mode.",
+              "required": [ "mode" ],
+              "properties": {
+                "mode": {
+                  "type": "string",
+                  "const": "require",
+                  "order": 0
+                }
+              }
+            }, {
+              "title": "verify-ca",
+              "additionalProperties": true,
+              "description": "Verify-ca SSL mode.",
+              "required": [ "mode", "ssl_ca_certificate" ],
+              "properties": {
+                "mode": {
+                  "type": "string",
+                  "const": "verify-ca",
+                  "order": 0
+                },
+                "ssl_ca_certificate": {
+                  "type": "string",
+                  "title": "CA certificate",
+                  "description": "Specifies the file name of a PEM file that contains Certificate Authority (CA) certificates for use with SSLMODE=verify-ca.\n See more information - <a href=\"https://teradata-docs.s3.amazonaws.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#URL_SSLCA\"> in the docs</a>.",
+                  "airbyte_secret": true,
+                  "multiline": true,
+                  "order": 1
+                }
+              }
+            }, {
+              "title": "verify-full",
+              "additionalProperties": true,
+              "description": "Verify-full SSL mode.",
+              "required": [ "mode", "ssl_ca_certificate" ],
+              "properties": {
+                "mode": {
+                  "type": "string",
+                  "const": "verify-full",
+                  "order": 0
+                },
+                "ssl_ca_certificate": {
+                  "type": "string",
+                  "title": "CA certificate",
+                  "description": "Specifies the file name of a PEM file that contains Certificate Authority (CA) certificates for use with SSLMODE=verify-full.\n See more information - <a href=\"https://teradata-docs.s3.amazonaws.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#URL_SSLCA\"> in the docs</a>.",
+                  "airbyte_secret": true,
+                  "multiline": true,
+                  "order": 1
+                }
+              }
+            } ]
+          }
+        }
+      },
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha",
+    "allowedHosts": {
+      "hosts": [ "${host}" ]
     }
   }, {
     "sourceDefinitionId": "0dad1a35-ccf8-4d03-b73e-6788c00b13ae",
@@ -25799,7 +26411,7 @@
     "sourceDefinitionId": "b9dc6155-672e-42ea-b10d-9f1f1fb95ab1",
     "name": "Twilio",
     "dockerRepository": "airbyte/source-twilio",
-    "dockerImageTag": "0.2.0",
+    "dockerImageTag": "0.5.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/twilio",
     "icon": "twilio.svg",
     "sourceType": "api",
@@ -27187,7 +27799,7 @@
     "sourceDefinitionId": "79c1aa37-dae3-42ae-b333-d1c105477715",
     "name": "Zendesk Support",
     "dockerRepository": "airbyte/source-zendesk-support",
-    "dockerImageTag": "0.2.27",
+    "dockerImageTag": "0.2.29",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/zendesk-support",
     "icon": "zendesk-support.svg",
     "sourceType": "api",
@@ -27563,7 +28175,7 @@
     "sourceDefinitionId": "cdaf146a-9b75-49fd-9dd2-9d64a0bb4781",
     "name": "Sentry",
     "dockerRepository": "airbyte/source-sentry",
-    "dockerImageTag": "0.2.0",
+    "dockerImageTag": "0.2.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/sentry",
     "icon": "sentry.svg",
     "sourceType": "api",
@@ -27617,7 +28229,7 @@
     "allowedHosts": {
       "hosts": [ "*" ]
     },
-    "maxSecondsBetweenMessages": 43200
+    "maxSecondsBetweenMessages": 64800
   }, {
     "sourceDefinitionId": "3dc3037c-5ce8-4661-adc2-f7a9e3c5ece5",
     "name": "Zuora",
@@ -27913,7 +28525,7 @@
     "sourceDefinitionId": "31e3242f-dee7-4cdc-a4b8-8e06c5458517",
     "name": "SFTP Bulk",
     "dockerRepository": "airbyte/source-sftp-bulk",
-    "dockerImageTag": "0.1.1",
+    "dockerImageTag": "0.1.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/sftp-bulk",
     "icon": "sftp.svg",
     "sourceType": "file",
@@ -27977,13 +28589,21 @@
             "order": 6,
             "examples": [ "csv", "json" ]
           },
+          "separator": {
+            "title": "CSV Separator (Optional)",
+            "description": "The separator used in the CSV files. Define None if you want to use the Sniffer functionality",
+            "type": "string",
+            "default": ",",
+            "examples": [ "," ],
+            "order": 7
+          },
           "folder_path": {
             "title": "Folder Path (Optional)",
             "description": "The directory to search files for sync",
             "type": "string",
             "default": "",
             "examples": [ "/logs/2022" ],
-            "order": 7
+            "order": 8
           },
           "file_pattern": {
             "title": "File Pattern (Optional)",
@@ -27991,14 +28611,14 @@
             "type": "string",
             "default": "",
             "examples": [ "log-([0-9]{4})([0-9]{2})([0-9]{2}) - This will filter files which  `log-yearmmdd`" ],
-            "order": 8
+            "order": 9
           },
           "file_most_recent": {
             "title": "Most recent file (Optional)",
             "description": "Sync only the most recent file for the configured folder path and file pattern",
             "type": "boolean",
             "default": false,
-            "order": 9
+            "order": 10
           },
           "start_date": {
             "type": "string",
@@ -28007,7 +28627,7 @@
             "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
             "examples": [ "2017-01-25T00:00:00Z" ],
             "description": "The date from which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
-            "order": 10
+            "order": 11
           }
         }
       },
@@ -28386,6 +29006,58 @@
       "hosts": [ "api-metrica.yandex.net" ]
     }
   }, {
+    "sourceDefinitionId": "18139f00-b1ba-4971-8f80-8387b617cfd8",
+    "name": "Yotpo",
+    "dockerRepository": "airbyte/source-yotpo",
+    "dockerImageTag": "0.1.0",
+    "documentationUrl": "https://docs.airbyte.com/integrations/sources/yotpo",
+    "icon": "yotpo.svg",
+    "sourceType": "api",
+    "spec": {
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/yotpo",
+      "connectionSpecification": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Yotpo Spec",
+        "type": "object",
+        "required": [ "access_token", "app_key", "start_date", "email" ],
+        "additionalProperties": true,
+        "properties": {
+          "access_token": {
+            "title": "Access Token",
+            "type": "string",
+            "description": "Access token recieved as a result of API call to https://api.yotpo.com/oauth/token (Ref- https://apidocs.yotpo.com/reference/yotpo-authentication)",
+            "airbyte_secret": true
+          },
+          "app_key": {
+            "title": "App Key",
+            "type": "string",
+            "description": "App key found at settings (Ref- https://settings.yotpo.com/#/general_settings)"
+          },
+          "start_date": {
+            "title": "Date-From Filter",
+            "type": "string",
+            "description": "Date time filter for incremental filter, Specify which date to extract from.",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$",
+            "examples": [ "2022-03-01T00:00:00.000Z" ],
+            "format": "date-time"
+          },
+          "email": {
+            "title": "Registered email address",
+            "type": "string",
+            "description": "Email address registered with yotpo.",
+            "default": "example@gmail.com"
+          }
+        }
+      },
+      "supportsNormalization": false,
+      "supportsDBT": false,
+      "supported_destination_sync_modes": [ ]
+    },
+    "tombstone": false,
+    "public": true,
+    "custom": false,
+    "releaseStage": "alpha"
+  }, {
     "sourceDefinitionId": "9c74c2d7-531a-4ebf-b6d8-6181f805ecdc",
     "name": "Younium",
     "dockerRepository": "airbyte/source-younium",
@@ -28471,6 +29143,7 @@
     "dockerRepository": "airbyte/source-braze",
     "dockerImageTag": "0.1.3",
     "documentationUrl": "https://docs.airbyte.io/integrations/sources/braze",
+    "icon": "braze.svg",
     "sourceType": "api",
     "spec": {
       "documentationUrl": "https://docs.airbyte.com/integrations/sources/braze",

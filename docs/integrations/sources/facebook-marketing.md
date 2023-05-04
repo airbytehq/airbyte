@@ -43,11 +43,6 @@ This page guides you through the process of setting up the Facebook Marketing so
 8. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
 9. (Optional) In the Custom Insights section. A list which contains ad statistics entries, each entry must have a name and can contain fields, breakdowns or action_breakdowns. Click on "add" to fill this field.
     To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync.
-
-    :::warning
-    Additional streams for Facebook Marketing are dynamically created based on the specified Custom Insights. For an existing Facebook Marketing source, when you are updating or removing Custom Insights, you should also ensure that any connections syncing to these streams are either disabled or have had their source schema refreshed.
-    :::
-
     We recommend following the Facebook Marketing [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns) to understand the breakdown limitations. Some fields can not be requested and many others only work when combined with specific fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field.
 
     To configure Custom Insights:
@@ -62,9 +57,14 @@ This page guides you through the process of setting up the Facebook Marketing so
     8. For **Action Report Time**, enter the action report time you want to configure (mixed, conversion or impression).
     9. For **Custom Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
     10. Click **Done**.
-    12. For **Page Size of Requests**, fill in the size of the page in case pagintion kicks in. Feel free to ignore it, the default value should work in most cases.
+    12. For **Page Size of Requests**, fill in the page size in case pagination kicks in. Feel free to ignore it, the default value should work in most cases.
     13. For **Insights Lookback Window**, fill in the appropriate value. Facebook freezes insight data 28 days after it was generated, which means that all data from the past 28 days may have changed since we last emitted it, so you can retrieve refreshed insights from the past by setting this parameter. If you set a custom lookback window value in Facebook account, please provide the same value here. See [more](#facebook-marketing-attribution-reporting) on this parameter.
     14. Click **Set up source**.
+
+    :::warning
+    Additional streams for Facebook Marketing are dynamically created based on the specified Custom Insights. For an existing Facebook Marketing source, when you are updating or removing Custom Insights, you should also ensure that any connections syncing to these streams are either disabled or have had their source schema refreshed.
+    :::
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->

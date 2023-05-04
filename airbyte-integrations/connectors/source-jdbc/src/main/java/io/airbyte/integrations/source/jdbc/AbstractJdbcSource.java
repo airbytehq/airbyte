@@ -31,6 +31,7 @@ import com.google.common.collect.Sets;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
@@ -112,12 +113,13 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
       final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
       return queryTable(database, String.format("SELECT %s FROM %s ORDER BY %s ASC",
           enquoteIdentifierList(columnNames, getQuoteString()),
-          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField));
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField),
+          tableName, schemaName);
     } else {
       // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering of the records.
       return queryTable(database, String.format("SELECT %s FROM %s",
           enquoteIdentifierList(columnNames, getQuoteString()),
-          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())), tableName, schemaName);
     }
   }
 
@@ -179,7 +181,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                 .map(f -> {
                   final Datatype datatype = sourceOperations.getDatabaseFieldType(f);
                   final JsonSchemaType jsonType = getAirbyteType(datatype);
-                  LOGGER.info("Table {} column {} (type {}[{}], nullable {}) -> {}",
+                  LOGGER.debug("Table {} column {} (type {}[{}], nullable {}) -> {}",
                       fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_NAME).asText(),
                       f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
@@ -309,6 +311,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                                                                final CursorInfo cursorInfo,
                                                                final Datatype cursorFieldType) {
     LOGGER.info("Queueing query for table: {}", tableName);
+    final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair airbyteStream =
+        AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.unsafeQuery(
@@ -349,11 +353,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
               return preparedStatement;
             },
             sourceOperations::rowToJson);
-        return AutoCloseableIterators.fromStream(stream);
+        return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final SQLException e) {
         throw new RuntimeException(e);
       }
-    });
+    }, airbyteStream);
   }
 
   /**
@@ -424,6 +428,20 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(jdbcConfig);
     return database;
+  }
+
+  /**
+   * {@inheritDoc}
+   * @param database database instance
+   * @param catalog schema of the incoming messages.
+   * @throws SQLException
+   */
+  @Override
+  protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
+      throws SQLException {
+    LOGGER.info("Data source product recognized as {}:{}",
+        database.getMetaData().getDatabaseProductName(),
+        database.getMetaData().getDatabaseProductVersion());
   }
 
   @Override

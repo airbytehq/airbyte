@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_COLUMN_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_INDEX_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_INDEX_NON_UNIQUE;
 import static io.airbyte.db.jdbc.JdbcUtils.AMPERSAND;
 import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.db.jdbc.JdbcUtils.PLATFORM_DATA_INCREASE_FACTOR;
@@ -19,7 +22,6 @@ import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TABLE_E
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TOTAL_BYTES_RESULT_COL;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -47,16 +49,15 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.integrations.debezium.internals.PostgresDebeziumStateUtil;
-import io.airbyte.integrations.debezium.internals.PostgresReplicationConnection;
+import io.airbyte.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
+import io.airbyte.integrations.debezium.internals.postgres.PostgresDebeziumStateUtil;
+import io.airbyte.integrations.debezium.internals.postgres.PostgresReplicationConnection;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
-import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.CommonField;
@@ -64,13 +65,10 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteEstimateTraceMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.net.URI;
@@ -78,6 +76,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
@@ -100,9 +99,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
   public static final String PARAM_SSLMODE = "sslmode";
   public static final String SSL_MODE = "ssl_mode";
-  public static final String PARAM_SSL = "ssl";
-  public static final String PARAM_SSL_TRUE = "true";
-  public static final String PARAM_SSL_FALSE = "false";
   public static final String SSL_ROOT_CERT = "sslrootcert";
 
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
@@ -185,8 +181,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
             .map((entry) -> {
               try {
                 final String result = switch (entry.getKey()) {
-                  case JdbcSSLConnectionUtils.SSL_MODE -> PARAM_SSLMODE + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()))
-                      + JdbcUtils.AMPERSAND + PARAM_SSL + EQUALS + (entry.getValue() == DISABLE ? PARAM_SSL_FALSE : PARAM_SSL_TRUE);
+                  case JdbcSSLConnectionUtils.SSL_MODE -> PARAM_SSLMODE + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()));
                   case CA_CERTIFICATE_PATH -> SSL_ROOT_CERT + EQUALS + entry.getValue();
                   case CLIENT_KEY_STORE_URL -> SSL_KEY + EQUALS + Path.of(new URI(entry.getValue()));
                   case CLIENT_KEY_STORE_PASS -> SSL_PASSWORD + EQUALS + entry.getValue();
@@ -209,6 +204,30 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   @Override
   protected Set<String> getExcludedViews() {
     return Set.of("pg_stat_statements", "pg_stat_statements_info");
+  }
+
+  @Override
+  protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
+      throws SQLException {
+    super.logPreSyncDebugData(database, catalog);
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      final String streamName = stream.getStream().getName();
+      final String schemaName = stream.getStream().getNamespace();
+      final ResultSet indexInfo = database.getMetaData().getIndexInfo(null,
+          schemaName,
+          streamName,
+          false,
+          false);
+      LOGGER.info("Discovering indexes for schema \"{}\", table \"{}\"", schemaName, streamName);
+      while (indexInfo.next()) {
+        LOGGER.info("Index name: {}, Column: {}, Unique: {}",
+            indexInfo.getString(JDBC_INDEX_NAME),
+            indexInfo.getString(JDBC_COLUMN_COLUMN_NAME),
+            !indexInfo.getBoolean(JDBC_INDEX_NON_UNIQUE));
+      }
+      indexInfo.close();
+    }
+    PostgresQueryUtils.logXminStatus(database);
   }
 
   @Override
@@ -249,11 +268,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       // process explicitly selected (from UI) schemas
       final List<TableInfo<CommonField<PostgresType>>> internals = new ArrayList<>();
       for (final String schema : schemas) {
-        LOGGER.info("Checking schema: {}", schema);
+        LOGGER.debug("Checking schema: {}", schema);
         final List<TableInfo<CommonField<PostgresType>>> tables = super.discoverInternal(database, schema);
         internals.addAll(tables);
         for (final TableInfo<CommonField<PostgresType>> table : tables) {
-          LOGGER.info("Found table: {}.{}", table.getNameSpace(), table.getName());
+          LOGGER.debug("Found table: {}.{}", table.getNameSpace(), table.getName());
         }
       }
       return internals;
@@ -402,7 +421,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot), new PostgresCdcConnectorMetadataInjector(),
           PostgresCdcProperties.getSnapshotProperties(database), postgresCdcStateHandler, emittedAt);
       return Collections.singletonList(
-          AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
+          AutoCloseableIterators.concatWithEagerClose(AirbyteTraceMessageUtility::emitStreamStatusTrace, snapshotIterator,
+              AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)));
 
     } else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
@@ -461,27 +481,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   @Override
   protected boolean isNotInternalSchema(final JsonNode jsonNode, final Set<String> internalSchemas) {
     return false;
-  }
-
-  // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
-  // state
-  @Override
-  protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
-    if (!featureFlags.useStreamCapableState()) {
-      return List.of(new AirbyteStateMessage()
-          .withType(AirbyteStateType.LEGACY)
-          .withData(Jsons.jsonNode(new DbState())));
-    }
-    if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
-      final AirbyteGlobalState globalState = new AirbyteGlobalState()
-          .withSharedState(Jsons.jsonNode(new CdcState()))
-          .withStreamStates(List.of());
-      return List.of(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
-    } else {
-      return List.of(new AirbyteStateMessage()
-          .withType(AirbyteStateType.STREAM)
-          .withStream(new AirbyteStreamState()));
-    }
   }
 
   @Override
