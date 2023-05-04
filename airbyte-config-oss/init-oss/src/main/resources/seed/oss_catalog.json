@@ -12396,7 +12396,7 @@
     "sourceDefinitionId": "e7778cfc-e97c-4458-9ecb-b4f2bba8946c",
     "name": "Facebook Marketing",
     "dockerRepository": "airbyte/source-facebook-marketing",
-    "dockerImageTag": "0.3.5",
+    "dockerImageTag": "0.3.6",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/facebook-marketing",
     "icon": "facebook.svg",
     "sourceType": "api",
@@ -12429,7 +12429,8 @@
             "order": 2,
             "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
             "examples": [ "2017-01-26T00:00:00Z" ],
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
           },
           "access_token": {
             "title": "Access Token",
@@ -17120,7 +17121,7 @@
     "sourceDefinitionId": "b03a9f3e-22a5-11eb-adc1-0242ac120002",
     "name": "Mailchimp",
     "dockerRepository": "airbyte/source-mailchimp",
-    "dockerImageTag": "0.4.0",
+    "dockerImageTag": "0.4.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mailchimp",
     "icon": "mailchimp.svg",
     "sourceType": "api",
@@ -17612,7 +17613,7 @@
     "sourceDefinitionId": "b5ea17b1-f170-46dc-bc31-cc744ca984c1",
     "name": "Microsoft SQL Server (MSSQL)",
     "dockerRepository": "airbyte/source-mssql",
-    "dockerImageTag": "1.0.15",
+    "dockerImageTag": "1.0.16",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mssql",
     "icon": "mssql.svg",
     "sourceType": "database",
@@ -18110,7 +18111,7 @@
     "sourceDefinitionId": "12928b32-bf0a-4f1e-964f-07e12e37153a",
     "name": "Mixpanel",
     "dockerRepository": "airbyte/source-mixpanel",
-    "dockerImageTag": "0.1.32",
+    "dockerImageTag": "0.1.33",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mixpanel",
     "icon": "mixpanel.svg",
     "sourceType": "api",
@@ -18580,7 +18581,7 @@
     "sourceDefinitionId": "435bb9a5-7887-4809-aa58-28c27df0d7ad",
     "name": "MySQL",
     "dockerRepository": "airbyte/source-mysql",
-    "dockerImageTag": "2.0.19",
+    "dockerImageTag": "2.0.20",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mysql",
     "icon": "mysql.svg",
     "sourceType": "database",
@@ -23186,7 +23187,7 @@
     "sourceDefinitionId": "b117307c-14b6-41aa-9422-947e34922962",
     "name": "Salesforce",
     "dockerRepository": "airbyte/source-salesforce",
-    "dockerImageTag": "2.0.11",
+    "dockerImageTag": "2.0.12",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/salesforce",
     "icon": "salesforce.svg",
     "sourceType": "api",
@@ -24555,7 +24556,7 @@
     "sourceDefinitionId": "77225a51-cd15-4a13-af02-65816bd0ecf4",
     "name": "Square",
     "dockerRepository": "airbyte/source-square",
-    "dockerImageTag": "0.2.2",
+    "dockerImageTag": "1.0.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/square",
     "icon": "square.svg",
     "sourceType": "api",
@@ -24578,9 +24579,9 @@
               "type": "object",
               "required": [ "auth_type", "client_id", "client_secret", "refresh_token" ],
               "properties": {
-                "credentials_title": {
+                "auth_type": {
                   "type": "string",
-                  "const": "OAuth Credentials",
+                  "const": "OAuth",
                   "order": 0
                 },
                 "client_id": {
@@ -24607,10 +24608,10 @@
               "type": "object",
               "required": [ "auth_type", "api_key" ],
               "properties": {
-                "credentials_title": {
+                "auth_type": {
                   "type": "string",
                   "const": "API Key",
-                  "order": 0
+                  "order": 1
                 },
                 "api_key": {
                   "type": "string",
@@ -24660,7 +24661,7 @@
       "advanced_auth": {
         "auth_flow_type": "oauth2.0",
         "predicate_key": [ "credentials", "auth_type" ],
-        "predicate_value": "Oauth",
+        "predicate_value": "OAuth",
         "oauth_config_specification": {
           "complete_oauth_output_specification": {
             "type": "object",
