@@ -16,7 +16,7 @@ from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from requests.exceptions import HTTPError
 
 from .graphql import CursorStorage, QueryReactions, get_query_issue_reactions, get_query_pull_requests, get_query_reviews
-from .utils import getter
+from .utils import TokenBucket, getter
 
 DEFAULT_PAGE_SIZE = 100
 
@@ -34,6 +34,7 @@ class GithubStream(HttpStream, ABC):
     def __init__(self, repositories: List[str], page_size_for_large_streams: int, **kwargs):
         super().__init__(**kwargs)
         self.repositories = repositories
+        self.token_bucket = TokenBucket(80, 1)
 
         # GitHub pagination could be from 1 to 100.
         self.page_size = page_size_for_large_streams if self.large_stream else DEFAULT_PAGE_SIZE
@@ -70,6 +71,10 @@ class GithubStream(HttpStream, ABC):
         return False
 
     def should_retry(self, response: requests.Response) -> bool:
+
+        if not self.token_bucket.consume(10):
+            time.sleep(1)
+
         if super().should_retry(response):
             return True
 
@@ -375,6 +380,7 @@ class Organizations(GithubStream):
     def __init__(self, organizations: List[str], **kwargs):
         super(GithubStream, self).__init__(**kwargs)
         self.organizations = organizations
+        self.token_bucket = TokenBucket(80, 1)
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for organization in self.organizations:
