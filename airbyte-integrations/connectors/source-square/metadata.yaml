@@ -3,11 +3,6 @@ data:
     hosts:
       - connect.squareupsandbox.com
       - connect.squareup.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 77225a51-cd15-4a13-af02-65816bd0ecf4
@@ -17,6 +12,11 @@ data:
   icon: square.svg
   license: MIT
   name: Square
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
   supportUrl: https://docs.airbyte.com/integrations/sources/square
 metadataSpecVersion: "1.0"
