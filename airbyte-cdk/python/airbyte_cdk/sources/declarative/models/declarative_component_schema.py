@@ -799,7 +799,11 @@ class AuthFlow(BaseModel):
         examples=["Oauth"],
         title="Predicate value",
     )
-    supports_revoking_tokens: Optional[bool] = False
+    supports_revoking_tokens: Optional[bool] = Field(
+        False,
+        description="If the connector OAuth flow supports revoking tokens or not.",
+        title="Supports revoking tokens",
+    )
     oauth_config_specification: Optional[OAuthConfigSpecification] = None
 
 
