@@ -13,7 +13,7 @@
       "oneOf": [
         {
           "title": "Logging",
-          "required": ["testDestinationType", "logging_config"],
+          "required": ["test_destination_type", "logging_config"],
           "properties": {
             "testDestinationType": {
               "type": "string",
@@ -128,9 +128,9 @@
         },
         {
           "title": "Silent",
-          "required": ["testDestinationType"],
+          "required": ["test_destination_type"],
           "properties": {
-            "testDestinationType": {
+            "test_destination_type": {
               "type": "string",
               "const": "SILENT",
               "default": "SILENT"
@@ -139,9 +139,9 @@
         },
         {
           "title": "Throttled",
-          "required": ["testDestinationType", "millis_per_record"],
+          "required": ["test_destination_type", "millis_per_record"],
           "properties": {
-            "testDestinationType": {
+            "test_destination_type": {
               "type": "string",
               "const": "THROTTLED",
               "default": "THROTTLED"
@@ -154,9 +154,9 @@
         },
         {
           "title": "Failing",
-          "required": ["testDestinationType", "num_messages"],
+          "required": ["test_destination_type", "num_messages"],
           "properties": {
-            "testDestinationType": {
+            "test_destination_type": {
               "type": "string",
               "const": "FAILING",
               "default": "FAILING"
