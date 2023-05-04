@@ -1,3 +1,0 @@
-api.py:
-    - field_to_property_schema function was changed so that date and date-time properties don't end up with "format: date-time" in their field_to_property_schema
-    - this is because the datetimes are not actually RFC3339, but ISO8601

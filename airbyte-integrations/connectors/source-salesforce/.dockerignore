@@ -1,9 +1,0 @@
-*
-!selected_streams.json
-!*.json
-!streams
-!Dockerfile
-!main.py
-!source_salesforce
-!setup.py
-!secrets
