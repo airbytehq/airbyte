@@ -6,88 +6,55 @@ use crate::apis::InterceptorStream;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
-    #[error("go.estuary.dev/E001: Network Tunnel startup timeout of 5 seconds exceeded. Please troubleshoot your network tunnel configuration and connection and try again")]
-    ChannelTimeoutError,
-
-    #[error("go.estuary.dev/E002: Failed to execute command: {0}")]
+    #[error("Failed to execute command: {0}")]
     CommandExecutionError(String),
 
-    #[error("go.estuary.dev/E003: {0:?} key already exists in connector's endpoint specification schema, unable to add this key to the endpoint specification schema")]
-    DuplicatedKeyError(&'static str),
-
-    #[error("go.estuary.dev/E004: Unable to find the entrypoint of the connector's container. Please make sure your container defines a valid entrypoint")]
-    EmptyEntrypointError,
-
-    #[error("go.estuary.dev/E005: Unable to parse the container image inspect file")]
-    InvalidImageInspectFile,
-
-    #[error("go.estuary.dev/E006: Unable to create an IO pipe to the connector")]
+    #[error("Unable to create an IO pipe to the connector")]
     MissingIOPipe,
 
-    #[error("go.estuary.dev/E007: The connector's protocol does not match the requested protocol. Connector protocol is {0}, requested protocol is {1}")]
-    MismatchingRuntimeProtocol(String, &'static str),
-
-    #[error("go.estuary.dev/E008: IO Error: {0}")]
+    #[error(transparent)]
     IOError(#[from] std::io::Error),
 
-    #[error("go.estuary.dev/E009: Json Error: {0}")]
+    #[error(transparent)]
     JsonError(#[from] serde_json::Error),
 
-    #[error("go.estuary.dev/E010: Decoding protobuf RPC messages: {0}")]
-    MessageDecodeError(#[from] prost::DecodeError),
-
-    #[error("go.estuary.dev/E010: Encoding protobuf RPC messages: {0}")]
-    MessageEncodeError(#[from] prost::EncodeError),
-
-    #[error("go.estuary.dev/E011: Missing required image inspect file. Specify it via --image-inspect-json-path in command line")]
-    MissingImageInspectFile,
-
-    #[error("go.estuary.dev/E013: Creating and persisting temporary file: {0}")]
-    TempfilePersistError(#[from] tempfile::PersistError),
-
-    #[error("go.estuary.dev/E014: Executing and joining a concurrent task failed")]
-    TokioTaskExecutionError(#[from] tokio::task::JoinError),
-
-    #[error("go.estuary.dev/E015: ATF Connector's pending checkpoint was not committed, this can happen if the connector exits abruptly")]
+    #[error("ATF Connector's pending checkpoint was not committed, this can happen if the connector exits abruptly")]
     CheckpointPending,
 
-    #[error("go.estuary.dev/E016: Stream is empty, expected to find a message but could not find any")]
+    #[error("Stream is empty, expected to find a message but could not find any")]
     EmptyStream,
 
-    #[error("go.estuary.dev/E017: Could not find expected message in stream: {0}")]
+    #[error("Could not find expected message in stream: {0}")]
     MessageNotFound(&'static str),
 
-    #[error("go.estuary.dev/E018: Connector's connection status is not successful: {0}")]
+    #[error("{0}")]
     ConnectionStatusUnsuccessful(String),
 
-    #[error("go.estuary.dev/E019: Validation request is missing")]
+    #[error("Validation request is missing")]
     MissingValidateRequest,
 
-    #[error("go.estuary.dev/E020: Connector output a record that does not belong to any known stream: {0}")]
+    #[error("Connector output a Record that does not belong to any known stream: {0}")]
     DanglingConnectorRecord(String),
 
-    #[error("go.estuary.dev/E021: Invalid PullResponse received from connector")]
+    #[error("Invalid PullResponse received from connector")]
     InvalidPullResponse,
 
-    #[error("go.estuary.dev/E023: Invalid connector catalog: {0}")]
+    #[error("Invalid connector catalog: {0}")]
     InvalidCatalog(ValidationErrors),
 
-    #[error("go.estuary.dev/E032: Invalid socket specification: {0}")]
-    InvalidSocketSpecification(String),
-
-    #[error("go.estuary.dev/E033: Adapting atf schema to flow: {0}")]
+    #[error("Adapting ATF schema to Flow: {0}")]
     InvalidSchema(String),
 
-    #[error("go.estuary.dev/E035: Adapting atf schema to flow: {0}")]
+    #[error("Adapting ATF schema to Flow: {0}")]
     InvalidMapping(String),
 
-    #[error("go.estuary.dev/E036: Invalid primary key patch file: {0}")]
+    #[error("Invalid primary key patch file: {0}")]
     InvalidPKPatch(String),
 
-    #[error("go.estuary.dev/uzQS5j: Unknown operation: {0}")]
+    #[error("Unknown operation: {0}")]
     UnknownOperation(String),
 
-    #[error("go.estuary.dev/x2W2J5: Connector has been idle")]
+    #[error("Connector has been idle")]
     IdleConnector,
 }
 
