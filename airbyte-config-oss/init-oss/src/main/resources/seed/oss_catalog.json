@@ -24556,7 +24556,7 @@
     "sourceDefinitionId": "77225a51-cd15-4a13-af02-65816bd0ecf4",
     "name": "Square",
     "dockerRepository": "airbyte/source-square",
-    "dockerImageTag": "0.2.2",
+    "dockerImageTag": "1.0.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/square",
     "icon": "square.svg",
     "sourceType": "api",
@@ -24579,9 +24579,9 @@
               "type": "object",
               "required": [ "auth_type", "client_id", "client_secret", "refresh_token" ],
               "properties": {
-                "credentials_title": {
+                "auth_type": {
                   "type": "string",
-                  "const": "OAuth Credentials",
+                  "const": "OAuth",
                   "order": 0
                 },
                 "client_id": {
@@ -24608,10 +24608,10 @@
               "type": "object",
               "required": [ "auth_type", "api_key" ],
               "properties": {
-                "credentials_title": {
+                "auth_type": {
                   "type": "string",
                   "const": "API Key",
-                  "order": 0
+                  "order": 1
                 },
                 "api_key": {
                   "type": "string",
@@ -24661,7 +24661,7 @@
       "advanced_auth": {
         "auth_flow_type": "oauth2.0",
         "predicate_key": [ "credentials", "auth_type" ],
-        "predicate_value": "Oauth",
+        "predicate_value": "OAuth",
         "oauth_config_specification": {
           "complete_oauth_output_specification": {
             "type": "object",
