@@ -799,6 +799,7 @@ class AuthFlow(BaseModel):
         examples=["Oauth"],
         title="Predicate value",
     )
+    supports_revoking_tokens: Optional[bool] = False
     oauth_config_specification: Optional[OAuthConfigSpecification] = None
 
 

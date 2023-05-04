@@ -150,6 +150,11 @@ definitions:
         type: string
         examples:
           - "Oauth"
+      supports_revoking_tokens:
+        title: "Supports revoking tokens"
+        description: If the connector OAuth flow supports revoking tokens or not.
+        type: boolean
+        default: false
       oauth_config_specification:
         "$ref": "#/definitions/OAuthConfigSpecification"
   BasicHttpAuthenticator:
