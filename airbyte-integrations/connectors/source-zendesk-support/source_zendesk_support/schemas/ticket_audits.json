@@ -152,6 +152,11 @@
                 }
               },
               {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
                 "type": "string"
               },
               {

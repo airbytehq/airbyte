@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - graph.facebook.com
-  catalogs:
+  registries:
     cloud:
       enabled: true
     oss:
@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.6
   dockerRepository: airbyte/source-facebook-marketing
   githubIssueLabel: source-facebook-marketing
   icon: facebook.svg

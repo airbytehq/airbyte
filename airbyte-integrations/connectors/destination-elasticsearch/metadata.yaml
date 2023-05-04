@@ -1,5 +1,5 @@
 data:
-  catalogs:
+  registries:
     cloud:
       dockerRepository: airbyte/destination-elasticsearch-strict-encrypt
       enabled: true
