@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
@@ -13,6 +8,11 @@ data:
   icon: asana.svg
   license: MIT
   name: Asana
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
   supportUrl: https://docs.airbyte.com/integrations/sources/asana
 metadataSpecVersion: "1.0"

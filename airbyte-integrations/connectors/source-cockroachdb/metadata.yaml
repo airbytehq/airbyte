@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - ${host}
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: source
   definitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
@@ -16,6 +11,11 @@ data:
   icon: cockroachdb.svg
   license: MIT
   name: Cockroachdb
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/cockroachdb
 metadataSpecVersion: "1.0"
