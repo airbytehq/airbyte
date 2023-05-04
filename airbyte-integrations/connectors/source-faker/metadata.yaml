@@ -1,11 +1,6 @@
 data:
   allowedHosts:
     hosts: []
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
@@ -15,6 +10,11 @@ data:
   icon: faker.svg
   license: MIT
   name: Sample Data (Faker)
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
   resourceRequirements:
     jobSpecific:
