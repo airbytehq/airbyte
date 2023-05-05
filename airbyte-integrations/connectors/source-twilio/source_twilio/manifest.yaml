@@ -191,6 +191,26 @@ definitions:
       partition_router:
         $ref: "#/definitions/available_phone_number_countries_partition_router"
   
+  calls_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "calls"
+      path: "/Accounts/{{stream_slice.id}}/Calls.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: "end_time"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_granularity: "PT0.000001S"
+        step: "P1D"
   
   conferences_stream:
     $ref: "#/definitions/base_stream_with_pagination"
@@ -462,12 +482,17 @@ definitions:
       primary_key: "sid"
     retriever:
       $ref: "#/definitions/retriever"
+      record_selector:
+        extractor:
+          field_path: ["parameters['name']"]
+      record_filter:
+        condition: "{{ stream_slice.message_id != '' }}"
       requester:
         $ref: "#/definitions/requester"
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
-        $ref: "#/definitions/accounts_partition_router"
+        $ref: "#/definitions/messages_partition_router"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: "date_created"
@@ -535,28 +560,6 @@ definitions:
         step: "P1D"
   
 
-
-  calls_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
-      name: "alerts"
-      path: "/Accounts/{{stream_slice.id}}/Calls.json"
-      primary_key: "sid"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: "end_time"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-        cursor_granularity: "PT0.000001S"
-        step: "P1D"
-
 streams:
   - "#/definitions/accounts_stream"
   - "#/definitions/addresses_stream"
@@ -608,11 +611,11 @@ check:
     - "flows"
     - "incoming_phone_numbers"
     - "keys"
-    - "message_media"
-    - "messages"
     - "outgoing_caller_ids"
     - "queues"
     - "recordings"
     - "transcriptions"
     - "usage_records"
     - "usage_triggers"
+    - "messages"
+    - "message_media"
