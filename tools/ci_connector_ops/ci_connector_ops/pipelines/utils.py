@@ -242,7 +242,11 @@ def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Pa
 
 
 def get_all_metadata_files() -> Set[Path]:
-    return {Path(metadata_file) for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)}
+    return {
+        Path(metadata_file)
+        for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
+        if "-scaffold-" not in metadata_file
+    }
 
 
 def slugify(value: Any, allow_unicode: bool = False):
