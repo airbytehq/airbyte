@@ -154,9 +154,9 @@ class SourceGithub(AbstractSource):
             token = creds.get("access_token") or creds.get("personal_access_token")
         tokens = [t.strip() for t in token.split(TOKEN_SEPARATOR)]
         requests_per_hour = config.get("requests_per_hour")
-        if not requests_per_hour:
-            return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
-        return MultipleTokenAuthenticatorWithRateLimiter(tokens=tokens, auth_method="token", requests_per_hour=requests_per_hour)
+        if requests_per_hour:
+            return MultipleTokenAuthenticatorWithRateLimiter(tokens=tokens, auth_method="token", requests_per_hour=requests_per_hour)
+        return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
 
     @staticmethod
     def _get_branches_data(selected_branches: str, full_refresh_args: Dict[str, Any] = None) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
