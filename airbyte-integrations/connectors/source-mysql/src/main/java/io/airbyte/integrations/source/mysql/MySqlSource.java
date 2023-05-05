@@ -387,6 +387,11 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     return result;
   }
 
+  @Override
+  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
+    return super.createDatabase(sourceConfig, this::getConnectionProperties);
+  }
+
   public Map<String, String> getConnectionProperties(final JsonNode config) {
     final Map<String, String> customProperties =
         config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)
@@ -414,11 +419,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       }
     }
     return parameters;
-  }
-
-  @Override
-  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
-    return super.createDatabase(sourceConfig, this::getConnectionProperties);
   }
 
   public static void main(final String[] args) throws Exception {
