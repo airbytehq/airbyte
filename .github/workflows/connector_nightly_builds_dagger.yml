@@ -3,7 +3,7 @@ name: POC Connectors CI - nightly builds
 on:
   schedule:
     # 11AM UTC is 12AM CET, 4AM PST.
-    - cron: "0 11 * * *"
+    - cron: "0 8 * * *"
   workflow_dispatch:
     inputs:
       runs-on:
@@ -66,6 +66,5 @@ jobs:
           TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
           CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
-          CI_GIT_REVISION: ${{ github.sha }}
           CI_CONTEXT: "nightly_builds"
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
