@@ -10,7 +10,7 @@ from unittest.mock import MagicMock
 import pendulum
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
-from source_hubspot.errors import HubspotRateLimited
+from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import API, Companies, Deals, Engagements, MarketingEmails, Products, Stream
@@ -61,13 +61,14 @@ def test_check_connection_exception(config):
     assert error_msg
 
 
-def test_streams(requests_mock, config):
-    json = {
-        "status": "error",
-        "message": "This access_token does not have proper permissions!",
-    }
-    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403)
+def test_check_connection_invalid_start_date_exception(config_invalid_date):
+    with pytest.raises(InvalidStartDateConfigError):
+        ok, error_msg = SourceHubspot().check_connection(logger, config=config_invalid_date)
+        assert not ok
+        assert error_msg
 
+
+def test_streams(config):
     streams = SourceHubspot().streams(config)
 
     assert len(streams) == 27

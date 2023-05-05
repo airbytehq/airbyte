@@ -1,6 +1,7 @@
 {
   "campaigns": { "create_time": "2020-11-23T05:42:11+00:00" },
   "lists": { "date_created": "2020-09-25T04:47:31+00:00" },
+  "automations": { "create_time": "2020-11-23T05:42:11+00:00" },
   "email_activity": {
     "49d68626f3": { "timestamp": "2020-11-23T05:42:10+00:00" }
   },
