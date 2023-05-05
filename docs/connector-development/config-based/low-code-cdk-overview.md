@@ -6,8 +6,8 @@ Airbyte’s low-code framework enables you to build source connectors for REST A
 Developer updates will be announced via our #using-the-cdk Slack channel. If you are using the CDK, please join to stay up to date on changes and issues. 
 :::
 
-:::caution
-The low-code framework is in [alpha](https://docs.airbyte.com/project-overview/product-release-stages/#alpha), which means it’s still in active development and may include backward-incompatible changes. Share feedback and requests with us on our [Slack channel](https://slack.airbyte.com/) or email us at [feedback@airbyte.io](mailto:feedback@airbyte.io)
+:::note
+The low-code framework is in [beta](https://docs.airbyte.com/project-overview/product-release-stages/#beta), which means that while it will be backwards compatible, it’s still in active development. Share feedback and requests with us on our [Slack channel](https://slack.airbyte.com/) or email us at [feedback@airbyte.io](mailto:feedback@airbyte.io)
 :::
 
 ## Why low-code? 

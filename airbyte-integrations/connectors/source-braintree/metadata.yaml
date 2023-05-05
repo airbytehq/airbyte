@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 63cea06f-1c75-458d-88fe-ad48c7cb27fd
@@ -13,6 +8,11 @@ data:
   icon: braintree.svg
   license: MIT
   name: Braintree
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/braintree
 metadataSpecVersion: "1.0"

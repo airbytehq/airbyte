@@ -4,7 +4,7 @@ description: 'We love contributions to Airbyte, big or small.'
 
 # Contributing to Airbyte
 
-Thank you for your interest in contributing! We love community contributions. Contribution guidelines are listed below. If you're unsure about how to start contributing or have any questions even after reading them, feel free to ask us on [Slack](https://slack.airbyte.io) in the \#dev or \#general channel.
+Thank you for your interest in contributing! We love community contributions. Contribution guidelines are listed below. If you're unsure about how to start contributing or have any questions even after reading them, feel free to ask us on [Slack](https://slack.airbyte.io) in the \#help-contributions.
 
 However, for those who want a bit more guidance on the best way to contribute to Airbyte, read on. This document will cover what we're looking for. By addressing the points below, the chances that we can quickly merge or address your contributions will increase.
 
@@ -146,7 +146,7 @@ Our goal is to keep our docs comprehensive and updated. If you would like to hel
 * Fix errors in existing docs
 * Help us in adding to the docs
 
-The contributing guide for docs can be found [here](updating-documentation.md).
+The contributing guide for docs can be found [here](contribute-documentation.md).
 
 ## Contributing community content
 
