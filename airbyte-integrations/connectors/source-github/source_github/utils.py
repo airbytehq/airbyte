@@ -36,16 +36,16 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
 
     duration = 3600  # seconds
 
-    def __init__(self, tokens: List[str], requests: int, auth_method: str = "Bearer", auth_header: str = "Authorization"):
+    def __init__(self, tokens: List[str], requests_per_hour: int, auth_method: str = "Bearer", auth_header: str = "Authorization"):
         self._auth_method = auth_method
         self._auth_header = auth_header
         self._tokens = tokens
         self._tokens_iter = cycle(self._tokens)
 
-        self.capacity = requests
+        self.requests_per_hour = requests_per_hour
         self.stat = {}
         for t in tokens:
-            self.stat[t] = {"items": requests, "timestamp": None}
+            self.stat[t] = {"requests_per_hour": requests_per_hour, "timestamp": None}
 
     @property
     def auth_header(self) -> str:
@@ -61,7 +61,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
                 return f"{self._auth_method} {t}"
 
             # do we need to sleep ?
-            if sum([v["items"] for k, v in self.stat.items()]) == 0:
+            if sum([v["requests_per_hour"] for k, v in self.stat.items()]) == 0:
                 min_t = min([v["timestamp"] for k, v in self.stat.items()])
                 sleep_time = self.duration - (now - min_t)
                 logging.warning("sleeping %d", sleep_time)
@@ -74,10 +74,10 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
 
         if now - self.stat[t]["timestamp"] >= self.duration:
             self.stat[t]["timestamp"] = now
-            self.stat[t]["items"] = self.capacity
+            self.stat[t]["requests_per_hour"] = self.requests_per_hour
 
-        if self.stat[t]["items"] > 0:
-            self.stat[t]["items"] -= 1
+        if self.stat[t]["requests_per_hour"] > 0:
+            self.stat[t]["requests_per_hour"] -= 1
             return True
 
         return False
