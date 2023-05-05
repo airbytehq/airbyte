@@ -158,18 +158,15 @@ class PipelineContext:
         Returns:
             Directory: The selected repo directory.
         """
-        if self.is_local:
-            if exclude is None:
-                exclude = self.DEFAULT_EXCLUDED_FILES
-            else:
-                exclude += self.DEFAULT_EXCLUDED_FILES
-                exclude = list(set(exclude))
-            if subdir != ".":
-                subdir = f"{subdir}/" if not subdir.endswith("/") else subdir
-                exclude = [f.replace(subdir, "") for f in exclude if subdir in f]
-            return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
+        if exclude is None:
+            exclude = self.DEFAULT_EXCLUDED_FILES
         else:
-            return self.repo.commit(self.git_revision).tree().directory(subdir)
+            exclude += self.DEFAULT_EXCLUDED_FILES
+            exclude = list(set(exclude))
+        if subdir != ".":
+            subdir = f"{subdir}/" if not subdir.endswith("/") else subdir
+            exclude = [f.replace(subdir, "") for f in exclude if subdir in f]
+        return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
 
     async def __aenter__(self):
         """Perform setup operation for the PipelineContext.
