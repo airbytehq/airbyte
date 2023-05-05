@@ -36,6 +36,7 @@ class GithubStream(HttpStream, ABC):
         self.repositories = repositories
 
         # GitHub pagination could be from 1 to 100.
+        # This parameter is deprecated and in future will be used sane default, page_size: 10
         self.page_size = page_size_for_large_streams if self.large_stream else DEFAULT_PAGE_SIZE
 
         MAX_RETRIES = 3
