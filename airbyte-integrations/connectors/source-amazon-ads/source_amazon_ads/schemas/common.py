@@ -1,10 +1,10 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Any, Dict, Iterable, Type, Optional
+from typing import Any, Dict, Iterable, Optional, Type
 
 from pydantic import BaseModel, create_model
 

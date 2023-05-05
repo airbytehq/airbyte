@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 from copy import deepcopy
@@ -17,7 +17,7 @@ def config():
         },
         "region": "NA",
         "report_wait_timeout": 60,
-        "report_generation_max_retries": 5
+        "report_generation_max_retries": 5,
     }
 
 

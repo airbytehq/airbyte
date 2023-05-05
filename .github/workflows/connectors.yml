@@ -78,44 +78,9 @@ jobs:
           push: true
           tags: ghcr.io/estuary/airbyte-to-flow:${{ steps.prep.outputs.tag }}
 
-  cdk:
-    runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Prepare
-        id: prep
-        run: |
-          TAG=$(echo $GITHUB_SHA | head -c7)
-          echo ::set-output name=tag::${TAG}
-
-      - uses: actions/setup-python@v3
-        with:
-          python-version: '3.9'
-
-      - uses: actions/setup-java@v1
-        with:
-          java-version: "17"
-
-      - name: Build CDK
-        id: build
-        if: ${{ github.event_name == 'push' }}
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: |
-          ./gradlew :airbyte-cdk:python:build
-          ./publish-airbyte-cdk.sh
-
   connector:
     needs:
       - airbyte_to_flow
-      - cdk
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
