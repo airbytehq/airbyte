@@ -15,7 +15,6 @@ import pytest
 from integration_tests.dbt_integration_test import DbtIntegrationTest
 from integration_tests.utils import generate_dbt_models, run_destination_process
 from normalization.destination_type import DestinationType
-from normalization.transform_catalog import TransformCatalog
 
 temporary_folders = set()
 
@@ -481,4 +480,3 @@ def to_lower_identifier(input: re.Match) -> str:
         return f"{input.group(1)}{input.group(2).lower()}{input.group(3)}"
     else:
         raise Exception(f"Unexpected number of groups in {input}")
-
