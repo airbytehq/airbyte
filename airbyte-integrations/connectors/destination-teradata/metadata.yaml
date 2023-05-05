@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 58e6f9da-904e-11ed-a1eb-0242ac120002
@@ -13,6 +8,11 @@ data:
   icon: teradata.svg
   license: MIT
   name: Teradata Vantage
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.io/integrations/destinations/teradata
 metadataSpecVersion: "1.0"

@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - api.hubapi.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
@@ -16,6 +11,11 @@ data:
   icon: hubspot.svg
   license: MIT
   name: HubSpot
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
   supportUrl: https://docs.airbyte.com/integrations/sources/hubspot
 metadataSpecVersion: "1.0"
