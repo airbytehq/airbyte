@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: f96bb511-5e3c-48fc-b408-547953cd81a4
@@ -13,6 +8,11 @@ data:
   icon: launchdarkly.svg
   license: MIT
   name: LaunchDarkly
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/launchdarkly
 metadataSpecVersion: "1.0"

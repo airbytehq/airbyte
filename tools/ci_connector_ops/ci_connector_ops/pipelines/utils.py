@@ -235,7 +235,9 @@ def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict[Conne
 
 def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
     return {
-        Path(str(f)) for f in modified_files if str(f).endswith(METADATA_FILE_NAME) and str(f).startswith("airbyte-integrations/connectors")
+        Path(str(f))
+        for f in modified_files
+        if str(f).endswith(METADATA_FILE_NAME) and str(f).startswith("airbyte-integrations/connectors") and "-scaffold-" not in str(f)
     }
 
 
