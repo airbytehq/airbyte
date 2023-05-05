@@ -4567,7 +4567,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.3.2"
+- dockerImage: "airbyte/source-file:0.3.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -4649,6 +4649,7 @@
               service_account_json:
                 type: "string"
                 title: "Service Account JSON"
+                airbyte_secret: true
                 description: "In order to access private Buckets stored on Google\
                   \ Cloud, this connector would need a service account json credentials\
                   \ with the proper permissions as described <a href=\"https://cloud.google.com/iam/docs/service-accounts\"\

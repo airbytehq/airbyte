@@ -82,6 +82,7 @@
               "service_account_json": {
                 "type": "string",
                 "title": "Service Account JSON",
+                "airbyte_secret": true,
                 "description": "In order to access private Buckets stored on Google Cloud, this connector would need a service account json credentials with the proper permissions as described <a href=\"https://cloud.google.com/iam/docs/service-accounts\" target=\"_blank\">here</a>. Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary."
               }
             }
