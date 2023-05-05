@@ -6,6 +6,9 @@ This page contains the setup guide and reference information for the Facebook Pa
 
 To set up the Facebook Pages source connector with Airbyte, you'll need to create your Facebook Application and use both long-lived Page access token and Facebook Page ID.
 
+:::note
+The Facebook Pages souce connector is currently only compatible with v15 of the Facebook Graph API.
+:::
 
 ## Setup guide
 ### Step 1: Set up Facebook Pages

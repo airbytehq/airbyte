@@ -1,6 +1,6 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte-types/blob/master/models/src/main/resources/JobType.yaml
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/JobType.yaml
 title: JobType
 description: enum that describes the different types of jobs that the platform runs.
 type: string
