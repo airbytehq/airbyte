@@ -9985,7 +9985,7 @@
     "sourceDefinitionId": "47f25999-dd5e-4636-8c39-e7cea2453331",
     "name": "Bing Ads",
     "dockerRepository": "airbyte/source-bing-ads",
-    "dockerImageTag": "0.1.20",
+    "dockerImageTag": "0.1.21",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/bing-ads",
     "icon": "bingads.svg",
     "sourceType": "api",
