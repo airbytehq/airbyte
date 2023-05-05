@@ -6,7 +6,7 @@
       "type": "integer"
     },
     "due": {
-      "type": ["null", "string"]
+      "type": ["null", "boolean"]
     },
     "created_at": {
       "type": "string",

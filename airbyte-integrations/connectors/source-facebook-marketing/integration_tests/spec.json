@@ -27,7 +27,8 @@
         "order": 2,
         "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-26T00:00:00Z"],
-        "type": "string"
+        "type": "string",
+        "format": "date-time"
       },
       "access_token": {
         "title": "Access Token",
@@ -63,6 +64,13 @@
             "name": {
               "title": "Name",
               "description": "The name value of insight",
+              "type": "string"
+            },
+            "level": {
+              "title": "Level",
+              "description": "Chosen level for API",
+              "default": "ad",
+              "enum": ["ad", "adset", "campaign", "account"],
               "type": "string"
             },
             "fields": {

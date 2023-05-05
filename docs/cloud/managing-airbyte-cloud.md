@@ -70,13 +70,13 @@ You can use one or multiple workspaces with Airbyte Cloud.
 | Number of workspaces | Benefits                                                                      | Considerations                                                                                                                              |
 |----------------------|-------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | Single               | All users in a workspace have access to the same data.                        | If you add a user to a workspace, you cannot limit their access to specific data within that workspace.                                     |
-| Multiple             | You can create multiple workspaces to allow certain users to access the data. | Since you have to manage user access for each workspace individually, it can get complicated if you have many users in multiple workspaces. | 
+| Multiple             | You can create multiple workspaces to allow certain users to access data in specific workspaces only. | Have to manage user access for each workspace individually. | 
  
 #### Billing
 | Number of workspaces | Benefits                                                                      | Considerations                                                                                                                              |
 |----------------------|-------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | Single               | You can use the same payment method for all purchases.                        | Credits pay for the use of resources in a workspace when you run a sync. Resource usage cannot be divided and paid for separately (for example, you cannot bill different departments in your organization for the usage of some credits in one workspace).                                     |
-| Multiple             | Workspaces are independent of each other, so you can use a different payment method card for each workspace (for example, different credit cards per department in your organization). | You can use the same payment method for different workspaces, but each workspace is billed separately. Managing billing for each workspace can become complicated if you have many workspaces. |
+| Multiple             |  You can use the same payment method for all purchases. | It is generally recommended to use the same payment method card for each workspace.
 
 ### Switch between multiple workspaces
 
@@ -140,7 +140,7 @@ To set up Slack notifications:
 
 ## Understand Airbyte Cloud limits
 
-Understanding the following limitations will help you better manage Airbyte Cloud:
+Airbyte Cloud limitations within the Cloud UI (does not apply to customers using [Powered by Airbyte](https://airbyte.com/embed-airbyte-connectors-with-api))
 
 * Max number of workspaces per user: 100
 * Max number of sources in a workspace: 100

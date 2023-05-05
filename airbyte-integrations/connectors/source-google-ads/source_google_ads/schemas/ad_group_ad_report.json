@@ -222,15 +222,6 @@
     "ad_group_ad.ad.legacy_responsive_display_ad.format_setting": {
       "type": ["null", "string"]
     },
-    "ad_group_ad.ad.gmail_ad.header_image": {
-      "type": ["null", "string"]
-    },
-    "ad_group_ad.ad.gmail_ad.teaser.logo_image": {
-      "type": ["null", "string"]
-    },
-    "ad_group_ad.ad.gmail_ad.marketing_image": {
-      "type": ["null", "string"]
-    },
     "metrics.gmail_forwards": {
       "type": ["null", "integer"]
     },
@@ -239,15 +230,6 @@
     },
     "metrics.gmail_secondary_clicks": {
       "type": ["null", "integer"]
-    },
-    "ad_group_ad.ad.gmail_ad.teaser.business_name": {
-      "type": ["null", "string"]
-    },
-    "ad_group_ad.ad.gmail_ad.teaser.description": {
-      "type": ["null", "string"]
-    },
-    "ad_group_ad.ad.gmail_ad.teaser.headline": {
-      "type": ["null", "string"]
     },
     "ad_group_ad.ad.text_ad.headline": {
       "type": ["null", "string"]
@@ -292,18 +274,6 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.main_color": {
-      "type": ["null", "string"]
-    },
-    "ad_group_ad.ad.gmail_ad.marketing_image_display_call_to_action.text": {
-      "type": ["null", "string"]
-    },
-    "ad_group_ad.ad.gmail_ad.marketing_image_display_call_to_action.text_color": {
-      "type": ["null", "string"]
-    },
-    "ad_group_ad.ad.gmail_ad.marketing_image_headline": {
-      "type": ["null", "string"]
-    },
-    "ad_group_ad.ad.gmail_ad.marketing_image_description": {
       "type": ["null", "string"]
     },
     "segments.month": {

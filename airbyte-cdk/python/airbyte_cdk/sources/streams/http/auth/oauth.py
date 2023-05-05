@@ -95,7 +95,7 @@ class Oauth2Authenticator(HttpAuthenticator):
             )
             response.raise_for_status()
             response_json = response.json()
-            return response_json["access_token"], response_json["expires_in"]
+            return response_json["access_token"], int(response_json["expires_in"])
         except requests.exceptions.RequestException as e:
             if e.response.status_code == 429 or e.response.status_code >= 500:
                 raise DefaultBackoffException(request=e.response.request, response=e.response)
