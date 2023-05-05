@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.4.1
   dockerRepository: airbyte/source-mailchimp
   githubIssueLabel: source-mailchimp
   icon: mailchimp.svg
