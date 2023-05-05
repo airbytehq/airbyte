@@ -70,7 +70,21 @@
       "type": ["null", "integer"]
     },
     "referenced_workflows": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "sha": {
+            "type": "string"
+          },
+          "ref": {
+            "type": "string"
+          }
+        }
+      }
     },
     "run_started_at": {
       "type": "string",
