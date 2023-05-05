@@ -5,11 +5,6 @@ data:
       - advertising-api.amazon.com
       - advertising-api-eu.amazon.com
       - advertising-api-fe.amazon.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
@@ -19,6 +14,11 @@ data:
   icon: amazonads.svg
   license: MIT
   name: Amazon Ads
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
   supportUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
 metadataSpecVersion: "1.0"
