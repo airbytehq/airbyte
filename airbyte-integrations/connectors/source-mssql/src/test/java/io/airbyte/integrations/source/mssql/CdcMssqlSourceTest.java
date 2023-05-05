@@ -8,6 +8,7 @@ import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_EVENT_SERIAL_NO;
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_LSN;
+import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_CHANGE_LSN;
 import static io.airbyte.integrations.source.mssql.MssqlSource.DRIVER_CLASS;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
@@ -372,6 +373,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   @Override
   protected void removeCDCColumns(final ObjectNode data) {
     data.remove(CDC_LSN);
+    data.remove(CDC_CHANGE_LSN);
     data.remove(CDC_UPDATED_AT);
     data.remove(CDC_DELETED_AT);
     data.remove(CDC_EVENT_SERIAL_NO);
@@ -407,6 +409,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   @Override
   protected void assertNullCdcMetaData(final JsonNode data) {
     assertNull(data.get(CDC_LSN));
+    assertNull(data.get(CDC_CHANGE_LSN));
     assertNull(data.get(CDC_UPDATED_AT));
     assertNull(data.get(CDC_DELETED_AT));
     assertNull(data.get(CDC_EVENT_SERIAL_NO));
@@ -415,6 +418,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   @Override
   protected void assertCdcMetaData(final JsonNode data, final boolean deletedAtNull) {
     assertNotNull(data.get(CDC_LSN));
+    assertNotNull(data.get(CDC_CHANGE_LSN));
     assertNotNull(data.get(CDC_EVENT_SERIAL_NO));
     assertNotNull(data.get(CDC_UPDATED_AT));
     if (deletedAtNull) {
@@ -431,6 +435,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     properties.set(CDC_LSN, stringType);
+    properties.set(CDC_CHANGE_LSN, stringType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
     properties.set(CDC_EVENT_SERIAL_NO, stringType);
