@@ -26,7 +26,7 @@ This is all just markdown at the end of the day so open a PR against master like
 
 # Local website
 
-If you want to run the docs as a docusaurus site locally just run `yarn build && yarn serve`.
+If you want to run the docs as a docusaurus site locally just run `yarn start`.
 Url will show on successful command execution.
 
 # Future
