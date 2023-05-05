@@ -12,6 +12,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_stripe.availability_strategy import StripeSubStreamAvailabilityStrategy
 
 STRIPE_ERROR_CODES: List = [
@@ -26,6 +27,7 @@ class StripeStream(HttpStream, ABC):
     url_base = "https://api.stripe.com/v1/"
     primary_key = "id"
     DEFAULT_SLICE_RANGE = 365
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, start_date: int, account_id: str, slice_range: int = DEFAULT_SLICE_RANGE, **kwargs):
         super().__init__(**kwargs)
