@@ -643,14 +643,6 @@
   icon: freshservice.svg
   sourceType: api
   releaseStage: alpha
-- name: Gainsight
-  sourceDefinitionId: <To-Be-Given>
-  dockerRepository: airbyte/source-gainsight
-  dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.com/integrations/sources/genesys
-  icon: gainsight.svg
-  sourceType: api
-  releaseStage: alpha
 - name: Genesys
   sourceDefinitionId: 5ea4459a-8f1a-452a-830f-a65c38cc438d
   dockerRepository: airbyte/source-genesys
