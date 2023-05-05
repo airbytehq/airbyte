@@ -11,6 +11,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
 
 from .streams import (
     Assignees,
@@ -152,7 +153,10 @@ class SourceGithub(AbstractSource):
             creds = config.get("credentials")
             token = creds.get("access_token") or creds.get("personal_access_token")
         tokens = [t.strip() for t in token.split(TOKEN_SEPARATOR)]
-        return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
+        requests_per_hour = config.get("requests_per_hour")
+        if not requests_per_hour:
+            return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
+        return MultipleTokenAuthenticatorWithRateLimiter(tokens=tokens, auth_method="token", requests=requests_per_hour)
 
     @staticmethod
     def _get_branches_data(selected_branches: str, full_refresh_args: Dict[str, Any] = None) -> Tuple[Dict[str, str], Dict[str, List[str]]]:

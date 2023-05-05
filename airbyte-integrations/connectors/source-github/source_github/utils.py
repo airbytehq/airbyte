@@ -2,10 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from time import time
+import logging
+import time
+from itertools import cycle
+from typing import List
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
 
 
 def getter(D: dict, key_or_keys, strict=True):
@@ -27,39 +31,53 @@ def read_full_refresh(stream_instance: Stream):
             yield record
 
 
-class TokenBucket:
-    """An implementation of the token bucket algorithm.
+class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
+    """Github rate limiter"""
 
-    >>> bucket = TokenBucket(80, 0.5)
-    >>> print(bucket.consume(10))
-    True
-    >>> print(bucket.consume(90))
-    False
-    """
+    duration = 3600  # seconds
 
-    def __init__(self, tokens, fill_rate):
-        """tokens is the total tokens in the bucket. fill_rate is the
-        rate in tokens/second that the bucket will be refilled."""
-        self.capacity = float(tokens)
-        self._tokens = float(tokens)
-        self.fill_rate = float(fill_rate)
-        self.timestamp = time()
+    def __init__(self, tokens: List[str], requests: int, auth_method: str = "Bearer", auth_header: str = "Authorization"):
+        self._auth_method = auth_method
+        self._auth_header = auth_header
+        self._tokens = tokens
+        self._tokens_iter = cycle(self._tokens)
 
-    def consume(self, tokens):
-        """Consume tokens from the bucket. Returns True if there were
-        sufficient tokens otherwise False."""
-        if tokens <= self.tokens:
-            self._tokens -= tokens
-        else:
-            return False
-        return True
+        self.capacity = requests
+        self.stat = {}
+        for t in tokens:
+            self.stat[t] = {"items": requests, "timestamp": None}
 
-    def get_tokens(self):
-        if self._tokens < self.capacity:
-            now = time()
-            delta = self.fill_rate * (now - self.timestamp)
-            self._tokens = min(self.capacity, self._tokens + delta)
-            self.timestamp = now
-        return self._tokens
+    @property
+    def auth_header(self) -> str:
+        return self._auth_header
 
-    tokens = property(get_tokens)
+    @property
+    def token(self) -> str:
+        now = time.time()
+        while True:
+            t = next(self._tokens_iter)
+            res = self._check_rate_limit(t, now)
+            if res:
+                return f"{self._auth_method} {t}"
+
+            # do we need to sleep ?
+            if sum([v["items"] for k, v in self.stat.items()]) == 0:
+                min_t = min([v["timestamp"] for k, v in self.stat.items()])
+                sleep_time = self.duration - (now - min_t)
+                logging.warning("sleeping %d", sleep_time)
+                time.sleep(self.duration - (now - min_t))
+
+    def _check_rate_limit(self, t, now):
+
+        if self.stat[t]["timestamp"] is None:
+            self.stat[t]["timestamp"] = now
+
+        if now - self.stat[t]["timestamp"] >= self.duration:
+            self.stat[t]["timestamp"] = now
+            self.stat[t]["items"] = self.capacity
+
+        if self.stat[t]["items"] > 0:
+            self.stat[t]["items"] -= 1
+            return True
+
+        return False

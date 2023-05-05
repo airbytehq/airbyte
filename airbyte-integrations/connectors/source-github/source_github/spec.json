@@ -89,6 +89,13 @@
         "default": 10,
         "description": "The Github connector contains several streams with a large amount of data. The page size of such streams depends on the size of your repository. We recommended that you specify values between 10 and 30.",
         "order": 4
+      },
+      "requests_per_hour": {
+        "type": "integer",
+        "title": "Max requests per hour for token",
+        "description": "To avoid being restricted by the rate limit of 5,000 requests per hour (or 15,000 for GitHub Enterprise), you may choose to limit the number of requests you make to a lower value. For example, setting a limit of 3600 would help you avoid hitting the rate limit",
+        "minimum": 1,
+        "order": 5
       }
     }
   },
