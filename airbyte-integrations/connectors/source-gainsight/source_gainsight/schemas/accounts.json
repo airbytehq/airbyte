@@ -1,8 +1,7 @@
 {
-  "type": "object",
   "title": "Account",
-  "description": "Account object",
   "additionalProperties": true,
+  "type": "object",
   "properties": {
     "id": {
       "type": ["null", "string"]
@@ -56,11 +55,7 @@
       "items": {
         "type": ["null", "string"]
       },
-      "examples": [
-        [
-          "AP-XXXXXXXXXX-2"
-        ]
-      ]
+      "examples": [["AP-XXXXXXXXXX-2"]]
     },
     "createDate": {
       "type": "integer",
