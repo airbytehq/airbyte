@@ -235,6 +235,8 @@ class ConnectorContext(PipelineContext):
         is_local: bool,
         git_branch: bool,
         git_revision: bool,
+        modified_files: List[str],
+        s3_report_key: str,
         use_remote_secrets: bool = True,
         connector_acceptance_test_image: Optional[str] = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
         gha_workflow_run_url: Optional[str] = None,
@@ -248,6 +250,8 @@ class ConnectorContext(PipelineContext):
             is_local (bool): Whether the context is for a local run or a CI run.
             git_branch (str): The current git branch name.
             git_revision (str): The current git revision, commit hash.
+            modified_files (List[str]): The list of modified files in the current git branch.
+            s3_report_key (str): The S3 key to upload the test report to.
             use_remote_secrets (bool, optional): Whether to download secrets for GSM or use the local secrets. Defaults to True.
             connector_acceptance_test_image (Optional[str], optional): The image to use to run connector acceptance tests. Defaults to DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE.
             gha_workflow_run_url (Optional[str], optional): URL to the github action workflow run. Only valid for CI run. Defaults to None.
@@ -259,7 +263,8 @@ class ConnectorContext(PipelineContext):
         self.connector = connector
         self.use_remote_secrets = use_remote_secrets
         self.connector_acceptance_test_image = connector_acceptance_test_image
-
+        self.modified_files = modified_files
+        self.s3_report_key = s3_report_key
         self._secrets_dir = None
         self._updated_secrets_dir = None
 
@@ -368,8 +373,7 @@ class ConnectorContext(PipelineContext):
         await local_report_path.parents[0].mkdir(parents=True, exist_ok=True)
         await local_report_path.write_text(self.report.to_json())
         if self.report.should_be_saved:
-            s3_reports_path_root = "python-poc/tests/history/"
-            s3_key = s3_reports_path_root + suffix
+            s3_key = self.s3_report_key + suffix
             report_upload_exit_code = await remote_storage.upload_to_s3(
                 self.dagger_client, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"]
             )

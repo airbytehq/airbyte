@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: file
   connectorType: destination
   definitionId: 471e5cab-8ed1-49f3-ba11-79c687784737
@@ -13,6 +8,11 @@ data:
   icon: s3-glue.svg
   license: MIT
   name: S3 Glue
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/s3-glue
 metadataSpecVersion: "1.0"

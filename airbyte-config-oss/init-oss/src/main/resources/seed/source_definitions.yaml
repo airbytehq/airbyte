@@ -578,7 +578,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.3.5
+  dockerImageTag: 0.3.6
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -637,7 +637,7 @@
 - name: File (CSV, JSON, Excel, Feather, Parquet)
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/file
   icon: file.svg
   sourceType: file
@@ -693,9 +693,17 @@
 - name: Freshservice
   sourceDefinitionId: 9bb85338-ea95-4c93-b267-6be89125b267
   dockerRepository: airbyte/source-freshservice
-  dockerImageTag: 0.1.1
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshservice
   icon: freshservice.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Fullstory
+  sourceDefinitionId: 263fd456-02d1-4a26-a35e-52ccaedad778
+  dockerRepository: airbyte/source-fullstory
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/fullstory
+  icon: fullstory.svg
   sourceType: api
   releaseStage: alpha
 - name: GCS
@@ -943,7 +951,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.6.1
+  dockerImageTag: 0.6.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -1162,7 +1170,7 @@
 - name: Mailchimp
   sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
   dockerRepository: airbyte/source-mailchimp
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.4.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailchimp
   icon: mailchimp.svg
   sourceType: api
@@ -1221,6 +1229,14 @@
   allowedHosts:
     hosts:
       - "*.mktorest.com"
+- name: Merge
+  sourceDefinitionId: 23240e9e-d14a-43bc-899f-72ea304d1994
+  dockerRepository: airbyte/source-merge
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/merge
+  icon: merge.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Metabase
   sourceDefinitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
   dockerRepository: airbyte/source-metabase
@@ -1232,7 +1248,7 @@
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 1.0.15
+  dockerImageTag: 1.0.16
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   icon: mssql.svg
   sourceType: database
@@ -1260,7 +1276,7 @@
 - name: Mixpanel
   sourceDefinitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
   dockerRepository: airbyte/source-mixpanel
-  dockerImageTag: 0.1.31
+  dockerImageTag: 0.1.33
   documentationUrl: https://docs.airbyte.com/integrations/sources/mixpanel
   icon: mixpanel.svg
   sourceType: api
@@ -1299,7 +1315,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 2.0.19
+  dockerImageTag: 2.0.20
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -1338,7 +1354,7 @@
 - name: News API
   sourceDefinitionId: df38991e-f35b-4af2-996d-36817f614587
   dockerRepository: airbyte/source-news-api
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/news-api
   icon: newsapi.svg
   sourceType: api
@@ -1353,7 +1369,7 @@
 - name: Notion
   sourceDefinitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
   dockerRepository: airbyte/source-notion
-  dockerImageTag: 1.0.4
+  dockerImageTag: 1.0.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/notion
   icon: notion.svg
   sourceType: api
@@ -1809,7 +1825,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 2.1.2
+  dockerImageTag: 2.1.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   icon: s3.svg
   sourceType: file
@@ -1831,7 +1847,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 2.0.11
+  dockerImageTag: 2.0.12
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -1994,7 +2010,7 @@
 - name: Square
   sourceDefinitionId: 77225a51-cd15-4a13-af02-65816bd0ecf4
   dockerRepository: airbyte/source-square
-  dockerImageTag: 0.2.2
+  dockerImageTag: 1.0.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/square
   icon: square.svg
   sourceType: api
@@ -2405,7 +2421,7 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.27
+  dockerImageTag: 0.2.29
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   icon: zendesk-support.svg
   sourceType: api
@@ -2449,7 +2465,7 @@
 - sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
   name: Sentry
   dockerRepository: airbyte/source-sentry
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
   icon: sentry.svg
   sourceType: api
@@ -2549,6 +2565,14 @@
   allowedHosts:
     hosts:
       - api-metrica.yandex.net
+- name: Yotpo
+  sourceDefinitionId: 18139f00-b1ba-4971-8f80-8387b617cfd8
+  dockerRepository: airbyte/source-yotpo
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/yotpo
+  icon: yotpo.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Younium
   sourceDefinitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
   dockerRepository: airbyte/source-younium
