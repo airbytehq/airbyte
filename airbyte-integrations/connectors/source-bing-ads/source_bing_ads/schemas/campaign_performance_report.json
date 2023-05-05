@@ -104,6 +104,9 @@
     "AllConversions": {
       "type": ["null", "integer"]
     },
+    "ConversionsQualified": {
+      "type": ["null", "number"]
+    },
     "AllConversionRate": {
       "type": ["null", "number"]
     },
