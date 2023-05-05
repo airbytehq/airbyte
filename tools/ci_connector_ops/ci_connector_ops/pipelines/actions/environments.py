@@ -9,7 +9,7 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
-from ci_connector_ops.pipelines.utils import get_file_contents, slugify
+from ci_connector_ops.pipelines.utils import get_file_contents, slugify, with_exit_code
 from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Platform, Secret
 
 if TYPE_CHECKING:
@@ -432,11 +432,20 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
     # Hacky way to make sure the image is always loaded
     tar_name = f"{str(uuid.uuid4())}.tar"
     docker_cli = with_docker_cli(context, docker_service_name=docker_service_name).with_mounted_file(tar_name, tar_file)
+
+    # Remove a previously existing image with the same tag if any.
+    docker_image_rm_exit_code = await with_exit_code(
+        docker_cli.with_env_variable("CACHEBUSTER", tar_name).with_exec(["docker", "image", "rm", image_tag])
+    )
+    if docker_image_rm_exit_code == 0:
+        context.logger.info(f"Removed an existing image tagged {image_tag}")
     image_load_output = await docker_cli.with_exec(["docker", "load", "--input", tar_name]).stdout()
+    context.logger.info(image_load_output)
     # Not tagged images only have a sha256 id the load output shares.
     if "sha256:" in image_load_output:
         image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
-        await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).exit_code()
+        docker_tag_output = await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).stdout()
+        context.logger.info(docker_tag_output)
 
 
 def with_poetry(context: PipelineContext) -> Container:
