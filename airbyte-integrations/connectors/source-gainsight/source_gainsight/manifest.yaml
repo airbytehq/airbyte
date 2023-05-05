@@ -43,17 +43,3 @@ check:
   stream_names:
     - "accounts"
 
-spec:
-  type: Spec
-  documentation_url: https://docs.airbyte.com/integrations/sources/gainsight
-  connection_specification:
-    title: Gainsight Spec
-    type: object
-    required:
-      - api_key
-    additionalProperties: true
-    properties:
-      api_key:
-        type: string
-        description: The Aptrinsic API Key which is recieved from the dashboard settings (ref - https://app.aptrinsic.com/settings/api-keys)
-        airbyte_secret: true
