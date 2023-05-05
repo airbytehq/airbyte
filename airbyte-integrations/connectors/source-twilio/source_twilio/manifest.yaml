@@ -23,6 +23,7 @@ definitions:
     step: "P1D"
     datetime_format: "%Y-%m-%d"
     cursor_granularity: "P1D"
+    lookback_window: "{{ config['lookback_window']}}"
     cursor_field: "date"
   retriever:
     record_selector:
@@ -84,6 +85,29 @@ definitions:
       - stream: "#/definitions/addresses_stream"
         parent_key: sid
         partition_field: address_id
+  
+  alerts_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "alerts"
+      path: "/Alerts"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        type: HttpRequester
+        url_base: "https://monitor.twilio.com/v1"
+        http_method: "GET"
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['account_sid'] }}"
+          password: "{{ config['auth_token'] }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: "date_generated"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_granularity: "PT0.000001S"
+        step: "P1D"
 
   applications_stream:
     $ref: "#/definitions/base_stream_with_pagination"
@@ -167,6 +191,50 @@ definitions:
       partition_router:
         $ref: "#/definitions/available_phone_number_countries_partition_router"
   
+  
+  conferences_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "conferences"
+      path: "/Accounts/{{stream_slice.id}}/Conferences.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: "date_created"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_granularity: "PT0.000001S"
+        step: "P1D"
+
+  conferences_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/conferences_stream"
+        parent_key: sid
+        partition_field: conferences_id
+  
+  conference_participants_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "conferences_participants"
+      path: "/Accounts/{{stream_slice.id}}/Conferences/{{ stream_slice.conferences_id}}/Participants.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/conferences_partition_router"
+
   conversations_stream:
     $ref: "#/definitions/base_stream_with_pagination"
     $parameters:
@@ -286,6 +354,8 @@ definitions:
           type: BasicHttpAuthenticator
           username: "{{ config['account_sid'] }}"
           password: "{{ config['auth_token'] }}"
+      paginator:
+        $ref: "#/definitions/default_paginator"
 
   flows_partition_router:
     type: SubstreamPartitionRouter
@@ -355,47 +425,194 @@ definitions:
         $ref: "#/definitions/default_paginator"
       partition_router:
         $ref: "#/definitions/accounts_partition_router"
-
   
+  messages_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "messages"
+      path: "/Accounts/{{stream_slice.id}}/Messages.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: "date_sent"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_granularity: "PT0.000001S"
+        step: "P1D"
+
+  messages_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/conferences_stream"
+        parent_key: sid
+        partition_field: message_id
+
+  message_media_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "message_media"
+      path: "/Accounts/{{stream_slice.id}}/Messages/{{stream_slice.message_id}}/Media.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: "date_created"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_granularity: "PT0.000001S"
+        step: "P1D"
+  
+  usage_records_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "usage_records"
+      path: "/Accounts/{{stream_slice.id}}/Usage/Records.json"
+      primary_key: 
+        - "account_sid"
+        - "category"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: "start_date"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_granularity: "PT0.000001S"
+        step: "P1D"
+  
+  usage_triggers_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "usage_triggers"
+      path: "/Accounts/{{stream_slice.id}}/Usage/Triggers.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+  
+  recordings_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "recordings"
+      path: "/Accounts/{{stream_slice.id}}/Recordings.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: "date_created"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_granularity: "PT0.000001S"
+        step: "P1D"
+  
+
+
+  calls_stream:
+    $ref: "#/definitions/base_stream_with_pagination"
+    $parameters:
+      name: "alerts"
+      path: "/Accounts/{{stream_slice.id}}/Calls.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: "end_time"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_granularity: "PT0.000001S"
+        step: "P1D"
 
 streams:
   - "#/definitions/accounts_stream"
   - "#/definitions/addresses_stream"
+  - "#/definitions/alerts_stream"
   - "#/definitions/applications_stream"
   - "#/definitions/available_phone_number_countries_stream"
   - "#/definitions/available_phone_numbers_local_stream"
   - "#/definitions/available_phone_numbers_mobile_stream"
   - "#/definitions/available_phone_numbers_toll_free_stream"
-  - "#/definitions/conversations_stream"
+  - "#/definitions/calls_stream"
+  - "#/definitions/conference_participants_stream"
+  - "#/definitions/conferences_stream"
   - "#/definitions/conversation_messages_stream"
   - "#/definitions/conversation_participants_stream"
+  - "#/definitions/conversations_stream"
   - "#/definitions/dependent_phone_numbers_stream"
   - "#/definitions/flows_stream"
   - "#/definitions/executions_stream"
   - "#/definitions/incoming_phone_numbers_stream"
   - "#/definitions/keys_stream"
+  - "#/definitions/message_media_stream"
+  - "#/definitions/messages_stream"
   - "#/definitions/outgoing_caller_ids_stream"
   - "#/definitions/queues_stream"
+  - "#/definitions/recordings_stream"
   - "#/definitions/transcriptions_stream"
+  - "#/definitions/usage_records_stream"
+  - "#/definitions/usage_triggers_stream"
 
 
 check:
   stream_names:
     - "accounts"
     - "addresses"
+    - "alerts"
     - "applications"
     - "available_phone_number_countries"
     - "available_phone_numbers_local"
     - "available_phone_numbers_mobile"
     - "available_phone_numbers_toll_free"
-    - "conversations"
+    - "calls"
+    - "conference_participants"
+    - "conferences"
     - "conversation_messages"
     - "conversation_participants"
+    - "conversations"
     - "dependent_phone_numbers"
     - "executions"
     - "flows"
     - "incoming_phone_numbers"
     - "keys"
+    - "message_media"
+    - "messages"
     - "outgoing_caller_ids"
     - "queues"
+    - "recordings"
     - "transcriptions"
+    - "usage_records"
+    - "usage_triggers"
