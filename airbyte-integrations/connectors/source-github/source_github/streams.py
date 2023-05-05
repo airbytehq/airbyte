@@ -70,7 +70,6 @@ class GithubStream(HttpStream, ABC):
         return False
 
     def should_retry(self, response: requests.Response) -> bool:
-
         if super().should_retry(response):
             return True
 
