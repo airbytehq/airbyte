@@ -3,18 +3,27 @@
   "type": "object",
   "properties": {
     "tweet_id": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "handler": {
-      "type": ["null", "string"]
-    },
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "timestamp": {
       "type": "string",
       "format": "date-time",
-      "airbyte_type": "timestamp_with_timezone",
+      "airbyte_type": "timestamp_with_timezone"
+    },
     "text": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "tweet_time": {
       "type": "string",
@@ -22,19 +31,34 @@
       "airbyte_type": "timestamp_with_timezone"
     },
     "retweet_count": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "reply_count": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "like_count": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "quote_count": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "impression_count": {
-      "type": ["null", "integer"]
+      "type": [
+        "null",
+        "integer"
+      ]
     }
   }
 }
