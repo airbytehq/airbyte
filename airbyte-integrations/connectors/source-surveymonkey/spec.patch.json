@@ -9,19 +9,19 @@
       "title": "Credentials",
       "description": "Credentials for the service",
       "discriminator": {
-        "propertyName": "auth_type"
+        "propertyName": "auth_method"
       },
       "properties": null,
       "required": null,
       "oneOf": [{
         "x-oauth2-provider": "surveymonkey",
-        "required": ["auth_type", "access_token", "client_id", "client_secret"],
+        "required": ["auth_method", "access_token", "client_id", "client_secret"],
         "title": "OAuth",
         "properties": {
-          "auth_type": {
+          "auth_method": {
             "type": "string",
-            "const": "oauth2",
-            "default": "oauth2"
+            "const": "oauth2.0",
+            "default": "oauth2.0"
           },
           "access_token": {
             "title": "Access Token",
@@ -42,10 +42,10 @@
           }
         }
       }, {
-        "required": ["auth_type", "access_token"],
+        "required": ["auth_method", "access_token"],
         "title": "Access Token",
         "properties": {
-          "auth_type": {
+          "auth_method": {
             "type": "string",
             "const": "access_token",
             "default": "access_token"
