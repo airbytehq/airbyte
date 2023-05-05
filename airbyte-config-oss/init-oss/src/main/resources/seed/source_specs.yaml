@@ -3977,7 +3977,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.3.5"
+- dockerImage: "airbyte/source-facebook-marketing:0.3.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -4018,6 +4018,7 @@
           examples:
           - "2017-01-26T00:00:00Z"
           type: "string"
+          format: "date-time"
         access_token:
           title: "Access Token"
           description: "The value of the generated access token. From your App’s Dashboard,\
@@ -4566,7 +4567,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.3.2"
+- dockerImage: "airbyte/source-file:0.3.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -4648,6 +4649,7 @@
               service_account_json:
                 type: "string"
                 title: "Service Account JSON"
+                airbyte_secret: true
                 description: "In order to access private Buckets stored on Google\
                   \ Cloud, this connector would need a service account json credentials\
                   \ with the proper permissions as described <a href=\"https://cloud.google.com/iam/docs/service-accounts\"\
@@ -4982,7 +4984,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-freshservice:0.1.1"
+- dockerImage: "airbyte/source-freshservice:1.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/freshservice"
     connectionSpecification:
@@ -4993,7 +4995,7 @@
       - "domain_name"
       - "api_key"
       - "start_date"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         domain_name:
           type: "string"
@@ -8364,7 +8366,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mailchimp:0.4.0"
+- dockerImage: "airbyte/source-mailchimp:0.4.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailchimp"
     connectionSpecification:
@@ -8738,7 +8740,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:1.0.15"
+- dockerImage: "airbyte/source-mssql:1.0.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -9208,7 +9210,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mixpanel:0.1.31"
+- dockerImage: "airbyte/source-mixpanel:0.1.33"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mixpanel"
     connectionSpecification:
@@ -9615,7 +9617,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.19"
+- dockerImage: "airbyte/source-mysql:2.0.20"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -13829,7 +13831,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:2.0.11"
+- dockerImage: "airbyte/source-salesforce:2.0.12"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -14996,7 +14998,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-square:0.2.2"
+- dockerImage: "airbyte/source-square:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/square"
     connectionSpecification:
@@ -15021,9 +15023,9 @@
             - "client_secret"
             - "refresh_token"
             properties:
-              credentials_title:
+              auth_type:
                 type: "string"
-                const: "OAuth Credentials"
+                const: "OAuth"
                 order: 0
               client_id:
                 type: "string"
@@ -15047,10 +15049,10 @@
             - "auth_type"
             - "api_key"
             properties:
-              credentials_title:
+              auth_type:
                 type: "string"
                 const: "API Key"
-                order: 0
+                order: 1
               api_key:
                 type: "string"
                 title: "API key token"
@@ -15097,7 +15099,7 @@
       predicate_key:
       - "credentials"
       - "auth_type"
-      predicate_value: "Oauth"
+      predicate_value: "OAuth"
       oauth_config_specification:
         complete_oauth_output_specification:
           type: "object"
@@ -17938,7 +17940,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sentry:0.2.1"
+- dockerImage: "airbyte/source-sentry:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sentry"
     connectionSpecification:
