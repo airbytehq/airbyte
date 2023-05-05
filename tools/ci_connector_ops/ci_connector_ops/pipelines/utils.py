@@ -14,6 +14,7 @@ from glob import glob
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Set, Tuple, Union
 
+import anyio
 import asyncer
 import click
 import git
@@ -174,7 +175,10 @@ def get_modified_files_in_branch_local(current_git_revision: str, diffed_branch:
 
 def get_modified_files_in_branch(current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True) -> Set[str]:
     """Retrieve the list of modified files on the branch."""
-    return get_modified_files_in_branch_local(current_git_revision, diffed_branch)
+    if is_local:
+        return get_modified_files_in_branch_local(current_git_revision, diffed_branch)
+    else:
+        return anyio.run(get_modified_files_in_branch_remote, current_git_branch, current_git_revision, diffed_branch)
 
 
 async def get_modified_files_in_commit_remote(current_git_branch: str, current_git_revision: str) -> Set[str]:
@@ -210,7 +214,10 @@ def get_modified_files_in_commit_local(current_git_revision: str) -> Set[str]:
 
 
 def get_modified_files_in_commit(current_git_branch: str, current_git_revision: str, is_local: bool = True) -> Set[str]:
-    return get_modified_files_in_commit_local(current_git_revision)
+    if is_local:
+        return get_modified_files_in_commit_local(current_git_revision)
+    else:
+        return anyio.run(get_modified_files_in_commit_remote, current_git_branch, current_git_revision)
 
 
 def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict[Connector, List[str]]:
