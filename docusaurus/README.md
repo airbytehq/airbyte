@@ -26,6 +26,10 @@ At this point you will see any broken links that docusaurus was able to find.
 yarn start # any changes will automatically be reflected in your browser!
 ```
 
+## Making Changes
+
+All the content for docs.airbute.com lives in the `/docs` directory in this repo. All files are markdown. Make changes or add new files, and you should see them in your browser!
+
 ## Plugin Client Redirects
 
 A silly name, but a useful plugin that adds redirect functionality to docusuaurs
