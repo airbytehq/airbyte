@@ -155,7 +155,11 @@ class SourceGithub(AbstractSource):
         tokens = [t.strip() for t in token.split(TOKEN_SEPARATOR)]
         requests_per_hour = config.get("requests_per_hour")
         if requests_per_hour:
-            return MultipleTokenAuthenticatorWithRateLimiter(tokens=tokens, auth_method="token", requests_per_hour=requests_per_hour)
+            return MultipleTokenAuthenticatorWithRateLimiter(
+                tokens=tokens,
+                auth_method="token",
+                requests_per_hour=requests_per_hour,
+            )
         return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
 
     @staticmethod
