@@ -17,7 +17,7 @@ public class MssqlCdcConnectorMetadataInjector implements CdcMetadataInjector {
   @Override
   public void addMetaData(final ObjectNode event, final JsonNode source) {
     final String commitLsn = source.get("commit_lsn").asText();
-    final String commitLsn = source.get("change_lsn").asText();
+    final String change_lsn = source.get("change_lsn").asText();
     final String eventSerialNo = source.get("event_serial_no").asText();
     event.put(CDC_LSN, commitLsn);
     event.put(CDC_CHANGE_LSN, change_lsn);
