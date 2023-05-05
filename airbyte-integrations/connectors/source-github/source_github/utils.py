@@ -32,20 +32,23 @@ def read_full_refresh(stream_instance: Stream):
 
 
 class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
-    """Github rate limiter"""
+    """
+    For authentication use a similar implementation for MultipleTokenAuthenticator.
+    Every token in the cycle is checked against the rate limiter and if the token is over capacity
+    switch to another token. If all tokens are exhausted sleep until the first token will be ready.
+    """
 
-    duration = 3600  # seconds
+    DURATION = 3600  # number of requests per hour
 
     def __init__(self, tokens: List[str], requests_per_hour: int, auth_method: str = "Bearer", auth_header: str = "Authorization"):
         self._auth_method = auth_method
         self._auth_header = auth_header
         self._tokens = tokens
         self._tokens_iter = cycle(self._tokens)
-
-        self.requests_per_hour = requests_per_hour
-        self.stat = {}
-        for t in tokens:
-            self.stat[t] = {"requests_per_hour": requests_per_hour, "timestamp": None}
+        self._requests_per_hour = requests_per_hour
+        now = time.time()
+        self._token_to_update_time = {t: now for t in tokens}
+        self._token_to_number = {t: self._requests_per_hour for t in tokens}
 
     @property
     def auth_header(self) -> str:
@@ -53,31 +56,24 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
 
     @property
     def token(self) -> str:
-        now = time.time()
         while True:
-            t = next(self._tokens_iter)
-            res = self._check_rate_limit(t, now)
-            if res:
-                return f"{self._auth_method} {t}"
+            token = next(self._tokens_iter)
+            if self._check_not_limited(token):
+                return f"{self._auth_method} {token}"
+            self._sleep()
 
-            # do we need to sleep ?
-            if sum([v["requests_per_hour"] for k, v in self.stat.items()]) == 0:
-                min_t = min([v["timestamp"] for k, v in self.stat.items()])
-                sleep_time = self.duration - (now - min_t)
-                logging.warning("sleeping %d", sleep_time)
-                time.sleep(self.duration - (now - min_t))
-
-    def _check_rate_limit(self, t, now):
-
-        if self.stat[t]["timestamp"] is None:
-            self.stat[t]["timestamp"] = now
-
-        if now - self.stat[t]["timestamp"] >= self.duration:
-            self.stat[t]["timestamp"] = now
-            self.stat[t]["requests_per_hour"] = self.requests_per_hour
-
-        if self.stat[t]["requests_per_hour"] > 0:
-            self.stat[t]["requests_per_hour"] -= 1
+    def _check_not_limited(self, token: str):
+        """check that token is not limited"""
+        now = time.time()
+        if now - self._token_to_update_time[token] >= self.DURATION:
+            self._token_to_number[token] = self._requests_per_hour
+            self._token_to_update_time[token] = now
+        if self._token_to_number[token] > 0:
+            self._token_to_number[token] -= 1
             return True
 
-        return False
+    def _sleep(self):
+        if sum(self._token_to_number.values()) == 0:
+            sleep_time = self.DURATION - (time.time() - min(self._token_to_update_time.values()))
+            logging.warning("Sleeping for %f seconds to limit connector to %d requests per hour.", sleep_time, self._requests_per_hour)
+            time.sleep(sleep_time)
