@@ -95,7 +95,7 @@ class JinjaInterpolation(Interpolation):
             undeclared = meta.find_undeclared_variables(ast)
             undeclared_not_in_context = {var for var in undeclared if var not in context}
             if undeclared_not_in_context:
-                raise ValueError(f"Jinja macro has undeclared variables: {undeclared}. Context: {context}")
+                raise ValueError(f"Jinja macro has undeclared variables: {undeclared_not_in_context}. Context: {context}")
             return self._environment.from_string(s).render(context)
         except TypeError:
             # The string is a static value, not a jinja template
