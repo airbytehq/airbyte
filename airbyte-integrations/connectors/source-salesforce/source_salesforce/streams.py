@@ -579,7 +579,7 @@ def transform_empty_string_to_none(instance: Any, schema: Any):
 
 class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     state_checkpoint_interval = 500
-    STREAM_SLICE_STEP = 120
+    STREAM_SLICE_STEP = 30
 
     def __init__(self, replication_key: str, start_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
