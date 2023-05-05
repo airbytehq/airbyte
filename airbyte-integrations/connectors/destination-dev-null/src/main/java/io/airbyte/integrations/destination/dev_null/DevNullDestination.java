@@ -41,11 +41,12 @@ public class DevNullDestination extends SpecModifyingDestination implements Dest
 
     ((ObjectNode) spec.getConnectionSpecification()).put("title", DEV_NULL_DESTINATION_TITLE);
 
-    final ArrayNode types = (ArrayNode) spec.getConnectionSpecification().get("oneOf");
+    final ObjectNode properties = (ObjectNode) spec.getConnectionSpecification().get("test_destination");
+    final ArrayNode types = (ArrayNode) properties.get("test_destination_type").get("oneOf");
     final Iterator<JsonNode> typesIterator = types.elements();
     while (typesIterator.hasNext()) {
       final JsonNode typeNode = typesIterator.next();
-      if (!typeNode.get("properties").get("test_destination_type").get("const").asText().equalsIgnoreCase("silent")) {
+      if (!typeNode.get("test_destination").get("test_destination_type").get("const").asText().equalsIgnoreCase("silent")) {
         typesIterator.remove();
       }
     }
