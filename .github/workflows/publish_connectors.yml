@@ -32,6 +32,7 @@ jobs:
       SPEC_CACHE_BUCKET_NAME: io-airbyte-cloud-spec-cache
       SPEC_CACHE_SERVICE_ACCOUNT_KEY: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
       TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
+      SLACK_WEBHOOK: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -46,7 +47,7 @@ jobs:
           # Setting concurrency to 1 for safety:
           # High concurrency can lead to resource issues for java connectors.
           # As speed is not a concern in this context I think not publishing connectors in parallel is fine.
-          subcommand: "connectors --concurrency=1 --modified publish --pre-release"
+          subcommand: "connectors --concurrency=1 --execute-timeout=1800 --modified publish --pre-release"
           context: "master"
       - name: Publish connectors
         id: publish-connectors
