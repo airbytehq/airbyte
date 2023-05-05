@@ -135,6 +135,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                  |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 1.4.1   | 2023-05-05 | [\#25649](https://github.com/airbytehq/airbyte/pull/25649) | Splits base class dependencies                                                                                           |
 | 1.4.0   | 2023-04-29 | [\#25570](https://github.com/airbytehq/airbyte/pull/25570) | Internal library update. Bumping version to stay in sync with BigQuery-denormalized.                                     |
 | 1.3.4   | 2023-04-28 | [\#25588](https://github.com/airbytehq/airbyte/pull/25588) | Internal scaffolding change for future development                                                                       |
 | 1.3.3   | 2023-04-27 | [\#25346](https://github.com/airbytehq/airbyte/pull/25346) | Internal code cleanup                                                                                                    |
