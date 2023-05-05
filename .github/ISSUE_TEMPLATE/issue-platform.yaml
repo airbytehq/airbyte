@@ -1,13 +1,20 @@
 name: Platform Issue
 description: Use this when you're facing a platform, deploy or infrastructure issue.
-title: "Platform Issue: "
+title: "Platform Issue: <REMOVE WITH ISSUE TITLE>"
 labels: [type/bug, area/platform, needs-triage]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+        Make sure you update the title with a concise title and provide all information you have to 
+        help us debugging the problem together.
+        Issues not following the pattern will be closed.
   - type: input
     id: platform-version
     attributes:
-      label: Platform Version
-      description: Give the Airbyte Platform version you're using.
+      label: Platform Version or Helm Chart Version
+      description: Give the Airbyte Platform version you're using. (eg. 0.44.1, 0.30.0)
     validations:
       required: true
   - type: dropdown
