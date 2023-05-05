@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.36.3
+pin the version of the requests library
+
 ## 0.36.2
 Support parsing non UTC dates and Connector Builder set slice descriptor
 
