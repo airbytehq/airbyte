@@ -135,7 +135,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     unit_test_results = await UnitTests(context).run(connector_container)
     if unit_test_results.status is StepStatus.FAILURE:
         return step_results + [unit_test_results]
-
+    step_results.append(unit_test_results)
     async with asyncer.create_task_group() as task_group:
         tasks = [
             task_group.soonify(IntegrationTests(context).run)(connector_container),

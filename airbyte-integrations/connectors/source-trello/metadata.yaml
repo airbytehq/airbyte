@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - api.trello.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 8da67652-004c-11ec-9a03-0242ac130003
@@ -16,6 +11,11 @@ data:
   icon: trello.svg
   license: MIT
   name: Trello
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
   supportUrl: https://docs.airbyte.com/integrations/sources/trello
 metadataSpecVersion: "1.0"
