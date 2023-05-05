@@ -149,7 +149,7 @@ class PytestStep(Step, ABC):
             StepResult: The inferred step result according to the log.
         """
         last_log_line = logs.split("\n")[-2]
-        if "failed" in last_log_line:
+        if "failed" in last_log_line or "errors" in last_log_line:
             return StepResult(self, StepStatus.FAILURE, stderr=logs)
         elif "no tests ran" in last_log_line:
             return StepResult(self, StepStatus.SKIPPED, stdout=logs)

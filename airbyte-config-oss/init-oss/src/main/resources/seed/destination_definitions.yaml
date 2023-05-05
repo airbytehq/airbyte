@@ -312,7 +312,7 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.4.6
+  dockerImageTag: 0.4.7
   documentationUrl: https://docs.airbyte.com/integrations/destinations/redshift
   icon: redshift.svg
   normalizationConfig:
@@ -356,7 +356,7 @@
 - name: S3 Glue
   destinationDefinitionId: 471e5cab-8ed1-49f3-ba11-79c687784737
   dockerRepository: airbyte/destination-s3-glue
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3-glue
   icon: s3-glue.svg
   releaseStage: alpha
@@ -377,7 +377,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.63
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   icon: snowflake.svg
   normalizationConfig:
