@@ -69,6 +69,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -410,6 +411,10 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
   @Override
   public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
+    return createDatabase(sourceConfig, JdbcDataSourceUtils::getConnectionProperties);
+  }
+
+  protected JdbcDatabase createDatabase(final JsonNode sourceConfig, Function<JsonNode, Map<String, String>> connectionProperties) throws SQLException {
     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
     // Create the data source
     final DataSource dataSource = DataSourceFactory.create(
@@ -417,7 +422,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        this.getConnectionProperties(sourceConfig));
+        connectionProperties.apply(sourceConfig));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
 
@@ -430,10 +435,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(jdbcConfig);
     return database;
-  }
-
-  public Map<String, String> getConnectionProperties(final JsonNode config) {
-    return JdbcDataSourceUtils.getConnectionProperties(config);
   }
 
   /**
