@@ -143,11 +143,7 @@ class PipelineContext:
     def get_repo_dir(self, subdir: str = ".", exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
         """Get a directory from the current repository.
 
-        If running in the CI:
-        The directory is extracted from the git branch.
-
-        If running locally:
-        The directory is extracted from your host file system.
+        The directory is extracted from the host file system.
         A couple of files or directories that could corrupt builds are exclude by default (check DEFAULT_EXCLUDED_FILES).
 
         Args:
@@ -158,18 +154,15 @@ class PipelineContext:
         Returns:
             Directory: The selected repo directory.
         """
-        if self.is_local:
-            if exclude is None:
-                exclude = self.DEFAULT_EXCLUDED_FILES
-            else:
-                exclude += self.DEFAULT_EXCLUDED_FILES
-                exclude = list(set(exclude))
-            if subdir != ".":
-                subdir = f"{subdir}/" if not subdir.endswith("/") else subdir
-                exclude = [f.replace(subdir, "") for f in exclude if subdir in f]
-            return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
+        if exclude is None:
+            exclude = self.DEFAULT_EXCLUDED_FILES
         else:
-            return self.repo.branch(self.git_branch).tree().directory(subdir)
+            exclude += self.DEFAULT_EXCLUDED_FILES
+            exclude = list(set(exclude))
+        if subdir != ".":
+            subdir = f"{subdir}/" if not subdir.endswith("/") else subdir
+            exclude = [f.replace(subdir, "") for f in exclude if subdir in f]
+        return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
 
     async def __aenter__(self):
         """Perform setup operation for the PipelineContext.
