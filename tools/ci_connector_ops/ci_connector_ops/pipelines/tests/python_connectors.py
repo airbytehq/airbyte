@@ -81,9 +81,7 @@ class UnitTests(PytestStep):
         Returns:
             StepResult: Failure or success of the unit tests with stdout and stdout.
         """
-        connector_under_test_with_secrets = connector_under_test.with_directory(
-            f"{self.context.connector.code_directory}/secrets", self.context.secrets_dir
-        )
+        connector_under_test_with_secrets = connector_under_test.with_directory("secrets", self.context.secrets_dir)
         return await self._run_tests_in_directory(connector_under_test_with_secrets, "unit_tests")
 
 
@@ -101,9 +99,7 @@ class IntegrationTests(PytestStep):
         Returns:
             StepResult: Failure or success of the integration tests with stdout and stdout.
         """
-        connector_under_test_with_secrets = connector_under_test.with_directory(
-            f"{self.context.connector.code_directory}/secrets", self.context.secrets_dir
-        )
+        connector_under_test_with_secrets = connector_under_test.with_directory("secrets", self.context.secrets_dir)
 
         return await self._run_tests_in_directory(connector_under_test_with_secrets, "integration_tests")
 
