@@ -238,7 +238,6 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                    |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------|
-| 0.3.1   | 2023-05-05 | [\#25649](https://github.com/airbytehq/airbyte/pull/25649) | Splits base class dependencies                                                                                             |
 | 0.3.0   | 2023-04-28 | [\#25570](https://github.com/airbytehq/airbyte/pull/25570) | Fix: all integer schemas should be converted to Avro longs                                                                 |
 | 0.2.17  | 2023-04-27 | [\#25346](https://github.com/airbytehq/airbyte/pull/25346) | Internal code cleanup                                                                                                      | |
 | 0.2.16  | 2023-03-17 | [\#23788](https://github.com/airbytehq/airbyte/pull/23788) | S3-Parquet: added handler to process null values in arrays                                                                 |
