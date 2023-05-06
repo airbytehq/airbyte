@@ -198,14 +198,35 @@ QA_CHECKS = [
 ]
 
 
+def remove_strict_encrypt_suffix(connector_technical_name: str) -> str:
+    """Remove the strict encrypt suffix from a connector name.
+
+    Args:
+        connector_technical_name (str): the connector name.
+
+    Returns:
+        str: the connector name without the strict encrypt suffix.
+    """
+    strict_encrypt_suffixes = [
+        "-strict-encrypt",
+        "-secure",
+    ]
+
+    for suffix in strict_encrypt_suffixes:
+        if connector_technical_name.endswith(suffix):
+            new_connector_technical_name = connector_technical_name.replace(suffix, "")
+            print("Checking connector " + new_connector_technical_name + " due to strict-encrypt")
+            return new_connector_technical_name
+    return connector_technical_name
+
+
 def run_qa_checks():
     connector_technical_name = sys.argv[1].split("/")[-1]
     if not connector_technical_name.startswith("source-") and not connector_technical_name.startswith("destination-"):
         print("No QA check to run as this is not a connector.")
         sys.exit(0)
-    if connector_technical_name.endswith("-strict-encrypt"):
-        connector_technical_name = connector_technical_name.replace("-strict-encrypt", "")
-        print("Checking connector " + connector_technical_name + " due to strict-encrypt")
+
+    connector_technical_name = remove_strict_encrypt_suffix(connector_technical_name)
     connector = Connector(connector_technical_name)
     print(f"Running QA checks for {connector_technical_name}:{connector.version}")
     qa_check_results = {qa_check.__name__: qa_check(connector) for qa_check in QA_CHECKS}
