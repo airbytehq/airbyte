@@ -146,16 +146,12 @@ Once you've finished iterating on the changes to a connector as specified in its
 
 1. Bump the version in the `Dockerfile` of the connector \(`LABEL io.airbyte.version=X.X.X`\). 
 2. Submit a PR containing the changes you made.
-3. One of Airbyte maintainers will review the change and publish the new version of the connector to Docker hub. Triggering tests and publishing connectors can be done by leaving a comment on the PR with the following format \(the PR must be from the Airbyte repo, not a fork\):
+3. One of Airbyte maintainers will review the change the new version.  Triggering tests can be done by leaving a comment on the PR with the following format \(the PR must be from the Airbyte repo, not a fork\):
 
    ```text
    # to run integration tests for the connector
    # Example: /test connector=connectors/source-hubspot
    /test connector=(connectors|bases)/<connector_name> 
-
-   # to run integration tests, publish the connector, and use the updated connector version in our config/metadata files
-   # Example: /publish connector=connectors/source-hubspot
-   /publish connector=(connectors|bases)/<connector_name>
    ```
    
 4. OPTIONAL: Necessary if this is a new connector, or the automated connector version bump fails
@@ -165,31 +161,21 @@ Once you've finished iterating on the changes to a connector as specified in its
    
    * Then run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/master/airbyte-config-oss/specs-oss) for more information.
 
-5. The new version of the connector is now available for everyone who uses it. Thank you!
+5. Once the PR is merged the new connector version will be published to DockerHub and the connector should now be available for everyone who uses it. Thank you!
 
 
 ### Updating Connector Metadata
 
-When a new (or updated version) of a connector is ready to be published, our automations will check your branch for a few things:
+When a new (or updated version) of a connector is ready, our automations will check your branch for a few things:
 * Does the connector have an icon?
 * Does the connector have documentation and is it in the proper format?
 * Does the connector have a changelog entry for this version?
 
-If any of the above are failing, you won't be able to merge your PR or publish your connector.
+If any of the above are failing, you won't be able to merge your PR.
 
 Connector icons should be square SVGs and be located in [this directory](https://github.com/airbytehq/airbyte/tree/master/airbyte-config-oss/init-oss/src/main/resources/icons).
 
 Connector documentation and changelogs are markdown files which live either [here for sources](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/sources), or [here for destinations](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/destinations).
-
-### The /publish command
-
-Publishing a connector can be done using the `/publish` command as outlined in the above section. The command runs a [github workflow](https://github.com/airbytehq/airbyte/actions/workflows/publish-command.yml), and has the following configurable parameters:
-* **connector** - Required. This tells the workflow which connector to publish. e.g. `connector=connectors/source-amazon-ads`. This can also be a comma-separated list of many connectors, e.g. `connector=connectors/source-s3,connectors/destination-postgres,connectors/source-facebook-marketing`. See the parallel flag below if publishing multiple connectors.
-* **repo** - Defaults to the main airbyte repo. Set this when building connectors from forked repos. e.g. `repo=userfork/airbyte`
-* **gitref** - Defaults to the branch of the PR where the /publish command is run as a comment. If running manually, set this to your branch where you made changes e.g. `gitref=george/s3-update`
-* **comment-id** - This is automatically filled if you run /publish from a comment and enables the workflow to write back success/fail logs to the git comment.
-* **auto-bump-version** - Defaults to true, automates the post-publish process of bumping the connector's version in the yaml seed definitions and generating spec.
-* **parallel** - Defaults to false. If set to true, a pool of runner agents will be spun up to allow publishing multiple connectors in parallel. Only switch this to true if publishing multiple connectors at once to avoid wasting $$$.
 
 ## Using credentials in CI
 
