@@ -1,0 +1,19 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*" # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 8ca1bcfb-0d03-457e-b84c-d02942593f9d
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-youtube-data
+  githubIssueLabel: source-youtube-data
+  icon: youtube-data.svg
+  license: MIT
+  name: Youtube Data 
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/youtube-data
+metadataSpecVersion: "1.0"

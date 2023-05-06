@@ -1,0 +1,122 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Generated schema for Root",
+    "type": "object",
+    "properties": {
+      "kind": {
+        "type": "string"
+      },
+      "etag": {
+        "type": "string"
+      },
+      "pageInfo": {
+        "type": "object",
+        "properties": {
+          "totalResults": {
+            "type": "number"
+          },
+          "resultsPerPage": {
+            "type": "number"
+          }
+        }
+     
+      },
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string"
+            },
+            "etag": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "snippet": {
+              "type": "object",
+              "properties": {
+                "videoId": {
+                  "type": "string"
+                },
+                "topLevelComment": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string"
+                    },
+                    "etag": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "snippet": {
+                      "type": "object",
+                      "properties": {
+                        "videoId": {
+                          "type": "string"
+                        },
+                        "textDisplay": {
+                          "type": "string"
+                        },
+                        "textOriginal": {
+                          "type": "string"
+                        },
+                        "authorDisplayName": {
+                          "type": "string"
+                        },
+                        "authorProfileImageUrl": {
+                          "type": "string"
+                        },
+                        "authorChannelUrl": {
+                          "type": "string"
+                        },
+                        "authorChannelId": {
+                          "type": "object",
+                          "properties": {
+                            "value": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "value"
+                          ]
+                        },
+                        "canRate": {
+                          "type": "boolean"
+                        },
+                        "viewerRating": {
+                          "type": "string"
+                        },
+                        "likeCount": {
+                          "type": "number"
+                        },
+                        "publishedAt": {
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "canReply": {
+                  "type": "boolean"
+                },
+                "totalReplyCount": {
+                  "type": "number"
+                },
+                "isPublic": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }

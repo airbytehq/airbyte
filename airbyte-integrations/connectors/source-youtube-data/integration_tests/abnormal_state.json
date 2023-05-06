@@ -1,0 +1,10 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "video_comments"
+      }
+    }
+  }
+]
