@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Tuple
 import asyncer
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.utils import check_path_in_workdir, slugify, with_exit_code, with_stderr, with_stdout
-from ci_connector_ops.utils import console
+from ci_connector_ops.utils import Connector, console
 from dagger import CacheVolume, Container, Directory, QueryError
 from rich.console import Group
 from rich.panel import Panel
@@ -430,10 +430,16 @@ class GradleTask(Step, ABC):
         Returns:
             List[str]: List of directories or files to be mounted to the container to run a Java connector Gradle task.
         """
+        additional_inclusion = []
+        if self.context.connector.technical_name.endswith("-strict-encrypt"):
+            additional_inclusion = [Connector(self.context.connector.technical_name.replace("-strict-encrypt", "")).code_directory]
+        if self.context.connector.technical_name == "source-file-secure":
+            additional_inclusion = [Connector("source-file").code_directory]
+
         if self.context.connector.connector_type == "source":
-            return self.JAVA_BUILD_INCLUDE + self.SOURCE_BUILD_INCLUDE
+            return additional_inclusion + self.JAVA_BUILD_INCLUDE + self.SOURCE_BUILD_INCLUDE
         elif self.context.connector.connector_type == "destination":
-            return self.JAVA_BUILD_INCLUDE + self.DESTINATION_BUILD_INCLUDE
+            return additional_inclusion + self.JAVA_BUILD_INCLUDE + self.DESTINATION_BUILD_INCLUDE
         else:
             raise ValueError(f"{self.context.connector.connector_type} is not supported")
 
