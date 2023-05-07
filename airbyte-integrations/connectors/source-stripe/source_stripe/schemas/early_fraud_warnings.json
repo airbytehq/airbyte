@@ -1,63 +1,48 @@
 {
-	"$schema": "http://json-schema.org/draft-07/schema#",
-	"title": "Generated schema for Root",
-	"type": "object",
-	"properties": {
-	  "id": {
-		"type": ["null", "string"]
-	  },
-	  "object": {
-		"type": ["null", "string"]
-	  },
-	  "url": {
-		"type": ["null", "string"]
-	  },
-	  "has_more": {
-		"type": ["boolean", "null"]
-	  },
-	  "data": {
-		"type": ["array", "null"],
-		"items": {
-		  "type": "object",
-		  "properties": {
-			"id": {
-			  "type": "string"
-			},
-			"object": {
-			  "type": "string"
-			},
-			"actionable": {
-			  "type": "boolean"
-			},
-			"charge": {
-			  "type": "string"
-			},
-			"created": {
-			  "type": "number"
-			},
-			"fraud_type": {
-			  "type": "string"
-			},
-			"livemode": {
-			  "type": "boolean"
-			}
-		  },
-		  "required": [
-			"id",
-			"object",
-			"actionable",
-			"charge",
-			"created",
-			"fraud_type",
-			"livemode"
-		  ]
-		}
-	  }
-	},
-	"required": [
-	  "object",
-	  "url",
-	  "has_more",
-	  "data"
-	]
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Generated schema for Root",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "has_more": {
+      "type": ["null", "boolean"]
+    },
+    "data": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "object": {
+            "type": ["null", "string"]
+          },
+          "actionable": {
+            "type": ["null", "boolean"]
+          },
+          "charge": {
+            "type": ["null", "string"]
+          },
+          "created": {
+            "type": ["null", "number"]
+          },
+          "fraud_type": {
+            "type": ["null", "string"]
+          },
+          "livemode": {
+            "type": ["null", "boolean"]
+          }
+        }
+      }
+    }
   }
+}
