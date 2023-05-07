@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import re
 from typing import Any, Dict, List, Mapping, Set, Tuple
 
 from airbyte_cdk import AirbyteLogger
