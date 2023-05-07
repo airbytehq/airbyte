@@ -84,17 +84,7 @@ definitions:
     primary_key: "id"
     type: DeclarativeStream
     retriever:
-      type: SimpleRetriever
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - stream: "#/definitions/docs_stream"
-            parent_key: "id"
-            partition_field: "doc_id"
+      $ref: "#/definitions/retriever_with_partition"
       requester:
         $ref: "#/definitions/requester"
         path: "docs/{{ stream_slice.doc_id }}/tables"
@@ -105,17 +95,7 @@ definitions:
     primary_key: "id"
     type: DeclarativeStream
     retriever:
-      type: SimpleRetriever
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - stream: "#/definitions/docs_stream"
-            parent_key: "id"
-            partition_field: "doc_id"
+      $ref: "#/definitions/retriever_with_partition"
       requester:
         $ref: "#/definitions/requester"
         path: "docs/{{ stream_slice.doc_id }}/formulas"
@@ -126,17 +106,7 @@ definitions:
     primary_key: "id"
     type: DeclarativeStream
     retriever:
-      type: SimpleRetriever
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - stream: "#/definitions/docs_stream"
-            parent_key: "id"
-            partition_field: "doc_id"
+      $ref: "#/definitions/retriever_with_partition"
       requester:
         $ref: "#/definitions/requester"
         path: "docs/{{ stream_slice.doc_id }}/controls"
