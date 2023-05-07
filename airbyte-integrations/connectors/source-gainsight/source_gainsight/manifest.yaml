@@ -69,10 +69,21 @@ definitions:
     name: "user_attributes"
     primary_key: "id"
 
+  users_stream:
+    $parameters:
+      path: "users"
+      extractorPath: "users"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/custom_retriever"
+    name: "users"
+    primary_key: "id"
+
 streams:
   - "#/definitions/accounts_stream"
   - "#/definitions/admin_attributes_stream"
   - "#/definitions/user_attributes_stream"
+  - "#/definitions/users_stream"
 
 check:
   type: CheckStream
@@ -80,4 +91,5 @@ check:
     - "accounts"
     - "admin_attributes"
     - "user_attributes"
+    - "users"
 
