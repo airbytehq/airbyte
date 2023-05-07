@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Early Fraud Warnings Schema",
+  "additionalProperties": true,
   "type": ["null", "object"],
   "properties": {
     "id": {
