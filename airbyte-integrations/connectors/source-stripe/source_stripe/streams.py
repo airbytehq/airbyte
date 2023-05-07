@@ -172,6 +172,7 @@ class BalanceTransactions(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/balance_transactions/list
     """
+
     cursor_field = "created"
     name = "balance_transactions"
 
@@ -704,3 +705,6 @@ class Accounts(StripeStream):
 
     def path(self, **kwargs):
         return "accounts"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"radar/early_fraud_warnings/{stream_slice[self.parent_id]}/"
