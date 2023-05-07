@@ -51,6 +51,8 @@ The Gainsight-API source connector supports the following [sync modes](https://d
 ## Supported Streams
 
 - accounts
+- admin_attributes
+- user_attributes
 
 ## API method example
 
@@ -64,4 +66,4 @@ Gainsight-API's [API reference](https://gainsightpx.docs.apiary.io/) has v1 at p
 
 | Version | Date       | Pull Request                                           | Subject        |
 | :------ | :--------- | :----------------------------------------------------- | :------------- |
-| 0.1.0   | 2023-04-10 | [Init](https://github.com/airbytehq/airbyte/pull/)| Initial commit |
+| 0.1.0   | 2023-05-10 | [Init](https://github.com/airbytehq/airbyte/pull/24769)| Initial PR     |
