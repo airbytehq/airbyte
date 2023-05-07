@@ -93,7 +93,7 @@
       "requests_per_hour": {
         "type": "integer",
         "title": "Max requests per hour",
-        "description": "If you like to use only part of your rate limit API quota, you can set maximum requests per hour for one token. For example, the standard Github quota is 5000 requests per hour (15000 Github Enterprise), you can specify 3600.",
+        "description": "The GitHub API allows for a maximum of 5000 requests per hour (15000 for Github Enterprise). You can specify a lower value to limit your use of the API quota.",
         "minimum": 1,
         "order": 5
       }

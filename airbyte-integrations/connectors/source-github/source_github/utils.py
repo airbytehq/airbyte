@@ -38,7 +38,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
     switch to another token. If all tokens are exhausted sleep until the first token will be ready.
     """
 
-    DURATION = 3600  # number of requests per hour
+    DURATION = 3600  # seconds
 
     def __init__(self, tokens: List[str], requests_per_hour: int, auth_method: str = "Bearer", auth_header: str = "Authorization"):
         self._auth_method = auth_method
