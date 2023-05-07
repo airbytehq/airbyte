@@ -59,23 +59,6 @@ DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM = 10
 
 class SourceGithub(AbstractSource):
     @staticmethod
-    def _is_repositories_config_valid(config_repositories: Set[str]) -> bool:
-        """
-        _is_repositories_config_valid validates that each repo config matches regex to highlight problem in provided config.
-        Valid examples: airbytehq/airbyte airbytehq/another-repo airbytehq/* airbytehq/airbyte
-        Args:
-            config_repositories: set of provided repositories
-        Returns:
-            True if config valid, False if it's not
-        """
-        pattern = re.compile(r"^(?:[\w.-]+/)+(?:\*|[\w.-]+)$")
-
-        for repo in config_repositories:
-            if not pattern.match(repo):
-                return False
-        return True
-
-    @staticmethod
     def _get_and_prepare_repositories_config(config: Mapping[str, Any]) -> Set[str]:
         """
         _get_and_prepare_repositories_config gets set of repositories names from config and removes simple errors that user could provide
@@ -97,14 +80,6 @@ class SourceGithub(AbstractSource):
             authenticator(MultipleTokenAuthenticator): authenticator object
         """
         config_repositories = SourceGithub._get_and_prepare_repositories_config(config)
-        if not SourceGithub._is_repositories_config_valid(config_repositories):
-            raise Exception(
-                f"You provided invalid format of repositories config: {' ' .join(config_repositories)}."
-                f" Valid examples: airbytehq/airbyte airbytehq/another-repo airbytehq/* airbytehq/airbyte"
-            )
-
-        if not config_repositories:
-            raise Exception("Field `repository` required to be provided for connect to Github API")
 
         repositories = set()
         organizations = set()

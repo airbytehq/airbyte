@@ -106,10 +106,6 @@ def test_get_org_repositories():
 
     source = SourceGithub()
 
-    with pytest.raises(Exception):
-        config = {"repository": ""}
-        source._get_org_repositories(config, authenticator=None)
-
     responses.add(
         "GET",
         "https://api.github.com/repos/airbytehq/integration-test",
@@ -141,33 +137,9 @@ def test_organization_or_repo_available():
     assert exc_info.value.args[0] == "No streams available. Please check permissions"
 
 
-@pytest.mark.parametrize(
-    ("repos_config", "expected"),
-    [
-        (("airbytehq/airbyte/", "airbytehq/", "airbytehq", "airbyte hq", "airbytehq/*/", "adc/ff*f", "akj*/jahsd"), False),
-        (("airbytehq/airbyte", ), True),
-        (("airbytehq/airbyte-test", "airbytehq/airbyte_test", "airbytehq/airbyte-test/another-repo"), True),
-        (("air232bytehq/air32byte", "airbyte_hq/another-repo", "airbytehq/*", "airbytehq/airbyte"), True),
-        (("airbyte_hq/another.repo", "airbytehq/*", "airbytehq/airbyte"), True),
-    ],
-)
-def test_config_validation(repos_config, expected):
-    actual = SourceGithub._is_repositories_config_valid(repos_config)
-    assert actual == expected
-
-
-@pytest.mark.parametrize(
-    ("config", "expected"),
-    [
-        ({"access_token": "test_token", "repository": "airbytehq/airbyte-test"}, {"airbytehq/airbyte-test", }),
-        ({"access_token": "test_token", "repository": "airbytehq/airbyte-test "}, {"airbytehq/airbyte-test", }),
-        ({"access_token": "test_token", "repository": "airbytehq/airbyte-test/"}, {"airbytehq/airbyte-test", }),
-        ({"access_token": "test_token", "repository": "airbytehq/airbyte-test/  airbytehq/airbyte"}, {"airbytehq/airbyte", "airbytehq/airbyte-test"}),
-    ],
-)
-def tests_get_and_prepare_repositories_config(config, expected):
-    actual = SourceGithub._get_and_prepare_repositories_config(config)
-    assert actual == expected
+def tests_get_and_prepare_repositories_config():
+    config = {"repository": "airbytehq/airbyte airbytehq/airbyte-test  airbytehq/integration-test.git   airbytehq/airbyte.git"}
+    assert SourceGithub._get_and_prepare_repositories_config(config) == {"airbytehq/airbyte", "airbytehq/airbyte-test", "airbytehq/integration-test"}
 
 
 def test_check_config_repository():
@@ -198,6 +170,9 @@ def test_check_config_repository():
     ]
 
     config["repository"] = ""
+    with pytest.raises(AirbyteTracedException):
+        assert command_check(source, config)
+    config["repository"] = " "
     with pytest.raises(AirbyteTracedException):
         assert command_check(source, config)
 
