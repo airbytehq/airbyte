@@ -85,12 +85,7 @@ class SourceGithub(AbstractSource):
             set of provided repositories
         """
         config_repositories = set(filter(None, config["repository"].split(" ")))
-
-        # Users can enter repository names in various formats we are trying to normalize all these ways
-        config_repositories = {repo.removesuffix("/") for repo in config_repositories}
         config_repositories = {repo.removesuffix(".git") for repo in config_repositories}
-        config_repositories = {repo.removeprefix("http://github.com/") for repo in config_repositories}
-        config_repositories = {repo.removeprefix("https://github.com/") for repo in config_repositories}
         return config_repositories
 
     @staticmethod
