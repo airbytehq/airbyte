@@ -7,7 +7,10 @@ from unittest.mock import MagicMock
 import pytest
 import responses
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_github.source import SourceGithub
+
+from .utils import command_check
 
 
 def check_source(repo_line: str) -> AirbyteConnectionStatus:
@@ -165,3 +168,57 @@ def test_config_validation(repos_config, expected):
 def tests_get_and_prepare_repositories_config(config, expected):
     actual = SourceGithub._get_and_prepare_repositories_config(config)
     assert actual == expected
+
+
+def test_check_config_repository():
+    source = SourceGithub()
+    source.check = MagicMock(return_value=True)
+    config = {"credentials": {"access_token": "access_token"}, "start_date": "1900-01-01T00:00:00Z"}
+
+    repos_ok = [
+        "airbytehq/airbyte",
+        "airbytehq/airbyte-test",
+        "airbytehq/airbyte_test",
+        "airbytehq/airbyte.git",
+        "airbytehq/*",
+        "airbytehq/.",
+        "airbyte_hq/airbyte",
+        "airbytehq/123",
+    ]
+
+    repos_fail = [
+        "airbytehq",
+        "airbytehq/",
+        "airbytehq/*/",
+        "airbytehq/airbyte/",
+        "airbytehq/air*yte",
+        "airbyte*/airbyte",
+        "airbytehq/airbyte-test/master-branch",
+        "https://github.com/airbytehq/airbyte",
+    ]
+
+    config["repository"] = ""
+    with pytest.raises(AirbyteTracedException):
+        assert command_check(source, config)
+
+    for repos in repos_ok:
+        config["repository"] = repos
+        assert command_check(source, config)
+
+    for repos in repos_fail:
+        config["repository"] = repos
+        with pytest.raises(AirbyteTracedException):
+            assert command_check(source, config)
+
+    config["repository"] = " ".join(repos_ok)
+    assert command_check(source, config)
+    config["repository"] = "    ".join(repos_ok)
+    assert command_check(source, config)
+    config["repository"] = ",".join(repos_ok)
+    with pytest.raises(AirbyteTracedException):
+        assert command_check(source, config)
+
+    for repos in repos_fail:
+        config["repository"] = " ".join(repos_ok[:len(repos_ok)//2] + [repos] + repos_ok[len(repos_ok)//2:])
+        with pytest.raises(AirbyteTracedException):
+            assert command_check(source, config)
