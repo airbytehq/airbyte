@@ -1,0 +1,190 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["items"]
+
+  requester:
+    type: HttpRequester
+    url_base: "https://coda.io/apis/v1/"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['auth_token'] }}"
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "#/definitions/requester"
+
+  parent_base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  child_base_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+        path: "{{ parameters.path }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_streams_configs:
+          - stream: "#/definitions/docs_stream"
+            parent_key: "id"
+            partition_field: "doc_id"
+
+  docs_stream:
+    $ref: "#/definitions/parent_base_stream"
+    name: "docs"
+    primary_key: "id"
+    $parameters:
+      path: "docs"
+
+  permissions_stream:
+    $parameters:
+      name: "permissions"
+      path: "docs/{{ stream_slice.doc_id }}/acl/permissions"
+    primary_key: "id"
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+        path: "docs/{{ stream_slice.doc_id }}/acl/permissions"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/docs_stream"
+            parent_key: "id"
+            partition_field: "doc_id"
+
+  pages_stream:
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+        path: "docs/{{ stream_slice.doc_id }}/pages"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/docs_stream"
+            parent_key: "id"
+            partition_field: "doc_id"
+    name: "pages"
+    primary_key: "id"
+
+  categories_stream:
+    $ref: "#/definitions/parent_base_stream"
+    name: "categories"
+    primary_key: "name"
+    $parameters:
+      path: "categories"
+
+  tables_stream:
+    $parameters:
+      name: "tables"
+      path: "docs/{{ stream_slice.doc_id }}/tables"
+    primary_key: "id"
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+        path: "docs/{{ stream_slice.doc_id }}/tables"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/docs_stream"
+            parent_key: "id"
+            partition_field: "doc_id"
+
+  formulas_stream:
+    $parameters:
+      name: "formulas"
+      path: "docs/{{ stream_slice.doc_id }}/formulas"
+    primary_key: "id"
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+        path: "docs/{{ stream_slice.doc_id }}/formulas"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/docs_stream"
+            parent_key: "id"
+            partition_field: "doc_id"
+
+  controls_stream:
+    $parameters:
+      name: "controls"
+      path: "docs/{{ stream_slice.doc_id }}/controls"
+    primary_key: "id"
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "#/definitions/requester"
+        path: "docs/{{ stream_slice.doc_id }}/controls"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/docs_stream"
+            parent_key: "id"
+            partition_field: "doc_id"
+
+streams:
+  - "#/definitions/docs_stream"
+  - "#/definitions/permissions_stream"
+  - "#/definitions/categories_stream"
+  - "#/definitions/pages_stream"
+  - "#/definitions/tables_stream"
+  - "#/definitions/formulas_stream"
+  - "#/definitions/controls_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "docs"
+    - "permissions"
+    - "categories"
+    - "pages"
+    - "tables"
+    - "formulas"
+    - "controls"
