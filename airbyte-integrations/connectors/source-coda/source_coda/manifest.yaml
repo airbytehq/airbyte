@@ -24,28 +24,23 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
 
+  retriever_with_partition:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: NoPagination
+    partition_router:
+      type: SubstreamPartitionRouter
+      parent_stream_configs:
+        - stream: "#/definitions/docs_stream"
+          parent_key: "id"
+          partition_field: "doc_id"
+
   parent_base_stream:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever"
-
-  child_base_stream:
-    type: DeclarativeStream
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
-      requester:
-        $ref: "#/definitions/requester"
-        path: "{{ parameters.path }}"
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_streams_configs:
-          - stream: "#/definitions/docs_stream"
-            parent_key: "id"
-            partition_field: "doc_id"
 
   docs_stream:
     $ref: "#/definitions/parent_base_stream"
@@ -67,17 +62,7 @@ definitions:
     primary_key: "id"
     type: DeclarativeStream
     retriever:
-      type: SimpleRetriever
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - stream: "#/definitions/docs_stream"
-            parent_key: "id"
-            partition_field: "doc_id"
+      $ref: "#/definitions/retriever_with_partition"
       requester:
         $ref: "#/definitions/requester"
         path: "docs/{{ stream_slice.doc_id }}/acl/permissions"
@@ -88,17 +73,7 @@ definitions:
     primary_key: "id"
     type: DeclarativeStream
     retriever:
-      type: SimpleRetriever
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        type: NoPagination
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - stream: "#/definitions/docs_stream"
-            parent_key: "id"
-            partition_field: "doc_id"
+      $ref: "#/definitions/retriever_with_partition"
       requester:
         $ref: "#/definitions/requester"
         path: "docs/{{ stream_slice.doc_id }}/pages"
