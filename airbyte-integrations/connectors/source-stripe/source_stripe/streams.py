@@ -237,6 +237,16 @@ class Disputes(IncrementalStripeStream):
     def path(self, **kwargs):
         return "disputes"
 
+class EarlyFraudWarnings(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/radar/early_fraud_warnings/
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "radar/early_fraud_warnings"
+
 
 class Events(IncrementalStripeStream):
     """
@@ -705,6 +715,3 @@ class Accounts(StripeStream):
 
     def path(self, **kwargs):
         return "accounts"
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        return f"radar/early_fraud_warnings/{stream_slice[self.parent_id]}/"

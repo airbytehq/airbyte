@@ -17,6 +17,13 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "early_fraud_warnings" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
       "stream_descriptor": { "name": "events" }
     }
   },

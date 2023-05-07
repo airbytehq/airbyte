@@ -15,6 +15,7 @@ from source_stripe.streams import (
     CustomerBalanceTransactions,
     Customers,
     Disputes,
+    EarlyFraudWarnings,
     Events,
     ExternalAccount,
     ExternalAccountBankAccounts,
