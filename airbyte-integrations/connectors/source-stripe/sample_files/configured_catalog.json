@@ -3075,52 +3075,22 @@
             "object": {
               "type": ["null", "string"]
             },
-            "url": {
+            "actionable": {
+              "type": ["null", "boolean"]
+            },
+            "charge": {
               "type": ["null", "string"]
             },
-            "has_more": {
-              "type": ["boolean", "null"]
+            "created": {
+              "type": ["null", "number"]
             },
-            "data": {
-              "type": ["array", "null"],
-              "items": {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "object": {
-                    "type": "string"
-                  },
-                  "actionable": {
-                    "type": "boolean"
-                  },
-                  "charge": {
-                    "type": "string"
-                  },
-                  "created": {
-                    "type": "number"
-                  },
-                  "fraud_type": {
-                    "type": "string"
-                  },
-                  "livemode": {
-                    "type": "boolean"
-                  }
-                },
-                "required": [
-                  "id",
-                  "object",
-                  "actionable",
-                  "charge",
-                  "created",
-                  "fraud_type",
-                  "livemode"
-                ]
-              }
+            "fraud_type": {
+              "type": ["null", "string"]
+            },
+            "livemode": {
+              "type": ["null", "boolean"]
             }
-          },
-          "required": ["object", "url", "has_more", "data"]
+          }
         },
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -3130,66 +3100,6 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["created"]
-    },
-    {
-      "stream": {
-        "name": "early_fraud_warnings_with_id",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "$id": "#root/id",
-              "title": "Id",
-              "type": ["null", "string"],
-              "default": "",
-              "pattern": "^.*$"
-            },
-            "object": {
-              "$id": "#root/object",
-              "title": "Object",
-              "type": ["null", "string"],
-              "default": "",
-              "pattern": "^.*$"
-            },
-            "actionable": {
-              "$id": "#root/actionable",
-              "title": "Actionable",
-              "type": ["null", "string", "boolean"],
-              "default": true
-            },
-            "charge": {
-              "$id": "#root/charge",
-              "title": "Charge",
-              "type": ["null", "string"],
-              "default": "",
-              "pattern": "^.*$"
-            },
-            "created": {
-              "$id": "#root/created",
-              "title": "Created",
-              "type": ["null", "string", "integer"],
-              "default": 0
-            },
-            "fraud_type": {
-              "$id": "#root/fraud_type",
-              "title": "Fraud_type",
-              "type": ["null", "string"],
-              "default": "",
-              "pattern": "^.*$"
-            },
-            "livemode": {
-              "$id": "#root/livemode",
-              "title": "Livemode",
-              "type": ["null", "string", "boolean"],
-              "default": true
-            }
-          }
-        },
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
