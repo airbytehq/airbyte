@@ -1,0 +1,20 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 449a6c68-8254-43df-a2c7-f6cfcf8f5786
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-gainsight
+  githubIssueLabel: source-gainsight
+  icon: gainsight.svg
+  license: MIT
+  name: Gainsight
+  releaseDate: TODO
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/gainsight
+metadataSpecVersion: "1.0"

@@ -1,7 +1,8 @@
 {
-  "title": "Account",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Accounts Schema",
   "additionalProperties": true,
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "id": {
       "type": ["null", "string"]
@@ -16,8 +17,7 @@
       "type": ["null", "string"]
     },
     "lastSeenDate": {
-      "type": "integer",
-      "format": "int64"
+      "type": ["null", "string"]
     },
     "dunsNumber": {
       "type": ["null", "string"]
@@ -26,8 +26,7 @@
       "type": ["null", "string"]
     },
     "numberOfEmployees": {
-      "type": "integer",
-      "format": "int32"
+      "type": ["null", "string"]
     },
     "sicCode": {
       "type": ["null", "string"]
@@ -42,36 +41,30 @@
       "type": ["null", "string"]
     },
     "location": {
-      "$ref": "#/definitions/Location"
+      "type": ["null", "string"]
     },
     "numberOfUsers": {
-      "type": "integer",
-      "format": "int32",
-      "description": "Number of users"
+      "type": ["null", "string"]
     },
     "propertyKeys": {
-      "type": "array",
-      "description": "Aptrinsic Tag Key, at least one is required",
+      "type": ["null", "array"],
       "items": {
-        "type": ["null", "string"]
-      },
-      "examples": [["AP-XXXXXXXXXX-2"]]
+        "location": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "createDate": {
-      "type": "integer",
-      "format": "int64"
+      "type": ["null", "string"]
     },
     "lastModifiedDate": {
-      "type": "integer",
-      "format": "int64"
+      "type": ["null", "string"]
     },
     "customAttributes": {
-      "type": ["null", "object"],
-      "description": "Map of apiName to value"
+      "type": ["null", "object"]
     },
     "parentGroupId": {
-      "type": ["null", "string"],
-      "description": "Id to group Accounts together"
+      "type": ["null", "string"]
     }
   }
 }
