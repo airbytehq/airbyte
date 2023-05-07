@@ -61,7 +61,7 @@ The Coda source connector supports the following [sync modes](https://docs.airby
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                          |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------- |
-| 0.2.0   | 2023-05-08 | [](https://github.com/airbytehq/airbyte/pull/) | Migrate python cdk to low-code |
+| Version | Date       | Pull Request                                             | Subject                           |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
+| 0.2.0   | 2023-05-08 | [25873](https://github.com/airbytehq/airbyte/pull/25873) | Migrate python cdk to low-code    |
 | 0.1.0   | 2022-11-17 | [18675](https://github.com/airbytehq/airbyte/pull/18675) | 🎉 New source: Coda [python cdk] |
