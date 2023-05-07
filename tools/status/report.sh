@@ -15,10 +15,7 @@ CONNECTOR=$1
 REPOSITORY=$2
 RUN_ID=$3
 TEST_OUTCOME=$4
-
-# TODO: Disabled for on master until #22127 resolved
-# QA_CHECKS_OUTCOME=$5
-QA_CHECKS_OUTCOME=success
+QA_CHECKS_OUTCOME=$5
 
 # Ensure connector is prefixed with connectors/
 # TODO (ben): In the future we should just hard error if this is not the case

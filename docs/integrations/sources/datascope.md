@@ -18,7 +18,7 @@ A DataScope account with access to the API. You can create a free account [here]
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the DataScope connector and select **DataScope** from the Source type dropdown.
 4. Enter your `api_key`.

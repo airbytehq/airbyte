@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -200,6 +200,11 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
     executeQuery("RESET MASTER;");
 
     assertEquals(6, filterRecords(runRead(configuredCatalog, latestState)).size());
+  }
+
+  @Override
+  protected boolean supportsPerStream() {
+    return true;
   }
 
 }

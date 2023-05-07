@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import base64
@@ -320,16 +320,13 @@ class PaypalTransactionStream(HttpStream, ABC):
             try:
                 response = self._send_request(request, request_kwargs)
             except PaypalHttpException as exception:
-                if self.max_records_in_response_reached(exception):
-                    date_slices = middle_date_slices(stream_slice)
-                    if date_slices:
-                        for date_slice in date_slices:
-                            yield from self.read_records(
-                                sync_mode, cursor_field=cursor_field, stream_slice=date_slice, stream_state=stream_state
-                            )
-                        break
-                    else:
-                        raise exception
+                if self.max_records_in_response_reached(exception) and (date_slices := middle_date_slices(stream_slice)):
+                    for date_slice in date_slices:
+                        yield from self.read_records(
+                            sync_mode, cursor_field=cursor_field, stream_slice=date_slice, stream_state=stream_state
+                        )
+                    break
+                raise exception
 
             yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
 

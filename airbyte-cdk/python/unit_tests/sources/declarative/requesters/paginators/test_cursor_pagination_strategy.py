@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -19,32 +19,37 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
         ("test_token_from_config", "{{ config.config_key }}", None, "config_value", None),
         ("test_token_from_last_record", "{{ last_records[-1].id }}", None, 1, None),
         ("test_token_from_response", "{{ response._metadata.content }}", None, "content_value", None),
-        ("test_token_from_options", "{{ options.key }}", None, "value", None),
+        ("test_token_from_parameters", "{{ parameters.key }}", None, "value", None),
         ("test_token_not_found", "{{ response.invalid_key }}", None, None, None),
-        ("test_static_token_with_stop_condition_false", "token", InterpolatedBoolean("{{False}}", options={}), "token", None),
-        ("test_static_token_with_stop_condition_true", "token", InterpolatedBoolean("{{True}}", options={}), None, None),
+        ("test_static_token_with_stop_condition_false", "token", InterpolatedBoolean("{{False}}", parameters={}), "token", None),
+        ("test_static_token_with_stop_condition_true", "token", InterpolatedBoolean("{{True}}", parameters={}), None, None),
         (
             "test_token_from_header",
             "{{ headers.next }}",
-            InterpolatedBoolean("{{ not headers.has_more }}", options={}),
+            InterpolatedBoolean("{{ not headers.has_more }}", parameters={}),
             "ready_to_go",
             None,
         ),
         (
             "test_token_from_response_header_links",
             "{{ headers.link.next.url }}",
-            InterpolatedBoolean("{{ not headers.link.next.url }}", options={}),
+            InterpolatedBoolean("{{ not headers.link.next.url }}", parameters={}),
             "https://adventure.io/api/v1/records?page=2&per_page=100",
             None,
         ),
     ],
 )
 def test_cursor_pagination_strategy(test_name, template_string, stop_condition, expected_token, page_size):
-    decoder = JsonDecoder(options={})
+    decoder = JsonDecoder(parameters={})
     config = {"config_key": "config_value"}
-    options = {"key": "value"}
+    parameters = {"key": "value"}
     strategy = CursorPaginationStrategy(
-        page_size=page_size, cursor_value=template_string, config=config, stop_condition=stop_condition, decoder=decoder, options=options
+        page_size=page_size,
+        cursor_value=template_string,
+        config=config,
+        stop_condition=stop_condition,
+        decoder=decoder,
+        parameters=parameters,
     )
 
     response = requests.Response()

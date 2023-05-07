@@ -1,7 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import functools
 import json
 import logging
 import re
@@ -17,6 +18,7 @@ import pytest
 from airbyte_cdk.models import (
     AirbyteRecordMessage,
     AirbyteStream,
+    AirbyteTraceMessage,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     ConnectorSpecification,
@@ -33,9 +35,10 @@ from connector_acceptance_test.config import (
     DiscoveryTestConfig,
     EmptyStreamConfiguration,
     ExpectedRecordsConfig,
+    IgnoredFieldsConfiguration,
     SpecTestConfig,
 )
-from connector_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
+from connector_acceptance_test.utils import ConnectorRunner, SecretDict, delete_fields, filter_output, make_hashable, verify_records_schema
 from connector_acceptance_test.utils.backward_compatibility import CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
 from connector_acceptance_test.utils.common import (
     build_configured_catalog_from_custom_catalog,
@@ -44,7 +47,6 @@ from connector_acceptance_test.utils.common import (
     find_keyword_schema,
 )
 from connector_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
-from docker.errors import ContainerError
 from jsonschema._utils import flatten
 
 
@@ -165,7 +167,7 @@ class TestSpec(BaseTest):
             for variant in variants:
                 assert "properties" in variant, f"Each item in the oneOf array should be a property with type object. {docs_msg}"
 
-            oneof_path = ".".join(variant_path)
+            oneof_path = ".".join(map(str, variant_path))
             variant_props = [set(v["properties"].keys()) for v in variants]
             common_props = set.intersection(*variant_props)
             assert common_props, f"There should be at least one common property for {oneof_path} subobjects. {docs_msg}"
@@ -410,6 +412,73 @@ class TestSpec(BaseTest):
                         f"{pattern_path} is defining a pattern that looks like a date-time without setting the format to `date-time`. Consider specifying the format to make it easier for users to edit this field in the UI."
                     )
 
+    def test_duplicate_order(self, connector_spec: ConnectorSpecification):
+        """
+        Custom ordering of field (via the "order" property defined in the field) is not allowed to have duplicates within the same group.
+        `{ "a": { "order": 1 }, "b": { "order": 1 } }` is invalid because there are two fields with order 1
+        `{ "a": { "order": 1 }, "b": { "order": 1, "group": "x" } }` is valid because the fields with the same order are in different groups
+        """
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        errors = []
+        for properties_path, properties in dpath.util.search(connector_spec.connectionSpecification, "**/properties", yielded=True):
+            definition = schema_helper.get_parent(properties_path)
+            if definition.get("type") != "object":
+                # unrelated "properties", not an actual object definition
+                continue
+            used_orders: Dict[str, Set[int]] = {}
+            for property in properties.values():
+                if "order" not in property:
+                    continue
+                order = property.get("order")
+                group = property.get("group", "")
+                if group not in used_orders:
+                    used_orders[group] = set()
+                orders_for_group = used_orders[group]
+                if order in orders_for_group:
+                    errors.append(f"{properties_path} has duplicate order: {order}")
+                orders_for_group.add(order)
+        self._fail_on_errors(errors)
+
+    def test_nested_group(self, connector_spec: ConnectorSpecification):
+        """
+        Groups can only be defined on the top level properties
+        `{ "a": { "group": "x" }}` is valid because field "a" is a top level field
+        `{ "a": { "oneOf": [{ "type": "object", "properties": { "b": { "group": "x" } } }] }}` is invalid because field "b" is nested in a oneOf
+        """
+        errors = []
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        for result in dpath.util.search(connector_spec.connectionSpecification, "/properties/**/group", yielded=True):
+            group_path = result[0]
+            parent_path = schema_helper.get_parent_path(group_path)
+            is_property_named_group = parent_path.endswith("properties")
+            grandparent_path = schema_helper.get_parent_path(parent_path)
+            if grandparent_path != "/properties" and not is_property_named_group:
+                errors.append(f"Groups can only be defined on top level, is defined at {group_path}")
+        self._fail_on_errors(errors)
+
+    def test_required_always_show(self, connector_spec: ConnectorSpecification):
+        """
+        Fields with always_show are not allowed to be required fields because only optional fields can be hidden in the form in the first place.
+        """
+        errors = []
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        for result in dpath.util.search(connector_spec.connectionSpecification, "/properties/**/always_show", yielded=True):
+            always_show_path = result[0]
+            parent_path = schema_helper.get_parent_path(always_show_path)
+            is_property_named_always_show = parent_path.endswith("properties")
+            if is_property_named_always_show:
+                continue
+            property_name = parent_path.rsplit(sep="/", maxsplit=1)[1]
+            properties_path = schema_helper.get_parent_path(parent_path)
+            parent_object = schema_helper.get_parent(properties_path)
+            if (
+                "required" in parent_object
+                and isinstance(parent_object.get("required"), List)
+                and property_name in parent_object.get("required")
+            ):
+                errors.append(f"always_show is only allowed on optional properties, but is set on {always_show_path}")
+        self._fail_on_errors(errors)
+
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
         """Checking for the presence of unresolved `$ref`s values within each json spec file"""
         check_result = list(find_all_values_for_key_in_schema(connector_spec_dict, "$ref"))
@@ -486,11 +555,13 @@ class TestConnection(BaseTest):
             assert len(con_messages) == 1, "Connection status message should be emitted exactly once"
             assert con_messages[0].connectionStatus.status == Status.FAILED
         elif inputs.status == ConnectionTestConfig.Status.Exception:
-            with pytest.raises(ContainerError) as err:
-                docker_runner.call_check(config=connector_config)
-
-            assert err.value.exit_status != 0, "Connector should exit with error code"
-            assert "Traceback" in err.value.stderr, "Connector should print exception"
+            output = docker_runner.call_check(config=connector_config, raise_container_error=False)
+            trace_messages = filter_output(output, Type.TRACE)
+            assert len(trace_messages) == 1, "A trace message should be emitted in case of unexpected errors"
+            trace = trace_messages[0].trace
+            assert isinstance(trace, AirbyteTraceMessage)
+            assert trace.error is not None
+            assert trace.error.message is not None
 
 
 @pytest.mark.default_timeout(30)
@@ -647,13 +718,13 @@ class TestBasicRead(BaseTest):
             ), f" Record {record} from {record.stream} stream with fields {record_fields} should have some fields mentioned by json schema: {schema_pathes}"
 
     @staticmethod
-    def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
+    def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog, fail_on_extra_columns: Boolean):
         """
         Check if data type and structure in records matches the one in json_schema of the stream in catalog
         """
         TestBasicRead._validate_records_structure(records, configured_catalog)
         bar = "-" * 80
-        streams_errors = verify_records_schema(records, configured_catalog)
+        streams_errors = verify_records_schema(records, configured_catalog, fail_on_extra_columns)
         for stream_name, errors in streams_errors.items():
             errors = map(str, errors.values())
             str_errors = f"\n{bar}\n".join(errors)
@@ -695,7 +766,7 @@ class TestBasicRead(BaseTest):
 
         return sorted(list(expected_paths))
 
-    def _validate_field_appears_at_least_once(self, records: List, configured_catalog: ConfiguredAirbyteCatalog):
+    def _validate_field_appears_at_least_once(self, records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
         """
         Validate if each field in a stream has appeared at least once in some record.
         """
@@ -720,6 +791,7 @@ class TestBasicRead(BaseTest):
         records: List[AirbyteRecordMessage],
         expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
         flags,
+        ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]],
         detailed_logger: Logger,
     ):
         """
@@ -733,6 +805,10 @@ class TestBasicRead(BaseTest):
             detailed_logger.info(f"Expected records for stream {stream_name}:")
             detailed_logger.log_json_list(expected)
 
+            ignored_field_names = [field.name for field in ignored_fields.get(stream_name, [])]
+            detailed_logger.info(f"Ignored fields for stream {stream_name}:")
+            detailed_logger.log_json_list(ignored_field_names)
+
             self.compare_records(
                 stream_name=stream_name,
                 actual=actual,
@@ -740,6 +816,7 @@ class TestBasicRead(BaseTest):
                 extra_fields=flags.extra_fields,
                 exact_order=flags.exact_order,
                 extra_records=flags.extra_records,
+                ignored_fields=ignored_field_names,
                 detailed_logger=detailed_logger,
             )
 
@@ -749,6 +826,11 @@ class TestBasicRead(BaseTest):
             pytest.fail("High strictness level error: validate_schema must be set to true in the basic read test configuration.")
         else:
             return inputs.validate_schema
+
+    @pytest.fixture(name="should_fail_on_extra_columns")
+    def should_fail_on_extra_columns_fixture(self, inputs: BasicReadTestConfig):
+        # TODO (Ella): enforce this param once all connectors are passing
+        return inputs.fail_on_extra_columns
 
     @pytest.fixture(name="should_validate_data_points")
     def should_validate_data_points_fixture(self, inputs: BasicReadTestConfig) -> Boolean:
@@ -794,7 +876,9 @@ class TestBasicRead(BaseTest):
         expect_records_config: ExpectedRecordsConfig,
         should_validate_schema: Boolean,
         should_validate_data_points: Boolean,
+        should_fail_on_extra_columns: Boolean,
         empty_streams: Set[EmptyStreamConfiguration],
+        ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]],
         expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
         docker_runner: ConnectorRunner,
         detailed_logger,
@@ -805,7 +889,9 @@ class TestBasicRead(BaseTest):
         assert records, "At least one record should be read using provided catalog"
 
         if should_validate_schema:
-            self._validate_schema(records=records, configured_catalog=configured_catalog)
+            self._validate_schema(
+                records=records, configured_catalog=configured_catalog, fail_on_extra_columns=should_fail_on_extra_columns
+            )
 
         self._validate_empty_streams(records=records, configured_catalog=configured_catalog, allowed_empty_streams=empty_streams)
         for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
@@ -823,6 +909,7 @@ class TestBasicRead(BaseTest):
                 records=records,
                 expected_records_by_stream=expected_records_by_stream,
                 flags=expect_records_config,
+                ignored_fields=ignored_fields,
                 detailed_logger=detailed_logger,
             )
 
@@ -875,6 +962,7 @@ class TestBasicRead(BaseTest):
         extra_fields: bool,
         exact_order: bool,
         extra_records: bool,
+        ignored_fields: List[str],
         detailed_logger: Logger,
     ):
         """Compare records using combination of restrictions"""
@@ -885,10 +973,14 @@ class TestBasicRead(BaseTest):
                     break
                 if extra_fields:
                     r2 = TestBasicRead.remove_extra_fields(r2, r1)
+                if ignored_fields:
+                    delete_fields(r1, ignored_fields)
+                    delete_fields(r2, ignored_fields)
                 assert r1 == r2, f"Stream {stream_name}: Mismatch of record order or values"
         else:
-            expected = set(map(make_hashable, expected))
-            actual = set(map(make_hashable, actual))
+            _make_hashable = functools.partial(make_hashable, exclude_fields=ignored_fields) if ignored_fields else make_hashable
+            expected = set(map(_make_hashable, expected))
+            actual = set(map(_make_hashable, actual))
             missing_expected = set(expected) - set(actual)
 
             if missing_expected:

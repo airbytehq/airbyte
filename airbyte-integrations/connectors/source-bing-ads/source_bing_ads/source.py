@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -23,6 +23,7 @@ from source_bing_ads.reports import (
     HISTORICAL_FIELDS,
     LOW_QUALITY_FIELDS,
     REVENUE_FIELDS,
+    PerformanceReportsMixin,
     ReportsMixin,
 )
 from suds import sudsobject
@@ -343,7 +344,7 @@ class BudgetSummaryReport(ReportsMixin, BingAdsStream):
     ]
 
 
-class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
+class CampaignPerformanceReport(PerformanceReportsMixin, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "CampaignPerformanceReport"
@@ -367,6 +368,9 @@ class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
 
     report_columns = [
         *primary_key,
+        "AccountName",
+        "CampaignName",
+        "CampaignType",
         "CampaignStatus",
         "Impressions",
         "Clicks",
@@ -424,7 +428,7 @@ class CampaignPerformanceReportMonthly(CampaignPerformanceReport):
     ]
 
 
-class AdPerformanceReport(ReportsMixin, BingAdsStream):
+class AdPerformanceReport(PerformanceReportsMixin, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "AdPerformanceReport"
@@ -451,6 +455,10 @@ class AdPerformanceReport(ReportsMixin, BingAdsStream):
 
     report_columns = [
         *primary_key,
+        "AccountName",
+        "CampaignName",
+        "CampaignType",
+        "AdGroupName",
         "Impressions",
         "Clicks",
         "Ctr",
@@ -492,7 +500,7 @@ class AdPerformanceReportMonthly(AdPerformanceReport):
     report_aggregation = "Monthly"
 
 
-class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
+class AdGroupPerformanceReport(PerformanceReportsMixin, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "AdGroupPerformanceReport"
@@ -519,6 +527,11 @@ class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
 
     report_columns = [
         *primary_key,
+        "AccountName",
+        "CampaignName",
+        "CampaignType",
+        "AdGroupName",
+        "AdGroupType",
         "Impressions",
         "Clicks",
         "Ctr",
@@ -574,7 +587,7 @@ class AdGroupPerformanceReportMonthly(AdGroupPerformanceReport):
     ]
 
 
-class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
+class KeywordPerformanceReport(PerformanceReportsMixin, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "KeywordPerformanceReport"
@@ -602,6 +615,9 @@ class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
 
     report_columns = [
         *primary_key,
+        "AccountName",
+        "CampaignName",
+        "AdGroupName",
         "Keyword",
         "KeywordStatus",
         "Impressions",
@@ -656,7 +672,7 @@ class KeywordPerformanceReportMonthly(KeywordPerformanceReport):
     report_aggregation = "Monthly"
 
 
-class AccountPerformanceReport(ReportsMixin, BingAdsStream):
+class AccountPerformanceReport(PerformanceReportsMixin, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "AccountPerformanceReport"
@@ -679,6 +695,8 @@ class AccountPerformanceReport(ReportsMixin, BingAdsStream):
 
     report_columns = [
         *primary_key,
+        "AccountName",
+        "AccountNumber",
         "PhoneImpressions",
         "PhoneCalls",
         "Clicks",

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -9,8 +9,8 @@ import requests
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from source_pocket.extractor import PocketExtractor
 
-options = {"options_field": "record_array"}
-decoder = JsonDecoder(options={})
+parameters = {"options_field": "record_array"}
+decoder = JsonDecoder(parameters={})
 
 
 @pytest.mark.parametrize(
@@ -22,7 +22,7 @@ decoder = JsonDecoder(options={})
     ],
 )
 def test_pocket_extractor(test_name, body, expected_records):
-    extractor = PocketExtractor(decoder=decoder, options=options)
+    extractor = PocketExtractor(decoder=decoder, parameters=parameters)
 
     response = create_response(body)
     actual_records = extractor.extract_records(response)

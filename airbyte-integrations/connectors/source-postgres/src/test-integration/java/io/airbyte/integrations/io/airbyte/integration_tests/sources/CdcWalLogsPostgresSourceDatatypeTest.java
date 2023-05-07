@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -30,7 +30,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   private static final String SCHEMA_NAME = "test";
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String PUBLICATION = "publication";
-  private static final int INITIAL_WAITING_SECONDS = 5;
+  private static final int INITIAL_WAITING_SECONDS = 15;
   private JsonNode stateAfterFirstSync;
 
   @Override
@@ -150,6 +150,28 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   }
 
   @Override
+  protected void addMoneyTest() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("money")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .addInsertValues(
+                "null",
+                "'999.99'", "'1,001.01'", "'-1,000'",
+                "'$999.99'", "'$1001.01'", "'-$1,000'"
+            // max values for Money type: "-92233720368547758.08", "92233720368547758.07"
+            // Debezium has wrong parsing for values more than 999999999999999 and less than -999999999999999
+            // https://github.com/airbytehq/airbyte/issues/7338
+            /* "'-92233720368547758.08'", "'92233720368547758.07'" */)
+            .addExpectedValues(
+                null,
+                "999.99", "1001.01", "-1000.00",
+                "999.99", "1001.01", "-1000.00"
+            /* "-92233720368547758.08", "92233720368547758.07" */)
+            .build());
+  }
+
+  @Override
   protected void addTimeWithTimeZoneTest() {
     // time with time zone
     for (final String fullSourceType : Set.of("timetz", "time with time zone")) {
@@ -161,8 +183,8 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
               .addInsertValues("null", "'13:00:01'", "'13:00:00+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.012345Z+8'", "'13:00:06.00000Z-8'")
               // A time value without time zone will use the time zone set on the database, which is Z-7,
               // so 13:00:01 is returned as 13:00:01-07.
-              .addExpectedValues(null, "20:00:01.000000Z", "05:00:00.000000Z", "21:00:03.000000Z", "13:00:04.000000Z", "21:00:05.012345Z",
-                  "05:00:06.000000Z")
+              .addExpectedValues(null, "20:00:01Z", "05:00:00.000000Z", "21:00:03Z", "13:00:04Z", "21:00:05.012345Z",
+                  "05:00:06Z")
               .build());
     }
   }

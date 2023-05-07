@@ -9,7 +9,7 @@
     },
     "creation_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "creator": {
       "type": ["string", "null"]
@@ -31,7 +31,7 @@
     },
     "original_content_creation_date": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "tags": {
       "type": ["array", "null"],
@@ -44,7 +44,7 @@
     },
     "update_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     }
   }
 }

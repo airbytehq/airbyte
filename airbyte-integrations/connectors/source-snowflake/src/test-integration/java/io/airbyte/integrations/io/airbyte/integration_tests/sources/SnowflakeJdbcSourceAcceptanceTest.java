@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -257,8 +257,8 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     assertFalse(actual.getStreams().isEmpty());
 
     var streams = actual.getStreams().stream()
-            .filter(s -> !s.getNamespace().equals(SCHEMA_NAME))
-                .collect(Collectors.toList());
+        .filter(s -> !s.getNamespace().equals(SCHEMA_NAME))
+        .collect(Collectors.toList());
 
     assertTrue(streams.isEmpty());
 
@@ -272,4 +272,5 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     assertTrue(streams.isEmpty());
   }
+
 }

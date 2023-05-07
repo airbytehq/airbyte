@@ -163,7 +163,7 @@
     },
     "account": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -175,7 +175,7 @@
     },
     "owner": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -187,7 +187,7 @@
     },
     "last_contacted_by": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -199,7 +199,7 @@
     },
     "import": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -211,7 +211,7 @@
     },
     "person_stage": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -223,7 +223,7 @@
     },
     "most_recent_cadence": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -235,7 +235,7 @@
     },
     "last_completed_step_cadence": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -247,7 +247,7 @@
     },
     "last_completed_step": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]

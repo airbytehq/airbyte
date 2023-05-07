@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock
@@ -13,7 +13,6 @@ def test_config():
         "client_id": "test_client_id",
         "client_secret": "test_client_secret",
         "refresh_token": "test_refresh_token",
-        "window_in_days": "Sandbox",
         "start_date": "2021-05-07",
     }
 
@@ -22,7 +21,6 @@ def test_config():
 def test_incremental_config():
     return {
         "authenticator": MagicMock(),
-        "window_in_days": 185,
         "start_date": "2021-05-07",
     }
 

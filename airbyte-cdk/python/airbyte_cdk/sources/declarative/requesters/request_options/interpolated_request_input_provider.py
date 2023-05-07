@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import InitVar, dataclass, field
@@ -16,19 +16,19 @@ class InterpolatedRequestInputProvider:
     Helper class that generically performs string interpolation on the provided dictionary or string input
     """
 
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     request_inputs: Optional[Union[str, Mapping[str, str]]] = field(default=None)
     config: Config = field(default_factory=dict)
     _interpolator: Union[InterpolatedString, InterpolatedMapping] = field(init=False, repr=False, default=None)
     _request_inputs: Union[str, Mapping[str, str]] = field(init=False, repr=False, default=None)
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
 
         self._request_inputs = self.request_inputs or {}
         if isinstance(self.request_inputs, str):
-            self._interpolator = InterpolatedString(self.request_inputs, default="", options=options)
+            self._interpolator = InterpolatedString(self.request_inputs, default="", parameters=parameters)
         else:
-            self._interpolator = InterpolatedMapping(self._request_inputs, options=options)
+            self._interpolator = InterpolatedMapping(self._request_inputs, parameters=parameters)
 
     def eval_request_inputs(
         self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Mapping[str, Any] = None

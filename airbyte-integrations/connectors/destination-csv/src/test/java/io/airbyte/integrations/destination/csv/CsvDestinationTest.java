@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.csv;
@@ -91,7 +91,8 @@ class CsvDestinationTest {
   void setup() throws IOException {
     destinationPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
     delimiter = Jsons.jsonNode(ImmutableMap.of("delimiter", "\\u002c"));
-    config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, destinationPath.toString(), CsvDestination.DELIMITER_TYPE, delimiter));
+    config =
+        Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, destinationPath.toString(), CsvDestination.DELIMITER_TYPE, delimiter));
   }
 
   private CsvDestination getDestination() {

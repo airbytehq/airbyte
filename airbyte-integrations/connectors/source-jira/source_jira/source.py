@@ -1,14 +1,16 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
+import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
+from pydantic.error_wrappers import ValidationError
 
 from .streams import (
     ApplicationRoles,
@@ -81,18 +83,21 @@ class SourceJira(AbstractSource):
         return BasicHttpAuthenticator(config["email"], config["api_token"])
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        config = self._validate_and_transform(config)
-        authenticator = self.get_authenticator(config)
-        kwargs = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
-        labels_stream = Labels(**kwargs)
-        next(read_full_refresh(labels_stream), None)
-        # check projects
-        projects_stream = Projects(**kwargs)
-        projects = {project["key"] for project in read_full_refresh(projects_stream)}
-        unknown_projects = set(config["projects"]) - projects
-        if unknown_projects:
-            return False, "unknown project(s): " + ", ".join(unknown_projects)
-        return True, None
+        try:
+            config = self._validate_and_transform(config)
+            authenticator = self.get_authenticator(config)
+            kwargs = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
+            labels_stream = Labels(**kwargs)
+            next(read_full_refresh(labels_stream), None)
+            # check projects
+            projects_stream = Projects(**kwargs)
+            projects = {project["key"] for project in read_full_refresh(projects_stream)}
+            unknown_projects = set(config["projects"]) - projects
+            if unknown_projects:
+                return False, "unknown project(s): " + ", ".join(unknown_projects)
+            return True, None
+        except (requests.exceptions.RequestException, ValidationError) as e:
+            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self._validate_and_transform(config)

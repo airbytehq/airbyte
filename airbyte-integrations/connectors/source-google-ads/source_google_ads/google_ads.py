@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -10,7 +10,7 @@ from typing import Any, Iterator, List, Mapping, MutableMapping
 import backoff
 import pendulum
 from google.ads.googleads.client import GoogleAdsClient
-from google.ads.googleads.v11.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
+from google.ads.googleads.v13.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
 from google.api_core.exceptions import ServerError, TooManyRequests
 from proto.marshal.collections import Repeated, RepeatedComposite
 
@@ -33,7 +33,7 @@ REPORT_MAPPING = {
     "geographic_report": "geographic_view",
     "keyword_report": "keyword_view",
 }
-API_VERSION = "v11"
+API_VERSION = "v13"
 logger = logging.getLogger("airbyte")
 
 

@@ -1,1 +1,0 @@
-export { DataResidencyView } from "./DataResidencyView";

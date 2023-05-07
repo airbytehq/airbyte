@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import functools
@@ -79,6 +79,14 @@ class ListWithHashMixin(HashMixin, list):
     pass
 
 
+def delete_fields(obj: Mapping, path_list: List[str]) -> None:
+    for path in path_list:
+        try:
+            dpath.util.delete(obj, path)
+        except dpath.exceptions.PathNotFound:
+            pass
+
+
 def make_hashable(obj, exclude_fields: List[str] = None) -> str:
     """
     Simplify comparison of nested dicts/lists
@@ -87,12 +95,8 @@ def make_hashable(obj, exclude_fields: List[str] = None) -> str:
     """
     if isinstance(obj, Mapping):
         # If value is Mapping, some fields can be excluded
-        exclude_fields = exclude_fields or []
-        for field in exclude_fields:
-            try:
-                dpath.util.delete(obj, field)
-            except dpath.exceptions.PathNotFound:
-                pass
+        if exclude_fields:
+            delete_fields(obj, exclude_fields)
         return DictWithHashMixin(obj)
     if isinstance(obj, List):
         return ListWithHashMixin(obj)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -29,6 +29,7 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   // This is an unfortunately fragile way to capture this, but Snowflake doesn't
   // provide a more specific permission exception error code
   private static final String NO_PRIVILEGES_ERROR_MESSAGE = "but current role has no privileges on it";
+  private static final String IP_NOT_IN_WHITE_LIST_ERR_MSG = "not allowed to access Snowflake";
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
@@ -45,6 +46,8 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   public boolean isSchemaExists(final JdbcDatabase database, final String outputSchema) throws Exception {
     try (final Stream<JsonNode> results = database.unsafeQuery(SHOW_SCHEMAS)) {
       return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
+    } catch (Exception e) {
+      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }
 
@@ -85,6 +88,16 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
     if (e instanceof SnowflakeSQLException && e.getMessage().contains(NO_PRIVILEGES_ERROR_MESSAGE)) {
       return Optional.of(new ConfigErrorException(
           "Encountered Error with Snowflake Configuration: Current role does not have permissions on the target schema please verify your privileges",
+          e));
+    }
+    if (e instanceof SnowflakeSQLException && e.getMessage().contains(IP_NOT_IN_WHITE_LIST_ERR_MSG)) {
+      return Optional.of(new ConfigErrorException(
+          """
+              Snowflake has blocked access from Airbyte IP address. Please make sure that your Snowflake user account's
+               network policy allows access from all Airbyte IP addresses. See this page for the list of Airbyte IPs:
+               https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#allowlist-ip-addresses and this page
+               for documentation on Snowflake network policies: https://docs.snowflake.com/en/user-guide/network-policies
+          """,
           e));
     }
     return Optional.empty();

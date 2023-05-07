@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from airbyte_cdk.models import AdvancedAuth, AuthFlowType, OAuthConfigSpecification
@@ -13,7 +13,6 @@ class AmazonSellerPartnerConfig(BaseModel):
         schema_extra = {"additionalProperties": True}
 
     app_id: str = Field(
-        None,
         description="Your Amazon App ID",
         title="App Id",
         airbyte_secret=True,
@@ -47,6 +46,7 @@ class AmazonSellerPartnerConfig(BaseModel):
     )
 
     aws_access_key: str = Field(
+        None,
         description="Specifies the AWS access key used as part of the credentials to authenticate the user.",
         title="AWS Access Key",
         airbyte_secret=True,
@@ -54,6 +54,7 @@ class AmazonSellerPartnerConfig(BaseModel):
     )
 
     aws_secret_key: str = Field(
+        None,
         description="Specifies the AWS secret key used as part of the credentials to authenticate the user.",
         title="AWS Secret Access Key",
         airbyte_secret=True,
@@ -61,6 +62,7 @@ class AmazonSellerPartnerConfig(BaseModel):
     )
 
     role_arn: str = Field(
+        None,
         description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).",
         title="Role ARN",
         airbyte_secret=True,
