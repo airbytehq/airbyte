@@ -33,9 +33,10 @@ def read_full_refresh(stream_instance: Stream):
 
 class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
     """
-    For authentication use a similar implementation for MultipleTokenAuthenticator.
-    Every token in the cycle is checked against the rate limiter and if the token is over capacity
-    switch to another token. If all tokens are exhausted sleep until the first token will be ready.
+    Each token in the cycle is checked against the rate limiter.
+    If a token exceeds the capacity limit, the system switches to another token.
+    If all tokens are exhausted, the system will enter a sleep state until
+    the first token becomes available again.
     """
 
     DURATION = 3600  # seconds
