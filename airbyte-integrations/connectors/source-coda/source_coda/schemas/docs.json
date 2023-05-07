@@ -42,16 +42,16 @@
       "type": ["null", "object"],
       "properties": {
         "totalRowCount": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "tableViewCount": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "pageCount": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "overApiSizeLimit": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         }
       }
     },
@@ -91,10 +91,10 @@
           "type": ["null", "string"]
         },
         "discoverable": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "earnCredit": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "mode": {
           "type": ["null", "string"]
