@@ -21,15 +21,15 @@ task downloadConnectorRegistry(type: JavaExec, dependsOn: compileJava) {
     outputs.upToDateWhen { true }
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'io.airbyte.configoss.specs.ConnectorRegistryDownloader'
-    args project(":airbyte-config-oss:init").projectDir
+    args project(":airbyte-config-oss:init-oss").projectDir
 }
 
-project(":airbyte-config-oss:init").tasks.processResources.dependsOn(downloadConnectorRegistry)
-project(":airbyte-config-oss:init").tasks.processTestResources.dependsOn(downloadConnectorRegistry)
-project(":airbyte-config-oss:init").tasks.test.dependsOn(downloadConnectorRegistry)
+project(":airbyte-config-oss:init-oss").tasks.processResources.dependsOn(downloadConnectorRegistry)
+project(":airbyte-config-oss:init-oss").tasks.processTestResources.dependsOn(downloadConnectorRegistry)
+project(":airbyte-config-oss:init-oss").tasks.test.dependsOn(downloadConnectorRegistry)
 
 
-task downloadConnectorSpecsMask(type: JavaExec, dependsOn: generateSeedConnectorSpecs) {
+task downloadConnectorSpecsMask(type: JavaExec, dependsOn: compileJava) {
     /**
      * run this once a day. if you want to force this task to run do so with --rerun
      * e.g. ./gradlew :airbyte-config-oss:specs:downloadConnectorRegistry --info --rerun

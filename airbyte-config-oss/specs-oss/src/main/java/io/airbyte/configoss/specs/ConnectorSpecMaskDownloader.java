@@ -5,9 +5,34 @@
 package io.airbyte.configoss.specs;
 
 import io.airbyte.configoss.CatalogDefinitionsConfig;
+import io.airbyte.commons.cli.Clis;
+import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+// import com.fasterxml.jackson.core.type.TypeReference;
+// import com.fasterxml.jackson.databind.JsonNode;
+
+// import io.airbyte.commons.io.IOs;
+// import io.airbyte.commons.yaml.Yamls;
+// import io.airbyte.configoss.DockerImageSpec;
+// import java.io.File;
+// import java.io.IOException;
+// import java.nio.charset.Charset;
+// import java.nio.file.Path;
+// import java.util.List;
+// import java.util.Map;
+// import java.util.Set;
+// import java.util.TreeSet;
+// import java.util.stream.Collectors;
+// import java.util.stream.Stream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,11 +54,11 @@ public class ConnectorSpecMaskDownloader {
   public static void main(final String[] args) throws Exception {
     final CommandLine parsed = Clis.parse(args, OPTIONS);
     final Path specRoot = Path.of(parsed.getOptionValue(SPEC_ROOT_OPTION.getOpt()));
-    final File writePath = specRoot.resolve(MASK_FILE)
+    final Path writePath = specRoot.resolve(MASK_FILE);
     LOGGER.info("Downloading Spec Secret Mask from {} to {}", REMOTE_SPEC_SECRET_MASK_URL, writePath);
 
     final int timeout = 10000;
-    FileUtils.copyURLToFile(new URL(REMOTE_SPEC_SECRET_MASK_URL), writePath, timeout, timeout);
+    FileUtils.copyURLToFile(new URL(REMOTE_SPEC_SECRET_MASK_URL), writePath.toFile(), timeout, timeout);
   }
 
 }
