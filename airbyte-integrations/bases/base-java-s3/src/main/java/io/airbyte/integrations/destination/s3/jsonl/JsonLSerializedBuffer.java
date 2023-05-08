@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3.jsonl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,12 +20,14 @@ import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.integrations.destination.s3.util.Flattening;
+import io.airbyte.integrations.destination.s3.util.Stringify;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -55,37 +58,32 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
   @Override
   protected void writeRecord(final AirbyteRecordMessage recordMessage) {
     final ObjectNode json = MAPPER.createObjectNode();
-    final JsonNode messageData;
     json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
     json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
-    // Stringify before Flattening because we want to be able to stringify nested objects with and without flattening
-    if (stringifyData) {
-      JsonNode node = recordMessage.getData();
-      if (node.isObject()) {
-        ObjectNode objectNode = (ObjectNode) node;
-        for (Iterator<String> it = objectNode.fieldNames(); it.hasNext(); ) {
-          String field = it.next();
-          JsonNode childNode = objectNode.get(field);
-          if (childNode.isObject()) {
-            try {
-              // If the child node is an object, convert it to an escaped string and set it back to the parent object node
-              objectNode.put(field, MAPPER.writeValueAsString(childNode));
-            } catch (JsonProcessingException e) {
-                // Handle exception if serialization fails
-                e.printStackTrace();
-            }
-          }
-        }
-      }
-      messageData = MAPPER.convertValue(node, JsonNode.class);
-    } else {
-      messageData = recordMessage.getData();
-    }
     if (flattenData) {
-      Map<String, JsonNode> data = MAPPER.convertValue(record.getData(), new TypeReference<>() {});
+      Map<String, JsonNode> data = MAPPER.convertValue(recordMessage.getData(), new TypeReference<>() {});
       json.setAll(data);
     } else {
-      json.set(JavaBaseConstants.COLUMN_NAME_DATA, record.getData());
+      json.set(JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData());
+    }
+    // We want all root level objects as strings, including _airbyte_data
+    if (stringifyData) {
+      // Get the names of all the root level objects in the "json" ObjectNode
+      try {
+        JsonNode rootNode = MAPPER.readTree(json.toString());
+        rootNode.fieldNames().forEachRemaining(fieldName -> {
+          JsonNode node = rootNode.get(fieldName);
+          if (node.isObject()) {
+            // Convert the root level object to a string
+            String jsonString = node.toString();
+
+            // Set the value of the root level object in the "json" ObjectNode as a string
+            json.put(fieldName, jsonString);
+          }
+        });
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException(e);
+      }
     }
     printWriter.println(Jsons.serialize(json));
   }
