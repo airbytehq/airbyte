@@ -1021,7 +1021,7 @@ class ScreenTabs(JiraStream):
             For some projects jira creates screens automatically, which does not present in UI, but exist in screens stream.
             We receive 400 error "Screen with id {screen_id} does not exist" for tabs by these screens.
             """
-            bad_request_reached = re.match(r"Screen with id \d* does not exist", screen_tab.get("errorMessages", [''])[0])
+            bad_request_reached = re.match(r"Screen with id \d* does not exist", screen_tab.get("errorMessages", [""])[0])
             if bad_request_reached:
                 self.logger.info("Could not get screen tab for %s screen id. Reason: %s", screen_id, screen_tab["errorMessages"][0])
                 return
