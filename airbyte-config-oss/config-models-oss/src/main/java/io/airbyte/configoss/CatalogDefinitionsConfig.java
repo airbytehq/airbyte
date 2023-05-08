@@ -14,7 +14,6 @@ public class CatalogDefinitionsConfig {
   private static final String DEFAULT_LOCAL_CONNECTOR_CATALOG_PATH =
       SEED_SUBDIRECTORY + LOCAL_CONNECTOR_CATALOG_FILE_NAME;
 
-  // TODO ben hey! use this in the ConnectorRegistryDownloader
   public static String getLocalConnectorCatalogPath() {
     final Optional<String> customCatalogPath = new EnvConfigs().getLocalCatalogPath();
     if (customCatalogPath.isPresent()) {
