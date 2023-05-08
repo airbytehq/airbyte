@@ -88,6 +88,14 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
     def path(self, **kwargs) -> str:
         return "export"
 
+    def should_retry(self, response: requests.Response) -> bool:
+        try:
+            # trying to parse response to avoid ConnectionResetError and retry if it occurs
+            self.iter_dicts(response.iter_lines(decode_unicode=True))
+        except ConnectionResetError:
+            return True
+        return super().should_retry(response)
+
     def iter_dicts(self, lines):
         """
         The incoming stream has to be JSON lines format.

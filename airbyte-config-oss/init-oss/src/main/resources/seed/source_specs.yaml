@@ -852,7 +852,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:1.0.3"
+- dockerImage: "airbyte/source-amazon-ads:1.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -2042,7 +2042,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.20"
+- dockerImage: "airbyte/source-bing-ads:0.1.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bing-ads"
     connectionSpecification:
@@ -4567,7 +4567,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.3.2"
+- dockerImage: "airbyte/source-file:0.3.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -4649,6 +4649,7 @@
               service_account_json:
                 type: "string"
                 title: "Service Account JSON"
+                airbyte_secret: true
                 description: "In order to access private Buckets stored on Google\
                   \ Cloud, this connector would need a service account json credentials\
                   \ with the proper permissions as described <a href=\"https://cloud.google.com/iam/docs/service-accounts\"\
@@ -7436,7 +7437,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.3.7"
+- dockerImage: "airbyte/source-jira:0.3.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/jira"
     connectionSpecification:
@@ -9209,7 +9210,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mixpanel:0.1.32"
+- dockerImage: "airbyte/source-mixpanel:0.1.33"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mixpanel"
     connectionSpecification:
@@ -15032,7 +15033,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-square:0.2.2"
+- dockerImage: "airbyte/source-square:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/square"
     connectionSpecification:
@@ -15057,9 +15058,9 @@
             - "client_secret"
             - "refresh_token"
             properties:
-              credentials_title:
+              auth_type:
                 type: "string"
-                const: "OAuth Credentials"
+                const: "OAuth"
                 order: 0
               client_id:
                 type: "string"
@@ -15083,10 +15084,10 @@
             - "auth_type"
             - "api_key"
             properties:
-              credentials_title:
+              auth_type:
                 type: "string"
                 const: "API Key"
-                order: 0
+                order: 1
               api_key:
                 type: "string"
                 title: "API key token"
@@ -15133,7 +15134,7 @@
       predicate_key:
       - "credentials"
       - "auth_type"
-      predicate_value: "Oauth"
+      predicate_value: "OAuth"
       oauth_config_specification:
         complete_oauth_output_specification:
           type: "object"
@@ -15286,7 +15287,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:3.4.1"
+- dockerImage: "airbyte/source-stripe:3.4.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
@@ -16391,7 +16392,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-trello:0.3.1"
+- dockerImage: "airbyte/source-trello:0.3.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/trello"
     connectionSpecification:
