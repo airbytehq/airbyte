@@ -31,7 +31,6 @@ def test_item_pagination_strategy(response_json, last_records, expected):
     strategy = ItemPaginationStrategy(
         page_size=1,
         parameters={"items_per_page": 1},
-        start_from_page=1,
     )
     response = MagicMock()
     response.json.return_value = response_json
