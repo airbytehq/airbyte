@@ -694,7 +694,7 @@
     "destinationDefinitionId": "22f6c74f-5699-40ff-833c-4a879ea40133",
     "name": "BigQuery",
     "dockerRepository": "airbyte/destination-bigquery",
-    "dockerImageTag": "1.3.4",
+    "dockerImageTag": "1.4.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/bigquery",
     "icon": "bigquery.svg",
     "spec": {
@@ -872,7 +872,7 @@
     "destinationDefinitionId": "079d5540-f236-4294-ba7c-ade8fd918496",
     "name": "BigQuery (denormalized typed struct)",
     "dockerRepository": "airbyte/destination-bigquery-denormalized",
-    "dockerImageTag": "1.3.3",
+    "dockerImageTag": "1.4.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/bigquery",
     "icon": "bigquery.svg",
     "spec": {
@@ -2651,7 +2651,7 @@
     "destinationDefinitionId": "ca8f6566-e555-4b40-943a-545bf123117a",
     "name": "Google Cloud Storage (GCS)",
     "dockerRepository": "airbyte/destination-gcs",
-    "dockerImageTag": "0.2.17",
+    "dockerImageTag": "0.3.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/gcs",
     "icon": "googlecloudstorage.svg",
     "spec": {
@@ -5751,7 +5751,7 @@
     "destinationDefinitionId": "4816b78f-1489-44c1-9060-4b19d5fa9362",
     "name": "S3",
     "dockerRepository": "airbyte/destination-s3",
-    "dockerImageTag": "0.3.25",
+    "dockerImageTag": "0.4.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/s3",
     "icon": "s3.svg",
     "spec": {
@@ -6380,7 +6380,7 @@
     "destinationDefinitionId": "424892c4-daac-4491-b35d-c6688ba547ba",
     "name": "Snowflake",
     "dockerRepository": "airbyte/destination-snowflake",
-    "dockerImageTag": "1.0.0",
+    "dockerImageTag": "1.0.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/snowflake",
     "icon": "snowflake.svg",
     "spec": {
@@ -8688,7 +8688,7 @@
     "sourceDefinitionId": "c6b0a29e-1da9-4512-9002-7bfd0cba2246",
     "name": "Amazon Ads",
     "dockerRepository": "airbyte/source-amazon-ads",
-    "dockerImageTag": "1.0.3",
+    "dockerImageTag": "1.0.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-ads",
     "icon": "amazonads.svg",
     "sourceType": "api",
@@ -9985,7 +9985,7 @@
     "sourceDefinitionId": "47f25999-dd5e-4636-8c39-e7cea2453331",
     "name": "Bing Ads",
     "dockerRepository": "airbyte/source-bing-ads",
-    "dockerImageTag": "0.1.20",
+    "dockerImageTag": "0.1.21",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/bing-ads",
     "icon": "bingads.svg",
     "sourceType": "api",
@@ -12828,7 +12828,7 @@
     "sourceDefinitionId": "778daa7c-feaf-4db6-96f3-70fd645acc77",
     "name": "File (CSV, JSON, Excel, Feather, Parquet)",
     "dockerRepository": "airbyte/source-file",
-    "dockerImageTag": "0.3.2",
+    "dockerImageTag": "0.3.3",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/file",
     "icon": "file.svg",
     "sourceType": "file",
@@ -12897,6 +12897,7 @@
                 "service_account_json": {
                   "type": "string",
                   "title": "Service Account JSON",
+                  "airbyte_secret": true,
                   "description": "In order to access private Buckets stored on Google Cloud, this connector would need a service account json credentials with the proper permissions as described <a href=\"https://cloud.google.com/iam/docs/service-accounts\" target=\"_blank\">here</a>. Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary."
                 }
               }
@@ -15995,7 +15996,7 @@
     "sourceDefinitionId": "68e63de2-bb83-4c7e-93fa-a8a9051e3993",
     "name": "Jira",
     "dockerRepository": "airbyte/source-jira",
-    "dockerImageTag": "0.3.7",
+    "dockerImageTag": "0.3.8",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/jira",
     "icon": "jira.svg",
     "sourceType": "api",
@@ -24823,7 +24824,7 @@
     "sourceDefinitionId": "e094cb9a-26de-4645-8761-65c0c425d1de",
     "name": "Stripe",
     "dockerRepository": "airbyte/source-stripe",
-    "dockerImageTag": "3.4.1",
+    "dockerImageTag": "3.4.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/stripe",
     "icon": "stripe.svg",
     "sourceType": "api",
@@ -26104,7 +26105,7 @@
     "sourceDefinitionId": "8da67652-004c-11ec-9a03-0242ac130003",
     "name": "Trello",
     "dockerRepository": "airbyte/source-trello",
-    "dockerImageTag": "0.3.1",
+    "dockerImageTag": "0.3.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/trello",
     "icon": "trello.svg",
     "sourceType": "api",
