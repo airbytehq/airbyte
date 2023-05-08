@@ -17,7 +17,11 @@ acceptance_tests:
   discovery:
     tests:
     - config_path: "secrets/config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.4.8"
     - config_path: "secrets/config_oauth.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.4.8"
   basic_read:
     tests:
     - config_path: "secrets/config.json"
@@ -69,7 +73,6 @@ acceptance_tests:
           bypass_reason: "fast changing data"
         - name: watchers
           bypass_reason: "fast changing data"
-      fail_on_extra_columns: false
   incremental:
     tests:
     - config_path: "secrets/config.json"
