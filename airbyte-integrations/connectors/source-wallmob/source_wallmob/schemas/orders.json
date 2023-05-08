@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "user_id": { "type": ["string", "null"] },
+    "user_name": { "type": ["string", "null"] },
+    "currency": { "type": ["string", "null"] },
+    "shop_id": { "type": ["string", "null"] },
+    "shop_table_id": { "type": ["string", "null"] },
+    "shop_name": { "type": ["string", "null"] },
+    "register_id": { "type": ["string", "null"] },
+    "register_name": { "type": ["string", "null"] },
+    "timestamp": { "type": "string" },
+    "email": { "type": ["string", "null"] },
+    "customer_id": { "type": ["string", "null"] },
+    "validated_external": { "type": ["string", "null"] },
+    "grant_purchased_coupons": { "type": ["string", "null"] },
+    "is_paid": { "type": "string" },
+    "sequence_number": { "type": "string" },
+    "lat": { "type": ["number", "null"] },
+    "lng": { "type": ["number", "null"] },
+    "coordinate_precision": { "type": ["number", "null"] },
+    "cvr": { "type": ["string", "null"] },
+    "vat_label": { "type": "string" },
+    "sales_tax_label": { "type": "string" },
+    "is_preorder": { "type": "string" },
+    "type_id": { "type": "string" },
+    "status": { "type": "string" },
+    "order_line_items": {
+      "type": "array"
+    },
+    "transactions": {
+      "type": "array"
+    },
+    "discounts": { "type": "array" },
+    "coupons": { "type": "array" },
+    "shipping_information": { "type": ["object", "null"] },
+    "fees": { "type": "array" },
+    "attributes": {
+      "type": "array"
+    }
+  }
+}

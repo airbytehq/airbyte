@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "receipt_text_header": { "type": ["string", "null"] },
+    "receipt_text_footer": { "type": ["string", "null"] },
+    "price_region_id": { "type": "string" },
+    "stock_location_id": { "type": "string" },
+    "layout_template_id": { "type": ["string", "null"] },
+    "description": { "type": ["string", "null"] },
+    "image": { "type": ["string", "null"] },
+    "country": { "type": "string" },
+    "city": { "type": "string" },
+    "zipcode": { "type": "string" },
+    "address": { "type": "string" },
+    "lat": { "type": ["number", "null"] },
+    "lng": { "type": ["number", "null"] },
+    "timezone": { "type": ["string", "null"] },
+    "create_time": { "type": "string" },
+    "tz": { "type": "string" },
+    "company_id": { "type": ["string", "null"] },
+    "additional_data": {
+      "type": "object",
+      "properties": {
+        "vipps_enabled": { "type": "boolean" },
+        "vipps_configuration": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "phone_number": { "type": ["string", "null"] },
+    "alternative_stock_locations": { "type": "array" },
+    "registers": { "type": "array", "items": { "type": "string" } },
+    "shop_groups": { "type": "array" },
+    "shop_opening_hours": { "type": "array" },
+    "shop_opening_hours_override": { "type": "array" },
+    "data_sources": { "type": "array" },
+    "shop_currencies": { "type": "array" },
+    "layout_template": { "type": ["string", "null"] },
+    "company": { "type": ["string", "null"] },
+    "entity_attribute_relation": { "type": "array" }
+  }
+}

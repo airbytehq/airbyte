@@ -1,0 +1,23 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Wallmob Spec
+  type: object
+  required:
+    - username
+    - password
+    - initial_sync_date
+  properties:
+    username:
+      type: string
+      description: The username for Wallmob API authentication
+    initial_sync_date:
+      type: string
+      description: The date from which to start syncing data
+      format: date-time
+      examples:
+        - 2021-01-01T00:00:00Z
+    password:
+      type: string
+      description: The password for Wallmob API authentication
+      airbyte_secret: true
