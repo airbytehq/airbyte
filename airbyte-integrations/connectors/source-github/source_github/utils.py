@@ -5,6 +5,7 @@
 import logging
 import time
 from itertools import cycle
+from types import SimpleNamespace as ns
 from typing import List
 
 from airbyte_cdk.models import SyncMode
@@ -44,12 +45,10 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
     def __init__(self, tokens: List[str], requests_per_hour: int, auth_method: str = "Bearer", auth_header: str = "Authorization"):
         self._auth_method = auth_method
         self._auth_header = auth_header
-        self._tokens = tokens
-        self._tokens_iter = cycle(self._tokens)
-        self._requests_per_hour = requests_per_hour
         now = time.time()
-        self._token_to_update_time = {t: now for t in tokens}
-        self._token_to_number = {t: self._requests_per_hour for t in tokens}
+        self._requests_per_hour = requests_per_hour
+        self._tokens = {t: ns(count=self._requests_per_hour, update_at=now) for t in tokens}
+        self._tokens_iter = cycle(self._tokens)
 
     @property
     def auth_header(self) -> str:
@@ -66,15 +65,15 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
     def _check_not_limited(self, token: str):
         """check that token is not limited"""
         now = time.time()
-        if now - self._token_to_update_time[token] >= self.DURATION:
-            self._token_to_number[token] = self._requests_per_hour
-            self._token_to_update_time[token] = now
-        if self._token_to_number[token] > 0:
-            self._token_to_number[token] -= 1
+        if now - self._tokens[token].update_at >= self.DURATION:
+            self._tokens[token].count = self._requests_per_hour
+            self._tokens[token].update_at = now
+        if self._tokens[token].count > 0:
+            self._tokens[token].count -= 1
             return True
 
     def _sleep(self):
-        if sum(self._token_to_number.values()) == 0:
-            sleep_time = self.DURATION - (time.time() - min(self._token_to_update_time.values()))
-            logging.warning("Sleeping for %f seconds to limit connector to %d requests per hour.", sleep_time, self._requests_per_hour)
+        if sum([ns.count for ns in self._tokens.values()]) == 0:
+            sleep_time = self.DURATION - (time.time() - min([ns.update_at for ns in self._tokens.values()]))
+            logging.warning("Sleeping for %.1f seconds to limit connector to %d requests per hour.", sleep_time, self._requests_per_hour)
             time.sleep(sleep_time)
