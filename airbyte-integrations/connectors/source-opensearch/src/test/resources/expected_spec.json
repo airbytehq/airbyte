@@ -10,7 +10,7 @@
       "endpoint": {
         "title": "Server Endpoint",
         "type": "string",
-        "description": "The full url of the Opensearch server"
+        "description": "The full url of the OpenSearch server"
       },
       "authenticationMethod": {
         "title": "Authentication Method",
@@ -41,7 +41,7 @@
               },
               "apiKeyId": {
                 "title": "API Key ID",
-                "description": "The Key ID to used when accessing an enterprise Opensearch instance.",
+                "description": "The Key ID to used when accessing an enterprise OpenSearch instance.",
                 "type": "string"
               },
               "apiKeySecret": {
@@ -64,12 +64,12 @@
               },
               "username": {
                 "title": "Username",
-                "description": "Basic auth username to access a secure Opensearch server",
+                "description": "Basic auth username to access a secure OpenSearch server",
                 "type": "string"
               },
               "password": {
                 "title": "Password",
-                "description": "Basic auth password to access a secure Opensearch server",
+                "description": "Basic auth password to access a secure OpenSearch server",
                 "type": "string",
                 "airbyte_secret": true
               }
