@@ -566,7 +566,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "snowflake.Dockerfile",
         "dbt_adapter": "dbt-snowflake==1.0.0",
         "integration_name": "snowflake",
-        "supports_in_connector_normalization": False,
+        "supports_in_connector_normalization": True,
     },
     "destination-tidb": {
         "dockerfile": "tidb.Dockerfile",
