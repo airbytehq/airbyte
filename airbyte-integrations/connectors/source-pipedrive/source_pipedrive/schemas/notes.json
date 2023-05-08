@@ -18,7 +18,7 @@
       "type": ["null", "integer"]
     },
     "lead_id": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "content": {
       "type": ["null", "string"]
