@@ -136,9 +136,9 @@ following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 | Feature                       | Supported?\(Yes/No\) | Notes |
 |:------------------------------|:---------------------|:------|
 | Full Refresh Sync             | Yes                  |       |
-| Incremental - Append Sync     | Yes                  |       |
-| Incremental - Deduped History | Yes                  |       |
-| Namespaces                    | Yes                  |       |
+| Incremental - Append Sync     | No                  |       |
+| Incremental - Deduped History | No                  |       |
+| Namespaces                    | No                  |       |
 
 ## Schema map
 
