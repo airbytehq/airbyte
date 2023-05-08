@@ -63,8 +63,10 @@ definitions:
       paginator:
         $ref: "#/definitions/default_paginator"
         pagination_strategy:
-          $ref: "#/definitions/default_paginator/pagination_strategy"
-          page_size: 1
+          class_name: "source_monday.item_pagination_strategy.ItemPaginationStrategy"
+          type: "CustomPaginationStrategy"
+          page_size: 100
+          start_from_page: 1
     $parameters:
       name: "items"
       path: ""
