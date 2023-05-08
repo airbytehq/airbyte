@@ -76,7 +76,7 @@ class RetentlyStream(HttpStream):
         response: requests.Response,
         **kwargs,
     ) -> Iterable[Mapping]:
-        
+        self.logger.info(f"{self.__class__.__name__}: {response}")
         data = response.json().get("data")
         stream_data = data.get(self.json_path) if self.json_path else data
         yield from stream_data
@@ -199,7 +199,7 @@ class Nps(RetentlyStream):
         response: requests.Response,
         **kwargs,
     ) -> Iterable[Mapping]:
-        yield response.json()
+        yield response.json().get("data")
 
     def request_params(
         self,
@@ -222,9 +222,9 @@ class Templates(RetentlyStream):
     def parse_response(
         self,
         response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Mapping]:
-        data = response.json().get("data")
-        yield data
+        self.logger.info(f"{self.__class__.__name__}: {response}")
+        data = response.json()
+        stream_data = data.get(self.json_path) if self.json_path else data
+        yield from stream_data

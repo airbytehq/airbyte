@@ -35,4 +35,4 @@ def stream_data_to_airbyte_message(
     elif isinstance(data_or_message, AirbyteLogMessage):
         return AirbyteMessage(type=MessageType.LOG, log=data_or_message)
     else:
-        raise ValueError(f"Unexpected type for data_or_message: {type(data_or_message)}: {data_or_message}")
+        raise ValueError(f"Unexpected type for {stream_name} data_or_message: {type(data_or_message)}: {data_or_message}")
