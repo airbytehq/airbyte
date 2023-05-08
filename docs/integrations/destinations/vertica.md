@@ -22,7 +22,7 @@ You'll need the following information to configure the Vertica destination:
 * **Database** - The database name. The default is to connect to a database with the same name as the user name.
 * **JDBC URL Params** (optional)
 
-[Refer to this guide for more details](https://www.vertica.com/docs/11.1.x/HTML/Content/Authoring/ConnectingToVertica/ClientJDBC/JDBCConnectionProperties.htm)
+[Refer to this guide for more details](https://www.vertica.com/docs/12.0.4/HTML/Content/Authoring/ConnectingToVertica/ClientJDBC/JDBCConnectionProperties.htm)
 
 #### Configure Network Access
 
@@ -56,7 +56,7 @@ synced data from Airbyte.
 
 ## Naming Conventions
 
-From [Vertica SQL Identifiers syntax](https://www.vertica.com/docs/11.1.x/HTML/Content/Authoring/ConnectingToVertica/ClientJDBC/ExecutingQueriesThroughJDBC.htm?tocpath=Connecting%20to%20Vertica%7CClient%20Libraries%7CProgramming%20JDBC%20Client%20Applications%7C_____4):
+From [Vertica SQL Identifiers syntax](https://www.vertica.com/docs/12.0.x/HTML/Content/Authoring/ConnectingToVertica/ClientJDBC/ExecutingQueriesThroughJDBC.htm?tocpath=Connecting%20to%20Vertica%7CClient%20Libraries%7CProgramming%20JDBC%20Client%20Applications%7C_____4):
 
 * SQL identifiers and key words must begin with a letter \(a-z, but also letters with diacritical
   marks and non-Latin letters\) or an underscore \(\_\).
@@ -104,7 +104,7 @@ characters.
     - **require** to always require encryption. Note: The connection will fail if the source doesn't support encryption.
     - **verify-ca** to always require encryption and verify that the source has a valid SSL certificate
     - **verify-full** to always require encryption and verify the identity of the source
-11. To customize the JDBC connection beyond common options, specify additional supported [JDBC URL parameters](https://www.vertica.com/docs/11.1.x/HTML/Content/Authoring/ConnectingToVertica/ClientJDBC/JDBCConnectionProperties.htm) as key-value pairs separated by the symbol & in the **JDBC URL Parameters (Advanced)** field.
+11. To customize the JDBC connection beyond common options, specify additional supported [JDBC URL parameters](https://www.vertica.com/docs/12.0.x/HTML/Content/Authoring/ConnectingToVertica/ClientJDBC/JDBCConnectionProperties.htm) as key-value pairs separated by the symbol & in the **JDBC URL Parameters (Advanced)** field.
 
     Example: key1=value1&key2=value2&key3=value3
 
