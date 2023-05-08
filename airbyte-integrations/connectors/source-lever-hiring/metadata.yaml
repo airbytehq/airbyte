@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 3981c999-bd7d-4afc-849b-e53dea90c948
@@ -13,6 +8,11 @@ data:
   icon: leverhiring.svg
   license: MIT
   name: Lever Hiring
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/lever-hiring
 metadataSpecVersion: "1.0"

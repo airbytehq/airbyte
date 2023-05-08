@@ -193,6 +193,9 @@
     },
     "ixUpdate": {
       "type": ["null", "string"]
+    },
+    "newLicenseInviteRestrict": {
+      "type": ["null", "string"]
     }
   }
 }
