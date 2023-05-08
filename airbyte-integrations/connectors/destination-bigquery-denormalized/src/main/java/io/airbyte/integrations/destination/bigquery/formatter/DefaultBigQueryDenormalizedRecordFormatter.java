@@ -77,7 +77,8 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
   @Override
   protected JsonNode formatJsonSchema(final JsonNode jsonSchema) {
-    final var modifiedJsonSchema = jsonSchema.deepCopy(); // Issue #5912 is reopened (PR #11166) formatAllOfAndAnyOfFields(namingResolver, jsonSchema);
+    final var modifiedJsonSchema = jsonSchema.deepCopy(); // Issue #5912 is reopened (PR #11166) formatAllOfAndAnyOfFields(namingResolver,
+                                                          // jsonSchema);
     getArrayFormatter().populateEmptyArrays(modifiedJsonSchema);
     getArrayFormatter().surroundArraysByObjects(modifiedJsonSchema);
     return modifiedJsonSchema;
@@ -291,7 +292,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
           case NUMBER -> {
             if (airbyteType != null
                 && StringUtils.equalsAnyIgnoreCase(airbyteType.asText(),
-                "big_integer", "integer")) {
+                    "big_integer", "integer")) {
               builder.setType(StandardSQLTypeName.INT64);
             } else {
               builder.setType(primaryType.getBigQueryType());

@@ -342,7 +342,7 @@ subprojects { subproj ->
     // make tag accessible in submodules.
     ext {
         cloudStorageTestTagName = 'cloud-storage'
-        numberThreads = project.hasProperty('numberThreads') ? project.getProperty('numberThreads') : Runtime.runtime.availableProcessors() ?: 1
+        numberThreads = project.hasProperty('numberThreads') ? project.getProperty('numberThreads') as int : Runtime.runtime.availableProcessors() ?: 1
     }
 
     spotbugs {
@@ -358,7 +358,6 @@ subprojects { subproj ->
         //This allows to set up a `gradle.properties` file inside the connector folder to reduce number of threads and reduce parallelization.
         //Specially useful for connectors that shares resources (like Redshift or Snowflake).
         maxParallelForks = numberThreads
-
         jacoco {
             enabled = true
             excludes = ['**/*Test*', '**/generated*']
@@ -534,7 +533,7 @@ publishing {
 
             from components.versionCatalog
             // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
-            // e.g. the subproject :airbyte-example:example-models is imported at io.airbyte.airbyte-config:config-persistence:<version-number>.
+            // e.g. the subproject :airbyte-example:example-models is imported at io.airbyte.airbyte-config-oss:config-persistence:<version-number>.
         }
     }
     repositories.add(rootProject.repositories.getByName('cloudrepo'))

@@ -15,11 +15,17 @@ acceptance_tests:
       - config_path: "secrets/config_oauth.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config_oauth.json"
-        status: "failed" 
+        status: "failed"
+      - config_path: "integration_tests/invalid_config_oauth_missing_fields.json"
+        status: "exception"
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 2.0.4
       - config_path: "secrets/config_oauth.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 2.0.4
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -27,7 +33,7 @@ acceptance_tests:
           path: "integration_tests/expected_records.jsonl"
           extra_fields: true
           exact_order: true
-          extra_records: false        
+          extra_records: false
       - config_path: "secrets/config_oauth.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"

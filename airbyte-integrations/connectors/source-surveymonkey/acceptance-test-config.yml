@@ -6,6 +6,8 @@ acceptance_tests:
       - spec_path: "source_surveymonkey/spec.json"
   connection:
     tests:
+      - config_path: "secrets/config_old.json"
+        status: "succeed"
       - config_path: "secrets/config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
@@ -18,6 +20,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.txt"
+        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"

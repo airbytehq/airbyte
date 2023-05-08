@@ -5,6 +5,8 @@
 import json
 import logging
 import pkgutil
+import re
+from importlib import metadata
 from typing import Any, Iterator, List, Mapping, MutableMapping, Union
 
 import yaml
@@ -34,7 +36,13 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
     VALID_TOP_LEVEL_FIELDS = {"check", "definitions", "schemas", "spec", "streams", "type", "version"}
 
-    def __init__(self, source_config: ConnectionDefinition, debug: bool = False, component_factory: ModelToComponentFactory = None):
+    def __init__(
+        self,
+        source_config: ConnectionDefinition,
+        debug: bool = False,
+        emit_connector_builder_messages: bool = False,
+        component_factory: ModelToComponentFactory = None,
+    ):
         """
         :param source_config(Mapping[str, Any]): The manifest of low-code components that describe the source connector
         :param debug(bool): True if debug mode is enabled
@@ -51,7 +59,8 @@ class ManifestDeclarativeSource(DeclarativeSource):
         propagated_source_config = ManifestComponentTransformer().propagate_types_and_parameters("", resolved_source_config, {})
         self._source_config = propagated_source_config
         self._debug = debug
-        self._constructor = component_factory if component_factory else ModelToComponentFactory()
+        self._emit_connector_builder_messages = emit_connector_builder_messages
+        self._constructor = component_factory if component_factory else ModelToComponentFactory(emit_connector_builder_messages)
 
         self._validate_source()
 
@@ -64,7 +73,9 @@ class ManifestDeclarativeSource(DeclarativeSource):
         check = self._source_config["check"]
         if "type" not in check:
             check["type"] = "CheckStream"
-        check_stream = self._constructor.create_component(CheckStreamModel, check, dict())
+        check_stream = self._constructor.create_component(
+            CheckStreamModel, check, dict(), emit_connector_builder_messages=self._emit_connector_builder_messages
+        )
         if isinstance(check_stream, ConnectionChecker):
             return check_stream
         else:
@@ -74,7 +85,9 @@ class ManifestDeclarativeSource(DeclarativeSource):
         self._emit_manifest_debug_message(extra_args={"source_name": self.name, "parsed_config": json.dumps(self._source_config)})
 
         source_streams = [
-            self._constructor.create_component(DeclarativeStreamModel, stream_config, config)
+            self._constructor.create_component(
+                DeclarativeStreamModel, stream_config, config, emit_connector_builder_messages=self._emit_connector_builder_messages
+            )
             for stream_config in self._stream_configs(self._source_config)
         ]
 
@@ -116,6 +129,9 @@ class ManifestDeclarativeSource(DeclarativeSource):
         self._configure_logger_level(logger)
         yield from super().read(logger, config, catalog, state)
 
+    def should_log_slice_message(self, logger: logging.Logger):
+        return self._emit_connector_builder_messages or super().should_log_slice_message(logger)
+
     def _configure_logger_level(self, logger: logging.Logger):
         """
         Set the log level to logging.DEBUG if debug mode is enabled
@@ -141,6 +157,33 @@ class ManifestDeclarativeSource(DeclarativeSource):
             validate(self._source_config, declarative_component_schema)
         except ValidationError as e:
             raise ValidationError("Validation against json schema defined in declarative_component_schema.yaml schema failed") from e
+
+        cdk_version = metadata.version("airbyte_cdk")
+        cdk_major, cdk_minor, cdk_patch = self._get_version_parts(cdk_version, "airbyte-cdk")
+        manifest_version = self._source_config.get("version")
+        manifest_major, manifest_minor, manifest_patch = self._get_version_parts(manifest_version, "manifest")
+
+        if cdk_major < manifest_major or (cdk_major == manifest_major and cdk_minor < manifest_minor):
+            raise ValidationError(
+                f"The manifest version {manifest_version} is greater than the airbyte-cdk package version ({cdk_version}). Your "
+                f"manifest may contain features that are not in the current CDK version."
+            )
+        elif manifest_major == 0 and manifest_minor < 29:
+            raise ValidationError(
+                f"The low-code framework was promoted to Beta in airbyte-cdk version 0.29.0 and contains many breaking changes to the "
+                f"language. The manifest version {manifest_version} is incompatible with the airbyte-cdk package version "
+                f"{cdk_version} which contains these breaking changes."
+            )
+
+    @staticmethod
+    def _get_version_parts(version: str, version_type: str) -> (int, int, int):
+        """
+        Takes a semantic version represented as a string and splits it into a tuple of its major, minor, and patch versions.
+        """
+        version_parts = re.split(r"\.", version)
+        if len(version_parts) != 3 or not all([part.isdigit() for part in version_parts]):
+            raise ValidationError(f"The {version_type} version {version} specified is not a valid version format (ex. 1.2.3)")
+        return (int(part) for part in version_parts)
 
     def _stream_configs(self, manifest: Mapping[str, Any]):
         # This has a warning flag for static, but after we finish part 4 we'll replace manifest with self._source_config

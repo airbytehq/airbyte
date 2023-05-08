@@ -58,7 +58,7 @@ class SourcePythonHttpTutorial(AbstractSource):
         return [ExchangeRates(authenticator=auth)]
 ```
 
-Having created this stream in code, we'll put a file `exchange_rates.json` in the `schemas/` folder. You can download the JSON file describing the output schema [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/exchange_rates.json) for convenience and place it in `schemas/`.
+Having created this stream in code, we'll put a file `exchange_rates.json` in the `schemas/` folder. You can download the JSON file describing the output schema [here](./exchange_rates_schema.json) for convenience and place it in `schemas/`.
 
 With `.json` schema file in place, let's see if the connector can now find this schema and produce a valid catalog:
 

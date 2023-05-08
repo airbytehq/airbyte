@@ -37,13 +37,13 @@ Airbyte [credits](https://airbyte.com/pricing) are used to pay for Airbyte resou
 
 To buy credits:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Credits** in the navigation bar.
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Billing** in the navigation bar.
 
 2. If you are unsure of how many credits you need, click **Talk to Sales** to find the right amount for your team.
 
 3. Click **Buy credits**.
 
-4. The Stripe payment page displays. If you want to change the amount of credits, click Qty **200**. The **Update quantity** dialog displays, and you can either type the amount or use minus (**-**) or plus (**+**) to change the quantity. Click **Update**. 
+4. The Stripe payment page displays. If you want to change the amount of credits, click the **Qty 200** dropdown. The **Update quantity** dialog displays, and you can either type the amount or use minus (**–**) or plus (**+**) to change the quantity. Click **Update**. 
 
     :::note 
     
@@ -61,7 +61,7 @@ To buy credits:
 
 6. Click **Pay**.
     
-    Your payment is processed. The Credits page displays the updated quantity of credits, total credit usage, and the credit usage per connection. 
+    Your payment is processed. The Billing page displays the available credits, total credit usage, and the credit usage per connection. 
 
     A receipt for your purchase is sent to your email. [Email us](mailto:ar@airbyte.io) for an invoice.
 

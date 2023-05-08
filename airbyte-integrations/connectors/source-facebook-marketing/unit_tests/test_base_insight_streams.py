@@ -292,3 +292,15 @@ class TestBaseInsightsStream:
         assert stream.fields == ["account_id", "account_currency"]
         schema = stream.get_json_schema()
         assert schema["properties"].keys() == set(["account_currency", "account_id", stream.cursor_field])
+
+    def test_level_custom(self, api):
+        stream = AdsInsights(
+            api=api,
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["account_id", "account_currency"],
+            insights_lookback_window=28,
+            level="adset"
+        )
+
+        assert stream.level == "adset"

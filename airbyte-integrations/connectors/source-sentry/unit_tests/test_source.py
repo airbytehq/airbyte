@@ -29,5 +29,5 @@ def test_streams(mocker):
     config_mock["organization"] = "test-organization"
     config_mock["project"] = "test-project"
     streams = source.streams(config_mock)
-    expected_streams_number = 4
+    expected_streams_number = 5
     assert len(streams) == expected_streams_number

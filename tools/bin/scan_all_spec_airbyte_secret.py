@@ -16,8 +16,8 @@ import subprocess
 import docker
 import yaml
 
-SOURCE_DEFINITIONS = "airbyte-config/init/src/main/resources/seed/source_definitions.yaml"
-DESTINATION_DEFINITIONS = "airbyte-config/init/src/main/resources/seed/destination_definitions.yaml"
+SOURCE_DEFINITIONS = "airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml"
+DESTINATION_DEFINITIONS = "airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml"
 SPECS_DIR = "specs"
 SPEC_FILE = "spec.json"
 PATTERNS = [

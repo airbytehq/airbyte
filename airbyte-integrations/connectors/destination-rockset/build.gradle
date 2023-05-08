@@ -15,11 +15,11 @@ repositories {
 }
 
 dependencies {
-    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    implementation project(':airbyte-integrations:connectors:destination-jdbc')
+    implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
 
     implementation group: 'com.rockset', name: 'rockset-java', version: '0.9.0'
     implementation group: 'org.awaitility', name: 'awaitility', version: '4.1.1'
