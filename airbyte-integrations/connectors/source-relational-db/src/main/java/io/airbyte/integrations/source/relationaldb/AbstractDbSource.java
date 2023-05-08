@@ -39,6 +39,7 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -137,9 +138,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                     final JsonNode state)
       throws Exception {
     final AirbyteStateType supportedStateType = getSupportedStateType(config);
+    final List<AirbyteStateMessage> stateMessages =
+        StateGeneratorUtils.deserializeInitialState(state, featureFlags.useStreamCapableState(), supportedStateType);
     final StateManager stateManager =
         StateManagerFactory.createStateManager(supportedStateType,
-            StateGeneratorUtils.deserializeInitialState(state, featureFlags.useStreamCapableState(), supportedStateType), catalog);
+            stateMessages, catalog);
     final Instant emittedAt = Instant.now();
 
     final Database database = createDatabase(config);
@@ -159,7 +162,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
     final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
         getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
-            emittedAt);
+            emittedAt, stateMessages);
     final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators =
         getFullRefreshIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
             emittedAt);
@@ -295,7 +298,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                                 final ConfiguredAirbyteCatalog catalog,
                                                                                 final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
                                                                                 final StateManager stateManager,
-                                                                                final Instant emittedAt) {
+                                                                                final Instant emittedAt,
+                                                                                final List<AirbyteStateMessage> stateMessages) {
     return getSelectedIterators(
         database,
         catalog,
