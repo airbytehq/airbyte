@@ -376,7 +376,7 @@ class ApplicationFees(IncrementalStripeStream):
 
 class ApplicationFeesRefunds(StripeSubStream):
     """
-    API docs: https://stripe.com/docs/api/invoices/invoice_lines
+    API docs: https://stripe.com/docs/api/fee_refunds/list
     """
 
     name = "application_fees_refunds"
