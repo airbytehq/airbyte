@@ -11,7 +11,7 @@ data:
   normalizationConfig:
     normalizationIntegrationType: oracle
     normalizationRepository: airbyte/normalization-oracle
-    normalizationTag: 0.4.0
+    normalizationTag: 0.4.1
   registries:
     cloud:
       dockerRepository: airbyte/destination-oracle-strict-encrypt

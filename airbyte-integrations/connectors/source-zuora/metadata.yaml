@@ -10,7 +10,6 @@ data:
   name: Zuora
   registries:
     cloud:
-      dockerImageTag: 0.1.0
       enabled: true
     oss:
       enabled: true

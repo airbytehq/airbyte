@@ -13,6 +13,7 @@ data:
   name: Salesforce
   registries:
     cloud:
+      dockerImageTag: 2.0.9
       enabled: true
     oss:
       enabled: true

@@ -11,7 +11,7 @@ data:
   normalizationConfig:
     normalizationIntegrationType: bigquery
     normalizationRepository: airbyte/normalization
-    normalizationTag: 0.4.0
+    normalizationTag: 0.4.1
   registries:
     cloud:
       enabled: true

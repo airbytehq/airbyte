@@ -11,7 +11,7 @@ data:
   normalizationConfig:
     normalizationIntegrationType: clickhouse
     normalizationRepository: airbyte/normalization-clickhouse
-    normalizationTag: 0.4.0
+    normalizationTag: 0.4.1
   registries:
     cloud:
       dockerRepository: airbyte/destination-clickhouse-strict-encrypt

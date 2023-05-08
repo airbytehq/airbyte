@@ -16,7 +16,7 @@ data:
   normalizationConfig:
     normalizationIntegrationType: mssql
     normalizationRepository: airbyte/normalization-mssql
-    normalizationTag: 0.4.0
+    normalizationTag: 0.4.1
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/mssql
   supportsDbt: true
