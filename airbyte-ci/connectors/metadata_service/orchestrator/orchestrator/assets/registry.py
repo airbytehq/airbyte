@@ -2,7 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import copy
+import json
 from typing import List
+from pydash.objects import get
 
 import pandas as pd
 from dagster import asset, OpExecutionContext, MetadataValue, Output
@@ -103,7 +105,7 @@ def metadata_to_registry_entry(metadata_definition: dict, connector_type: str, o
 
 
 def is_metadata_registry_enabled(metadata_definition: dict, registry_name: str) -> bool:
-    return metadata_definition["data"]["registries"][registry_name]["enabled"]
+    return get(metadata_definition, f"data.registries.{registry_name}.enabled", False)
 
 
 def is_metadata_connector_type(metadata_definition: dict, connector_type: str) -> bool:
@@ -155,7 +157,7 @@ def construct_registry_with_spec_from_registry(registry: dict, cached_specs: Out
             else:
                 registry_with_specs["destinations"].append(entry_with_spec)
         except KeyError:
-            raise MissingCachedSpecError(f"No cached spec found for {entry['dockerRepository']:{entry['dockerImageTag']}}")
+            raise MissingCachedSpecError(f"No cached spec found for {entry['dockerRepository']}:{entry['dockerImageTag']}")
     return registry_with_specs
 
 
@@ -173,7 +175,8 @@ def persist_registry_to_json(
         OutputDataFrame: The registry directory manager.
     """
     registry_file_name = f"{registry_name}_registry"
-    registry_json = registry.json()
+    registry_json = registry.json(exclude_none=True)
+
     file_handle = registry_directory_manager.write_data(registry_json.encode("utf-8"), ext="json", key=registry_file_name)
     return file_handle
 
@@ -208,7 +211,7 @@ def generate_and_persist_registry(
     return Output(metadata=metadata, value=registry_model)
 
 
-# New Registry
+# New Registry Generation
 
 
 @asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)
@@ -273,3 +276,32 @@ def oss_destinations_dataframe(oss_registry_from_metadata: ConnectorRegistryV0) 
     oss_registry_from_metadata_dict = to_json_sanitized_dict(oss_registry_from_metadata)
     destinations = oss_registry_from_metadata_dict["destinations"]
     return output_dataframe(pd.DataFrame(destinations))
+
+
+# Registry from JSON
+
+
+@asset(required_resource_keys={"latest_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
+def latest_cloud_registry(latest_cloud_registry_dict: dict) -> ConnectorRegistryV0:
+    return ConnectorRegistryV0.parse_obj(latest_cloud_registry_dict)
+
+
+@asset(required_resource_keys={"latest_oss_registry_gcs_blob"}, group_name=GROUP_NAME)
+def latest_oss_registry(latest_oss_registry_dict: dict) -> ConnectorRegistryV0:
+    return ConnectorRegistryV0.parse_obj(latest_oss_registry_dict)
+
+
+@asset(required_resource_keys={"latest_cloud_registry_gcs_blob"}, group_name=GROUP_NAME)
+def latest_cloud_registry_dict(context: OpExecutionContext) -> dict:
+    oss_registry_file = context.resources.latest_cloud_registry_gcs_blob
+    json_string = oss_registry_file.download_as_string().decode("utf-8")
+    oss_registry_dict = json.loads(json_string)
+    return oss_registry_dict
+
+
+@asset(required_resource_keys={"latest_oss_registry_gcs_blob"}, group_name=GROUP_NAME)
+def latest_oss_registry_dict(context: OpExecutionContext) -> dict:
+    oss_registry_file = context.resources.latest_oss_registry_gcs_blob
+    json_string = oss_registry_file.download_as_string().decode("utf-8")
+    oss_registry_dict = json.loads(json_string)
+    return oss_registry_dict

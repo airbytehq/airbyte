@@ -1,10 +1,6 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorType: destination
+  connectorSubtype: api
   definitionId: 3eb4d99c-11fa-4561-a259-fc88e0c2f8f4
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/destination-convex
@@ -12,7 +8,11 @@ data:
   icon: convex.svg
   license: MIT
   name: Convex
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  connectorSubtype: api
   supportUrl: https://docs.airbyte.io/integrations/destinations/convex
 metadataSpecVersion: "1.0"
