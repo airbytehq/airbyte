@@ -2180,7 +2180,7 @@
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/trello
   icon: trello.svg
   sourceType: api
