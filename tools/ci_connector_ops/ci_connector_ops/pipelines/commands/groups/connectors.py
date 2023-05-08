@@ -77,6 +77,12 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
 )
 @click.option("--modified/--not-modified", help="Only test modified connectors in the current branch.", default=False, type=bool)
 @click.option("--concurrency", help="Number of connector tests pipeline to run in parallel.", default=5, type=int)
+@click.option(
+    "--execute-timeout",
+    help="The maximum time in seconds for the execution of a Dagger request before an ExecuteTimeoutError is raised. Passing None results in waiting forever.",
+    default=None,
+    type=int,
+)
 @click.pass_context
 def connectors(
     ctx: click.Context,
@@ -86,6 +92,7 @@ def connectors(
     release_stages: Tuple[str],
     modified: bool,
     concurrency: int,
+    execute_timeout: int,
 ):
     """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"], use_remote_secrets)
@@ -97,6 +104,7 @@ def connectors(
     ctx.obj["release_states"] = release_stages
     ctx.obj["modified"] = modified
     ctx.obj["concurrency"] = concurrency
+    ctx.obj["execute_timeout"] = execute_timeout
     update_commit_status_check(
         ctx.obj["git_revision"],
         "pending",
@@ -157,12 +165,14 @@ def test(
 
     connectors_tests_contexts = [
         ConnectorContext(
-            connector,
-            ctx.obj["is_local"],
-            ctx.obj["git_branch"],
-            ctx.obj["git_revision"],
-            modified_files,
-            ctx.obj["use_remote_secrets"],
+            pipeline_name="Test",
+            connector=connector,
+            is_local=ctx.obj["is_local"],
+            git_branch=ctx.obj["git_branch"],
+            git_revision=ctx.obj["git_revision"],
+            modified_files=modified_files,
+            s3_report_key="python-poc/tests/history/",
+            use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
@@ -170,7 +180,14 @@ def test(
         for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
     ]
     try:
-        anyio.run(run_connectors_pipelines, connectors_tests_contexts, run_connector_test_pipeline, "Test Pipeline", ctx.obj["concurrency"])
+        anyio.run(
+            run_connectors_pipelines,
+            connectors_tests_contexts,
+            run_connector_test_pipeline,
+            "Test Pipeline",
+            ctx.obj["concurrency"],
+            ctx.obj["execute_timeout"],
+        )
         update_commit_status_check(
             ctx.obj["git_revision"],
             "success",
@@ -201,19 +218,28 @@ def build(ctx: click.Context) -> bool:
     click.secho(f"Will build the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
     connectors_contexts = [
         ConnectorContext(
-            connector,
-            ctx.obj["is_local"],
-            ctx.obj["git_branch"],
-            ctx.obj["git_revision"],
-            modified_files,
-            ctx.obj["use_remote_secrets"],
+            pipeline_name="Build",
+            connector=connector,
+            is_local=ctx.obj["is_local"],
+            git_branch=ctx.obj["git_branch"],
+            git_revision=ctx.obj["git_revision"],
+            modified_files=modified_files,
+            s3_report_key="python-poc/build/history/",
+            use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
         )
         for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
     ]
-    anyio.run(run_connectors_pipelines, connectors_contexts, run_connector_build_pipeline, "Build Pipeline", ctx.obj["concurrency"])
+    anyio.run(
+        run_connectors_pipelines,
+        connectors_contexts,
+        run_connector_build_pipeline,
+        "Build Pipeline",
+        ctx.obj["concurrency"],
+        ctx.obj["execute_timeout"],
+    )
 
     return True
 
@@ -276,15 +302,18 @@ def publish(
 
     connectors_contexts = [
         ConnectorContext(
-            connector,
-            ctx.obj["is_local"],
-            ctx.obj["git_branch"],
-            ctx.obj["git_revision"],
-            modified_files,
-            ctx.obj["use_remote_secrets"],
+            pipeline_name="Publish",
+            connector=connector,
+            is_local=ctx.obj["is_local"],
+            git_branch=ctx.obj["git_branch"],
+            git_revision=ctx.obj["git_revision"],
+            modified_files=modified_files,
+            s3_report_key="python-poc/publish/history/",
+            use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
+            reporting_slack_channel="publish-on-merge-updates",
         )
         for connector, modified_files in selected_connectors_and_files.items()
     ]
@@ -294,6 +323,7 @@ def publish(
         run_connector_publish_pipeline,
         "Publish pipeline",
         ctx.obj["concurrency"],
+        ctx.obj["execute_timeout"],
         pre_release,
         spec_cache_bucket_name,
         metadata_service_bucket_name,
