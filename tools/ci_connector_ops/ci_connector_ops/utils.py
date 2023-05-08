@@ -25,7 +25,7 @@ except ImportError:
 console = Console()
 
 DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")
-OSS_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json"
+OSS_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
 SOURCE_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/source-"
 DESTINATION_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/destination-"
@@ -42,6 +42,7 @@ def download_catalog(catalog_url):
 
 
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
+METADATA_FILE_NAME = "metadata.yaml"
 
 
 class ConnectorInvalidNameError(Exception):
@@ -131,6 +132,10 @@ class Connector:
         return Path(f"./airbyte-integrations/connectors/{self.technical_name}")
 
     @property
+    def metadata(self) -> dict:
+        return yaml.safe_load((self.code_directory / METADATA_FILE_NAME).read_text())["data"]
+
+    @property
     def language(self) -> ConnectorLanguage:
         if Path(self.code_directory / self.technical_name.replace("-", "_") / "manifest.yaml").is_file():
             return ConnectorLanguage.LOW_CODE
@@ -147,6 +152,10 @@ class Connector:
 
     @property
     def version(self) -> str:
+        return self.metadata["dockerImageTag"]
+
+    @property
+    def version_in_dockerfile_label(self) -> str:
         with open(self.code_directory / "Dockerfile") as f:
             for line in f:
                 if "io.airbyte.version" in line:
@@ -198,6 +207,20 @@ class Connector:
         except FileNotFoundError:
             logging.warning(f"No {ACCEPTANCE_TEST_CONFIG_FILE_NAME} file found for {self.technical_name}")
             return None
+
+    @property
+    def supports_normalization(self) -> bool:
+        return self.definition and self.definition.get("normalizationConfig") is not None
+
+    @property
+    def normalization_repository(self) -> Optional[str]:
+        if self.supports_normalization:
+            return f"{self.definition['normalizationConfig']['normalizationRepository']}"
+
+    @property
+    def normalization_tag(self) -> Optional[str]:
+        if self.supports_normalization:
+            return f"{self.definition['normalizationConfig']['normalizationTag']}"
 
     def get_secret_manager(self, gsm_credentials: str):
         return SecretsManager(connector_name=self.technical_name, gsm_credentials=gsm_credentials)

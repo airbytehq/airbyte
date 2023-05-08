@@ -32,6 +32,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
+import io.airbyte.integrations.debezium.internals.mssql.MssqlCdcTargetPosition;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.mssql.MssqlCdcHelper.SnapshotIsolation;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -107,7 +108,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           String.format("SELECT %s FROM %s ORDER BY %s ASC", newIdentifiers,
               getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField);
       LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
-      return queryTable(database, preparedSqlQuery);
+      return queryTable(database, preparedSqlQuery, tableName, schemaName);
     } else {
       // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering of the records.
       final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
@@ -115,7 +116,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           String.format("SELECT %s FROM %s", newIdentifiers, getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()));
 
       LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
-      return queryTable(database, preparedSqlQuery);
+      return queryTable(database, preparedSqlQuery, tableName, schemaName);
     }
   }
 
