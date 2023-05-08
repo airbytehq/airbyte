@@ -1,6 +1,12 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres;
 
 import autovalue.shaded.com.google.common.collect.AbstractIterator;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -19,22 +25,23 @@ public class XminStateIterator extends AbstractIterator<AirbyteMessage> implemen
   private final Iterator<io.airbyte.protocol.models.v0.AirbyteMessage> messageIterator;
   private final StateManager stateManager;
   private final AirbyteStreamNameNamespacePair pair;
-  private String currentMaxCursor;
   private boolean hasEmittedFinalState;
 
   private boolean hasCaughtException = false;
-
+  private final XminStatus xminStatus;
 
   /**
    * @param stateManager Manager that maintains connector state
    * @param pair Stream Name and Namespace (e.g. public.users)
    */
   public XminStateIterator(final Iterator<io.airbyte.protocol.models.v0.AirbyteMessage> messageIterator,
-      final StateManager stateManager,
-      final AirbyteStreamNameNamespacePair pair) {
+                           final StateManager stateManager,
+                           final AirbyteStreamNameNamespacePair pair,
+                           final XminStatus xminStatus) {
     this.messageIterator = messageIterator;
     this.stateManager = stateManager;
     this.pair = pair;
+    this.xminStatus = xminStatus;
   }
 
   /**
@@ -88,16 +95,21 @@ public class XminStateIterator extends AbstractIterator<AirbyteMessage> implemen
     final StreamDescriptor streamDescriptor = new StreamDescriptor();
     streamDescriptor.setName(pair.getName());
     streamDescriptor.setNamespace(pair.getNamespace());
-    final io.airbyte.protocol.models.v0.AirbyteStreamState streamState =
+    final io.airbyte.protocol.models.v0.AirbyteStreamState airbyteStreamState =
         new io.airbyte.protocol.models.v0.AirbyteStreamState();
 
     // Set state
 
-    streamState.setStreamDescriptor(streamDescriptor);
+    airbyteStreamState.setStreamDescriptor(streamDescriptor);
+
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonNode node = mapper.valueToTree(xminStatus);
+    // JsonNode node = Jsons.
+    airbyteStreamState.setStreamState(node);
     final AirbyteStateMessage stateMessage =
         new AirbyteStateMessage()
             .withType(AirbyteStateType.STREAM)
-            .withStream(streamState);
+            .withStream(airbyteStreamState);
 
     // final AirbyteStateMessage stateMessage = stateManager.emit(Optional.of(pair));
     if (isFinalState) {
@@ -106,4 +118,5 @@ public class XminStateIterator extends AbstractIterator<AirbyteMessage> implemen
 
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
   }
+
 }
