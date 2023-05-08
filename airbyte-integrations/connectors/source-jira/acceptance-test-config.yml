@@ -27,6 +27,12 @@ acceptance_tests:
         bypass_reason: "unable to populate"
       - name: "screen_tab_fields"
         bypass_reason: "unable to populate"
+      ignored_fields:
+        sprint_issues:
+          - name: updated
+            bypass_reason: "Unstable data"
+          - name: fields/updated
+            bypass_reason: "Unstable data"
       timeout_seconds: 2400
       fail_on_extra_columns: false
   incremental:
