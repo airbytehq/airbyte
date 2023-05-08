@@ -363,6 +363,33 @@ class StripeSubStream(StripeStream, ABC):
             yield item
 
 
+class ApplicationFees(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/application_fees
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "application_fees"
+
+
+class ApplicationFeesRefunds(StripeSubStream):
+    """
+    API docs: https://stripe.com/docs/api/invoices/invoice_lines
+    """
+
+    name = "application_fees_refunds"
+
+    parent = ApplicationFees
+    parent_id: str = "refund_id"
+    sub_items_attr = "refunds"
+    add_parent_id = True
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"application_fees/{stream_slice[self.parent_id]}/refunds"
+
+
 class Invoices(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/invoices/list
