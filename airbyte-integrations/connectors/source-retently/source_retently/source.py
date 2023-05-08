@@ -76,7 +76,6 @@ class RetentlyStream(HttpStream):
         response: requests.Response,
         **kwargs,
     ) -> Iterable[Mapping]:
-        self.logger.info(f"{self.__class__.__name__}: {response}")
         data = response.json().get("data")
         stream_data = data.get(self.json_path) if self.json_path else data
         yield from stream_data
@@ -224,7 +223,6 @@ class Templates(RetentlyStream):
         response: requests.Response,
         **kwargs,
     ) -> Iterable[Mapping]:
-        self.logger.info(f"{self.__class__.__name__}: {response}")
         data = response.json()
         stream_data = data.get(self.json_path) if self.json_path else data
         yield from stream_data
