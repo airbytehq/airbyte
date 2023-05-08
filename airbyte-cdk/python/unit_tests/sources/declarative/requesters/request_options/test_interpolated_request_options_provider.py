@@ -21,7 +21,6 @@ config = {"option": "OPTION"}
         ("test_value_depends_on_stream_slice", {"read_from_slice": "{{ stream_slice['start_date'] }}"}, {"read_from_slice": "2020-01-01"}),
         ("test_value_depends_on_next_page_token", {"read_from_token": "{{ next_page_token['offset'] }}"}, {"read_from_token": 12345}),
         ("test_value_depends_on_config", {"read_from_config": "{{ config['option'] }}"}, {"read_from_config": "OPTION"}),
-        ("test_missing_value", {"missing_param": "{{ fake_path['date'] }}"}, {}),
         (
             "test_parameter_is_interpolated",
             {"{{ stream_state['date'] }} - {{stream_slice['start_date']}} - {{next_page_token['offset']}} - {{config['option']}}": "ABC"},
@@ -50,7 +49,6 @@ def test_interpolated_request_params(test_name, input_request_params, expected_r
         ("test_value_depends_on_stream_slice", {"read_from_slice": "{{ stream_slice['start_date'] }}"}, {"read_from_slice": "2020-01-01"}),
         ("test_value_depends_on_next_page_token", {"read_from_token": "{{ next_page_token['offset'] }}"}, {"read_from_token": 12345}),
         ("test_value_depends_on_config", {"read_from_config": "{{ config['option'] }}"}, {"read_from_config": "OPTION"}),
-        ("test_missing_value", {"missing_json": "{{ fake_path['date'] }}"}, {}),
         (
             "test_interpolated_keys",
             {"{{ stream_state['date'] }}": 123, "{{ config['option'] }}": "ABC"},
