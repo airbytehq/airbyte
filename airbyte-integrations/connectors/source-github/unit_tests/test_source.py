@@ -152,6 +152,7 @@ def test_check_config_repository():
         "airbytehq/airbyte-test",
         "airbytehq/airbyte_test",
         "airbytehq/airbyte.git",
+        "erohmensing/thismonth.rocks",
         "airbytehq/*",
         "airbytehq/.",
         "airbyte_hq/airbyte",
