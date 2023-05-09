@@ -116,7 +116,7 @@ The steps for updating an existing connector are the same as for building a new 
 
 ## Adding normalization to a connector
 
-In order to enable normalization for a destination connector, you'll need to set some fields on the destination definitions entry for the connector. This is done in the `metadata.yaml` file found at the root of each connector.
+In order to enable normalization for a destination connector, you'll need to set some fields on the destination definitions entry for the connector. This is done in the [metadata.yaml](connector-metadata-file.md) file found at the root of each connector.
 
 Here's an example of normalization fields being set to enable normalization for the Postgres destination:
 
@@ -138,7 +138,7 @@ The presence of these fields will enable normalization for the connector, and de
 Once you've finished iterating on the changes to a connector as specified in its `README.md`, follow these instructions to ship the new version of the connector with Airbyte out of the box.
 
 1. Bump the version in the `Dockerfile` of the connector \(`LABEL io.airbyte.version=X.X.X`\).
-1. Update the docker image version in the  `metadata.yaml` of the connector.
+1. Update the docker image version in the  [metadata.yaml](connector-metadata-file.md) of the connector.
 1. Submit a PR containing the changes you made.
 1. One of Airbyte maintainers will review the change and publish the new version of the connector to Docker hub. Triggering tests and publishing connectors can be done by leaving a comment on the PR with the following format \(the PR must be from the Airbyte repo, not a fork\):
 
@@ -166,6 +166,8 @@ If any of the above are failing, you won't be able to merge your PR or publish y
 Connector icons should be square SVGs and be located in [this directory](https://github.com/airbytehq/airbyte/tree/master/airbyte-config-oss/init-oss/src/main/resources/icons).
 
 Connector documentation and changelogs are markdown files which live either [here for sources](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/sources), or [here for destinations](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/destinations).
+
+The [metadata.yaml](connector-metadata-file.md) file is valid.
 
 ### The /publish command
 

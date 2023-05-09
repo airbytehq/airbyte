@@ -380,7 +380,7 @@ Generally Available Connectors must enable high-strictness testing for the Conne
 
 ### Allowed Hosts
 
-GA and Beta connectors are required to provide an entry for Allowed Hosts in the `metadata.yaml` for the connector. You can provide:
+GA and Beta connectors are required to provide an entry for Allowed Hosts in the [metadata.yaml](../connector-metadata-file.md) for the connector. You can provide:
 
 A list of static hostnames or IP addresses. Wildcards are valid.
 
