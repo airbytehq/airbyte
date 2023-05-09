@@ -1,6 +1,5 @@
-name: New Connector
-description: Use this to request a new connector
-title: "New Connector: <REMOVE THIS WITH THE CONNECTOR'S NAME>"
+name: ✨ request a new connector
+description: Request for new sources and destinations
 labels: [area/connectors, new-connector]
 body:
   - type: input
