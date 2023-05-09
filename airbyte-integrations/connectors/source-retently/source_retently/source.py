@@ -110,7 +110,6 @@ class Campaigns(RetentlyStream):
 
     def path(self, **kwargs) -> str:
         return "campaigns"
-    
 
     def parse_response(
         self,
@@ -177,9 +176,11 @@ class Reports(RetentlyStream):
         **kwargs,
     ) -> str:
         return "reports"
+
     # does not support pagination
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
+
 
 class Nps(RetentlyStream):
     json_path = None
@@ -192,7 +193,7 @@ class Nps(RetentlyStream):
     # does not support pagination
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
-    
+
     def parse_response(
         self,
         response: requests.Response,
