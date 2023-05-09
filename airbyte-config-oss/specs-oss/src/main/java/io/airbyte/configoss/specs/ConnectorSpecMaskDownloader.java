@@ -26,8 +26,8 @@ public class ConnectorSpecMaskDownloader {
   private static final Options OPTIONS = new Options().addOption(SPEC_ROOT_OPTION);
 
   /**
-   * This method is to download the Spec Mask File from the remote URL and save it to the local resource
-   * folder.
+   * This method is to download the Spec Mask File from the remote URL and save it to the local
+   * resource folder.
    */
   public static void main(final String[] args) throws Exception {
     final CommandLine parsed = Clis.parse(args, OPTIONS);
@@ -38,4 +38,5 @@ public class ConnectorSpecMaskDownloader {
     final int timeout = 10000;
     FileUtils.copyURLToFile(new URL(REMOTE_SPEC_SECRET_MASK_URL), writePath.toFile(), timeout, timeout);
   }
+
 }

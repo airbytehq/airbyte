@@ -13,7 +13,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.yaml.Yamls;
 import java.io.File;
 import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
@@ -40,6 +39,5 @@ class ConnectorSpecMaskDownloaderTest {
     assertTrue(propertiesList.size() > 50);
 
   }
-
 
 }

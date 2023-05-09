@@ -26,7 +26,6 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
 
   private static final String LOCAL_CONNECTOR_REGISTRY_PATH = CatalogDefinitionsConfig.getLocalConnectorCatalogPath();
 
-
   public CombinedConnectorCatalog getLocalDefinitionCatalog() {
     try {
       final URL url = Resources.getResource(LOCAL_CONNECTOR_REGISTRY_PATH);
