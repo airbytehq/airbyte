@@ -19,6 +19,7 @@ from rich.logging import RichHandler
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
 logger = logging.getLogger(__name__)
 
+
 # MAIN GROUP
 
 
@@ -37,9 +38,6 @@ def metadata(ctx: click.Context):
 def validate(ctx: click.Context, modified_only: bool) -> bool:
     if modified_only:
         metadata_to_validate = get_modified_metadata_files(ctx.obj["modified_files"])
-        if not metadata_to_validate:
-            click.secho("No modified metadata found. Skipping metadata validation.")
-            return True
     else:
         click.secho("Will run metadata validation on all the metadata files found in the repo.")
         metadata_to_validate = get_all_metadata_files()

@@ -229,7 +229,7 @@ class Report:
 
     @property
     def success(self) -> bool:  # noqa D102
-        return len(self.failed_steps) == 0 and len(self.steps_results) > 0
+        return len(self.failed_steps) == 0
 
     @property
     def run_duration(self) -> int:  # noqa D102
