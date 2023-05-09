@@ -87,11 +87,12 @@ public final class PostgresCdcCatalogHelper {
   }
 
   /**
-   * Modifies streams that are NOT present in the publication to be full-refresh only streams. Users should be able to replicate these streams, just
-   * not in incremental mode as they have no associated publication.
+   * Modifies streams that are NOT present in the publication to be full-refresh only streams. Users
+   * should be able to replicate these streams, just not in incremental mode as they have no
+   * associated publication.
    */
   public static AirbyteStream setFullRefreshForNonPublicationStreams(final AirbyteStream stream,
-      final Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc) {
+                                                                     final Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc) {
     if (!publicizedTablesInCdc.contains(new AirbyteStreamNameNamespacePair(stream.getName(), stream.getNamespace()))) {
       stream.setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
       stream.setSourceDefinedCursor(false);

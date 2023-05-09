@@ -347,11 +347,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   /**
-   * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number
-   * of file buffers and sets the minimum number to the default
+   * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number of
+   * file buffers and sets the minimum number to the default
    *
-   * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit
-   * has not been thoroughly load tested across all instance sizes
+   * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit has
+   * not been thoroughly load tested across all instance sizes
    *
    * @param config user configurations
    * @return number of file buffers if configured otherwise default

@@ -108,7 +108,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                                                                   final SyncMode syncMode,
                                                                   final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters as intermediate state messages are emitted.
+    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters
+    // as intermediate state messages are emitted.
     if (syncMode.equals(SyncMode.INCREMENTAL)) {
       final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
       return queryTable(database, String.format("SELECT %s FROM %s ORDER BY %s ASC",
@@ -116,7 +117,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
           getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField),
           tableName, schemaName);
     } else {
-      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering of the records.
+      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering
+      // of the records.
       return queryTable(database, String.format("SELECT %s FROM %s",
           enquoteIdentifierList(columnNames, getQuoteString()),
           getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())), tableName, schemaName);
@@ -432,6 +434,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
   /**
    * {@inheritDoc}
+   *
    * @param database database instance
    * @param catalog schema of the incoming messages.
    * @throws SQLException

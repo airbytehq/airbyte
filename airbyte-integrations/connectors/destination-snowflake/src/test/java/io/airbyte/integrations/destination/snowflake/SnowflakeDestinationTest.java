@@ -38,7 +38,8 @@ public class SnowflakeDestinationTest {
         arguments("https://acme-marketing.test-account.snowflakecomputing.com", true),
 
         // Legacy style (account locator in a region)
-        // Some examples taken from https://docs.snowflake.com/en/user-guide/admin-account-identifier#non-vps-account-locator-formats-by-cloud-platform-and-region
+        // Some examples taken from
+        // https://docs.snowflake.com/en/user-guide/admin-account-identifier#non-vps-account-locator-formats-by-cloud-platform-and-region
         arguments("xy12345.snowflakecomputing.com", true),
         arguments("xy12345.us-gov-west-1.aws.snowflakecomputing.com", true),
         arguments("xy12345.us-east-1.aws.snowflakecomputing.com", true),
