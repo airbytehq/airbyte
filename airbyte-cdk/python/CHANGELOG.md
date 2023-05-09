@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.36.4
+low-code: use jinja sandbox and restrict some methods
+
 ## 0.36.3
 pin the version of the requests library
 
