@@ -9,7 +9,7 @@ body:
           <a target="_blank" href="https://airbyte.com">
             <picture>
               <source srcset="https://assets-global.website-files.com/605e01bc25f7e19a82e74788/621e2495cb90b8b2c3b31b0d_airbyte-octo-p-500.png">
-              <img alt="airbyte ocatvia" src="https://assets-global.website-files.com/605e01bc25f7e19a82e74788/621e2495cb90b8b2c3b31b0d_airbyte-octo-p-500.png" width="auto" height="150">
+              <img alt="airbyte octavia" src="https://assets-global.website-files.com/605e01bc25f7e19a82e74788/621e2495cb90b8b2c3b31b0d_airbyte-octo-p-500.png" width="auto" height="150">
             </picture>
           </a>
         </p>
@@ -17,9 +17,9 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report...
-        Make sure you update the title with a concise title and provide all information you have to 
-        help us debugging the problem together.
-        Issues not following the pattern will be closed.
+        Make sure you update this issue with a concise title and provide all information you have to
+        help us debug the problem together.
+        Issues not following the template will be closed.
   - type: input
     id: connector-name
     attributes:
@@ -35,7 +35,7 @@ body:
     id: connector-version
     attributes:
       label: Connector Version
-      description: Give the connector version has problem. You can check in the sync log file or in the settings page.
+      description: Give the connector version that has a problem. You can find it in the sync log file or the settings page.
       placeholder: 0.2.63
     validations:
       required: true
@@ -53,7 +53,7 @@ body:
     id: description
     attributes:
       label: Revelant information
-      description: Please give any aditional information you have your steps to reproduce the problem.
+      description: Please give any additional information you have and steps to reproduce the problem.
   - type: textarea
     id: logs
     attributes:
@@ -61,7 +61,7 @@ body:
       description: |
         Please copy and paste any relevant log output. 
         This will be automatically formatted into code, so no need for backticks.
-        We strongly recommend to upload the log file to further debugging.
+        We strongly recommend to upload the log file for further debugging.
       render: shell
   - type: checkboxes
     id: submit-pr
