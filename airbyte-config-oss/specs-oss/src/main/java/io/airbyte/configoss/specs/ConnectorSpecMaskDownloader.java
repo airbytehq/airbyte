@@ -38,5 +38,4 @@ public class ConnectorSpecMaskDownloader {
     final int timeout = 10000;
     FileUtils.copyURLToFile(new URL(REMOTE_SPEC_SECRET_MASK_URL), writePath.toFile(), timeout, timeout);
   }
-
 }

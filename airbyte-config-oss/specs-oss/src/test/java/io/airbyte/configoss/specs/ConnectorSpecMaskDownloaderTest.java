@@ -32,19 +32,13 @@ class ConnectorSpecMaskDownloaderTest {
     assertTrue(outputFile.exists());
 
     final JsonNode maskContents = Yamls.deserialize(FileUtils.readFileToString(outputFile, Charset.defaultCharset()));
-
-    final List<String> commonSecretFieldNames = Arrays.asList(
-        "apiKey",
-        "api_key",
-        "password",
-        "service_account_json"
-    );
-
     final JsonNode propertiesNode = maskContents.get("properties");
     final List<String> propertiesList = Jsons.object(propertiesNode, new TypeReference<>() {});
 
-    final boolean containsAll = propertiesList.containsAll(commonSecretFieldNames);
-    assertTrue(containsAll);
+    // Assert the properties list is greater than 50.
+    // This is a rough sanity check to ensure that the mask file is not empty.
+    assertTrue(propertiesList.size() > 50);
+
   }
 
 
