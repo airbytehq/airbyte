@@ -1,0 +1,17 @@
+data:
+  registries:
+    cloud:
+      enabled: false # source-relational-db is only used as a base to build other connectors
+    oss:
+      enabled: false # source-relational-db is only used as a base to build other connectors
+  connectorSubtype: database
+  connectorType: source
+  definitionId: c5551794-eeb5-11ed-a05b-0242ac120003
+  dockerImageTag: 0.3.1
+  dockerRepository: airbyte/source-relational-db
+  githubIssueLabel: source-relational-db
+  license: MIT
+  name: Source Relational DB (internal only)
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/postgres
+metadataSpecVersion: "1.0"

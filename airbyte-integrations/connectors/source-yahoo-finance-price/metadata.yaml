@@ -1,0 +1,17 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: a1b84930-eeb7-11ed-a05b-0242ac120003
+  dockerImageTag: 0.1.3
+  dockerRepository: airbyte/source-yahoo-finance-price
+  githubIssueLabel: source-yahoo-finance-price
+  license: MIT
+  name: Yahoo Finance Price
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/yahoo-finance-price
+metadataSpecVersion: "1.0"

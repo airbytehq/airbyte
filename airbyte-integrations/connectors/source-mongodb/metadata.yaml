@@ -1,0 +1,18 @@
+data:
+  connectorSubtype: database
+  connectorType: source
+  definitionId: 9d5cfc12-eeb4-11ed-a05b-0242ac120003
+  dockerImageTag: 0.3.3
+  dockerRepository: airbyte/source-mongodb
+  githubIssueLabel: source-mongodb
+  icon: mongodb.svg
+  license: MIT
+  name: MongoDb (DEPRECATED)
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/mongodb
+metadataSpecVersion: "1.0"

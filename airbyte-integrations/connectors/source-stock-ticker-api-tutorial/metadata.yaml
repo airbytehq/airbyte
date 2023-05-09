@@ -1,0 +1,17 @@
+data:
+  registries:
+    cloud:
+      enabled: false # stock-ticker-api-tutorial is only a tutorial
+    oss:
+      enabled: false # stock-ticker-api-tutorial is only a tutorial
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 2c13d59e-eeb4-11ed-a05b-0242ac120003
+  dockerImageTag: 0.2.1
+  dockerRepository: airbyte/source-stock-ticker-api-tutorial
+  githubIssueLabel: source-stock-ticker-api-tutorial
+  license: MIT
+  name: Source stock-ticker-api-tutorial (internal only)
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/understanding-airbyte/beginners-guide-to-catalog/
+metadataSpecVersion: "1.0"

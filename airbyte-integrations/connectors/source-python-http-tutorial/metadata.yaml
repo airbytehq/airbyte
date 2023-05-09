@@ -1,0 +1,17 @@
+data:
+  registries:
+    cloud:
+      enabled: false # source-python-http-tutorial is only a tutorial
+    oss:
+      enabled: false # source-python-http-tutorial is only a tutorial
+  connectorSubtype: api
+  connectorType: source
+  definitionId: e6849f64-eeb7-11ed-a05b-0242ac120003
+  dockerImageTag: 0.1.4
+  dockerRepository: airbyte/source-python-http-tutorial
+  githubIssueLabel: source-python-http-tutorial
+  license: MIT
+  name: Source Python Http Tutorial (internal only)
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/connector-development/tutorials/cdk-tutorial-python-http/creating-the-source/
+metadataSpecVersion: "1.0"

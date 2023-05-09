@@ -1,0 +1,18 @@
+data:
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 98ba2a78-eeb3-11ed-a05b-0242ac120003
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-kvdb
+  githubIssueLabel: destination-kvdb
+  icon: kvdb.svg
+  license: MIT
+  name: KVDB
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: false
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/kvdb
+metadataSpecVersion: "1.0"
