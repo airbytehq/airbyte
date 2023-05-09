@@ -265,10 +265,22 @@ def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Pa
 
 
 def get_all_metadata_files() -> Set[Path]:
+    # matches all source-* connectors in the airbyte repo
+    source_connector_folders = glob(f"{SOURCE_CONNECTOR_PATH_PREFIX}*")
+
+    # matches all destination-* connectors in the airbyte repo
+    destination_connector_folders = glob(f"{DESTINATION_CONNECTOR_PATH_PREFIX}*")
+
+    # matches all third-party connectors in the airbyte repo
+    third_party_connector_folders = glob(THIRD_PARTY_PATH_GLOB)
+
+    all_connector_folders = source_connector_folders + destination_connector_folders + third_party_connector_folders
+
     return {
-        Path(metadata_file)
-        for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
-        if "-scaffold-" not in metadata_file
+        Path(f"{connector_file_path}/{METADATA_FILE_NAME}")
+        for connector_file_path
+        in all_connector_folders
+        if "-scaffold-" not in connector_file_path
     }
 
 
