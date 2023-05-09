@@ -1,10 +1,11 @@
 # Schema Reference
 
-This document gives instructions how to create a static schema for your stream.
-You can check all data types supported and example [here](./understanding-airbyte/supported-data-types.md)
+This document provides instructions on how to create a static schema for your Airbyte stream, which is necessary for integrating data from various sources. 
+You can check out all the supported data types and examples at [this link](./understanding-airbyte/supported-data-types.md).
 
-Example from the record response is:
-```
+
+For instance, the example record response for the schema is shown below:
+```json
 {
   "id": "hashidstring",
   "date_created": "2022-11-22T01:23:45",
@@ -19,7 +20,8 @@ Example from the record response is:
 }
 ```
 
-And the schema is translated to the following. Make sure your schema has the `$schema`, `type` and `additionalProperties: true`. Usually Airbyte schemas requires `null` to each field to make the stream more reliable if the field don't receive data.
+The schema is then translated into the following JSON format. Please note that it's essential to include `$schema`, `type`, and `additionalProperties: true` fields in your schema. Typically, Airbyte schemas require null values for each field to make the stream more reliable if the field doesn't receive any data.
+
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -63,5 +65,8 @@ And the schema is translated to the following. Make sure your schema has the `$s
     }
   }
 }
-
 ```
+
+We hope this guide helps you create a successful static schema for your Airbyte stream. Please don't hesitate to reach out if you have any further questions or concerns.
+
+
