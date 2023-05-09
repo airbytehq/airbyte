@@ -18,14 +18,14 @@ body:
       value: |
         Thanks for taking the time to fill out this bug report...
         Make sure you update this issue with a concise title and provide all information you have to help us debug the problem together.
-        Some examples of good titles following the convention:
-        * Source Name: issue description
-        * Destination Name: issue description
-        * Source Postgres: Add `_ab_cdc_inserted_at` column for CDC syncs
-        * Source Chargebee: cannot sync transaction objects
-        * Source Snowflake: support for case sensitive parameters in connection string
-        * Destination BigQuery: normalization incorrectly processes arrays
         Issues not following the template will be closed. 
+        Some examples of good titles following the convention:
+            * Source Name: issue description
+            * Destination Name: issue description
+            * Source Postgres: Add `_ab_cdc_inserted_at` column for CDC syncs
+            * Source Chargebee: cannot sync transaction objects
+            * Source Snowflake: support for case sensitive parameters in connection string
+            * Destination BigQuery: normalization incorrectly processes arrays
   - type: input
     id: connector-name
     attributes:
