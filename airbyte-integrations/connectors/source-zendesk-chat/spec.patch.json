@@ -73,11 +73,6 @@
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "format": "date-time"
     },
-    "subdomain": {
-        "type": "string",
-        "title": "Subdomain",
-        "description": "Required if you access Zendesk Chat from a Zendesk Support subdomain.",
-        "default": ""
-    } 
+    "subdomain": null
   }   
 }
