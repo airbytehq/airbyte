@@ -12604,7 +12604,7 @@
     "sourceDefinitionId": "dfd88b22-b603-4c3d-aad7-3701784586b1",
     "name": "Sample Data (Faker)",
     "dockerRepository": "airbyte/source-faker",
-    "dockerImageTag": "2.0.3",
+    "dockerImageTag": "2.1.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/faker",
     "icon": "faker.svg",
     "sourceType": "api",
