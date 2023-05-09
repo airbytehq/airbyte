@@ -68,12 +68,6 @@ Follow the instructions in the connector README to build the Docker image. Typic
 
 From this point on your connector is a regular low-code CDK connector and can be distributed as a docker image and made part of the regular Airbyte connector catalog - you can find the [publish process on the overview page](/connector-development/#publishing-a-connector).
 
-### Building the connector image
-
-Follow the instructions in the connector README to build the Docker image. Typically this will be something like `docker build . -t airbyte/source-<name>:<version>`.
-
-Once you've built the connector image, [follow these instructions](https://docs.airbyte.com/integrations/custom-connectors#adding-your-connectors-in-the-ui) to add your connector to your Airbyte instance.
-
 ## Examples
 
 A lot of [Airbyte-managed connectors](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors) are based on the low-code CDK. They can be identified by the `manifest.yaml` file in place of python files.

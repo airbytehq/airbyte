@@ -26,7 +26,6 @@ If requests are authenticated using the Basic HTTP authentication method, the do
 - "Basic Auth"
 - "Basic HTTP"
 - "Authorization: Basic"
-- "Base64"
 
 The Basic HTTP authentication method is a standard and doesn't require any further configuration. Username and password are set via "Testing values" in the connector builder and by the end user when configuring this connector as a Source.
 
