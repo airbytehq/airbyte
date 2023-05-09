@@ -8,16 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.io.Resources;
-import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.configoss.StandardDestinationDefinition;
 import io.airbyte.configoss.StandardSourceDefinition;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
