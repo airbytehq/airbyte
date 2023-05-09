@@ -28,7 +28,7 @@ All the commands below assume that `python` points to a version of python &gt;3.
 * Step 8: Set up Standard Tests
 * Step 9: Write unit tests or integration tests
 * Step 10: Update the `README.md` \(If API credentials are required to run the integration, please document how they can be obtained or link to a how-to guide.\)
-* Step 11: Add the connector to the API/UI \(by adding a `metadata.yaml` file to the connectors folder\)
+* Step 11: Update the `metadata.yaml` file with accurate information about your connector. These metadata will be used to add the connector to Airbyte's connector registry.
 * Step 12: Add docs \(in `docs/integrations/sources/<source-name>.md`\)
 
 :::info
