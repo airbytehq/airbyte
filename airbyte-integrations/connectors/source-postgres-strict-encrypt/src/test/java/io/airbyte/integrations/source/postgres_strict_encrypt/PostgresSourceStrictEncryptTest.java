@@ -132,7 +132,9 @@ public class PostgresSourceStrictEncryptTest {
     }
   }
 
-  private ImmutableMap.Builder<Object, Object> getDatabaseConfigBuilderWithSSLMode(final PostgreSQLContainer<?> db, final String sslMode, final boolean innerAddress) {
+  private ImmutableMap.Builder<Object, Object> getDatabaseConfigBuilderWithSSLMode(final PostgreSQLContainer<?> db,
+                                                                                   final String sslMode,
+                                                                                   final boolean innerAddress) {
     final var containerAddress = innerAddress ? SshHelpers.getInnerContainerAddress(db) : SshHelpers.getOuterContainerAddress(db);
     return ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(
@@ -169,9 +171,11 @@ public class PostgresSourceStrictEncryptTest {
     }
   }
 
-  private AirbyteConnectionStatus checkWithTunnel(final PostgreSQLContainer<?> db, final String sslmode, final boolean innerAddress) throws Exception {
+  private AirbyteConnectionStatus checkWithTunnel(final PostgreSQLContainer<?> db, final String sslmode, final boolean innerAddress)
+      throws Exception {
     final ImmutableMap.Builder<Object, Object> configBuilderWithSSLMode = getDatabaseConfigBuilderWithSSLMode(db, sslmode, true);
-    final JsonNode configWithSSLModeDisable = bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, configBuilderWithSSLMode, innerAddress);
+    final JsonNode configWithSSLModeDisable =
+        bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, configBuilderWithSSLMode, innerAddress);
     return source.check(configWithSSLModeDisable);
   }
 

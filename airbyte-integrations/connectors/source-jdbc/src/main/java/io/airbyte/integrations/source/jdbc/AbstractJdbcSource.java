@@ -31,6 +31,7 @@ import com.google.common.collect.Sets;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
@@ -107,17 +108,20 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                                                                   final SyncMode syncMode,
                                                                   final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters as intermediate state messages are emitted.
+    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters
+    // as intermediate state messages are emitted.
     if (syncMode.equals(SyncMode.INCREMENTAL)) {
       final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
       return queryTable(database, String.format("SELECT %s FROM %s ORDER BY %s ASC",
           enquoteIdentifierList(columnNames, getQuoteString()),
-          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField));
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField),
+          tableName, schemaName);
     } else {
-      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering of the records.
+      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering
+      // of the records.
       return queryTable(database, String.format("SELECT %s FROM %s",
           enquoteIdentifierList(columnNames, getQuoteString()),
-          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())), tableName, schemaName);
     }
   }
 
@@ -309,6 +313,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                                                                final CursorInfo cursorInfo,
                                                                final Datatype cursorFieldType) {
     LOGGER.info("Queueing query for table: {}", tableName);
+    final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair airbyteStream =
+        AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.unsafeQuery(
@@ -349,11 +355,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
               return preparedStatement;
             },
             sourceOperations::rowToJson);
-        return AutoCloseableIterators.fromStream(stream);
+        return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final SQLException e) {
         throw new RuntimeException(e);
       }
-    });
+    }, airbyteStream);
   }
 
   /**
@@ -428,6 +434,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
   /**
    * {@inheritDoc}
+   *
    * @param database database instance
    * @param catalog schema of the incoming messages.
    * @throws SQLException
