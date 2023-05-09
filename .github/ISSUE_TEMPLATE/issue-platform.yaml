@@ -21,7 +21,6 @@ body:
         help us debugging the problem together. Issues not following the pattern will be closed.
   - type: dropdown
     id: deploy
-    description: The 
     validations:
       required: true
     attributes:
