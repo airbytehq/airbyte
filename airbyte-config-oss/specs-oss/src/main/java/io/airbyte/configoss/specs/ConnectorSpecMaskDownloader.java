@@ -4,35 +4,13 @@
 
 package io.airbyte.configoss.specs;
 
-import io.airbyte.configoss.CatalogDefinitionsConfig;
 import io.airbyte.commons.cli.Clis;
-import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-// import com.fasterxml.jackson.core.type.TypeReference;
-// import com.fasterxml.jackson.databind.JsonNode;
-
-// import io.airbyte.commons.io.IOs;
-// import io.airbyte.commons.yaml.Yamls;
-// import io.airbyte.configoss.DockerImageSpec;
-// import java.io.File;
-// import java.io.IOException;
-// import java.nio.charset.Charset;
-// import java.nio.file.Path;
-// import java.util.List;
-// import java.util.Map;
-// import java.util.Set;
-// import java.util.TreeSet;
-// import java.util.stream.Collectors;
-// import java.util.stream.Stream;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
