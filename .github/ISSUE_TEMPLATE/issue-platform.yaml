@@ -1,17 +1,27 @@
-name: [ISSUE]: 
-description: Use this when you're facing a platform, deploy or infrastructure issue.
-title: "Platform Issue: <REMOVE WITH ISSUE TITLE>"
+name: 🪲 Report a platform, infra or deployment bug
+description: Report problems and issues with the Dagster framework.
 labels: [type/bug, area/platform, needs-triage]
 body:
   - type: markdown
     attributes:
+      value: >
+        <p align="center">
+          <a target="_blank" href="https://airbyte.com">
+            <picture>
+              <source srcset="https://assets-global.website-files.com/605e01bc25f7e19a82e74788/621e2495cb90b8b2c3b31b0d_airbyte-octo-p-500.png">
+              <img alt="airbyte ocatvia" src="https://assets-global.website-files.com/605e01bc25f7e19a82e74788/621e2495cb90b8b2c3b31b0d_airbyte-octo-p-500.png" width="auto" height="40">
+            </picture>
+          </a>
+        </p>
+  - type: markdown
+    attributes:
       value: |
-        Thanks for taking the time to fill out this bug report!
+        Thanks for taking the time to fill out this bug report...
         Make sure you update the title with a concise title and provide all information you have to 
-        help us debugging the problem together.
-        Issues not following the pattern will be closed.
+        help us debugging the problem together. Issues not following the pattern will be closed.
   - type: dropdown
     id: deploy
+    description: The 
     validations:
       required: true
     attributes:
@@ -24,7 +34,8 @@ body:
     id: platform-version
     attributes:
       label: Platform Version or Helm Chart Version
-      description: Give the Airbyte Platform version you're using. (eg. 0.44.1, 0.30.0)
+      description: What is the platform or Helm chart version you're using? 
+      placeholder: "Some examples are: (eg. 0.44.1, 0.30.0), you can find the version in the left bottom in Airbyte UI or in the .env / value.yaml file"
     validations:
       required: true
   - type: dropdown
@@ -35,7 +46,7 @@ body:
       options:
         - On deploy
         - During the Sync
-        - Upgrading the Platform
+        - Upgrading the Platform or Helm Chart
         - Other
   - type: textarea
     id: description
