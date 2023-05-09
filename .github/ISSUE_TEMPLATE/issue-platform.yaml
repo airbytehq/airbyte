@@ -12,11 +12,11 @@ body:
         Issues not following the pattern will be closed.
   - type: dropdown
     id: deploy
+    validations:
+      required: true
     attributes:
       label: What method are you using to run Airbyte?
       multiple: false
-      validations:
-        required: true
       options:
         - Docker
         - Kubernetes
