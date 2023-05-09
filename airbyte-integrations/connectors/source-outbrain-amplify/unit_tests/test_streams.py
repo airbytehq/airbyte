@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 import pytest
 import json
 import requests
+import inspect
 from source_outbrain_amplify.source import OutbrainAmplifyStream
 
 
@@ -37,18 +38,21 @@ def test_next_page_token(patch_base_class):
     assert stream.next_page_token(response) == expected_token
 
 
-# def test_parse_response(patch_base_class):
-#     mock_response = {
-#         "campaigns": [],
-#         "totalCount": 5,
-#         "count": 0
-#     }
-#     stream = OutbrainAmplifyStream()
-#     results = stream.parse_response(json.dumps(mock_response))
-#     first_result = results
-#     expected_result = [{'campaigns': [], 'totalCount': 5, 'count': 0}]
-#     print("here", first_result, mock_response)
-#     assert first_result == expected_result
+def test_parse_response(patch_base_class):
+    stream = OutbrainAmplifyStream()
+    mock_response = {
+        "campaigns": [],
+        "totalCount": 5,
+        "count": 0
+    }
+    mock_response = json.dumps(mock_response)
+    response = requests.Response()
+    response.status_code = 200
+    response.headers['Content-Type'] = 'application/json'
+    response._content = mock_response.encode('utf-8')
+    result = stream.parse_response(response)
+    expected_result = True
+    assert inspect.isgenerator(result) == expected_result
 
 
 def test_request_headers(patch_base_class):
