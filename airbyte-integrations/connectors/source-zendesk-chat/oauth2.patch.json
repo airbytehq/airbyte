@@ -4,5 +4,8 @@
   "accessTokenUrlTemplate": "https://www.zopim.com/oauth2/token",
   "accessTokenBody": "grant_type=authorization_code&client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&client_secret={{#urlencode}}{{{ client_secret }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&code={{#urlencode}}{{{ code }}}{{/urlencode}}",
   "accessTokenHeaders": {"content-type": "application/x-www-form-urlencoded"},
-  "accessTokenResponseMap": {"access_token": "/access_token"}
+  "accessTokenResponseMap": {
+    "refresh_token": "/refresh_token",
+    "access_token": "/access_token"
+  }
 }
