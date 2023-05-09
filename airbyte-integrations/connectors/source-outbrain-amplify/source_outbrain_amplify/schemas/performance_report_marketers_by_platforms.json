@@ -1,0 +1,295 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "platform": {
+                "type": "string"
+              },
+              "breakdown": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "breakdown",
+              "platform"
+            ]
+          },
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "impressions": {
+                "type": "integer"
+              },
+              "clicks": {
+                "type": "integer"
+              },
+              "totalConversions": {
+                "type": "integer"
+              },
+              "conversions": {
+                "type": "integer"
+              },
+              "viewConversions": {
+                "type": "integer"
+              },
+              "spend": {
+                "type": "number"
+              },
+              "ecpc": {
+                "type": "integer"
+              },
+              "ctr": {
+                "type": "integer"
+              },
+              "conversionRate": {
+                "type": "integer"
+              },
+              "viewConversionRate": {
+                "type": "integer"
+              },
+              "cpa": {
+                "type": "integer"
+              },
+              "totalCpa": {
+                "type": "integer"
+              },
+              "totalSumValue": {
+                "type": "integer"
+              },
+              "sumValue": {
+                "type": "integer"
+              },
+              "viewSumValue": {
+                "type": "integer"
+              },
+              "totalAverageValue": {
+                "type": "integer"
+              },
+              "averageValue": {
+                "type": "integer"
+              },
+              "viewAverageValue": {
+                "type": "integer"
+              },
+              "totalRoas": {
+                "type": "integer"
+              },
+              "roas": {
+                "type": "integer"
+              },
+              "videoReachedFirstQ": {
+                "type": "integer"
+              },
+              "videoReachedSecondQ": {
+                "type": "integer"
+              },
+              "videoReachedThirdQ": {
+                "type": "integer"
+              },
+              "videoReachedCompletion": {
+                "type": "integer"
+              },
+              "videoViewDuration": {
+                "type": "integer"
+              },
+              "videoAvgViewDuration": {
+                "type": "integer"
+              },
+              "videoPlays": {
+                "type": "integer"
+              },
+              "clicksOnVideo": {
+                "type": "integer"
+              },
+              "videoActiveCompletions": {
+                "type": "integer"
+              },
+              "videoActiveCompletionsPercentage": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "averageValue",
+              "clicks",
+              "clicksOnVideo",
+              "conversionRate",
+              "conversions",
+              "cpa",
+              "ctr",
+              "ecpc",
+              "impressions",
+              "roas",
+              "spend",
+              "sumValue",
+              "totalAverageValue",
+              "totalConversions",
+              "totalCpa",
+              "totalRoas",
+              "totalSumValue",
+              "videoActiveCompletions",
+              "videoActiveCompletionsPercentage",
+              "videoAvgViewDuration",
+              "videoPlays",
+              "videoReachedCompletion",
+              "videoReachedFirstQ",
+              "videoReachedSecondQ",
+              "videoReachedThirdQ",
+              "videoViewDuration",
+              "viewAverageValue",
+              "viewConversionRate",
+              "viewConversions",
+              "viewSumValue"
+            ]
+          }
+        },
+        "required": [
+          "metadata",
+          "metrics"
+        ]
+      }
+    },
+    "totalResults": {
+      "type": "integer"
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "impressions": {
+          "type": "number"
+        },
+        "clicks": {
+          "type": "number"
+        },
+        "totalConversions": {
+          "type": "number"
+        },
+        "conversions": {
+          "type": "number"
+        },
+        "viewConversions": {
+          "type": "number"
+        },
+        "spend": {
+          "type": "number"
+        },
+        "ecpc": {
+          "type": "integer"
+        },
+        "ctr": {
+          "type": "integer"
+        },
+        "conversionRate": {
+          "type": "integer"
+        },
+        "viewConversionRate": {
+          "type": "integer"
+        },
+        "cpa": {
+          "type": "integer"
+        },
+        "totalCpa": {
+          "type": "integer"
+        },
+        "totalSumValue": {
+          "type": "integer"
+        },
+        "sumValue": {
+          "type": "integer"
+        },
+        "viewSumValue": {
+          "type": "integer"
+        },
+        "totalAverageValue": {
+          "type": "integer"
+        },
+        "averageValue": {
+          "type": "integer"
+        },
+        "viewAverageValue": {
+          "type": "integer"
+        },
+        "totalRoas": {
+          "type": "integer"
+        },
+        "roas": {
+          "type": "integer"
+        },
+        "videoReachedFirstQ": {
+          "type": "integer"
+        },
+        "videoReachedSecondQ": {
+          "type": "integer"
+        },
+        "videoReachedThirdQ": {
+          "type": "integer"
+        },
+        "videoReachedCompletion": {
+          "type": "integer"
+        },
+        "videoViewDuration": {
+          "type": "integer"
+        },
+        "videoAvgViewDuration": {
+          "type": "integer"
+        },
+        "videoPlays": {
+          "type": "integer"
+        },
+        "clicksOnVideo": {
+          "type": "integer"
+        },
+        "videoActiveCompletions": {
+          "type": "integer"
+        },
+        "videoActiveCompletionsPercentage": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "averageValue",
+        "clicks",
+        "clicksOnVideo",
+        "conversionRate",
+        "conversions",
+        "cpa",
+        "ctr",
+        "ecpc",
+        "impressions",
+        "roas",
+        "spend",
+        "sumValue",
+        "totalAverageValue",
+        "totalConversions",
+        "totalCpa",
+        "totalRoas",
+        "totalSumValue",
+        "videoActiveCompletions",
+        "videoActiveCompletionsPercentage",
+        "videoAvgViewDuration",
+        "videoPlays",
+        "videoReachedCompletion",
+        "videoReachedFirstQ",
+        "videoReachedSecondQ",
+        "videoReachedThirdQ",
+        "videoViewDuration",
+        "viewAverageValue",
+        "viewConversionRate",
+        "viewConversions",
+        "viewSumValue"
+      ]
+    }
+  },
+  "required": [
+    "results",
+    "summary",
+    "totalResults"
+  ]
+}

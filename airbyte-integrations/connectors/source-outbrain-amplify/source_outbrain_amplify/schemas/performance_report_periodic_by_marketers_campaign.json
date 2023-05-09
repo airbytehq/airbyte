@@ -1,0 +1,178 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "campaignResults": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "metadata": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "fromDate": {
+                      "type": "string"
+                    },
+                    "toDate": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "fromDate",
+                    "id",
+                    "toDate"
+                  ]
+                },
+                "metrics": {
+                  "type": "object",
+                  "properties": {
+                    "impressions": {
+                      "type": "number"
+                    },
+                    "clicks": {
+                      "type": "number"
+                    },
+                    "totalConversions": {
+                      "type": "number"
+                    },
+                    "conversions": {
+                      "type": "number"
+                    },
+                    "viewConversions": {
+                      "type": "number"
+                    },
+                    "spend": {
+                      "type": "number"
+                    },
+                    "ecpc": {
+                      "type": "number"
+                    },
+                    "ctr": {
+                      "type": "number"
+                    },
+                    "conversionRate": {
+                      "type": "number"
+                    },
+                    "viewConversionRate": {
+                      "type": "number"
+                    },
+                    "cpa": {
+                      "type": "number"
+                    },
+                    "totalCpa": {
+                      "type": "number"
+                    },
+                    "totalSumValue": {
+                      "type": "number"
+                    },
+                    "sumValue": {
+                      "type": "number"
+                    },
+                    "viewSumValue": {
+                      "type": "number"
+                    },
+                    "totalAverageValue": {
+                      "type": "number"
+                    },
+                    "averageValue": {
+                      "type": "number"
+                    },
+                    "viewAverageValue": {
+                      "type": "number"
+                    },
+                    "totalRoas": {
+                      "type": "number"
+                    },
+                    "roas": {
+                      "type": "number"
+                    },
+                    "videoReachedFirstQ": {
+                      "type": "integer"
+                    },
+                    "videoReachedSecondQ": {
+                      "type": "integer"
+                    },
+                    "videoReachedThirdQ": {
+                      "type": "integer"
+                    },
+                    "videoReachedCompletion": {
+                      "type": "integer"
+                    },
+                    "videoViewDuration": {
+                      "type": "integer"
+                    },
+                    "videoAvgViewDuration": {
+                      "type": "integer"
+                    },
+                    "videoPlays": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "averageValue",
+                    "clicks",
+                    "conversionRate",
+                    "conversions",
+                    "cpa",
+                    "ctr",
+                    "ecpc",
+                    "impressions",
+                    "roas",
+                    "spend",
+                    "sumValue",
+                    "totalAverageValue",
+                    "totalConversions",
+                    "totalCpa",
+                    "totalRoas",
+                    "totalSumValue",
+                    "videoAvgViewDuration",
+                    "videoPlays",
+                    "videoReachedCompletion",
+                    "videoReachedFirstQ",
+                    "videoReachedSecondQ",
+                    "videoReachedThirdQ",
+                    "videoViewDuration",
+                    "viewAverageValue",
+                    "viewConversionRate",
+                    "viewConversions",
+                    "viewSumValue"
+                  ]
+                }
+              },
+              "required": [
+                "metadata",
+                "metrics"
+              ]
+            }
+          },
+          "totalResults": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "campaignId",
+          "results",
+          "totalResults"
+        ]
+      }
+    },
+    "totalCampaigns": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "campaignResults",
+    "totalCampaigns"
+  ]
+}

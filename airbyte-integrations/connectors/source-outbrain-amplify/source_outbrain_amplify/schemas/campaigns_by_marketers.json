@@ -1,0 +1,218 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "enabled": {
+      "type": "boolean"
+    },
+    "creationTime": {
+      "type": "string"
+    },
+    "lastModified": {
+      "type": "string"
+    },
+    "cpc": {
+      "type": "number"
+    },
+    "autoArchived": {
+      "type": "boolean"
+    },
+    "minimumCpc": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "targeting": {
+      "type": "object",
+      "properties": {
+        "platform": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "language": {
+          "type": "string"
+        },
+        "excludeAdBlockUsers": {
+          "type": "boolean"
+        },
+        "nativePlacements": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled"
+          ]
+        },
+        "includeCellularNetwork": {
+          "type": "boolean"
+        },
+        "nativePlacementsEnabled": {
+          "type": "boolean"
+        },
+        "locationsVersion": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "excludeAdBlockUsers",
+        "includeCellularNetwork",
+        "language",
+        "locationsVersion",
+        "nativePlacements",
+        "nativePlacementsEnabled",
+        "platform"
+      ]
+    },
+    "marketerId": {
+      "type": "string"
+    },
+    "contentType": {
+      "type": "string"
+    },
+    "budget": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "shared": {
+          "type": "boolean"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "creationTime": {
+          "type": "string"
+        },
+        "lastModified": {
+          "type": "string"
+        },
+        "startDate": {
+          "type": "string"
+        },
+        "endDate": {
+          "type": "string"
+        },
+        "runForever": {
+          "type": "boolean"
+        },
+        "type": {
+          "type": "string"
+        },
+        "pacing": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount",
+        "creationTime",
+        "currency",
+        "endDate",
+        "id",
+        "lastModified",
+        "name",
+        "pacing",
+        "runForever",
+        "shared",
+        "startDate",
+        "type"
+      ]
+    },
+    "prefixTrackingCode": {
+      "type": "object",
+      "properties": {
+        "prefix": {
+          "type": "string"
+        },
+        "encode": {
+          "type": "boolean"
+        }
+      }
+    },
+    "liveStatus": {
+      "type": "object",
+      "properties": {
+        "onAirReason": {
+          "type": "string"
+        },
+        "campaignOnAir": {
+          "type": "boolean"
+        },
+        "amountSpent": {
+          "type": "number"
+        },
+        "onAirModificationTime": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "amountSpent",
+        "campaignOnAir",
+        "onAirModificationTime",
+        "onAirReason"
+      ]
+    },
+    "readonly": {
+      "type": "boolean"
+    },
+    "startHour": {
+      "type": "string"
+    },
+    "onAirType": {
+      "type": "string"
+    },
+    "objective": {
+      "type": "string"
+    },
+    "creativeFormat": {
+      "type": "string"
+    },
+    "dynamicRetargeting": {
+      "type": "boolean"
+    },
+    "autoExpirationOfAds": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "autoArchived",
+    "budget",
+    "contentType",
+    "cpc",
+    "creationTime",
+    "creativeFormat",
+    "currency",
+    "dynamicRetargeting",
+    "enabled",
+    "id",
+    "lastModified",
+    "liveStatus",
+    "marketerId",
+    "minimumCpc",
+    "name",
+    "objective",
+    "onAirType",
+    "prefixTrackingCode",
+    "readonly",
+    "startHour",
+    "targeting"
+  ]
+}

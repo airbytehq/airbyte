@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "targetingStatus": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "targetingStatus"
+            ]
+          },
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "impressions": {
+                "type": "number"
+              },
+              "clicks": {
+                "type": "number"
+              },
+              "totalConversions": {
+                "type": "number"
+              },
+              "conversions": {
+                "type": "number"
+              },
+              "viewConversions": {
+                "type": "integer"
+              },
+              "spend": {
+                "type": "number"
+              },
+              "ecpc": {
+                "type": "number"
+              },
+              "ctr": {
+                "type": "number"
+              },
+              "conversionRate": {
+                "type": "number"
+              },
+              "viewConversionRate": {
+                "type": "number"
+              },
+              "cpa": {
+                "type": "number"
+              },
+              "totalCpa": {
+                "type": "number"
+              },
+              "totalSumValue": {
+                "type": "number"
+              },
+              "sumValue": {
+                "type": "number"
+              },
+              "viewSumValue": {
+                "type": "integer"
+              },
+              "totalAverageValue": {
+                "type": "number"
+              },
+              "averageValue": {
+                "type": "number"
+              },
+              "viewAverageValue": {
+                "type": "integer"
+              },
+              "totalRoas": {
+                "type": "number"
+              },
+              "roas": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "averageValue",
+              "clicks",
+              "conversionRate",
+              "conversions",
+              "cpa",
+              "ctr",
+              "ecpc",
+              "impressions",
+              "roas",
+              "spend",
+              "sumValue",
+              "totalAverageValue",
+              "totalConversions",
+              "totalCpa",
+              "totalRoas",
+              "totalSumValue",
+              "viewAverageValue",
+              "viewConversionRate",
+              "viewConversions",
+              "viewSumValue"
+            ]
+          }
+        },
+        "required": [
+          "metadata",
+          "metrics"
+        ]
+      }
+    },
+    "totalResults": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "results",
+    "totalResults"
+  ]
+}

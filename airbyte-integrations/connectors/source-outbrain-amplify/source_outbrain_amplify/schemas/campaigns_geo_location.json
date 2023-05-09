@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "geoLocations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "geoType": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "canonicalName": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "canonicalName",
+          "code",
+          "geoType",
+          "id",
+          "name"
+        ]
+      }
+    },
+    "excludedGeoLocations": {
+      "type": "array"
+    }
+  },
+  "required": [
+    "excludedGeoLocations",
+    "geoLocations"
+  ]
+}

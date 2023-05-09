@@ -1,0 +1,200 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "sequences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "campaignId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "onAirStatus": {
+            "type": "object",
+            "properties": {
+              "onAir": {
+                "type": "boolean"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "onAir",
+              "reason"
+            ]
+          },
+          "cachedLogoUrl": {
+            "type": "string"
+          },
+          "sponsor": {
+            "type": "string"
+          },
+          "promotedLinks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "creationTime": {
+                  "type": "string"
+                },
+                "lastModified": {
+                  "type": "string"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "siteName": {
+                  "type": "string"
+                },
+                "sectionName": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "cachedImageUrl": {
+                  "type": "string"
+                },
+                "campaignId": {
+                  "type": "string"
+                },
+                "archived": {
+                  "type": "boolean"
+                },
+                "documentLanguage": {
+                  "type": "string"
+                },
+                "onAirStatus": {
+                  "type": "object",
+                  "properties": {
+                    "onAir": {
+                      "type": "boolean"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "onAir",
+                    "reason"
+                  ]
+                },
+                "baseUrl": {
+                  "type": "string"
+                },
+                "documentId": {
+                  "type": "string"
+                },
+                "sequenceSettings": {
+                  "type": "object",
+                  "properties": {
+                    "sequenceId": {
+                      "type": "string"
+                    },
+                    "sequenceOrder": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "sequenceId",
+                    "sequenceOrder"
+                  ]
+                },
+                "approvalStatus": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "isEditable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "isEditable",
+                    "status"
+                  ]
+                },
+                "imageType": {
+                  "type": "string"
+                },
+                "language": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "approvalStatus",
+                "archived",
+                "baseUrl",
+                "cachedImageUrl",
+                "campaignId",
+                "creationTime",
+                "documentId",
+                "documentLanguage",
+                "enabled",
+                "id",
+                "lastModified",
+                "onAirStatus",
+                "sectionName",
+                "sequenceSettings",
+                "siteName",
+                "status",
+                "text",
+                "url"
+              ]
+            }
+          },
+          "creationTime": {
+            "type": "string"
+          },
+          "lastModified": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "cachedLogoUrl",
+          "campaignId",
+          "creationTime",
+          "enabled",
+          "id",
+          "lastModified",
+          "onAirStatus",
+          "promotedLinks",
+          "sponsor",
+          "title"
+        ]
+      }
+    },
+    "totalCount": {
+      "type": "integer"
+    },
+    "count": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "count",
+    "sequences",
+    "totalCount"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "shared": {
+      "type": "boolean"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "amountRemaining": {
+      "type": "number"
+    },
+    "amountSpent": {
+      "type": "number"
+    },
+    "creationTime": {
+      "type": "string"
+    },
+    "lastModified": {
+      "type": "string"
+    },
+    "startDate": {
+      "type": "string"
+    },
+    "endDate": {
+      "type": "string"
+    },
+    "runForever": {
+      "type": "boolean"
+    },
+    "type": {
+      "type": "string"
+    },
+    "pacing": {
+      "type": "string"
+    },
+    "marketer_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "amount",
+    "amountRemaining",
+    "amountSpent",
+    "creationTime",
+    "currency",
+    "endDate",
+    "id",
+    "lastModified",
+    "name",
+    "pacing",
+    "runForever",
+    "shared",
+    "startDate",
+    "type",
+    "marketer_id"
+  ]
+}

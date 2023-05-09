@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "creationTime": {
+      "type": "string"
+    },
+    "lastModified": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "siteName": {
+      "type": "string"
+    },
+    "sectionName": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "enabled": {
+      "type": "boolean"
+    },
+    "campaignId": {
+      "type": "string"
+    },
+    "archived": {
+      "type": "boolean"
+    },
+    "documentLanguage": {
+      "type": "string"
+    },
+    "onAirStatus": {
+      "type": "object",
+      "properties": {
+        "onAir": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "onAir",
+        "reason"
+      ]
+    },
+    "baseUrl": {
+      "type": "string"
+    },
+    "documentId": {
+      "type": "string"
+    },
+    "approvalStatus": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "isEditable": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "isEditable",
+        "status"
+      ]
+    },
+    "callToAction": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "value"
+      ]
+    },
+    "imageType": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "metaData": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "approvalStatus",
+    "archived",
+    "baseUrl",
+    "campaignId",
+    "creationTime",
+    "documentId",
+    "documentLanguage",
+    "enabled",
+    "id",
+    "imageType",
+    "language",
+    "lastModified",
+    "onAirStatus",
+    "sectionName",
+    "siteName",
+    "status",
+    "text",
+    "url",
+    "description",
+    "metaData"
+  ]
+}
