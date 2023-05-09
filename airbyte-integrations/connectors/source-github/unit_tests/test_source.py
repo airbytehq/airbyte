@@ -2,12 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
+import time
 from unittest.mock import MagicMock
 
 import pytest
 import responses
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
+from freezegun import freeze_time
 from source_github.source import SourceGithub
+from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
 
 
 def check_source(repo_line: str) -> AirbyteConnectionStatus:
@@ -165,3 +169,24 @@ def test_config_validation(repos_config, expected):
 def tests_get_and_prepare_repositories_config(config, expected):
     actual = SourceGithub._get_and_prepare_repositories_config(config)
     assert actual == expected
+
+
+def test_multiple_token_authenticator_with_rate_limiter(monkeypatch):
+
+    called_args = []
+
+    def sleep_mock(seconds):
+        frozen_time.tick(delta=datetime.timedelta(seconds=seconds))
+        called_args.append(seconds)
+
+    monkeypatch.setattr(time, 'sleep', sleep_mock)
+
+    with freeze_time("2021-01-01 12:00:00") as frozen_time:
+
+        authenticator = MultipleTokenAuthenticatorWithRateLimiter(tokens=["token1", "token2"], requests_per_hour=1000)
+        for _ in range(2000):
+            authenticator.token
+            frozen_time.tick(delta=datetime.timedelta(seconds=1))
+        assert called_args == []
+        authenticator.token
+        assert called_args == [1600.0]
