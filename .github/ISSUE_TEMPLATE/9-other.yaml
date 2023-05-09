@@ -1,6 +1,5 @@
-name: Others
-description: Use this when the request doesn't fit other category.
-title: "Other: "
+name: 🤷 others issues requests...
+description: Use this for whatever other issues you need to create but don't have a specific category.
 labels: [needs-triage]
 body:
   - type: input

@@ -1,6 +1,5 @@
-name: Low Code Component
-description: Use this when requesting low-code CDK components
-title: "Low-code CDK: <REMOVE WITH ISSUE TITLE>"
+name: ✨ request a new low-code CDK component
+description: Use this to request new low-code CDK
 labels:
   [
     "team/extensibility",
