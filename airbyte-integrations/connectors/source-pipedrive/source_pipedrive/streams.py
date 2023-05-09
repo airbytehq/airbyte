@@ -77,9 +77,12 @@ class PipedriveStream(HttpStream, ABC):
         """
         :return an iterable containing each record in the response
         """
+        documented_properties = self.get_json_schema()["properties"]
         records = response.json().get(self.data_field) or []
         for record in records:
             record = record.get(self.data_field) or record
+            # do not emit non-documented top level fields as part of a record
+            record = {key: value for key, value in record.items() if key in documented_properties}
             if self.primary_key in record and record[self.primary_key] is None:
                 # Convert "id: null" fields to "id: 0" since id is primary key and SAT checks if it is not null.
                 record[self.primary_key] = 0

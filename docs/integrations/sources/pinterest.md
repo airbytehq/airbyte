@@ -71,7 +71,8 @@ The connector is restricted by the Pinterest [requests limitation](https://devel
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
-| 0.2.6   | 2023-04-26 | [25548](https://github.com/airbytehq/airbyte/pull/25548) |  Fixed `format` issue for `boards` stream schema for fields with `date-time`                                                  |
+| 0.3.0   | 2023-05-09 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add `creative_type` field to the `BoardPins` stream                                                     |
+| 0.2.6   | 2023-04-26 | [25548](https://github.com/airbytehq/airbyte/pull/25548) | Fixed `format` issue for `boards` stream schema for fields with `date-time`                             |
 | 0.2.5   | 2023-04-19 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Update `AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP` to 89 days                                                   |
 | 0.2.4   | 2023-02-25 | [23457](https://github.com/airbytehq/airbyte/pull/23457) | Adding missing columns for analytics streams for pinterest source                                       |
 | 0.2.3   | 2023-03-01 | [23649](https://github.com/airbytehq/airbyte/pull/23649) | Fix for `HTTP - 400 Bad Request` when requesting data >= 90 days                                        |
