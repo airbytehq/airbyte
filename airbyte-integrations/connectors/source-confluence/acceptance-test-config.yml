@@ -20,7 +20,7 @@ acceptance_tests:
       configured_catalog_path: "integration_tests/configured_catalog.json"
       expect_records:
         path: "integration_tests/expected_records.jsonl"
-      fail_on_extra_fields: false
+      fail_on_extra_columns: false
   full_refresh:
     tests:
     - config_path: "secrets/config.json"

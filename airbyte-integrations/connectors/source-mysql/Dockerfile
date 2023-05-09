@@ -16,6 +16,6 @@ ENV APPLICATION source-mysql
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=2.0.10
+LABEL io.airbyte.version=2.0.20
 
 LABEL io.airbyte.name=airbyte/source-mysql

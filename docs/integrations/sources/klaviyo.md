@@ -55,6 +55,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                   |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------|
+| `0.3.0`  | 2023-02-18 | [23236](https://github.com/airbytehq/airbyte/pull/23236)   | Add ` Email Templates` stream 
 | `0.2.0` | 2023-03-13 | [22942](https://github.com/airbytehq/airbyte/pull/23968)   | Add `Profiles` stream
 | `0.1.13` | 2023-02-13 | [22942](https://github.com/airbytehq/airbyte/pull/22942)   | Specified date formatting in specification                                                                |
 | `0.1.12` | 2023-01-30 | [22071](https://github.com/airbytehq/airbyte/pull/22071)   | Fix `Events` stream schema                                                                |

@@ -42,13 +42,10 @@ QA_ENGINE_REQUIREMENTS = [
     "pytablewriter~=0.64.2",
 ]
 
-PIPELINES_REQUIREMENTS = [
-    "dagger-io==0.4.0",
-    "asyncer",
-]
+PIPELINES_REQUIREMENTS = ["dagger-io==0.5.0", "asyncer", "anyio", "more-itertools", "docker", "requests", "semver"]
 
 setup(
-    version="0.1.16",
+    version="0.2.1",
     name="ci_connector_ops",
     description="Packaged maintained by the connector operations team to perform CI for connectors",
     author="Airbyte",
@@ -71,7 +68,7 @@ setup(
             "allowed-hosts-checks = ci_connector_ops.allowed_hosts_checks:check_allowed_hosts",
             "run-qa-engine = ci_connector_ops.qa_engine.main:main",
             "run-qa-checks = ci_connector_ops.qa_checks:run_qa_checks",
-            "connectors-ci = ci_connector_ops.pipelines.connectors_ci:connectors_ci",
+            "airbyte-ci = ci_connector_ops.pipelines.commands.airbyte_ci:airbyte_ci",
         ],
     },
 )

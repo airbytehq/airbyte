@@ -329,6 +329,7 @@ class ListUsers(IterableStream):
     name = "list_users"
     # enable caching, because this stream used by other ones
     use_cache = True
+    raise_on_http_errors = False
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"lists/{self.data_field}?listId={stream_slice['list_id']}"
@@ -339,8 +340,14 @@ class ListUsers(IterableStream):
             yield {"list_id": list_record["id"]}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if not self.check_unauthorized_key(response):
-            return []
+        if not response.ok:
+            if not self.check_unauthorized_key(response):
+                return []
+            # Avoid block whole of sync if a slice is broken. Skip current slice on 500 Internal Server Error.
+            # See on-call: https://github.com/airbytehq/oncall/issues/1592#issuecomment-1499109251
+            if response.status_code == codes.INTERNAL_SERVER_ERROR:
+                return []
+            response.raise_for_status()
         list_id = self._get_list_id(response.url)
         for user in response.iter_lines():
             yield {"email": user.decode(), "listId": list_id}

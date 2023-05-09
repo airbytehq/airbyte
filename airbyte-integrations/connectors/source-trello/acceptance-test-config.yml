@@ -27,7 +27,6 @@ acceptance_tests:
         extra_fields: no
         exact_order: no
         extra_records: yes
-      empty_streams: []
       fail_on_extra_columns: false
   incremental:
     tests:
