@@ -86,17 +86,18 @@ public class DockerProcessFactory implements ProcessFactory {
                         final String jobId,
                         final int attempt,
                         final Path jobRoot,
-                        final String imageName,
-                        final boolean usesIsolatedPool,
-                        final boolean usesStdin,
-                        final Map<String, String> files,
-                        final String entrypoint,
-                        final ResourceRequirements resourceRequirements,
-                        final AllowedHosts allowedHosts,
-                        final Map<String, String> labels,
-                        final Map<String, String> jobMetadata,
-                        final Map<Integer, Integer> internalToExternalPorts,
-                        final String... args)
+      final String imageName,
+      final boolean usesIsolatedPool,
+      final boolean usesStdin,
+      final Map<String, String> files,
+      final String entrypoint,
+      final ResourceRequirements resourceRequirements,
+      final AllowedHosts allowedHosts,
+      final Map<String, String> labels,
+      final Map<String, String> jobMetadata,
+      final Map<Integer, Integer> internalToExternalPorts,
+      final Map<String, String> additionalEnvironmentVariables,
+      final String... args)
       throws TestHarnessException {
     try {
       if (!checkImageExists(imageName)) {
@@ -142,7 +143,7 @@ public class DockerProcessFactory implements ProcessFactory {
         cmd.add(String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION));
       }
 
-      final Map<String, String> allEnvMap = MoreMaps.merge(jobMetadata, envMap);
+      final Map<String, String> allEnvMap = MoreMaps.merge(jobMetadata, envMap, additionalEnvironmentVariables);
       for (final Map.Entry<String, String> envEntry : allEnvMap.entrySet()) {
         cmd.add("-e");
         cmd.add(envEntry.getKey() + "=" + envEntry.getValue());

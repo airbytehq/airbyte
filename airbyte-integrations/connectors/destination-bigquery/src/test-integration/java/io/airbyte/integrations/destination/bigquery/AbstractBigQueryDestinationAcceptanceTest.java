@@ -95,7 +95,14 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
   }
 
   @Override
-  protected boolean supportIncrementalSchemaChanges() { return true; }
+  protected boolean supportIncrementalSchemaChanges() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportsInDestinationNormalization() {
+    return true;
+  }
 
   @Override
   protected Optional<NamingConventionTransformer> getNameTransformer() {
@@ -104,8 +111,8 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
 
   @Override
   protected void assertNamespaceNormalization(final String testCaseId,
-                                              final String expectedNormalizedNamespace,
-                                              final String actualNormalizedNamespace) {
+      final String expectedNormalizedNamespace,
+      final String actualNormalizedNamespace) {
     final String message = String.format("Test case %s failed; if this is expected, please override assertNamespaceNormalization", testCaseId);
     if (testCaseId.equals("S3A-1")) {
       // bigquery allows namespace starting with a number, and prepending underscore
