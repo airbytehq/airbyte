@@ -9,7 +9,7 @@ For instance, the example record response for the schema is shown below:
 {
   "id": "hashidstring",
   "date_created": "2022-11-22T01:23:45",
-  "date_updated": 2023-12-22T01:12:00",
+  "date_updated": "2023-12-22T01:12:00",
   "total": 1000,
   "status": "published",
   "example_obj": {
