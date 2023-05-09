@@ -86,8 +86,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
         Jsons.serialize(destinationConfig.getDestinationConnectionConfiguration()),
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
         protocolSerializer.serialize(destinationConfig.getCatalog()),
-        additionalEnvironmentVariables
-    );
+        additionalEnvironmentVariables);
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error, "airbyte-destination", CONTAINER_LOG_MDC_BUILDER);
 

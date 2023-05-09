@@ -43,11 +43,11 @@ public interface IntegrationLauncher {
   }
 
   Process write(final Path jobRoot,
-      final String configFilename,
-      final String configContents,
-      final String catalogFilename,
-      final String catalogContents,
-      final Map<String, String> additionalEnvironmentVariables)
+                final String configFilename,
+                final String configContents,
+                final String catalogFilename,
+                final String catalogContents,
+                final Map<String, String> additionalEnvironmentVariables)
       throws TestHarnessException;
 
 }
