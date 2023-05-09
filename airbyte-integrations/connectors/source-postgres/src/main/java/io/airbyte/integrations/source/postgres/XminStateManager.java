@@ -13,8 +13,12 @@ import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class XminStateManager {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(XminStateManager.class);
 
   private final Map<AirbyteStreamNameNamespacePair, XminStatus> pairToXminStatus;
 
@@ -30,7 +34,9 @@ public class XminStateManager {
     final Map<AirbyteStreamNameNamespacePair, XminStatus> localMap = new HashMap<>();
     if (stateMessages != null) {
       for (final AirbyteStateMessage stateMessage : stateMessages) {
-        if (!stateMessage.equals(EMPTY_STATE)) {
+        // A reset causes the default state to be an empty legacy state, so we have to ignore those messages. 
+        if (stateMessage.getType() == AirbyteStateType.STREAM && !stateMessage.equals(EMPTY_STATE)) {
+          LOGGER.info("State message: " + stateMessage);
           final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
           final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace());
           final XminStatus xminStatus = Jsons.object(stateMessage.getStream().getStreamState(), XminStatus.class);

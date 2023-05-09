@@ -138,6 +138,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                     final JsonNode state)
       throws Exception {
     final AirbyteStateType supportedStateType = getSupportedStateType(config);
+    LOGGER.info("featureFlags.useStreamCapableState(): " + featureFlags.useStreamCapableState());
+    LOGGER.info("supportedStateType: " + supportedStateType);
     final List<AirbyteStateMessage> stateMessages =
         StateGeneratorUtils.deserializeInitialState(state, featureFlags.useStreamCapableState(), supportedStateType);
     final StateManager stateManager =
