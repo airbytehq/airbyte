@@ -67,7 +67,6 @@ class SourceGithub(AbstractSource):
             set of provided repositories
         """
         config_repositories = set(filter(None, config["repository"].split(" ")))
-        config_repositories = {repo.removesuffix(".git") for repo in config_repositories}
         return config_repositories
 
     @staticmethod

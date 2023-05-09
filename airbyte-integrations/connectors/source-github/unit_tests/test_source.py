@@ -138,8 +138,8 @@ def test_organization_or_repo_available():
 
 
 def tests_get_and_prepare_repositories_config():
-    config = {"repository": "airbytehq/airbyte airbytehq/airbyte-test  airbytehq/integration-test.git   airbytehq/airbyte.git"}
-    assert SourceGithub._get_and_prepare_repositories_config(config) == {"airbytehq/airbyte", "airbytehq/airbyte-test", "airbytehq/integration-test"}
+    config = {"repository": "airbytehq/airbyte airbytehq/airbyte.test  airbytehq/integration-test"}
+    assert SourceGithub._get_and_prepare_repositories_config(config) == {"airbytehq/airbyte", "airbytehq/airbyte.test", "airbytehq/integration-test"}
 
 
 def test_check_config_repository():
@@ -151,18 +151,19 @@ def test_check_config_repository():
         "airbytehq/airbyte",
         "airbytehq/airbyte-test",
         "airbytehq/airbyte_test",
-        "airbytehq/airbyte.git",
         "erohmensing/thismonth.rocks",
         "airbytehq/*",
         "airbytehq/.",
         "airbyte_hq/airbyte",
         "airbytehq/123",
+        "airbytehq/airbytexgit",
     ]
 
     repos_fail = [
         "airbytehq",
         "airbytehq/",
         "airbytehq/*/",
+        "airbytehq/airbyte.git",
         "airbytehq/airbyte/",
         "airbytehq/air*yte",
         "airbyte*/airbyte",
