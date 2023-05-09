@@ -13,12 +13,18 @@
             "title": "OAuth2.0",
             "x-oauth2-provider": "zendesk",
             "required": [
+              "credentials",
               "client_id",
               "client_secret",
               "refresh_token",
               "access_token"
               ],
             "properties": {
+              "credentials": {
+                "type": "string",
+                "const": "oauth2.0",
+                "order": 0
+              },
               "client_id": {
                 "type": "string",
                 "title": "Client ID",
