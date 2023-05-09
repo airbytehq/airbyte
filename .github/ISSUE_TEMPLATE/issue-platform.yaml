@@ -10,6 +10,14 @@ body:
         Make sure you update the title with a concise title and provide all information you have to 
         help us debugging the problem together.
         Issues not following the pattern will be closed.
+  - type: dropdown
+    id: deploy
+    attributes:
+      label: What method are you using to run Airbyte?
+      multiple: false
+      options:
+        - Docker
+        - Kubernetes
   - type: input
     id: platform-version
     attributes:
