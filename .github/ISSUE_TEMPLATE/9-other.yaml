@@ -1,5 +1,5 @@
-name: 🤷 others issues requests...
-description: Use this for whatever other issues you need to create but don't have a specific category.
+name: 🤷 Others issues requests...
+description: Use this for whatever other issues you need to create an issue but don't have a specific category.
 labels: [needs-triage]
 body:
   - type: input
