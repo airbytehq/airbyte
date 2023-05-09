@@ -372,6 +372,7 @@ class CampaignPerformanceReport(PerformanceReportsMixin, BingAdsStream):
         "CampaignName",
         "CampaignType",
         "CampaignStatus",
+        "CampaignLabels",
         "Impressions",
         "Clicks",
         "Ctr",
