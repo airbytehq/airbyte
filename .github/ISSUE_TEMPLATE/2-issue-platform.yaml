@@ -1,0 +1,62 @@
+name: 🪲 Report a platform, infra or deployment bug
+description: Use this template when you're having problem operating Airbyte platform
+labels: [type/bug, area/platform, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        <p align="center">
+          <a target="_blank" href="https://airbyte.com">
+            <picture>
+              <source srcset="https://assets-global.website-files.com/605e01bc25f7e19a82e74788/621e2495cb90b8b2c3b31b0d_airbyte-octo-p-500.png">
+              <img alt="airbyte ocatvia" src="https://assets-global.website-files.com/605e01bc25f7e19a82e74788/621e2495cb90b8b2c3b31b0d_airbyte-octo-p-500.png" width="auto" height="150">
+            </picture>
+          </a>
+        </p>
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report...
+        Make sure you update the title with a concise title and provide all information you have to 
+        help us debugging the problem together. Issues not following the pattern will be closed.
+  - type: dropdown
+    id: deploy
+    validations:
+      required: true
+    attributes:
+      label: What method are you using to run Airbyte?
+      multiple: false
+      options:
+        - Docker
+        - Kubernetes
+  - type: input
+    id: platform-version
+    attributes:
+      label: Platform Version or Helm Chart Version
+      description: "Some examples are: (eg. 0.44.1, 0.30.0), you can find the version in the left bottom in Airbyte UI or in the .env / value.yaml file"
+    validations:
+      required: true
+  - type: dropdown
+    id: step
+    attributes:
+      label: What step the error happened?
+      multiple: false
+      options:
+        - On deploy
+        - During the Sync
+        - Upgrading the Platform or Helm Chart
+        - Other
+  - type: textarea
+    id: description
+    attributes:
+      label: Revelant information
+      description: Please give any aditional information you have your steps to reproduce the problem.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: |
+        Please copy and paste any relevant log output. 
+        This will be automatically formatted into code, so no need for backticks.
+        We strongly recommend to upload the log file to further debugging.
+      render: shell

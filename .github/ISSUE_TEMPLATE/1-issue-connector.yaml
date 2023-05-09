@@ -1,12 +1,22 @@
-name: Connector Issue
-description: Use this when you're facing issue with connector
-title: "Connector Issue: <REMOVE WITH ISSUE TITLE>"
+name: 🪲 Report a connector problem
+description: Use this template to report a problem using source or a destination connector
 labels: [type/bug, area/connectors, needs-triage]
 body:
   - type: markdown
     attributes:
+      value: >
+        <p align="center">
+          <a target="_blank" href="https://airbyte.com">
+            <picture>
+              <source srcset="https://assets-global.website-files.com/605e01bc25f7e19a82e74788/621e2495cb90b8b2c3b31b0d_airbyte-octo-p-500.png">
+              <img alt="airbyte ocatvia" src="https://assets-global.website-files.com/605e01bc25f7e19a82e74788/621e2495cb90b8b2c3b31b0d_airbyte-octo-p-500.png" width="auto" height="150">
+            </picture>
+          </a>
+        </p>
+  - type: markdown
+    attributes:
       value: |
-        Thanks for taking the time to fill out this bug report!
+        Thanks for taking the time to fill out this bug report...
         Make sure you update the title with a concise title and provide all information you have to 
         help us debugging the problem together.
         Issues not following the pattern will be closed.
@@ -14,14 +24,19 @@ body:
     id: connector-name
     attributes:
       label: Connector Name
-      description: Give the connector name in form of airbyte/source-pokeapi, airbyte/destination-snowflake
+      description: |
+        Insert only the name of the connector is having issue. 
+        Use the pattern source-postgres or destination-postgres. 
+        This will help us automatically label the issue to the correct teams.
+      placeholder: destination-mssql
     validations:
       required: true
   - type: input
     id: connector-version
     attributes:
       label: Connector Version
-      description: Give the connector version you're using. (eg. 0.2.63, 0.1.0)
+      description: Give the connector version has problem. You can check in the sync log file or in the settings page.
+      placeholder: 0.2.63
     validations:
       required: true
   - type: dropdown

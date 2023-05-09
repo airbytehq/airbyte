@@ -1,6 +1,6 @@
-name: 🪲 Report a platform, infra or deployment bug
-description: Report problems and issues with the Dagster framework.
-labels: [type/bug, area/platform, needs-triage]
+name: 🪲 Report a problem while using the Octavia CLI
+description: Use this template when you discovered a CLI problem
+labels: [type/bug, area/octavia-cli, needs-triage]
 body:
   - type: markdown
     attributes:
@@ -19,33 +19,13 @@ body:
         Thanks for taking the time to fill out this bug report...
         Make sure you update the title with a concise title and provide all information you have to 
         help us debugging the problem together. Issues not following the pattern will be closed.
-  - type: dropdown
-    id: deploy
-    validations:
-      required: true
-    attributes:
-      label: What method are you using to run Airbyte?
-      multiple: false
-      options:
-        - Docker
-        - Kubernetes
   - type: input
-    id: platform-version
+    id: cli-version
     attributes:
-      label: Platform Version or Helm Chart Version
-      description: "Some examples are: (eg. 0.44.1, 0.30.0), you can find the version in the left bottom in Airbyte UI or in the .env / value.yaml file"
+      label: Octavia CLI Version
+      description: Give the Octavia CLI version you're using.
     validations:
       required: true
-  - type: dropdown
-    id: step
-    attributes:
-      label: What step the error happened?
-      multiple: false
-      options:
-        - On deploy
-        - During the Sync
-        - Upgrading the Platform or Helm Chart
-        - Other
   - type: textarea
     id: description
     attributes:
