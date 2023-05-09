@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 4fd7565c-8b99-439b-80d0-2d965e1d958c
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-configcat
+  githubIssueLabel: source-configcat
+  icon: configcat.svg
+  license: MIT
+  name: ConfigCat
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/configcat
+metadataSpecVersion: "1.0"

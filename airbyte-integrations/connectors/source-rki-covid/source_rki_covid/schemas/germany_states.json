@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["integer", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "population": {
+      "type": ["integer", "null"]
+    },
+    "cases": {
+      "type": ["integer", "null"]
+    },
+    "deaths": {
+      "type": ["integer", "null"]
+    },
+    "casesPerWeek": {
+      "type": ["integer", "null"]
+    },
+    "deathsPerWeek": {
+      "type": ["integer", "null"]
+    },
+    "recovered": {
+      "type": ["integer", "null"]
+    },
+    "abbreviation": {
+      "type": ["string", "null"]
+    },
+    "weekIncidence": {
+      "type": ["number", "null"]
+    },
+    "casesPer100k": {
+      "type": ["number", "null"]
+    },
+    "delta": {
+      "type": "object",
+      "properties": {
+        "cases": {
+          "type": ["integer", "null"]
+        },
+        "deaths": {
+          "type": ["integer", "null"]
+        },
+        "recovered": {
+          "type": ["integer", "null"]
+        },
+        "weekIncidence": {
+          "type": ["number", "null"]
+        }
+      },
+      "required": ["cases", "deaths", "recovered", "weekIncidence"]
+    },
+    "hospitalization": {
+      "type": "object",
+      "properties": {
+        "cases7Days": {
+          "type": ["integer", "null"]
+        },
+        "incidence7Days": {
+          "type": ["number", "null"]
+        },
+        "date": {
+          "type": ["string", "null"]
+        },
+        "lastUpdate": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["cases7Days", "date", "incidence7Days", "lastUpdate"]
+    }
+  },
+  "required": [
+    "abbreviation",
+    "cases",
+    "casesPer100k",
+    "casesPerWeek",
+    "deaths",
+    "deathsPerWeek",
+    "delta",
+    "hospitalization",
+    "id",
+    "name",
+    "population",
+    "recovered",
+    "weekIncidence"
+  ]
+}

@@ -1,21 +1,28 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/paypal-transactions",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/paypal-transactions",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Paypal Transaction Search",
     "type": "object",
-    "required": ["client_id", "secret", "start_date", "is_sandbox"],
+    "required": ["start_date", "is_sandbox"],
     "additionalProperties": true,
     "properties": {
       "client_id": {
+        "type": "string",
         "title": "Client ID",
-        "type": "string",
-        "description": "The Client ID of your Paypal developer application."
+        "description": "The Client ID of your Paypal developer application.",
+        "airbyte_secret": true
       },
-      "secret": {
-        "title": "Client Secret",
+      "client_secret": {
         "type": "string",
+        "title": "Client secret",
         "description": "The Client Secret of your Paypal developer application.",
+        "airbyte_secret": true
+      },
+      "refresh_token": {
+        "type": "string",
+        "title": "Refresh token",
+        "description": "The key to refresh the expired access token.",
         "airbyte_secret": true
       },
       "start_date": {

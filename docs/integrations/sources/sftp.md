@@ -1,5 +1,5 @@
 # SFTP
-This page contains the setup guide and reference information for the SFT source connector.
+This page contains the setup guide and reference information for the SFTP source connector.
 
 ## Prerequisites
 
@@ -19,11 +19,12 @@ Key pair is created (typically by the user). This is typically done with ssh-key
 Private key stays with the user (and only there), while the public key is sent to the server. Typically with the ssh-copy-id utility.
 Server stores the public key (and "marks" it as authorized).
 Server will now allow access to anyone who can prove they have the corresponding private key.
-## Step 2: Set up the `$CONNECTOR_NAME` connector in Airbyte
 
-### For Airbyte Cloud:
+### Step 2: Set up the SFTP connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+#### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **`Sources`**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the SFTP connector and select **SFTP** from the Source type dropdown.
 4. Enter your `User Name`, `Host Address`, `Port`

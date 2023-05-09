@@ -61,6 +61,7 @@
 * [jonathan-duval](https://github.com/jonathan-duval)
 * [jonstacks](https://github.com/jonstacks)
 * [jrhizor](https://github.com/jrhizor)
+* [juweins](https://github.com/juweins)
 * [keu](https://github.com/keu)
 * [lazebnyi](https://github.com/lazebnyi)
 * [lizdeika](https://github.com/lizdeika)

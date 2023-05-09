@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: c332628c-f55c-4017-8222-378cfafda9b2
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-convex
+  githubIssueLabel: source-convex
+  icon: convex.svg
+  license: MIT
+  name: Convex
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/convex
+metadataSpecVersion: "1.0"

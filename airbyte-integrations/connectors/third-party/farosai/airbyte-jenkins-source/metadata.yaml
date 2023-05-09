@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d6f73702-d7a0-4e95-9758-b0fb1af0bfba
+  dockerImageTag: 0.1.23
+  dockerRepository: farosai/airbyte-jenkins-source
+  githubIssueLabel: farosai/airbyte-jenkins-source
+  icon: jenkins.svg
+  license: MIT
+  name: Jenkins
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/jenkins
+metadataSpecVersion: "1.0"

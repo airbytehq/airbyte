@@ -1,6 +1,6 @@
 {
   "type": ["object", "null"],
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["integer", "null"]
@@ -35,6 +35,9 @@
       "type": ["null", "string"]
     },
     "headStart": {
+      "type": ["null", "boolean"]
+    },
+    "isHeadStart": {
       "type": ["null", "boolean"]
     },
     "folder": {

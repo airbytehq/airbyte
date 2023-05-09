@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "page_title": {
+      "type": ["null", "string"]
+    },
+    "meta_keywords": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "meta_description": {
+      "type": ["null", "string"]
+    },
+    "search_keywords": {
+      "type": ["null", "string"]
+    },
+    "image_url": {
+      "type": ["null", "string"]
+    },
+    "custom_url": {
+      "type": ["null", "object"],
+      "properties": {
+        "url": {
+          "type": ["null", "string"]
+        },
+        "is_customized": {
+          "type": ["null", "boolean"]
+        }
+      }
+    }
+  }
+}

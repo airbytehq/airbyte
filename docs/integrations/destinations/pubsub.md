@@ -4,11 +4,14 @@ description: >-
   Provider.
 ---
 
-# Google PubSub
+# PubSub
 
 ## Overview
 
 The Airbyte Google PubSub destination allows you to send/stream data into PubSub. Pub/Sub is an asynchronous messaging service provided by Google Cloud Provider.
+
+## Prerequisites
+- For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your PubSub connector to version `0.1.6` or newer
 
 ### Sync overview
 
@@ -89,6 +92,7 @@ Once you've configured PubSub as a destination, delete the Service Account Key f
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.0 | August 16, 2022 | [15705](https://github.com/airbytehq/airbyte/pull/15705) | Add configuration for Batching and Ordering |
 | 0.1.5 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
 | 0.1.4 | February 21, 2022 | [\#9819](https://github.com/airbytehq/airbyte/pull/9819) | Upgrade version of google-cloud-pubsub |
 | 0.1.3 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option |

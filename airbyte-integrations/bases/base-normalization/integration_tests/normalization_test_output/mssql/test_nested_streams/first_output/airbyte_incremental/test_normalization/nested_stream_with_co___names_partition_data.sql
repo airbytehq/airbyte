@@ -52,7 +52,7 @@ and "DATA" is not null
 select
     _airbyte_partition_hashid,
     cast(currency as 
-    VARCHAR(max)) as currency,
+    NVARCHAR(max)) as currency,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     SYSDATETIME() as _airbyte_normalized_at
@@ -70,9 +70,9 @@ select
     
 
     concat(concat(coalesce(cast(_airbyte_partition_hashid as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(currency as 
-    VARCHAR(max)), ''''),''''), '''') as 
-    VARCHAR(max)), '''')), 2) as _airbyte_data_hashid,
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(currency as 
+    NVARCHAR(max)), ''''),''''), '''') as 
+    NVARCHAR(max)), '''')), 2) as _airbyte_data_hashid,
     tmp.*
 from __dbt__cte__nested_stream_with_co___names_partition_data_ab2 tmp
 -- DATA at nested_stream_with_complex_columns_resulting_into_long_names/partition/DATA

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from copy import deepcopy
@@ -8,13 +8,16 @@ from unittest.mock import mock_open, patch
 import pytest
 from airbyte_api_client import ApiException
 from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
-from airbyte_api_client.model.connection_schedule import ConnectionSchedule
+from airbyte_api_client.model.connection_schedule_data_basic_schedule import ConnectionScheduleDataBasicSchedule
+from airbyte_api_client.model.connection_schedule_type import ConnectionScheduleType
 from airbyte_api_client.model.connection_status import ConnectionStatus
+from airbyte_api_client.model.destination_definition_id_request_body import DestinationDefinitionIdRequestBody
 from airbyte_api_client.model.destination_definition_id_with_workspace_id import DestinationDefinitionIdWithWorkspaceId
 from airbyte_api_client.model.namespace_definition_type import NamespaceDefinitionType
 from airbyte_api_client.model.operation_create import OperationCreate
 from airbyte_api_client.model.operator_type import OperatorType
 from airbyte_api_client.model.resource_requirements import ResourceRequirements
+from airbyte_api_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
 from airbyte_api_client.model.source_definition_id_with_workspace_id import SourceDefinitionIdWithWorkspaceId
 from airbyte_api_client.model.web_backend_operation_create_or_update import WebBackendOperationCreateOrUpdate
 from octavia_cli.apply import resources, yaml_loaders
@@ -385,10 +388,19 @@ class TestSource:
         source.api_instance.discover_schema_for_source.assert_called_with(source.source_discover_schema_request_body)
 
     def test_definition(self, mocker, mock_api_client, local_configuration):
+        mocker.patch.object(resources.source_definition_api, "SourceDefinitionApi")
+        mock_api_instance = resources.source_definition_api.SourceDefinitionApi.return_value
+        source = resources.Source(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
+        assert source.definition == mock_api_instance.get_source_definition.return_value
+        resources.source_definition_api.SourceDefinitionApi.assert_called_with(mock_api_client)
+        expected_payload = SourceDefinitionIdRequestBody(source_definition_id=source.definition_id)
+        mock_api_instance.get_source_definition.assert_called_with(expected_payload)
+
+    def test_definition_specification(self, mocker, mock_api_client, local_configuration):
         mocker.patch.object(resources.source_definition_specification_api, "SourceDefinitionSpecificationApi")
         mock_api_instance = resources.source_definition_specification_api.SourceDefinitionSpecificationApi.return_value
         source = resources.Source(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
-        assert source.definition == mock_api_instance.get_source_definition_specification.return_value
+        assert source.definition_specification == mock_api_instance.get_source_definition_specification.return_value
         resources.source_definition_specification_api.SourceDefinitionSpecificationApi.assert_called_with(mock_api_client)
         expected_payload = SourceDefinitionIdWithWorkspaceId(source_definition_id=source.definition_id, workspace_id=source.workspace_id)
         mock_api_instance.get_source_definition_specification.assert_called_with(expected_payload)
@@ -422,10 +434,21 @@ class TestDestination:
             assert destination.get_payload == resources.DestinationIdRequestBody(state.resource_id)
 
     def test_definition(self, mocker, mock_api_client, local_configuration):
+        mocker.patch.object(resources.destination_definition_api, "DestinationDefinitionApi")
+        mock_api_instance = resources.destination_definition_api.DestinationDefinitionApi.return_value
+        destination = resources.Destination(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
+        assert destination.definition == mock_api_instance.get_destination_definition.return_value
+        resources.destination_definition_api.DestinationDefinitionApi.assert_called_with(mock_api_client)
+        expected_payload = DestinationDefinitionIdRequestBody(
+            destination_definition_id=destination.definition_id
+        )
+        mock_api_instance.get_destination_definition.assert_called_with(expected_payload)
+
+    def test_definition_specification(self, mocker, mock_api_client, local_configuration):
         mocker.patch.object(resources.destination_definition_specification_api, "DestinationDefinitionSpecificationApi")
         mock_api_instance = resources.destination_definition_specification_api.DestinationDefinitionSpecificationApi.return_value
         destination = resources.Destination(mock_api_client, "workspace_id", local_configuration, "bar.yaml")
-        assert destination.definition == mock_api_instance.get_destination_definition_specification.return_value
+        assert destination.definition_specification == mock_api_instance.get_destination_definition_specification.return_value
         resources.destination_definition_specification_api.DestinationDefinitionSpecificationApi.assert_called_with(mock_api_client)
         expected_payload = DestinationDefinitionIdWithWorkspaceId(
             destination_definition_id=destination.definition_id, workspace_id=destination.workspace_id
@@ -468,11 +491,19 @@ class TestConnection:
                         }
                     ]
                 },
-                "schedule": {"units": 1, "time_unit": "days"},
+                "schedule_type": "basic",
+                "schedule_data": {"units": 1, "time_unit": "days"},
                 "status": "active",
                 "resource_requirements": {"cpu_request": "foo", "cpu_limit": "foo", "memory_request": "foo", "memory_limit": "foo"},
             },
         }
+
+    @pytest.fixture
+    def connection_configuration_with_manual_schedule(self, connection_configuration):
+        connection_configuration_with_manual_schedule = deepcopy(connection_configuration)
+        connection_configuration_with_manual_schedule["configuration"]["schedule_type"] = "manual"
+        connection_configuration_with_manual_schedule["configuration"]["schedule_data"] = None
+        return connection_configuration_with_manual_schedule
 
     @pytest.fixture
     def connection_configuration_with_normalization(self, connection_configuration):
@@ -551,6 +582,28 @@ class TestConnection:
                                     "aliasName": "alias_name_example",
                                     "selected": True,
                                 },
+                            }
+                        ]
+                    },
+                    "schedule": {"units": 1, "time_unit": "days"},
+                    "status": "active",
+                    "resource_requirements": {"cpu_request": "foo", "cpu_limit": "foo", "memory_request": "foo", "memory_limit": "foo"},
+                },
+            },
+            {
+                "definition_type": "connection",
+                "resource_name": "my_connection",
+                "source_id": "my_source",
+                "destination_id": "my_destination",
+                "configuration": {
+                    "namespace_definition": "customformat",
+                    "namespace_format": "foo",
+                    "prefix": "foo",
+                    "sync_catalog": {
+                        "streams": [
+                            {
+                                "stream": {},
+                                "config": {},
                             }
                         ]
                     },
@@ -769,14 +822,18 @@ class TestConnection:
         assert update_result == resource._create_or_update.return_value
         resource._create_or_update.assert_called_with(resource._update_fn, resource.update_payload)
 
-    def test__deserialize_raw_configuration(self, mock_api_client, connection_configuration):
+    def test__deserialize_raw_configuration(self, mock_api_client, connection_configuration, connection_configuration_with_manual_schedule):
         resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")
         configuration = resource._deserialize_raw_configuration()
         assert isinstance(configuration["sync_catalog"], AirbyteCatalog)
         assert configuration["namespace_definition"] == NamespaceDefinitionType(
             connection_configuration["configuration"]["namespace_definition"]
         )
-        assert configuration["schedule"] == ConnectionSchedule(**connection_configuration["configuration"]["schedule"])
+        assert configuration["schedule_type"] == ConnectionScheduleType(connection_configuration["configuration"]["schedule_type"])
+        assert (
+            configuration["schedule_data"].to_dict()
+            == ConnectionScheduleDataBasicSchedule(**connection_configuration["configuration"]["schedule_data"]).to_dict()
+        )
         assert configuration["resource_requirements"] == ResourceRequirements(
             **connection_configuration["configuration"]["resource_requirements"]
         )
@@ -786,10 +843,18 @@ class TestConnection:
             "namespace_format",
             "prefix",
             "sync_catalog",
-            "schedule",
+            "schedule_type",
+            "schedule_data",
             "status",
             "resource_requirements",
         ]
+
+        resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration_with_manual_schedule, "bar.yaml")
+        configuration = resource._deserialize_raw_configuration()
+        assert configuration["schedule_type"] == ConnectionScheduleType(
+            connection_configuration_with_manual_schedule["configuration"]["schedule_type"]
+        )
+        assert configuration["schedule_data"] is None
 
     def test__deserialize_operations(self, mock_api_client, connection_configuration):
         resource = resources.Connection(mock_api_client, "workspace_id", connection_configuration, "bar.yaml")

@@ -65,14 +65,26 @@
     "paid": {
       "type": ["null", "boolean"]
     },
-    "discount": {
-      "type": ["null", "string"]
-    },
     "discounts": {
       "type": ["null", "array"],
+      "items": {
+        "type": [
+          "null",
+          "string"
+        ]
+      }
+    },
+    "discount": {
+      "type": ["null", "object"],
       "properties": {
-        "end": {
-          "type": ["null", "integer"]
+        "id": {
+          "type": ["null", "string"]
+        },
+        "object": {
+          "type": ["null", "string"]
+        },
+        "checkout_session": {
+          "type": ["null", "string"]
         },
         "coupon": {
           "type": ["null", "object"],
@@ -91,13 +103,10 @@
               "type": ["null", "integer"]
             },
             "redeem_by": {
-              "type": ["null", "number"]
+              "type": ["null", "integer"]
             },
             "duration_in_months": {
               "type": ["null", "integer"]
-            },
-            "percent_off_precise": {
-              "type": ["null", "number"]
             },
             "max_redemptions": {
               "type": ["null", "integer"]
@@ -131,11 +140,20 @@
         "customer": {
           "type": ["null", "string"]
         },
-        "start": {
+        "end": {
           "type": ["null", "integer"]
         },
-        "object": {
+        "invoice": {
           "type": ["null", "string"]
+        },
+        "invoice_item": {
+          "type": ["null", "string"]
+        },
+        "promotion_code": {
+          "type": ["null", "string"]
+        },
+        "start": {
+          "type": ["null", "integer"]
         },
         "subscription": {
           "type": ["null", "string"]
@@ -208,6 +226,35 @@
     },
     "status": {
       "type": ["null", "string"]
+    },
+    "status_transitions": {
+      "type": "object",
+      "properties": {
+        "finalized_at": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "marked_uncollectible_at": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "paid_at": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "voided_at": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        }
+      }
     }
   }
 }

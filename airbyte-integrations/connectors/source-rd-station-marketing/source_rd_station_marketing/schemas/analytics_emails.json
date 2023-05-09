@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "send_at": {
+      "type": ["null", "string"]
+    },
+    "campaign_id": {
+      "type": ["null", "integer"]
+    },
+    "campaign_name": {
+      "type": ["null", "string"]
+    },
+    "email_dropped_count": {
+      "type": ["null", "integer"]
+    },
+    "email_delivered_count": {
+      "type": ["null", "integer"]
+    },
+    "email_bounced_count": {
+      "type": ["null", "integer"]
+    },
+    "email_opened_count": {
+      "type": ["null", "integer"]
+    },
+    "email_clicked_count": {
+      "type": ["null", "integer"]
+    },
+    "email_unsubscribed_count": {
+      "type": ["null", "integer"]
+    },
+    "email_spam_reported_count": {
+      "type": ["null", "integer"]
+    },
+    "email_delivered_rate": {
+      "type": ["null", "number"]
+    },
+    "email_opened_rate": {
+      "type": ["null", "number"]
+    },
+    "email_clicked_rate": {
+      "type": ["null", "number"]
+    },
+    "email_spam_reported_rate": {
+      "type": ["null", "number"]
+    },
+    "contacts_count": {
+      "type": ["null", "integer"]
+    }
+  }
+}

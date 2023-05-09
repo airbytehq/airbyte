@@ -31,7 +31,7 @@ When reviewing connectors, we'll use the following "checklist" to verify whether
 * **API connectors** should validate records that every stream outputs data
   * If this causes rate limiting problems, there should be a periodic CI build which tests this on a less frequent cadence to avoid rate limiting
 
-**Thoroughly test edge cases.** While Airbyte provides a [Standard Test Suite](testing-connectors/source-acceptance-tests-reference.md) that all connectors must pass, it's not possible for the standard test suite to cover all edge cases. When in doubt about whether the standard tests provide sufficient evidence of functionality, write a custom test case for your connector.
+**Thoroughly test edge cases.** While Airbyte provides a [Standard Test Suite](testing-connectors/connector-acceptance-tests-reference.md) that all connectors must pass, it's not possible for the standard test suite to cover all edge cases. When in doubt about whether the standard tests provide sufficient evidence of functionality, write a custom test case for your connector.
 
 ### Check Connection
 
@@ -49,3 +49,6 @@ When reviewing connectors, we'll use the following "checklist" to verify whether
 
 Most APIs enforce rate limits. Your connector should gracefully handle those \(i.e: without failing the connector process\). The most common way to handle rate limits is to implement backoff.
 
+## Maintaining connectors
+
+Once a connector has been published for use within Airbyte, we must take special care to account for the customer impact of updates to the connector.

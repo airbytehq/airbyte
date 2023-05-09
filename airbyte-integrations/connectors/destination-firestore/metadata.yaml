@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 27dc7500-6d1b-40b1-8b07-e2f2aea3c9f4
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/destination-firestore
+  githubIssueLabel: destination-firestore
+  icon: firestore.svg
+  license: MIT
+  name: Google Firestore
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/firestore
+metadataSpecVersion: "1.0"

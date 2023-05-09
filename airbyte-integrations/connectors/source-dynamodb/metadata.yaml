@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 50401137-8871-4c5a-abb7-1f5fda35545a
+  dockerImageTag: 0.1.2
+  dockerRepository: airbyte/source-dynamodb
+  githubIssueLabel: source-dynamodb
+  icon: dynamodb.svg
+  license: MIT
+  name: DynamoDB
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/dynamodb
+metadataSpecVersion: "1.0"

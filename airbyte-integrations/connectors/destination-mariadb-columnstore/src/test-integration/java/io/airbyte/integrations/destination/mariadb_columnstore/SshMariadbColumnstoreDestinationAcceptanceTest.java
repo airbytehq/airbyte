@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mariadb_columnstore;
@@ -15,7 +15,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +37,7 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
   private static final Logger LOGGER = LoggerFactory.getLogger(MariadbColumnstoreDestinationAcceptanceTest.class);
   private static final Network network = Network.newNetwork();
 
-  private final ExtendedNameTransformer namingResolver = new MariadbColumnstoreNameTransformer();
+  private final StandardNameTransformer namingResolver = new MariadbColumnstoreNameTransformer();
 
   private JsonNode configJson;
 
@@ -59,7 +59,7 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db));
+    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db), false);
   }
 
   @Override
@@ -71,10 +71,10 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    if (config.get("database") == null) {
+    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
       return null;
     }
-    return config.get("database").asText();
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override
@@ -93,8 +93,8 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
-        MariadbColumnstoreDestination.HOST_KEY,
-        MariadbColumnstoreDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
                 ctx -> ctx
@@ -107,13 +107,13 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
     final DSLContext dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MARIADB.getDriverClassName(),
         String.format(DatabaseDriver.MARIADB.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            config.get("database").asText()),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.MARIADB);
     return new Database(dslContext);
   }

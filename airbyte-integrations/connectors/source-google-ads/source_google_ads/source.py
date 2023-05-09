@@ -1,19 +1,19 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
+import logging
 import traceback
 from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.errors import GoogleAdsException
 from pendulum import parse, today
 
-from .custom_query_stream import CustomQuery
+from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
 from .models import Customer
 from .streams import (
@@ -35,9 +35,20 @@ from .streams import (
     ShoppingPerformanceReport,
     UserLocationReport,
 )
+from .utils import GAQL
+
+FULL_REFRESH_CUSTOM_TABLE = ["geo_target_constant", "custom_audience"]
 
 
 class SourceGoogleAds(AbstractSource):
+    @staticmethod
+    def _validate_and_transform(config: Mapping[str, Any]):
+        if config.get("end_date") == "":
+            config.pop("end_date")
+        for query in config.get("custom_queries", []):
+            query["query"] = GAQL.parse(query["query"])
+        return config
+
     @staticmethod
     def get_credentials(config: Mapping[str, Any]) -> MutableMapping[str, Any]:
         credentials = config["credentials"]
@@ -52,16 +63,15 @@ class SourceGoogleAds(AbstractSource):
 
     @staticmethod
     def get_incremental_stream_config(google_api: GoogleAds, config: Mapping[str, Any], customers: List[Customer]):
-        true_end_date = None
-        configured_end_date = config.get("end_date")
-        if configured_end_date is not None:
-            true_end_date = min(today(), parse(configured_end_date)).to_date_string()
+        end_date = config.get("end_date")
+        if end_date:
+            end_date = min(today(), parse(end_date)).to_date_string()
         incremental_stream_config = dict(
             api=google_api,
             customers=customers,
             conversion_window_days=config["conversion_window_days"],
             start_date=config["start_date"],
-            end_date=true_end_date,
+            end_date=end_date,
         )
         return incremental_stream_config
 
@@ -72,14 +82,14 @@ class SourceGoogleAds(AbstractSource):
             yield accounts_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_)
 
     @staticmethod
-    def is_metrics_in_custom_query(query: str) -> bool:
-        fields = CustomQuery.get_query_fields(query)
-        for field in fields:
-            if field.startswith("metrics"):
+    def is_metrics_in_custom_query(query: GAQL) -> bool:
+        for field in query.fields:
+            if field.split(".")[0] == "metrics":
                 return True
         return False
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+        config = self._validate_and_transform(config)
         try:
             logger.info("Checking the config")
             google_api = GoogleAds(credentials=self.get_credentials(config))
@@ -89,16 +99,18 @@ class SourceGoogleAds(AbstractSource):
             # Check custom query request validity by sending metric request with non-existant time window
             for customer in customers:
                 for query in config.get("custom_queries", []):
-                    query = query.get("query")
+                    query = query["query"]
                     if customer.is_manager_account and self.is_metrics_in_custom_query(query):
                         logger.warning(
                             f"Metrics are not available for manager account {customer.id}. "
                             f"Please remove metrics fields in your custom query: {query}."
                         )
-                    if CustomQuery.cursor_field in query:
-                        return False, f"Custom query should not contain {CustomQuery.cursor_field}"
-                    req_q = CustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
-                    response = google_api.send_request(req_q, customer_id=customer.id)
+                    if query.resource_name not in FULL_REFRESH_CUSTOM_TABLE:
+                        if IncrementalCustomQuery.cursor_field in query.fields:
+                            return False, f"Custom query should not contain {IncrementalCustomQuery.cursor_field}"
+                        query = IncrementalCustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
+                    query = query.set_limit(1)
+                    response = google_api.send_request(str(query), customer_id=customer.id)
                     # iterate over the response otherwise exceptions will not be raised!
                     for _ in response:
                         pass
@@ -109,6 +121,7 @@ class SourceGoogleAds(AbstractSource):
             return False, f"Unable to connect to Google Ads API with the provided configuration - {error_messages}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        config = self._validate_and_transform(config)
         google_api = GoogleAds(credentials=self.get_credentials(config))
         accounts = self.get_account_info(google_api, config)
         customers = Customer.from_accounts(accounts)
@@ -121,7 +134,6 @@ class SourceGoogleAds(AbstractSource):
             AdGroups(**incremental_config),
             AdGroupLabels(google_api, customers=customers),
             Accounts(**incremental_config),
-            Campaigns(**incremental_config),
             CampaignLabels(google_api, customers=customers),
             ClickView(**incremental_config),
         ]
@@ -129,6 +141,7 @@ class SourceGoogleAds(AbstractSource):
         if non_manager_accounts:
             streams.extend(
                 [
+                    Campaigns(**non_manager_incremental_config),
                     UserLocationReport(**non_manager_incremental_config),
                     AccountPerformanceReport(**non_manager_incremental_config),
                     DisplayTopicsPerformanceReport(**non_manager_incremental_config),
@@ -140,10 +153,16 @@ class SourceGoogleAds(AbstractSource):
                 ]
             )
         for single_query_config in config.get("custom_queries", []):
-            query = single_query_config.get("query")
+            query = single_query_config["query"]
             if self.is_metrics_in_custom_query(query):
                 if non_manager_accounts:
-                    streams.append(CustomQuery(custom_query_config=single_query_config, **non_manager_incremental_config))
+                    if query.resource_name in FULL_REFRESH_CUSTOM_TABLE:
+                        streams.append(CustomQuery(config=single_query_config, api=google_api, customers=non_manager_accounts))
+                    else:
+                        streams.append(IncrementalCustomQuery(config=single_query_config, **non_manager_incremental_config))
                 continue
-            streams.append(CustomQuery(custom_query_config=single_query_config, **incremental_config))
+            if query.resource_name in FULL_REFRESH_CUSTOM_TABLE:
+                streams.append(CustomQuery(config=single_query_config, api=google_api, customers=customers))
+            else:
+                streams.append(IncrementalCustomQuery(config=single_query_config, **incremental_config))
         return streams

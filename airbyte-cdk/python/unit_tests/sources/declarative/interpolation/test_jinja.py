@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import datetime
@@ -62,3 +62,19 @@ def test_negative_day_delta():
     val = interpolation.eval(delta_template, {})
 
     assert val <= (datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=25)).strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+
+
+@pytest.mark.parametrize(
+    "test_name, s, expected_value",
+    [
+        ("test_timestamp_from_timestamp", "{{ timestamp(1621439283) }}", 1621439283),
+        ("test_timestamp_from_string", "{{ timestamp('2021-05-19') }}", 1621382400),
+        ("test_timestamp_from_rfc3339", "{{ timestamp('2017-01-01T00:00:00.0Z') }}", 1483228800),
+        ("test_max", "{{ max(1,2) }}", 2),
+    ],
+)
+def test_macros(test_name, s, expected_value):
+    interpolation = JinjaInterpolation()
+    config = {}
+    val = interpolation.eval(s, config)
+    assert val == expected_value

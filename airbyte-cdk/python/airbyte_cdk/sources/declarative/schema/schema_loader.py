@@ -1,12 +1,17 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+from dataclasses import dataclass
 from typing import Any, Mapping
 
 
-class SchemaLoader(ABC):
+@dataclass
+class SchemaLoader:
+    """Describes a stream's schema"""
+
     @abstractmethod
     def get_json_schema(self) -> Mapping[str, Any]:
+        """Returns a mapping describing the stream's schema"""
         pass

@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "address": {
+      "type": ["null", "string"]
+    },
+    "archived": {
+      "type": "boolean"
+    },
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "note": {
+      "type": ["null", "string"]
+    },
+    "workspaceId": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

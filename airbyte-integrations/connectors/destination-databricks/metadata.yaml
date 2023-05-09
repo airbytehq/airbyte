@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 072d5540-f236-4294-ba7c-ade8fd918496
+  dockerImageTag: 1.0.0
+  dockerRepository: airbyte/destination-databricks
+  githubIssueLabel: destination-databricks
+  icon: databricks.svg
+  license: MIT
+  name: Databricks Lakehouse
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/databricks
+metadataSpecVersion: "1.0"

@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "LEAD_SOURCE_ID": {
+      "type": "integer"
+    },
+    "LEAD_SOURCE": {
+      "type": ["string", "null"]
+    },
+    "DEFAULT_VALUE": {
+      "type": ["boolean", "null"]
+    },
+    "FIELD_ORDER": {
+      "type": ["integer", "null"]
+    }
+  }
+}

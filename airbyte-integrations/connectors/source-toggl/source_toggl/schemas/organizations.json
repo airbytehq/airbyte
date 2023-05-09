@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "admin": {
+      "type": "boolean"
+    },
+    "at": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "is_chargify": {
+      "type": "boolean"
+    },
+    "is_multi_workspace_enabled": {
+      "type": "boolean"
+    },
+    "is_unified": {
+      "type": "boolean"
+    },
+    "max_workspaces": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "owner": {
+      "type": "boolean"
+    },
+    "payment_methods": {
+      "type": "string"
+    },
+    "pricing_plan_id": {
+      "type": "integer"
+    },
+    "server_deleted_at": {
+      "type": ["null", "string"]
+    },
+    "suspended_at": {
+      "type": ["null", "string"]
+    },
+    "trial_info": {
+      "type": "object"
+    },
+    "user_count": {
+      "type": "integer"
+    }
+  }
+}

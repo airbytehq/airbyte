@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 16447954-e6a8-4593-b140-43dea13bc457
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-appsflyer
+  githubIssueLabel: source-appsflyer
+  icon: appsflyer.svg
+  license: MIT
+  name: AppsFlyer
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/appsflyer
+metadataSpecVersion: "1.0"

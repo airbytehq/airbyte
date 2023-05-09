@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.iterable.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
+  dockerImageTag: 0.1.26
+  dockerRepository: airbyte/source-iterable
+  githubIssueLabel: source-iterable
+  icon: iterable.svg
+  license: MIT
+  name: Iterable
+  releaseStage: generally_available
+  supportUrl: https://docs.airbyte.com/integrations/sources/iterable
+metadataSpecVersion: "1.0"

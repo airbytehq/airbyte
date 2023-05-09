@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: bd14b08f-9f43-400f-b2b6-7248b5c72561
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-tvmaze-schedule
+  githubIssueLabel: source-tvmaze-schedule
+  icon: tvmazeschedule.svg
+  license: MIT
+  name: TVMaze Schedule
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/tvmaze-schedule
+metadataSpecVersion: "1.0"

@@ -1,0 +1,18 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/secoda
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Secoda Spec
+  type: object
+  required:
+    - api_key
+  additionalProperties: true
+  properties:
+    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
+    api_key:
+      title: Api Key
+      type: string
+      description: >-
+        Your API Access Key. See <a
+        href="https://docs.secoda.co/secoda-api/authentication">here</a>. The key is
+        case sensitive.
+      airbyte_secret: true

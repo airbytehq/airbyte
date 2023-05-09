@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
+  dockerImageTag: 1.0.0
+  dockerRepository: airbyte/source-onesignal
+  githubIssueLabel: source-onesignal
+  icon: onesignal.svg
+  license: MIT
+  name: OneSignal
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/onesignal
+metadataSpecVersion: "1.0"

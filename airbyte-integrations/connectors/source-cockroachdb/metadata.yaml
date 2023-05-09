@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - ${host}
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: source
+  definitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
+  dockerImageTag: 0.1.22
+  dockerRepository: airbyte/source-cockroachdb
+  githubIssueLabel: source-cockroachdb
+  icon: cockroachdb.svg
+  license: MIT
+  name: Cockroachdb
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/cockroachdb
+metadataSpecVersion: "1.0"

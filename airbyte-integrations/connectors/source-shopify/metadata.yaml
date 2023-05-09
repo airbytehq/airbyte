@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
+  dockerImageTag: 0.3.2
+  dockerRepository: airbyte/source-shopify
+  githubIssueLabel: source-shopify
+  icon: shopify.svg
+  license: MIT
+  name: Shopify
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/shopify
+metadataSpecVersion: "1.0"

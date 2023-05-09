@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -48,18 +48,13 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
         )
 
         endpoint: str = Field("", description="Endpoint to an S3 compatible service. Leave empty to use AWS.", order=4)
-        use_ssl: bool = Field(
-            default=None,
-            title="Use TLS",
-            description="Whether the remote server is using a secure SSL/TLS connection. Only relevant if using an S3-compatible, "
-            "non-AWS server",
+        start_date: Optional[str] = Field(
+            title="Start Date",
+            description="UTC date and time in the format 2017-01-25T00:00:00Z. Any file modified before this date will not be replicated.",
+            examples=["2021-01-01T00:00:00Z"],
+            format="date-time",
+            pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
             order=5,
-        )
-        verify_ssl_cert: bool = Field(
-            default=None,
-            title="Verify TLS Certificates",
-            description="Set this to false to allow self signed certificates. Only relevant if using an S3-compatible, non-AWS server",
-            order=6,
         )
 
     provider: S3Provider
@@ -68,7 +63,7 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
 class SourceS3(SourceFilesAbstract):
     stream_class = IncrementalFileStreamS3
     spec_class = SourceS3Spec
-    documentation_url = "https://docs.airbyte.io/integrations/sources/s3"
+    documentation_url = "https://docs.airbyte.com/integrations/sources/s3"
 
     def read_config(self, config_path: str) -> Mapping[str, Any]:
         config: Mapping[str, Any] = super().read_config(config_path)

@@ -1,0 +1,23 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
+    oss:
+      enabled: false # strict encrypt connectors are not used on OSS.
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
+  dockerImageTag: 0.1.20
+  dockerRepository: airbyte/destination-mysql-strict-encrypt
+  githubIssueLabel: destination-mysql
+  icon: mysql.svg
+  license: MIT
+  name: MySQL
+  normalizationConfig:
+    normalizationIntegrationType: mysql
+    normalizationRepository: airbyte/normalization-mysql
+    normalizationTag: 0.4.0
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/mysql
+  supportsDbt: true
+metadataSpecVersion: "1.0"

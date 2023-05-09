@@ -54,7 +54,7 @@
       "type": ["null", "integer"]
     },
     "annotation_click_through_rate": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "annotation_closable_impressions": {
       "type": ["null", "integer"]
@@ -63,7 +63,7 @@
       "type": ["null", "integer"]
     },
     "annotation_close_rate": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "card_teaser_impressions": {
       "type": ["null", "integer"]
@@ -72,7 +72,7 @@
       "type": ["null", "integer"]
     },
     "card_teaser_click_rate": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "card_impressions": {
       "type": ["null", "integer"]
@@ -81,7 +81,7 @@
       "type": ["null", "integer"]
     },
     "card_click_rate": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "subscribers_gained": {
       "type": ["null", "integer"]

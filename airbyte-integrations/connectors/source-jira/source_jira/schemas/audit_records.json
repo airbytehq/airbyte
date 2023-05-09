@@ -135,6 +135,6 @@
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "An audit record."
 }

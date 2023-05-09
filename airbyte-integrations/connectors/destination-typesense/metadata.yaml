@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 36be8dc6-9851-49af-b776-9d4c30e4ab6a
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-typesense
+  githubIssueLabel: destination-typesense
+  icon: typesense.svg
+  license: MIT
+  name: Typesense
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/typesense
+metadataSpecVersion: "1.0"

@@ -1,0 +1,17 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: bb6071d9-6f34-4766-bec2-d1d4ed81a653
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/destination-exasol
+  githubIssueLabel: destination-exasol
+  license: MIT
+  name: Exasol
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/exasol
+metadataSpecVersion: "1.0"

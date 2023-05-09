@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 05c161bf-ca73-4d48-b524-d392be417002
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-doris
+  githubIssueLabel: destination-doris
+  icon: apachedoris.svg
+  license: MIT
+  name: Apache Doris
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/doris
+metadataSpecVersion: "1.0"

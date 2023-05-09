@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: a68fbcde-b465-4ab3-b2a6-b0590a875835
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-google-webfonts
+  githubIssueLabel: source-google-webfonts
+  icon: googleworkpace.svg
+  license: MIT
+  name: Google Webfonts
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/google-webfonts
+metadataSpecVersion: "1.0"

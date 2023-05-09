@@ -1,0 +1,251 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "ym:pv:watchID": {
+      "type": "string"
+    },
+    "ym:pv:counterID": {
+      "type": "string"
+    },
+    "ym:pv:date": {
+      "type": "string",
+      "format": "date"
+    },
+    "ym:pv:dateTime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ym:pv:title": {
+      "type": "string"
+    },
+    "ym:pv:URL": {
+      "type": "string"
+    },
+    "ym:pv:referer": {
+      "type": "string"
+    },
+    "ym:pv:UTMCampaign": {
+      "type": "string"
+    },
+    "ym:pv:UTMContent": {
+      "type": "string"
+    },
+    "ym:pv:UTMMedium": {
+      "type": "string"
+    },
+    "ym:pv:UTMSource": {
+      "type": "string"
+    },
+    "ym:pv:UTMTerm": {
+      "type": "string"
+    },
+    "ym:pv:browser": {
+      "type": "string"
+    },
+    "ym:pv:browserMajorVersion": {
+      "type": "string"
+    },
+    "ym:pv:browserMinorVersion": {
+      "type": "string"
+    },
+    "ym:pv:browserCountry": {
+      "type": "string"
+    },
+    "ym:pv:browserEngine": {
+      "type": "string"
+    },
+    "ym:pv:browserEngineVersion1": {
+      "type": "string"
+    },
+    "ym:pv:browserEngineVersion2": {
+      "type": "string"
+    },
+    "ym:pv:browserEngineVersion3": {
+      "type": "string"
+    },
+    "ym:pv:browserEngineVersion4": {
+      "type": "string"
+    },
+    "ym:pv:browserLanguage": {
+      "type": "string"
+    },
+    "ym:pv:clientTimeZone": {
+      "type": "string"
+    },
+    "ym:pv:cookieEnabled": {
+      "type": "string"
+    },
+    "ym:pv:deviceCategory": {
+      "type": "string"
+    },
+    "ym:pv:from": {
+      "type": "string"
+    },
+    "ym:pv:hasGCLID": {
+      "type": "string"
+    },
+    "ym:pv:GCLID": {
+      "type": "string"
+    },
+    "ym:pv:ipAddress": {
+      "type": "string"
+    },
+    "ym:pv:javascriptEnabled": {
+      "type": "string"
+    },
+    "ym:pv:mobilePhone": {
+      "type": "string"
+    },
+    "ym:pv:mobilePhoneModel": {
+      "type": "string"
+    },
+    "ym:pv:openstatAd": {
+      "type": "string"
+    },
+    "ym:pv:openstatCampaign": {
+      "type": "string"
+    },
+    "ym:pv:openstatService": {
+      "type": "string"
+    },
+    "ym:pv:openstatSource": {
+      "type": "string"
+    },
+    "ym:pv:operatingSystem": {
+      "type": "string"
+    },
+    "ym:pv:operatingSystemRoot": {
+      "type": "string"
+    },
+    "ym:pv:physicalScreenHeight": {
+      "type": "string"
+    },
+    "ym:pv:physicalScreenWidth": {
+      "type": "string"
+    },
+    "ym:pv:regionCity": {
+      "type": "string"
+    },
+    "ym:pv:regionCountry": {
+      "type": "string"
+    },
+    "ym:pv:regionCityID": {
+      "type": "string"
+    },
+    "ym:pv:regionCountryID": {
+      "type": "string"
+    },
+    "ym:pv:screenColors": {
+      "type": "string"
+    },
+    "ym:pv:screenFormat": {
+      "type": "string"
+    },
+    "ym:pv:screenHeight": {
+      "type": "string"
+    },
+    "ym:pv:screenOrientation": {
+      "type": "string"
+    },
+    "ym:pv:screenWidth": {
+      "type": "string"
+    },
+    "ym:pv:windowClientHeight": {
+      "type": "string"
+    },
+    "ym:pv:windowClientWidth": {
+      "type": "string"
+    },
+    "ym:pv:lastTrafficSource": {
+      "type": "string"
+    },
+    "ym:pv:lastSearchEngine": {
+      "type": "string"
+    },
+    "ym:pv:lastSearchEngineRoot": {
+      "type": "string"
+    },
+    "ym:pv:lastAdvEngine": {
+      "type": "string"
+    },
+    "ym:pv:artificial": {
+      "type": "string"
+    },
+    "ym:pv:pageCharset": {
+      "type": "string"
+    },
+    "ym:pv:isPageView": {
+      "type": "string"
+    },
+    "ym:pv:link": {
+      "type": "string"
+    },
+    "ym:pv:download": {
+      "type": "string"
+    },
+    "ym:pv:notBounce": {
+      "type": "string"
+    },
+    "ym:pv:lastSocialNetwork": {
+      "type": "string"
+    },
+    "ym:pv:httpError": {
+      "type": "string"
+    },
+    "ym:pv:clientID": {
+      "type": "string"
+    },
+    "ym:pv:networkType": {
+      "type": "string"
+    },
+    "ym:pv:lastSocialNetworkProfile": {
+      "type": "string"
+    },
+    "ym:pv:goalsID": {
+      "type": "string"
+    },
+    "ym:pv:shareService": {
+      "type": "string"
+    },
+    "ym:pv:shareURL": {
+      "type": "string"
+    },
+    "ym:pv:shareTitle": {
+      "type": "string"
+    },
+    "ym:pv:iFrame": {
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey1": {
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey2": {
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey3": {
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey4": {
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey5": {
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey6": {
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey7": {
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey8": {
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey9": {
+      "type": "string"
+    },
+    "ym:pv:parsedParamsKey10": {
+      "type": "string"
+    }
+  }
+}

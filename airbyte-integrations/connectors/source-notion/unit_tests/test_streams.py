@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import random
@@ -47,7 +47,7 @@ def test_parse_response(patch_base_class, requests_mock):
 def test_request_headers(patch_base_class):
     stream = NotionStream(config=MagicMock())
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_headers = {"Notion-Version": "2021-08-16"}
+    expected_headers = {"Notion-Version": "2022-06-28"}
     assert stream.request_headers(**inputs) == expected_headers
 
 
@@ -61,7 +61,7 @@ def test_http_method(patch_base_class):
     ("http_status", "should_retry"),
     [
         (HTTPStatus.OK, False),
-        (HTTPStatus.BAD_REQUEST, False),
+        (HTTPStatus.BAD_REQUEST, True),
         (HTTPStatus.TOO_MANY_REQUESTS, True),
         (HTTPStatus.INTERNAL_SERVER_ERROR, True),
     ],
@@ -74,10 +74,9 @@ def test_should_retry(patch_base_class, http_status, should_retry):
 
 
 def test_backoff_time(patch_base_class):
-    response_mock = MagicMock()
+    response_mock = MagicMock(headers={"retry-after": "10"})
     stream = NotionStream(config=MagicMock())
-    expected_backoff_time = None
-    assert stream.backoff_time(response_mock) == expected_backoff_time
+    assert stream.backoff_time(response_mock) == 10.0
 
 
 def test_users_request_params(patch_base_class):

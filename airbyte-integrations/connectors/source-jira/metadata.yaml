@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - ${domain}
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
+  dockerImageTag: 0.3.4
+  dockerRepository: airbyte/source-jira
+  githubIssueLabel: source-jira
+  icon: jira.svg
+  license: MIT
+  name: Jira
+  releaseStage: beta
+  supportUrl: https://docs.airbyte.com/integrations/sources/jira
+metadataSpecVersion: "1.0"

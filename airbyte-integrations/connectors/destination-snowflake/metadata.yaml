@@ -1,0 +1,29 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
+  dockerImageTag: 0.4.61
+  dockerRepository: airbyte/destination-snowflake
+  githubIssueLabel: destination-snowflake
+  icon: snowflake.svg
+  license: MIT
+  name: Snowflake
+  normalizationConfig:
+    normalizationIntegrationType: snowflake
+    normalizationRepository: airbyte/normalization-snowflake
+    normalizationTag: 0.4.0
+  releaseStage: generally_available
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 1Gi
+          memory_request: 1Gi
+  supportUrl: https://docs.airbyte.com/integrations/destinations/snowflake
+  supportsDbt: true
+metadataSpecVersion: "1.0"

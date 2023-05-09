@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - galaxyapi.senseforce.io
+      - senseforce.io
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 39de93cb-1511-473e-a673-5cbedb9436af
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-senseforce
+  githubIssueLabel: source-senseforce
+  icon: senseforce.svg
+  license: MIT
+  name: Senseforce
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/senseforce
+metadataSpecVersion: "1.0"

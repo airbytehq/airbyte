@@ -1,16 +1,16 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import re
-from typing import Any, Dict, List, Mapping, Tuple
+from typing import Any, Dict, List, Mapping, Set, Tuple
 
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .streams import (
     Assignees,
@@ -47,46 +47,101 @@ from .streams import (
     TeamMemberships,
     Teams,
     Users,
+    WorkflowJobs,
     WorkflowRuns,
     Workflows,
 )
+from .utils import read_full_refresh
 
 TOKEN_SEPARATOR = ","
 DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM = 10
-# To scan all the repos within orgnaization, organization name could be
-# specified by using asteriks i.e. "airbytehq/*"
-ORGANIZATION_PATTERN = re.compile("^.*/\\*$")
 
 
 class SourceGithub(AbstractSource):
     @staticmethod
-    def _generate_repositories(config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator) -> Tuple[List[str], List[str]]:
+    def _is_repositories_config_valid(config_repositories: Set[str]) -> bool:
         """
-        Parse repositories config line and produce two lists of repositories.
+        _is_repositories_config_valid validates that each repo config matches regex to highlight problem in provided config.
+        Valid examples: airbytehq/airbyte airbytehq/another-repo airbytehq/* airbytehq/airbyte
+        Args:
+            config_repositories: set of provided repositories
+        Returns:
+            True if config valid, False if it's not
+        """
+        pattern = re.compile(r"^(?:[\w-]+/)+(?:\*|[\w-]+)$")
+
+        for repo in config_repositories:
+            if not pattern.match(repo):
+                return False
+        return True
+
+    @staticmethod
+    def _get_and_prepare_repositories_config(config: Mapping[str, Any]) -> Set[str]:
+        """
+        _get_and_prepare_repositories_config gets set of repositories names from config and removes simple errors that user could provide
+        Args:
+            config: Dict representing connector's config
+        Returns:
+            set of provided repositories
+        """
+        config_repositories = set(filter(None, config["repository"].split(" ")))
+        # removing spaces
+        config_repositories = {repo.strip() for repo in config_repositories}
+        # removing redundant / in the end
+        config_repositories = {repo[:-1] if repo.endswith("/") else repo for repo in config_repositories}
+
+        return config_repositories
+
+    @staticmethod
+    def _get_org_repositories(config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator) -> Tuple[List[str], List[str]]:
+        """
+        Parse config.repository and produce two lists: organizations, repositories.
         Args:
             config (dict): Dict representing connector's config
             authenticator(MultipleTokenAuthenticator): authenticator object
-        Returns:
-            Tuple[List[str], List[str]]: Tuple of two lists: first representing
-            repositories directly mentioned in config and second is
-            organization repositories from orgs/{org}/repos request.
         """
-        repositories = list(filter(None, config["repository"].split(" ")))
+        config_repositories = SourceGithub._get_and_prepare_repositories_config(config)
+        if not SourceGithub._is_repositories_config_valid(config_repositories):
+            raise Exception(
+                f"You provided invalid format of repositories config: {' ' .join(config_repositories)}."
+                f" Valid examples: airbytehq/airbyte airbytehq/another-repo airbytehq/* airbytehq/airbyte"
+            )
 
-        if not repositories:
+        if not config_repositories:
             raise Exception("Field `repository` required to be provided for connect to Github API")
 
-        repositories_list: set = {repo for repo in repositories if not ORGANIZATION_PATTERN.match(repo)}
-        organizations = [org.split("/")[0] for org in repositories if org not in repositories_list]
-        organisation_repos = set()
-        if organizations:
-            repos = Repositories(authenticator=authenticator, organizations=organizations)
-            for stream in repos.stream_slices(sync_mode=SyncMode.full_refresh):
-                organisation_repos = organisation_repos.union(
-                    {r["full_name"] for r in repos.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream)}
-                )
+        repositories = set()
+        organizations = set()
+        unchecked_repos = set()
+        unchecked_orgs = set()
 
-        return list(repositories_list), list(organisation_repos)
+        for org_repos in config_repositories:
+            org, _, repos = org_repos.partition("/")
+            if repos == "*":
+                unchecked_orgs.add(org)
+            else:
+                unchecked_repos.add(org_repos)
+
+        if unchecked_orgs:
+            stream = Repositories(authenticator=authenticator, organizations=unchecked_orgs)
+            for record in read_full_refresh(stream):
+                repositories.add(record["full_name"])
+                organizations.add(record["organization"])
+
+        unchecked_repos = unchecked_repos - repositories
+        if unchecked_repos:
+            stream = RepositoryStats(
+                authenticator=authenticator,
+                repositories=unchecked_repos,
+                page_size_for_large_streams=config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
+            )
+            for record in read_full_refresh(stream):
+                repositories.add(record["full_name"])
+                organization = record.get("organization", {}).get("login")
+                if organization:
+                    organizations.add(organization)
+
+        return list(organizations), list(repositories)
 
     @staticmethod
     def _get_authenticator(config: Dict[str, Any]):
@@ -136,46 +191,51 @@ class SourceGithub(AbstractSource):
 
         return default_branches, branches_to_pull
 
+    def user_friendly_error_message(self, message: str) -> str:
+        user_message = ""
+        if "404 Client Error: Not Found for url: https://api.github.com/repos/" in message:
+            # 404 Client Error: Not Found for url: https://api.github.com/repos/airbytehq/airbyte3?per_page=100
+            full_repo_name = message.split("https://api.github.com/repos/")[1].split("?")[0]
+            user_message = f'Repo name: "{full_repo_name}" is unknown, "repository" config option should use existing full repo name <organization>/<repository>'
+        elif "404 Client Error: Not Found for url: https://api.github.com/orgs/" in message:
+            # 404 Client Error: Not Found for url: https://api.github.com/orgs/airbytehqBLA/repos?per_page=100
+            org_name = message.split("https://api.github.com/orgs/")[1].split("/")[0]
+            user_message = f'Organization name: "{org_name}" is unknown, "repository" config option should be updated'
+        elif "401 Client Error: Unauthorized for url" in message:
+            # 401 Client Error: Unauthorized for url: https://api.github.com/orgs/datarootsio/repos?per_page=100&sort=updated&direction=desc
+            user_message = "Bad credentials, re-authentication or access token renewal is required"
+        return user_message
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = self._get_authenticator(config)
-            # In case of getting repository list for given organization was
-            # successfull no need of checking stats for every repository within
-            # that organization.
-            # Since we have "repo" scope requested it should grant access to private repos as well:
-            # https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes
-            repositories, _ = self._generate_repositories(config=config, authenticator=authenticator)
-
-            repository_stats_stream = RepositoryStats(
-                authenticator=authenticator,
-                repositories=repositories,
-                page_size_for_large_streams=config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
-            )
-            for stream_slice in repository_stats_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-                next(repository_stats_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
+            _, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
+            if not repositories:
+                return False, "Invalid repositories. Valid examples: airbytehq/airbyte airbytehq/another-repo airbytehq/* airbytehq/airbyte"
             return True, None
 
         except Exception as e:
             message = repr(e)
-            if "404 Client Error: Not Found for url: https://api.github.com/repos/" in message:
-                # HTTPError('404 Client Error: Not Found for url: https://api.github.com/repos/airbytehq/airbyte3?per_page=100')"
-                full_repo_name = message.split("https://api.github.com/repos/")[1]
-                full_repo_name = full_repo_name.split("?")[0]
-                message = f'Unknown repo name: "{full_repo_name}", use existing full repo name <organization>/<repository>'
-            elif "404 Client Error: Not Found for url: https://api.github.com/orgs/" in message:
-                # HTTPError('404 Client Error: Not Found for url: https://api.github.com/orgs/airbytehqBLA/repos?per_page=100')"
-                org_name = message.split("https://api.github.com/orgs/")[1]
-                org_name = org_name.split("/")[0]
-                message = f'Unknown organization name: "{org_name}"'
-
-            return False, message
+            user_message = self.user_friendly_error_message(message)
+            return False, user_message or message
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config)
-        repos, organization_repos = self._generate_repositories(config=config, authenticator=authenticator)
-        repositories = repos + organization_repos
+        try:
+            organizations, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
+        except Exception as e:
+            message = repr(e)
+            user_message = self.user_friendly_error_message(message)
+            if user_message:
+                raise AirbyteTracedException(
+                    internal_message=message, message=user_message, failure_type=FailureType.config_error, exception=e
+                )
+            else:
+                raise e
 
-        organizations = list({org.split("/")[0] for org in repositories})
+        if not any((organizations, repositories)):
+            raise Exception("No streams available. Please check permissions")
+
         page_size = config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
 
         organization_args = {"authenticator": authenticator, "organizations": organizations}
@@ -189,6 +249,7 @@ class SourceGithub(AbstractSource):
         project_columns_stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
         teams_stream = Teams(**organization_args)
         team_members_stream = TeamMembers(parent=teams_stream, **repository_args)
+        workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
 
         return [
             Assignees(**repository_args),
@@ -224,6 +285,7 @@ class SourceGithub(AbstractSource):
             team_members_stream,
             Users(**organization_args),
             Workflows(**repository_args_with_start_date),
-            WorkflowRuns(**repository_args_with_start_date),
+            workflow_runs_stream,
+            WorkflowJobs(parent=workflow_runs_stream, **repository_args_with_start_date),
             TeamMemberships(parent=team_members_stream, **repository_args),
         ]

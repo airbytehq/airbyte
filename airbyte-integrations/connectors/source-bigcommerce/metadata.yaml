@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 59c5501b-9f95-411e-9269-7143c939adbd
+  dockerImageTag: 0.1.10
+  dockerRepository: airbyte/source-bigcommerce
+  githubIssueLabel: source-bigcommerce
+  icon: bigcommerce.svg
+  license: MIT
+  name: BigCommerce
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/bigcommerce
+metadataSpecVersion: "1.0"

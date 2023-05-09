@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*.s3.amazonaws.com"
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: file
+  connectorType: source
+  definitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
+  dockerImageTag: 2.0.4
+  dockerRepository: airbyte/source-s3
+  githubIssueLabel: source-s3
+  icon: s3.svg
+  license: MIT
+  name: S3
+  releaseStage: generally_available
+  supportUrl: https://docs.airbyte.com/integrations/sources/s3
+metadataSpecVersion: "1.0"

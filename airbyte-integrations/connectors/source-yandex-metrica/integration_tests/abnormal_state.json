@@ -1,0 +1,16 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "dateTime": "2100-01-01T00:00:00+00:00"},
+      "stream_descriptor": { "name": "sessions" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "dateTime": "2100-01-01T00:00:00+00:00"},
+      "stream_descriptor": { "name": "views" }
+    }
+  }
+]

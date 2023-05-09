@@ -110,7 +110,7 @@
     "campaign.maximize_conversion_value.target_roas": {
       "type": ["null", "number"]
     },
-    "campaign.maximize_conversions.target_cpa": {
+    "campaign.maximize_conversions.target_cpa_micros": {
       "type": ["null", "integer"]
     },
     "campaign.name": {
@@ -188,7 +188,10 @@
     "campaign.target_cpa.target_cpa_micros": {
       "type": ["null", "integer"]
     },
-    "campaign.target_cpm": {
+    "campaign.target_cpm.target_frequency_goal.target_count": {
+      "type": ["null", "integer"]
+    },
+    "campaign.target_cpm.target_frequency_goal.time_unit": {
       "type": ["null", "string"]
     },
     "campaign.target_impression_share.cpc_bid_ceiling_micros": {
@@ -245,6 +248,15 @@
     "metrics.clicks": {
       "type": ["null", "integer"]
     },
+    "metrics.ctr": {
+      "type": ["null", "number"]
+    },
+    "metrics.conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.conversions_value": {
+      "type": ["null", "number"]
+    },
     "metrics.cost_micros": {
       "type": ["null", "integer"]
     },
@@ -260,6 +272,9 @@
     "segments.date": {
       "type": ["null", "string"],
       "format": "date"
+    },
+    "segments.hour": {
+      "type": ["null", "number"]
     }
   }
 }

@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: destination
+  definitionId: eebd85cf-60b2-4af6-9ba0-edeca01437b0
+  dockerImageTag: 0.0.1
+  dockerRepository: ghcr.io/devmate-cloud/streamr-airbyte-connectors
+  githubIssueLabel: ghcr.io/devmate-cloud/streamr-airbyte-connectors
+  icon: streamr.svg
+  license: MIT
+  name: Streamr
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/streamr
+metadataSpecVersion: "1.0"

@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -22,10 +22,12 @@ import java.util.stream.Collectors;
  * stream. In these cases, at each state of the process, it tracks the LAST state message for EACH
  * stream (no duplicates!).
  *
+ * <p>
  * Guaranteed to output state messages in order relative to other messages of the SAME state. Does
  * NOT guarantee that state messages of different streams will be output in the order in which they
  * were received. State messages across streams will be emitted in alphabetical order (primary sort
  * on namespace, secondary on name).
+ * </p>
  */
 public class DestStreamStateLifecycleManager implements DestStateLifecycleManager {
 
@@ -50,6 +52,11 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
     return listStatesInOrder(streamToLastPendingState);
   }
 
+  /*
+   * Similar to #markFlushedAsCommmitted, this method should no longer be used to align with the
+   * changes to destination checkpointing where flush/commit operations will be bundled
+   */
+  @Deprecated
   @Override
   public void markPendingAsFlushed() {
     moveToNextPhase(streamToLastPendingState, streamToLastFlushedState);
@@ -60,14 +67,35 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
     return listStatesInOrder(streamToLastFlushedState);
   }
 
+  /*
+   * During the process of migration to destination checkpointing, this method should no longer be in
+   * use in favor of #markPendingAsCommitted where states will be flushed/committed as a singular
+   * transaction
+   */
+  @Deprecated
   @Override
   public void markFlushedAsCommitted() {
     moveToNextPhase(streamToLastFlushedState, streamToLastCommittedState);
   }
 
   @Override
+  public void clearCommitted() {
+    streamToLastCommittedState.clear();
+  }
+
+  @Override
+  public void markPendingAsCommitted() {
+    moveToNextPhase(streamToLastPendingState, streamToLastCommittedState);
+  }
+
+  @Override
   public Queue<AirbyteMessage> listCommitted() {
     return listStatesInOrder(streamToLastCommittedState);
+  }
+
+  @Override
+  public boolean supportsPerStreamFlush() {
+    return true;
   }
 
   /**

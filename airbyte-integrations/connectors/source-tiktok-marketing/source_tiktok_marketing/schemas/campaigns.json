@@ -1,5 +1,5 @@
 {
-  "type": ["null", "object"],
+  "type": "object",
   "properties": {
     "campaign_id": {
       "type": "integer"
@@ -19,10 +19,10 @@
     "budget_mode": {
       "type": "string"
     },
-    "status": {
+    "secondary_status": {
       "type": "string"
     },
-    "opt_status": {
+    "operation_status": {
       "type": ["null", "string"]
     },
     "objective": {
@@ -31,8 +31,8 @@
     "objective_type": {
       "type": ["null", "string"]
     },
-    "budget_optimize_switch": {
-      "type": ["null", "number"]
+    "budget_optimize_on": {
+      "type": ["null", "boolean"]
     },
     "bid_type": {
       "type": ["null", "string"]
@@ -40,7 +40,7 @@
     "deep_bid_type": {
       "type": ["null", "string"]
     },
-    "optimize_goal": {
+    "optimization_goal": {
       "type": ["null", "string"]
     },
     "split_test_variable": {
@@ -50,10 +50,20 @@
       "type": "boolean"
     },
     "create_time": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "modify_time": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "roas_bid": {
+      "type": ["null", "number"]
+    },
+    "is_smart_performance_campaign": {
+      "type": ["null", "boolean"]
     }
   }
 }

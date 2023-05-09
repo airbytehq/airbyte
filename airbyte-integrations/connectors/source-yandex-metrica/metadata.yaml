@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - api-metrica.yandex.net
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 7865dce4-2211-4f6a-88e5-9d0fe161afe7
+  dockerImageTag: 1.0.0
+  dockerRepository: airbyte/source-yandex-metrica
+  githubIssueLabel: source-yandex-metrica
+  icon: yandexmetrica.svg
+  license: MIT
+  name: Yandex Metrica
+  releaseStage: beta
+  supportUrl: https://docs.airbyte.com/integrations/sources/yandex-metrica
+metadataSpecVersion: "1.0"

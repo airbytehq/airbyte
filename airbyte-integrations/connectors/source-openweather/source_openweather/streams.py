@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
@@ -11,7 +11,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class OneCall(HttpStream):
 
     cursor_field = ["current", "dt"]
-    url_base = "https://api.openweathermap.org/data/2.5/"
+    url_base = "https://api.openweathermap.org/data/3.0/"
     primary_key = None
 
     def __init__(self, appid: str, lat: float, lon: float, lang: str = None, units: str = None):

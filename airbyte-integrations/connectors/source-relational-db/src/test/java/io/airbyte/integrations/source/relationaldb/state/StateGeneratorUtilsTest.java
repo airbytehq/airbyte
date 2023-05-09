@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb.state;
@@ -7,7 +7,7 @@ package io.airbyte.integrations.source.relationaldb.state;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import org.junit.jupiter.api.Test;
 
 /**

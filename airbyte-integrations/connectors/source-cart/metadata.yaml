@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
+  dockerImageTag: 0.2.1
+  dockerRepository: airbyte/source-cart
+  githubIssueLabel: source-cart
+  icon: cart.svg
+  license: MIT
+  name: Cart.com
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/cart
+metadataSpecVersion: "1.0"

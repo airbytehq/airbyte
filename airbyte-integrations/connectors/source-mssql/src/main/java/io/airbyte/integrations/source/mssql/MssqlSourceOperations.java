@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -34,7 +34,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
    * @throws SQLException
    */
   @Override
-  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json)
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json)
       throws SQLException {
 
     final SQLServerResultSetMetaData metadata = (SQLServerResultSetMetaData) resultSet
@@ -44,7 +44,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
     final JDBCType columnType = safeGetJdbcType(metadata.getColumnType(colIndex));
 
     if (columnTypeName.equalsIgnoreCase("time")) {
-      putString(json, columnName, resultSet, colIndex);
+      putTime(json, columnName, resultSet, colIndex);
     } else if (columnTypeName.equalsIgnoreCase("geometry")) {
       putGeometry(json, columnName, resultSet, colIndex);
     } else if (columnTypeName.equalsIgnoreCase("geography")) {
@@ -80,7 +80,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JDBCType getFieldType(final JsonNode field) {
+  public JDBCType getDatabaseFieldType(final JsonNode field) {
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText();
       if (typeName.equalsIgnoreCase("geography")

@@ -76,7 +76,7 @@ definitions:
     title: App ID or empty string
     type: string
   defs_pinned_info:
-    additionalProperties: false
+    additionalProperties: true
     title: Info for a pinned item
     type: object
   defs_reminder_id:
@@ -108,14 +108,14 @@ definitions:
     title: Team or Enterprise ID
     type: string
   objs_bot_profile:
-    additionalProperties: false
+    additionalProperties: true
     properties:
       app_id:
         "$ref": "#/definitions/defs_app_id"
       deleted:
         type: boolean
       icons:
-        additionalProperties: false
+        additionalProperties: true
         properties:
           image_36:
             format: uri
@@ -150,7 +150,7 @@ definitions:
     title: Bot Profile Object
     type: object
   objs_channel:
-    additionalProperties: false
+    additionalProperties: true
     properties:
       accepted_user:
         "$ref": "#/definitions/defs_user_id"
@@ -221,7 +221,7 @@ definitions:
       priority:
         type: number
       purpose:
-        additionalProperties: false
+        additionalProperties: true
         properties:
           creator:
             "$ref": "#/definitions/defs_topic_purpose_creator"
@@ -235,7 +235,7 @@ definitions:
           - last_set
         type: object
       topic:
-        additionalProperties: false
+        additionalProperties: true
         properties:
           creator:
             "$ref": "#/definitions/defs_topic_purpose_creator"
@@ -274,7 +274,7 @@ definitions:
     title: Channel Object
     type: object
   objs_comment:
-    additionalProperties: false
+    additionalProperties: true
     properties:
       comment:
         type: string
@@ -317,7 +317,7 @@ definitions:
     type: array
   objs_conversation:
     items:
-      - additionalProperties: false
+      - additionalProperties: true
         properties:
           accepted_user:
             "$ref": "#/definitions/defs_user_id"
@@ -334,7 +334,7 @@ definitions:
           creator:
             "$ref": "#/definitions/defs_user_id"
           display_counts:
-            additionalProperties: false
+            additionalProperties: true
             properties:
               display_counts:
                 type: integer
@@ -447,7 +447,7 @@ definitions:
           priority:
             type: number
           purpose:
-            additionalProperties: false
+            additionalProperties: true
             properties:
               creator:
                 "$ref": "#/definitions/defs_topic_purpose_creator"
@@ -468,7 +468,7 @@ definitions:
             uniqueItems: true
           shares:
             items:
-              additionalProperties: false
+              additionalProperties: true
               properties:
                 accepted_user:
                   "$ref": "#/definitions/defs_user_id"
@@ -489,7 +489,7 @@ definitions:
           timezone_count:
             type: integer
           topic:
-            additionalProperties: false
+            additionalProperties: true
             properties:
               creator:
                 "$ref": "#/definitions/defs_topic_purpose_creator"
@@ -536,7 +536,7 @@ definitions:
           - purpose
         title: Conversation object
         type: object
-      - additionalProperties: false
+      - additionalProperties: true
         properties:
           accepted_user:
             "$ref": "#/definitions/defs_user_id"
@@ -553,7 +553,7 @@ definitions:
           creator:
             "$ref": "#/definitions/defs_user_id"
           display_counts:
-            additionalProperties: false
+            additionalProperties: true
             properties:
               display_counts:
                 type: integer
@@ -656,7 +656,7 @@ definitions:
           priority:
             type: number
           purpose:
-            additionalProperties: false
+            additionalProperties: true
             properties:
               creator:
                 "$ref": "#/definitions/defs_topic_purpose_creator"
@@ -677,7 +677,7 @@ definitions:
             uniqueItems: true
           shares:
             items:
-              additionalProperties: false
+              additionalProperties: true
               properties:
                 accepted_user:
                   "$ref": "#/definitions/defs_user_id"
@@ -698,7 +698,7 @@ definitions:
           timezone_count:
             type: integer
           topic:
-            additionalProperties: false
+            additionalProperties: true
             properties:
               creator:
                 "$ref": "#/definitions/defs_topic_purpose_creator"
@@ -743,7 +743,7 @@ definitions:
           - purpose
         title: Conversation MPIM Object
         type: object
-      - additionalProperties: false
+      - additionalProperties: true
         properties:
           created:
             type: integer
@@ -785,7 +785,7 @@ definitions:
             type: number
           shares:
             items:
-              additionalProperties: false
+              additionalProperties: true
               properties:
                 date_create:
                   type: integer
@@ -825,7 +825,7 @@ definitions:
         title: Conversation IM Channel Object from conversations.* methods
         type: object
   objs_enterprise_user:
-    additionalProperties: false
+    additionalProperties: true
     properties:
       enterprise_id:
         "$ref": "#/definitions/defs_enterprise_id"
@@ -872,7 +872,7 @@ definitions:
     title: External Org Migrations
     type: object
   objs_file:
-    additionalProperties: false
+    additionalProperties: true
     properties:
       channels:
         items:
@@ -963,12 +963,12 @@ definitions:
           "$ref": "#/definitions/objs_reaction"
         type: array
       shares:
-        additionalProperties: false
+        additionalProperties: true
         properties:
           private:
-            additionalProperties: false
+            additionalProperties: true
           public:
-            additionalProperties: false
+            additionalProperties: true
         type: object
       size:
         type: integer
@@ -1069,11 +1069,11 @@ definitions:
         type: boolean
     type: object
   objs_message:
-    additionalProperties: false
+    additionalProperties: true
     properties:
       attachments:
         items:
-          additionalProperties: false
+          additionalProperties: true
           properties:
             fallback:
               type: string
@@ -1117,7 +1117,7 @@ definitions:
         type: array
         uniqueItems: true
       icons:
-        additionalProperties: false
+        additionalProperties: true
         properties:
           emoji:
             type: string
@@ -1203,7 +1203,7 @@ definitions:
     title: Message object
     type: object
   objs_paging:
-    additionalProperties: false
+    additionalProperties: true
     properties:
       count:
         type: integer
@@ -1250,7 +1250,7 @@ definitions:
     title: Reaction object
     type: object
   objs_reminder:
-    additionalProperties: false
+    additionalProperties: true
     properties:
       complete_ts:
         type: integer
@@ -1274,7 +1274,7 @@ definitions:
       - recurring
     type: object
   objs_resources:
-    additionalProperties: false
+    additionalProperties: true
     properties:
       excluded_ids:
         items:
@@ -1296,7 +1296,7 @@ definitions:
     type: object
   objs_response_metadata:
     items:
-      - additionalProperties: false
+      - additionalProperties: true
         properties:
           next_cursor:
             type: string
@@ -1304,7 +1304,7 @@ definitions:
           - next_cursor
         title: new paging style
         type: object
-      - additionalProperties: false
+      - additionalProperties: true
         properties:
           messages:
             items:
@@ -1321,7 +1321,7 @@ definitions:
           - warnings
         title: deprecation_warning
         type: object
-      - additionalProperties: false
+      - additionalProperties: true
         properties:
           messages:
             items:
@@ -1351,7 +1351,7 @@ definitions:
         - im:read
     type: array
   objs_subteam:
-    additionalProperties: false
+    additionalProperties: true
     properties:
       auto_provision:
         type: boolean
@@ -1393,7 +1393,7 @@ definitions:
       name:
         type: string
       prefs:
-        additionalProperties: false
+        additionalProperties: true
         properties:
           channels:
             items:
@@ -1439,7 +1439,7 @@ definitions:
     title: Subteam/Usergroup Object
     type: object
   objs_team:
-    additionalProperties: false
+    additionalProperties: true
     properties:
       archived:
         type: boolean
@@ -1526,7 +1526,7 @@ definitions:
     title: Team Object
     type: object
   objs_team_profile_field:
-    additionalProperties: false
+    additionalProperties: true
     properties:
       field_name:
         type:
@@ -1570,7 +1570,7 @@ definitions:
       - type
     type: object
   objs_team_profile_field_option:
-    additionalProperties: false
+    additionalProperties: true
     properties:
       is_custom:
         type:
@@ -1591,7 +1591,7 @@ definitions:
     type: object
   objs_user:
     items:
-      - additionalProperties: false
+      - additionalProperties: true
         description: user object for non enterprise type
         properties:
           color:
@@ -1642,7 +1642,7 @@ definitions:
           team_id:
             "$ref": "#/definitions/defs_workspace_id"
           team_profile:
-            additionalProperties: false
+            additionalProperties: true
             properties:
               fields:
                 items:
@@ -1673,7 +1673,7 @@ definitions:
           - updated
           - is_app_user
         type: object
-      - additionalProperties: false
+      - additionalProperties: true
         description: enterprise user
         properties:
           color:
@@ -1721,7 +1721,7 @@ definitions:
           team_id:
             "$ref": "#/definitions/defs_workspace_id"
           team_profile:
-            additionalProperties: false
+            additionalProperties: true
             properties:
               fields:
                 items:
@@ -1759,7 +1759,7 @@ definitions:
           - is_app_user
         type: object
   objs_user_profile:
-    additionalProperties: false
+    additionalProperties: true
     properties:
       always_active:
         type: boolean
@@ -1916,7 +1916,7 @@ definitions:
     title: User profile object
     type: object
   objs_user_profile_short:
-    additionalProperties: false
+    additionalProperties: true
     properties:
       avatar_hash:
         type: string
@@ -2485,7 +2485,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response of admin.conversations.archive
             properties:
               ok:
@@ -2501,7 +2501,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from admin.conversations.archive
             properties:
               error:
@@ -2558,7 +2558,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response of admin.conversations.convertToPrivate
             properties:
               ok:
@@ -2574,7 +2574,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from admin.conversations.convertToPrivate
             properties:
               error:
@@ -2655,7 +2655,7 @@ paths:
               channel_id: C12345
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response of admin.conversations.create
             properties:
               channel_id:
@@ -2673,7 +2673,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from admin.conversations.create
             properties:
               error:
@@ -2730,7 +2730,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response of admin.conversations.delete
             properties:
               ok:
@@ -2746,7 +2746,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from admin.conversations.delete
             properties:
               error:
@@ -2809,7 +2809,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response of admin.conversations.disconnectShared
             properties:
               ok:
@@ -2825,7 +2825,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from admin.conversations.disconnectShared
             properties:
               error:
@@ -2976,7 +2976,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response of admin.conversations.getConversationPrefs
             properties:
               ok:
@@ -3017,7 +3017,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from admin.conversations.getConversationPrefs
             properties:
               error:
@@ -3093,13 +3093,13 @@ paths:
                 - T1234
                 - T5678
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response of admin.conversations.getTeams
             properties:
               ok:
                 "$ref": "#/definitions/defs_ok_true"
               response_metadata:
-                additionalProperties: false
+                additionalProperties: true
                 properties:
                   next_cursor:
                     type: string
@@ -3122,7 +3122,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from admin.conversations.getTeams
             properties:
               error:
@@ -3184,7 +3184,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response of admin.conversations.invite
             properties:
               ok:
@@ -3260,7 +3260,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response of admin.conversations.rename
             properties:
               ok:
@@ -3276,7 +3276,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from admin.conversations.rename
             properties:
               error:
@@ -3634,7 +3634,7 @@ paths:
               response_metadata:
                 next_cursor: dGVhbTpDMDYxRkE1UEI=
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response of admin.conversations.search
             properties:
               channels:
@@ -3655,7 +3655,7 @@ paths:
               error: not_an_enterprise
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from admin.conversations.search
             properties:
               error:
@@ -3719,7 +3719,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response of admin.conversations.setConversationPrefs
             properties:
               ok:
@@ -3735,7 +3735,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from admin.conversations.setConversationPrefs
             properties:
               error:
@@ -3875,7 +3875,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response of admin.conversations.unarchive
             properties:
               ok:
@@ -3891,7 +3891,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from admin.conversations.unarchive
             properties:
               error:
@@ -6697,7 +6697,7 @@ paths:
                   scopes: []
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for successful response from apps.permissions.info
               method
@@ -6771,7 +6771,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from apps.permissions.info method
             properties:
               callstack:
@@ -6846,7 +6846,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for successful response from apps.permissions.request
               method
@@ -6864,7 +6864,7 @@ paths:
               error: invalid_trigger_id
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from apps.permissions.request method
             properties:
               callstack:
@@ -6980,7 +6980,7 @@ paths:
                   type: object
                 type: array
               response_metadata:
-                additionalProperties: false
+                additionalProperties: true
                 properties:
                   next_cursor:
                     type: string
@@ -7001,7 +7001,7 @@ paths:
               error: invalid_cursor
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for error response from apps.permissions.resources.list
               method
@@ -7123,7 +7123,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for error response from apps.permissions.scopes.list
               method
@@ -7356,7 +7356,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from apps.uninstall method
             properties:
               ok:
@@ -7372,7 +7372,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from apps.uninstall method
             properties:
               callstack:
@@ -7446,7 +7446,7 @@ paths:
               ok: true
               revoked: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from auth.revoke method
             properties:
               ok:
@@ -7465,7 +7465,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from auth.revoke method
             properties:
               callstack:
@@ -7534,7 +7534,7 @@ paths:
               user: grace
               user_id: W12345678
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response auth.test method
             properties:
               bot_id:
@@ -7569,7 +7569,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response auth.test method
             properties:
               callstack:
@@ -7643,18 +7643,18 @@ paths:
                 user_id: U012ABCDEF
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from bots.info method
             properties:
               bot:
-                additionalProperties: false
+                additionalProperties: true
                 properties:
                   app_id:
                     "$ref": "#/definitions/defs_app_id"
                   deleted:
                     type: boolean
                   icons:
-                    additionalProperties: false
+                    additionalProperties: true
                     properties:
                       image_36:
                         format: uri
@@ -7700,7 +7700,7 @@ paths:
               error: bot_not_found
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from bots.info method
             properties:
               callstack:
@@ -8243,7 +8243,7 @@ paths:
               ok: true
               ts: "1401383885.000061"
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response of chat.delete method
             properties:
               channel:
@@ -8265,7 +8265,7 @@ paths:
               error: message_not_found
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from chat.delete method
             properties:
               callstack:
@@ -8350,7 +8350,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for successful response from chat.deleteScheduledMessage
               method
@@ -8368,7 +8368,7 @@ paths:
               error: invalid_scheduled_message_id
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for error response from chat.deleteScheduledMessage
               method
@@ -8451,7 +8451,7 @@ paths:
               ok: true
               permalink: https://ghostbusters.slack.com/archives/C1H9RESGA/p135854651500008
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response chat.getPermalink
             properties:
               channel:
@@ -8474,7 +8474,7 @@ paths:
               error: channel_not_found
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from chat.getPermalink method
             properties:
               callstack:
@@ -8551,7 +8551,7 @@ paths:
               ok: true
               ts: "1417671948.000006"
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from chat.meMessage method
             properties:
               channel:
@@ -8571,7 +8571,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from chat.meMessage method
             properties:
               callstack:
@@ -8718,7 +8718,7 @@ paths:
               message_ts: "1502210682.580145"
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from chat.postEphemeral method
             properties:
               message_ts:
@@ -8737,7 +8737,7 @@ paths:
               error: user_not_in_channel
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from chat.postEphemeral method
             properties:
               callstack:
@@ -8908,7 +8908,7 @@ paths:
               ok: true
               ts: "1503435956.000247"
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response of chat.postMessage method
             properties:
               channel:
@@ -8933,7 +8933,7 @@ paths:
               error: too_many_attachments
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response chat.postMessage method
             properties:
               callstack:
@@ -9071,13 +9071,13 @@ paths:
               post_at: "1562180400"
               scheduled_message_id: Q1298393284
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response of chat.scheduleMessage method
             properties:
               channel:
                 "$ref": "#/definitions/defs_channel"
               message:
-                additionalProperties: false
+                additionalProperties: true
                 properties:
                   bot_id:
                     "$ref": "#/definitions/defs_bot_id"
@@ -9126,7 +9126,7 @@ paths:
               error: time_in_past
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response chat.scheduleMessage method
             properties:
               callstack:
@@ -9237,7 +9237,7 @@ paths:
                   post_at: 1551991428
                   text: Here's a message for you in the future
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for successful response from chat.scheduledMessages.list
               method
@@ -9245,7 +9245,7 @@ paths:
               ok:
                 "$ref": "#/definitions/defs_ok_true"
               response_metadata:
-                additionalProperties: false
+                additionalProperties: true
                 properties:
                   next_cursor:
                     type: string
@@ -9254,7 +9254,7 @@ paths:
                 type: object
               scheduled_messages:
                 items:
-                  additionalProperties: false
+                  additionalProperties: true
                   properties:
                     channel_id:
                       "$ref": "#/definitions/defs_channel_id"
@@ -9289,7 +9289,7 @@ paths:
               error: invalid_channel
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for error response from chat.scheduledMessages.list
               method
@@ -9394,7 +9394,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from chat.unfurl method
             properties:
               ok:
@@ -9410,7 +9410,7 @@ paths:
               error: cannot_unfurl_url
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from chat.unfurl method
             properties:
               callstack:
@@ -9539,7 +9539,7 @@ paths:
               text: Updated text you carefully authored
               ts: "1401383885.000061"
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response of chat.update method
             properties:
               channel:
@@ -9579,7 +9579,7 @@ paths:
               error: cant_update_message
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response chat.update method
             properties:
               callstack:
@@ -9654,7 +9654,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response conversations.archive method
             properties:
               ok:
@@ -9670,7 +9670,7 @@ paths:
               error: channel_not_found
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from conversations.archive method
             properties:
               callstack:
@@ -9752,7 +9752,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response conversations.close method
             properties:
               already_closed:
@@ -9772,7 +9772,7 @@ paths:
               error: channel_not_found
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from conversations.close method
             properties:
               callstack:
@@ -9886,7 +9886,7 @@ paths:
                 unread_count_display: 0
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response conversations.create method
             properties:
               channel:
@@ -9905,7 +9905,7 @@ paths:
               error: name_taken
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from conversations.create method
             properties:
               callstack:
@@ -10030,7 +10030,7 @@ paths:
               response_metadata:
                 next_cursor: bmV4dF90czoxNTEyMDg1ODYxMDAwNTQz
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for successful response from conversations.history
               method
@@ -10069,7 +10069,7 @@ paths:
               error: channel_not_found
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from conversations.history method
             properties:
               callstack:
@@ -10191,7 +10191,7 @@ paths:
                 unlinked: 0
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response conversations.info
             properties:
               channel:
@@ -10210,7 +10210,7 @@ paths:
               error: channel_not_found
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from conversations.info method
             properties:
               callstack:
@@ -10322,7 +10322,7 @@ paths:
                 unlinked: 0
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for successful response from conversations.invite
               method
@@ -10345,7 +10345,7 @@ paths:
               error: method_not_supported_for_channel_type
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from conversations.invite method
             properties:
               callstack:
@@ -10387,7 +10387,7 @@ paths:
                 type: string
               errors:
                 items:
-                  additionalProperties: false
+                  additionalProperties: true
                   properties:
                     error:
                       enum:
@@ -10514,7 +10514,7 @@ paths:
                   - already_in_channel
               warning: already_in_channel
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from conversations.join method
             properties:
               channel:
@@ -10547,7 +10547,7 @@ paths:
               error: is_archived
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from conversations.join method
             properties:
               callstack:
@@ -10627,7 +10627,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response conversations.kick method
             properties:
               ok:
@@ -10645,7 +10645,7 @@ paths:
               error: cant_kick_self
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response conversations.kick method
             properties:
               callstack:
@@ -10724,7 +10724,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from conversations.leave method
             properties:
               not_in_channel:
@@ -10746,7 +10746,7 @@ paths:
               error: cant_leave_general
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from conversations.leave method
             properties:
               callstack:
@@ -10913,7 +10913,7 @@ paths:
               response_metadata:
                 next_cursor: dGVhbTpDMDYxRkE1UEI=
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from conversations.list method
             properties:
               channels:
@@ -10924,7 +10924,7 @@ paths:
               ok:
                 "$ref": "#/definitions/defs_ok_true"
               response_metadata:
-                additionalProperties: false
+                additionalProperties: true
                 properties:
                   next_cursor:
                     type: string
@@ -10943,7 +10943,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from conversations.list method
             properties:
               callstack:
@@ -11019,7 +11019,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response conversations.mark method
             properties:
               ok:
@@ -11035,7 +11035,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from conversations.mark method
             properties:
               callstack:
@@ -11130,7 +11130,7 @@ paths:
               response_metadata:
                 next_cursor: e3VzZXJfaWQ6IFcxMjM0NTY3fQ==
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response conversations.members method
             properties:
               members:
@@ -11142,7 +11142,7 @@ paths:
               ok:
                 "$ref": "#/definitions/defs_ok_true"
               response_metadata:
-                additionalProperties: false
+                additionalProperties: true
                 properties:
                   next_cursor:
                     type: string
@@ -11162,7 +11162,7 @@ paths:
               error: invalid_cursor
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response conversations.members method
             properties:
               callstack:
@@ -11250,7 +11250,7 @@ paths:
                 id: D069C7QFK
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for successful response from conversations.open method
               when opening channels, ims, mpims
@@ -11260,7 +11260,7 @@ paths:
               channel:
                 items:
                   - "$ref": "#/definitions/objs_conversation"
-                  - additionalProperties: false
+                  - additionalProperties: true
                     properties:
                       created:
                         type: string
@@ -11299,7 +11299,7 @@ paths:
               error: channel_not_found
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from conversations.open method
             properties:
               callstack:
@@ -11414,7 +11414,7 @@ paths:
                 unlinked: 0
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for successful response from conversations.rename
               method
@@ -11437,7 +11437,7 @@ paths:
               error: not_in_channel
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from conversations.rename method
             properties:
               callstack:
@@ -11585,7 +11585,7 @@ paths:
               response_metadata:
                 next_cursor: bmV4dF90czoxNDg0Njc4MjkwNTE3MDkx
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for successful response from conversations.replies
               method
@@ -11595,7 +11595,7 @@ paths:
               messages:
                 items:
                   items:
-                    - additionalProperties: false
+                    - additionalProperties: true
                       properties:
                         last_read:
                           "$ref": "#/definitions/defs_ts"
@@ -11641,7 +11641,7 @@ paths:
                         - subscribed
                         - ts
                       type: object
-                    - additionalProperties: false
+                    - additionalProperties: true
                       properties:
                         is_starred:
                           type: boolean
@@ -11688,7 +11688,7 @@ paths:
               error: thread_not_found
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from conversations.replies method
             properties:
               callstack:
@@ -11765,7 +11765,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for successful response from conversations.setPurpose
               method
@@ -11786,7 +11786,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from conversations.setPurpose method
             properties:
               callstack:
@@ -11867,7 +11867,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for successful response from conversations.setTopic
               method
@@ -11888,7 +11888,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from conversations.setTopic method
             properties:
               callstack:
@@ -11965,7 +11965,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for successful response from conversations.unarchive
               method
@@ -11983,7 +11983,7 @@ paths:
               error: channel_not_found
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from conversations.unarchive method
             properties:
               callstack:
@@ -12069,7 +12069,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from dialog.open method
             properties:
               ok:
@@ -12087,7 +12087,7 @@ paths:
               error: missing_trigger
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from dialog.open method
             properties:
               callstack:
@@ -12160,7 +12160,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from dnd.endDnd method
             properties:
               ok:
@@ -12176,7 +12176,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from dnd.endDnd method
             properties:
               callstack:
@@ -12242,7 +12242,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from dnd.endSnooze method
             properties:
               dnd_enabled:
@@ -12270,7 +12270,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from dnd.endSnooze method
             properties:
               callstack:
@@ -12339,7 +12339,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from dnd.info method
             properties:
               dnd_enabled:
@@ -12370,7 +12370,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from dnd.info method
             properties:
               callstack:
@@ -12441,7 +12441,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from dnd.setSnooze method
             properties:
               ok:
@@ -12466,7 +12466,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from dnd.setSnooze method
             properties:
               callstack:
@@ -12671,7 +12671,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response files.comments.delete method
             properties:
               ok:
@@ -12687,7 +12687,7 @@ paths:
               error: file_not_found
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response files.comments.delete method
             properties:
               callstack:
@@ -12753,7 +12753,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response files.delete method
             properties:
               ok:
@@ -12769,7 +12769,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response files.delete method
             properties:
               callstack:
@@ -12915,7 +12915,7 @@ paths:
               response_metadata:
                 next_cursor: dGVhbTpDMUg5UkVTR0w=
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from files.info method
             properties:
               comments:
@@ -12945,7 +12945,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from files.info method
             properties:
               callstack:
@@ -13128,7 +13128,7 @@ paths:
                 pages: 1
                 total: 2
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from files.list method
             properties:
               files:
@@ -13154,7 +13154,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from files.list method
             properties:
               callstack:
@@ -13684,7 +13684,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for successful response from files.revokePublicURL
               method
@@ -13705,7 +13705,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from files.revokePublicURL method
             properties:
               callstack:
@@ -13775,7 +13775,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for successful response from files.sharedPublicURL
               method
@@ -13796,7 +13796,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from files.sharedPublicURL method
             properties:
               callstack:
@@ -13953,7 +13953,7 @@ paths:
                 username: ""
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response files.upload method
             properties:
               file:
@@ -13972,7 +13972,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response files.upload method
             properties:
               callstack:
@@ -14098,7 +14098,7 @@ paths:
               error: not_enterprise_team
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from migration.exchange method
             properties:
               callstack:
@@ -14431,7 +14431,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from pins.add method
             properties:
               ok:
@@ -14447,7 +14447,7 @@ paths:
               error: channel_not_found
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from pins.add method
             properties:
               callstack:
@@ -14547,11 +14547,11 @@ paths:
           schema:
             description: Schema for successful response from pins.list method
             items:
-              - additionalProperties: false
+              - additionalProperties: true
                 properties:
                   items:
                     items:
-                      - additionalProperties: false
+                      - additionalProperties: true
                         properties:
                           created:
                             type: integer
@@ -14565,7 +14565,7 @@ paths:
                             type: string
                         title: File Pin
                         type: object
-                      - additionalProperties: false
+                      - additionalProperties: true
                         properties:
                           channel:
                             "$ref": "#/definitions/defs_channel"
@@ -14589,7 +14589,7 @@ paths:
                   - ok
                   - items
                 type: object
-              - additionalProperties: false
+              - additionalProperties: true
                 properties:
                   count:
                     type: integer
@@ -14607,7 +14607,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from pins.list method
             properties:
               callstack:
@@ -14678,7 +14678,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from pins.remove method
             properties:
               ok:
@@ -14694,7 +14694,7 @@ paths:
               error: no_pin
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from pins.remove method
             properties:
               callstack:
@@ -14777,7 +14777,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from reactions.add method
             properties:
               ok:
@@ -14793,7 +14793,7 @@ paths:
               error: already_reacted
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from reactions.add method
             properties:
               callstack:
@@ -14900,7 +14900,7 @@ paths:
           schema:
             description: Schema for successful response from reactions.get method
             items:
-              - additionalProperties: false
+              - additionalProperties: true
                 properties:
                   channel:
                     "$ref": "#/definitions/defs_channel"
@@ -14917,7 +14917,7 @@ paths:
                   - type
                   - channel
                   - message
-              - additionalProperties: false
+              - additionalProperties: true
                 properties:
                   file:
                     "$ref": "#/definitions/objs_file"
@@ -14931,7 +14931,7 @@ paths:
                   - ok
                   - type
                   - file
-              - additionalProperties: false
+              - additionalProperties: true
                 properties:
                   comment:
                     "$ref": "#/definitions/objs_comment"
@@ -14957,7 +14957,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from reactions.get method
             properties:
               callstack:
@@ -15109,13 +15109,13 @@ paths:
               response_metadata:
                 next_cursor: dGVhbTpDMUg5UkVTR0w=
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from reactions.list method
             properties:
               items:
                 items:
                   items:
-                    - additionalProperties: false
+                    - additionalProperties: true
                       properties:
                         channel:
                           "$ref": "#/definitions/defs_channel"
@@ -15130,7 +15130,7 @@ paths:
                         - channel
                         - message
                       type: object
-                    - additionalProperties: false
+                    - additionalProperties: true
                       properties:
                         file:
                           "$ref": "#/definitions/objs_file"
@@ -15142,7 +15142,7 @@ paths:
                         - type
                         - file
                       type: object
-                    - additionalProperties: false
+                    - additionalProperties: true
                       properties:
                         comment:
                           "$ref": "#/definitions/objs_comment"
@@ -15176,7 +15176,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from reactions.list method
             properties:
               callstack:
@@ -15260,7 +15260,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from reactions.remove method
             properties:
               ok:
@@ -15276,7 +15276,7 @@ paths:
               error: no_reaction
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from reactions.remove method
             properties:
               callstack:
@@ -15365,7 +15365,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from reminders.add method
             properties:
               ok:
@@ -15384,7 +15384,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from reminders.add method
             properties:
               callstack:
@@ -15458,7 +15458,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from reminders.complete method
             properties:
               ok:
@@ -15474,7 +15474,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from reminders.complete method
             properties:
               callstack:
@@ -15545,7 +15545,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from reminders.delete method
             properties:
               ok:
@@ -15561,7 +15561,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from reminders.delete method
             properties:
               callstack:
@@ -15629,7 +15629,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from reminders.info method
             properties:
               ok:
@@ -15648,7 +15648,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from reminders.info method
             properties:
               callstack:
@@ -15712,7 +15712,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from reminders.list method
             properties:
               ok:
@@ -15733,7 +15733,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from reminders.list method
             properties:
               callstack:
@@ -15817,13 +15817,13 @@ paths:
                 name: SlackDemo
               url: wss://...
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from rtm.connect method
             properties:
               ok:
                 "$ref": "#/definitions/defs_ok_true"
               self:
-                additionalProperties: false
+                additionalProperties: true
                 properties:
                   id:
                     "$ref": "#/definitions/defs_user_id"
@@ -15834,7 +15834,7 @@ paths:
                   - name
                 type: object
               team:
-                additionalProperties: false
+                additionalProperties: true
                 properties:
                   domain:
                     type: string
@@ -15864,7 +15864,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from rtm.connect method
             properties:
               callstack:
@@ -16081,7 +16081,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from stars.add method
             properties:
               ok:
@@ -16097,7 +16097,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from stars.add method
             properties:
               callstack:
@@ -16188,13 +16188,13 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from stars.list method
             properties:
               items:
                 items:
                   items:
-                    - additionalProperties: false
+                    - additionalProperties: true
                       properties:
                         channel:
                           "$ref": "#/definitions/defs_channel"
@@ -16212,7 +16212,7 @@ paths:
                         - message
                         - date_create
                       type: object
-                    - additionalProperties: false
+                    - additionalProperties: true
                       properties:
                         date_create:
                           type: integer
@@ -16227,7 +16227,7 @@ paths:
                         - file
                         - date_create
                       type: object
-                    - additionalProperties: false
+                    - additionalProperties: true
                       properties:
                         comment:
                           "$ref": "#/definitions/objs_comment"
@@ -16245,7 +16245,7 @@ paths:
                         - comment
                         - date_create
                       type: object
-                    - additionalProperties: false
+                    - additionalProperties: true
                       properties:
                         channel:
                           "$ref": "#/definitions/defs_channel"
@@ -16260,7 +16260,7 @@ paths:
                         - channel
                         - date_create
                       type: object
-                    - additionalProperties: false
+                    - additionalProperties: true
                       properties:
                         channel:
                           "$ref": "#/definitions/defs_dm_id"
@@ -16275,7 +16275,7 @@ paths:
                         - channel
                         - date_create
                       type: object
-                    - additionalProperties: false
+                    - additionalProperties: true
                       properties:
                         channel:
                           "$ref": "#/definitions/defs_group_id"
@@ -16307,7 +16307,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from stars.list method
             properties:
               callstack:
@@ -16390,7 +16390,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from stars.remove method
             properties:
               ok:
@@ -16406,7 +16406,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from stars.remove method
             properties:
               callstack:
@@ -16517,12 +16517,12 @@ paths:
                 pages: 1
                 total: 2
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from team.accessLogs method
             properties:
               logins:
                 items:
-                  additionalProperties: false
+                  additionalProperties: true
                   properties:
                     count:
                       type: integer
@@ -16586,7 +16586,7 @@ paths:
               error: paid_only
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from team.accessLogs method
             properties:
               callstack:
@@ -16745,7 +16745,7 @@ paths:
                 id: T12345
                 name: My Team
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from team.info method
             properties:
               ok:
@@ -16764,7 +16764,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from team.info method
             properties:
               callstack:
@@ -16850,14 +16850,14 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for successful response from team.integrationLogs
               method
             properties:
               logs:
                 items:
-                  additionalProperties: false
+                  additionalProperties: true
                   properties:
                     admin_app_id:
                       "$ref": "#/definitions/defs_app_id"
@@ -16910,7 +16910,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from team.integrationLogs method
             properties:
               callstack:
@@ -17028,13 +17028,13 @@ paths:
                     possible_values:
                     type: user
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from team.profile.get method
             properties:
               ok:
                 "$ref": "#/definitions/defs_ok_true"
               profile:
-                additionalProperties: false
+                additionalProperties: true
                 properties:
                   fields:
                     items:
@@ -17056,7 +17056,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from team.profile.get method
             properties:
               callstack:
@@ -17144,7 +17144,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from usergroups.create method
             properties:
               ok:
@@ -17163,7 +17163,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from usergroups.create method
             properties:
               callstack:
@@ -17239,7 +17239,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from usergroups.disable method
             properties:
               ok:
@@ -17258,7 +17258,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from usergroups.disable method
             properties:
               callstack:
@@ -17334,7 +17334,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from usergroups.enable method
             properties:
               ok:
@@ -17353,7 +17353,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from usergroups.enable method
             properties:
               callstack:
@@ -17487,7 +17487,7 @@ paths:
                   updated_by: U060RNRCZ
                   user_count: "0"
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from usergroups.list method
             properties:
               ok:
@@ -17508,7 +17508,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from usergroups.list method
             properties:
               callstack:
@@ -17627,7 +17627,7 @@ paths:
                   - U060R4BJ4
                   - U060RNRCZ
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from usergroups.update method
             properties:
               ok:
@@ -17646,7 +17646,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from usergroups.update method
             properties:
               callstack:
@@ -17726,7 +17726,7 @@ paths:
                 - U060R4BJ4
                 - W123A4BC5
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for successful response from usergroups.users.list
               method
@@ -17749,7 +17749,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from usergroups.users.list method
             properties:
               callstack:
@@ -17856,7 +17856,7 @@ paths:
                   - U060R4BJ4
                   - U060RNRCZ
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description:
               Schema for successful response from usergroups.users.update
               method
@@ -17877,7 +17877,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from usergroups.users.update method
             properties:
               callstack:
@@ -18054,7 +18054,7 @@ paths:
               ok:
                 "$ref": "#/definitions/defs_ok_true"
               response_metadata:
-                additionalProperties: false
+                additionalProperties: true
                 properties:
                   next_cursor:
                     type: string
@@ -18073,7 +18073,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from users.conversations method
             properties:
               callstack:
@@ -18143,7 +18143,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from users.deletePhoto method
             properties:
               ok:
@@ -18159,7 +18159,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from users.deletePhoto method
             properties:
               callstack:
@@ -18307,13 +18307,13 @@ paths:
           schema:
             description: Schema for successful response from users.identity method
             items:
-              - additionalProperties: false
+              - additionalProperties: true
                 description: Schema for 'identity.basic' scope
                 properties:
                   ok:
                     "$ref": "#/definitions/defs_ok_true"
                   team:
-                    additionalProperties: false
+                    additionalProperties: true
                     properties:
                       id:
                         "$ref": "#/definitions/defs_team"
@@ -18321,7 +18321,7 @@ paths:
                       - id
                     type: object
                   user:
-                    additionalProperties: false
+                    additionalProperties: true
                     properties:
                       id:
                         "$ref": "#/definitions/defs_user_id"
@@ -18336,13 +18336,13 @@ paths:
                   - user
                   - team
                 type: object
-              - additionalProperties: false
+              - additionalProperties: true
                 description: Schema for 'identity.basic,identity.email' scopes
                 properties:
                   ok:
                     "$ref": "#/definitions/defs_ok_true"
                   team:
-                    additionalProperties: false
+                    additionalProperties: true
                     properties:
                       id:
                         "$ref": "#/definitions/defs_team"
@@ -18350,7 +18350,7 @@ paths:
                       - id
                     type: object
                   user:
-                    additionalProperties: false
+                    additionalProperties: true
                     properties:
                       email:
                         format: email
@@ -18369,13 +18369,13 @@ paths:
                   - user
                   - team
                 type: object
-              - additionalProperties: false
+              - additionalProperties: true
                 description: Schema for 'identity.basic,identity.avatar' scopes
                 properties:
                   ok:
                     "$ref": "#/definitions/defs_ok_true"
                   team:
-                    additionalProperties: false
+                    additionalProperties: true
                     properties:
                       id:
                         "$ref": "#/definitions/defs_team"
@@ -18383,7 +18383,7 @@ paths:
                       - id
                     type: object
                   user:
-                    additionalProperties: false
+                    additionalProperties: true
                     properties:
                       id:
                         "$ref": "#/definitions/defs_user_id"
@@ -18422,13 +18422,13 @@ paths:
                   - user
                   - team
                 type: object
-              - additionalProperties: false
+              - additionalProperties: true
                 description: Schema for 'identity.basic,identity.team' scopes
                 properties:
                   ok:
                     "$ref": "#/definitions/defs_ok_true"
                   team:
-                    additionalProperties: false
+                    additionalProperties: true
                     properties:
                       domain:
                         type: string
@@ -18473,7 +18473,7 @@ paths:
                       - image_default
                     type: object
                   user:
-                    additionalProperties: false
+                    additionalProperties: true
                     properties:
                       id:
                         "$ref": "#/definitions/defs_user_id"
@@ -18496,7 +18496,7 @@ paths:
               error: account_inactive
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from users.identity method
             properties:
               callstack:
@@ -18625,7 +18625,7 @@ paths:
               error: user_not_found
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from users.info method
             properties:
               callstack:
@@ -18782,7 +18782,7 @@ paths:
               response_metadata:
                 next_cursor: dXNlcjpVMEc5V0ZYTlo=
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from users.list method
             properties:
               cache_ts:
@@ -18810,7 +18810,7 @@ paths:
               error: invalid_cursor
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from users.list method
             properties:
               callstack:
@@ -18932,7 +18932,7 @@ paths:
               error: users_not_found
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from users.lookupByEmail method
             properties:
               callstack:
@@ -19021,7 +19021,7 @@ paths:
                 status_text: Print is dead
                 team: T012AB3C4
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from users.profile.get method
             properties:
               ok:
@@ -19040,7 +19040,7 @@ paths:
               error: user_not_found
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from users.profile.get method
             properties:
               callstack:
@@ -19148,7 +19148,7 @@ paths:
                 status_text: Print is dead
                 team: T012AB3C4
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from users.profile.set method
             properties:
               email_pending:
@@ -19173,7 +19173,7 @@ paths:
               error: invalid_profile
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from users.profile.set method
             properties:
               callstack:
@@ -19245,7 +19245,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from users.setActive method
             properties:
               ok:
@@ -19261,7 +19261,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from users.setActive method
             properties:
               callstack:
@@ -19340,13 +19340,13 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from users.setPhoto method
             properties:
               ok:
                 "$ref": "#/definitions/defs_ok_true"
               profile:
-                additionalProperties: false
+                additionalProperties: true
                 properties:
                   avatar_hash:
                     pattern: "^[0-9a-f]{12}$"
@@ -19398,7 +19398,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from users.setPhoto method
             properties:
               callstack:
@@ -19481,7 +19481,7 @@ paths:
             application/json:
               ok: true
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for successful response from users.setPresence method
             properties:
               ok:
@@ -19497,7 +19497,7 @@ paths:
               error: invalid_auth
               ok: false
           schema:
-            additionalProperties: false
+            additionalProperties: true
             description: Schema for error response from users.setPresence method
             properties:
               callstack:

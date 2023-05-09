@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -66,4 +66,4 @@ def test_wrong_config(wrong_config):
 
 def test_streams_count(config):
     streams = SourceMailchimp().streams(config)
-    assert len(streams) == 3
+    assert len(streams) == 4

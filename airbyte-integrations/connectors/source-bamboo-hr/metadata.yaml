@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 90916976-a132-4ce9-8bce-82a03dd58788
+  dockerImageTag: 0.2.2
+  dockerRepository: airbyte/source-bamboo-hr
+  githubIssueLabel: source-bamboo-hr
+  icon: bamboohr.svg
+  license: MIT
+  name: BambooHR
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/bamboo-hr
+metadataSpecVersion: "1.0"

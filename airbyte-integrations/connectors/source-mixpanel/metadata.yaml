@@ -1,0 +1,23 @@
+data:
+  allowedHosts:
+    hosts:
+      - mixpanel.com
+      - eu.mixpanel.com
+  catalogs:
+    cloud:
+      dockerImageTag: 0.1.30
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
+  dockerImageTag: 0.1.31
+  dockerRepository: airbyte/source-mixpanel
+  githubIssueLabel: source-mixpanel
+  icon: mixpanel.svg
+  license: MIT
+  name: Mixpanel
+  releaseStage: generally_available
+  supportUrl: https://docs.airbyte.com/integrations/sources/mixpanel
+metadataSpecVersion: "1.0"

@@ -43,7 +43,7 @@ cat <&0 | docker run --rm -i <destination-image-name> write --config <config-fil
 
 The `write` command will consume `AirbyteMessage`s from STDIN.
 
-##I/O:
+## I/O:
 * Connectors receive arguments on the command line via JSON files. `e.g. --catalog catalog.json`
 * They read `AirbyteMessage`s from STDIN. The destination `write` action is the only command that consumes `AirbyteMessage`s.
 * They emit `AirbyteMessage`s on STDOUT.

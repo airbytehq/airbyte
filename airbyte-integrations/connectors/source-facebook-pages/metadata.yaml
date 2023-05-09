@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - graph.facebook.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
+  dockerImageTag: 0.2.3
+  dockerRepository: airbyte/source-facebook-pages
+  githubIssueLabel: source-facebook-pages
+  icon: facebook.svg
+  license: MIT
+  name: Facebook Pages
+  releaseStage: beta
+  supportUrl: https://docs.airbyte.com/integrations/sources/facebook-pages
+metadataSpecVersion: "1.0"

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, Iterable, List, Mapping, Optional
@@ -26,6 +26,9 @@ class CohortMembers(Engage):
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        if sync_mode == SyncMode.incremental:
+            self.set_cursor(cursor_field)
+
         stream_slices = []
         # full refresh is needed because even though some cohorts might already have been read
         # they can still have new members added

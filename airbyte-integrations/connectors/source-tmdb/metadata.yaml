@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 6240848f-f795-45eb-8f5e-c7542822fc03
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-tmdb
+  githubIssueLabel: source-tmdb
+  icon: tmdb.svg
+  license: MIT
+  name: TMDb
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/tmdb
+metadataSpecVersion: "1.0"

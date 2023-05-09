@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "url": {
@@ -103,7 +103,19 @@
       "type": ["null", "string"]
     },
     "payload": {
-      "type": ["null", "string", "object"]
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": true
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "transient_environment": {
       "type": ["null", "boolean"]

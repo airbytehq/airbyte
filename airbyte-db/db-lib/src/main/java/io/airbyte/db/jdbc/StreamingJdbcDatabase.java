@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -19,6 +19,8 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This database allows a developer to specify a {@link JdbcStreamingQueryConfig}. This allows the
@@ -26,6 +28,8 @@ import javax.sql.DataSource;
  * execute as in a streaming / chunked manner.
  */
 public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(StreamingJdbcDatabase.class);
 
   private final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider;
 
@@ -67,6 +71,9 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
             try {
               connection.setAutoCommit(true);
               connection.close();
+              if (isStreamFailed) {
+                throw new RuntimeException(streamException);
+              }
             } catch (final SQLException e) {
               throw new RuntimeException(e);
             }
@@ -80,9 +87,9 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
    * This method differs from {@link DefaultJdbcDatabase#toUnsafeStream} in that it takes a streaming
    * config that adjusts the fetch size dynamically according to sampled row size.
    */
-  protected static <T> Stream<T> toUnsafeStream(final ResultSet resultSet,
-                                                final CheckedFunction<ResultSet, T, SQLException> mapper,
-                                                final JdbcStreamingQueryConfig streamingConfig) {
+  protected <T> Stream<T> toUnsafeStream(final ResultSet resultSet,
+                                         final CheckedFunction<ResultSet, T, SQLException> mapper,
+                                         final JdbcStreamingQueryConfig streamingConfig) {
     return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
 
       @Override
@@ -97,7 +104,12 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
           action.accept(dataRow);
           return true;
         } catch (final SQLException e) {
-          throw new RuntimeException(e);
+          LOGGER.error("SQLState: {}, Message: {}", e.getSQLState(), e.getMessage());
+          streamException = e;
+          isStreamFailed = true;
+          // throwing an exception in tryAdvance() method lead to the endless loop in Spliterator and stream
+          // will never close
+          return false;
         }
       }
 

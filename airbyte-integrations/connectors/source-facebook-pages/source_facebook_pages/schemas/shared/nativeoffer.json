@@ -24,7 +24,7 @@
     },
     "expiration_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "id": {
       "type": ["string", "null"]

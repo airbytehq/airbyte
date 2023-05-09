@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: ad15c7ba-72a7-440b-af15-b9a963dc1a8a
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-pardot
+  githubIssueLabel: source-pardot
+  icon: salesforcepardot.svg
+  license: MIT
+  name: Pardot
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/pardot
+metadataSpecVersion: "1.0"

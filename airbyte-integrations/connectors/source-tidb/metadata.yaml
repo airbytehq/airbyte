@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - ${host}
+      - ${tunnel_method.tunnel_host}
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: source
+  definitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
+  dockerImageTag: 0.2.4
+  dockerRepository: airbyte/source-tidb
+  githubIssueLabel: source-tidb
+  icon: tidb.svg
+  license: MIT
+  name: TiDB
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/tidb
+metadataSpecVersion: "1.0"

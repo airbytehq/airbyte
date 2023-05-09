@@ -1,0 +1,6 @@
+{
+    "database_name": "your-database-name",
+    "google_application_credentials": "your service_account's credentials JSON",
+    "path": "path/to/node",
+    "buffer_size": 10000
+}

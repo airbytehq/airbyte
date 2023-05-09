@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 7e20ce3e-d820-4327-ad7a-88f3927fd97a
+  dockerImageTag: 0.1.23
+  dockerRepository: farosai/airbyte-victorops-source
+  githubIssueLabel: farosai/airbyte-victorops-source
+  icon: victorops.svg
+  license: MIT
+  name: VictorOps
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/victorops
+metadataSpecVersion: "1.0"

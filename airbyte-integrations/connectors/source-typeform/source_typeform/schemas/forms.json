@@ -364,69 +364,28 @@
       }
     },
     "logic": {
-      "type": ["null", "object"],
-      "properties": {
-        "type": {
-          "type": ["null", "string"]
-        },
-        "ref": {
-          "type": ["null", "string"]
-        },
-        "actions": {
-          "type": ["null", "array"],
-          "items": {
-            "type": ["null", "object"],
-            "properties": {
-              "action": {
-                "type": ["null", "string"]
-              },
-              "details": {
-                "type": ["null", "object"],
-                "properties": {
-                  "to": {
-                    "type": ["null", "object"],
-                    "properties": {
-                      "type": {
-                        "type": ["null", "string"]
-                      },
-                      "value": {
-                        "type": ["null", "string"]
-                      }
-                    }
-                  },
-                  "target": {
-                    "type": ["null", "object"],
-                    "properties": {
-                      "type": {
-                        "type": ["null", "string"]
-                      },
-                      "value": {
-                        "type": ["null", "string"]
-                      }
-                    }
-                  },
-                  "value": {
-                    "type": ["null", "object"],
-                    "properties": {
-                      "type": {
-                        "type": ["null", "string"]
-                      },
-                      "value": {
-                        "type": ["null", "string"]
-                      }
-                    }
-                  }
-                }
-              },
-              "condition": {
-                "type": ["null", "object"],
-                "properties": {
-                  "op": {
-                    "type": ["null", "string"]
-                  },
-                  "vars": {
-                    "type": ["null", "array"],
-                    "items": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "type": {
+            "type": ["null", "string"]
+          },
+          "ref": {
+            "type": ["null", "string"]
+          },
+          "actions": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "action": {
+                  "type": ["null", "string"]
+                },
+                "details": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "to": {
                       "type": ["null", "object"],
                       "properties": {
                         "type": {
@@ -434,6 +393,50 @@
                         },
                         "value": {
                           "type": ["null", "string"]
+                        }
+                      }
+                    },
+                    "target": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "type": {
+                          "type": ["null", "string"]
+                        },
+                        "value": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    },
+                    "value": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "type": {
+                          "type": ["null", "string"]
+                        },
+                        "value": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
+                },
+                "condition": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "op": {
+                      "type": ["null", "string"]
+                    },
+                    "vars": {
+                      "type": ["null", "array"],
+                      "items": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "type": {
+                            "type": ["null", "string"]
+                          },
+                          "value": {
+                            "type": ["null", "string"]
+                          }
                         }
                       }
                     }

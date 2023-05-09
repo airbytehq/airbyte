@@ -5,6 +5,19 @@ set -x
 
 . tools/lib/lib.sh
 
+# If you are looking at this file because you find yourself needing to publish a connector image manually, you might not need to do all of this!
+# If the connector you are publishing is a python connector (e.g. not using our base images), you can do the following:
+#
+# # NAME="source-foo"; VERSION="1.2.3"
+#
+# git pull
+#
+# cd airbyte-integrations/connectors/$NAME
+#
+# docker buildx build . --platform "linux/amd64,linux/arm64" --tag airbyte/$NAME:latest  --push
+# docker buildx build . --platform "linux/amd64,linux/arm64" --tag airbyte/$NAME:$VERSION  --push
+
+
 USAGE="
 Usage: $(basename "$0") <cmd>
 For publish, if you want to push the spec to the spec cache, provide a path to a service account key file that can write to the cache.
@@ -12,7 +25,7 @@ Available commands:
   scaffold
   test <integration_root_path>
   build  <integration_root_path> [<run_tests>]
-  publish  <integration_root_path> [<run_tests>] [--publish_spec_to_cache] [--publish_spec_to_cache_with_key_file <path to keyfile>]
+  publish  <integration_root_path> [<run_tests>] [--publish_spec_to_cache] [--publish_spec_to_cache_with_key_file <path to keyfile>] [--pre_release]
   publish_external  <image_name> <image_version>
 "
 
@@ -47,19 +60,21 @@ cmd_build() {
   echo "Building $path"
   # Note that we are only building (and testing) once on this build machine's architecture
   # Learn more @ https://github.com/airbytehq/airbyte/pull/13004
-  ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
-  ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
+  ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" clean)"
 
   if [ "$run_tests" = false ] ; then
-    echo "Skipping integration tests..."
+    echo "Building and skipping unit tests + integration tests..."
+    ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" build)" -x test
   else
-    echo "Running integration tests..."
+    echo "Building and running unit tests + integration tests..."
+    ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" build)"
 
     if test "$path" == "airbyte-integrations/bases/base-normalization"; then
+      export RANDOM_TEST_SCHEMA="true"
       ./gradlew --no-daemon --scan :airbyte-integrations:bases:base-normalization:airbyteDocker
     fi
 
-    ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
+    ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" integrationTest)"
   fi
 }
 
@@ -69,8 +84,8 @@ cmd_build_experiment() {
   [ -d "$path" ] || error "Path must be the root path of the integration"
 
   echo "Building $path"
-  ./gradlew --no-daemon "$(_to_gradle_path "$path" clean)"
-  ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
+  ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" clean)"
+  ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" build)"
 
   # After this happens this image should exist: "image_name:dev"
   # Re-tag with CI candidate label
@@ -91,7 +106,7 @@ cmd_test() {
 
   # TODO: needs to know to use alternate image tag from cmd_build_experiment
   echo "Running integration tests..."
-  ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
+  ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" integrationTest)"
 }
 
 # Bumps connector version in Dockerfile, definitions.yaml file, and updates seeds with gradle.
@@ -116,7 +131,7 @@ cmd_bump_version() {
     echo "Invalid connector_type from $connector"
     exit 1
   fi
-  definitions_path="./airbyte-config/init/src/main/resources/seed/${connector_type}_definitions.yaml"
+  definitions_path="./airbyte-config-oss/init-oss/src/main/resources/seed/${connector_type}_definitions.yaml"
   dockerfile="$connector_path/Dockerfile"
   master_dockerfile="/tmp/master_${connector}_dockerfile"
   # This allows getting the contents of a file without checking it out
@@ -180,12 +195,17 @@ cmd_publish() {
 
   local run_tests=$1; shift || run_tests=true
   local publish_spec_to_cache
+  local pre_release
   local spec_cache_writer_sa_key_file
 
   while [ $# -ne 0 ]; do
     case "$1" in
     --publish_spec_to_cache)
       publish_spec_to_cache=true
+      shift 1
+      ;;
+    --pre_release)
+      pre_release=true
       shift 1
       ;;
     --publish_spec_to_cache_with_key_file)
@@ -207,7 +227,7 @@ cmd_publish() {
 
   # setting local variables for docker image versioning
   local image_name; image_name=$(_get_docker_image_name "$path"/Dockerfile)
-  local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile)
+  local image_version; image_version=$(_get_docker_image_version "$path"/Dockerfile "$pre_release")
   local versioned_image=$image_name:$image_version
   local latest_image="$image_name" # don't include ":latest", that's assumed here
   local build_arch="linux/amd64,linux/arm64"
@@ -219,7 +239,7 @@ cmd_publish() {
 
   # Install docker emulators
   # TODO: Don't run this command on M1 macs locally (it won't work and isn't needed)
-  docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+  apt-get update && apt-get install -y qemu-user-static
 
   # log into docker
   if test -z "${DOCKER_HUB_USERNAME}"; then
@@ -238,7 +258,13 @@ cmd_publish() {
 
   echo "image_name $image_name"
   echo "versioned_image $versioned_image"
-  echo "latest_image $latest_image"
+
+  if [ "$pre_release" == "true" ]
+  then
+    echo "will skip updating latest_image $latest_image tag due to pre_release"
+  else
+    echo "latest_image $latest_image"
+  fi
 
   # before we start working sanity check that this version has not been published yet, so that we do not spend a lot of
   # time building, running tests to realize this version is a duplicate.
@@ -267,10 +293,12 @@ cmd_publish() {
       -f docker-compose.build.yaml                                       \
       --push
 
-    VERSION=latest GIT_REVISION=$GIT_REVISION docker buildx bake \
-      --set "*.platform=$build_arch"                             \
-      -f docker-compose.build.yaml                               \
-      --push
+    if [ "$pre_release" != "true" ]; then
+      VERSION=latest GIT_REVISION=$GIT_REVISION docker buildx bake \
+        --set "*.platform=$build_arch"                             \
+        -f docker-compose.build.yaml                               \
+        --push
+    fi
 
     docker buildx rm connector-buildx
 
@@ -286,20 +314,35 @@ cmd_publish() {
       docker buildx build -t airbyte/integration-base:dev --platform $arch --load airbyte-integrations/bases/base
       docker buildx build -t airbyte/integration-base-java:dev --platform $arch --load airbyte-integrations/bases/base-java
 
+      # For a short while (https://github.com/airbytehq/airbyte/pull/25034), destinations rely on the normalization image to build
+      # Thanks to gradle, destinstaions which need normalization will already have built base-normalization's "build" artifacts
+      if [[ "$image_name" == *"destination-"* ]]; then
+        if [ -f "airbyte-integrations/bases/base-normalization/build/sshtunneling.sh" ]; then
+          docker buildx build -t airbyte/normalization:dev --platform $arch --load airbyte-integrations/bases/base-normalization
+        fi
+      fi
+
       local arch_versioned_image=$image_name:`echo $arch | sed "s/\//-/g"`-$image_version
       echo "Publishing new version ($arch_versioned_image) from $path"
       docker buildx build -t $arch_versioned_image --platform $arch --push $path
-      docker manifest create $latest_image --amend $arch_versioned_image
       docker manifest create $versioned_image --amend $arch_versioned_image
+
+      if [ "$pre_release" != "true" ]; then
+        docker manifest create $latest_image --amend $arch_versioned_image
+      fi
+
     done
 
-    docker manifest push $latest_image
     docker manifest push $versioned_image
-    docker manifest rm $latest_image
     docker manifest rm $versioned_image
 
+    if [ "$pre_release" != "true" ]; then
+      docker manifest push $latest_image
+      docker manifest rm $latest_image
+    fi
+
     # delete the temporary image tags made with arch_versioned_image
-    sleep 5
+    sleep 10
     for arch in $(echo $build_arch | sed "s/,/ /g")
     do
       local arch_versioned_tag=`echo $arch | sed "s/\//-/g"`-$image_version

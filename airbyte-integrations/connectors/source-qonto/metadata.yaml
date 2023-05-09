@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: f7c0b910-5f66-11ed-9b6a-0242ac120002
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-qonto
+  githubIssueLabel: source-qonto
+  icon: qonto.svg
+  license: MIT
+  name: Qonto
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/public-qonto
+metadataSpecVersion: "1.0"

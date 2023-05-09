@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dynamodb;
@@ -79,7 +79,7 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
         maxSyncTime = Math.max(maxSyncTime, ((BigDecimal) item.get("sync_time")).longValue());
       }
     } catch (final Exception e) {
-      LOGGER.error(e.getMessage());
+      LOGGER.error(e.getMessage(), e);
     }
 
     items.sort(Comparator.comparingLong(o -> ((BigDecimal) o.get(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)).longValue()));
@@ -155,7 +155,7 @@ public class DynamodbDestinationAcceptanceTest extends DestinationAcceptanceTest
         LOGGER.info(String.format("Delete table %s", tableName));
       }
     } catch (final Exception e) {
-      LOGGER.error(e.getMessage());
+      LOGGER.error(e.getMessage(), e);
     }
   }
 

@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d53f9084-fa6b-4a5a-976c-5b8392f4ad8a
+  dockerImageTag: 2.1.4
+  dockerRepository: airbyte/source-e2e-test
+  githubIssueLabel: source-e2e-test
+  icon: airbyte.svg
+  license: MIT
+  name: E2E Testing
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/e2e-test
+metadataSpecVersion: "1.0"

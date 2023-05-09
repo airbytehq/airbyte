@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 9bb85338-ea95-4c93-b267-6be89125b267
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-freshservice
+  githubIssueLabel: source-freshservice
+  icon: freshservice.svg
+  license: MIT
+  name: Freshservice
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/freshservice
+metadataSpecVersion: "1.0"

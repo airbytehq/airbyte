@@ -1,25 +1,25 @@
 name: airbyte_utils
-version: "1.0"
+version: '1.0'
 config-version: 2
 profile: normalize
 model-paths:
-  - modified_models
+- modified_models
 docs-paths:
-  - docs
+- docs
 analysis-paths:
-  - analysis
+- analysis
 test-paths:
-  - tests
+- tests
 seed-paths:
-  - data
+- data
 macro-paths:
-  - macros
+- macros
 target-path: ../build
 log-path: ../logs
 packages-install-path: /dbt
 clean-targets:
-  - build
-  - dbt_modules
+- build
+- dbt_modules
 quoting:
   database: true
   schema: false
@@ -44,29 +44,29 @@ models:
         +tags: airbyte_internal_views
         +materialized: view
 dispatch:
-  - macro_namespace: dbt_utils
-    search_order:
-      - airbyte_utils
-      - dbt_utils
+- macro_namespace: dbt_utils
+  search_order:
+  - airbyte_utils
+  - dbt_utils
 vars:
   json_column: _airbyte_data
   models_to_source:
-    exchange_rate_ab1: test_normalization._airbyte_raw_exchange_rate
-    exchange_rate_ab2: test_normalization._airbyte_raw_exchange_rate
-    exchange_rate_ab3: test_normalization._airbyte_raw_exchange_rate
-    exchange_rate: test_normalization._airbyte_raw_exchange_rate
-    dedup_exchange_rate_ab1: test_normalization._airbyte_raw_dedup_exchange_rate
-    dedup_exchange_rate_ab2: test_normalization._airbyte_raw_dedup_exchange_rate
-    dedup_exchange_rate_stg: test_normalization._airbyte_raw_dedup_exchange_rate
-    dedup_exchange_rate_scd: test_normalization._airbyte_raw_dedup_exchange_rate
-    dedup_exchange_rate: test_normalization._airbyte_raw_dedup_exchange_rate
-    renamed_dedup_cdc_excluded_ab1: test_normalization._airbyte_raw_renamed_dedup_cdc_excluded
-    renamed_dedup_cdc_excluded_ab2: test_normalization._airbyte_raw_renamed_dedup_cdc_excluded
-    renamed_dedup_cdc_excluded_stg: test_normalization._airbyte_raw_renamed_dedup_cdc_excluded
-    renamed_dedup_cdc_excluded_scd: test_normalization._airbyte_raw_renamed_dedup_cdc_excluded
-    renamed_dedup_cdc_excluded: test_normalization._airbyte_raw_renamed_dedup_cdc_excluded
-    dedup_cdc_excluded_ab1: test_normalization._airbyte_raw_dedup_cdc_excluded
-    dedup_cdc_excluded_ab2: test_normalization._airbyte_raw_dedup_cdc_excluded
-    dedup_cdc_excluded_stg: test_normalization._airbyte_raw_dedup_cdc_excluded
-    dedup_cdc_excluded_scd: test_normalization._airbyte_raw_dedup_cdc_excluded
-    dedup_cdc_excluded: test_normalization._airbyte_raw_dedup_cdc_excluded
+    exchange_rate_ab1: test_normalization_bhhpj._airbyte_raw_exchange_rate
+    exchange_rate_ab2: test_normalization_bhhpj._airbyte_raw_exchange_rate
+    exchange_rate_ab3: test_normalization_bhhpj._airbyte_raw_exchange_rate
+    exchange_rate: test_normalization_bhhpj._airbyte_raw_exchange_rate
+    dedup_exchange_rate_ab1: test_normalization_bhhpj._airbyte_raw_dedup_exchange_rate
+    dedup_exchange_rate_ab2: test_normalization_bhhpj._airbyte_raw_dedup_exchange_rate
+    dedup_exchange_rate_stg: test_normalization_bhhpj._airbyte_raw_dedup_exchange_rate
+    dedup_exchange_rate_scd: test_normalization_bhhpj._airbyte_raw_dedup_exchange_rate
+    dedup_exchange_rate: test_normalization_bhhpj._airbyte_raw_dedup_exchange_rate
+    renamed_dedup_cdc_excluded_ab1: test_normalization_bhhpj._airbyte_raw_renamed_dedup_cdc_excluded
+    renamed_dedup_cdc_excluded_ab2: test_normalization_bhhpj._airbyte_raw_renamed_dedup_cdc_excluded
+    renamed_dedup_cdc_excluded_stg: test_normalization_bhhpj._airbyte_raw_renamed_dedup_cdc_excluded
+    renamed_dedup_cdc_excluded_scd: test_normalization_bhhpj._airbyte_raw_renamed_dedup_cdc_excluded
+    renamed_dedup_cdc_excluded: test_normalization_bhhpj._airbyte_raw_renamed_dedup_cdc_excluded
+    dedup_cdc_excluded_ab1: test_normalization_bhhpj._airbyte_raw_dedup_cdc_excluded
+    dedup_cdc_excluded_ab2: test_normalization_bhhpj._airbyte_raw_dedup_cdc_excluded
+    dedup_cdc_excluded_stg: test_normalization_bhhpj._airbyte_raw_dedup_cdc_excluded
+    dedup_cdc_excluded_scd: test_normalization_bhhpj._airbyte_raw_dedup_cdc_excluded
+    dedup_cdc_excluded: test_normalization_bhhpj._airbyte_raw_dedup_cdc_excluded

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pendulum
@@ -49,7 +49,7 @@ def fb_account_response_fixture(account_id):
 
 @fixture(name="api")
 def api_fixture(some_config, requests_mock, fb_account_response):
-    api = API(account_id=some_config["account_id"], access_token=some_config["access_token"])
+    api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], google_service_account="")
 
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/adaccounts", [fb_account_response])
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{some_config['account_id']}/", [fb_account_response])

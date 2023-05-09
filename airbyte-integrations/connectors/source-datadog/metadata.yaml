@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 1cfc30c7-82db-43f4-9fd7-ac1b42312cda
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-datadog
+  githubIssueLabel: source-datadog
+  icon: datadog.svg
+  license: MIT
+  name: Datadog
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/datadog
+metadataSpecVersion: "1.0"

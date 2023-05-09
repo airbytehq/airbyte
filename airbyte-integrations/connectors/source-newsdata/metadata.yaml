@@ -1,0 +1,17 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 60bd11d8-2632-4daa-a688-b47336d32093
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-newsdata
+  githubIssueLabel: source-newsdata
+  license: MIT
+  name: Newsdata
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/newsdata
+metadataSpecVersion: "1.0"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
@@ -7,12 +7,12 @@ package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.AirbyteStreamState;
-import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.LinkedList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -93,6 +93,11 @@ class DestStreamStateLifecycleManagerTest {
     assertTrue(mgr.listCommitted().isEmpty());
   }
 
+  /*
+   * TODO: remove this test after all destination connectors have updated to reflect destination
+   * checkpointing changes where flush/commit will be bundled into the same operation
+   */
+  @Deprecated
   @Test
   void testFlushed() {
     mgr.addState(STREAM1_MESSAGE1);
@@ -135,6 +140,23 @@ class DestStreamStateLifecycleManagerTest {
     assertTrue(mgr.listPending().isEmpty());
     assertTrue(mgr.listFlushed().isEmpty());
     assertEquals(new LinkedList<>(List.of(STREAM1_MESSAGE1, STREAM2_MESSAGE1)), mgr.listCommitted());
+  }
+
+  /*
+   * This section is to test for logic that is isolated to changes with respect to destination
+   * checkpointing where it captures flush and commit are bundled into a transaction so
+   *
+   * buffer -(flush buffer)-> staging area -(copy into {staging_file})-> destination raw table
+   */
+  @Test
+  void testPendingAsCommitted() {
+    mgr.addState(STREAM1_MESSAGE1);
+    mgr.markPendingAsCommitted();
+
+    // verifies that we've skipped "Flushed" without needing to call `markPendingAsFlushed()` and
+    // `markFlushedAsCommitted`
+    assertTrue(mgr.listPending().isEmpty());
+    assertEquals(new LinkedList<>(List.of(STREAM1_MESSAGE1)), mgr.listCommitted());
   }
 
 }

@@ -21,18 +21,15 @@
       "type": "boolean"
     },
     "monthlyBudget": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "lead": {
       "type": "object",
       "properties": {
         "self": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "accountId": {
-          "type": "string"
-        },
-        "displayName": {
           "type": "string"
         }
       }
@@ -44,9 +41,6 @@
           "type": "string"
         },
         "accountId": {
-          "type": "string"
-        },
-        "displayName": {
           "type": "string"
         },
         "type": {
@@ -64,18 +58,23 @@
           "type": "string"
         },
         "id": {
-          "type": "string"
+          "type": "integer"
         },
         "name": {
           "type": "string"
         },
         "type": {
-          "type": "string"
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          }
         }
       }
     },
     "customer": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "self": {
           "type": "string"
@@ -84,7 +83,7 @@
           "type": "string"
         },
         "id": {
-          "type": "string"
+          "type": "integer"
         },
         "name": {
           "type": "string"
@@ -99,6 +98,5 @@
         }
       }
     }
-  },
-  "additionalProperties": false
+  }
 }

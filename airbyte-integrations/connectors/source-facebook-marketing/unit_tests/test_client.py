@@ -1,15 +1,16 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
+from functools import partial
 
 import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
-from source_facebook_marketing.streams import AdAccount, AdCreatives, Campaigns
+from source_facebook_marketing.streams import AdAccount, AdCreatives, Campaigns, Activities, AdSets, Videos
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
@@ -35,6 +36,42 @@ def fb_call_rate_response_fixture():
         },
         "status_code": 400,
         "headers": headers,
+    }
+
+
+@pytest.fixture(name="fb_call_amount_data_response")
+def fb_call_amount_data_response_fixture():
+    error = {"message": "Please reduce the amount of data you're asking for, then retry your request", "code": 1}
+
+    return {
+        "json": {
+            "error": error,
+        },
+        "status_code": 500,
+    }
+
+
+@pytest.fixture(name="fb_call_unknown_error")
+def fb_call_unknown_response_fixture():
+    error = {"message": "An unknown error occurred", "code": 99}
+
+    return {
+        "json": {
+            "error": error,
+        },
+        "status_code": 500,
+    }
+
+
+@pytest.fixture(name="fb_call_success")
+def fb_call_success_response_fixture():
+    message = {"message": "Success", "code": 1}
+
+    return {
+        "json": {
+            "message": message,
+        },
+        "status_code": 200,
     }
 
 
@@ -124,6 +161,7 @@ class TestBackoff:
             },
         ]
 
+        requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/business_users", json={"data": []})
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/", responses)
         requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{account_data['id']}/", responses)
 
@@ -131,3 +169,80 @@ class TestBackoff:
         accounts = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
 
         assert accounts == [account_data]
+
+    def test_limit_error_retry(self, fb_call_amount_data_response, requests_mock, api, account_id):
+        """Error every time, check limit parameter decreases by 2 times every new call"""
+
+        res = requests_mock.register_uri(
+            "GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/activities", [fb_call_amount_data_response]
+        )
+
+        stream = Activities(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False)
+
+        slice = {}
+        for slice in stream.stream_slices(stream_state={}):
+            slice = slice
+
+        try:
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}, stream_slice=slice))
+        except FacebookRequestError:
+            assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "50", "25", "12", "6"]
+
+    def test_unknown_error_retry(self, fb_call_unknown_error, fb_call_success,  requests_mock, api, account_id):
+        """Error every time, check limit parameter decreases by 2 times every new call"""
+
+        res = requests_mock.register_uri(
+            "GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/activities", [fb_call_unknown_error]
+        )
+
+        stream = Activities(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False)
+
+        slice = {}
+        for slice in stream.stream_slices(stream_state={}):
+            slice = slice
+
+        try:
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}, stream_slice=slice))
+        except FacebookRequestError:
+            assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "50", "25", "12", "6"]
+
+            res2 = requests_mock.register_uri(
+                "GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/activities", [fb_call_success]
+            )
+
+            slice = {}
+            for slice in stream.stream_slices(stream_state={}):
+                slice = slice
+
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}, stream_slice=slice))
+
+            assert [x.qs.get("limit")[0] for x in res2.request_history] == ["100", "50", "25", "12", "6"]
+
+    def test_limit_error_retry_next_page(self, fb_call_amount_data_response, requests_mock, api, account_id):
+        """Unlike the previous test, this one tests the API call fail on the second or more page of a request."""
+        base_url = FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/advideos"
+
+        res = requests_mock.register_uri(
+            "GET", base_url,
+            [
+                {
+                    "json": {
+                        "data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}],
+                        "paging": {"next": f"{base_url}?after=after_page_1&limit=100"}
+                    },
+                    "status_code": 200
+                },
+                fb_call_amount_data_response
+            ]
+        )
+
+        stream = Videos(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)
+
+        slice = {}
+        for slice in stream.stream_slices(stream_state={}):
+            slice = slice
+
+        try:
+            list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}, stream_slice=slice))
+        except FacebookRequestError:
+            assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "100", "50", "25", "12", "6"]

@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: cf8ff320-6272-4faa-89e6-4402dc17e5d5
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-glassfrog
+  githubIssueLabel: source-glassfrog
+  icon: glassfrog.svg
+  license: MIT
+  name: Glassfrog
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/glassfrog
+metadataSpecVersion: "1.0"

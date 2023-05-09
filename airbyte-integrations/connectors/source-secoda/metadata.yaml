@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: da9fc6b9-8059-4be0-b204-f56e22e4d52d
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-secoda
+  githubIssueLabel: source-secoda
+  icon: secoda.svg
+  license: MIT
+  name: Secoda
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/secoda
+metadataSpecVersion: "1.0"

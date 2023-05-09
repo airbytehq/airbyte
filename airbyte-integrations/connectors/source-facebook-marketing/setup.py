@@ -1,21 +1,22 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1.56",
+    "airbyte-cdk~=0.11",
     "cached_property==1.5.2",
-    "facebook_business==13.0.0",
+    "facebook_business==15.0.0",
     "pendulum>=2,<3",
+    "google-cloud-bigquery==3.6.0"
 ]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "pytest-mock~=3.6",
-    "requests_mock~=1.8",
+    "requests_mock~=1.8"
 ]
 
 setup(

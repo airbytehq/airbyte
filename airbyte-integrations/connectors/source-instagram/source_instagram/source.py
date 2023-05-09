@@ -1,19 +1,11 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from datetime import datetime
-from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping, Tuple
 
-from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import (
-    AirbyteMessage,
-    AuthSpecification,
-    ConfiguredAirbyteCatalog,
-    ConnectorSpecification,
-    DestinationSyncMode,
-    OAuth2Specification,
-)
+from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from pydantic import BaseModel, Field
@@ -32,7 +24,13 @@ class ConnectorConfig(BaseModel):
     )
 
     access_token: str = Field(
-        description='The value of the access token generated. See the <a href="https://docs.airbyte.io/integrations/sources/instagram">docs</a> for more information',
+        description=(
+            "The value of the access token generated with "
+            "<b>instagram_basic, instagram_manage_insights, pages_show_list, pages_read_engagement, Instagram Public Content Access</b> "
+            "permissions. "
+            'See the <a href="https://docs.airbyte.com/integrations/sources/instagram/#step-1-set-up-instagram">docs</a> for more '
+            "information"
+        ),
         airbyte_secret=True,
     )
 
@@ -58,15 +56,6 @@ class SourceInstagram(AbstractSource):
 
         return ok, error_msg
 
-    def read(
-        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
-    ) -> Iterator[AirbyteMessage]:
-        for stream in self.streams(config):
-            state_key = str(stream.name)
-            if state and state_key in state and hasattr(stream, "upgrade_state_to_latest_format"):
-                state[state_key] = stream.upgrade_state_to_latest_format(state[state_key])
-        return super().read(logger, config, catalog, state)
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """Discovery method, returns available streams
 
@@ -91,8 +80,8 @@ class SourceInstagram(AbstractSource):
         required to run this integration.
         """
         return ConnectorSpecification(
-            documentationUrl="https://docs.airbyte.io/integrations/sources/instagram",
-            changelogUrl="https://docs.airbyte.io/integrations/sources/instagram",
+            documentationUrl="https://docs.airbyte.com/integrations/sources/instagram",
+            changelogUrl="https://docs.airbyte.com/integrations/sources/instagram",
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),

@@ -1,0 +1,17 @@
+{
+  "issues": [
+    {
+      "expand": "operations,versionedRepresentations,editmeta,changelog,renderedFields",
+      "id": "10012",
+      "self": "https://airbyteio.atlassian.net/rest/agile/1.0/issue/10012",
+      "key": "IT-6",
+      "fields": {
+        "updated": "2022-05-17T04:26:21.613-0700",
+        "created": "2021-03-11T06:14:18.085-0800"
+      },
+      "boardId": 1,
+      "created": "2021-03-11T06:14:18.085-0800",
+      "updated": "2022-05-17T04:26:21.613-0700"
+    }
+  ]
+}

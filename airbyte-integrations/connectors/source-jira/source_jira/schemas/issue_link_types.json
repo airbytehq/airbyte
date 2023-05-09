@@ -25,6 +25,6 @@
       "readOnly": true
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "A list of issue link type beans."
 }

@@ -1,0 +1,25 @@
+data:
+  catalogs:
+    cloud:
+      dockerImageTag: 0.1.22
+      dockerRepository: airbyte/destination-mssql-strict-encrypt
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
+  dockerImageTag: 0.1.23
+  dockerRepository: airbyte/destination-mssql
+  githubIssueLabel: destination-mssql
+  icon: mssql.svg
+  license: MIT
+  name: MS SQL Server
+  normalizationConfig:
+    normalizationIntegrationType: mssql
+    normalizationRepository: airbyte/normalization-mssql
+    normalizationTag: 0.4.0
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/mssql
+  supportsDbt: true
+metadataSpecVersion: "1.0"

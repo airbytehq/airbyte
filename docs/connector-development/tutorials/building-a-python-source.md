@@ -28,7 +28,7 @@ All the commands below assume that `python` points to a version of python &gt;3.
 * Step 8: Set up Standard Tests
 * Step 9: Write unit tests or integration tests
 * Step 10: Update the `README.md` \(If API credentials are required to run the integration, please document how they can be obtained or link to a how-to guide.\)
-* Step 11: Add the connector to the API/UI \(by adding an entry in `airbyte-config/init/src/main/resources/seed/source_definitions.yaml`\)
+* Step 11: Add the connector to the API/UI \(by adding an entry in `airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml`\)
 * Step 12: Add docs \(in `docs/integrations/sources/<source-name>.md`\)
 
 :::info
@@ -147,6 +147,24 @@ Note: Each time you make a change to your implementation you need to re-build th
 
 The nice thing about this approach is that you are running your source exactly as it will be run by Airbyte. The tradeoff is that iteration is slightly slower, because you need to re-build the connector between each change.
 
+**Detailed Debug Messages**
+
+During development of your connector, you can enable the printing of detailed debug information during a sync by specifying the `--debug` flag. This will allow you to get a better picture of what is happening during each step of your sync.
+```text
+python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json --debug
+```
+
+In addition to the preset CDK debug statements, you can also emit custom debug information from your connector by introducing your own debug statements:
+```python
+self.logger.debug(
+    "your debug message here",
+    extra={
+        "debug_field": self.value,
+        "custom_field": your_object.field
+    }
+)
+```
+
 **TDD using standard tests**
 
 Airbyte provides a standard test suite that is run against every source. The objective of these tests is to provide some "free" tests that can sanity check that the basic functionality of the source works. One approach to developing your connector is to simply run the tests between each change and use the feedback from them to guide your development.
@@ -181,7 +199,7 @@ As described in the template code, this method takes in the same config object a
 
 ### Step 8: Set up Standard Tests
 
-The Standard Tests are a set of tests that run against all sources. These tests are run in the Airbyte CI to prevent regressions. They also can help you sanity check that your source works as expected. The following [article](../testing-connectors/source-acceptance-tests-reference.md) explains Standard Tests and how to run them.
+The Standard Tests are a set of tests that run against all sources. These tests are run in the Airbyte CI to prevent regressions. They also can help you sanity check that your source works as expected. The following [article](../testing-connectors/connector-acceptance-tests-reference.md) explains Standard Tests and how to run them.
 
 You can run the tests using `./gradlew :airbyte-integrations:connectors:source-<source-name>:integrationTest`. Make sure to run this command from the Airbyte repository root.
 
@@ -213,7 +231,7 @@ The template fills in most of the information for the readme for you. Unless the
 
 ### Step 11: Add the connector to the API/UI
 
-Open the following file: `airbyte-config/init/src/main/resources/seed/source_definitions.yaml`. You'll find a list of all the connectors that Airbyte displays in the UI. Pattern match to add your own connector. Make sure to generate a new _unique_ UUIDv4 for the `sourceDefinitionId` field. You can get one [here](https://www.uuidgenerator.net/). Note that modifications to source_definitions.yaml will only be picked-up the first time you start Airbyte, or when you upgrade Airbyte, or if you entirely wipe our your instance of Airbyte and start from scratch.
+Open the following file: `airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml`. You'll find a list of all the connectors that Airbyte displays in the UI. Pattern match to add your own connector. Make sure to generate a new _unique_ UUIDv4 for the `sourceDefinitionId` field. You can get one [here](https://www.uuidgenerator.net/). Note that modifications to source_definitions.yaml will only be picked-up the first time you start Airbyte, or when you upgrade Airbyte, or if you entirely wipe our your instance of Airbyte and start from scratch.
 
 Note that for simple and quick testing use cases, you can also do this step [using the UI](../../integrations/custom-connectors.md#adding-your-connectors-in-the-ui).
 

@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 5ea4459a-8f1a-452a-830f-a65c38cc438d
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-genesys
+  githubIssueLabel: source-genesys
+  icon: genesys.svg
+  license: MIT
+  name: Genesys
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/genesys
+metadataSpecVersion: "1.0"

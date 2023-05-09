@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -7,10 +7,12 @@ import json
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from datetime import datetime, timedelta
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from traceback import format_exc
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
+import pendulum
+import pytz
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -20,6 +22,7 @@ from .file_info import FileInfo
 from .formats.abstract_file_parser import AbstractFileParser
 from .formats.avro_parser import AvroParser
 from .formats.csv_parser import CsvParser
+from .formats.jsonl_parser import JsonlParser
 from .formats.parquet_parser import ParquetParser
 from .storagefile import StorageFile
 
@@ -33,23 +36,23 @@ class ConfigurationError(Exception):
 
 
 class FileStream(Stream, ABC):
-    @property
-    def fileformatparser_map(self) -> Mapping[str, type]:
-        """Mapping where every key is equal  'filetype' and values are  corresponding  parser classes."""
-        return {
-            "csv": CsvParser,
-            "parquet": ParquetParser,
-            "avro": AvroParser,
-        }
-
+    file_formatparser_map = {
+        "csv": CsvParser,
+        "parquet": ParquetParser,
+        "avro": AvroParser,
+        "jsonl": JsonlParser,
+    }
     # TODO: make these user configurable in spec.json
     ab_additional_col = "_ab_additional_properties"
     ab_last_mod_col = "_ab_source_file_last_modified"
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_additional_col, ab_last_mod_col, ab_file_name_col]
-    datetime_format_string = "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format_string = "%Y-%m-%dT%H:%M:%SZ"
+    # In version 2.0.1 the datetime format has been changed. Since the state may still store values in the old datetime format,
+    # we need to support both of them for a while
+    deprecated_datetime_format_string = "%Y-%m-%dT%H:%M:%S%z"
 
-    def __init__(self, dataset: str, provider: dict, format: dict, path_pattern: str, schema: str = None):
+    def __init__(self, dataset: str, provider: dict, format: dict, path_pattern: str, schema: str = None, start_date: str = None):
         """
         :param dataset: table name for this stream
         :param provider: provider specific mapping as described in spec.json
@@ -61,10 +64,10 @@ class FileStream(Stream, ABC):
         self._path_pattern = path_pattern
         self._provider = provider
         self._format = format
-        self._schema: Dict[str, Any] = {}
+        self._user_input_schema: Dict[str, Any] = {}
+        self.start_date = pendulum.parse(start_date) if start_date else pendulum.from_timestamp(0)
         if schema:
-            self._schema = self._parse_user_input_schema(schema)
-        self.master_schema: Dict[str, Any] = None
+            self._user_input_schema = self._parse_user_input_schema(schema)
         LOGGER.info(f"initialised stream with format: {format}")
 
     @staticmethod
@@ -95,6 +98,13 @@ class FileStream(Stream, ABC):
 
         return py_schema
 
+    @classmethod
+    def with_minimal_block_size(cls, config: MutableMapping[str, Any]):
+        file_type = config["format"]["filetype"]
+        file_reader = cls.file_formatparser_map[file_type]
+        file_reader.set_minimal_block_size(config["format"])
+        return cls(**config)
+
     @property
     def name(self) -> str:
         return self.dataset
@@ -109,10 +119,10 @@ class FileStream(Stream, ABC):
         :return: reference to the relevant fileformatparser class e.g. CsvParser
         """
         filetype = self._format.get("filetype")
-        file_reader = self.fileformatparser_map.get(filetype)
+        file_reader = self.file_formatparser_map.get(filetype)
         if not file_reader:
             raise RuntimeError(
-                f"Detected mismatched file format '{filetype}'. Available values: '{list(self.fileformatparser_map.keys())}''."
+                f"Detected mismatched file format '{filetype}'. Available values: '{list(self.file_formatparser_map.keys())}''."
             )
         return file_reader
 
@@ -126,7 +136,7 @@ class FileStream(Stream, ABC):
         """
 
     @abstractmethod
-    def filepath_iterator(self) -> Iterator[FileInfo]:
+    def filepath_iterator(self, stream_state: Mapping[str, Any] = None) -> Iterator[FileInfo]:
         """
         Provider-specific method to iterate through bucket/container/etc. and yield each full filepath.
         This should supply the 'FileInfo' to use in StorageFile(). This is aggrigate all file properties (last_modified, key, size).
@@ -147,7 +157,7 @@ class FileStream(Stream, ABC):
                 yield file_info
 
     @lru_cache(maxsize=None)
-    def get_time_ordered_file_infos(self) -> List[FileInfo]:
+    def get_time_ordered_file_infos(self, stream_state: str = None) -> List[FileInfo]:
         """
         Iterates through pattern_matched_filepath_iterator(), acquiring FileInfo objects
         with last_modified property of each file to return in time ascending order.
@@ -155,100 +165,42 @@ class FileStream(Stream, ABC):
 
         :return: list in time-ascending order
         """
-        return sorted(self.pattern_matched_filepath_iterator(self.filepath_iterator()), key=lambda file_info: file_info.last_modified)
+        stream_state = eval(stream_state) if stream_state else None
+        return sorted(
+            self.pattern_matched_filepath_iterator(self.filepath_iterator(stream_state=stream_state)),
+            key=lambda file_info: file_info.last_modified,
+        )
 
-    def _get_schema_map(self) -> Mapping[str, Any]:
-        return_schema: Dict[str, Any] = None
-        if self._schema != {}:
-            return_schema = deepcopy(self._schema)
-        else:  # we have no provided schema or schema state from a previous incremental run
-            return_schema = self._get_master_schema()
+    @property
+    def _raw_schema(self) -> Mapping[str, Any]:
+        if self._user_input_schema and isinstance(self._user_input_schema, dict):
+            return self._user_input_schema
+        return self._auto_inferred_schema
 
-        return_schema[self.ab_additional_col] = "object"
-        return_schema[self.ab_last_mod_col] = "string"
-        return_schema[self.ab_file_name_col] = "string"
-        return return_schema
+    @property
+    def _schema(self) -> Mapping[str, Any]:
+        extra_fields = {self.ab_additional_col: "object", self.ab_last_mod_col: "string", self.ab_file_name_col: "string"}
+        schema = self._raw_schema
+        return {**schema, **extra_fields}
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """
-        :return: the JSON schema representing this stream.
-        """
         # note: making every non-airbyte column nullable for compatibility
-        # TODO: ensure this behaviour still makes sense as we add new file formats
         properties: Mapping[str, Any] = {
-            column: {"type": ["null", typ]} if column not in self.airbyte_columns else {"type": typ}
-            for column, typ in self._get_schema_map().items()
+            column: {"type": ["null", typ]} if column not in self.airbyte_columns else {"type": typ} for column, typ in self._schema.items()
         }
-
         properties[self.ab_last_mod_col]["format"] = "date-time"
         return {"type": "object", "properties": properties}
 
-    def _get_master_schema(self, min_datetime: datetime = None) -> Dict[str, Any]:
-        """
-        In order to auto-infer a schema across many files and/or allow for additional properties (columns),
-            we need to determine the superset of schemas across all relevant files.
-        This method iterates through get_time_ordered_file_infos() obtaining the inferred schema (process implemented per file format),
-            to build up this superset schema (master_schema).
-        This runs datatype checks to Warn or Error if we find incompatible schemas (e.g. same column is 'date' in one file but 'float' in another).
-        This caches the master_schema after first run in order to avoid repeated compute and network calls to infer schema on all files.
-
-        :param min_datetime: if passed, will only use files with last_modified >= this to determine master schema
-
-        :raises RuntimeError: if we find datatype mismatches between files or between a file and schema state (provided or from previous inc. batch)
-        :return: A dict of the JSON schema representing this stream.
-        """
-        # TODO: could implement a (user-beware) 'lazy' mode that skips schema checking to improve performance
-        # TODO: could utilise min_datetime to add a start_date parameter in spec for user
-        if self.master_schema is None:
-            master_schema = deepcopy(self._schema)
-
-            file_reader = self.fileformatparser_class(self._format)
-
-            for file_info in self.get_time_ordered_file_infos():
-                # skip this file if it's earlier than min_datetime
-                if (min_datetime is not None) and (file_info.last_modified < min_datetime):
-                    continue
-
-                storagefile = self.storagefile_class(file_info, self._provider)
-                with storagefile.open(file_reader.is_binary) as f:
-                    this_schema = file_reader.get_inferred_schema(f)
-
-                if this_schema == master_schema:
-                    continue  # exact schema match so go to next file
-
-                # creates a superset of columns retaining order of master_schema with any additional columns added to end
-                column_superset = list(master_schema.keys()) + [c for c in this_schema.keys() if c not in master_schema.keys()]
-                # this compares datatype of every column that the two schemas have in common
-                for col in column_superset:
-                    if (col in master_schema.keys()) and (col in this_schema.keys()) and (master_schema[col] != this_schema[col]):
-                        # If this column exists in a provided schema or schema state, we'll WARN here rather than throw an error
-                        # this is to allow more leniency as we may be able to coerce this datatype mismatch on read according to
-                        # provided schema state. If not, then the read will error anyway
-                        if col in self._schema.keys():
-                            LOGGER.warn(
-                                f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
-                                + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'. "
-                                + f"Airbyte will attempt to coerce this to {master_schema[col]} on read."
-                            )
-                        # else we're inferring the schema (or at least this column) from scratch and therefore
-                        # throw an error on mismatching datatypes
-                        else:
-                            raise RuntimeError(
-                                f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
-                                + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'."
-                            )
-
-                # missing columns in this_schema doesn't affect our master_schema, so we don't check for it here
-
-                # add to master_schema any columns from this_schema that aren't already present
-                for col, datatype in this_schema.items():
-                    if col not in master_schema.keys():
-                        master_schema[col] = datatype
-
-            LOGGER.info(f"determined master schema: {master_schema}")
-            self.master_schema = master_schema
-
-        return self.master_schema
+    @cached_property
+    def _auto_inferred_schema(self) -> Dict[str, Any]:
+        file_reader = self.fileformatparser_class(self._format)
+        file_info_iterator = iter(list(self.get_time_ordered_file_infos()))
+        file_info = next(file_info_iterator, None)
+        if not file_info:
+            return {}
+        storage_file = self.storagefile_class(file_info, self._provider)
+        with storage_file.open(file_reader.is_binary) as f:
+            return file_reader.get_inferred_schema(f, file_info)
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -275,7 +227,7 @@ class FileStream(Stream, ABC):
         We start off with a check to see if we're already lined up to target in order to avoid unnecessary iterations (useful if many columns)
 
         :param record: json-like representation of a data row {column:value}
-        :param target_columns: list of column names to mutate this record into (obtained via self._get_schema_map().keys() as of now)
+        :param target_columns: list of column names to mutate this record into (obtained via self._schema.keys() as of now)
         :return: mutated record with columns lining up to target_columns
         """
         compare_columns = [c for c in target_columns if c not in [self.ab_last_mod_col, self.ab_file_name_col]]
@@ -319,18 +271,21 @@ class FileStream(Stream, ABC):
         """
         for file_item in stream_slice["files"]:
             storage_file: StorageFile = file_item["storage_file"]
-            with storage_file.open(file_reader.is_binary) as f:
-                # TODO: make this more efficient than mutating every record one-by-one as they stream
-                for record in file_reader.stream_records(f):
-                    schema_matched_record = self._match_target_schema(record, list(self._get_schema_map().keys()))
-                    complete_record = self._add_extra_fields_from_map(
-                        schema_matched_record,
-                        {
-                            self.ab_last_mod_col: datetime.strftime(storage_file.last_modified, self.datetime_format_string),
-                            self.ab_file_name_col: storage_file.url,
-                        },
-                    )
-                    yield complete_record
+            try:
+                with storage_file.open(file_reader.is_binary) as f:
+                    # TODO: make this more efficient than mutating every record one-by-one as they stream
+                    for record in file_reader.stream_records(f, storage_file.file_info):
+                        schema_matched_record = self._match_target_schema(record, list(self._schema.keys()))
+                        complete_record = self._add_extra_fields_from_map(
+                            schema_matched_record,
+                            {
+                                self.ab_last_mod_col: datetime.strftime(storage_file.last_modified, self.datetime_format_string),
+                                self.ab_file_name_col: storage_file.url,
+                            },
+                        )
+                        yield complete_record
+            except OSError:
+                continue
         LOGGER.info("finished reading a stream slice")
 
     def read_records(
@@ -344,7 +299,7 @@ class FileStream(Stream, ABC):
         The heavy lifting sits in _read_from_slice() which is full refresh / incremental agnostic
         """
         if stream_slice:
-            file_reader = self.fileformatparser_class(self._format, self._get_master_schema())
+            file_reader = self.fileformatparser_class(self._format, self._raw_schema)
             yield from self._read_from_slice(file_reader, stream_slice)
 
 
@@ -363,18 +318,24 @@ class IncrementalFileStream(FileStream, ABC):
         return self.ab_last_mod_col
 
     @staticmethod
-    def file_in_history(file_info: FileInfo, history: dict) -> bool:
-        for slot in history.values():
-            if file_info.key in slot:
-                return file_info.key in slot
-        return False
+    def file_in_history(file_key: str, history: dict) -> bool:
+        return any(file_key in slot for slot in history.values())
 
     def _get_datetime_from_stream_state(self, stream_state: Mapping[str, Any] = None) -> datetime:
-        """if no state, we default to 1970-01-01 in order to pick up all files present."""
+        """
+        Returns the datetime from the stream state.
+
+        If there is no state, defaults to 1970-01-01 in order to pick up all files present.
+        The datetime object is localized to UTC to match the timezone of the last_modified attribute of objects in S3.
+        """
         if stream_state is not None and self.cursor_field in stream_state.keys():
-            return datetime.strptime(stream_state[self.cursor_field], self.datetime_format_string)
+            try:
+                state_datetime = datetime.strptime(stream_state[self.cursor_field], self.datetime_format_string)
+            except ValueError:
+                state_datetime = datetime.strptime(stream_state[self.cursor_field], self.deprecated_datetime_format_string)
         else:
-            return datetime.strptime("1970-01-01T00:00:00+0000", self.datetime_format_string)
+            state_datetime = datetime.strptime("1970-01-01T00:00:00Z", self.datetime_format_string)
+        return state_datetime.astimezone(pytz.utc)
 
     def get_updated_history(self, current_stream_state, latest_record_datetime, latest_record, current_parsed_datetime, state_date):
         """
@@ -428,11 +389,10 @@ class IncrementalFileStream(FileStream, ABC):
         state_dict: Dict[str, Any] = {}
         current_parsed_datetime = self._get_datetime_from_stream_state(current_stream_state)
         latest_record_datetime = datetime.strptime(
-            latest_record.get(self.cursor_field, "1970-01-01T00:00:00+0000"), self.datetime_format_string
+            latest_record.get(self.cursor_field, "1970-01-01T00:00:00Z"), self.datetime_format_string
         )
+        latest_record_datetime = latest_record_datetime.astimezone(pytz.utc)
         state_dict[self.cursor_field] = datetime.strftime(max(current_parsed_datetime, latest_record_datetime), self.datetime_format_string)
-
-        state_dict["schema"] = self._get_schema_map()
 
         state_date = self._get_datetime_from_stream_state(state_dict).date()
 
@@ -442,27 +402,6 @@ class IncrementalFileStream(FileStream, ABC):
             )
 
         return self.size_history_balancer(state_dict)
-
-    def need_to_skip_file(self, stream_state, file_info):
-        """
-        Skip this file if last_mod is earlier than our cursor value from state and already in history
-        or skip this file if last_mod plus delta is earlier than our cursor value
-        """
-        file_in_history_and_last_modified_is_earlier_than_cursor_value = (
-            stream_state is not None
-            and self.cursor_field in stream_state.keys()
-            and file_info.last_modified <= self._get_datetime_from_stream_state(stream_state)
-            and self.file_in_history(file_info, stream_state.get("history", {}))
-        )
-
-        file_is_not_in_history_and_last_modified_plus_buffer_days_is_earlier_than_cursor_value = file_info.last_modified + timedelta(
-            days=self.buffer_days
-        ) < self._get_datetime_from_stream_state(stream_state) and not self.file_in_history(file_info, stream_state.get("history", {}))
-
-        return (
-            file_in_history_and_last_modified_is_earlier_than_cursor_value
-            or file_is_not_in_history_and_last_modified_plus_buffer_days_is_earlier_than_cursor_value
-        )
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -480,18 +419,11 @@ class IncrementalFileStream(FileStream, ABC):
             yield from super().stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
         else:
-            # if necessary and present, let's update this object's schema attribute to the schema stored in state
-            # TODO: ideally we could do this on __init__ but I'm not sure that's possible without breaking from cdk style implementation
-            if self._schema == {} and stream_state is not None and "schema" in stream_state.keys():
-                self._schema = stream_state["schema"]
 
             # logic here is to bundle all files with exact same last modified timestamp together in each slice
             prev_file_last_mod: datetime = None  # init variable to hold previous iterations last modified
             grouped_files_by_time: List[Dict[str, Any]] = []
-            for file_info in self.get_time_ordered_file_infos():
-                if self.need_to_skip_file(stream_state, file_info):
-                    continue
-
+            for file_info in self.get_time_ordered_file_infos(stream_state=str(stream_state)):
                 # check if this file belongs in the next slice, if so yield the current slice before this file
                 if (prev_file_last_mod is not None) and (file_info.last_modified != prev_file_last_mod):
                     yield {"files": grouped_files_by_time}
@@ -508,26 +440,3 @@ class IncrementalFileStream(FileStream, ABC):
             else:
                 # in case we have no files
                 yield None
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        """
-        The heavy lifting sits in _read_from_slice() which is full refresh / incremental agnostic.
-        We override this for incremental so we can pass our minimum datetime from state into _get_master_schema().
-        This means we only parse the schema of new files on incremental runs rather than all files in the bucket.
-        """
-        if stream_slice:
-            if sync_mode == SyncMode.full_refresh:
-                yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
-
-            else:
-
-                file_reader = self.fileformatparser_class(
-                    self._format, self._get_master_schema(self._get_datetime_from_stream_state(stream_state))
-                )
-                yield from self._read_from_slice(file_reader, stream_slice)

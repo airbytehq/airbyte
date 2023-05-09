@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc.streaming;
@@ -45,13 +45,18 @@ public abstract class BaseSizeEstimator implements FetchSizeEstimator {
     // the whole method only provides an estimation. Please never convert
     // the string to byte[] to get the exact length. That conversion is known
     // to introduce a lot of memory overhead.
-    return Jsons.serialize(rowData).length() * 4L;
+    //
+    // We are using 3L as the median byte-size of a serialized char here assuming that most chars fit
+    // into the ASCII space (fewer bytes)
+
+    return Jsons.serialize(rowData).length() * 3L;
   }
 
   /**
    * This method ensures that the fetch size is between {@code minFetchSize} and {@code maxFetchSize},
    * inclusively.
    */
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   protected int getBoundedFetchSize() {
     if (maxRowByteSize <= 0.0) {
       return defaultFetchSize;

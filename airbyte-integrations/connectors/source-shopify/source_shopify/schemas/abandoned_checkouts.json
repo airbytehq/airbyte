@@ -1,5 +1,6 @@
 {
   "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "note_attributes": {
       "type": ["null", "array"],

@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.tempo.io
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d1aa448b-7c54-498e-ad95-263cbebcd2db
+  dockerImageTag: 0.3.1
+  dockerRepository: airbyte/source-tempo
+  githubIssueLabel: source-tempo
+  icon: tempo.svg
+  license: MIT
+  name: Tempo
+  releaseStage: beta
+  supportUrl: https://docs.airbyte.com/integrations/sources/tempo
+metadataSpecVersion: "1.0"

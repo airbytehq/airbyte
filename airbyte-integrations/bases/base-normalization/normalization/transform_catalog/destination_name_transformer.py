@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -27,6 +27,11 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.MSSQL.value: 64,
     # https://stackoverflow.com/questions/68358686/what-is-the-maximum-length-of-a-column-in-clickhouse-can-it-be-modified
     DestinationType.CLICKHOUSE.value: 63,
+    # https://docs.pingcap.com/tidb/stable/tidb-limitations
+    DestinationType.TIDB.value: 64,
+    # According to the DuckDB team there no restriction: We don't enforce a maximum right now but I would not recommend having column names
+    # longer than a few kilobytes. https://discord.com/channels/909674491309850675/1067042662827438122/1067043835768737893.
+    DestinationType.DUCKDB.value: 64,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -164,7 +169,15 @@ class DestinationNameTransformer:
         if truncate:
             result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_level=conflict_level)
         if self.needs_quotes(result):
-            if self.destination_type.value != DestinationType.MYSQL.value:
+            if self.destination_type.value == DestinationType.CLICKHOUSE.value:
+                result = result.replace('"', "_")
+                result = result.replace("`", "_")
+                result = result.replace("'", "_")
+            elif (
+                self.destination_type.value != DestinationType.MYSQL.value
+                and self.destination_type.value != DestinationType.TIDB.value
+                and self.destination_type.value != DestinationType.DUCKDB.value
+            ):
                 result = result.replace('"', '""')
             else:
                 result = result.replace("`", "_")
@@ -181,13 +194,15 @@ class DestinationNameTransformer:
             return f"'{result}'"
         return result
 
-    def apply_quote(self, input: str) -> str:
+    def apply_quote(self, input: str, literal=True) -> str:
+        if literal:
+            input = f"'{input}'"
         if self.destination_type == DestinationType.ORACLE:
             # Oracle dbt lib doesn't implemented adapter quote yet.
-            return f"quote('{input}')"
+            return f"quote({input})"
         elif self.destination_type == DestinationType.CLICKHOUSE:
-            return f"quote('{input}')"
-        return f"adapter.quote('{input}')"
+            return f"quote({input})"
+        return f"adapter.quote({input})"
 
     def __normalize_naming_conventions(self, input_name: str, is_column: bool = False) -> str:
         result = input_name
@@ -228,6 +243,12 @@ class DestinationNameTransformer:
                 result = input_name.upper()
         elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
             pass
+        elif self.destination_type.value == DestinationType.TIDB.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
+        elif self.destination_type.value == DestinationType.DUCKDB.value:
+            if not is_quoted and not self.needs_quotes(input_name):
+                result = input_name.lower()
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result
@@ -266,6 +287,10 @@ class DestinationNameTransformer:
                 result = input_name.upper()
         elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
             pass
+        elif self.destination_type.value == DestinationType.TIDB.value:
+            result = input_name.lower()
+        elif self.destination_type.value == DestinationType.DUCKDB.value:
+            result = input_name.lower()
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result

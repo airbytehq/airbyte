@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 4a961f66-5e99-4430-8320-a73afe52f7a2
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-n8n
+  githubIssueLabel: source-n8n
+  icon: n8n.svg
+  license: MIT
+  name: n8n
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/n8n
+metadataSpecVersion: "1.0"

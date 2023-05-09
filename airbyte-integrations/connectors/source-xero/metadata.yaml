@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.xero.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 6fd1e833-dd6e-45ec-a727-ab917c5be892
+  dockerImageTag: 0.2.1
+  dockerRepository: airbyte/source-xero
+  githubIssueLabel: source-xero
+  icon: xero.svg
+  license: MIT
+  name: Xero
+  releaseStage: beta
+  supportUrl: https://docs.airbyte.com/integrations/sources/xero
+metadataSpecVersion: "1.0"

@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 4a4d887b-0f2d-4b33-ab7f-9b01b9072804
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-survey-sparrow
+  githubIssueLabel: source-survey-sparrow
+  icon: surveysparrow.svg
+  license: MIT
+  name: SurveySparrow
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/survey-sparrow
+metadataSpecVersion: "1.0"

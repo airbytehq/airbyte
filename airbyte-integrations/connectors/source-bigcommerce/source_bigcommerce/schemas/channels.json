@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "external_id": {
+      "type": ["null", "string"]
+    },
+    "is_listable_from_ui": {
+      "type": ["null", "boolean"]
+    },
+    "is_visible": {
+      "type": ["null", "boolean"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "platform": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "date_modified": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "icon_url": {
+      "type": ["null", "string"]
+    }
+  }
+}

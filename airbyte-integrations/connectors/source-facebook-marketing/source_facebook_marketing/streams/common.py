@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import http.client
@@ -33,6 +33,13 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         logger.info(str(exc))
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
+    def reduce_request_record_limit(details):
+        _, exc, _ = sys.exc_info()
+        if (
+                details.get("kwargs", {}).get("params", {}).get("limit")
+        ):
+            details["kwargs"]["params"]["limit"] = int(int(details["kwargs"]["params"]["limit"]) / 4)
+
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):
             call_rate_limit_error = exc.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES
@@ -54,14 +61,27 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
             )
         return True
 
+    # Save the original limit value
+    original_limit = wait_gen_kwargs.get("kwargs", {}).get("params", {}).get("limit")
+
+    # Wrap the decorated function with another function that resets the limit value after a successful API call
+    def reset_limit_decorator(f):
+        def wrapper(*args, **kwargs):
+            result = f(*args, **kwargs)
+            # Reset the limit value after the API call is successful
+            if original_limit:
+                kwargs["params"]["limit"] = original_limit
+            return result
+        return wrapper
+
     return backoff.on_exception(
         backoff_type,
         exception,
         jitter=None,
-        on_backoff=log_retry_attempt,
+        on_backoff=[log_retry_attempt, reduce_request_record_limit],
         giveup=lambda exc: not should_retry_api_error(exc),
         **wait_gen_kwargs,
-    )
+    )(reset_limit_decorator)
 
 
 def deep_merge(a: Any, b: Any) -> Any:

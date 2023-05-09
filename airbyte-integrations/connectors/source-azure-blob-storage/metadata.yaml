@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: file
+  connectorType: source
+  definitionId: fdaaba68-4875-4ed9-8fcd-4ae1e0a25093
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-azure-blob-storage
+  githubIssueLabel: source-azure-blob-storage
+  icon: azureblobstorage.svg
+  license: MIT
+  name: Azure Blob Storage
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/azure-blob-storage
+metadataSpecVersion: "1.0"

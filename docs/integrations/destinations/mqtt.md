@@ -4,6 +4,9 @@
 
 The Airbyte MQTT destination allows you to sync data to any MQTT system compliance with version 3.1.X. Each stream is written to the corresponding MQTT topic.
 
+## Prerequisites
+- For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your MQTT connector to the latest version
+
 ### Sync overview
 
 #### Output schema
@@ -48,7 +51,7 @@ Airbyte should be allowed to write messages into topics. Based on the MQTT broke
 
 #### Target topics
 
-You can determine the topics to which messages are written via the `topic_pattern` configuration parameter. Messages can be written to either a hardcoded, pre-defined topic, or dynamically written to different topics based on the [namespace](https://docs.airbyte.io/understanding-airbyte/namespaces) or stream they came from.
+You can determine the topics to which messages are written via the `topic_pattern` configuration parameter. Messages can be written to either a hardcoded, pre-defined topic, or dynamically written to different topics based on the [namespace](https://docs.airbyte.com/understanding-airbyte/namespaces) or stream they came from.
 
 To write all messages to a single hardcoded topic, enter its name in the `topic_pattern` field e.g: setting `topic_pattern` to `path1/path2/my-topic-name` will write all messages from all streams and namespaces to that topic.
 
@@ -82,4 +85,6 @@ _NOTE_: MQTT version 5 is not supported yet.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.3 | 2022-09-02 | [16263](https://github.com/airbytehq/airbyte/pull/16263) | Marked password field in spec as airbyte_secret |
+| 0.1.2 | 2022-07-12 | [14648](https://github.com/airbytehq/airbyte/pull/14648) | Include lifecycle management |
 | 0.1.1 | 2022-05-24 | [13099](https://github.com/airbytehq/airbyte/pull/13099) | Fixed build's tests |

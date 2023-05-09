@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import copy
@@ -8,6 +8,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Iterator, List, Mapping, Optional, Type, Union
 
+import backoff
 import pendulum
 from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adaccount import AdAccount
@@ -15,9 +16,18 @@ from facebook_business.adobjects.adreportrun import AdReportRun
 from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
-from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookResponse
+from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookBadObjectError, FacebookResponse
+from source_facebook_marketing.streams.common import retry_pattern
 
 logger = logging.getLogger("airbyte")
+
+
+# `FacebookBadObjectError` occurs in FB SDK when it fetches an inconsistent or corrupted data.
+# It still has http status 200 but the object can not be constructed from what was fetched from API.
+# Also, it does not happen while making a call to the API, but later - when parsing the result,
+# that's why a retry is added to `get_results()` instead of extending the existing retry of `api.call()` with `FacebookBadObjectError`.
+
+backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=10, factor=5)
 
 
 def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
@@ -171,14 +181,17 @@ class ParentAsyncJob(AsyncJob):
 
     def __str__(self) -> str:
         """String representation of the job wrapper."""
-        return f"ParentAsyncJob({self._jobs[0]} ... {len(self._jobs) - 1} jobs more)"
-
+        if len(self._jobs) > 0:
+            return f"ParentAsyncJob({self._jobs[0]} ... {len(self._jobs) - 1} jobs more)"
+        else:
+            return f"No ParentAsyncJob Job left"
 
 class InsightAsyncJob(AsyncJob):
     """AsyncJob wraps FB AdReport class and provides interface to restart/retry the async job"""
 
     job_timeout = pendulum.duration(hours=1)
     page_size = 100
+    INSIGHTS_RETENTION_PERIOD = pendulum.duration(months=37)
 
     def __init__(self, edge_object: Union[AdAccount, Campaign, AdSet, Ad], params: Mapping[str, Any], **kwargs):
         """Initialize
@@ -194,7 +207,7 @@ class InsightAsyncJob(AsyncJob):
             "until": self._interval.end.to_date_string(),
         }
 
-        self._edge_object = edge_object
+        self.edge_object = edge_object
         self._job: Optional[AdReportRun] = None
         self._start_time = None
         self._finish_time = None
@@ -202,11 +215,11 @@ class InsightAsyncJob(AsyncJob):
 
     def split_job(self) -> List["AsyncJob"]:
         """Split existing job in few smaller ones grouped by ParentAsyncJob class."""
-        if isinstance(self._edge_object, AdAccount):
+        if isinstance(self.edge_object, AdAccount):
             return self._split_by_edge_class(Campaign)
-        elif isinstance(self._edge_object, Campaign):
+        elif isinstance(self.edge_object, Campaign):
             return self._split_by_edge_class(AdSet)
-        elif isinstance(self._edge_object, AdSet):
+        elif isinstance(self.edge_object, AdSet):
             return self._split_by_edge_class(Ad)
         raise ValueError("The job is already splitted to the smallest size.")
 
@@ -231,10 +244,12 @@ class InsightAsyncJob(AsyncJob):
         params = dict(copy.deepcopy(self._params))
         # get objects from attribution window as well (28 day + 1 current day)
         new_start = self._interval.start - pendulum.duration(days=28 + 1)
+        oldest_date = pendulum.today().date() - self.INSIGHTS_RETENTION_PERIOD
+        new_start = max(new_start, oldest_date)
         params.update(fields=[pk_name], level=level)
         params["time_range"].update(since=new_start.to_date_string())
         params.pop("time_increment")  # query all days
-        result = self._edge_object.get_insights(params=params)
+        result = self.edge_object.get_insights(params=params)
         ids = set(row[pk_name] for row in result)
         logger.info(f"Got {len(ids)} {pk_name}s for period {self._interval}: {ids}")
 
@@ -246,7 +261,7 @@ class InsightAsyncJob(AsyncJob):
         if self._job:
             raise RuntimeError(f"{self}: Incorrect usage of start - the job already started, use restart instead")
 
-        self._job = self._edge_object.get_insights(params=self._params, is_async=True)
+        self._job = self.edge_object.get_insights(params=self._params, is_async=True)
         self._start_time = pendulum.now()
         self._attempt_number += 1
         logger.info(f"{self}: created AdReportRun")
@@ -338,6 +353,7 @@ class InsightAsyncJob(AsyncJob):
 
         return False
 
+    @backoff_policy
     def get_result(self) -> Any:
         """Retrieve result of the finished job."""
         if not self._job or self.failed:
@@ -348,4 +364,4 @@ class InsightAsyncJob(AsyncJob):
         """String representation of the job wrapper."""
         job_id = self._job["report_run_id"] if self._job else "<None>"
         breakdowns = self._params["breakdowns"]
-        return f"InsightAsyncJob(id={job_id}, {self._edge_object}, time_range={self._interval}, breakdowns={breakdowns})"
+        return f"InsightAsyncJob(id={job_id}, {self.edge_object}, time_range={self._interval}, breakdowns={breakdowns})"

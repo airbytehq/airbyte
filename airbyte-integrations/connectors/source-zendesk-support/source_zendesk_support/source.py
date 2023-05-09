@@ -1,15 +1,17 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import base64
+import logging
+from datetime import datetime
 from typing import Any, List, Mapping, Tuple
 
-import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from source_zendesk_support.streams import SourceZendeskException
+from source_zendesk_support.streams import DATETIME_FORMAT, SourceZendeskException
 
 from .streams import (
     Brands,
@@ -32,6 +34,8 @@ from .streams import (
     Users,
     UserSettingsStream,
 )
+
+logger = logging.getLogger("airbyte")
 
 
 class BasicApiTokenAuthenticator(TokenAuthenticator):
@@ -78,8 +82,9 @@ class SourceZendeskSupport(AbstractSource):
         auth = self.get_authenticator(config)
         settings = None
         try:
+            datetime.strptime(config["start_date"], DATETIME_FORMAT)
             settings = UserSettingsStream(config["subdomain"], authenticator=auth, start_date=None).get_settings()
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             return False, e
 
         active_features = [k for k, v in settings.get("active_features", {}).items() if v]
@@ -97,6 +102,7 @@ class SourceZendeskSupport(AbstractSource):
             "subdomain": config["subdomain"],
             "start_date": config["start_date"],
             "authenticator": cls.get_authenticator(config),
+            "ignore_pagination": config.get("ignore_pagination", False),
         }
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -104,8 +110,7 @@ class SourceZendeskSupport(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         args = self.convert_config2stream_args(config)
-        # sorted in alphabet order
-        return [
+        streams = [
             GroupMemberships(**args),
             Groups(**args),
             Macros(**args),
@@ -116,7 +121,6 @@ class SourceZendeskSupport(AbstractSource):
             TicketAudits(**args),
             TicketComments(**args),
             TicketFields(**args),
-            TicketForms(**args),
             TicketMetrics(**args),
             TicketMetricEvents(**args),
             Tickets(**args),
@@ -125,3 +129,15 @@ class SourceZendeskSupport(AbstractSource):
             CustomRoles(**args),
             Schedules(**args),
         ]
+        ticket_forms_stream = TicketForms(**args)
+        # TicketForms stream is only available for Enterprise Plan users but Zendesk API does not provide
+        # a public API to get user's subscription plan. That's why we try to read at least one record and expose this stream
+        # in case of success or skip it otherwise
+        try:
+            for stream_slice in ticket_forms_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+                for _ in ticket_forms_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                    streams.append(ticket_forms_stream)
+                    break
+        except Exception as e:
+            logger.warning(f"An exception occurred while trying to access TicketForms stream: {str(e)}. Skipping this stream.")
+        return streams

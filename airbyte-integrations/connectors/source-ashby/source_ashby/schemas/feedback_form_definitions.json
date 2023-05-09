@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "organizationId": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "isArchived": {
+      "type": ["null", "boolean"]
+    },
+    "isDefaultForm": {
+      "type": ["null", "boolean"]
+    },
+    "formDefinition": {
+      "type": ["null", "object"]
+    },
+    "interviewId": {
+      "type": ["null", "string"]
+    }
+  }
+}

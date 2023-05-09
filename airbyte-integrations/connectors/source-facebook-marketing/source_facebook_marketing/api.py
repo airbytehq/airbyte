@@ -1,20 +1,25 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
 import logging
 from dataclasses import dataclass
 from time import sleep
+from typing import List
 
 import backoff
 import pendulum
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
+from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams.common import retry_pattern
+
+from google.cloud import bigquery
+from google.oauth2 import service_account
 
 logger = logging.getLogger("airbyte")
 
@@ -29,8 +34,8 @@ backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, 
 class MyFacebookAdsApi(FacebookAdsApi):
     """Custom Facebook API class to intercept all API calls and handle call rate limits"""
 
-    MAX_RATE, MAX_PAUSE_INTERVAL = (95, pendulum.duration(minutes=5))
-    MIN_RATE, MIN_PAUSE_INTERVAL = (90, pendulum.duration(minutes=1))
+    MAX_RATE, MAX_PAUSE_INTERVAL = (95, pendulum.duration(minutes=20))
+    MIN_RATE, MIN_PAUSE_INTERVAL = (90, pendulum.duration(minutes=5))
 
     @dataclass
     class Throttle:
@@ -139,17 +144,18 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
     @backoff_policy
     def call(
-        self,
-        method,
-        path,
-        params=None,
-        headers=None,
-        files=None,
-        url_override=None,
-        api_version=None,
+            self,
+            method,
+            path,
+            params=None,
+            headers=None,
+            files=None,
+            url_override=None,
+            api_version=None,
     ):
         """Makes an API call, delegate actual work to parent class and handles call rates"""
         response = super().call(method, path, params, headers, files, url_override, api_version)
+
         self._update_insights_throttle_limit(response)
         self._handle_call_rate_limit(response, params)
         return response
@@ -158,8 +164,9 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, account_id: str, access_token: str):
+    def __init__(self, account_id: str, access_token: str, google_service_account: str):
         self._account_id = account_id
+        self._google_service_account = google_service_account
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
         FacebookAdsApi.set_default_api(self.api)
@@ -167,7 +174,36 @@ class API:
     @cached_property
     def account(self) -> AdAccount:
         """Find current account"""
-        return self._find_account(self._account_id)
+        return next(iter(self.accounts), None)
+
+    @cached_property
+    def accounts(self) -> List[AdAccount]:
+        """Find current accounts"""
+        if len(self._account_id):
+            return [self._find_account(acc.strip()) for acc in self._account_id.split(",")]
+        else:
+            ad_accounts = []
+            missing_permissions = []
+            google_service_account = json.loads(self._google_service_account)
+            bq_credentials = service_account.Credentials.from_service_account_info(google_service_account)
+            bq_client = bigquery.Client(credentials=bq_credentials)
+
+            query = bq_client.query(query="SELECT DISTINCT publisher_account_id "
+                                          "FROM `dolead-gsp-2020.dbt_mart.new_core_ppc_accounts` "
+                                          "WHERE publisher = 'FB_ADS' "
+                                          "AND is_active = TRUE ")
+            results = query.result()
+            for res in results:
+                id = str(res.publisher_account_id)
+                try:
+                    account = self._find_account(id)
+                    ad_accounts.append(account)
+                except FacebookAPIException as e:
+                    missing_permissions.append(id)
+
+            logger.info("Missing permissions on following accounts : " + str(missing_permissions))
+
+            return ad_accounts
 
     @staticmethod
     def _find_account(account_id: str) -> AdAccount:
@@ -175,4 +211,8 @@ class API:
         try:
             return AdAccount(f"act_{account_id}").api_get()
         except FacebookRequestError as exc:
-            raise FacebookAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
+            raise FacebookAPIException(
+                f"Error: {exc.api_error_code()}, {exc.api_error_message()}. "
+                f"Please also verify your Account ID: "
+                f"See the https://www.facebook.com/business/help/1492627900875762 for more information."
+            ) from exc

@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 8a5d48f6-03bb-4038-a942-a8d3f175cca3
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-freshcaller
+  githubIssueLabel: source-freshcaller
+  icon: freshcaller.svg
+  license: MIT
+  name: Freshcaller
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/freshcaller
+metadataSpecVersion: "1.0"

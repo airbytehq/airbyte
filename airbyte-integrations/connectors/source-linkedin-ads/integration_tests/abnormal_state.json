@@ -1,23 +1,51 @@
-{
-  "account_users": {
-    "lastModified": "2050-01-01"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModified": "2050-01-01" },
+      "stream_descriptor": { "name": "account_users" }
+    }
   },
-  "campaign_groups": {
-    "lastModified": "2050-01-01"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModified": "2050-01-01" },
+      "stream_descriptor": { "name": "campaign_groups" }
+    }
   },
-  "campaigns": {
-    "lastModified": "2050-01-01"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModified": "2050-01-01" },
+      "stream_descriptor": { "name": "campaigns" }
+    }
   },
-  "creatives": {
-    "lastModified": "2050-01-01"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModified": "2050-01-01" },
+      "stream_descriptor": { "name": "creatives" }
+    }
   },
-  "ad_direct_sponsored_contents": {
-    "lastModified": "2050-01-01"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModified": "2050-01-01" },
+      "stream_descriptor": { "name": "ad_direct_sponsored_contents" }
+    }
   },
-  "ad_campaign_analytics": {
-    "end_date": "2050-01-01"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "end_date": "2050-01-01" },
+      "stream_descriptor": { "name": "ad_campaign_analytics" }
+    }
   },
-  "ad_creative_analytics": {
-    "end_date": "2050-01-01"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "end_date": "2050-01-01" },
+      "stream_descriptor": { "name": "ad_creative_analytics" }
+    }
   }
-}
+]

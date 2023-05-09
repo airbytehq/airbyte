@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: source
+  definitionId: e87ffa8e-a3b5-f69c-9076-6011339de1f6
+  dockerImageTag: 0.3.16
+  dockerRepository: airbyte/source-redshift
+  githubIssueLabel: source-redshift
+  icon: redshift.svg
+  license: MIT
+  name: Redshift
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/redshift
+metadataSpecVersion: "1.0"

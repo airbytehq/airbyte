@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - slack.com
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
+  dockerImageTag: 0.1.25
+  dockerRepository: airbyte/source-slack
+  githubIssueLabel: source-slack
+  icon: slack.svg
+  license: MIT
+  name: Slack
+  releaseStage: generally_available
+  supportUrl: https://docs.airbyte.com/integrations/sources/slack
+metadataSpecVersion: "1.0"

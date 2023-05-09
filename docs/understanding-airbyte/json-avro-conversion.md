@@ -18,6 +18,10 @@ Json schema types are mapped to Avro types as follows:
 | object | record |
 | array | array |
 
+### Nullable Fields
+
+All fields are nullable. For example, a `string` Json field will be typed as `["null", "string"]` in Avro. This is necessary because the incoming data stream may have optional fields.
+
 ### Built-in Formats
 
 The following built-in Json formats will be mapped to Avro logical types.
@@ -27,6 +31,8 @@ The following built-in Json formats will be mapped to Avro logical types.
 | `string` | `date` | `int` | `date` | Number of epoch days from 1970-01-01 ([reference](https://avro.apache.org/docs/current/spec.html#Date)). |
 | `string` | `time` | `long` | `time-micros` | Number of microseconds after midnight ([reference](https://avro.apache.org/docs/current/spec.html#Time+%28microsecond+precision%29)). |
 | `string` | `date-time` | `long` | `timestamp-micros` | Number of microseconds from `1970-01-01T00:00:00Z` ([reference](https://avro.apache.org/docs/current/spec.html#Timestamp+%28microsecond+precision%29)). |
+
+In the final Avro schema, these Avro logical type fields will be a union of the logical type and string. The rationale is that the incoming Json objects may contain invalid Json built-in formats. If that's the case, and the conversion from the Json built-in format to Avro built-in format fails, the field will fall back to a string. The extra string type can cause problem for some users in the destination. We may re-evaluate this conversion rule in the future. This issue is tracked [here](https://github.com/airbytehq/airbyte/issues/17011).
 
 **Date**
 
@@ -41,12 +47,27 @@ A date logical type annotates an Avro int, where the int stores the number of da
 }
 ```
 
-will become in Avro schema:
+is mapped to:
 
 ```json
 {
   "type": "int",
   "logicalType": "date"
+}
+```
+
+and the Avro schema is:
+
+```json
+{
+  "type": [
+    "null",
+    {
+      "type": "int",
+      "logicalType": "date"
+    },
+    "string"
+  ]
 }
 ```
 
@@ -63,12 +84,27 @@ A time-micros logical type annotates an Avro long, where the long stores the num
 }
 ```
 
-will become in Avro schema:
+is mapped to:
 
 ```json
 {
   "type": "long",
   "logicalType": "time-micros"
+}
+```
+
+and the Avro schema is:
+
+```json
+{
+  "type": [
+    "null",
+    {
+      "type": "long",
+      "logicalType": "time-micros"
+    },
+    "string"
+  ]
 }
 ```
 
@@ -85,12 +121,27 @@ A timestamp-micros logical type annotates an Avro long, where the long stores th
 }
 ```
 
-will become in Avro schema:
+is mapped to:
 
 ```json
 {
   "type": "long",
   "logicalType": "timestamp-micros"
+}
+```
+
+and the Avro schema is:
+
+```json
+{
+  "type": [
+    "null",
+    {
+      "type": "long",
+      "logicalType": "timestamp-micros"
+    },
+    "string"
+  ]
 }
 ```
 
@@ -124,10 +175,6 @@ Keyword `not` is not supported, as there is no equivalent validation mechanism i
 Only alphanumeric characters and underscores \(`/a-zA-Z0-9_/`\) are allowed in a stream or field name. Any special character will be converted to an alphabet or underscore. For example, `spécial:character_names` will become `special_character_names`. The original names will be stored in the `doc`property in this format: `_airbyte_original_name:<original-name>`.
 
 Field name cannot start with a number, so an underscore will be added to those field names at the beginning.
-
-### Nullable Fields
-
-All field will be nullable. For example, a `string` Json field will be typed as `["null", "string"]` in Avro. This is necessary because the incoming data stream may have optional fields.
 
 ### Array Types
 

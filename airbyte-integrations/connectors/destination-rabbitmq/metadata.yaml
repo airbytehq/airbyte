@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: e06ad785-ad6f-4647-b2e8-3027a5c59454
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/destination-rabbitmq
+  githubIssueLabel: destination-rabbitmq
+  icon: pulsar.svg
+  license: MIT
+  name: RabbitMQ
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/rabbitmq
+metadataSpecVersion: "1.0"

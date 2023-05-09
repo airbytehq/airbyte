@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: b4375641-e270-41d3-9c20-4f9cecad87a8
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/source-appfollow
+  githubIssueLabel: source-appfollow
+  icon: appfollow.svg
+  license: MIT
+  name: Appfollow
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/appfollow
+metadataSpecVersion: "1.0"

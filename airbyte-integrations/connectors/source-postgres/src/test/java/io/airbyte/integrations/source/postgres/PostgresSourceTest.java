@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -7,6 +7,8 @@ package io.airbyte.integrations.source.postgres;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.map;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.setEmittedAtToNull;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,23 +18,39 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Database;
+import io.airbyte.db.IncrementalUtils;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -52,6 +70,7 @@ class PostgresSourceTest {
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME_PRIVILEGES_TEST_CASE = "id_and_name_3";
+  private static final String STREAM_NAME_WITH_QUOTES = "\"test_dq_table\"";
   private static final String STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW = "id_and_name_3_view";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
@@ -92,6 +111,8 @@ class PostgresSourceTest {
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
+  private static final ConfiguredAirbyteCatalog CONFIGURED_INCR_CATALOG = toIncrementalConfiguredCatalog(CATALOG);
+
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
@@ -100,6 +121,10 @@ class PostgresSourceTest {
   private static final Set<AirbyteMessage> UTF8_MESSAGES = Sets.newHashSet(
       createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", 1, "name", "\u2013 someutfstring")),
       createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", 2, "name", "\u2215")));
+
+  private static final Set<AirbyteMessage> DOUBLE_QUOTED_MESSAGES = Sets.newHashSet(
+      createRecord(STREAM_NAME_WITH_QUOTES, SCHEMA_NAME, ImmutableMap.of("id", 1, "\"test_column\"", "test1")),
+      createRecord(STREAM_NAME_WITH_QUOTES, SCHEMA_NAME, ImmutableMap.of("id", 2, "\"test_column\"", "test2")));
 
   private static final Set<AirbyteMessage> PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES = Sets.newHashSet(
       createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", 1, "name", "Zed")),
@@ -132,17 +157,18 @@ class PostgresSourceTest {
     try (final DSLContext dslContext = getDslContext(config)) {
       final Database database = getDatabase(dslContext);
       database.query(ctx -> {
-        ctx.fetch("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
+        ctx.fetch(
+            "CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");
         ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
         ctx.fetch(
-            "INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
+            "INSERT INTO id_and_name (id, name, power) VALUES (2, 'vegeta', 9000.1), (1,'goku', 'Infinity'), ('NaN', 'piccolo', '-Infinity');");
 
-        ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
+        ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
         ctx.fetch(
             "INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
         ctx.fetch(
-            "CREATE TABLE names(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
+            "CREATE TABLE names(first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (first_name, last_name));");
         ctx.fetch(
             "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
         return null;
@@ -156,9 +182,9 @@ class PostgresSourceTest {
         password,
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            config.get("database").asText()),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);
   }
 
@@ -168,37 +194,37 @@ class PostgresSourceTest {
 
   private static DSLContext getDslContext(final JsonNode config) {
     return DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            config.get("database").asText()),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);
   }
 
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", psqlDb.getHost())
-        .put("port", psqlDb.getFirstMappedPort())
-        .put("database", dbName)
-        .put("schemas", List.of(SCHEMA_NAME))
-        .put("username", psqlDb.getUsername())
-        .put("password", psqlDb.getPassword())
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
+        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
+        .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
   }
 
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName, final String user, final String password) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", psqlDb.getHost())
-        .put("port", psqlDb.getFirstMappedPort())
-        .put("database", dbName)
-        .put("schemas", List.of(SCHEMA_NAME))
-        .put("username", user)
-        .put("password", password)
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
+        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
+        .put(JdbcUtils.USERNAME_KEY, user)
+        .put(JdbcUtils.PASSWORD_KEY, password)
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
   }
 
@@ -213,6 +239,39 @@ class PostgresSourceTest {
   @AfterAll
   static void cleanUp() {
     PSQL_DB.close();
+  }
+
+  @Test
+  public void testCanReadTablesAndColumnsWithDoubleQuotes() throws Exception {
+    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
+      db.start();
+
+      final AirbyteCatalog airbyteCatalog = new AirbyteCatalog().withStreams(List.of(
+          CatalogHelpers.createAirbyteStream(
+              STREAM_NAME_WITH_QUOTES,
+              SCHEMA_NAME,
+              Field.of("id", JsonSchemaType.NUMBER),
+              Field.of("\"test_column\"", JsonSchemaType.STRING))
+              .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+              .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
+
+      final JsonNode config = getConfig(db);
+      try (final DSLContext dslContext = getDslContext(config)) {
+        final Database database = getDatabase(dslContext);
+
+        database.query(ctx -> {
+          ctx.fetch("CREATE TABLE \"\"\"test_dq_table\"\"\"(id INTEGER PRIMARY KEY,  \"\"\"test_column\"\"\" varchar);");
+          ctx.fetch("INSERT INTO \"\"\"test_dq_table\"\"\" (id, \"\"\"test_column\"\"\") VALUES (1,'test1'),  (2, 'test2');");
+          return null;
+        });
+      }
+      final Set<AirbyteMessage> actualMessages =
+          MoreIterators.toSet(new PostgresSource().read(config, CatalogHelpers.toDefaultConfiguredCatalog(airbyteCatalog), null));
+      setEmittedAtToNull(actualMessages);
+
+      assertEquals(DOUBLE_QUOTED_MESSAGES, actualMessages);
+      db.stop();
+    }
   }
 
   @Test
@@ -410,9 +469,14 @@ class PostgresSourceTest {
         });
       }
 
-      AirbyteCatalog actual = new PostgresSource().discover(getConfig(db, "new_test_user", "new_pass"));
-      Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
-      Set<String> expectedVisibleNames = Sets.newHashSet(
+      final AirbyteCatalog actual = new PostgresSource().discover(getConfig(db, "new_test_user", "new_pass"));
+      actual.getStreams().stream().forEach(airbyteStream -> {
+        assertEquals(2, airbyteStream.getSupportedSyncModes().size());
+        assertTrue(airbyteStream.getSupportedSyncModes().contains(SyncMode.FULL_REFRESH));
+        assertTrue(airbyteStream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL));
+      });
+      final Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
+      final Set<String> expectedVisibleNames = Sets.newHashSet(
           "table_granted_by_role",
           "table_granted_by_role_with_options",
           "test_table_granted_directly",
@@ -444,15 +508,95 @@ class PostgresSourceTest {
   }
 
   @Test
+  void testReadIncrementalSuccess() throws Exception {
+    final JsonNode config = getConfig(PSQL_DB, dbName);
+    // We want to test ordering, so we can delete the NaN entry and add a 3.
+    try (final DSLContext dslContext = getDslContext(config)) {
+      final Database database = getDatabase(dslContext);
+      database.query(ctx -> {
+        ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
+        ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (3, 'gohan', 222.1);");
+        return null;
+      });
+      final ConfiguredAirbyteCatalog configuredCatalog =
+          CONFIGURED_INCR_CATALOG
+              .withStreams(CONFIGURED_INCR_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(
+                  Collectors.toList()));
+      final PostgresSource source = new PostgresSource();
+      source.setStateEmissionFrequencyForDebug(1);
+      final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(getConfig(PSQL_DB, dbName), configuredCatalog, null));
+      setEmittedAtToNull(actualMessages);
+
+      final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(actualMessages);
+
+      setEmittedAtToNull(actualMessages);
+
+      final Set<AirbyteMessage> expectedOutput = Sets.newHashSet(
+          createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
+          createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
+          createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "vegeta", "power", 222.1)));
+
+      // Assert that the correct number of messages are emitted.
+      assertEquals(actualMessages.size(), expectedOutput.size() + 2);
+      assertThat(actualMessages.contains(expectedOutput));
+      // Assert that the Postgres source is emitting records & state messages in the correct order.
+      assertCorrectRecordOrderForIncrementalSync(actualMessages, "id", JsonSchemaPrimitive.NUMBER, configuredCatalog,
+          new AirbyteStreamNameNamespacePair("id_and_name", "public"));
+
+      final AirbyteStateMessage lastEmittedState = stateAfterFirstBatch.get(stateAfterFirstBatch.size() - 1);
+      final JsonNode state = Jsons.jsonNode(List.of(lastEmittedState));
+
+      database.query(ctx -> {
+        ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (5, 'piccolo', 100.0);");
+        return null;
+      });
+      // Incremental sync should only read one new message (where id = '5.0')
+      final Set<AirbyteMessage> nextSyncMessages = MoreIterators.toSet(source.read(getConfig(PSQL_DB, dbName), configuredCatalog, state));
+      setEmittedAtToNull(nextSyncMessages);
+
+      // An extra state message is emitted, in addition to the record messages.
+      assertEquals(nextSyncMessages.size(), 2);
+      assertThat(nextSyncMessages.contains(createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "5.0", "name", "piccolo", "power", 100.0))));
+    }
+  }
+
+  /* The messages that are emitted from an incremental sync should follow certain invariants. They should :
+  (i) Be emitted in increasing order of the defined cursor.
+  (ii) A record that is emitted after a state message should not have a cursor value less than a previously emitted state message.
+   */
+  private void assertCorrectRecordOrderForIncrementalSync(final List<AirbyteMessage> messages, final String cursorField,
+      final JsonSchemaPrimitive cursorType, final ConfiguredAirbyteCatalog catalog, final AirbyteStreamNameNamespacePair pair) {
+    String prevRecordCursorValue = null;
+    String prevStateCursorValue = null;
+    for (final AirbyteMessage message : messages) {
+      if (message.getType().equals(Type.RECORD)) {
+        // Parse the cursor. Assert that (i) it's greater/equal to the prevRecordCursorValue and (ii) greater than the previous state cursor value.
+        final String cursorCandidate = message.getRecord().getData().get(cursorField).asText();
+        assertThat(IncrementalUtils.compareCursors(prevRecordCursorValue, cursorCandidate, cursorType)).isLessThanOrEqualTo(0);
+        assertThat(IncrementalUtils.compareCursors(prevStateCursorValue, cursorCandidate, cursorType)).isLessThanOrEqualTo(0);
+        prevRecordCursorValue = cursorCandidate;
+      } else if (message.getType().equals(Type.STATE)) {
+        // Parse the state and the cursor value here. Assert that it is (i) greater than the previous state emission value.
+        final StateManager stateManager =
+            StateManagerFactory.createStateManager(AirbyteStateType.LEGACY, List.of(message.getState()), catalog);
+        final Optional<CursorInfo> cursorInfoOptional = stateManager.getCursorInfo(pair);
+        final String cursorCandidate = cursorInfoOptional.get().getCursor();
+        assertThat(IncrementalUtils.compareCursors(prevStateCursorValue, cursorCandidate, cursorType)).isLessThanOrEqualTo(0);
+        prevStateCursorValue = cursorCandidate;
+      }
+    }
+  }
+
+  @Test
   void testIsCdc() {
     final JsonNode config = getConfig(PSQL_DB, dbName);
 
-    assertFalse(PostgresSource.isCdc(config));
+    assertFalse(PostgresUtils.isCdc(config));
 
     ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
         "replication_slot", "slot",
         "publication", "ab_pub")));
-    assertTrue(PostgresSource.isCdc(config));
+    assertTrue(PostgresUtils.isCdc(config));
   }
 
   @Test
@@ -461,15 +605,182 @@ class PostgresSourceTest {
 
     // normal host
     final JsonNode normalConfig = Jsons.jsonNode(Map.of(
-        "username", username,
-        "jdbc_url", "jdbc:postgresql://airbyte.database.com:5432:airbyte"));
+        JdbcUtils.USERNAME_KEY, username,
+        JdbcUtils.JDBC_URL_KEY, "jdbc:postgresql://airbyte.database.com:5432:airbyte"));
     assertEquals(username, PostgresSource.getUsername(normalConfig));
 
     // azure host
     final JsonNode azureConfig = Jsons.jsonNode(Map.of(
-        "username", username + "@airbyte",
-        "jdbc_url", "jdbc:postgresql://airbyte.azure.com:5432:airbyte"));
+        JdbcUtils.USERNAME_KEY, username + "@airbyte",
+        JdbcUtils.JDBC_URL_KEY, "jdbc:postgresql://airbyte.azure.com:5432:airbyte"));
     assertEquals(username, PostgresSource.getUsername(azureConfig));
+  }
+
+  @Test
+  public void tableWithInvalidCursorShouldThrowException() throws Exception {
+    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
+      db.start();
+      final JsonNode config = getConfig(db);
+      try (final DSLContext dslContext = getDslContext(config)) {
+        final Database database = new Database(dslContext);
+        final ConfiguredAirbyteStream tableWithInvalidCursorType = createTableWithInvalidCursorType(database);
+        final ConfiguredAirbyteCatalog configuredAirbyteCatalog =
+            new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(tableWithInvalidCursorType));
+
+        final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, configuredAirbyteCatalog, null)));
+        assertThat(throwable).isInstanceOf(ConfigErrorException.class)
+            .hasMessageContaining(
+                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_table', cursorColumnName='id', cursorSqlType=OTHER, cause=Unsupported cursor type}");
+      } finally {
+        db.stop();
+      }
+    }
+  }
+
+  private ConfiguredAirbyteStream createTableWithInvalidCursorType(final Database database) throws SQLException {
+    database.query(ctx -> {
+      ctx.fetch("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";");
+      ctx.fetch("CREATE TABLE IF NOT EXISTS public.test_table(id uuid PRIMARY KEY DEFAULT uuid_generate_v4());");
+      return null;
+    });
+
+    return new ConfiguredAirbyteStream().withSyncMode(SyncMode.INCREMENTAL)
+        .withCursorField(Lists.newArrayList("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withStream(CatalogHelpers.createAirbyteStream(
+            "test_table",
+            SCHEMA_NAME,
+            Field.of("id", JsonSchemaType.STRING))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
+
+  }
+
+  @Test
+  void testJdbcUrlWithEscapedDatabaseName() {
+    final JsonNode jdbcConfig = new PostgresSource().toDatabaseConfig(buildConfigEscapingNeeded());
+    assertEquals(EXPECTED_JDBC_ESCAPED_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+  }
+
+  private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:postgresql://localhost:1111/db%2Ffoo?";
+
+  private JsonNode buildConfigEscapingNeeded() {
+    return Jsons.jsonNode(ImmutableMap.of(
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1111,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db/foo",
+        JdbcUtils.SSL_KEY, "false"));
+  }
+
+  @Test
+  public void tableWithNullValueCursorShouldThrowException() throws SQLException {
+    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
+      db.start();
+      final JsonNode config = getConfig(db);
+      try (final DSLContext dslContext = getDslContext(config)) {
+        final Database database = new Database(dslContext);
+        final ConfiguredAirbyteStream table = createTableWithNullValueCursor(database);
+        final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(table));
+
+        final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, catalog, null)));
+        assertThat(throwable).isInstanceOf(ConfigErrorException.class)
+            .hasMessageContaining(
+                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_table_null_cursor', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
+
+      } finally {
+        db.stop();
+      }
+    }
+  }
+
+  private ConfiguredAirbyteStream createTableWithNullValueCursor(final Database database) throws SQLException {
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE IF NOT EXISTS public.test_table_null_cursor(id INTEGER NULL)");
+      ctx.fetch("INSERT INTO public.test_table_null_cursor(id) VALUES (1), (2), (NULL)");
+      return null;
+    });
+
+    return new ConfiguredAirbyteStream().withSyncMode(SyncMode.INCREMENTAL)
+        .withCursorField(Lists.newArrayList("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withStream(CatalogHelpers.createAirbyteStream(
+            "test_table_null_cursor",
+            SCHEMA_NAME,
+            Field.of("id", JsonSchemaType.STRING))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
+
+  }
+
+  @Test
+  public void viewWithNullValueCursorShouldThrowException() throws SQLException {
+    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
+      db.start();
+      final JsonNode config = getConfig(db);
+      try (final DSLContext dslContext = getDslContext(config)) {
+        final Database database = new Database(dslContext);
+        final ConfiguredAirbyteStream table = createViewWithNullValueCursor(database);
+        final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(table));
+
+        final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, catalog, null)));
+        assertThat(throwable).isInstanceOf(ConfigErrorException.class)
+            .hasMessageContaining(
+                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_view_null_cursor', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
+
+      } finally {
+        db.stop();
+      }
+    }
+  }
+
+  private ConfiguredAirbyteStream createViewWithNullValueCursor(final Database database) throws SQLException {
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE IF NOT EXISTS public.test_table_null_cursor(id INTEGER NULL)");
+      ctx.fetch("""
+                CREATE VIEW test_view_null_cursor(id) as
+                SELECT test_table_null_cursor.id
+                FROM test_table_null_cursor
+                """);
+      ctx.fetch("INSERT INTO public.test_table_null_cursor(id) VALUES (1), (2), (NULL)");
+      return null;
+    });
+
+    return new ConfiguredAirbyteStream().withSyncMode(SyncMode.INCREMENTAL)
+        .withCursorField(Lists.newArrayList("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withStream(CatalogHelpers.createAirbyteStream(
+            "test_view_null_cursor",
+            SCHEMA_NAME,
+            Field.of("id", JsonSchemaType.STRING))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
+
+  }
+
+  private static List<AirbyteStateMessage> extractStateMessage(final List<AirbyteMessage> messages) {
+    return messages.stream().filter(r -> r.getType() == Type.STATE).map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
+  }
+
+  private static ConfiguredAirbyteCatalog toIncrementalConfiguredCatalog(final AirbyteCatalog catalog) {
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(catalog.getStreams()
+            .stream()
+            .map(s -> toIncrementalConfiguredStream(s))
+            .toList());
+  }
+
+  private static ConfiguredAirbyteStream toIncrementalConfiguredStream(final AirbyteStream stream) {
+    return new ConfiguredAirbyteStream()
+        .withStream(stream)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withCursorField(List.of("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withPrimaryKey(new ArrayList<>());
   }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -9,13 +9,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcStateHandler;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import java.util.Map;
-import java.util.Optional;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+import java.util.Optional;
 
 public class PostgresCdcStateHandler implements CdcStateHandler {
 
@@ -41,11 +42,13 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
   }
 
   /**
-   * Here we just want to emit the state to update the list of streams in the database to mark the completion of snapshot of new added streams.
-   * The addition of new streams in the state is done here {@link io.airbyte.integrations.source.relationaldb.state.GlobalStateManager#toState(Optional)}
-   * which is called inside the {@link StateManager#emit(Optional)} method which is being triggered below.
-   * The toState method adds all the streams present in the catalog in the state.
-   * Since there is no change in the CDC state value, whatever was present in the database will again be stored.
+   * Here we just want to emit the state to update the list of streams in the database to mark the
+   * completion of snapshot of new added streams. The addition of new streams in the state is done
+   * here
+   * {@link io.airbyte.integrations.source.relationaldb.state.GlobalStateManager#toState(Optional)}
+   * which is called inside the {@link StateManager#emit(Optional)} method which is being triggered
+   * below. The toState method adds all the streams present in the catalog in the state. Since there
+   * is no change in the CDC state value, whatever was present in the database will again be stored.
    * This is done so that we can mark the completion of snapshot of new tables.
    */
   @Override
@@ -58,5 +61,4 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
     final AirbyteStateMessage stateMessage = stateManager.emit(Optional.empty());
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
   }
-
 }

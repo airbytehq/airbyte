@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 7b7d7a0d-954c-45a0-bcfc-39a634b97736
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/destination-weaviate
+  githubIssueLabel: destination-weaviate
+  icon: weaviate.svg
+  license: MIT
+  name: Weaviate
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/weaviate
+metadataSpecVersion: "1.0"

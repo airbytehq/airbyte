@@ -2,7 +2,7 @@
       
 
   create  table
-    "integrationtests"."test_normalization"."nested_stream_with_complex_columns_resulting_into_long_names_partition_data__dbt_tmp"
+    "integrationtests".test_normalization_xjvlg."nested_stream_with_complex_columns_resulting_into_long_names_partition_data"
     
     
       compound sortkey(_airbyte_emitted_at)
@@ -12,13 +12,13 @@
 with __dbt__cte__nested_stream_with_complex_columns_resulting_into_long_names_partition_data_ab1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
--- depends_on: "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition"
+-- depends_on: "integrationtests".test_normalization_xjvlg."nested_stream_with_complex_columns_resulting_into_long_names_partition"
 
     with joined as (
             select
                 table_alias._airbyte_partition_hashid as _airbyte_hashid,
                 _airbyte_nested_data
-            from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition" as table_alias, table_alias.data as _airbyte_nested_data
+            from "integrationtests".test_normalization_xjvlg."nested_stream_with_complex_columns_resulting_into_long_names_partition" as table_alias, table_alias.data as _airbyte_nested_data
         )
 select
     _airbyte_partition_hashid,
@@ -26,7 +26,7 @@ select
     _airbyte_ab_id,
     _airbyte_emitted_at,
     getdate() as _airbyte_normalized_at
-from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition" as table_alias
+from "integrationtests".test_normalization_xjvlg."nested_stream_with_complex_columns_resulting_into_long_names_partition" as table_alias
 -- data at nested_stream_with_complex_columns_resulting_into_long_names/partition/DATA
 left join joined on _airbyte_partition_hashid = joined._airbyte_hashid
 where 1 = 1
@@ -67,7 +67,7 @@ select
     getdate() as _airbyte_normalized_at,
     _airbyte_data_hashid
 from __dbt__cte__nested_stream_with_complex_columns_resulting_into_long_names_partition_data_ab3
--- data at nested_stream_with_complex_columns_resulting_into_long_names/partition/DATA from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_partition"
+-- data at nested_stream_with_complex_columns_resulting_into_long_names/partition/DATA from "integrationtests".test_normalization_xjvlg."nested_stream_with_complex_columns_resulting_into_long_names_partition"
 where 1 = 1
 
   );

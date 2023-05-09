@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!main.py
+!source_mailjet_sms
+!setup.py
+!secrets

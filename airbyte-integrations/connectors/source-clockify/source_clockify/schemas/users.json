@@ -1,0 +1,133 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "activeWorkspace": {
+      "type": "string"
+    },
+    "customFields": {
+      "type": "array"
+    },
+    "defaultWorkspace": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "memberships": {
+      "type": "array"
+    },
+    "name": {
+      "type": "string"
+    },
+    "profilePicture": {
+      "type": "string"
+    },
+    "settings": {
+      "properties": {
+        "alerts": {
+          "type": "boolean"
+        },
+        "approval": {
+          "type": "boolean"
+        },
+        "collapseAllProjectLists": {
+          "type": "boolean"
+        },
+        "dashboardPinToTop": {
+          "type": "boolean"
+        },
+        "dashboardSelection": {
+          "type": "string"
+        },
+        "dashboardViewType": {
+          "type": "string"
+        },
+        "dateFormat": {
+          "type": "string"
+        },
+        "groupSimilarEntriesDisabled": {
+          "type": "boolean"
+        },
+        "isCompactViewOn": {
+          "type": "boolean"
+        },
+        "lang": {
+          "type": "string"
+        },
+        "longRunning": {
+          "type": "boolean"
+        },
+        "multiFactorEnabled": {
+          "type": "boolean"
+        },
+        "myStartOfDay": {
+          "type": "string"
+        },
+        "onboarding": {
+          "type": "boolean"
+        },
+        "projectListCollapse": {
+          "type": "integer"
+        },
+        "projectPickerTaskFilter": {
+          "type": "boolean"
+        },
+        "pto": {
+          "type": "boolean"
+        },
+        "reminders": {
+          "type": "boolean"
+        },
+        "scheduledReports": {
+          "type": "boolean"
+        },
+        "scheduling": {
+          "type": "boolean"
+        },
+        "sendNewsletter": {
+          "type": "boolean"
+        },
+        "showOnlyWorkingDays": {
+          "type": "boolean"
+        },
+        "summaryReportSettings": {
+          "properties": {
+            "group": {
+              "type": "string"
+            },
+            "subgroup": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "theme": {
+          "type": "string"
+        },
+        "timeFormat": {
+          "type": "string"
+        },
+        "timeTrackingManual": {
+          "type": "boolean"
+        },
+        "timeZone": {
+          "type": "string"
+        },
+        "weekStart": {
+          "type": "string"
+        },
+        "weeklyUpdates": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "status": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

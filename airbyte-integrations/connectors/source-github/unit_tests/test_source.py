@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock
@@ -19,9 +19,9 @@ def check_source(repo_line: str) -> AirbyteConnectionStatus:
 
 @responses.activate
 def test_check_connection_repos_only():
-    responses.add("GET", "https://api.github.com/repos/airbyte", json={})
+    responses.add("GET", "https://api.github.com/repos/airbytehq/airbyte", json={"full_name": "airbytehq/airbyte"})
 
-    status = check_source("airbyte airbyte airbyte")
+    status = check_source("airbytehq/airbyte airbytehq/airbyte airbytehq/airbyte")
     assert not status.message
     assert status.status == Status.SUCCEEDED
     # Only one request since 3 repos have same name
@@ -31,8 +31,12 @@ def test_check_connection_repos_only():
 @responses.activate
 def test_check_connection_repos_and_org_repos():
     repos = [{"name": f"name {i}", "full_name": f"full name {i}", "updated_at": "2020-01-01T00:00:00Z"} for i in range(1000)]
-    responses.add("GET", "https://api.github.com/repos/airbyte/test", json={})
-    responses.add("GET", "https://api.github.com/repos/airbyte/test2", json={})
+    responses.add(
+        "GET", "https://api.github.com/repos/airbyte/test", json={"full_name": "airbyte/test", "organization": {"login": "airbyte"}}
+    )
+    responses.add(
+        "GET", "https://api.github.com/repos/airbyte/test2", json={"full_name": "airbyte/test2", "organization": {"login": "airbyte"}}
+    )
     responses.add("GET", "https://api.github.com/orgs/airbytehq/repos", json=repos)
     responses.add("GET", "https://api.github.com/orgs/org/repos", json=repos)
 
@@ -95,13 +99,19 @@ def test_get_branches_data():
 
 
 @responses.activate
-def test_generate_repositories():
+def test_get_org_repositories():
 
     source = SourceGithub()
 
     with pytest.raises(Exception):
         config = {"repository": ""}
-        source._generate_repositories(config, authenticator=None)
+        source._get_org_repositories(config, authenticator=None)
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/airbytehq/integration-test",
+        json={"full_name": "airbytehq/integration-test", "organization": {"login": "airbytehq"}},
+    )
 
     responses.add(
         "GET",
@@ -113,9 +123,44 @@ def test_generate_repositories():
     )
 
     config = {"repository": "airbytehq/integration-test docker/*"}
-    repositories_list, organisation_repos = source._generate_repositories(config, authenticator=None)
+    organisations, repositories = source._get_org_repositories(config, authenticator=None)
 
-    assert repositories_list == ["airbytehq/integration-test"]
-    assert len(organisation_repos) == 2
-    assert "docker/compose" in organisation_repos
-    assert "docker/docker-py" in organisation_repos
+    assert set(repositories) == {"airbytehq/integration-test", "docker/docker-py", "docker/compose"}
+    assert set(organisations) == {"airbytehq", "docker"}
+
+
+def test_organization_or_repo_available():
+    SourceGithub._get_org_repositories = MagicMock(return_value=(False, False))
+    source = SourceGithub()
+    with pytest.raises(Exception) as exc_info:
+        config = {"access_token": "test_token", "repository": ""}
+        source.streams(config=config)
+    assert exc_info.value.args[0] == "No streams available. Please check permissions"
+
+
+@pytest.mark.parametrize(
+    ("repos_config", "expected"),
+    [
+        (("airbytehq/airbyte/", "airbytehq/", "airbytehq", "airbyte hq", "airbytehq/*/", "adc/ff*f", "akj*/jahsd"), False),
+        (("airbytehq/airbyte", ), True),
+        (("airbytehq/airbyte-test", "airbytehq/airbyte_test", "airbytehq/airbyte-test/another-repo"), True),
+        (("air232bytehq/air32byte", "airbyte_hq/another-repo", "airbytehq/*", "airbytehq/airbyte"), True),
+    ],
+)
+def test_config_validation(repos_config, expected):
+    actual = SourceGithub._is_repositories_config_valid(repos_config)
+    assert actual == expected
+
+
+@pytest.mark.parametrize(
+    ("config", "expected"),
+    [
+        ({"access_token": "test_token", "repository": "airbytehq/airbyte-test"}, {"airbytehq/airbyte-test", }),
+        ({"access_token": "test_token", "repository": "airbytehq/airbyte-test "}, {"airbytehq/airbyte-test", }),
+        ({"access_token": "test_token", "repository": "airbytehq/airbyte-test/"}, {"airbytehq/airbyte-test", }),
+        ({"access_token": "test_token", "repository": "airbytehq/airbyte-test/  airbytehq/airbyte"}, {"airbytehq/airbyte", "airbytehq/airbyte-test"}),
+    ],
+)
+def tests_get_and_prepare_repositories_config(config, expected):
+    actual = SourceGithub._get_and_prepare_repositories_config(config)
+    assert actual == expected

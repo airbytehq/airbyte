@@ -1,0 +1,21 @@
+data:
+  allowedHosts:
+    hosts:
+      - ${host}
+  catalogs:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  connectorSubtype: database
+  connectorType: source
+  definitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
+  dockerImageTag: 0.1.19
+  dockerRepository: airbyte/source-db2
+  githubIssueLabel: source-db2
+  icon: db2.svg
+  license: MIT
+  name: IBM Db2
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/db2
+metadataSpecVersion: "1.0"

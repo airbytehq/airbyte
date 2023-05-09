@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -18,13 +18,14 @@ from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 logger = init_logger("airbyte")
-init_uncaught_exception_handler(logger)
 
 
 class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
+        init_uncaught_exception_handler(logger)
         self.source = source
         self.logger = logging.getLogger(f"airbyte.{getattr(source, 'name', '')}")
 
@@ -32,6 +33,7 @@ class AirbyteEntrypoint(object):
     def parse_args(args: List[str]) -> argparse.Namespace:
         # set up parent parsers
         parent_parser = argparse.ArgumentParser(add_help=False)
+        parent_parser.add_argument("--debug", action="store_true", help="enables detailed debug logs related to the sync")
         main_parser = argparse.ArgumentParser()
         subparsers = main_parser.add_subparsers(title="commands", dest="command")
 
@@ -67,6 +69,12 @@ class AirbyteEntrypoint(object):
         if not cmd:
             raise Exception("No command passed")
 
+        if hasattr(parsed_args, "debug") and parsed_args.debug:
+            self.logger.setLevel(logging.DEBUG)
+            self.logger.debug("Debug logs enabled")
+        else:
+            self.logger.setLevel(logging.INFO)
+
         # todo: add try catch for exceptions with different exit codes
         source_spec: ConnectorSpecification = self.source.spec(self.logger)
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -86,7 +94,14 @@ class AirbyteEntrypoint(object):
                 # jsonschema's additionalProperties flag wont fail the validation
                 connector_config, _ = split_config(config)
                 if self.source.check_config_against_spec or cmd == "check":
-                    check_config_against_spec_or_exit(connector_config, source_spec)
+                    try:
+                        check_config_against_spec_or_exit(connector_config, source_spec)
+                    except AirbyteTracedException as traced_exc:
+                        connection_status = traced_exc.as_connection_status_message()
+                        if connection_status and cmd == "check":
+                            yield connection_status.json(exclude_unset=True)
+                            return
+                        raise traced_exc
 
                 if cmd == "check":
                     check_result = self.source.check(self.logger, config)

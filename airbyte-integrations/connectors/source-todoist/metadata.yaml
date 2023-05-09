@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 7d272065-c316-4c04-a433-cd4ee143f83e
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-todoist
+  githubIssueLabel: source-todoist
+  icon: todoist.svg
+  license: MIT
+  name: Todoist
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/todoist
+metadataSpecVersion: "1.0"

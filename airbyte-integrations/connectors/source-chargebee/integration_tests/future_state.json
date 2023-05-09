@@ -1,34 +1,114 @@
-{
-  "subscription": {
-    "updated_at": 2147483647
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "subscription" }
+    }
   },
-  "coupon": {
-    "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "coupon" }
+    }
   },
-  "customer": {
-    "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "customer" }
+    }
   },
-  "invoice": {
-    "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "invoice" }
+    }
   },
-  "order": {
-    "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "credit_note" }
+    }
   },
-  "addon": {
-    "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "order" }
+    }
   },
-  "plan": {
-    "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "item" }
+    }
   },
-  "item": {
-    "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "hosted_page" }
+    }
   },
-  "item_price": {
-    "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "item_price" }
+    }
   },
-  "attached_item": {
-    "cbdemo_standard": {
-      "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "payment_source" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created_at": 2147483647 },
+      "stream_descriptor": { "name": "promotional_credit" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "gift" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "unbilled_charge" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "quote" }
+    }
+  },
+    {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "occurred_at": 2147483647 },
+      "stream_descriptor": { "name": "event" }
+    }
+  },
+    {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "transaction" }
     }
   }
-}
+]

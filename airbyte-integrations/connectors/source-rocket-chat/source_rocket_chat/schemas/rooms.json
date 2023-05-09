@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "_id": {
+      "type": ["null", "string"]
+    },
+    "fname": {
+      "type": ["null", "string"]
+    },
+    "customFields": {
+      "type": ["null", "object"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "broadcast": {
+      "type": ["null", "boolean"]
+    },
+    "encrypted": {
+      "type": ["null", "boolean"]
+    },
+    "federated": {
+      "type": ["null", "boolean"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "t": {
+      "type": ["null", "string"]
+    },
+    "msgs": {
+      "type": ["null", "integer"]
+    },
+    "usersCount": {
+      "type": ["null", "integer"]
+    },
+    "u": {
+      "type": ["null", "object"]
+    },
+    "ts": {
+      "type": ["null", "string"]
+    },
+    "ro": {
+      "type": ["null", "boolean"]
+    },
+    "default": {
+      "type": ["null", "boolean"]
+    },
+    "sysMes": {
+      "type": ["null", "boolean"]
+    },
+    "_updatedAt": {
+      "type": ["null", "string"]
+    },
+    "lastMessage": {
+      "type": ["null", "object"]
+    },
+    "lm": {
+      "type": ["null", "string"]
+    }
+  }
+}

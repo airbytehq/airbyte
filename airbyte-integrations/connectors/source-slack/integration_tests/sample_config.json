@@ -1,7 +1,0 @@
-{
-  "api_token": "api_token",
-  "start_date": "2021-07-22T20:00:00Z",
-  "lookback_window": 2,
-  "join_channels": true,
-  "channel_filter": []
-}

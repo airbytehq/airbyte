@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "campaign_id": {
+      "type": ["null", "string"]
+    },
+    "time": {
+      "type": ["null", "string"]
+    },
+    "messages": {
+      "type": ["null", "object"],
+      "properties": {
+        "ios_push": {
+          "type": ["null", "array"]
+        },
+        "android_push": {
+          "type": ["null", "array"]
+        },
+        "webhook": {
+          "type": ["null", "array"]
+        },
+        "email": {
+          "type": ["null", "array"]
+        },
+        "sms": {
+          "type": ["null", "array"]
+        }
+      }
+    },
+    "conversions_by_send_time": {
+      "type": ["null", "integer"]
+    },
+    "conversions1_by_send_time": {
+      "type": ["null", "integer"]
+    },
+    "conversions2_by_send_time": {
+      "type": ["null", "integer"]
+    },
+    "conversions3_by_send_time": {
+      "type": ["null", "integer"]
+    },
+    "conversions": {
+      "type": ["null", "integer"]
+    },
+    "conversions1": {
+      "type": ["null", "integer"]
+    },
+    "conversions2": {
+      "type": ["null", "integer"]
+    },
+    "conversions3": {
+      "type": ["null", "integer"]
+    },
+    "unique_recipients": {
+      "type": ["null", "integer"]
+    },
+    "revenue": {
+      "type": ["null", "number"]
+    }
+  }
+}

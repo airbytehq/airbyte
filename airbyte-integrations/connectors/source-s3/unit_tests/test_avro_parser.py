@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import os
@@ -45,7 +45,7 @@ nested_records_schema_str = """{
     ]
 }"""
 
-nested_schema_output = {"lastname": "string", "address": "string"}
+nested_schema_output = {"lastname": "string", "address": "object"}
 
 master_schema = {
     "name": "string",
@@ -60,7 +60,7 @@ class TestAvroParser(AbstractTestParser):
     filetype = "avro"
 
     @classmethod
-    def generate_avro_file(cls, schema_str: str, out_file, num_rows: int) -> str:
+    def generate_avro_file(cls, out_file, num_rows: int) -> str:
         """Creates an avro file and saves to tmp folder to be used by test cases
         :param schema_str: valid avro schema as a string
         :param out_file: name of file to be created
@@ -68,7 +68,7 @@ class TestAvroParser(AbstractTestParser):
         :return: string with path to the file created
         """
         filename = os.path.join(TMP_FOLDER, out_file + "." + cls.filetype)
-        parsed_schema = schema.parse(schema_str)
+        parsed_schema = schema.parse(simple_schema_str)
         rec_writer = io.DatumWriter(parsed_schema)
         file_writer = datafile.DataFileWriter(open(filename, "wb"), rec_writer, parsed_schema)
         for _ in range(num_rows):
@@ -83,6 +83,29 @@ class TestAvroParser(AbstractTestParser):
         return filename
 
     @classmethod
+    def generate_nested_avro_file(cls, out_file, num_rows: int) -> str:
+        """Creates an avro file and saves to tmp folder to be used by test cases
+        :param schema_str: valid avro schema as a string
+        :param out_file: name of file to be created
+        :param num_rows: number of rows to be generated
+        :return: string with path to the file created
+        """
+        filename = os.path.join(TMP_FOLDER, out_file + "." + cls.filetype)
+        parsed_schema = schema.parse(nested_records_schema_str)
+        rec_writer = io.DatumWriter(parsed_schema)
+        file_writer = datafile.DataFileWriter(open(filename, "wb"), rec_writer, parsed_schema)
+        for _ in range(num_rows):
+            data = {}
+            data["lastname"] = "".join(random.choice(string.ascii_letters) for i in range(10))
+            data["address"] = {
+                "streetaddress": "".join(random.choice(string.ascii_letters) for i in range(10)),
+                "city": "".join(random.choice(string.ascii_letters) for i in range(10))
+            }
+            file_writer.append(data)
+        file_writer.close()
+        return filename
+
+    @classmethod
     def cases(cls) -> Mapping[str, Any]:
         """
         return test cases
@@ -91,7 +114,7 @@ class TestAvroParser(AbstractTestParser):
         # test basic file with data type conversions
         cases["simple_test"] = {
             "AbstractFileParser": AvroParser(format=cls.filetype),
-            "filepath": cls.generate_avro_file(simple_schema_str, "test_file", 1000),
+            "filepath": cls.generate_avro_file("test_file", 1000),
             "num_records": 1000,
             "inferred_schema": master_schema,
             "line_checks": {},
@@ -100,7 +123,7 @@ class TestAvroParser(AbstractTestParser):
         # test file with 0 records. Will pass but not ingest anything
         cases["test_zero_rows"] = {
             "AbstractFileParser": AvroParser(format=cls.filetype),
-            "filepath": cls.generate_avro_file(simple_schema_str, "test_file_zero_rows", 0),
+            "filepath": cls.generate_avro_file("test_file_zero_rows", 0),
             "num_records": 0,
             "inferred_schema": master_schema,
             "line_checks": {},
@@ -110,8 +133,8 @@ class TestAvroParser(AbstractTestParser):
         # test for avro schema with nested records. This will pass as all nested records are returned as one string
         cases["test_nested_records"] = {
             "AbstractFileParser": AvroParser(format=cls.filetype),
-            "filepath": cls.generate_avro_file(nested_records_schema_str, "test_nested_records", 0),
-            "num_records": 0,
+            "filepath": cls.generate_nested_avro_file("test_nested_records", 10),
+            "num_records": 10,
             "inferred_schema": nested_schema_output,
             "line_checks": {},
             "fails": [],

@@ -1,86 +1,198 @@
-{
-  "contacts": {
-    "updated_at": "2217-06-26T21:20:07Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "contacts" }
+    }
   },
-  "clients": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "clients" }
+    }
   },
-  "invoices": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "invoices" }
+    }
   },
-  "invoice_messages": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "invoice_messages" }
+    }
   },
-  "invoice_payments": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "invoice_payments" }
+    }
   },
-  "invoice_item_categories": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "invoice_item_categories" }
+    }
   },
-  "estimates": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "estimates" }
+    }
   },
-  "estimate_messages": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "estimate_messages" }
+    }
   },
-  "estimate_item_categories": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "estimate_item_categories" }
+    }
   },
-  "expenses": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "expenses" }
+    }
   },
-  "expense_categories": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "expense_categories" }
+    }
   },
-  "tasks": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "tasks" }
+    }
   },
-  "time_entries": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "time_entries" }
+    }
   },
-  "user_assignments": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "user_assignments" }
+    }
   },
-  "task_assignments": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "task_assignments" }
+    }
   },
-  "projects": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "projects" }
+    }
   },
-  "roles": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "roles" }
+    }
   },
-  "users": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "users" }
+    }
   },
-  "project_assignments": {
-    "updated_at": "2217-06-26T21:20:07Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2217-06-26T21:20:07Z" },
+      "stream_descriptor": { "name": "project_assignments" }
+    }
   },
-  "expenses_clients": {
-    "to": "22170626"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "to": "22170626" },
+      "stream_descriptor": { "name": "expenses_clients" }
+    }
   },
-  "expenses_projects": {
-    "to": "22170626"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "to": "22170626" },
+      "stream_descriptor": { "name": "expenses_projects" }
+    }
   },
-  "expenses_categories": {
-    "to": "22170626"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "to": "22170626" },
+      "stream_descriptor": { "name": "expenses_categories" }
+    }
   },
-  "expenses_team": {
-    "to": "22170626"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "to": "22170626" },
+      "stream_descriptor": { "name": "expenses_team" }
+    }
   },
-  "uninvoiced": {
-    "to": "22170626"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "to": "22170626" },
+      "stream_descriptor": { "name": "uninvoiced" }
+    }
   },
-  "time_clients": {
-    "to": "22170626"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "to": "22170626" },
+      "stream_descriptor": { "name": "time_clients" }
+    }
   },
-  "time_projects": {
-    "to": "22170626"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "to": "22170626" },
+      "stream_descriptor": { "name": "time_projects" }
+    }
   },
-  "time_tasks": {
-    "to": "22170626"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "to": "22170626" },
+      "stream_descriptor": { "name": "time_tasks" }
+    }
   },
-  "time_team": {
-    "to": "22170626"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "to": "22170626" },
+      "stream_descriptor": { "name": "time_team" }
+    }
   }
-}
+]

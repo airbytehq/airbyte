@@ -1,0 +1,18 @@
+data:
+  catalogs:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: b0dd65f1-081f-4731-9c51-38e9e6aa0ebf
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-pocket
+  githubIssueLabel: source-pocket
+  icon: pocket.svg
+  license: MIT
+  name: Pocket
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/pocket
+metadataSpecVersion: "1.0"
