@@ -1,4 +1,4 @@
-name: ✨ request a new feature
+name: ✨ Request a new feature
 description: Request to any new Airbyte features
 labels: [type/enhancement, needs-triage]
 body:

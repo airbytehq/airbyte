@@ -1,4 +1,4 @@
-name: 🪲 Report a connector problem
+name: 🐛 Report a connector problem
 description: Use this template to report a problem using source or a destination connector
 labels: [type/bug, area/connectors, needs-triage]
 body:
@@ -8,8 +8,8 @@ body:
         <p align="center">
           <a target="_blank" href="https://airbyte.com">
             <picture>
-              <source srcset="https://assets-global.website-files.com/605e01bc25f7e19a82e74788/621e2495cb90b8b2c3b31b0d_airbyte-octo-p-500.png">
-              <img alt="airbyte octavia" src="https://assets-global.website-files.com/605e01bc25f7e19a82e74788/621e2495cb90b8b2c3b31b0d_airbyte-octo-p-500.png" width="auto" height="150">
+              <source srcset="https://raw.githubusercontent.com/airbytehq/airbyte/master/.github/octavia-issue-template.svg">
+              <img alt="octavia-welcome" src="https://raw.githubusercontent.com/airbytehq/airbyte/master/.github/octavia-issue-template.svg" width="auto" height="120">
             </picture>
           </a>
         </p>
@@ -17,9 +17,18 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report...
-        Make sure you update this issue with a concise title and provide all information you have to
-        help us debug the problem together.
-        Issues not following the template will be closed.
+        Make sure you update this issue with a concise title and provide all information you have to help us debug the problem together.
+        Some examples of good titles following the convention:
+        <ul>
+          <li> Source Name: issue description </li>
+          <li> Destination Name: issue description </li>
+          <li> Source Postgres: Add `_ab_cdc_inserted_at` column for CDC syncs </li>
+          <li> Source Chargebee: cannot sync transaction objects</li>
+          <li> Source Snowflake: support for case sensitive parameters in connection string</li>
+          <li> Destination BigQuery: normalization incorrectly processes arrays</li>
+        <ul>
+        <br>
+        <small>Issues not following the template will be closed. </small>
   - type: input
     id: connector-name
     attributes:
