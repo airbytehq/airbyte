@@ -1,4 +1,4 @@
-name: Platform Issue
+name: [ISSUE]: 
 description: Use this when you're facing a platform, deploy or infrastructure issue.
 title: "Platform Issue: <REMOVE WITH ISSUE TITLE>"
 labels: [type/bug, area/platform, needs-triage]
