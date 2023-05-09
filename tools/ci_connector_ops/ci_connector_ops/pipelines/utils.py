@@ -18,7 +18,13 @@ import anyio
 import asyncer
 import click
 import git
-from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
+from ci_connector_ops.utils import (
+    DESTINATION_CONNECTOR_PATH_PREFIX,
+    SOURCE_CONNECTOR_PATH_PREFIX,
+    THIRD_PARTY_PATH_GLOB,
+    Connector,
+    get_connector_name_from_path,
+)
 from dagger import Config, Connection, Container, DaggerError, File, QueryError
 from more_itertools import chunked
 
@@ -232,6 +238,23 @@ def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict[Conne
                 modified_connectors[modified_connector] = [file_path]
     return modified_connectors
 
+def get_expected_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
+    """Get the expected metadata file paths for the modified connectors.
+
+    Args:
+        modified_files (Set[Union[str, Path]]): files modified in the branch
+
+    Returns:
+        Set[Path]: set of expected metadata file paths
+    """
+    modified_connectors = get_modified_connectors(modified_files)
+    modified_connector_file_paths = [connector.code_directory for connector in modified_connectors.keys()]
+    expected_metadata_file_paths = [
+        Path(f"{connector_file_path}/{METADATA_FILE_NAME}")
+        for connector_file_path
+        in modified_connector_file_paths
+    ]
+    return expected_metadata_file_paths;
 
 def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
     return {
