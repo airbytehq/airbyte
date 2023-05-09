@@ -33,8 +33,7 @@ body:
     id: platform-version
     attributes:
       label: Platform Version or Helm Chart Version
-      description: What is the platform or Helm chart version you're using? 
-      placeholder: "Some examples are: (eg. 0.44.1, 0.30.0), you can find the version in the left bottom in Airbyte UI or in the .env / value.yaml file"
+      description: "Some examples are: (eg. 0.44.1, 0.30.0), you can find the version in the left bottom in Airbyte UI or in the .env / value.yaml file"
     validations:
       required: true
   - type: dropdown
