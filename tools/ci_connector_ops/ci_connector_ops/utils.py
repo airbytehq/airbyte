@@ -7,6 +7,7 @@ import os
 from dataclasses import dataclass
 from enum import Enum
 from functools import cached_property
+from glob import glob
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
@@ -241,5 +242,8 @@ def get_changed_connectors() -> Set[Connector]:
 
 
 def get_all_released_connectors() -> Set:
-    all_definitions = OSS_CATALOG["sources"] + OSS_CATALOG["destinations"]
-    return {Connector(definition["dockerRepository"].replace("airbyte/", "")) for definition in all_definitions}
+    return {
+        Connector(Path(metadata_file).parent.name)
+        for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
+        if "-scaffold-" not in metadata_file
+    }
