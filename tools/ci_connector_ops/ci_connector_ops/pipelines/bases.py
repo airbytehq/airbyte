@@ -443,16 +443,16 @@ class GradleTask(Step, ABC):
         Returns:
             List[str]: List of directories or files to be mounted to the container to run a Java connector Gradle task.
         """
-        to_include = [self.JAVA_BUILD_INCLUDE]
+        to_include = self.JAVA_BUILD_INCLUDE
 
         if self.context.connector.connector_type == "source":
-            to_include.append(self.SOURCE_BUILD_INCLUDE)
+            to_include += self.SOURCE_BUILD_INCLUDE
         elif self.context.connector.connector_type == "destination":
-            to_include.append(self.DESTINATION_BUILD_INCLUDE)
+            to_include += self.DESTINATION_BUILD_INCLUDE
         else:
             raise ValueError(f"{self.context.connector.connector_type} is not supported")
 
-        with_related_connectors_source_code = to_include + [connector.code_directory for connector in self.get_related_connectors()]
+        with_related_connectors_source_code = to_include + [str(connector.code_directory) for connector in self.get_related_connectors()]
         return with_related_connectors_source_code
 
     async def _get_patched_connector_dir(self) -> Directory:
