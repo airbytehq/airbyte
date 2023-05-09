@@ -36,7 +36,6 @@ public class OpenSearchSourceAcceptanceTest extends SourceAcceptanceTest {
   private static final ObjectMapper mapper = MoreMappers.initMapper();
   private static final String index = "sample";
 
-  // TODO -> OpenSearchContainer -> Add depenency
   private static OpensearchContainer container;
   private RestHighLevelClient client;
 
