@@ -1050,6 +1050,18 @@ class PerformanceReportMarketersByInterest(OutbrainAmplifyStream, HttpSubStream)
             stream_end.date()) + "&limit=500" + "&includeVideoStats=true"
 
 
+class IncrementalOutbrainAmplifyStream(OutbrainAmplifyStream, ABC):
+
+    state_checkpoint_interval = None
+
+    @property
+    def cursor_field(self) -> str:
+        return []
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {}
+
+
 # Source
 class SourceOutbrainAmplify(AbstractSource):
 

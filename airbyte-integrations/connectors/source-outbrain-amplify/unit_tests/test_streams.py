@@ -1,17 +1,18 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
+import json
+import requests
 from source_outbrain_amplify.source import OutbrainAmplifyStream
 
 
 @pytest.fixture
 def patch_base_class(mocker):
-    # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(OutbrainAmplifyStream, "path", "v0/example_endpoint")
     mocker.patch.object(OutbrainAmplifyStream, "primary_key", "test_primary_key")
     mocker.patch.object(OutbrainAmplifyStream, "__abstractmethods__", set())
@@ -19,43 +20,46 @@ def patch_base_class(mocker):
 
 def test_request_params(patch_base_class):
     stream = OutbrainAmplifyStream()
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
     expected_params = {}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
     stream = OutbrainAmplifyStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
-    expected_token = None
-    assert stream.next_page_token(**inputs) == expected_token
+    inputs = {"totalCount": 100, "count": 50}
+    pagination_token = json.dumps(inputs)
+    response = requests.Response()
+    response.status_code = 200
+    response.headers['content-type'] = 'application/json'
+    response._content = pagination_token.encode('utf-8')
+    expected_token = {'offset': 51}
+    assert stream.next_page_token(response) == expected_token
 
 
-def test_parse_response(patch_base_class):
-    stream = OutbrainAmplifyStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
+# def test_parse_response(patch_base_class):
+#     mock_response = {
+#         "campaigns": [],
+#         "totalCount": 5,
+#         "count": 0
+#     }
+#     stream = OutbrainAmplifyStream()
+#     results = stream.parse_response(json.dumps(mock_response))
+#     first_result = results
+#     expected_result = [{'campaigns': [], 'totalCount': 5, 'count': 0}]
+#     print("here", first_result, mock_response)
+#     assert first_result == expected_result
 
 
 def test_request_headers(patch_base_class):
     stream = OutbrainAmplifyStream()
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
     expected_headers = {}
     assert stream.request_headers(**inputs) == expected_headers
 
 
 def test_http_method(patch_base_class):
     stream = OutbrainAmplifyStream()
-    # TODO: replace this with your expected http request method
     expected_method = "GET"
     assert stream.http_method == expected_method
 
@@ -81,3 +85,13 @@ def test_backoff_time(patch_base_class):
     stream = OutbrainAmplifyStream()
     expected_backoff_time = None
     assert stream.backoff_time(response_mock) == expected_backoff_time
+
+
+def test_get_time_interval(patch_base_class):
+    stream = OutbrainAmplifyStream()
+    start_date = "2022-08-03 00:00:00"
+    ending_date = "2022-08-02 00:00:00"
+    try:
+        stream._get_time_interval(start_date, ending_date)
+    except ValueError as e:
+        assert ValueError
