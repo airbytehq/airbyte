@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: false
   connectorSubtype: api
   connectorType: source
   definitionId: 2470e835-feaf-4db6-96f3-70fd645acc77
@@ -12,6 +7,11 @@ data:
   githubIssueLabel: source-salesforce-singer
   license: MIT
   name: Salesforce (Singer)
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: false
   releaseStage: alpha
   supportUrl: https://docs.airbyte.io/integrations/sources/salesforce
 metadataSpecVersion: "1.0"

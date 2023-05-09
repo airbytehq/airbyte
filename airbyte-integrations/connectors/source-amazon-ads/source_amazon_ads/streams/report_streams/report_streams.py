@@ -18,6 +18,7 @@ import backoff
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from pendulum import Date
 from pydantic import BaseModel
@@ -131,6 +132,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     @property
     def model(self) -> CatalogModel:
         return self._model
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def read_records(
         self,
