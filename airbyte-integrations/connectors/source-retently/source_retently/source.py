@@ -124,10 +124,7 @@ class Campaigns(RetentlyStream):
             yield d
 
     # does not support pagination
-    def next_page_token(
-        self,
-        response: requests.Response,
-    ) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
 
@@ -181,10 +178,7 @@ class Reports(RetentlyStream):
         return "reports"
 
     # does not support pagination
-    def next_page_token(
-        self,
-        response: requests.Response,
-    ) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
 
@@ -192,23 +186,12 @@ class Nps(RetentlyStream):
     json_path = None
 
     def path(
-        self,
-        **kwargs,
-    ):
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
         return "nps/score"
 
     # does not support pagination
-    def next_page_token(
-        self,
-        response: requests.Response,
-    ) -> Optional[Mapping[str, Any]]:
-        return None
-
-    # does not support limit
-    def request_params(
-        self,
-        **kwargs,
-    ) -> MutableMapping[str, Any]:
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
     def parse_response(
@@ -236,8 +219,7 @@ class Templates(RetentlyStream):
     ) -> str:
         return "templates"
 
-    # does not support pagination
-    def next_page_token(
+    def parse_response(
         self,
         response: requests.Response,
         **kwargs,
