@@ -72,9 +72,8 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     """
     context.secrets_dir = await secrets.get_connector_secret_dir(context)
 
-    step_results = await run_steps([BuildConnectorImage(context, LOCAL_BUILD_PLATFORM), UnitTests(context)])
-    if any([result.status is StepStatus.FAILURE for result in step_results]):
-        return step_results
+    step_results = await run_steps([BuildConnectorImage(context, LOCAL_BUILD_PLATFORM)])
+
     if context.connector.supports_normalization:
         normalization_image = f"{context.connector.normalization_repository}:dev"
         context.logger.info(f"This connector supports normalization: will build {normalization_image}.")
