@@ -3,49 +3,49 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "companyId": { "type": "string" },
-    "id": { "type": "string" },
-    "customerId": { "type": "string" },
-    "email": { "type": "string" },
-    "firstName": { "type": "string" },
-    "lastName": { "type": "string" },
-    "companyName": { "type": "string" },
-    "jobTitle": { "type": "string" },
-    "country": { "type": "string" },
-    "state": { "type": "string" },
-    "city": { "type": "string" },
+    "companyId": { "type": ["null", "string"] },
+    "id": { "type": ["null", "string"] },
+    "customerId": { "type": ["null", "string"] },
+    "email": { "type": ["null", "string"] },
+    "firstName": { "type": ["null", "string"] },
+    "lastName": { "type": ["null", "string"] },
+    "companyName": { "type": ["null", "string"] },
+    "jobTitle": { "type": ["null", "string"] },
+    "country": { "type": ["null", "string"] },
+    "state": { "type": ["null", "string"] },
+    "city": { "type": ["null", "string"] },
     "tags": {
-      "type": "array",
-      "items": { "type": "string" }
+      "type": ["null", "array"],
+      "items": { "type": ["null", "string"] }
     },
     "customProps": {
-      "type": "array",
-      "items": { "type": "object" }
+      "type": ["null", "array"],
+      "items": { "type": ["null", "object"] }
     },
-    "campaignId": { "type": "string" },
-    "campaignName": { "type": "string" },
-    "createdDate": { "type": "string" },
-    "score": { "type": "number" },
-    "comment": { "type": "string" },
-    "checkbox": { "type": "boolean" },
+    "campaignId": { "type": ["null", "string"] },
+    "campaignName": { "type": ["null", "string"] },
+    "createdDate": { "type": ["null", "string"] },
+    "score": { "type": ["null", "number"] },
+    "comment": { "type": ["null", "string"] },
+    "checkbox": { "type": ["null", "boolean"] },
     "additionalQuestions": {
-      "type": "array",
-      "items": { "type": "object" }
+      "type": ["null", "array"],
+      "items": { "type": ["null", "object"] }
     },
     "feedbackTags": {
-      "type": "array",
-      "items": { "type": "string" }
+      "type": ["null", "array"],
+      "items": { "type": ["null", "string"] }
     },
     "notes": {
-      "type": "array",
-      "items": { "type": "object" }
+      "type": ["null", "array"],
+      "items": { "type": ["null", "object"] }
     },
-    "status": { "type": "string" },
-    "assigned": { "type": "string" },
-    "ratingCategory": { "type": "string" },
-    "resolved": { "type": "boolean" },
-    "channel": { "type": "string" },
-    "metricsType": { "type": "string" },
-    "isBogus": { "type": "boolean" }
+    "status": { "type": ["null", "string"] },
+    "assigned": { "type": ["null", "string"] },
+    "ratingCategory": { "type": ["null", "string"] },
+    "resolved": { "type": ["null", "boolean"] },
+    "channel": { "type": ["null", "string"] },
+    "metricsType": { "type": ["null", "string"] },
+    "isBogus": { "type": ["null", "boolean"] }
   }
 }
