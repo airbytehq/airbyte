@@ -55,7 +55,7 @@ class GAQL:
 
         resource_names = re.split(r"\s*,\s*", m.group("ResourceNames"))
         if len(resource_names) > 1:
-            raise QueryParseException(f"incorrect GAQL query statement: {repr(query)}: multuple resource_names not allowed")
+            raise QueryParseException(f"incorrect GAQL query: multiple resources '{', '.join(resource_names)}' is not allowed")
         resource_name = resource_names[0]
 
         where = cls._normalize(m.group("WhereClause") or "")
