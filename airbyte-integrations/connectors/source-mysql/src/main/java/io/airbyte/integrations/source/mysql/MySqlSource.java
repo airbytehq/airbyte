@@ -19,6 +19,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mysql.cj.MysqlType;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -412,7 +413,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         } else if (split.length == 3 && kv.contains("sessionVariables")) {
           parameters.put(split[0], split[1] + "=" + split[2]);
         } else {
-          throw new IllegalArgumentException(
+          throw new ConfigErrorException(
               "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got "
                   + jdbcPropertiesString);
         }
