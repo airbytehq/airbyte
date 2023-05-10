@@ -191,7 +191,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
-| 0.3.3   | 2023-05-10 | [xxx](https://github.com/airbytehq/airbyte/pull/xxx)     | fix Pandas date-time parsing to airbyte type                                                            |
+| 0.3.3   | 2023-05-10 | [25965](https://github.com/airbytehq/airbyte/pull/25965) | fix Pandas date-time parsing to airbyte type                                                            |
 | 0.3.3   | 2023-05-04 | [25819](https://github.com/airbytehq/airbyte/pull/25819) | GCP service_account_json is a secret                                                                    |
 | 0.3.2   | 2023-05-01 | [25641](https://github.com/airbytehq/airbyte/pull/25641) | Handle network errors                                                                                   |
 | 0.3.1   | 2023-04-27 | [25575](https://github.com/airbytehq/airbyte/pull/25575) | Fix OOM; read Excel files in chunks using `openpyxl`                                                    |
