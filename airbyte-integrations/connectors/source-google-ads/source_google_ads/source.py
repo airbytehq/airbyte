@@ -35,7 +35,7 @@ from .streams import (
     ShoppingPerformanceReport,
     UserLocationReport,
 )
-from .utils import GAQL
+from .utils import GAQL, GaqlException
 
 FULL_REFRESH_CUSTOM_TABLE = ["geo_target_constant", "custom_audience"]
 
@@ -89,7 +89,12 @@ class SourceGoogleAds(AbstractSource):
         return False
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        config = self._validate_and_transform(config)
+
+        try:
+            config = self._validate_and_transform(config)
+        except GaqlException as e:
+            return False, str(e)
+
         try:
             logger.info("Checking the config")
             google_api = GoogleAds(credentials=self.get_credentials(config))
