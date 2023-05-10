@@ -80,9 +80,10 @@ def test_parse_GAQL_fail():
         GAQL.parse("SELECT field1, , field2 FROM table")
     with pytest.raises(QueryParseException) as e:
         GAQL.parse("SELECT fie ld1, field2 FROM table")
+
     with pytest.raises(QueryParseException) as e:
         GAQL.parse("SELECT field1, field2 FROM customer, campaign_labels")
-    assert str(e.value) == "incorrect GAQL query statement: 'SELECT field1, field2 FROM customer, campaign_labels': multuple resource_names not allowed"
+    assert str(e.value) == "incorrect GAQL query: multiple resources 'customer, campaign_labels' is not allowed"
 
 
 @pytest.mark.parametrize(
