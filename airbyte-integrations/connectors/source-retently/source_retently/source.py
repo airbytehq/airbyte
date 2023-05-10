@@ -76,15 +76,8 @@ class RetentlyStream(HttpStream):
         response: requests.Response,
         **kwargs,
     ) -> Iterable[Mapping]:
-        resp = response.json()
-        data = resp
-        # not all streams have a data key, for example campaigns
-        if "data" in resp:
-            data = resp.get("data", {})
-
+        data = response.json().get("data")
         stream_data = data.get(self.json_path) if self.json_path else data
-        # not all streams return a list of results
-        stream_data = stream_data if isinstance(stream_data, list) else [stream_data]
         yield from stream_data
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -117,6 +110,18 @@ class Campaigns(RetentlyStream):
 
     def path(self, **kwargs) -> str:
         return "campaigns"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        data = response.json()
+        stream_data = data.get(self.json_path) if self.json_path else data
+        for d in stream_data:
+            yield d
 
     # does not support pagination
     def next_page_token(
@@ -206,6 +211,21 @@ class Nps(RetentlyStream):
     ) -> MutableMapping[str, Any]:
         return None
 
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs,
+    ) -> Iterable[Mapping]:
+        yield response.json().get("data")
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        return {}
+
 
 class Templates(RetentlyStream):
     json_path = "templates"
@@ -220,25 +240,8 @@ class Templates(RetentlyStream):
     def next_page_token(
         self,
         response: requests.Response,
-    ) -> Optional[Mapping[str, Any]]:
-        return None
-
-
-class Campaigns(RetentlyStream):
-    json_path = "campaigns"
-
-    def path(
-        self,
         **kwargs,
-    ) -> str:
-        return "campaigns"
-
-
-class Feedback(RetentlyStream):
-    json_path = "responses"
-
-    def path(
-        self,
-        **kwargs,
-    ) -> str:
-        return "feedback"
+    ) -> Iterable[Mapping]:
+        data = response.json()
+        stream_data = data.get(self.json_path) if self.json_path else data
+        yield from stream_data

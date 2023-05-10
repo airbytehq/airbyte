@@ -1,6 +1,22 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
+    "attributes": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {}
+    },
+    "mandrillMessageId": {
+      "type": ["null", "string"]
+    },
+    "personTags": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
     "email": {
       "type": ["string", "null"]
     },
@@ -78,19 +94,19 @@
     "additionalRecipients": {
       "type": "array",
       "items": {
-          "type": "object",
-          "properties": {
-            "email": {
-              "type": ["string", "null"]
-            },
-            "type": {
-              "type": ["string", "null"]
-            },
-            "mandrillMessageId": {
-              "type": ["string", "null"]
-            }
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": ["string", "null"]
+          },
+          "type": {
+            "type": ["string", "null"]
+          },
+          "mandrillMessageId": {
+            "type": ["string", "null"]
           }
         }
+      }
     },
     "mandrillMessageId": {
       "type": ["string", "null"]

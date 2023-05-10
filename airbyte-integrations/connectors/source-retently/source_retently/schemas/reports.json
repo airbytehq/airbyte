@@ -1,5 +1,7 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "campaignId": {
       "type": "string"
@@ -48,6 +50,12 @@
         "score": {
           "type": ["number", "null"]
         }
+      }
+    },
+    "questionsStats": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
       }
     },
     "deliveryStats": {
