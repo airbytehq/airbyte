@@ -15,22 +15,10 @@ public class HostPortResolver {
     return getIpAddress(container);
   }
 
-  public static String resolveHost(GenericContainer container, boolean fromHostMachine) {
-    return fromHostMachine ? container.getHost() : getIpAddress(container);
-  }
-
   public static int resolvePort(GenericContainer container) {
     return (Integer) container.getExposedPorts().stream().findFirst().get();
   }
-
-  public static int resolvePort(GenericContainer container, boolean fromHostMachine) {
-    if (fromHostMachine) {
-      return container.getFirstMappedPort();
-    } else {
-      return (Integer) container.getExposedPorts().stream().findFirst().get();
-    }
-  }
-
+  
   public static String resolveIpAddress(GenericContainer container) {
     return getIpAddress(container);
   }
