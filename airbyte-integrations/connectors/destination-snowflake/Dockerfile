@@ -15,7 +15,7 @@ FROM airbyte/integration-base-java:dev
 #  unzip /tmp/YourKit-JavaProfiler-2021.3-docker.zip -d /usr/local && \
 #  rm /tmp/YourKit-JavaProfiler-2021.3-docker.zip
 
-RUN yum install -y python3 python3-devel jq sshpass git && \
+RUN yum install -y python3 python3-devel jq sshpass git gcc-c++ && \
   alternatives --install /usr/bin/python python /usr/bin/python3 60 && \
   python -m ensurepip --upgrade && \
   pip3 install dbt-snowflake==1.0.0

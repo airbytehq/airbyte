@@ -602,6 +602,9 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         "git",
     ]
 
+    if context.connector.technical_name == "destination-snowflake":
+        yum_packages_to_install += ["gcc-c++"]
+
     dbt_adapter_package = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dbt_adapter"]
     normalization_integration_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["integration_name"]
 
