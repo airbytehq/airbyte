@@ -20,7 +20,6 @@ _URL_BASE = "https://api.outreach.io/api/v2/"
 
 # Basic full refresh stream
 class OutreachStream(HttpStream, ABC):
-
     url_base = _URL_BASE
     primary_key = "id"
     page_size = 1000
@@ -123,6 +122,16 @@ class SequenceStates(IncrementalOutreachStream):
     """
     Sequence stream. Yields data from the GET /sequences endpoint.
     See https://api.outreach.io/api/v2/docs#sequenceState
+    """
+
+    def path(self, **kwargs) -> str:
+        return "sequenceStates"
+
+
+class SequenceSteps(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /sequenceSteps endpoint.
+    See https://api.outreach.io/api/v2/docs#sequenceStep
     """
 
     def path(self, **kwargs) -> str:
@@ -239,6 +248,7 @@ class SourceOutreach(AbstractSource):
             Prospects(authenticator=auth, **config),
             Sequences(authenticator=auth, **config),
             SequenceStates(authenticator=auth, **config),
+            SequenceSteps(authenticator=auth, **config),
             Accounts(authenticator=auth, **config),
             Opportunities(authenticator=auth, **config),
             Personas(authenticator=auth, **config),

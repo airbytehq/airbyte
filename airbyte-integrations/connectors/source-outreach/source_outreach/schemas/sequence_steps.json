@@ -6,25 +6,11 @@
     "id": {
       "type": "integer"
     },
-    "activeAt": {
-      "type": [
-        "null",
-        "string"
-      ],
-      "format": "date-time"
-    },
     "bounceCount": {
       "type": [
         "null",
         "integer"
       ]
-    },
-    "callCompletedAt": {
-      "type": [
-        "null",
-        "string"
-      ],
-      "format": "date-time"
     },
     "clickCount": {
       "type": [
@@ -39,19 +25,32 @@
       ],
       "format": "date-time"
     },
+    "date": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date"
+    },
     "deliverCount": {
       "type": [
         "null",
         "integer"
       ]
     },
-    "errorReason": {
+    "displayName": {
       "type": [
         "null",
         "string"
       ]
     },
     "failureCount": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "interval": {
       "type": [
         "null",
         "integer"
@@ -81,10 +80,10 @@
         "integer"
       ]
     },
-    "pauseReason": {
+    "order": {
       "type": [
         "null",
-        "string"
+        "integer"
       ]
     },
     "positiveReplyCount": {
@@ -92,13 +91,6 @@
         "null",
         "integer"
       ]
-    },
-    "repliedAt": {
-      "type": [
-        "null",
-        "string"
-      ],
-      "format": "date-time"
     },
     "replyCount": {
       "type": [
@@ -112,18 +104,17 @@
         "integer"
       ]
     },
-    "state": {
+    "stepType": {
       "type": [
         "null",
         "string"
       ]
     },
-    "stateChangedAt": {
+    "taskAutoDisplay": {
       "type": [
         "null",
         "string"
-      ],
-      "format": "date-time"
+      ]
     },
     "updatedAt": {
       "type": [
@@ -132,40 +123,13 @@
       ],
       "format": "date-time"
     },
-    "account": {
+    "callPurpose": {
       "type": [
         "null",
         "array"
       ],
       "items": {
-        "type": [
-          "null",
-          "integer"
-        ]
-      }
-    },
-    "activeStepMailings": {
-      "type": [
-        "null",
-        "array"
-      ],
-      "items": {
-        "type": [
-          "null",
-          "integer"
-        ]
-      }
-    },
-    "activeStepTasks": {
-      "type": [
-        "null",
-        "array"
-      ],
-      "items": {
-        "type": [
-          "null",
-          "integer"
-        ]
+        "type": "integer"
       }
     },
     "calls": {
@@ -174,10 +138,7 @@
         "array"
       ],
       "items": {
-        "type": [
-          "null",
-          "integer"
-        ]
+        "type": "integer"
       }
     },
     "creator": {
@@ -186,22 +147,7 @@
         "array"
       ],
       "items": {
-        "type": [
-          "null",
-          "integer"
-        ]
-      }
-    },
-    "mailbox": {
-      "type": [
-        "null",
-        "array"
-      ],
-      "items": {
-        "type": [
-          "null",
-          "integer"
-        ]
+        "type": "string"
       }
     },
     "mailings": {
@@ -210,34 +156,7 @@
         "array"
       ],
       "items": {
-        "type": [
-          "null",
-          "integer"
-        ]
-      }
-    },
-    "opportunity": {
-      "type": [
-        "null",
-        "array"
-      ],
-      "items": {
-        "type": [
-          "null",
-          "integer"
-        ]
-      }
-    },
-    "prospect": {
-      "type": [
-        "null",
-        "array"
-      ],
-      "items": {
-        "type": [
-          "null",
-          "integer"
-        ]
+        "type": "integer"
       }
     },
     "sequence": {
@@ -246,22 +165,25 @@
         "array"
       ],
       "items": {
-        "type": [
-          "null",
-          "integer"
-        ]
+        "type": "integer"
       }
     },
-    "sequenceStep": {
+    "sequenceTemplates": {
       "type": [
         "null",
         "array"
       ],
       "items": {
-        "type": [
-          "null",
-          "integer"
-        ]
+        "type": "integer"
+      }
+    },
+    "taskPriority": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "integer"
       }
     },
     "tasks": {
@@ -270,10 +192,16 @@
         "array"
       ],
       "items": {
-        "type": [
-          "null",
-          "integer"
-        ]
+        "type": "integer"
+      }
+    },
+    "updater": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "integer"
       }
     }
   }
