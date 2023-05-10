@@ -261,4 +261,4 @@ class CsvParser(AbstractFileParser):
 
     @classmethod
     def set_minimal_block_size(cls, format: Mapping[str, Any]):
-        format["block_size"] = 1024
+        pass
