@@ -24,12 +24,12 @@ public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanc
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.jsonNode(Collections.singletonMap("typeDestinationType", TestDestinationType.SILENT.name()));
+    return Jsons.jsonNode(Collections.singletonMap("test_destination_type", TestDestinationType.SILENT.name()));
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    return Jsons.jsonNode(Collections.singletonMap("typeDestinationType", "invalid"));
+    return Jsons.jsonNode(Collections.singletonMap("test_destination_type", "invalid"));
   }
 
   @Override
