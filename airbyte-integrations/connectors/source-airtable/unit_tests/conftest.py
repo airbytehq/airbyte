@@ -38,7 +38,7 @@ def fake_tables_response():
 
 @pytest.fixture
 def expected_discovery_stream_name():
-    return ["test_base/test_table"]
+    return ["test_base/test_table/5678"]
 
 
 @pytest.fixture

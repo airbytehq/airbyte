@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.process;
 
-import io.airbyte.config.AllowedHosts;
-import io.airbyte.config.ResourceRequirements;
+import io.airbyte.configoss.AllowedHosts;
+import io.airbyte.configoss.ResourceRequirements;
 import io.airbyte.workers.exception.TestHarnessException;
 import java.nio.file.Path;
 import java.util.Map;

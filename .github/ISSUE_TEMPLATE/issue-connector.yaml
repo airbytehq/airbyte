@@ -1,0 +1,51 @@
+name: Connector Issue
+description: Use this when you're facing issue with connector
+title: "Connector Issue: "
+labels: [type/bug, area/connectors, needs-triage]
+body:
+  - type: input
+    id: connector-name
+    attributes:
+      label: Connector Name
+      description: Give the connector name in form of airbyte/source-pokeapi, airbyte/destination-snowflake
+    validations:
+      required: true
+  - type: input
+    id: connector-version
+    attributes:
+      label: Connector Version
+      description: Give the connector version you're using.
+    validations:
+      required: true
+  - type: dropdown
+    id: step
+    attributes:
+      label: What step the error happened?
+      multiple: false
+      options:
+        - Configuring a new connector
+        - During the sync
+        - Updating the connector
+        - Other
+  - type: textarea
+    id: description
+    attributes:
+      label: Revelant information
+      description: Please give any aditional information you have your steps to reproduce the problem.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: |
+        Please copy and paste any relevant log output. 
+        This will be automatically formatted into code, so no need for backticks.
+        We strongly recommend to upload the log file to further debugging.
+      render: shell
+  - type: checkboxes
+    id: submit-pr
+    attributes:
+      label: Contribute
+      description: Are you willing to submit the fix?
+      options:
+        - label: Yes, I want to contribute
+          required: false

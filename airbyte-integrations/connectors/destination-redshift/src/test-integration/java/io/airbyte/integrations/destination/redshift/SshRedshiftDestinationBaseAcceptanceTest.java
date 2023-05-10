@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.redshift;
 
 import static io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_KEY_AUTH;
@@ -10,9 +14,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.commons.jackson.MoreMappers;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import java.util.Map;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
@@ -23,9 +24,10 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDestinationAcceptanceTest {
@@ -77,8 +79,7 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
 
   public static Map<Object, Object> deserializeToObjectMap(final JsonNode json) {
     final ObjectMapper objectMapper = MoreMappers.initMapper();
-    return objectMapper.convertValue(json, new TypeReference<>() {
-    });
+    return objectMapper.convertValue(json, new TypeReference<>() {});
   }
 
   public abstract JsonNode getStaticConfig() throws IOException;
@@ -103,8 +104,11 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace,
-      final JsonNode streamSchema) throws Exception {
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
+      throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
         .map(j -> j.get(JavaBaseConstants.COLUMN_NAME_DATA))

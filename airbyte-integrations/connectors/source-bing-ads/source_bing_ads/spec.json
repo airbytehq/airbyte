@@ -60,6 +60,15 @@
         "default": "2020-01-01",
         "description": "The start date from which to begin replicating report data. Any data generated before this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format.",
         "order": 5
+      },
+      "lookback_window": {
+        "title": "Lookback window",
+        "description": "Also known as attribution or conversion window. How far into the past to look for records (in days). If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. Used only for performance report streams in incremental mode.",
+        "type": "integer",
+        "default": 0,
+        "minimum": 0,
+        "maximum": 90,
+        "order": 6
       }
     }
   },

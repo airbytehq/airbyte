@@ -1,4 +1,4 @@
-version: "0.3.0"
+version: "0.29.0"
 
 definitions:
   selector:
@@ -16,7 +16,6 @@ definitions:
       type: "SessionTokenAuthenticator"
       username: "{{ config['username'] }}"
       password: "{{ config['password'] }}"
-      api_url: "{{ config['instance_api_url'] }}"
       header: "X-Metabase-Session"
       session_token: "{{ config['session_token'] }}"
       session_token_response_key: "id"

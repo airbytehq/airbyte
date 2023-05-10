@@ -9,11 +9,11 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    implementation project(':airbyte-integrations:connectors:destination-jdbc')
+    implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
     implementation project(':airbyte-db:db-lib')
 
     implementation 'com.yugabyte:jdbc-yugabytedb:42.3.5-yb-1'

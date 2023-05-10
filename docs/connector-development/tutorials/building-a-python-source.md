@@ -28,7 +28,7 @@ All the commands below assume that `python` points to a version of python &gt;3.
 * Step 8: Set up Standard Tests
 * Step 9: Write unit tests or integration tests
 * Step 10: Update the `README.md` \(If API credentials are required to run the integration, please document how they can be obtained or link to a how-to guide.\)
-* Step 11: Add the connector to the API/UI \(by adding an entry in `airbyte-config/init/src/main/resources/seed/source_definitions.yaml`\)
+* Step 11: Add the connector to the API/UI \(by adding an entry in `airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml`\)
 * Step 12: Add docs \(in `docs/integrations/sources/<source-name>.md`\)
 
 :::info
@@ -231,7 +231,7 @@ The template fills in most of the information for the readme for you. Unless the
 
 ### Step 11: Add the connector to the API/UI
 
-Open the following file: `airbyte-config/init/src/main/resources/seed/source_definitions.yaml`. You'll find a list of all the connectors that Airbyte displays in the UI. Pattern match to add your own connector. Make sure to generate a new _unique_ UUIDv4 for the `sourceDefinitionId` field. You can get one [here](https://www.uuidgenerator.net/). Note that modifications to source_definitions.yaml will only be picked-up the first time you start Airbyte, or when you upgrade Airbyte, or if you entirely wipe our your instance of Airbyte and start from scratch.
+Open the following file: `airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml`. You'll find a list of all the connectors that Airbyte displays in the UI. Pattern match to add your own connector. Make sure to generate a new _unique_ UUIDv4 for the `sourceDefinitionId` field. You can get one [here](https://www.uuidgenerator.net/). Note that modifications to source_definitions.yaml will only be picked-up the first time you start Airbyte, or when you upgrade Airbyte, or if you entirely wipe our your instance of Airbyte and start from scratch.
 
 Note that for simple and quick testing use cases, you can also do this step [using the UI](../../integrations/custom-connectors.md#adding-your-connectors-in-the-ui).
 
