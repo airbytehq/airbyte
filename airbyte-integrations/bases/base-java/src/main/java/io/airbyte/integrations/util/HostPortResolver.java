@@ -7,19 +7,29 @@ package io.airbyte.integrations.util;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.Optional;
 import org.testcontainers.containers.GenericContainer;
 
 public class HostPortResolver {
 
   public static String resolveHost(GenericContainer container) {
-    return System.getProperty("os.name").toLowerCase().startsWith("mac")
-        ? getIpAddress(container)
-        : container.getHost();
+    return getIpAddress(container);
+  }
+
+  public static String resolveHost(GenericContainer container, boolean fromHostMachine) {
+    return fromHostMachine ? container.getHost() : getIpAddress(container);
   }
 
   public static int resolvePort(GenericContainer container) {
-    return System.getProperty("os.name").toLowerCase().startsWith("mac") ? (Integer) container.getExposedPorts().get(0)
-        : container.getFirstMappedPort();
+      return (Integer) container.getExposedPorts().stream().findFirst().get();
+  }
+
+  public static int resolvePort(GenericContainer container, boolean fromHostMachine) {
+    if (fromHostMachine) {
+      return container.getFirstMappedPort();
+    } else {
+      return (Integer) container.getExposedPorts().stream().findFirst().get();
+    }
   }
 
   public static String resolveIpAddress(GenericContainer container) {
