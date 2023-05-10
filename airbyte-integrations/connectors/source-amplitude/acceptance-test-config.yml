@@ -30,7 +30,6 @@ acceptance_tests:
           extra_fields: no
           exact_order: no
           extra_records: yes
-        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"
