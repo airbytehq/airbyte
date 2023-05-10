@@ -13,6 +13,7 @@ def output_dataframe(result_df: pd.DataFrame) -> Output[pd.DataFrame]:
     """
     return Output(result_df, metadata={"count": len(result_df), "preview": MetadataValue.md(result_df.to_markdown())})
 
+
 def string_array_to_cursor(strings: List[str]) -> str:
     """Hash a list of strings into a cursor string.
 
@@ -24,4 +25,4 @@ def string_array_to_cursor(strings: List[str]) -> str:
     """
     unique_strings = list(set(strings))
     unique_strings.sort()
-    return hashlib.md5(str(unique_strings).encode('utf-8')).hexdigest()
+    return hashlib.md5(str(unique_strings).encode("utf-8")).hexdigest()
