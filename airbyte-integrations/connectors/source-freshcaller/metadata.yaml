@@ -1,9 +1,4 @@
 data:
-  catalogs:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 8a5d48f6-03bb-4038-a942-a8d3f175cca3
@@ -13,6 +8,11 @@ data:
   icon: freshcaller.svg
   license: MIT
   name: Freshcaller
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/freshcaller
 metadataSpecVersion: "1.0"

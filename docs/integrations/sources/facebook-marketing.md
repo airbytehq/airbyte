@@ -43,27 +43,27 @@ This page guides you through the process of setting up the Facebook Marketing so
 8. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
 9. (Optional) In the Custom Insights section. A list which contains ad statistics entries, each entry must have a name and can contain fields, breakdowns or action_breakdowns. Click on "add" to fill this field.
     To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync.
+    We recommend following the Facebook Marketing [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns) to understand the breakdown limitations. Some fields can not be requested and many others only work when combined with specific fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field.
+
+    To configure Custom Insights:
+
+       1. For **Name**, enter a name for the insight. This will be used as the Airbyte stream name 
+       2. For **Level**, enter the level of the fields you want to pull from the Facebook Marketing API. By default, 'ad'. You can specify also account, campaign or adset. 
+       3. For **Fields**, enter a list of the fields you want to pull from the Facebook Marketing API.
+       4. For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
+       5. For **Breakdowns**, enter a list of the breakdowns you want to configure.
+       6. For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+       7. For **Action Breakdown**, enter a list of the action breakdowns you want to configure.
+       8. For **Custom Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
+       9. Click **Done**.
+      10.  For **Page Size of Requests**, fill in the page size in case pagination kicks in. Feel free to ignore it, the default value should work in most cases. 
+      12.  For **Insights Lookback Window**, fill in the appropriate value. Facebook freezes insight data 28 days after it was generated, which means that all data from the past 28 days may have changed since we last emitted it, so you can retrieve refreshed insights from the past by setting this parameter. If you set a custom lookback window value in Facebook account, please provide the same value here. See [more](#facebook-marketing-attribution-reporting) on this parameter. 
+      13.  Click **Set up source**.
 
     :::warning
     Additional streams for Facebook Marketing are dynamically created based on the specified Custom Insights. For an existing Facebook Marketing source, when you are updating or removing Custom Insights, you should also ensure that any connections syncing to these streams are either disabled or have had their source schema refreshed.
     :::
 
-    We recommend following the Facebook Marketing [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns) to understand the breakdown limitations. Some fields can not be requested and many others only work when combined with specific fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field.
-
-    To configure Custom Insights:
-
-    1. For **Name**, enter a name for the insight. This will be used as the Airbyte stream name 
-    2. For **Level**, enter the level of the fields you want to pull from the Facebook Marketing API. By default, 'ad'. You can specify also account, campaign or adset. 
-    3. For **Fields**, enter a list of the fields you want to pull from the Facebook Marketing API.
-    4. For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
-    5. For **Breakdowns**, enter a list of the breakdowns you want to configure.
-    6. For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-    7. For **Action Breakdown**, enter a list of the action breakdowns you want to configure.
-    8. For **Custom Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
-    9. Click **Done**.
-   10. For **Page Size of Requests**, fill in the page size in case pagination kicks in. Feel free to ignore it, the default value should work in most cases. 
-   11. For **Insights Lookback Window**, fill in the appropriate value. Facebook freezes insight data 28 days after it was generated, which means that all data from the past 28 days may have changed since we last emitted it, so you can retrieve refreshed insights from the past by setting this parameter. If you set a custom lookback window value in Facebook account, please provide the same value here. See [more](#facebook-marketing-attribution-reporting) on this parameter. 
-   12. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -136,7 +136,10 @@ Please be informed that the connector uses the `lookback_window` parameter to pe
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.3   | 2023-04-14 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Fix data retention period validation                                                                                                                                                                                                                                                              |
+| 0.3.6   | 2023-04-27 | [22999](https://github.com/airbytehq/airbyte/pull/22999) | Specified date formatting in specification                                                     ||         |            |                                                          |                                                                                                                                                                                                                                                                                                   |                                                                                                                                                                                                                                     ||         |            |                                                          |                                                                                                                                                                                                                                                                                                   |
+| 0.3.5   | 2023-04-26 | [24994](https://github.com/airbytehq/airbyte/pull/24994) | Emit stream status messages                                                                                                                                                                                                                                                                            |
+| 0.3.4   | 2023-04-18 | [22990](https://github.com/airbytehq/airbyte/pull/22990) | Increase pause interval                                                                                                                                                                                                                                                                           |
+| 0.3.3   | 2023-04-14 | [25204](https://github.com/airbytehq/airbyte/pull/25204) | Fix data retention period validation                                                                                                                                                                                                                                                              |
 | 0.3.2   | 2023-04-08 | [25003](https://github.com/airbytehq/airbyte/pull/25003) | Don't fetch `thumbnail_data_url` if it's None                                                                                                                                                                                                                                                     |
 | 0.3.1   | 2023-03-27 | [24600](https://github.com/airbytehq/airbyte/pull/24600) | Reduce request record limit when retrying second page or further                                                                                                                                                                                                                                  |
 | 0.3.0   | 2023-03-16 | [19141](https://github.com/airbytehq/airbyte/pull/19141) | Added Level parameter to custom Ads Insights                                                                                                                                                                                                                                                      |

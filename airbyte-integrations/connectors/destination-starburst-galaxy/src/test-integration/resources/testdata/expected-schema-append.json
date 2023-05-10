@@ -1,0 +1,8 @@
+{
+  "_airbyte_ab_id" : "varchar",
+  "c_row" : "row(first_name varchar, _airbyte_additional_properties map(varchar, varchar))",
+  "_airbyte_additional_properties" : "map(varchar, varchar)",
+  "c_array" : "array(varchar)",
+  "_airbyte_emitted_at" : "timestamp(6) with time zone",
+  "c_new_column" : "bigint"
+}

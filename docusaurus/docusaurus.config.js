@@ -86,6 +86,21 @@ const config = {
         ],
       },
     ],
+    () => ({
+      name: "Yaml loader",
+      configureWebpack() {
+        return {
+          module: {
+            rules: [
+              {
+                test: /\.ya?ml$/,
+                use: 'yaml-loader'
+              }
+            ]
+          },
+        };
+      },
+    }),
   ],
 
   presets: [
