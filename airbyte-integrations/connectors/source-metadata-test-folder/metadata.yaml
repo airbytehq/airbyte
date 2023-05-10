@@ -1,0 +1,18 @@
+data:
+  registries:
+    cloud:
+      enabled: false # DO NOT ENABLE just testing out ci
+    oss:
+      enabled: false # DO NOT ENABLE just testing out ci
+  connectorSubtype: database
+  connectorType: source
+  definitionId: a39a7370-74c3-45a6-ac3a-380d48520a84
+  dockerImageTag: 2.0.28
+  dockerRepository: airbyte/source-postgres-strict-encrypt
+  githubIssueLabel: source-metadata-ignore
+  icon: postgresql.svg
+  license: MIT
+  name: Metadata Test Publish (internal)
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/oracle
+metadataSpecVersion: "1.0"
