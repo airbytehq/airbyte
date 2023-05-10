@@ -556,8 +556,9 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   protected abstract Database createDatabase(JsonNode config) throws Exception;
 
   /**
-   * Gets and logs relevant and useful database metadata such as DB product/version, index names and definition. Called before syncing data.
-   * Any logged information should be scoped to the configured catalog and database.
+   * Gets and logs relevant and useful database metadata such as DB product/version, index names and
+   * definition. Called before syncing data. Any logged information should be scoped to the configured
+   * catalog and database.
    *
    * @param database given database instance.
    * @param catalog configured catalog.
