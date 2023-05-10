@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Tuple
 import asyncer
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.utils import check_path_in_workdir, slugify, with_exit_code, with_stderr, with_stdout
-from ci_connector_ops.utils import console
+from ci_connector_ops.utils import Connector, console
 from dagger import CacheVolume, Container, Directory, QueryError
 from rich.console import Group
 from rich.panel import Panel
@@ -229,7 +229,7 @@ class Report:
 
     @property
     def success(self) -> bool:  # noqa D102
-        return len(self.failed_steps) == 0 and len(self.steps_results) > 0
+        return len(self.failed_steps) == 0
 
     @property
     def run_duration(self) -> int:  # noqa D102
@@ -421,6 +421,19 @@ class GradleTask(Step, ABC):
     def connector_java_build_cache(self) -> CacheVolume:
         return self.context.dagger_client.cache_volume("connector_java_build_cache")
 
+    def get_related_connectors(self) -> List[Connector]:
+        """Retrieve the list of related connectors.
+        This is used to include source code of non strict-encrypt connectors when running build for a strict-encrypt connector.
+
+        Returns:
+            List[Connector]: The list of related connectors.
+        """
+        if self.context.connector.technical_name.endswith("-strict-encrypt"):
+            return [Connector(self.context.connector.technical_name.replace("-strict-encrypt", ""))]
+        if self.context.connector.technical_name == "source-file-secure":
+            return [Connector("source-file")]
+        return []
+
     @property
     def build_include(self) -> List[str]:
         """Retrieve the list of source code directory required to run a Java connector Gradle task.
@@ -430,12 +443,17 @@ class GradleTask(Step, ABC):
         Returns:
             List[str]: List of directories or files to be mounted to the container to run a Java connector Gradle task.
         """
+        to_include = self.JAVA_BUILD_INCLUDE
+
         if self.context.connector.connector_type == "source":
-            return self.JAVA_BUILD_INCLUDE + self.SOURCE_BUILD_INCLUDE
+            to_include += self.SOURCE_BUILD_INCLUDE
         elif self.context.connector.connector_type == "destination":
-            return self.JAVA_BUILD_INCLUDE + self.DESTINATION_BUILD_INCLUDE
+            to_include += self.DESTINATION_BUILD_INCLUDE
         else:
             raise ValueError(f"{self.context.connector.connector_type} is not supported")
+
+        with_related_connectors_source_code = to_include + [str(connector.code_directory) for connector in self.get_related_connectors()]
+        return with_related_connectors_source_code
 
     async def _get_patched_connector_dir(self) -> Directory:
         """Patch the build.gradle file of the connector under test by removing the lines declared in LINES_TO_REMOVE_FROM_GRADLE_FILE.
