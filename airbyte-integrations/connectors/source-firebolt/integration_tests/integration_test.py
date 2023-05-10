@@ -58,7 +58,7 @@ def table_schema() -> str:
             "column3": {"type": ["null", "string"], "format": "date"},
             "column4": {
                 "type": ["null", "string"],
-                "format": "datetime",
+                "format": "date-time",
                 "airbyte_type": "timestamp_without_timezone",
             },
             # If column check fails you mignt not have the latest Firebolt version

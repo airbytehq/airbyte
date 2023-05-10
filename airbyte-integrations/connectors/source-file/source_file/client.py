@@ -376,7 +376,7 @@ class Client:
         if dtype == "bool" and (not current_type or current_type == "boolean"):
             return "boolean"
         if dtype == "datetime64[ns]":
-            return "datetime"
+            return "date-time"
         return "string"
 
     @property
