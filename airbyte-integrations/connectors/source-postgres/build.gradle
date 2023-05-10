@@ -4,6 +4,7 @@ plugins {
     id 'airbyte-integration-test-java'
     id 'airbyte-performance-test-java'
     id 'airbyte-connector-acceptance-test'
+    id 'org.gradle.test-retry' version '1.5.2'
 }
 
 application {
@@ -37,4 +38,12 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     performanceTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+}
+
+test {
+    retry {
+        maxRetries = 3
+        maxFailures = 20
+        failOnPassedAfterRetry = true
+    }
 }
