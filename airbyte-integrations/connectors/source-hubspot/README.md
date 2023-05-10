@@ -195,3 +195,10 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 3. Create a Pull Request
 4. Pat yourself on the back for being an awesome contributor
 5. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master
+
+
+
+
+docker build . -t airbyte/source-hubspot:2.0.0 --platform linux/amd64
+docker tag airbyte/source-hubspot:2.0.0 askeladden/source-hubspot:2.0.0
+docker push askeladden/source-hubspot:2.0.0
