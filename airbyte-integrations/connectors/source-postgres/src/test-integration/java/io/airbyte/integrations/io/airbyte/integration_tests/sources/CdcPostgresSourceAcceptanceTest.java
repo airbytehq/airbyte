@@ -45,7 +45,7 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
   protected static final String PUBLICATION = "publication";
-  protected static final int INITIAL_WAITING_SECONDS = 5;
+  protected static final int INITIAL_WAITING_SECONDS = 30;
 
   protected PostgreSQLContainer<?> container;
   protected JsonNode config;
