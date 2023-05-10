@@ -7,7 +7,6 @@ package io.airbyte.integrations.util;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
-import java.util.Optional;
 import org.testcontainers.containers.GenericContainer;
 
 public class HostPortResolver {
@@ -21,7 +20,7 @@ public class HostPortResolver {
   }
 
   public static int resolvePort(GenericContainer container) {
-      return (Integer) container.getExposedPorts().stream().findFirst().get();
+    return (Integer) container.getExposedPorts().stream().findFirst().get();
   }
 
   public static int resolvePort(GenericContainer container, boolean fromHostMachine) {
