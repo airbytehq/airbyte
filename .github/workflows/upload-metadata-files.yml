@@ -11,9 +11,6 @@ jobs:
   deploy-catalog-to-stage:
     name: "Upload Metadata Files to Metadata Service"
     runs-on: ubuntu-latest
-    env:
-      DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
-      DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
     steps:
       - name: Checkout Airbyte Cloud
         uses: actions/checkout@v2
@@ -35,6 +32,9 @@ jobs:
         run: echo "${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}" > /tmp/gcs_credentials.json
       - name: Upload All Changed Metadata Files
         if: steps.changed-files-specific.outputs.any_changed == 'true'
+        env:
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
         run: |
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             metadata_service upload $file prod-airbyte-cloud-connector-metadata-service -sa /tmp/gcs_credentials.json
