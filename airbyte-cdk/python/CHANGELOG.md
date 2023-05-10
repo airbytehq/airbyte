@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.36.4
+low-code: use jinja sandbox and restrict some methods
+
+## 0.36.3
+pin the version of the requests library
+
+## 0.36.2
+Support parsing non UTC dates and Connector Builder set slice descriptor
+
+## 0.36.1
+low-code: fix add field transformation when running from the connector builder
+
+## 0.36.0
+Emit stream status messages
+
 ## 0.35.4
 low-code: remove now_local() macro because it's too unpredictable
 
