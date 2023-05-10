@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - "*.googleapis.com"
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: afa734e4-3571-11ec-991a-1e0031268139
@@ -16,6 +11,11 @@ data:
   icon: youtube-analytics.svg
   license: MIT
   name: YouTube Analytics
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
   supportUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics
 metadataSpecVersion: "1.0"

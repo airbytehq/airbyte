@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_COLUMN_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_INDEX_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_INDEX_NON_UNIQUE;
 import static io.airbyte.db.jdbc.JdbcUtils.AMPERSAND;
 import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.db.jdbc.JdbcUtils.PLATFORM_DATA_INCREASE_FACTOR;
@@ -73,8 +76,8 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.NumberFormat;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -207,6 +210,23 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
       throws SQLException {
     super.logPreSyncDebugData(database, catalog);
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      final String streamName = stream.getStream().getName();
+      final String schemaName = stream.getStream().getNamespace();
+      final ResultSet indexInfo = database.getMetaData().getIndexInfo(null,
+          schemaName,
+          streamName,
+          false,
+          false);
+      LOGGER.info("Discovering indexes for schema \"{}\", table \"{}\"", schemaName, streamName);
+      while (indexInfo.next()) {
+        LOGGER.info("Index name: {}, Column: {}, Unique: {}",
+            indexInfo.getString(JDBC_INDEX_NAME),
+            indexInfo.getString(JDBC_COLUMN_COLUMN_NAME),
+            !indexInfo.getBoolean(JDBC_INDEX_NON_UNIQUE));
+      }
+      indexInfo.close();
+    }
     PostgresQueryUtils.logXminStatus(database);
   }
 
@@ -221,7 +241,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           .map(PostgresCdcCatalogHelper::removeIncrementalWithoutPk)
           .map(PostgresCdcCatalogHelper::setIncrementalToSourceDefined)
           .map(PostgresCdcCatalogHelper::addCdcMetadataColumns)
-          // If we're in CDC mode and a stream is not in the publication, the user should only be able to sync this in FULL_REFRESH mode
+          // If we're in CDC mode and a stream is not in the publication, the user should only be able to sync
+          // this in FULL_REFRESH mode
           .map(stream -> PostgresCdcCatalogHelper.setFullRefreshForNonPublicationStreams(stream, publicizedTablesInCdc))
           .collect(toList());
 
@@ -401,7 +422,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot), new PostgresCdcConnectorMetadataInjector(),
           PostgresCdcProperties.getSnapshotProperties(database), postgresCdcStateHandler, emittedAt);
       return Collections.singletonList(
-          AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
+          AutoCloseableIterators.concatWithEagerClose(AirbyteTraceMessageUtility::emitStreamStatusTrace, snapshotIterator,
+              AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)));
 
     } else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
@@ -573,8 +595,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         // read a row and Stringify it to better understand the accurate volume of data sent over the wire.
         // However, this approach doesn't account for different row sizes.
         AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
-        LOGGER.info(String.format("Estimate for table in full refresh mode: %s : {rows_to_sync: %s, data_to_sync: %s}",
-            fullTableName, NumberFormat.getInstance().format(syncRowCount), JdbcUtils.humanReadableByteCountSI(syncByteCount)));
+        LOGGER.info(String.format("Estimate for table: %s : {sync_row_count: %s, sync_bytes: %s, total_table_row_count: %s, total_table_bytes: %s}",
+            fullTableName, syncRowCount, syncByteCount, syncRowCount, syncByteCount));
       }
     } catch (final SQLException e) {
       LOGGER.warn("Error occurred while attempting to estimate sync size", e);
@@ -615,9 +637,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       // read a row and Stringify it to better understand the accurate volume of data sent over the wire.
       // However, this approach doesn't account for different row sizes
       AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
-      LOGGER.info(String.format("Estimate for table in incremental mode: %s : {rows_to_sync: %s, data_to_sync: %s, table_row_count: %s, table_size: %s}",
-          fullTableName, NumberFormat.getInstance().format(syncRowCount), JdbcUtils.humanReadableByteCountSI(syncByteCount), NumberFormat.getInstance().format(tableRowCount),
-          JdbcUtils.humanReadableByteCountSI(tableByteCount)));
+      LOGGER.info(String.format("Estimate for table: %s : {sync_row_count: %s, sync_bytes: %s, total_table_row_count: %s, total_table_bytes: %s}",
+          fullTableName, syncRowCount, syncByteCount, tableRowCount, tableRowCount));
     } catch (final SQLException e) {
       LOGGER.warn("Error occurred while attempting to estimate sync size", e);
     }

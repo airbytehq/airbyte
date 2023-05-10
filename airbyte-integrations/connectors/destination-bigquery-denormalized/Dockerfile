@@ -16,5 +16,5 @@ ENV APPLICATION destination-bigquery-denormalized
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=1.3.1
+LABEL io.airbyte.version=1.4.0
 LABEL io.airbyte.name=airbyte/destination-bigquery-denormalized
