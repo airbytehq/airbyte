@@ -32,7 +32,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
-import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -95,8 +94,8 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", HostPortResolver.resolveHost(container))
-        .put("port", HostPortResolver.resolvePort(container))
+        .put("host", container.getHost())
+        .put("port", container.getFirstMappedPort())
         .put("database", DB_NAME)
         .put("username", container.getUsername())
         .put("password", container.getPassword())
