@@ -18,7 +18,7 @@ public class HostPortResolver {
   public static int resolvePort(GenericContainer container) {
     return (Integer) container.getExposedPorts().stream().findFirst().get();
   }
-  
+
   public static String resolveIpAddress(GenericContainer container) {
     return getIpAddress(container);
   }
