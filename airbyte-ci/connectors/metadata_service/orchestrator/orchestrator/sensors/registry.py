@@ -1,6 +1,6 @@
 from dagster import sensor, RunRequest, SkipReason, SensorDefinition, SensorEvaluationContext, build_resources, DefaultSensorStatus
 
-from orchestrator.utils.dagster_helpers import string_array_to_cursor
+from orchestrator.utils.dagster_helpers import string_array_to_hash
 
 
 def registry_updated_sensor(job, resources_def) -> SensorDefinition:
@@ -21,13 +21,10 @@ def registry_updated_sensor(job, resources_def) -> SensorDefinition:
         with build_resources(resources_def) as resources:
             context.log.info("Got resources for gcs_registry_updated_sensor")
 
-            etags_cursor_raw = context.cursor or []
-            etags_cursor = string_array_to_cursor(etags_cursor_raw)
-
-            context.log.info(f"Old etag cursor: {etags_cursor}")
+            context.log.info(f"Old etag cursor: {context.cursor}")
 
             # TODO (ben) stop using legacy resources when we remove the legacy registry
-            new_etags_cursor = string_array_to_cursor(
+            new_etags_cursor = string_array_to_hash(
                 [resources.legacy_oss_registry_gcs_blob.etag, resources.legacy_cloud_registry_gcs_blob.etag]
             )
 
@@ -35,7 +32,7 @@ def registry_updated_sensor(job, resources_def) -> SensorDefinition:
 
             # Note: ETAGs are GCS's way of providing a version number for a file
             # Another option would be to use the last modified date or MD5 hash
-            if etags_cursor == new_etags_cursor:
+            if context.cursor == new_etags_cursor:
                 context.log.info("No new registries in GCS bucket")
                 return SkipReason("No new registries in GCS bucket")
 

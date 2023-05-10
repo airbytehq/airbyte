@@ -14,7 +14,7 @@ def output_dataframe(result_df: pd.DataFrame) -> Output[pd.DataFrame]:
     return Output(result_df, metadata={"count": len(result_df), "preview": MetadataValue.md(result_df.to_markdown())})
 
 
-def string_array_to_cursor(strings: List[str]) -> str:
+def string_array_to_hash(strings: List[str]) -> str:
     """Hash a list of strings into a cursor string.
 
     Args:
