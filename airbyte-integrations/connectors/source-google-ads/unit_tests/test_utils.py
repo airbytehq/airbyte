@@ -3,7 +3,7 @@
 #
 
 import pytest
-from source_google_ads.utils import GAQL, GaqlException
+from source_google_ads.utils import GAQL, QueryParseException
 
 
 def test_parse_GAQL_ok():
@@ -70,17 +70,17 @@ def test_parse_GAQL_ok():
 
 
 def test_parse_GAQL_fail():
-    with pytest.raises(GaqlException) as e:
+    with pytest.raises(QueryParseException) as e:
         GAQL.parse("SELECT field1, field2 FROM x_Table2")
     assert str(e.value) == "incorrect GAQL query statement: 'SELECT field1, field2 FROM x_Table2'"
 
-    with pytest.raises(GaqlException) as e:
+    with pytest.raises(QueryParseException) as e:
         GAQL.parse("SELECT field1, field2 FROM x_Table WHERE ")
-    with pytest.raises(GaqlException) as e:
+    with pytest.raises(QueryParseException) as e:
         GAQL.parse("SELECT field1, , field2 FROM table")
-    with pytest.raises(GaqlException) as e:
+    with pytest.raises(QueryParseException) as e:
         GAQL.parse("SELECT fie ld1, field2 FROM table")
-    with pytest.raises(GaqlException) as e:
+    with pytest.raises(QueryParseException) as e:
         GAQL.parse("SELECT field1, field2 FROM customer, campaign_labels")
     assert str(e.value) == "incorrect GAQL query statement: 'SELECT field1, field2 FROM customer, campaign_labels': multuple resource_names not allowed"
 

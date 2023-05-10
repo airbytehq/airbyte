@@ -35,7 +35,7 @@ from .streams import (
     ShoppingPerformanceReport,
     UserLocationReport,
 )
-from .utils import GAQL, GaqlException
+from .utils import GAQL, QueryParseException
 
 FULL_REFRESH_CUSTOM_TABLE = ["geo_target_constant", "custom_audience"]
 
@@ -92,7 +92,7 @@ class SourceGoogleAds(AbstractSource):
 
         try:
             config = self._validate_and_transform(config)
-        except GaqlException as e:
+        except QueryParseException as e:
             return False, str(e)
 
         try:
