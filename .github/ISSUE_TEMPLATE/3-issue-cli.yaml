@@ -7,10 +7,10 @@ body:
       value: >
         <p align="center">
           <a target="_blank" href="https://airbyte.com">
-            <picture>
+            <image>
               <source srcset="https://raw.githubusercontent.com/airbytehq/airbyte/master/.github/octavia-issue-template.svg">
-              <img alt="octavia-welcome" src="https://raw.githubusercontent.com/airbytehq/airbyte/master/.github/octavia-issue-template.svg" width="auto" height="120">
-            </picture>
+              <img alt="octavia-welcome" src="htt ps://raw.githubusercontent.com/airbytehq/airbyte/master/.github/octavia-issue-template.svg" width="auto" height="120">
+            </image>
           </a>
         </p>
   - type: markdown
