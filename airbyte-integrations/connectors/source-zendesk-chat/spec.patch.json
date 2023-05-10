@@ -7,6 +7,9 @@
       "credentials": {
         "title": "Authorization Method",
         "type": "object",
+        "discriminator": {
+          "propertyName": "credentials"
+        },
         "oneOf": [
           {
             "type": "object",
@@ -23,7 +26,8 @@
               "credentials": {
                 "type": "string",
                 "const": "oauth2.0",
-                "order": 0
+                "order": 0,
+                "default": "oauth2.0"
               },
               "client_id": {
                 "type": "string",
@@ -59,7 +63,8 @@
               "credentials": {
                 "type": "string",
                 "const": "access_token",
-                "order": 0
+                "order": 0,
+                "default": "access_token"
               },
               "access_token": {
                 "type": "string",
