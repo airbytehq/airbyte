@@ -61,6 +61,7 @@ public class StagingConsumerFactory {
   // to load (or reload backups?) in the connection's staging area to be loaded at the next sync.
   private static final DateTime SYNC_DATETIME = DateTime.now(DateTimeZone.UTC);
   private final UUID RANDOM_CONNECTION_ID = UUID.randomUUID();
+  private Integer FLUSH_COUNT = 0;
 
   public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
                                        final JdbcDatabase database,
@@ -222,8 +223,18 @@ public class StagingConsumerFactory {
       try (writer) {
         writer.flush();
         final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
-        copyIntoTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(), schemaName,
-            stagingOperations);
+        if (FLUSH_COUNT == 10) {
+          writeConfig.addStagedFile(stagedFile);
+          FLUSH_COUNT++;
+        } else {
+          // gets the files back, copies into destination table, clears files from being listed to
+          // avoid re-uploading the same data, then resets the flush count
+          copyIntoTableFromStage(database, stageName, stagingPath, writeConfig.getStagedFiles(),
+              writeConfig.getOutputTableName(), schemaName,
+              stagingOperations);
+          writeConfig.clearStagedFiles();
+          FLUSH_COUNT = 0;
+        }
       } catch (final Exception e) {
         LOGGER.error("Failed to flush and commit buffer data into destination's raw table", e);
         throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);

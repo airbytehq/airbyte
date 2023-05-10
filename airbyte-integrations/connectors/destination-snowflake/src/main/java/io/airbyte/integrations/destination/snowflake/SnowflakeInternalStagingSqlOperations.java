@@ -67,6 +67,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
       throws IOException {
     final List<Exception> exceptionsThrown = new ArrayList<>();
     boolean succeeded = false;
+    LOGGER.info("Starting to uploadRecordsToStage");
     while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT && !succeeded) {
       try {
         uploadRecordsToBucket(database, stageName, stagingPath, recordsData);
@@ -162,8 +163,10 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
     try {
       final String query = getCopyQuery(stageName, stagingPath, stagedFiles, tableName, schemaName);
       LOGGER.debug("Executing query: {}", query);
+      LOGGER.info("Starting copy execution");
       database.execute(query);
-    } catch (SQLException e) {
+      LOGGER.info("Ending copy execution");
+    } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }
@@ -193,7 +196,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
       final String query = getDropQuery(stageName);
       LOGGER.debug("Executing query: {}", query);
       database.execute(query);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }
@@ -214,7 +217,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
       final String query = getRemoveQuery(stageName);
       LOGGER.debug("Executing query: {}", query);
       database.execute(query);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }
