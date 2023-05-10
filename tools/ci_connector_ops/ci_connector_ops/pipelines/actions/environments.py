@@ -409,6 +409,7 @@ def with_gradle(
         .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
         .with_exec(["mkdir", "/root/.gradle"])
         .with_mounted_cache("/root/.gradle", root_gradle_cache, sharing=CacheSharingMode.LOCKED)
+        .with_exec(["rm", "-f", "/root/.gradle/caches/journal-1/journal-1.lock"])
         .with_exec(["mkdir", "/airbyte"])
         .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
         .with_mounted_cache("/airbyte/.gradle", airbyte_gradle_cache, sharing=CacheSharingMode.LOCKED)
@@ -524,61 +525,61 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "Dockerfile",
         "dbt_adapter": "dbt-bigquery==1.0.0",
         "integration_name": "bigquery",
-        "supports_in_connector_normalization": True
+        "supports_in_connector_normalization": True,
     },
     "destination-clickhouse": {
         "dockerfile": "clickhouse.Dockerfile",
         "dbt_adapter": "dbt-clickhouse>=1.4.0",
         "integration_name": "clickhouse",
-        "supports_in_connector_normalization": False
+        "supports_in_connector_normalization": False,
     },
     "destination-duckdb": {
         "dockerfile": "duckdb.Dockerfile",
         "dbt_adapter": "dbt-duckdb==1.0.1",
         "integration_name": "duckdb",
-        "supports_in_connector_normalization": False
+        "supports_in_connector_normalization": False,
     },
     "destination-mssql": {
         "dockerfile": "mssql.Dockerfile",
         "dbt_adapter": "dbt-sqlserver==1.0.0",
         "integration_name": "mssql",
-        "supports_in_connector_normalization": False
+        "supports_in_connector_normalization": False,
     },
     "destination-mysql": {
         "dockerfile": "mysql.Dockerfile",
         "dbt_adapter": "dbt-mysql==1.0.0",
         "integration_name": "mysql",
-        "supports_in_connector_normalization": False
+        "supports_in_connector_normalization": False,
     },
     "destination-oracle": {
         "dockerfile": "oracle.Dockerfile",
         "dbt_adapter": "dbt-oracle==0.4.3",
         "integration_name": "oracle",
-        "supports_in_connector_normalization": False
+        "supports_in_connector_normalization": False,
     },
     "destination-postgres": {
         "dockerfile": "Dockerfile",
         "dbt_adapter": "dbt-postgres==1.0.0",
         "integration_name": "postgres",
-        "supports_in_connector_normalization": False
+        "supports_in_connector_normalization": False,
     },
     "destination-redshift": {
         "dockerfile": "redshift.Dockerfile",
         "dbt_adapter": "dbt-redshift==1.0.0",
         "integration_name": "redshift",
-        "supports_in_connector_normalization": False
+        "supports_in_connector_normalization": False,
     },
     "destination-snowflake": {
         "dockerfile": "snowflake.Dockerfile",
         "dbt_adapter": "dbt-snowflake==1.0.0",
         "integration_name": "snowflake",
-        "supports_in_connector_normalization": False
+        "supports_in_connector_normalization": False,
     },
     "destination-tidb": {
         "dockerfile": "tidb.Dockerfile",
         "dbt_adapter": "dbt-tidb==1.0.1",
         "integration_name": "tidb",
-        "supports_in_connector_normalization": False
+        "supports_in_connector_normalization": False,
     },
 }
 
@@ -634,7 +635,12 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         .with_exec(["pip3", "install", "urllib3<2"])
         .with_exec(["dbt", "deps"])
         .with_workdir("/airbyte")
-        .with_file("run_with_normalization.sh", context.get_repo_dir("airbyte-integrations/bases/base-java", include=["run_with_normalization.sh"]).file("run_with_normalization.sh"))
+        .with_file(
+            "run_with_normalization.sh",
+            context.get_repo_dir("airbyte-integrations/bases/base-java", include=["run_with_normalization.sh"]).file(
+                "run_with_normalization.sh"
+            ),
+        )
         .with_env_variable("AIRBYTE_NORMALIZATION_INTEGRATION", normalization_integration_name)
         .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/run_with_normalization.sh")
     )
@@ -652,7 +658,10 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         .with_exec(["rm", "-rf", f"{application}.tar"])
     )
 
-    if context.connector.supports_normalization and DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["supports_in_connector_normalization"]:
+    if (
+        context.connector.supports_normalization
+        and DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["supports_in_connector_normalization"]
+    ):
         base = with_integration_base_java_and_normalization(context, build_platform)
         entrypoint = ["/airbyte/run_with_normalization.sh"]
     else:
