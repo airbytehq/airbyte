@@ -9,7 +9,7 @@ on:
 
 jobs:
   deploy-catalog-to-stage:
-    name: "Deploy Catalog to Stage"
+    name: "Upload Metadata Files to Metadata Service"
     runs-on: ubuntu-latest
     env:
       DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
