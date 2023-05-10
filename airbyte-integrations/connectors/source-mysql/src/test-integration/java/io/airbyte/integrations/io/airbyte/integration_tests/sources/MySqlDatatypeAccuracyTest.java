@@ -81,13 +81,12 @@ public class MySqlDatatypeAccuracyTest extends AbstractMySqlSourceDatatypeTest {
     for (final MysqlType mst : MysqlType.values()) {
       switch (mst) {
         case DECIMAL -> {
-          /* https://github.com/airbytehq/airbyte/issues/25027 */
-          // addDataTypeTestData(
-          // TestDataHolder.builder()
-          // .sourceType(mst.name())
-          // .airbyteType(JsonSchemaType.INTEGER)
-          // .fullSourceDataType("%s(1,0)".formatted(mst.getName()))
-          // .build());
+          addDataTypeTestData(
+              TestDataHolder.builder()
+                  .sourceType(mst.name())
+                  .airbyteType(JsonSchemaType.INTEGER)
+                  .fullSourceDataType("%s(10,0)".formatted(mst.getName()))
+                  .build());
 
           addDataTypeTestData(
               TestDataHolder.builder()
@@ -97,12 +96,12 @@ public class MySqlDatatypeAccuracyTest extends AbstractMySqlSourceDatatypeTest {
                   .build());
         }
         case DECIMAL_UNSIGNED -> {
-          // addDataTypeTestData(
-          // TestDataHolder.builder()
-          // .sourceType(mst.name())
-          // .airbyteType(JsonSchemaType.INTEGER)
-          // .fullSourceDataType("DECIMAL(1,0) UNSIGNED")
-          // .build());
+          addDataTypeTestData(
+              TestDataHolder.builder()
+                  .sourceType(mst.name())
+                  .airbyteType(JsonSchemaType.INTEGER)
+                  .fullSourceDataType("DECIMAL(32,0) UNSIGNED")
+                  .build());
 
           addDataTypeTestData(
               TestDataHolder.builder()
