@@ -119,8 +119,8 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
 
   @Override
   protected void assertNamespaceNormalization(final String testCaseId,
-      final String expectedNormalizedNamespace,
-      final String actualNormalizedNamespace) {
+                                              final String expectedNormalizedNamespace,
+                                              final String actualNormalizedNamespace) {
     final String message = String.format("Test case %s failed; if this is expected, please override assertNamespaceNormalization", testCaseId);
     if (testCaseId.equals("S3A-1")) {
       // bigquery allows namespace starting with a number, and prepending underscore
@@ -175,14 +175,14 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
         .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fields))).collect(Collectors.toList());
   }
 
-  private static boolean isAirbyteColumn(final String name) {
+  private boolean isAirbyteColumn(final String name) {
     if (AIRBYTE_COLUMNS.contains(name)) {
       return true;
     }
     return name.startsWith("_airbyte") && name.endsWith("_hashid");
   }
 
-  private static Object getTypedFieldValue(final FieldValueList row, final Field field) {
+  private Object getTypedFieldValue(final FieldValueList row, final Field field) {
     final FieldValue fieldValue = row.get(field.getName());
     if (fieldValue.getValue() != null) {
       return switch (field.getType().getStandardType()) {
