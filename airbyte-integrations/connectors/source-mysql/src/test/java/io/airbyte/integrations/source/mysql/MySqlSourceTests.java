@@ -19,6 +19,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Database;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -79,8 +80,8 @@ public class MySqlSourceTests {
 
   private static JsonNode getConfig(final MySQLContainer dbContainer, final String dbName, final String jdbcParams) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, dbContainer.getHost())
-        .put(JdbcUtils.PORT_KEY, dbContainer.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(dbContainer))
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(dbContainer))
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, TEST_USER)
         .put(JdbcUtils.PASSWORD_KEY, TEST_PASSWORD)

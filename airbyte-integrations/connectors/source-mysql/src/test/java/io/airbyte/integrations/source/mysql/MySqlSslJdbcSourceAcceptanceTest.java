@@ -13,6 +13,7 @@ import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.util.HostPortResolver;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -34,8 +35,8 @@ class MySqlSslJdbcSourceAcceptanceTest extends MySqlJdbcSourceAcceptanceTest {
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s?%s",
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asText(),
+            container.getHost(),
+            container.getFirstMappedPort(),
             String.join("&", SSL_PARAMETERS)),
         SQLDialect.MYSQL);
     database = new Database(dslContext);
