@@ -43,7 +43,5 @@ dependencies {
 test {
     retry {
         maxRetries = 3
-        maxFailures = 20
-        failOnPassedAfterRetry = true
     }
 }
