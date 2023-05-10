@@ -31,7 +31,7 @@ Currently, this source connector works with `Standard` subscription plan only. `
 When using OAuth, you may see a `400` or `401` error causing a failed sync. You can re-authenticate your Airtable connector to solve the issue temporarily. We are working on a permanent fix that you can follow [here](https://github.com/airbytehq/airbyte/issues/25278).
 :::
 
-1. Click **Set up source**.
+5. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -44,6 +44,8 @@ When using OAuth, you may see a `400` or `401` error causing a failed sync. You 
 5. Click **Set up source**.
 <!-- /env:oss -->
 
+### Note on changed table names
+Please keep in mind, if you rename tables in your Airtable account you won't be able to sync data from this renamed table until you reset the data. Same goes for case when you delete a table. This is because stream catalog is generated only during initial setup of this connector, and if there are any changed stream names in the future they will be skipped from the sync, until data is reset.
 
 ## Supported sync modes
 
@@ -109,6 +111,7 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version | Date       | Pull Request                                             | Subject                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------|
+| 3.0.1   | 2023-05-10 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Skip stream if it does not appear in catalog                                  |
 | 3.0.0   | 2023-03-20 | [22704](https://github.com/airbytehq/airbyte/pull/22704) | Fix for stream name uniqueness                                  |
 | 2.0.4   | 2023-03-15 | [24093](https://github.com/airbytehq/airbyte/pull/24093) | Update spec and doc                                             |
 | 2.0.3   | 2023-02-02 | [22311](https://github.com/airbytehq/airbyte/pull/22311) | Fix for `singleSelect` types when discovering the schema        |
