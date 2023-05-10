@@ -519,60 +519,70 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dbt_adapter": "dbt-bigquery==1.0.0",
         "integration_name": "bigquery",
         "supports_in_connector_normalization": True,
+        "yum_packages": [],
     },
     "destination-clickhouse": {
         "dockerfile": "clickhouse.Dockerfile",
         "dbt_adapter": "dbt-clickhouse>=1.4.0",
         "integration_name": "clickhouse",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-duckdb": {
         "dockerfile": "duckdb.Dockerfile",
         "dbt_adapter": "dbt-duckdb==1.0.1",
         "integration_name": "duckdb",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-mssql": {
         "dockerfile": "mssql.Dockerfile",
         "dbt_adapter": "dbt-sqlserver==1.0.0",
         "integration_name": "mssql",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-mysql": {
         "dockerfile": "mysql.Dockerfile",
         "dbt_adapter": "dbt-mysql==1.0.0",
         "integration_name": "mysql",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-oracle": {
         "dockerfile": "oracle.Dockerfile",
         "dbt_adapter": "dbt-oracle==0.4.3",
         "integration_name": "oracle",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-postgres": {
         "dockerfile": "Dockerfile",
         "dbt_adapter": "dbt-postgres==1.0.0",
         "integration_name": "postgres",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-redshift": {
         "dockerfile": "redshift.Dockerfile",
         "dbt_adapter": "dbt-redshift==1.0.0",
         "integration_name": "redshift",
         "supports_in_connector_normalization": True,
+        "yum_packages": [],
     },
     "destination-snowflake": {
         "dockerfile": "snowflake.Dockerfile",
         "dbt_adapter": "dbt-snowflake==1.0.0",
         "integration_name": "snowflake",
         "supports_in_connector_normalization": True,
+        "yum_packages": ["gcc-c++"],
     },
     "destination-tidb": {
         "dockerfile": "tidb.Dockerfile",
         "dbt_adapter": "dbt-tidb==1.0.1",
         "integration_name": "tidb",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
 }
 
@@ -602,8 +612,8 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         "git",
     ]
 
-    if context.connector.technical_name == "destination-snowflake":
-        yum_packages_to_install += ["gcc-c++"]
+    additional_yum_packages = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["yum_packages"]
+    yum_packages_to_install += additional_yum_packages
 
     dbt_adapter_package = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dbt_adapter"]
     normalization_integration_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["integration_name"]

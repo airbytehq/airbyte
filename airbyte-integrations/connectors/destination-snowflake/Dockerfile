@@ -15,10 +15,11 @@ FROM airbyte/integration-base-java:dev
 #  unzip /tmp/YourKit-JavaProfiler-2021.3-docker.zip -d /usr/local && \
 #  rm /tmp/YourKit-JavaProfiler-2021.3-docker.zip
 
+# amazon linux 2 isn't compatible with urllib3 2.x, so force 1.26.15
 RUN yum install -y python3 python3-devel jq sshpass git gcc-c++ && \
   alternatives --install /usr/bin/python python /usr/bin/python3 60 && \
   python -m ensurepip --upgrade && \
-  pip3 install dbt-snowflake==1.0.0
+  pip3 install dbt-snowflake==1.0.0 "urllib3<2"
 
 # Luckily, none of normalization's files conflict with destination-bigquery's files :)
 # We don't enforce that in any way, but hopefully we're only living in this state for a short time.
@@ -30,8 +31,6 @@ WORKDIR /airbyte/normalization_code
 RUN pip3 install .
 WORKDIR /airbyte/normalization_code/dbt-template/
 # Download external dbt dependencies
-# amazon linux 2 isn't compatible with urllib3 2.x, so force 1.26.15
-RUN pip3 install "urllib3<2"
 RUN dbt deps
 
 WORKDIR /airbyte
