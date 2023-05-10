@@ -54,11 +54,6 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, service_a
     raw_metadata = yaml.safe_load(metadata_file_path.read_text())
     metadata = ConnectorMetadataDefinitionV0.parse_obj(raw_metadata)
 
-    # Validate that the images are on DockerHub
-    is_valid, error = validate_metadata_images_in_dockerhub(metadata)
-    if not is_valid:
-        raise ValueError(error)
-
     credentials = service_account.Credentials.from_service_account_file(service_account_file_path)
     storage_client = storage.Client(credentials=credentials)
     bucket = storage_client.bucket(bucket_name)
@@ -83,13 +78,23 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, service_a
     print(f"Current Version blob md5_hash: {version_blob_md5_hash}")
     print(f"Latest blob md5_hash: {latest_blob_md5_hash}")
 
+    trigger_version_upload = metadata_file_md5_hash != version_blob_md5_hash
+    trigger_latest_upload = metadata_file_md5_hash != latest_blob_md5_hash
+
+    # Validate that the images are on DockerHub
+    if trigger_version_upload or trigger_latest_upload:
+        print("Validating that the images are on DockerHub...")
+        is_valid, error = validate_metadata_images_in_dockerhub(metadata)
+        if not is_valid:
+            raise ValueError(error)
+
     # upload if md5_hash is different
-    if metadata_file_md5_hash != version_blob_md5_hash:
+    if trigger_version_upload:
         print(f"Uploading {metadata_file_path} to {version_path}...")
         version_blob.upload_from_filename(str(metadata_file_path))
         uploaded = True
 
-    if metadata_file_md5_hash != latest_blob_md5_hash:
+    if trigger_latest_upload:
         print(f"Uploading {metadata_file_path} to {latest_path}...")
         latest_blob.upload_from_filename(str(metadata_file_path))
         uploaded = True
