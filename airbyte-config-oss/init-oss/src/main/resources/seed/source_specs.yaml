@@ -1344,7 +1344,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.2.3"
+- dockerImage: "airbyte/source-amplitude:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
@@ -2042,7 +2042,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.21"
+- dockerImage: "airbyte/source-bing-ads:0.1.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bing-ads"
     connectionSpecification:
@@ -13450,7 +13450,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:2.1.4"
+- dockerImage: "airbyte/source-s3:2.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
