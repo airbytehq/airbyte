@@ -1,0 +1,18 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Telegram Spec
+  type: object
+  required:
+    - chat_id
+    - bot_token
+  properties:
+    bot_token:
+      title: Bot Token
+      description: Bot Token
+      type: string
+      airbyte_secret: true
+    chat_id:
+      title: Chat ID
+      description: Chat ID of your target telegram group
+      type: string
