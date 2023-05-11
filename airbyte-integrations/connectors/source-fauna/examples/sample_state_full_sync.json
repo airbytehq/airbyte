@@ -1,8 +1,0 @@
-{
-  "foo": {
-    "full_sync_cursor": {
-      "ts": 1658504456881000,
-      "after": "[{\"@ref\":{\"id\":\"337898800783819264\",\"collection\":{\"@ref\":{\"id\":\"foo\",\"collection\":{\"@ref\":{\"id\":\"collections\"}}}}}}]"
-    }
-  }
-}

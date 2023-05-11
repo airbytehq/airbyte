@@ -1,5 +1,0 @@
-*
-!Dockerfile
-!main.py
-!destination_{{snakeCase name}}
-!setup.py

@@ -1,6 +1,0 @@
-{
-  "client_id": "wrong_client_id",
-  "tenant_id": "wrong_tenant_id",
-  "client_secret": "wrong_client_secret",
-  "period": "D180"
-}

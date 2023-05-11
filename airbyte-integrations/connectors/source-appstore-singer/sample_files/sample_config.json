@@ -1,7 +1,0 @@
-{
-  "key_id": "<your_key_id>",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nfirst_row_of_private_key\nsecond_row_of_private_key\n...etc...-----END PRIVATE KEY-----\n",
-  "issuer_id": "<your_issuer_id>",
-  "vendor": "<your_vendor>",
-  "start_date": "2020-11-22T20:32:05Z"
-}

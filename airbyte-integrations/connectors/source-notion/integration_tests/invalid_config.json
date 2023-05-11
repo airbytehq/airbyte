@@ -1,9 +1,0 @@
-{
-  "start_date": "2021-01-01T00:00:00.000Z",
-  "credentials": {
-    "auth_type": "OAuth2.0",
-    "client_id": "client_id",
-    "client_secret": "client_secret",
-    "access_token": "access_token"
-  }
-}

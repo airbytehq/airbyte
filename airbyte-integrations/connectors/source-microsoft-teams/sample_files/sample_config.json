@@ -1,6 +1,0 @@
-{
-  "tenant_id": "<your tenant ID>",
-  "client_id": "<your client ID>",
-  "client_secret": "<your client secret>",
-  "period": "D7"
-}
