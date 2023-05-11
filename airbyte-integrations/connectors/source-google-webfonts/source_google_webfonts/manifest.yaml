@@ -1,9 +1,9 @@
-version: "0.1.0"
+version: "0.29.0"
 
 definitions:
   selector:
     extractor:
-      field_pointer: ["items"]
+      field_path: ["items"]
   requester:
     url_base: "https://webfonts.googleapis.com/v1"
     http_method: "GET"
@@ -14,24 +14,24 @@ definitions:
 
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
 
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
 
   fonts_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "fonts"
       path: "/webfonts?key={{ config['api_key'] }}&sort={{ config['sort'] or 'SORT_UNDEFINED'}}&prettyPrint={{ config['prettyPrint'] or 'true'}}&alt={{ config['alt'] or 'json'}}"
 
 streams:
-  - "*ref(definitions.fonts_stream)"
+  - "#/definitions/fonts_stream"
 
 check:
   stream_names:

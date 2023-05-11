@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -40,13 +40,13 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
   private final GcsConfig gcsConfig;
   private final Set<String> fullObjectKeys = new HashSet<>();
 
-  public SnowflakeGcsStagingSqlOperations(NamingConventionTransformer nameTransformer, GcsConfig gcsConfig) {
+  public SnowflakeGcsStagingSqlOperations(final NamingConventionTransformer nameTransformer, final GcsConfig gcsConfig) {
     this.nameTransformer = nameTransformer;
     this.gcsConfig = gcsConfig;
     this.storageClient = getStorageClient(gcsConfig);
   }
 
-  private Storage getStorageClient(GcsConfig gcsConfig) {
+  private Storage getStorageClient(final GcsConfig gcsConfig) {
     try {
       final InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes(StandardCharsets.UTF_8));
       final GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsInputStream);
@@ -55,21 +55,21 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
           .setProjectId(gcsConfig.getProjectId())
           .build()
           .getService();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
 
   }
 
   @Override
-  public String getStageName(String namespace, String streamName) {
+  public String getStageName(final String namespace, final String streamName) {
     return nameTransformer.applyDefaultCase(String.join("_",
         nameTransformer.convertStreamName(namespace),
         nameTransformer.convertStreamName(streamName)));
   }
 
   @Override
-  public String getStagingPath(UUID connectionId, String namespace, String streamName, DateTime writeDatetime) {
+  public String getStagingPath(final UUID connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
     // see https://docs.snowflake.com/en/user-guide/data-load-considerations-stage.html
     return nameTransformer.applyDefaultCase(String.format("%s/%s_%02d_%02d_%02d/%s/",
         getStageName(namespace, streamName),
@@ -81,7 +81,7 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
   }
 
   @Override
-  public void createStageIfNotExists(JdbcDatabase database, String stageName) throws Exception {
+  public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws Exception {
     final String bucket = gcsConfig.getBucketName();
     if (!doesBucketExist(bucket)) {
       LOGGER.info("Bucket {} does not exist; creating...", bucket);
@@ -90,17 +90,23 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
     }
   }
 
-  private boolean doesBucketExist(String bucket) {
+  private boolean doesBucketExist(final String bucket) {
     return storageClient.get(bucket, Storage.BucketGetOption.fields()) != null;
   }
 
   @Override
-  public String uploadRecordsToStage(JdbcDatabase database, SerializableBuffer recordsData, String schemaName, String stageName, String stagingPath)
+  public String uploadRecordsToStage(final JdbcDatabase database,
+                                     final SerializableBuffer recordsData,
+                                     final String schemaName,
+                                     final String stageName,
+                                     final String stagingPath)
       throws Exception {
     final List<Exception> exceptionsThrown = new ArrayList<>();
     while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT) {
       try {
-        return loadDataIntoBucket(stagingPath, recordsData);
+        final String fileName = loadDataIntoBucket(stagingPath, recordsData);
+        LOGGER.info("Successfully loaded records to stage {} with {} re-attempt(s)", stagingPath, exceptionsThrown.size());
+        return fileName;
       } catch (final Exception e) {
         LOGGER.error("Failed to upload records into storage {}", stagingPath, e);
         exceptionsThrown.add(e);
@@ -109,6 +115,18 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
     throw new RuntimeException(String.format("Exceptions thrown while uploading records into storage: %s", Strings.join(exceptionsThrown, "\n")));
   }
 
+  /**
+   * Upload the file from {@code recordsData} to S3 and simplify the filename as <partId>.<extension>.
+   *
+   * <p>
+   * Method mirrors similarly named method within
+   * {@link io.airbyte.integrations.destination.s3.S3StorageOperations}
+   * </p>
+   *
+   * @param objectPath filepath to the object
+   * @param recordsData serialized {@link io.airbyte.protocol.models.AirbyteRecordMessage}s
+   * @return the uploaded filename, which is different from the serialized buffer filename
+   */
   private String loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {
 
     final String fullObjectKey = objectPath + recordsData.getFilename();
@@ -120,7 +138,7 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
     final var channel = blob.writer();
     try (channel) {
       final OutputStream outputStream = Channels.newOutputStream(channel);
-      InputStream dataInputStream = recordsData.getInputStream();
+      final InputStream dataInputStream = recordsData.getInputStream();
       dataInputStream.transferTo(outputStream);
     } catch (final Exception e) {
       LOGGER.error("Failed to load data into storage {}", objectPath, e);
@@ -130,20 +148,22 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
   }
 
   @Override
-  public void copyIntoTmpTableFromStage(JdbcDatabase database,
-                                        String stageName,
-                                        String stagingPath,
-                                        List<String> stagedFiles,
-                                        String dstTableName,
-                                        String schemaName)
+  public void copyIntoTableFromStage(final JdbcDatabase database,
+                                     final String stageName,
+                                     final String stagingPath,
+                                     final List<String> stagedFiles,
+                                     final String tableName,
+                                     final String schemaName)
       throws Exception {
-    LOGGER.info("Starting copy to tmp table from stage: {} in destination from stage: {}, schema: {}, .", dstTableName, stagingPath, schemaName);
+    LOGGER.info("Starting copy to target table from stage: {} in destination from stage: {}, schema: {}, .",
+        tableName, stagingPath, schemaName);
     // Print actual SQL query if user needs to manually force reload from staging
-    Exceptions.toRuntime(() -> database.execute(getCopyQuery(stagingPath, stagedFiles, dstTableName, schemaName)));
-    LOGGER.info("Copy to tmp table {}.{} in destination complete.", schemaName, dstTableName);
+    Exceptions.toRuntime(() -> database.execute(getCopyQuery(stagingPath, stagedFiles,
+        tableName, schemaName)));
+    LOGGER.info("Copy to target table {}.{} in destination complete.", schemaName, tableName);
   }
 
-  private String getCopyQuery(String stagingPath, List<String> stagedFiles, String dstTableName, String schemaName) {
+  private String getCopyQuery(final String stagingPath, final List<String> stagedFiles, final String dstTableName, final String schemaName) {
 
     return String.format(
         "COPY INTO %s.%s FROM '%s' storage_integration = gcs_airbyte_integration "
@@ -154,16 +174,16 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
         generateBucketPath(stagingPath));
   }
 
-  private String generateBucketPath(String stagingPath) {
+  private String generateBucketPath(final String stagingPath) {
     return "gcs://" + gcsConfig.getBucketName() + "/" + stagingPath;
   }
 
   @Override
-  public void cleanUpStage(JdbcDatabase database, String stageName, List<String> stagedFiles) throws Exception {
+  public void cleanUpStage(final JdbcDatabase database, final String stageName, final List<String> stagedFiles) throws Exception {
     cleanUpBucketObject(stagedFiles);
   }
 
-  private void cleanUpBucketObject(List<String> currentStagedFiles) {
+  private void cleanUpBucketObject(final List<String> currentStagedFiles) {
     currentStagedFiles.forEach(candidate -> fullObjectKeys.forEach(fullBlobPath -> {
       if (fullBlobPath.contains(candidate)) {
         removeBlob(fullBlobPath);
@@ -171,21 +191,21 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
     }));
   }
 
-  private void removeBlob(String file) {
+  private void removeBlob(final String file) {
     final var blobId = BlobId.of(gcsConfig.getBucketName(), file);
     storageClient.delete(blobId);
   }
 
   @Override
-  public void dropStageIfExists(JdbcDatabase database, String stageName) throws Exception {
+  public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws Exception {
     dropBucketObject();
   }
 
   private void dropBucketObject() {
     if (!fullObjectKeys.isEmpty()) {
-      Iterator<String> iterator = fullObjectKeys.iterator();
+      final Iterator<String> iterator = fullObjectKeys.iterator();
       while (iterator.hasNext()) {
-        String element = iterator.next();
+        final String element = iterator.next();
         if (element != null) {
           removeBlob(element);
           iterator.remove();

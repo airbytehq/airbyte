@@ -12,8 +12,8 @@ This Source is capable of syncing the following core Streams:
 
 - [Customers](https://docs.partnerstack.com/reference/get_v2-customers-2)
 - [Deals](https://docs.partnerstack.com/reference/get_v2-deals)
-- [Groups](https://docs.partnerstack.com/reference/get_groups)
-- [Leads](https://docs.partnerstack.com/reference/get_leads)
+- [Groups](https://docs.partnerstack.com/reference/get_v2-groups)
+- [Leads](https://docs.partnerstack.com/reference/get_v2-leads)
 - [Partnerships](https://docs.partnerstack.com/reference/get_v2-partnerships-2)
 - [Rewards](https://docs.partnerstack.com/reference/get_v2-rewards-2)
 - [Transactions](https://docs.partnerstack.com/reference/get_v2-transactions-2)

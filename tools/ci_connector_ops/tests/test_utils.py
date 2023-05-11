@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from contextlib import nullcontext as does_not_raise
@@ -43,13 +43,13 @@ class TestConnector:
             assert isinstance(connector.definition, dict)
             assert isinstance(connector.release_stage, str)
             assert isinstance(connector.acceptance_test_config, dict)
-            assert connector.icon_path == Path(f"./airbyte-config/init/src/main/resources/icons/{connector.definition['icon']}")
+            assert connector.icon_path == Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{connector.definition['icon']}")
             assert len(connector.version.split(".")) == 3
         else:
             assert connector.definition is None
             assert connector.release_stage is None
             assert connector.acceptance_test_config is None
-            assert connector.icon_path == Path(f"./airbyte-config/init/src/main/resources/icons/{connector.name}.svg")
+            assert connector.icon_path == Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{connector.name}.svg")
             with pytest.raises(FileNotFoundError):
                 connector.version
             with pytest.raises(utils.ConnectorVersionNotFound):

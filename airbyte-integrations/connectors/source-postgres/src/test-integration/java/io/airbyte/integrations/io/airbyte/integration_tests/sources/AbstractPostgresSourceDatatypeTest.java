@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -189,8 +189,8 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               .sourceType("date")
               .fullSourceDataType(type)
               .airbyteType(JsonSchemaType.STRING_DATE)
-              .addInsertValues("'1999-01-08'", "'1991-02-10 BC'")
-              .addExpectedValues("1999-01-08", "1991-02-10 BC")
+              .addInsertValues("'1999-01-08'", "'1991-02-10 BC'", "'2022/11/12'", "'1987.12.01'")
+              .addExpectedValues("1999-01-08", "1991-02-10 BC", "2022-11-12", "1987-12-01")
               .build());
     }
 
@@ -293,27 +293,6 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                 "08:00:2b:01:02:03:04:07")
             .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("money")
-            .airbyteType(JsonSchemaType.NUMBER)
-            .addInsertValues(
-                "null",
-                "'999.99'", "'1,001.01'", "'-1,000'",
-                "'$999.99'", "'$1001.01'", "'-$1,000'"
-            // max values for Money type: "-92233720368547758.08", "92233720368547758.07"
-            // Debezium has wrong parsing for values more than 999999999999999 and less than -999999999999999
-            // https://github.com/airbytehq/airbyte/issues/7338
-            /* "'-92233720368547758.08'", "'92233720368547758.07'" */)
-            .addExpectedValues(
-                null,
-                // Double#toString method is necessary here because sometimes the output
-                // has unexpected decimals, e.g. Double.toString(-1000) is -1000.0
-                "999.99", "1001.01", Double.toString(-1000),
-                "999.99", "1001.01", Double.toString(-1000)
-            /* "-92233720368547758.08", "92233720368547758.07" */)
-            .build());
-
     // Blocked by https://github.com/airbytehq/airbyte/issues/8902
     for (final String type : Set.of("numeric", "decimal")) {
       addDataTypeTestData(
@@ -410,9 +389,10 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
               // time column will ignore time zone
-              .addInsertValues("'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.01234Z+8'", "'13:00:00Z-8'", "'24:00:00'")
-              .addExpectedValues("13:00:01.000000", "13:00:02.000000", "13:00:03.000000", "13:00:04.000000", "13:00:05.012340",
-                  "13:00:00.000000", "23:59:59.999999")
+              .addInsertValues("'13:00:01.010'", "'13:00:02.000001+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.01234Z+8'", "'13:00:00Z-8'",
+                  "'24:00:00'")
+              .addExpectedValues("13:00:01.010", "13:00:02.000001", "13:00:03", "13:00:04", "13:00:05.012340",
+                  "13:00:00.000000", "23:59:59.999999999")
               .build());
     }
 
@@ -578,6 +558,30 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
 
     addTimeWithTimeZoneTest();
     addArraysTestData();
+    addMoneyTest();
+  }
+
+  protected void addMoneyTest() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("money")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .addInsertValues(
+                "null",
+                "'999.99'", "'1,001.01'", "'-1,000'",
+                "'$999.99'", "'$1001.01'", "'-$1,000'"
+            // max values for Money type: "-92233720368547758.08", "92233720368547758.07"
+            // Debezium has wrong parsing for values more than 999999999999999 and less than -999999999999999
+            // https://github.com/airbytehq/airbyte/issues/7338
+            /* "'-92233720368547758.08'", "'92233720368547758.07'" */)
+            .addExpectedValues(
+                null,
+                // Double#toString method is necessary here because sometimes the output
+                // has unexpected decimals, e.g. Double.toString(-1000) is -1000.0
+                "999.99", "1001.01", Double.toString(-1000),
+                "999.99", "1001.01", Double.toString(-1000)
+            /* "-92233720368547758.08", "92233720368547758.07" */)
+            .build());
   }
 
   protected void addTimeWithTimeZoneTest() {
@@ -588,11 +592,12 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               .sourceType("timetz")
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
-              .addInsertValues("null", "'13:00:01'", "'13:00:00+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.012345Z+8'", "'13:00:06.00000Z-8'")
+              .addInsertValues("null", "'13:00:01.123456'", "'13:00:01+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.012345Z+8'",
+                  "'13:00:06.00000Z-8'")
               // A time value without time zone will use the time zone set on the database, which is Z-7,
               // so 13:00:01 is returned as 13:00:01-07.
-              .addExpectedValues(null, "13:00:01.000000-07:00", "13:00:00.000000+08:00", "13:00:03.000000-08:00", "13:00:04.000000Z",
-                  "13:00:05.012345-08:00", "13:00:06.000000+08:00")
+              .addExpectedValues(null, "13:00:01.123456-07:00", "13:00:01+08:00", "13:00:03-08:00", "13:00:04Z",
+                  "13:00:05.012345-08:00", "13:00:06+08:00")
               .build());
     }
   }
@@ -839,7 +844,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                 .build())
             .addInsertValues("'{13:00:01,13:00:02+8,13:00:03-8,13:00:04Z,13:00:05.000000+8,13:00:00Z-8}'")
             .addExpectedValues(
-                "[\"13:00:01.000000\",\"13:00:02.000000\",\"13:00:03.000000\",\"13:00:04.000000\",\"13:00:05.000000\",\"13:00:00.000000\"]")
+                "[\"13:00:01\",\"13:00:02\",\"13:00:03\",\"13:00:04\",\"13:00:05\",\"13:00:00.000000\"]")
             .build());
 
     addDataTypeTestData(
@@ -851,7 +856,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                 .build())
             .addInsertValues("'{null,13:00:01,13:00:00+8,13:00:03-8,13:00:04Z,13:00:05.012345Z+8,13:00:06.00000Z-8,13:00}'")
             .addExpectedValues(
-                "[null,\"13:00:01.000000-07:00\",\"13:00:00.000000+08:00\",\"13:00:03.000000-08:00\",\"13:00:04.000000Z\",\"13:00:05.012345-08:00\",\"13:00:06.000000+08:00\",\"13:00:00.000000-07:00\"]")
+                "[null,\"13:00:01-07:00\",\"13:00:00.000000+08:00\",\"13:00:03-08:00\",\"13:00:04Z\",\"13:00:05.012345-08:00\",\"13:00:06+08:00\",\"13:00:00.000000-07:00\"]")
             .build());
 
     addDataTypeTestData(

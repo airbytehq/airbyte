@@ -1,4 +1,4 @@
-version: "0.1.0"
+version: "0.29.0"
 
 definitions:
   requester:
@@ -19,62 +19,62 @@ definitions:
       field_name: "page_size"
       inject_into: "request_parameter"
     page_token_option:
+      type: RequestOption
       field_name: "next_page_token"
       inject_into: "request_parameter"
-    url_base: "*ref(definitions.requester.url_base)"
 
   retriever:
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
 
   schema_loader:
-    type: JsonSchema
-    file_path: "./source_zoom/schemas/{{ options['name'] }}.json"
+    type: JsonFileSchemaLoader
+    file_path: "./source_zoom/schemas/{{ parameters['name'] }}.json"
 
   users_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
       paginator:
-        $ref: "*ref(definitions.zoom_paginator)"
+        $ref: "#/definitions/zoom_paginator"
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["users"]
-      $ref: "*ref(definitions.retriever)"
-    $options:
+          field_path: ["users"]
+      $ref: "#/definitions/retriever"
+    $parameters:
       name: "users"
       primary_key: "id"
       path: "/users"
 
   meetings_list_tmp_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "meetings_list_tmp"
       primary_key: "id"
     retriever:
       paginator:
-        $ref: "*ref(definitions.zoom_paginator)"
+        $ref: "#/definitions/zoom_paginator"
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["meetings"]
-      $ref: "*ref(definitions.retriever)"
+          field_path: ["meetings"]
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/users/{{ stream_slice.parent_id }}/meetings"
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.users_stream)"
+          - stream: "#/definitions/users_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
 
   meetings_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "meetings"
       primary_key: "id"
     retriever:
@@ -83,34 +83,34 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: []
-      $ref: "*ref(definitions.retriever)"
+          field_path: []
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/meetings/{{ stream_slice.parent_id }}"
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.meetings_list_tmp_stream)"
+          - stream: "#/definitions/meetings_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
 
   meeting_registrants_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "meeting_registrants"
       primary_key: "id"
     retriever:
       paginator:
-        $ref: "*ref(definitions.zoom_paginator)"
+        $ref: "#/definitions/zoom_paginator"
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["registrants"]
-      $ref: "*ref(definitions.retriever)"
+          field_path: ["registrants"]
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/meetings/{{ stream_slice.parent_id }}/registrants"
         error_handler:
           type: CompositeErrorHandler
@@ -121,12 +121,12 @@ definitions:
                 - predicate: "{{ response.code == 300 }}"
                   action: IGNORE
             - type: DefaultErrorHandler # we're adding this DefaultErrorHandler for 429, 5XX errors etc;
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.meetings_list_tmp_stream)"
+          - stream: "#/definitions/meetings_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -135,8 +135,8 @@ definitions:
 
   meeting_polls_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "meeting_polls"
       primary_key: "id"
     retriever:
@@ -145,10 +145,10 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["polls"]
-      $ref: "*ref(definitions.retriever)"
+          field_path: ["polls"]
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/meetings/{{ stream_slice.parent_id }}/polls"
         error_handler:
           type: CompositeErrorHandler
@@ -159,12 +159,12 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.meetings_list_tmp_stream)"
+          - stream: "#/definitions/meetings_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -173,8 +173,8 @@ definitions:
 
   meeting_poll_results_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "meeting_poll_results"
     retriever:
       paginator:
@@ -182,10 +182,10 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["questions"]
-      $ref: "*ref(definitions.retriever)"
+          field_path: ["questions"]
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/past_meetings/{{ stream_slice.parent_id }}/polls"
         error_handler:
           type: CompositeErrorHandler
@@ -197,12 +197,12 @@ definitions:
                 - http_codes: [400, 404]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.meetings_list_tmp_stream)"
+          - stream: "#/definitions/meetings_list_tmp_stream"
             parent_key: "uuid"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -211,8 +211,8 @@ definitions:
 
   meeting_registration_questions_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "meeting_registration_questions"
     retriever:
       paginator:
@@ -220,10 +220,10 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: []
-      $ref: "*ref(definitions.retriever)"
+          field_path: []
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/meetings/{{ stream_slice.parent_id }}/registrants/questions"
         error_handler:
           type: CompositeErrorHandler
@@ -234,12 +234,12 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.meetings_list_tmp_stream)"
+          - stream: "#/definitions/meetings_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -248,20 +248,20 @@ definitions:
 
   webinars_list_tmp_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "webinars_list_tmp"
       primary_key: "id"
     retriever:
       paginator:
-        $ref: "*ref(definitions.zoom_paginator)"
+        $ref: "#/definitions/zoom_paginator"
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["webinars"]
-      $ref: "*ref(definitions.retriever)"
+          field_path: ["webinars"]
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/users/{{ stream_slice.parent_id }}/webinars"
         error_handler:
           type: CompositeErrorHandler
@@ -272,17 +272,17 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.users_stream)"
+          - stream: "#/definitions/users_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
 
   webinars_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "webinars"
       primary_key: "id"
     retriever:
@@ -291,10 +291,10 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: []
-      $ref: "*ref(definitions.retriever)"
+          field_path: []
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/webinars/{{ stream_slice.parent_id }}"
         error_handler:
           type: CompositeErrorHandler
@@ -307,17 +307,17 @@ definitions:
                 - http_codes: [400, 404]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.webinars_list_tmp_stream)"
+          - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
 
   webinar_panelists_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "webinar_panelists"
     retriever:
       paginator:
@@ -325,10 +325,10 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["panelists"]
-      $ref: "*ref(definitions.retriever)"
+          field_path: ["panelists"]
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/webinars/{{ stream_slice.parent_id }}/panelists"
         error_handler:
           type: CompositeErrorHandler
@@ -340,12 +340,12 @@ definitions:
                 - http_codes: [400, 404]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.webinars_list_tmp_stream)"
+          - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -354,19 +354,19 @@ definitions:
 
   webinar_registrants_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "webinar_registrants"
     retriever:
       paginator:
-        $ref: "*ref(definitions.zoom_paginator)"
+        $ref: "#/definitions/zoom_paginator"
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["registrants"]
-      $ref: "*ref(definitions.retriever)"
+          field_path: ["registrants"]
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/webinars/{{ stream_slice.parent_id }}/registrants"
         error_handler:
           type: CompositeErrorHandler
@@ -378,12 +378,12 @@ definitions:
                 - http_codes: [400, 404]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.webinars_list_tmp_stream)"
+          - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -392,20 +392,20 @@ definitions:
 
   webinar_absentees_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "webinar_absentees"
       primary_key: "id"
     retriever:
       paginator:
-        $ref: "*ref(definitions.zoom_paginator)"
+        $ref: "#/definitions/zoom_paginator"
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["registrants"]
-      $ref: "*ref(definitions.retriever)"
+          field_path: ["registrants"]
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/past_webinars/{{ stream_slice.parent_uuid }}/absentees"
         error_handler:
           type: CompositeErrorHandler
@@ -417,12 +417,12 @@ definitions:
                 - http_codes: [400, 404]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.webinars_list_tmp_stream)"
+          - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "uuid"
-            stream_slice_field: "parent_uuid"
+            partition_field: "parent_uuid"
     transformations:
       - type: AddFields
         fields:
@@ -431,8 +431,8 @@ definitions:
 
   webinar_polls_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "webinar_polls"
     retriever:
       paginator:
@@ -440,10 +440,10 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["polls"]
-      $ref: "*ref(definitions.retriever)"
+          field_path: ["polls"]
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/webinars/{{ stream_slice.parent_id }}/polls"
         error_handler:
           type: CompositeErrorHandler
@@ -455,12 +455,12 @@ definitions:
                 - http_codes: [400, 404]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.webinars_list_tmp_stream)"
+          - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -469,8 +469,8 @@ definitions:
 
   webinar_poll_results_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "webinar_poll_results"
     retriever:
       paginator:
@@ -478,10 +478,10 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["questions"]
-      $ref: "*ref(definitions.retriever)"
+          field_path: ["questions"]
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/past_webinars/{{ stream_slice.parent_id }}/polls"
         error_handler:
           type: CompositeErrorHandler
@@ -491,12 +491,12 @@ definitions:
                 - http_codes: [404]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.webinars_list_tmp_stream)"
+          - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "uuid"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -505,8 +505,8 @@ definitions:
 
   webinar_registration_questions_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "webinar_registration_questions"
     retriever:
       paginator:
@@ -514,10 +514,10 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: []
-      $ref: "*ref(definitions.retriever)"
+          field_path: []
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/webinars/{{ stream_slice.parent_id }}/registrants/questions"
         error_handler:
           type: CompositeErrorHandler
@@ -528,12 +528,12 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.webinars_list_tmp_stream)"
+          - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -542,8 +542,8 @@ definitions:
 
   webinar_tracking_sources_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "webinar_tracking_sources"
       primary_key: "id"
     retriever:
@@ -552,10 +552,10 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["tracking_sources"]
-      $ref: "*ref(definitions.retriever)"
+          field_path: ["tracking_sources"]
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/webinars/{{ stream_slice.parent_id }}/tracking_sources"
         error_handler:
           type: CompositeErrorHandler
@@ -565,12 +565,12 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.webinars_list_tmp_stream)"
+          - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -579,8 +579,8 @@ definitions:
 
   webinar_qna_results_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "webinar_qna_results"
     retriever:
       paginator:
@@ -588,10 +588,10 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["questions"]
-      $ref: "*ref(definitions.retriever)"
+          field_path: ["questions"]
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/past_webinars/{{ stream_slice.parent_id }}/qa"
         error_handler:
           type: CompositeErrorHandler
@@ -601,12 +601,12 @@ definitions:
                 - http_codes: [400, 404]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.webinars_list_tmp_stream)"
+          - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "uuid"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -615,8 +615,8 @@ definitions:
 
   report_meetings_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "report_meetings"
       primary_key: "id"
     retriever:
@@ -625,10 +625,10 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["tracking_sources"]
-      $ref: "*ref(definitions.retriever)"
+          field_path: ["tracking_sources"]
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/report/meetings/{{ stream_slice.parent_id }}"
         error_handler:
           type: CompositeErrorHandler
@@ -638,12 +638,12 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.meetings_list_tmp_stream)"
+          - stream: "#/definitions/meetings_list_tmp_stream"
             parent_key: "uuid"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -652,20 +652,20 @@ definitions:
 
   report_meeting_participants_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "report_meeting_participants"
       primary_key: "id"
     retriever:
       paginator:
-        $ref: "*ref(definitions.zoom_paginator)"
+        $ref: "#/definitions/zoom_paginator"
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["participants"]
-      $ref: "*ref(definitions.retriever)"
+          field_path: ["participants"]
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/report/meetings/{{ stream_slice.parent_id }}/participants"
         error_handler:
           type: CompositeErrorHandler
@@ -675,12 +675,12 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.meetings_list_tmp_stream)"
+          - stream: "#/definitions/meetings_list_tmp_stream"
             parent_key: "uuid"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -689,8 +689,8 @@ definitions:
 
   report_webinars_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "report_webinars"
     retriever:
       paginator:
@@ -698,10 +698,10 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: []
-      $ref: "*ref(definitions.retriever)"
+          field_path: []
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/report/webinars/{{ stream_slice.parent_id }}"
         error_handler:
           type: CompositeErrorHandler
@@ -711,12 +711,12 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.webinars_list_tmp_stream)"
+          - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "uuid"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -725,19 +725,19 @@ definitions:
 
   report_webinar_participants_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+    $parameters:
       name: "report_webinar_participants"
     retriever:
       paginator:
-        $ref: "*ref(definitions.zoom_paginator)"
+        $ref: "#/definitions/zoom_paginator"
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["participants"]
-      $ref: "*ref(definitions.retriever)"
+          field_path: ["participants"]
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/report/webinars/{{ stream_slice.parent_id }}/participants"
         error_handler:
           type: CompositeErrorHandler
@@ -747,12 +747,12 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.webinars_list_tmp_stream)"
+          - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "uuid"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -760,25 +760,25 @@ definitions:
             value: "{{ stream_slice.parent_id }}"
 
 streams:
-  - "*ref(definitions.users_stream)"
-  - "*ref(definitions.meetings_stream)"
-  - "*ref(definitions.meeting_registrants_stream)"
-  - "*ref(definitions.meeting_polls_stream)"
-  - "*ref(definitions.meeting_poll_results_stream)"
-  - "*ref(definitions.meeting_registration_questions_stream)"
-  - "*ref(definitions.webinars_stream)"
-  - "*ref(definitions.webinar_panelists_stream)"
-  - "*ref(definitions.webinar_registrants_stream)"
-  - "*ref(definitions.webinar_absentees_stream)"
-  - "*ref(definitions.webinar_polls_stream)"
-  - "*ref(definitions.webinar_poll_results_stream)"
-  - "*ref(definitions.webinar_registration_questions_stream)"
-  - "*ref(definitions.webinar_tracking_sources_stream)"
-  - "*ref(definitions.webinar_qna_results_stream)"
-  - "*ref(definitions.report_meetings_stream)"
-  - "*ref(definitions.report_meeting_participants_stream)"
-  - "*ref(definitions.report_webinars_stream)"
-  - "*ref(definitions.report_webinar_participants_stream)"
+  - "#/definitions/users_stream"
+  - "#/definitions/meetings_stream"
+  - "#/definitions/meeting_registrants_stream"
+  - "#/definitions/meeting_polls_stream"
+  - "#/definitions/meeting_poll_results_stream"
+  - "#/definitions/meeting_registration_questions_stream"
+  - "#/definitions/webinars_stream"
+  - "#/definitions/webinar_panelists_stream"
+  - "#/definitions/webinar_registrants_stream"
+  - "#/definitions/webinar_absentees_stream"
+  - "#/definitions/webinar_polls_stream"
+  - "#/definitions/webinar_poll_results_stream"
+  - "#/definitions/webinar_registration_questions_stream"
+  - "#/definitions/webinar_tracking_sources_stream"
+  - "#/definitions/webinar_qna_results_stream"
+  - "#/definitions/report_meetings_stream"
+  - "#/definitions/report_meeting_participants_stream"
+  - "#/definitions/report_webinars_stream"
+  - "#/definitions/report_webinar_participants_stream"
 
 check:
   stream_names:

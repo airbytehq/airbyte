@@ -1,5 +1,0 @@
-flags:
-  - name: test-true
-    enabled: true
-  - name: test-false
-    enabled: false

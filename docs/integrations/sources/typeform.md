@@ -27,7 +27,7 @@ To get the API token for your application follow this [steps](https://developer.
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Typeform** from the Source type dropdown and enter a name for this connector.
 4. Fill-in 'API Token' and 'Start Date'
@@ -70,6 +70,8 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.1.12  | 2023-02-21 | [22824](https://github.com/airbytehq/airbyte/pull/22824) | Specified date formatting in specification                                                   |
+| 0.1.11  | 2023-02-20 | [23248](https://github.com/airbytehq/airbyte/pull/23248) | Store cursor value as a string                                          |
 | 0.1.10  | 2023-01-07 | [16125](https://github.com/airbytehq/airbyte/pull/16125) | Certification to Beta                                                   |
 | 0.1.9   | 2022-08-30 | [16125](https://github.com/airbytehq/airbyte/pull/16125) | Improve `metadata.referer` url parsing                                  |
 | 0.1.8   | 2022-08-09 | [15435](https://github.com/airbytehq/airbyte/pull/15435) | Update Forms   stream schema                                            |

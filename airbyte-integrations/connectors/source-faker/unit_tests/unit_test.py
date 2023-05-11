@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import jsonschema
@@ -18,6 +18,9 @@ class MockLogger:
     def exception(a,b,**kwargs):
         print(b)
         return None
+
+    def isEnabledFor(a, b, **kwargs):
+        return False
 
 
 logger = MockLogger()
@@ -59,6 +62,18 @@ def test_source_streams():
         "height": {"type": "string"},
         "blood_type": {"type": "string"},
         "weight": {"type": "integer"},
+        'address': {
+            'type': 'object',
+            'properties': {
+                'city': {'type': 'string'},
+                'country_code': {'type': 'string'},
+                'postal_code': {'type': 'string'},
+                'province': {'type': 'string'},
+                'state': {'type': 'string'},
+                'street_name': {'type': 'string'},
+                'street_number': {'type': 'string'}
+            }
+        }
     }
 
 
@@ -90,7 +105,7 @@ def test_read_small_random_data():
             state_rows_count = state_rows_count + 1
             latest_state = row
 
-    assert estimate_row_count == 1
+    assert estimate_row_count == 4
     assert record_rows_count == 10
     assert state_rows_count == 1
     assert latest_state.state.data == {"users": {"id": 10, "seed": None}}

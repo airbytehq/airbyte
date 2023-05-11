@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mysql;
@@ -17,7 +17,7 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -43,13 +43,12 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   protected static final String PASSWORD_WITHOUT_PERMISSION = "new_password";
 
   private MySQLContainer<?> db;
-  private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
+  private final StandardNameTransformer namingResolver = new MySQLNameTransformer();
 
   @Override
   protected String getImageName() {
     return "airbyte/destination-mysql:dev";
   }
-
 
   @Override
   protected boolean implementsNamespaces() {

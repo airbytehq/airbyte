@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 
 public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  private static final String SCHEMA_NAME = "SOURCE_INTEGRATION_TEST_"
+  protected static final String SCHEMA_NAME = "SOURCE_INTEGRATION_TEST_"
       + RandomStringUtils.randomAlphanumeric(4).toUpperCase();
   private static final String STREAM_NAME1 = "ID_AND_NAME1";
   private static final String STREAM_NAME2 = "ID_AND_NAME2";

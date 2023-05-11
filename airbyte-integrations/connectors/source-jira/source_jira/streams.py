@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import re
@@ -190,12 +190,15 @@ class Boards(JiraStream):
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         for board in super().read_records(**kwargs):
-            if not self._projects or board["location"]["projectKey"] in self._projects:
+            location = board.get("location", {})
+            if not self._projects or location.get("projectKey") in self._projects:
                 yield board
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["projectId"] = str(record["location"]["projectId"])
-        record["projectKey"] = record["location"]["projectKey"]
+        location = record.get("location")
+        if location:
+            record["projectId"] = str(location.get("projectId"))
+            record["projectKey"] = location.get("projectKey")
         return record
 
 
@@ -303,7 +306,7 @@ class Issues(IncrementalJiraStream):
 
     cursor_field = "updated"
     extract_field = "issues"
-    use_cache = True
+    use_cache = False  # disable caching due to OOM errors in kubernetes
 
     def __init__(self, expand_changelog: bool = False, render_fields: bool = False, **kwargs):
         super().__init__(**kwargs)
@@ -497,7 +500,7 @@ class IssuePropertyKeys(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-get
     """
 
-    extract_field = "key"
+    extract_field = "keys"
     use_cache = True
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
@@ -1013,7 +1016,16 @@ class ScreenTabs(JiraStream):
 
     def read_tab_records(self, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping[str, Any]]:
         screen_id = stream_slice["screen_id"]
-        yield from super().read_records(stream_slice={"screen_id": screen_id}, **kwargs)
+        for screen_tab in super().read_records(stream_slice={"screen_id": screen_id}, **kwargs):
+            """
+            For some projects jira creates screens automatically, which does not present in UI, but exist in screens stream.
+            We receive 400 error "Screen with id {screen_id} does not exist" for tabs by these screens.
+            """
+            bad_request_reached = re.match(r"Screen with id \d* does not exist", screen_tab.get("errorMessages", [""])[0])
+            if bad_request_reached:
+                self.logger.info("Could not get screen tab for %s screen id. Reason: %s", screen_id, screen_tab["errorMessages"][0])
+                return
+            yield screen_tab
 
 
 class ScreenTabFields(JiraStream):
@@ -1032,7 +1044,7 @@ class ScreenTabFields(JiraStream):
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for screen in read_full_refresh(self.screens_stream):
             for tab in self.screen_tabs_stream.read_tab_records(stream_slice={"screen_id": screen["id"]}, **kwargs):
-                if id in tab:  # Check for proper tab record since the ScreenTabs stream doesn't throw http errors
+                if "id" in tab:  # Check for proper tab record since the ScreenTabs stream doesn't throw http errors
                     yield from super().read_records(stream_slice={"screen_id": screen["id"], "tab_id": tab["id"]}, **kwargs)
 
 
@@ -1068,8 +1080,9 @@ class Sprints(JiraStream):
         return f"board/{stream_slice['board_id']}/sprint"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        available_board_types = ["scrum", "simple"]
         for board in read_full_refresh(self.boards_stream):
-            if board["type"] == "scrum":
+            if board["type"] in available_board_types:
                 yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
 
 

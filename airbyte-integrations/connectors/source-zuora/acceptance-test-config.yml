@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/contributing-to-airbyte/building-new-connector/source-acceptance-tests)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/contributing-to-airbyte/building-new-connector/connector-acceptance-tests)
 # for more information about how to configure these tests
 connector_image: airbyte/source-zuora:dev
 tests:

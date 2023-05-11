@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -86,6 +86,8 @@ METRICS = [
     "custom_event_3",
     "custom_event_4",
     "custom_event_5",
+    "story_opens",
+    "story_completes",
 ]
 
 METRICS_NOT_HOURLY = [

@@ -7,6 +7,7 @@ set -e
 # runs integration tests for an integration name
 
 connector="$1"
+local_cdk="$2"
 all_integration_tests=$(./gradlew integrationTest --dry-run | grep 'integrationTest SKIPPED' | cut -d: -f 4)
 run() {
 if [[ "$connector" == "all" ]] ; then
@@ -20,9 +21,9 @@ else
     # avoid schema conflicts when multiple tests for normalization are run concurrently
     export RANDOM_TEST_SCHEMA="true"
     ./gradlew --no-daemon --scan airbyteDocker
-  elif [[ "$connector" == *"source-acceptance-test"* ]]; then
+  elif [[ "$connector" == *"connector-acceptance-test"* ]]; then
     connector_name=$(echo $connector | cut -d / -f 2)
-    selected_integration_test="source-acceptance-test"
+    selected_integration_test="connector-acceptance-test"
     integrationTestCommand="$(_to_gradle_path "airbyte-integrations/bases/$connector_name" integrationTest)"
     export SUB_BUILD="CONNECTORS_BASE"
   elif [[ "$connector" == *"bases"* ]]; then
@@ -40,7 +41,7 @@ else
   fi
   if [ -n "$selected_integration_test" ] ; then
     echo "Running: ./gradlew --no-daemon --scan $integrationTestCommand"
-    ./gradlew --no-daemon --scan "$integrationTestCommand"
+    ./gradlew --no-daemon --scan "$integrationTestCommand" -PconnectorAcceptanceTest.useLocalCdk=$local_cdk -PconnectorAcceptanceTest.connectorName=$connector_name
   else
     echo "Connector '$connector' not found..."
     return 1

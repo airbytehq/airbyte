@@ -1,47 +1,34 @@
-version: "0.1.0"
+version: "0.29.0"
 
 definitions:
   selector:
     extractor:
-      field_pointer: []
+      field_path: []
   requester:
     url_base: "https://app.waiteraid.com"
     http_method: "POST"
-    request_options_provider:
-      request_parameters:
-        date: "{{ config['start_date'] }}"
-        auth_hash: "{{ config['auth_hash'] }}"
-        restid: "{{ config['restid'] }}"
-  stream_slicer:
-    type: "DatetimeStreamSlicer"
-    start_datetime:
-      datetime: "{{ config['start_date'] }}"
-      datetime_format: "%Y-%m-%d"
-    end_datetime:
-      datetime: "{{ now_utc() }}"
-      datetime_format: "%Y-%m-%d %H:%M:%S.%f"
-    step: "1d"
-    datetime_format: "%Y-%m-%d"
-    cursor_field: "{{ options['stream_cursor_field'] }}"
+    request_parameters:
+      date: "{{ config['start_date'] }}"
+      auth_hash: "{{ config['auth_hash'] }}"
+      restid: "{{ config['restid'] }}"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   booking_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "booking"
       path: "/wa-api/searchBooking"
-      stream_cursor_field: "date"
 
 streams:
-  - "*ref(definitions.booking_stream)"
+  - "#/definitions/booking_stream"
 
 check:
   stream_names:

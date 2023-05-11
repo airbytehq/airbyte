@@ -1,14 +1,16 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import datetime
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from urllib.parse import urlparse
 
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -50,7 +52,17 @@ class GitlabStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return f"https://{self.api_url}/api/v4/"
+        parse_result = urlparse(self.api_url)
+        # Default scheme to "https" if URL doesn't contain
+        scheme = parse_result.scheme if parse_result.scheme else "https"
+        # hostname without a scheme will result in `path` attribute
+        # Use path if netloc is not detected
+        host = parse_result.netloc if parse_result.netloc else parse_result.path
+        return f"{scheme}://{host}/api/v4/"
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def should_retry(self, response: requests.Response) -> bool:
         # Gitlab API returns a 403 response in case a feature is disabled in a project (pipelines/jobs for instance).

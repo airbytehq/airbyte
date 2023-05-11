@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -9,7 +9,7 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock~=3.6.1", "source-acceptance-test", "requests_mock~=1.9"]
+TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock~=3.6.1", "connector-acceptance-test", "requests_mock~=1.9"]
 
 setup(
     name="source_appfollow",

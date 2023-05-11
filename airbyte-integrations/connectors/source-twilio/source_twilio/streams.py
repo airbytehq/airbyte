@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import copy
@@ -12,15 +12,19 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from pendulum.datetime import DateTime
 from requests.auth import AuthBase
 
+TWILIO_CONVERSATION_BASE = "https://conversations.twilio.com/v1/"
 TWILIO_API_URL_BASE = "https://api.twilio.com"
 TWILIO_API_URL_BASE_VERSIONED = f"{TWILIO_API_URL_BASE}/2010-04-01/"
 TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
+TWILIO_STUDIO_API_BASE = "https://studio.twilio.com/v1/"
+TWILIO_CONVERSATIONS_URL_BASE = "https://conversations.twilio.com/v1/"
 
 
 class TwilioStream(HttpStream, ABC):
@@ -39,6 +43,10 @@ class TwilioStream(HttpStream, ABC):
         :return list of changeable fields that should be removed from the records
         """
         return []
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def path(self, **kwargs):
         return f"{self.name.title()}.json"
@@ -394,6 +402,33 @@ class ConferenceParticipants(TwilioNestedStream):
     data_field = "participants"
 
 
+class Flows(TwilioStream):
+    """
+    https://www.twilio.com/docs/studio/rest-api/flow#read-a-list-of-flows
+    """
+
+    url_base = TWILIO_STUDIO_API_BASE
+
+    def path(self, **kwargs):
+        return "Flows"
+
+
+class Executions(TwilioNestedStream):
+    """
+    https://www.twilio.com/docs/studio/rest-api/execution#read-a-list-of-executions
+    """
+
+    parent_stream = Flows
+    url_base = TWILIO_STUDIO_API_BASE
+    uri_from_subresource = False
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"Flows/{ stream_slice['flow_sid'] }/Executions"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"flow_sid": record["sid"]}
+
+
 class OutgoingCallerIds(TwilioNestedStream):
     """https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource"""
 
@@ -497,3 +532,42 @@ class Alerts(IncrementalTwilioStream):
 
     def path(self, **kwargs):
         return self.name.title()
+
+
+class Conversations(TwilioStream):
+    """https://www.twilio.com/docs/conversations/api/conversation-resource#read-multiple-conversation-resources"""
+
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+
+    def path(self, **kwargs):
+        return self.name.title()
+
+
+class ConversationParticipants(TwilioNestedStream):
+    """https://www.twilio.com/docs/conversations/api/conversation-participant-resource"""
+
+    parent_stream = Conversations
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+    data_field = "participants"
+    uri_from_subresource = False
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Conversations/{stream_slice['conversation_sid']}/Participants"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"conversation_sid": record["sid"]}
+
+
+class ConversationMessages(TwilioNestedStream):
+    """https://www.twilio.com/docs/conversations/api/conversation-message-resource#list-all-conversation-messages"""
+
+    parent_stream = Conversations
+    url_base = TWILIO_CONVERSATIONS_URL_BASE
+    uri_from_subresource = False
+    data_field = "messages"
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs):
+        return f"Conversations/{stream_slice['conversation_sid']}/Messages"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"conversation_sid": record["sid"]}

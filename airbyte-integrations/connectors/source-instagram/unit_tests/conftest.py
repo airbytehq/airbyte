@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from facebook_business import FacebookAdsApi, FacebookSession
@@ -7,6 +7,11 @@ from pytest import fixture
 from source_instagram.api import InstagramAPI as API
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
+
+
+@fixture(autouse=True)
+def mock_sleep(mocker):
+    mocker.patch("time.sleep")
 
 
 @fixture(scope="session", name="account_id")
