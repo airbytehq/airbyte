@@ -11,7 +11,6 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_DECIMAL_DIGITS;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
-import static io.airbyte.integrations.source.postgres.PostgresType.BIGINT;
 import static io.airbyte.integrations.source.postgres.PostgresType.safeGetJdbcType;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -379,7 +378,6 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText().toLowerCase();
       // Postgres boolean is mapped to JDBCType.BIT, but should be BOOLEAN
-      final PostgresType defaultType = PostgresType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt(), POSTGRES_TYPE_DICT);
       return switch (typeName) {
         case "_bit" -> PostgresType.BIT_ARRAY;
         case "_bool" -> PostgresType.BOOL_ARRAY;
@@ -409,14 +407,14 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "bytea" -> PostgresType.VARCHAR;
         case "numeric" -> {
           if (field.get(INTERNAL_DECIMAL_DIGITS) != null && field.get(INTERNAL_DECIMAL_DIGITS).asInt() == 0) {
-            yield BIGINT;
+            yield PostgresType.BIGINT;
           } else {
-            yield defaultType;
+            yield PostgresType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt(), POSTGRES_TYPE_DICT);
           }
         }
         case TIMESTAMPTZ -> PostgresType.TIMESTAMP_WITH_TIMEZONE;
         case TIMETZ -> PostgresType.TIME_WITH_TIMEZONE;
-        default -> defaultType;
+        default -> PostgresType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt(), POSTGRES_TYPE_DICT);
       };
     } catch (final IllegalArgumentException ex) {
       LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
