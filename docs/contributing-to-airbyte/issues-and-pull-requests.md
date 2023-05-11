@@ -26,7 +26,7 @@ Airbyte uses this pattern to automatically assign team reviews and build the pro
 | Documentation (updates or new entries) | 📝 | 📝 Fix Database connector changelog                    |
 | It's a breaking change                 | 🚨 | 🚨🚨🐛 Source Kafka: fix a complex bug                  |
 
-For more information about [breaking changes](contributing-to-airbyte.md#breaking-changes-to-connectors). A maintainer will help and instruct about possible breaking changes.
+For more information about [breaking changes](README.md#breaking-changes-to-connectors). A maintainer will help and instruct about possible breaking changes.
 
 Any refactors, cleanups, etc.. that are not visible improvements to the user should not have emojis.
 
