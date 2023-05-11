@@ -65,7 +65,7 @@ fn main() -> anyhow::Result<()> {
             Err(err.into())
         }
         Ok(()) => {
-            tracing::info!(message = "connector-proxy exiting");
+            tracing::info!(message = "atf exiting");
             Ok(())
         }
     }

@@ -46,7 +46,7 @@ pub async fn run_airbyte_source_connector(
     let full_entrypoint = format!("{} \"{}\"", entrypoint, args.join("\" \""));
     let log_level = log_args.level.to_string();
 
-    let (mut child, child_stdin, child_stdout) =
+    let (child, child_stdin, child_stdout) =
         parse_child(invoke_connector_delayed(full_entrypoint, log_level)?)?;
 
     let adapted_request_stream = airbyte_interceptor.adapt_request_stream(
@@ -87,9 +87,6 @@ pub async fn run_airbyte_source_connector(
     }.map_ok(|bytes| {
         bytes::Bytes::from([&bytes[..],&[NEWLINE]].concat())
     });
-
-    // A channel that can be used to send a signal to terminate the child
-    let (terminate_sender, terminate_receiver) = oneshot::channel::<()>();
 
     // A channel to ping whenever a response is received from the connector
     // this allows us to monitor connectors for long inactivity and restart the connector
@@ -133,18 +130,11 @@ pub async fn run_airbyte_source_connector(
     );
 
     let op_ref = &op;
+    let child_arc = &Arc::new(Mutex::new(child));
     let exit_status_task = async move {
-        let exit_status_result = tokio::select! {
-            result = async { check_exit_status("atf:", child.wait().await) } => result,
-
-            // If we get a termination signal, we assume this signal means the child has been idle and
-            // needs to be restarted. In such a scenario, there is no error from the connector, so we can consider
-            // the connector to have exit successfully (albeit it had to be killed)
-            Ok(_) = terminate_receiver => {
-                child.kill().await?;
-                Ok(())
-            }
-        };
+        let c = Arc::clone(child_arc);
+        
+        let exit_status_result = check_exit_status("atf:", c.lock().await.wait().await);
 
         // There are some Airbyte connectors that write records, and exit successfully, without ever writing
         // a state (checkpoint). In those cases, we want to provide a default empty checkpoint. It's important that
@@ -217,7 +207,8 @@ pub async fn run_airbyte_source_connector(
         // just exit and let the connector restart, since an idle connector
         // is not always an error.
         Err(_) = ping_timeout_task => {
-            terminate_sender.send(()).expect("sending termination signal");
+            tracing::debug!("atf: killing child process");
+            Arc::clone(child_arc).lock().await.kill().await?;
             Ok(())
         }
     }?;
