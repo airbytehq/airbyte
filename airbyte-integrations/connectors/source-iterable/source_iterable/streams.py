@@ -15,12 +15,13 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from pendulum.datetime import DateTime
 from requests import codes
 from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator, RangeSliceGenerator, StreamSlice
-from source_iterable.utils import IterableGenericErrorHandler, dateutil_parse
+from source_iterable.utils import dateutil_parse
 
 EVENT_ROWS_LIMIT = 200
 CAMPAIGNS_PER_REQUEST = 20
@@ -31,8 +32,6 @@ class IterableStream(HttpStream, ABC):
     # in case we get a 401 error (api token disabled or deleted) on a stream slice, do not make further requests within the current stream
     # to prevent 429 error on other streams
     ignore_further_slices = False
-    # to handle the Generic Errors (500 with msg pattern)
-    generic_error_handler: IterableGenericErrorHandler = IterableGenericErrorHandler()
 
     url_base = "https://api.iterable.com/api/"
     primary_key = "id"
@@ -87,15 +86,21 @@ class IterableStream(HttpStream, ABC):
         for record in records:
             yield record
 
+    def check_generic_error(self, response: requests.Response):
+        if response.status_code == 500:
+            try:
+                response_json = json.loads(response.text)
+            except ValueError:
+                return False
+            if response_json.get("code") in ["Generic Error", "GenericError"] and "Please try again later" in response_json.get("msg", ""):
+                return True
+
     def should_retry(self, response: requests.Response) -> bool:
         # check the authentication
         if not self.check_unauthorized_key(response):
             return False
-        # retry on generic error 500
-        if response.status_code == 500:
-            # will retry for 2 times, then give up and skip the fetch for slice
-            return self.generic_error_handler.handle(response, self.name, self._last_slice)
-        # all other cases
+        if self.check_generic_error(response):
+            return True
         return super().should_retry(response)
 
     def read_records(
@@ -109,7 +114,12 @@ class IterableStream(HttpStream, ABC):
             return []
         # save last slice
         self._last_slice = stream_slice
-        yield from super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
+
+        try:
+            yield from super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
+        except DefaultBackoffException as e:
+            if self.check_generic_error(e.response):
+                return
 
 
 class IterableExportStream(IterableStream, ABC):
