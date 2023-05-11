@@ -6,6 +6,11 @@ import pytest
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 
 
+@pytest.fixture(autouse=True)
+def disable_cache(mocker):
+    mocker.patch("source_iterable.streams.ListUsers.use_cache", False)
+
+
 @pytest.fixture
 def catalog(request):
     return ConfiguredAirbyteCatalog(
