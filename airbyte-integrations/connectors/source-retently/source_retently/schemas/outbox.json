@@ -1,6 +1,22 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
+    "attributes": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {}
+    },
+    "mandrillMessageId": {
+      "type": ["null", "string"]
+    },
+    "personTags": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
     "email": {
       "type": "string"
     },
@@ -71,7 +87,7 @@
     },
     "additionalRecipients": {
       "type": "array",
-      "items": { "type": "object"}
+      "items": { "type": "object" }
     }
   }
 }
