@@ -83,8 +83,9 @@ jobs:
       - name: Filter supported connectors
         if: "${{ github.event.inputs.connector != 'connectors/source-postgres' && 
               github.event.inputs.connector != 'connectors/source-mysql' &&
-              github.event.inputs.connector != 'connectors/destination-snowflake' }}"
-        run: echo "Only connectors/source-postgres, source-mysql and destination-snowflake currently supported by harness" && exit 1
+              github.event.inputs.connector != 'connectors/destination-snowflake' &&
+              github.event.inputs.connector != 'connectors/destination-bigquery' }}"
+        run: echo "Only connectors/source-postgres, source-mysql, destination-snowflake, and destination-bigquery currently supported by harness" && exit 1
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
