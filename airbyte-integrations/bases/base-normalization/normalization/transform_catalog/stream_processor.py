@@ -804,6 +804,13 @@ where 1 = 1
             cdc_cols += f", {cast_begin}{col_cdc_log_pos}{cast_as}" + "{{ dbt_utils.type_string() }}" + f"{cast_end}"
             quoted_cdc_cols += f", {quoted_col_cdc_log_pos}"
 
+        if "_ab_cdc_lsn" in column_names.keys():
+            col_cdc_lsn = self.name_transformer.normalize_column_name("_ab_cdc_lsn")
+            quoted_col_cdc_lsn = self.name_transformer.normalize_column_name("_ab_cdc_lsn", in_jinja=True)
+            cdc_updated_order_pattern += f"\n            {col_cdc_lsn} desc,"
+            cdc_cols += f", {cast_begin}{col_cdc_lsn}{cast_as}" + "{{ dbt_utils.type_string() }}" + f"{cast_end}"
+            quoted_cdc_cols += f", {quoted_col_cdc_lsn}"
+
         if (
             self.destination_type == DestinationType.BIGQUERY
             and self.get_cursor_field_property_name(column_names) != self.airbyte_emitted_at
