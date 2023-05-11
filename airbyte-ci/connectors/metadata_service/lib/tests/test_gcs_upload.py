@@ -4,6 +4,7 @@
 import pathlib
 
 import pytest
+import json
 import yaml
 from metadata_service import gcs_upload
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
@@ -45,6 +46,8 @@ def test_upload_metadata_to_gcs_valid_metadata(
     expected_version_key = f"metadata/{metadata.data.dockerRepository}/{metadata.data.dockerImageTag}/{METADATA_FILE_NAME}"
     expected_latest_key = f"metadata/{metadata.data.dockerRepository}/latest/{METADATA_FILE_NAME}"
 
+    service_account_json = '{"type": "service_account"}'
+    mocker.patch.dict("os.environ", {"GCS_CREDENTIALS": service_account_json})
     mock_credentials = mocker.Mock()
     mock_storage_client = mocker.Mock()
 
@@ -56,7 +59,7 @@ def test_upload_metadata_to_gcs_valid_metadata(
     mock_bucket = mock_storage_client.bucket.return_value
     mock_bucket.blob.side_effect = [mock_version_blob, mock_latest_blob]
 
-    mocker.patch.object(gcs_upload.service_account.Credentials, "from_service_account_file", mocker.Mock(return_value=mock_credentials))
+    mocker.patch.object(gcs_upload.service_account.Credentials, "from_service_account_info", mocker.Mock(return_value=mock_credentials))
     mocker.patch.object(gcs_upload.storage, "Client", mocker.Mock(return_value=mock_storage_client))
     mocker.patch.object(gcs_upload, "validate_metadata_images_in_dockerhub", mocker.Mock(return_value=(True, None)))
     mocker.patch.object(gcs_upload, "compute_gcs_md5", mocker.Mock(return_value=local_file_md5_hash))
@@ -66,12 +69,11 @@ def test_upload_metadata_to_gcs_valid_metadata(
     uploaded, blob_id = gcs_upload.upload_metadata_to_gcs(
         "my_bucket",
         metadata_file_path,
-        "my_service_account_path",
     )
 
     # Assertions
 
-    gcs_upload.service_account.Credentials.from_service_account_file.assert_called_with("my_service_account_path")
+    gcs_upload.service_account.Credentials.from_service_account_info.assert_called_with(json.loads(service_account_json))
     mock_storage_client.bucket.assert_called_with("my_bucket")
     mock_bucket.blob.assert_has_calls([mocker.call(expected_version_key), mocker.call(expected_latest_key)])
     assert blob_id == mock_version_blob.id
@@ -99,7 +101,6 @@ def test_upload_metadata_to_gcs_invalid_metadata(invalid_metadata_yaml_files):
         gcs_upload.upload_metadata_to_gcs(
             "my_bucket",
             metadata_file_path,
-            "my_service_account_path",
         )
 
 
@@ -109,5 +110,4 @@ def test_upload_metadata_to_gcs_non_existent_metadata_file():
         gcs_upload.upload_metadata_to_gcs(
             "my_bucket",
             metadata_file_path,
-            "my_service_account_path",
         )
