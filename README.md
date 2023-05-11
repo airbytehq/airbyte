@@ -28,6 +28,17 @@ Now visit [http://localhost:8000](http://localhost:8000)
 
 Here is a [step-by-step guide](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/quickstart/getting-started.md) showing you how to load data from an API into a file, all on your computer.
 
+
+
+#### Build custom connector
+First, make sure you build the latest Docker image:
+```
+docker build . -t airbyte/source-wallmob:3.0.0  (--platform linux/amd64 on mac m1)
+
+#### Push custom connector to Askeladden docker hub
+docker tag airbyte/source-wallmob:3.0.0 askeladden/airbyte-wallmob-python-source:3.0.0
+docker push askeladden/airbyte-wallmob-python-source:3.0.0
+
 ## Features
 
 * **Built for extensibility**: Adapt an existing connector to your needs or build a new one with ease.

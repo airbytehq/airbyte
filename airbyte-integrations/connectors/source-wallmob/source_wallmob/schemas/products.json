@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "sku": { "type": "string" },
+    "source": { "type": "string" },
+    "image": { "type": ["string", "null"] },
+    "color": { "type": ["string", "null"] },
+    "subproduct_only": { "type": "string" },
+    "offline_product": { "type": "string" },
+    "active": { "type": "string" },
+    "max_quantity_per_line_item": { "type": ["number", "null"] },
+    "description": { "type": ["string", "null"] },
+    "type_id": { "type": "string" },
+    "update_time": { "type": "string" },
+    "supplier_reference_id": { "type": ["string", "null"] },
+    "supplier_id": { "type": ["string", "null"] },
+    "min_addons_quantity": { "type": ["number", "null"] },
+    "max_addons_quantity": { "type": ["number", "null"] },
+    "deposit_product_id": { "type": ["string", "null"] },
+    "product_data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "type_id": { "type": "string" },
+          "retail_price": { "type": "string" },
+          "cost_price": { "type": "string" },
+          "product_id": { "type": "string" },
+          "product_variant_id": { "type": ["string", "null"] },
+          "price_region_id": { "type": "string" },
+          "vat_rate_id": { "type": ["string", "null"] },
+          "least_quantity": { "type": ["number", "null"] },
+          "weekcover": { "type": "string" },
+          "loyalty_points": { "type": ["number", "null"] },
+          "variable_price": { "type": "string" },
+          "sales_tax_rate_id": { "type": ["string", "null"] },
+          "unit_id": { "type": "string" }
+        },
+        "required": [
+          "id",
+          "type_id",
+          "retail_price",
+          "cost_price",
+          "product_id",
+          "price_region_id",
+          "weekcover",
+          "variable_price",
+          "unit_id"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "product_categories": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "grant_coupons": { "type": "array" },
+    "shops": { "type": "array" },
+    "product_variants": { "type": "array" },
+    "shop_groups": { "type": "array" },
+    "addon_products": { "type": "array" },
+    "bundled_products": { "type": "array" },
+    "supplier": { "type": ["string", "null"] },
+    "product_images": { "type": "array" },
+    "bundled_product_metadata": { "type": "array" },
+    "attributes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": { "type": "string" }
+      }
+    }
+  }
+}
