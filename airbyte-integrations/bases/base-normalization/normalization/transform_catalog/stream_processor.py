@@ -1023,6 +1023,8 @@ from dedup_data where {{ airbyte_row_num }} = 1
                 return "_ab_cdc_updated_at"
             elif "_ab_cdc_log_pos" in column_names.keys():
                 return "_ab_cdc_log_pos"
+            elif "_ab_cdc_lsn" in column_names.keys():
+                return "_ab_cdc_lsn"
             else:
                 return self.airbyte_emitted_at
         elif len(self.cursor_field) == 1:
