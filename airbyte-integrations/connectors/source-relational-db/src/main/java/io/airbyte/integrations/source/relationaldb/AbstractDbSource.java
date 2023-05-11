@@ -164,7 +164,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
     final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
         getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
-            emittedAt, stateMessages);
+            emittedAt);
     final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators =
         getFullRefreshIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
             emittedAt);
@@ -300,8 +300,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                                 final ConfiguredAirbyteCatalog catalog,
                                                                                 final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
                                                                                 final StateManager stateManager,
-                                                                                final Instant emittedAt,
-                                                                                final List<AirbyteStateMessage> stateMessages) {
+                                                                                final Instant emittedAt) {
     return getSelectedIterators(
         database,
         catalog,

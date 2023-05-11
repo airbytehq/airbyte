@@ -104,7 +104,7 @@ public class StateManagerFactory {
    * @return The converted state messages.
    * @throws IllegalArgumentException if unable to convert between the given state type and stream.
    */
-  private static List<AirbyteStateMessage> generateStreamState(final List<AirbyteStateMessage> states) {
+  public static List<AirbyteStateMessage> generateStreamState(final List<AirbyteStateMessage> states) {
     final AirbyteStateMessage airbyteStateMessage = states.get(0);
     final List<AirbyteStateMessage> streamStates = new ArrayList<>();
     switch (airbyteStateMessage.getType()) {

@@ -4,8 +4,11 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
@@ -16,6 +19,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Utility class to manage xmin state.
+ */
 public class XminStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(XminStateManager.class);
@@ -34,7 +40,7 @@ public class XminStateManager {
     final Map<AirbyteStreamNameNamespacePair, XminStatus> localMap = new HashMap<>();
     if (stateMessages != null) {
       for (final AirbyteStateMessage stateMessage : stateMessages) {
-        // A reset causes the default state to be an empty legacy state, so we have to ignore those messages. 
+        // A reset causes the default state to be an empty legacy state, so we have to ignore those messages.
         if (stateMessage.getType() == AirbyteStateType.STREAM && !stateMessage.equals(EMPTY_STATE)) {
           LOGGER.info("State message: " + stateMessage);
           final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
@@ -51,4 +57,28 @@ public class XminStateManager {
     return pairToXminStatus.get(pair);
   }
 
+  /**
+   * Creates AirbyteStateMessage associated with the given {@link XminStatus}.
+   *
+   * @return AirbyteMessage which includes information on state of records read so far
+   */
+  public static AirbyteMessage createStateMessage(final AirbyteStreamNameNamespacePair pair, final XminStatus xminStatus) {
+    final AirbyteStreamState airbyteStreamState =
+        new AirbyteStreamState()
+            .withStreamDescriptor(
+                new StreamDescriptor()
+                    .withName(pair.getName())
+                    .withNamespace(pair.getNamespace()))
+            .withStreamState(new ObjectMapper().valueToTree(xminStatus));
+
+    // Set state
+    final AirbyteStateMessage stateMessage =
+        new AirbyteStateMessage()
+            .withType(AirbyteStateType.STREAM)
+            .withStream(airbyteStreamState);
+
+    return new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(stateMessage);
+  }
 }

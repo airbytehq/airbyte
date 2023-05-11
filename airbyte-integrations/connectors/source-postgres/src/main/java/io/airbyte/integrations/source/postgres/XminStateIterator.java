@@ -5,15 +5,9 @@
 package io.airbyte.integrations.source.postgres;
 
 import autovalue.shaded.com.google.common.collect.AbstractIterator;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Iterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +17,6 @@ public class XminStateIterator extends AbstractIterator<AirbyteMessage> implemen
   private static final Logger LOGGER = LoggerFactory.getLogger(XminStateIterator.class);
 
   private final Iterator<io.airbyte.protocol.models.v0.AirbyteMessage> messageIterator;
-  private final StateManager stateManager;
   private final AirbyteStreamNameNamespacePair pair;
   private boolean hasEmittedFinalState;
 
@@ -31,15 +24,12 @@ public class XminStateIterator extends AbstractIterator<AirbyteMessage> implemen
   private final XminStatus xminStatus;
 
   /**
-   * @param stateManager Manager that maintains connector state
    * @param pair Stream Name and Namespace (e.g. public.users)
    */
   public XminStateIterator(final Iterator<io.airbyte.protocol.models.v0.AirbyteMessage> messageIterator,
-                           final StateManager stateManager,
                            final AirbyteStreamNameNamespacePair pair,
                            final XminStatus xminStatus) {
     this.messageIterator = messageIterator;
-    this.stateManager = stateManager;
     this.pair = pair;
     this.xminStatus = xminStatus;
   }
@@ -75,48 +65,13 @@ public class XminStateIterator extends AbstractIterator<AirbyteMessage> implemen
       } catch (final Exception e) {
         hasCaughtException = true;
         LOGGER.error("Message iterator failed to read next record.", e);
-        return createStateMessage(false);
+        return endOfData();
       }
     } else if (!hasEmittedFinalState) {
-      return createStateMessage(true);
+      hasEmittedFinalState = true;
+      return XminStateManager.createStateMessage(pair, xminStatus);
     } else {
       return endOfData();
     }
   }
-
-  /**
-   * Creates AirbyteStateMessage while updating the cursor used to checkpoint the state of records
-   * read up so far
-   *
-   * @param isFinalState marker for if the final state of the iterator has been reached
-   * @return AirbyteMessage which includes information on state of records read so far
-   */
-  public io.airbyte.protocol.models.v0.AirbyteMessage createStateMessage(final boolean isFinalState) {
-    final StreamDescriptor streamDescriptor = new StreamDescriptor();
-    streamDescriptor.setName(pair.getName());
-    streamDescriptor.setNamespace(pair.getNamespace());
-    final io.airbyte.protocol.models.v0.AirbyteStreamState airbyteStreamState =
-        new io.airbyte.protocol.models.v0.AirbyteStreamState();
-
-    // Set state
-
-    airbyteStreamState.setStreamDescriptor(streamDescriptor);
-
-    final ObjectMapper mapper = new ObjectMapper();
-    final JsonNode node = mapper.valueToTree(xminStatus);
-    // JsonNode node = Jsons.
-    airbyteStreamState.setStreamState(node);
-    final AirbyteStateMessage stateMessage =
-        new AirbyteStateMessage()
-            .withType(AirbyteStateType.STREAM)
-            .withStream(airbyteStreamState);
-
-    // final AirbyteStateMessage stateMessage = stateManager.emit(Optional.of(pair));
-    if (isFinalState) {
-      hasEmittedFinalState = true;
-    }
-
-    return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
-  }
-
 }

@@ -40,7 +40,6 @@ import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.SyncMode;
@@ -443,7 +442,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                              final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final StateManager stateManager,
-                                                                             final Instant emittedAt, final List<AirbyteStateMessage> stateMessages) {
+                                                                             final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
@@ -462,7 +461,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       return Collections.singletonList(incrementalIteratorSupplier.get());
     } else {
       LOGGER.info("using CDC: {}", false);
-      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt, stateMessages);
+      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
   }
 

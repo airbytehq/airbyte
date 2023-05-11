@@ -13,25 +13,25 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.relationaldb.DbSourceDiscoverUtil;
+import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
-import io.airbyte.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.SyncMode;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -51,32 +51,21 @@ public class PostgresXminHandler {
                              final JdbcCompatibleSourceOperations sourceOperations,
                              final String quoteString,
                              final XminStatus xminStatus,
-                             final List<AirbyteStateMessage> stateMessages) {
+                             final XminStateManager xminStateManager) {
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
     this.xminStatus = xminStatus;
-    LOGGER.info("State messages from previous run: " + stateMessages);
-    this.xminStateManager = new XminStateManager(stateMessages);
-  }
-
-  public static boolean isXmin(final JsonNode config) {
-    final boolean isXmin = config.hasNonNull("replication_method")
-        && config.get("replication_method").get("method").asText().equals("Xmin");
-    LOGGER.info("using Xmin: {}", isXmin);
-    return isXmin;
+    this.xminStateManager = xminStateManager;
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
                                                                              final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
-                                                                             final StateManager stateManager,
                                                                              final Instant emittedAt) {
 
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
     /*
-     * Process each stream : 1. If a stream doesn't exist in the source anymore, skip it. 2. Get the
-     * xmin cursor for the stream.
      */
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
@@ -93,6 +82,7 @@ public class PostgresXminHandler {
         continue;
       }
 
+      // Grab the selected fields to sync
       final TableInfo<CommonField<PostgresType>> table = tableNameToTable
           .get(fullyQualifiedTableName);
       final List<String> selectedDatabaseFields = table.getFields()
@@ -101,21 +91,12 @@ public class PostgresXminHandler {
           .filter(CatalogHelpers.getTopLevelFieldNames(airbyteStream)::contains)
           .collect(Collectors.toList());
 
-      final AutoCloseableIterator<JsonNode> queryStream =
-          queryTableXmin(selectedDatabaseFields, table.getNameSpace(),
-              table.getName());
-      final AutoCloseableIterator<AirbyteMessage> airbyteMessageIterator =
-          getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
-      final AutoCloseableIterator<AirbyteMessage> iterator;
-      iterator = AutoCloseableIterators.transform(
-          autoCloseableIterator -> new XminStateIterator(
-              autoCloseableIterator,
-              stateManager,
-              pair,
-              xminStatus),
-          airbyteMessageIterator,
-          AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()));
-      iteratorList.add(iterator);
+      final AutoCloseableIterator<JsonNode> queryStream = queryTableXmin(selectedDatabaseFields, table.getNameSpace(), table.getName());
+      final AutoCloseableIterator<AirbyteMessage> recordIterator =
+          getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
+      final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
+
+      iteratorList.add(augmentWithLogs(recordAndMessageIterator, pair, streamName));
     }
 
     return iteratorList;
@@ -126,37 +107,12 @@ public class PostgresXminHandler {
                                                          final String schemaName,
                                                          final String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair airbyteStream =
+    final AirbyteStreamNameNamespacePair airbyteStream =
         AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.unsafeQuery(
-            connection -> {
-              LOGGER.info("Preparing query for table: {}", tableName);
-              final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
-                  quoteString);
-              /*
-               * final String quotedCursorField = enquoteIdentifier(cursorInfo.getCursorField(),
-               * getQuoteString());
-               *
-               *
-               * final String wrappedColumnNames = getWrappedColumnNames(database, connection, columnNames,
-               * schemaName, tableName);
-               */
-              final StringBuilder sql = new StringBuilder(String.format("SELECT * FROM %s WHERE xmin::text::bigint > ?",
-                  fullTableName));
-
-              final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
-
-              final XminStatus currentStreamXminStatus = xminStateManager.getXminStatus(airbyteStream);
-              if (currentStreamXminStatus != null) {
-                preparedStatement.setLong(1, currentStreamXminStatus.getXminXidValue());
-              } else {
-                preparedStatement.setLong(1, 0L);
-              }
-              LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
-              return preparedStatement;
-            },
+            connection -> createXminQueryStatement(connection, columnNames, schemaName, tableName, airbyteStream),
             sourceOperations::rowToJson);
         return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final SQLException e) {
@@ -165,12 +121,38 @@ public class PostgresXminHandler {
     }, airbyteStream);
   }
 
-  public static boolean shouldUseXmin(final ConfiguredAirbyteCatalog catalog) {
-    return catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
-        .anyMatch(syncMode -> syncMode == SyncMode.INCREMENTAL);
+  private PreparedStatement createXminQueryStatement(
+      final Connection connection,
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName,
+      final AirbyteStreamNameNamespacePair airbyteStream) {
+    try {
+      LOGGER.info("Preparing query for table: {}", tableName);
+      final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
+          quoteString);
+
+      final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
+      final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE xmin::text::bigint > ?",
+          wrappedColumnNames, fullTableName));
+
+      final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
+
+      final XminStatus currentStreamXminStatus = xminStateManager.getXminStatus(airbyteStream);
+      if (currentStreamXminStatus != null) {
+        preparedStatement.setLong(1, currentStreamXminStatus.getXminXidValue());
+      } else {
+        preparedStatement.setLong(1, 0L);
+      }
+      LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
+      return preparedStatement;
+    } catch (final SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  private static AutoCloseableIterator<AirbyteMessage> getMessageIterator(
+  // Transforms the given iterator to create an {@link AirbyteRecordMessage}
+  private static AutoCloseableIterator<AirbyteMessage> getRecordIterator(
                                                                           final AutoCloseableIterator<JsonNode> recordIterator,
                                                                           final String streamName,
                                                                           final String namespace,
@@ -184,4 +166,29 @@ public class PostgresXminHandler {
             .withData(r)));
   }
 
+  // Augments the given iterator with record count logs.
+  private AutoCloseableIterator<AirbyteMessage> augmentWithLogs(final AutoCloseableIterator<AirbyteMessage> iterator,
+      final AirbyteStreamNameNamespacePair pair, final String streamName) {
+    final AtomicLong recordCount = new AtomicLong();
+    return AutoCloseableIterators.transform(iterator,
+        AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()),
+        r -> {
+          final long count = recordCount.incrementAndGet();
+          if (count % 10000 == 0) {
+            LOGGER.info("Reading stream {}. Records read: {}", streamName, count);
+          }
+          return r;
+        });
+  }
+
+  private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessage> recordIterator,
+      final AirbyteStreamNameNamespacePair pair) {
+    return  AutoCloseableIterators.transform(
+        autoCloseableIterator -> new XminStateIterator(
+            autoCloseableIterator,
+            pair,
+            xminStatus),
+        recordIterator,
+        AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()));
+  }
 }

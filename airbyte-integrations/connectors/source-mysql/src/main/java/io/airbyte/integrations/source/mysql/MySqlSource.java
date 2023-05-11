@@ -45,7 +45,6 @@ import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -260,7 +259,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
                                                                              final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
                                                                              final StateManager stateManager,
-                                                                             final Instant emittedAt, final List<AirbyteStateMessage> stateMessages) {
+                                                                             final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
@@ -299,7 +298,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     } else {
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager,
-          emittedAt, stateMessages);
+          emittedAt);
     }
   }
 
