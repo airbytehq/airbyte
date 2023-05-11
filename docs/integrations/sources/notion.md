@@ -61,6 +61,12 @@ The Notion source connector supports the following [sync modes](https://docs.air
 * [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (partially)
 * [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
+:::note
+
+The users stream does not support Incremental - Append sync mode.
+
+:::
+
 ## Supported Streams
 
 The Notion source connector supports the following streams. For more information, see the [Notion API](https://developers.notion.com/reference/intro).
@@ -72,7 +78,8 @@ The Notion source connector supports the following streams. For more information
 
 :::note
 
-The users stream does not support Incremental - Append sync mode.
+To sync data from blocks, databases, or pages the integration must be added to each desired page. Removing the integration connection from a page after it has been synced will cause the following syncs to fail.
+![image](https://github.com/airbytehq/airbyte/assets/104733644/5f9655a4-e627-49ff-857b-3fb81171dc68)
 
 :::
 
