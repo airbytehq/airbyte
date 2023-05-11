@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "from": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "to": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "strict": {
+      "type": "boolean"
+    },
+    "fields": {
+      "type": ["null", "string"]
+    },
+    "filter_field": {
+      "type": ["null", "string"],
+      "enum": ["project_state"]
+    },
+    "filter_list": {
+      "type": ["null", "string"],
+      "enum": ["Internal", "Tentative", "Confirmed"]
+    },
+    "sort_field": {
+      "type": ["null", "string"],
+      "enum": ["created", "updated"]
+    },
+    "sort_order": {
+      "type": ["null", "string"],
+      "enum": ["ascending", "descending"]
+    },
+    "project_code": {
+      "type": ["null", "string"]
+    },
+    "phase_name": {
+      "type": ["null", "string"]
+    },
+    "with_archived": {
+      "type": ["null", "boolean"]
+    },
+    "with_phases": {
+      "type": ["null", "boolean"]
+    },
+    "per_page": {
+      "type": ["null", "integer"],
+      "maximum": 1000
+    },
+    "page": {
+      "type": ["null", "integer"]
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    }
+  }
+}
