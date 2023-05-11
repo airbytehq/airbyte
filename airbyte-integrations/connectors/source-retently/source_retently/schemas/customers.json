@@ -28,25 +28,23 @@
     },
     "properties": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "label": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            },
-            "type": {
-              "type": "string"
-            },
-            "value": {
-              "type": ["string", "integer", "number", "boolean"]
-            }
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "value": {
+            "type": ["string", "integer", "number", "boolean"]
           }
         }
-      ]
+      }
     }
   }
 }

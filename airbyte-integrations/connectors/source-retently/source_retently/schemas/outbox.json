@@ -8,15 +8,6 @@
       "additionalProperties": true,
       "properties": {}
     },
-    "mandrillMessageId": {
-      "type": ["null", "string"]
-    },
-    "personTags": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
-    },
     "email": {
       "type": ["string", "null"]
     },
