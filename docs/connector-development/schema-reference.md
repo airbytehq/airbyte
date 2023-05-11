@@ -1,7 +1,7 @@
 # Schema Reference
 
 This document provides instructions on how to create a static schema for your Airbyte stream, which is necessary for integrating data from various sources. 
-You can check out all the supported data types and examples at [this link](./understanding-airbyte/supported-data-types.md).
+You can check out all the supported data types and examples at [this link](../understanding-airbyte/supported-data-types.md).
 
 
 For instance, the example record response for the schema is shown below:
