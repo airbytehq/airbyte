@@ -421,6 +421,7 @@ class ConnectorContext(PipelineContext):
         if self.state is ContextState.FAILURE:
             message += "🔴"
         message += f" {self.state.value['description']}"
-        if self.state is ContextState.FAILURE:
-            message += "\ncc. <!channel>"
+        # TODO: renable this when pipeline is stable
+        # if self.state is ContextState.FAILURE:
+        #     message += "\ncc. <!channel>"
         return message
