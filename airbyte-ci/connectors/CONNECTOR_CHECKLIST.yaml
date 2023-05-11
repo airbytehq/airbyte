@@ -8,4 +8,4 @@ paths:
     - Changelog updated in `docs/integrations/<source or destination>/<name>.md` with an entry for the new version. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
     - You, or an Airbyter, have run `/test` successfully on this PR - or on a non-forked branch
     - You, or an Airbyter, have run `/publish` successfully on this PR - or on a non-forked branch
-    - You've updated the connector's `metadata.yaml` file (new!)
+    - You've updated the connector's [metadata.yaml](https://docs.airbyte.com/connector-development/connector-metadata-file) file `new!`
