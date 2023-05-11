@@ -7,14 +7,10 @@ import logging
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Tuple, Union
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, AirbyteStreamStatus, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteCatalog, AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.utils.schema_helpers import split_config
-from airbyte_cdk.utils.event_timing import create_timer
-from airbyte_cdk.utils.stream_status_utils import as_airbyte_message as stream_status_as_airbyte_message
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .auth import AirtableAuth
 from .schema_helpers import SchemaHelpers
@@ -40,7 +36,9 @@ class SourceAirtable(AbstractSource):
         except Exception as e:
             return False, str(e)
 
-    def _remove_missed_streams_from_catalog(self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog) -> ConfiguredAirbyteCatalog:
+    def _remove_missed_streams_from_catalog(
+        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog
+    ) -> ConfiguredAirbyteCatalog:
         config, _ = split_config(config)
         stream_instances = {s.name: s for s in self.streams(config)}
         for index, configured_stream in enumerate(catalog.streams):

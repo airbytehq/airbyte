@@ -151,6 +151,7 @@ def prepared_stream():
         )
     }
 
+
 @pytest.fixture
 def make_airtable_stream(prepared_stream):
     def make(name):
@@ -161,6 +162,7 @@ def make_airtable_stream(prepared_stream):
             authenticator=fake_auth
         )
     return make
+
 
 @pytest.fixture
 def make_stream(prepared_stream):
@@ -178,6 +180,7 @@ def make_stream(prepared_stream):
         }
     return make
 
+
 @pytest.fixture
 def fake_catalog(make_stream):
     stream1 = make_stream(name="test_base/test_table1/abcdef")
@@ -185,6 +188,7 @@ def fake_catalog(make_stream):
     return ConfiguredAirbyteCatalog(
         streams=[stream1, stream2],
     )
+
 
 @pytest.fixture
 def fake_streams(make_airtable_stream):
