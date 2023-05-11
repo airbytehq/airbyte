@@ -39,7 +39,6 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -138,13 +137,9 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                     final JsonNode state)
       throws Exception {
     final AirbyteStateType supportedStateType = getSupportedStateType(config);
-    LOGGER.info("featureFlags.useStreamCapableState(): " + featureFlags.useStreamCapableState());
-    LOGGER.info("supportedStateType: " + supportedStateType);
-    final List<AirbyteStateMessage> stateMessages =
-        StateGeneratorUtils.deserializeInitialState(state, featureFlags.useStreamCapableState(), supportedStateType);
     final StateManager stateManager =
         StateManagerFactory.createStateManager(supportedStateType,
-            stateMessages, catalog);
+            StateGeneratorUtils.deserializeInitialState(state, featureFlags.useStreamCapableState(), supportedStateType), catalog);
     final Instant emittedAt = Instant.now();
 
     final Database database = createDatabase(config);

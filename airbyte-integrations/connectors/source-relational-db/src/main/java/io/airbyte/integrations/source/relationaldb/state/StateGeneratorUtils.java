@@ -227,7 +227,6 @@ public class StateGeneratorUtils {
   public static List<AirbyteStateMessage> deserializeInitialState(final JsonNode initialStateJson,
                                                                   final boolean useStreamCapableState,
                                                                   final AirbyteStateType supportedStateType) {
-    LOGGER.info("initial state json: " + initialStateJson);
     final Optional<StateWrapper> typedState = StateMessageHelper.getTypedState(initialStateJson,
         useStreamCapableState);
     return typedState.map((state) -> {
