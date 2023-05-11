@@ -62,7 +62,6 @@ class CheckConnectorImageDoesNotExist(PublishStep):
 
 
 class BuildConnectorForPublish(Step):
-
     title = "Build connector for publish"
 
     async def _run(self) -> StepResult:
@@ -174,7 +173,6 @@ async def run_connector_publish_pipeline(
     """
     async with semaphore:
         async with context:
-
             metadata_service_account: dagger.Secret = context.dagger_client.set_secret(
                 "metadata_service_account_key", sanitize_gcs_service_account_key(os.environ["METADATA_SERVICE_ACCOUNT_KEY"])
             )
