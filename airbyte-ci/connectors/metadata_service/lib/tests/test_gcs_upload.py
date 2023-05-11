@@ -66,7 +66,6 @@ def test_upload_metadata_to_gcs_valid_metadata(
     uploaded, blob_id = gcs_upload.upload_metadata_to_gcs(
         "my_bucket",
         metadata_file_path,
-        "my_service_account_path",
     )
 
     # Assertions
@@ -99,7 +98,6 @@ def test_upload_metadata_to_gcs_invalid_metadata(invalid_metadata_yaml_files):
         gcs_upload.upload_metadata_to_gcs(
             "my_bucket",
             metadata_file_path,
-            "my_service_account_path",
         )
 
 
@@ -109,5 +107,4 @@ def test_upload_metadata_to_gcs_non_existent_metadata_file():
         gcs_upload.upload_metadata_to_gcs(
             "my_bucket",
             metadata_file_path,
-            "my_service_account_path",
         )

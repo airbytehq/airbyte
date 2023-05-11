@@ -14,5 +14,5 @@ data:
   license: MIT
   name: Metadata Test Publish (internal)
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/oracle
+  supportUrl: https://docs.airbyte.com/integrations/sources/oracledsd
 metadataSpecVersion: "1.0"
