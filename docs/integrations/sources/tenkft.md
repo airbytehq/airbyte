@@ -50,3 +50,9 @@ The Tenkft source connector supports the following [sync modes](https://docs.air
 * [Projects](https://10kft.github.io/10kft-api/#list-projects)
 * [ProjectAssignments](https://10kft.github.io/10kft-api/#list-all-assignments)
 * [BillRates](https://10kft.github.io/10kft-api/#bill-rates)
+
+## Changelog
+
+| Version | Date       | Pull Request                                              | Subject            |
+|:--------|:-----------|:----------------------------------------------------------|:-------------------|
+| 1.0.0   | 2023-04-11 | [26003](https://github.com/airbytehq/airbyte/pull/26003)  | New Source: Tenkft |
