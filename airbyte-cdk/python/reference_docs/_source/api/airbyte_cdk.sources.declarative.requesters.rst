@@ -5,10 +5,9 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   airbyte_cdk.sources.declarative.requesters.error_handlers
    airbyte_cdk.sources.declarative.requesters.paginators
-   airbyte_cdk.sources.declarative.requesters.request_headers
    airbyte_cdk.sources.declarative.requesters.request_options
-   airbyte_cdk.sources.declarative.requesters.retriers
 
 Submodules
 ----------
@@ -21,10 +20,10 @@ airbyte\_cdk.sources.declarative.requesters.http\_requester module
    :undoc-members:
    :show-inheritance:
 
-airbyte\_cdk.sources.declarative.requesters.interpolated\_request\_input\_provider module
------------------------------------------------------------------------------------------
+airbyte\_cdk.sources.declarative.requesters.request\_option module
+------------------------------------------------------------------
 
-.. automodule:: airbyte_cdk.sources.declarative.requesters.interpolated_request_input_provider
+.. automodule:: airbyte_cdk.sources.declarative.requesters.request_option
    :members:
    :undoc-members:
    :show-inheritance:

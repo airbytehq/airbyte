@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -57,10 +57,6 @@ public enum JsonSchemaFormat {
     } else {
       return matchFormats.get(0);
     }
-  }
-
-  public String getJsonSchemaFormat() {
-    return jsonSchemaFormat;
   }
 
   public StandardSQLTypeName getBigQueryType() {

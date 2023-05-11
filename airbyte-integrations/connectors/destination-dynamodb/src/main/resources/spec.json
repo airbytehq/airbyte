@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/dynamodb",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/dynamodb",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,

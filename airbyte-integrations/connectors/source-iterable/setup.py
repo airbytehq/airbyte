@@ -1,13 +1,14 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
+    "airbyte-cdk",
     "pendulum~=2.1.2",
+    "python-dateutil~=2.8.2",
     "requests~=2.25",
 ]
 

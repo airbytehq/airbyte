@@ -47,7 +47,6 @@
     },
     "properties": {
       "type": "array",
-      "additionalProperties": false,
       "items": {
         "type": ["null", "object"],
         "additionalProperties": true,

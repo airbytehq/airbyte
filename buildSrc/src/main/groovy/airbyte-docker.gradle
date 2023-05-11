@@ -56,10 +56,31 @@ abstract class AirbyteDockerTask extends DefaultTask {
         }
     }
 
+    def buildDockerfileWithLocalCdk(String scriptPath, String fileName) {
+        if (project.file(fileName).exists()) {
+            def tag = DockerHelpers.getDevTaggedImage(projectDir, dockerfileName)
+            project.exec {
+                environment "CONNECTOR_TAG", tag
+                environment "CONNECTOR_NAME", project.findProperty('connectorAcceptanceTest.connectorName')
+                commandLine scriptPath
+            }
+        }
+    }
+
     @TaskAction
     def dockerTask() {
-        def scriptPath = Paths.get(rootDir.absolutePath, 'tools/bin/build_image.sh').toString()
-        buildDockerfile(scriptPath, dockerfileName)
+        if (
+            project.hasProperty('connectorAcceptanceTest.useLocalCdk') &&
+            project.properties["connectorAcceptanceTest.useLocalCdk"] &&
+            project.parent.project.name.equals("connectors")
+        ) {
+            def scriptPath = Paths.get(rootDir.absolutePath, 'airbyte-integrations/scripts/build-connector-image-with-local-cdk.sh').toString()
+            buildDockerfileWithLocalCdk(scriptPath, dockerfileName)
+        }
+        else {
+            def scriptPath = Paths.get(rootDir.absolutePath, 'tools/bin/build_image.sh').toString()
+            buildDockerfile(scriptPath, dockerfileName)
+        }
     }
 }
 
@@ -117,8 +138,8 @@ class AirbyteDockerPlugin implements Plugin<Project> {
         return "$stdout".toString().trim()
     }
 
-    // Some image tags rely on environment variables (e.g. "FROM openjdk:${JDK_VERSION}-slim").
-    // dump those into a "sh -c 'echo ...'" command to resolve them (e.g. "openjdk:17-slim")
+    // Some image tags rely on environment variables (e.g. "FROM amazoncorretto:${JDK_VERSION}").
+    // dump those into a "sh -c 'echo ...'" command to resolve them (e.g. "amazoncorretto:17.0.4")
     static String resolveEnvironmentVariables(Project project, String str) {
         def stdout = new ByteArrayOutputStream()
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from datetime import datetime
@@ -77,6 +77,7 @@ def configured_stream1() -> ConfiguredAirbyteStream:
                 "type": "object",
                 "properties": {"col1": {"type": "string"}, "col2": {"type": "integer"}},
             },
+            supported_sync_modes=[SyncMode.incremental],
         ),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
@@ -92,6 +93,7 @@ def configured_stream2() -> ConfiguredAirbyteStream:
                 "type": "object",
                 "properties": {"col1": {"type": "string"}, "col2": {"type": "integer"}},
             },
+            supported_sync_modes=[SyncMode.incremental],
         ),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb;
@@ -19,5 +19,6 @@ public class TableInfo<T> {
   private final String name;
   private final List<T> fields;
   private final List<String> primaryKeys;
+  private final List<String> cursorFields;
 
 }

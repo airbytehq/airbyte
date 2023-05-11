@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -8,6 +8,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
+import static io.airbyte.db.jdbc.JdbcUtils.ALLOWED_CURSOR_TYPES;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -17,6 +18,9 @@ import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.format.DateTimeParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +40,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final int columnTypeInt = resultSet.getMetaData().getColumnType(colIndex);
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
     final JDBCType columnType = safeGetJdbcType(columnTypeInt);
@@ -54,6 +58,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
       case DATE -> putDate(json, columnName, resultSet, colIndex);
       case TIME -> putTime(json, columnName, resultSet, colIndex);
       case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
+      case TIMESTAMP_WITH_TIMEZONE -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
       case ARRAY -> putArray(json, columnName, resultSet, colIndex);
       default -> putDefault(json, columnName, resultSet, colIndex);
@@ -61,15 +66,17 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public void setStatementField(final PreparedStatement preparedStatement,
-                                final int parameterIndex,
-                                final JDBCType cursorFieldType,
-                                final String value)
+  public void setCursorField(final PreparedStatement preparedStatement,
+                             final int parameterIndex,
+                             final JDBCType cursorFieldType,
+                             final String value)
       throws SQLException {
     switch (cursorFieldType) {
 
       case TIMESTAMP -> setTimestamp(preparedStatement, parameterIndex, value);
+      case TIMESTAMP_WITH_TIMEZONE -> setTimestampWithTimezone(preparedStatement, parameterIndex, value);
       case TIME -> setTime(preparedStatement, parameterIndex, value);
+      case TIME_WITH_TIMEZONE -> setTimeWithTimezone(preparedStatement, parameterIndex, value);
       case DATE -> setDate(preparedStatement, parameterIndex, value);
       case BIT -> setBit(preparedStatement, parameterIndex, value);
       case BOOLEAN -> setBoolean(preparedStatement, parameterIndex, value);
@@ -83,12 +90,29 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
       case BINARY, BLOB -> setBinary(preparedStatement, parameterIndex, value);
       // since cursor are expected to be comparable, handle cursor typing strictly and error on
       // unrecognized types
-      default -> throw new IllegalArgumentException(String.format("%s is not supported.", cursorFieldType));
+      default -> throw new IllegalArgumentException(String.format("%s cannot be used as a cursor.", cursorFieldType));
+    }
+  }
+
+  protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value)
+      throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  protected void setTimeWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      throw new RuntimeException(e);
     }
   }
 
   @Override
-  public JDBCType getFieldType(final JsonNode field) {
+  public JDBCType getDatabaseFieldType(final JsonNode field) {
     try {
       return JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
     } catch (final IllegalArgumentException ex) {
@@ -102,12 +126,17 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public JsonSchemaType getJsonType(JDBCType jdbcType) {
+  public boolean isCursorType(final JDBCType type) {
+    return ALLOWED_CURSOR_TYPES.contains(type);
+  }
+
+  @Override
+  public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
-      case TINYINT, SMALLINT -> JsonSchemaType.NUMBER;
-      case INTEGER -> JsonSchemaType.NUMBER;
-      case BIGINT -> JsonSchemaType.NUMBER;
+      case TINYINT, SMALLINT -> JsonSchemaType.INTEGER;
+      case INTEGER -> JsonSchemaType.INTEGER;
+      case BIGINT -> JsonSchemaType.INTEGER;
       case FLOAT, DOUBLE -> JsonSchemaType.NUMBER;
       case REAL -> JsonSchemaType.NUMBER;
       case NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;

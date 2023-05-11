@@ -5,50 +5,57 @@ This page guides you through setting up the Zendesk Support source connector.
 ## Prerequisites
 
 - Locate your Zendesk subdomain found in your account URL. For example, if your account URL is `https://{MY_SUBDOMAIN}.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
-- (For Airbyte OSS) Find the email address associated with your Zendesk account. Also, generate an [API token](https://support.zendesk.com/hc/en-us/articles/4408889192858-Generating-a-new-API-token) for the account.
+- (For Airbyte Open Source) Find the email address associated with your Zendesk account. Also, generate an [API token](https://support.zendesk.com/hc/en-us/articles/4408889192858-Generating-a-new-API-token) for the account.
 
 ## Set up the Zendesk Support source connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte OSS account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**. 
 3. On the Set up the source page, select **Zendesk Support** from the Source type dropdown.
 4. Enter a name for your source.
 5. For **Subdomain**, enter your [Zendesk subdomain](#prerequisites).
-6. For **Start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-7. You can use OAuth or an API key to authenticate your Zendesk Support account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte OSS.
+6. For **Start date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. You can use OAuth or an API key to authenticate your Zendesk Support account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte Open Source.
     - To authenticate using OAuth for Airbyte Cloud, click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account. 
-    - To authenticate using an API key for Airbyte OSS, select **API key** from the Authentication dropdown and enter your [API key](#prerequisites). Enter the **Email** associated with your Zendesk Support account.   
+    - To authenticate using an API key for Airbyte Open Source, select **API key** from the Authentication dropdown and enter your [API key](#prerequisites). Enter the **Email** associated with your Zendesk Support account.   
 8. Click **Set up source**.
 
 ## Supported sync modes
 
 The Zendesk Support source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
- - Full Refresh - overwrite
- - Full Refresh - append
- - Incremental - append
+ - Full Refresh | Overwrite
+ - Full Refresh | Append
+ - Incremental Sync | Append
+ - Incremental Sync | Deduped History
 
-## Supported streams 
+## Supported streams
+
+:::note
+There are two types of incremental sync:
+1. Incremental (standard server-side, where API returns only the data updated or generated since the last sync)
+2. Client-Side Incremental (API returns all available data and connector filters out only new records)
+:::
 
 The Zendesk Support source connector supports the following streams:
 
 * [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
 * [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles)
-* [Groups](https://developer.zendesk.com/rest_api/docs/support/groups)
-* [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships)
-* [Macros](https://developer.zendesk.com/rest_api/docs/support/macros)
-* [Organizations](https://developer.zendesk.com/rest_api/docs/support/organizations)
-* [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings)
+* [Groups](https://developer.zendesk.com/rest_api/docs/support/groups) \(Incremental\)
+* [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships) \(Incremental\)
+* [Macros](https://developer.zendesk.com/rest_api/docs/support/macros) \(Incremental\)
+* [Organizations](https://developer.zendesk.com/rest_api/docs/support/organizations) \(Incremental\)
+* [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings) \(Incremental\)
 * [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules)
 * [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies)
 * [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
-* [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based)
-* [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits)
-* [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export)
-* [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields)
-* [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms)
-* [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics)
-* [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/)
-* [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export)
+* [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) \(Incremental\)
+* [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits) \(Client-Side Incremental\)
+* [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export)  \(Incremental\)
+* [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields) \(Incremental\)
+* [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms) \(Incremental\)
+* [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics) \(Incremental\)
+* [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/) \(Incremental\)
+* [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
 
 ## Performance considerations
 
@@ -60,7 +67,24 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `0.2.12` | 2022-06-30 | [14304](https://github.com/airbytehq/airbyte/pull/14304) | Fixed Pagination for Group Membership stream|
+| `0.2.29` | 2023-04-18 | [25214](https://github.com/airbytehq/airbyte/pull/25214) | Add missing fields to `Tickets` stream                                                         |
+| `0.2.28` | 2023-03-21 | [24053](https://github.com/airbytehq/airbyte/pull/24053) | Fix stream `sla_policies` schema data type error (events.value)                                                                                                                                                                    |
+| `0.2.27` | 2023-03-22 | [22817](https://github.com/airbytehq/airbyte/pull/22817) | Specified date formatting in specification                                                     |
+| `0.2.26` | 2023-03-20 | [24252](https://github.com/airbytehq/airbyte/pull/24252) | Handle invalid `start_date` when checking connection                                                                                                                                                                               |
+| `0.2.25` | 2023-02-28 | [22308](https://github.com/airbytehq/airbyte/pull/22308) | Add `AvailabilityStrategy` for all streams                                                                                                                                                                                         |
+| `0.2.24` | 2023-02-17 | [23246](https://github.com/airbytehq/airbyte/pull/23246) | Handle `StartTimeTooRecent` error for Tickets stream                                                                                                                                                                               |
+| `0.2.23` | 2023-02-15 | [23035](https://github.com/airbytehq/airbyte/pull/23035) | Handle 403 Error                                                                                                                                                                                                                   |
+| `0.2.22` | 2023-02-14 | [22483](https://github.com/airbytehq/airbyte/pull/22483) | Fix test; handle 400 error                                                                                                                                                                                                         |
+| `0.2.21` | 2023-01-27 | [22027](https://github.com/airbytehq/airbyte/pull/22027) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                                                                                                                        |
+| `0.2.20` | 2022-12-28 | [20900](https://github.com/airbytehq/airbyte/pull/20900) | Remove synchronous time.sleep, add logging, reduce backoff time                                                                                                                                                                    |
+| `0.2.19` | 2022-12-09 | [19967](https://github.com/airbytehq/airbyte/pull/19967) | Fix reading response for more than 100k records                                                                                                                                                                                    |
+| `0.2.18` | 2022-11-29 | [19432](https://github.com/airbytehq/airbyte/pull/19432) | Revert changes from version 0.2.15, use a test read instead                                                                                                                                                                        |
+| `0.2.17` | 2022-11-24 | [19792](https://github.com/airbytehq/airbyte/pull/19792) | Transform `ticket_comments.via` "-" to null                                                                                                                                                                                        |
+| `0.2.16` | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                                                                                                                                                      |
+| `0.2.15` | 2022-08-03 | [15233](https://github.com/airbytehq/airbyte/pull/15233) | Added `subscription plan` check on `streams discovery` step to remove streams that are not accessible for fetch due to subscription plan restrictions                                                                              |
+| `0.2.14` | 2022-07-27 | [15036](https://github.com/airbytehq/airbyte/pull/15036) | Convert `ticket_audits.previous_value` values to string                                                                                                                                                                            |
+| `0.2.13` | 2022-07-21 | [14829](https://github.com/airbytehq/airbyte/pull/14829) | Convert `tickets.custom_fields` values to string                                                                                                                                                                                   |
+| `0.2.12` | 2022-06-30 | [14304](https://github.com/airbytehq/airbyte/pull/14304) | Fixed Pagination for Group Membership stream                                                                                                                                                                                       |
 | `0.2.11` | 2022-06-24 | [14112](https://github.com/airbytehq/airbyte/pull/14112) | Fixed "Retry-After" non integer value                                                                                                                                                                                              |
 | `0.2.10` | 2022-06-14 | [13757](https://github.com/airbytehq/airbyte/pull/13757) | Fixed the bug with `TicketMetrics` stream, HTTP Error 429, caused by lots of API requests                                                                                                                                          |
 | `0.2.9`  | 2022-05-27 | [13261](https://github.com/airbytehq/airbyte/pull/13261) | Bugfix for the unhandled [ChunkedEncodingError](https://github.com/airbytehq/airbyte/issues/12591) and [ConnectionError](https://github.com/airbytehq/airbyte/issues/12155)                                                        |

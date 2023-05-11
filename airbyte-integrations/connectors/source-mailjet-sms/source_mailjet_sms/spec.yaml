@@ -1,0 +1,30 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/mailjet-sms
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Mailjet Sms Spec
+  type: object
+  required:
+    - token
+  additionalProperties: true
+  properties:
+    token:
+      title: Access Token
+      type: string
+      description: >-
+        Your access token. See <a
+        href="https://dev.mailjet.com/sms/reference/overview/authentication">here</a>.
+      airbyte_secret: true
+    start_date:
+      title: Start date
+      type: integer
+      description: Retrieve SMS messages created after the specified timestamp. Required format - Unix timestamp.
+      pattern: ^[0-9]*$
+      examples:
+        - 1666261656
+    end_date:
+      title: End date
+      type: integer
+      description: Retrieve SMS messages created before the specified timestamp. Required format - Unix timestamp.
+      pattern: ^[0-9]*$
+      examples:
+        - 1666281656

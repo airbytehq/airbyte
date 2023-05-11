@@ -1,12 +1,14 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
+import backoff
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
@@ -15,6 +17,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import IncrementalMixin, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 # https://marketingapi.snapchat.com/docs/#core-metrics
@@ -83,6 +86,8 @@ METRICS = [
     "custom_event_3",
     "custom_event_4",
     "custom_event_5",
+    "story_opens",
+    "story_completes",
 ]
 
 METRICS_NOT_HOURLY = [
@@ -93,6 +98,8 @@ METRICS_NOT_HOURLY = [
     "total_reach",
     "earned_reach",
 ]
+
+logger = logging.getLogger("airbyte")
 
 
 class GranularityType(Enum):
@@ -156,6 +163,7 @@ def get_parent_ids(parent) -> List:
 class SnapchatMarketingStream(HttpStream, ABC):
     url_base = "https://adsapi.snapchat.com/v1/"
     primary_key = "id"
+    raise_on_http_errors = True
 
     def __init__(self, start_date, end_date, **kwargs):
         super().__init__(**kwargs)
@@ -200,13 +208,20 @@ class SnapchatMarketingStream(HttpStream, ABC):
         Also, the client side filtering for incremental sync is used
         """
 
-        json_response = response.json().get(self.response_root_name)
+        json_response = response.json().get(self.response_root_name, [])
         for resp in json_response:
             if self.response_item_name not in resp:
                 error_text = f"stream {self.name}: field named '{self.response_item_name}' is absent in the response: {resp}"
                 self.logger.error(error_text)
                 raise SnapchatMarketingException(error_text)
             yield resp.get(self.response_item_name)
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 403:
+            setattr(self, "raise_on_http_errors", False)
+            self.logger.warning(f"Got permission error when accessing URL {response.request.url}. " f"Skipping {self.name} stream.")
+            return False
+        return super().should_retry(response)
 
 
 class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
@@ -470,7 +485,7 @@ class StatsIncremental(Stats, IncrementalMixin):
             self.number_of_last_records += 1
             # Update state if 'last' records for all dependant entities have been read
             if self.number_of_parent_ids == self.number_of_last_records:
-                self.state = record_end_date
+                self.state = {self.cursor_field: record_end_date}
 
     @property
     def state(self):
@@ -478,7 +493,7 @@ class StatsIncremental(Stats, IncrementalMixin):
 
     @state.setter
     def state(self, value):
-        self._state[self.cursor_field] = value
+        self._state = value
 
     def parse_response(
         self,
@@ -492,7 +507,7 @@ class StatsIncremental(Stats, IncrementalMixin):
 
         # Update state for each date slice (start_date), it ensures that previous date slices have been read
         # and can be skipped in next incremental sync
-        self.state = stream_slice[self.cursor_field]
+        self.state = {self.cursor_field: stream_slice[self.cursor_field]}
 
         for record in super().parse_response(
             response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
@@ -722,39 +737,35 @@ class CampaignsStatsLifetime(Lifetime, Stats):
     parent = Campaigns
 
 
-class SnapchatAdsOauth2Authenticator(Oauth2Authenticator):
-    """Request example for API token extraction:
-    curl -X POST https://accounts.snapchat.com/login/oauth2/access_token \
-      -d "refresh_token={refresh_token}" \
-      -d "client_id={client_id}" \
-      -d "client_secret={client_secret}"  \
-      -d "grant_type=refresh_token"  \
-    """
-
-    def __init__(self, config):
-        super().__init__(
-            token_refresh_endpoint="https://accounts.snapchat.com/login/oauth2/access_token",
-            client_id=config["client_id"],
-            client_secret=config["client_secret"],
-            refresh_token=config["refresh_token"],
-        )
-
+class SnapchatOauth2Authenticator(Oauth2Authenticator):
+    @backoff.on_exception(
+        backoff.expo,
+        DefaultBackoffException,
+        on_backoff=lambda details: logger.info(
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+        ),
+        max_time=300,
+    )
     def refresh_access_token(self) -> Tuple[str, int]:
-        response_json = None
+        """
+        returns a tuple of (access_token, token_lifespan_in_seconds)
+        """
         try:
-            response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
-            response_json = response.json()
+            response = requests.request(
+                method="POST",
+                url=self.token_refresh_endpoint,
+                data=self.get_refresh_request_body(),
+                headers=self.get_refresh_access_token_headers(),
+            )
             response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            if response_json and "error" in response_json:
-                raise Exception(
-                    "Error refreshing access token. Error: {}; Error details: {}; Exception: {}".format(
-                        response_json["error"], response_json["error_description"], e
-                    )
-                ) from e
-            raise Exception(f"Error refreshing access token: {e}") from e
-        else:
+            response_json = response.json()
             return response_json["access_token"], response_json["expires_in"]
+        except requests.exceptions.RequestException as e:
+            if e.response.status_code == 429 or e.response.status_code >= 500:
+                raise DefaultBackoffException(request=e.response.request, response=e.response)
+            raise
+        except Exception as e:
+            raise Exception(f"Error while refreshing access token: {e}") from e
 
 
 # Source
@@ -762,9 +773,13 @@ class SourceSnapchatMarketing(AbstractSource):
     """Source Snapchat Marketing helps to retrieve the different Ad data from Snapchat business account"""
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-
         try:
-            auth = SnapchatAdsOauth2Authenticator(config)
+            auth = SnapchatOauth2Authenticator(
+                token_refresh_endpoint="https://accounts.snapchat.com/login/oauth2/access_token",
+                client_id=config["client_id"],
+                client_secret=config["client_secret"],
+                refresh_token=config["refresh_token"],
+            )
             token = auth.get_access_token()
             url = f"{SnapchatMarketingStream.url_base}me"
 
@@ -776,7 +791,6 @@ class SourceSnapchatMarketing(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-
         # https://marketingapi.snapchat.com/docs/#core-metrics
         # IMPORTANT: Metrics are finalized 48 hours after the end of the day in the Ad Account’s timezone.
         DELAYED_DAYS = 2
@@ -786,7 +800,12 @@ class SourceSnapchatMarketing(AbstractSource):
         # 2. when timezone is not specified, default account's timezone will be used automatically
         default_end_date = pendulum.now().subtract(days=DELAYED_DAYS).to_date_string()
         kwargs = {
-            "authenticator": SnapchatAdsOauth2Authenticator(config),
+            "authenticator": SnapchatOauth2Authenticator(
+                token_refresh_endpoint="https://accounts.snapchat.com/login/oauth2/access_token",
+                client_id=config["client_id"],
+                client_secret=config["client_secret"],
+                refresh_token=config["refresh_token"],
+            ),
             "start_date": config["start_date"],
             "end_date": config.get("end_date", default_end_date),
         }

@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/snowflake",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/snowflake",
   "supportsIncremental": true,
   "supportsNormalization": true,
   "supportsDBT": true,
@@ -19,6 +19,8 @@
         ],
         "type": "string",
         "title": "Host",
+        "pattern": "^(http(s)?:\\/\\/)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.snowflakecomputing\\.com)$",
+        "pattern_descriptor": "{account_name}.snowflakecomputing.com or {accountname}.{aws_location}.aws.snowflakecomputing.com",
         "order": 0
       },
       "role": {
@@ -62,8 +64,8 @@
         "type": "object",
         "oneOf": [
           {
-            "type": "object",
             "title": "OAuth2.0",
+            "type": "object",
             "order": 0,
             "required": ["access_token", "refresh_token"],
             "properties": {
@@ -101,11 +103,46 @@
             }
           },
           {
+            "title": "Key Pair Authentication",
+            "type": "object",
+            "order": 1,
+            "required": ["private_key"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Key Pair Authentication",
+                "enum": ["Key Pair Authentication"],
+                "default": "Key Pair Authentication",
+                "order": 0
+              },
+              "private_key": {
+                "type": "string",
+                "title": "Private Key",
+                "description": "RSA Private key to use for Snowflake connection. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake\">docs</a> for more information on how to obtain this key.",
+                "multiline": true,
+                "airbyte_secret": true
+              },
+              "private_key_password": {
+                "type": "string",
+                "title": "Passphrase",
+                "description": "Passphrase for private key",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
             "title": "Username and Password",
             "type": "object",
             "required": ["password"],
-            "order": 1,
+            "order": 2,
             "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Username and Password",
+                "enum": ["Username and Password"],
+                "default": "Username and Password",
+                "order": 0
+              },
               "password": {
                 "description": "Enter the password associated with the username.",
                 "type": "string",
@@ -283,9 +320,13 @@
               "file_name_pattern": {
                 "type": "string",
                 "description": "The pattern allows you to set the file-name format for the S3 staging file(s)",
-                "title": "S3 Filename pattern (Optional)",
+                "title": "S3 Filename pattern",
                 "examples": [
-                  "{date}", "{date:yyyy_MM}", "{timestamp}", "{part_number}", "{sync_id}"
+                  "{date}",
+                  "{date:yyyy_MM}",
+                  "{timestamp}",
+                  "{part_number}",
+                  "{sync_id}"
                 ],
                 "order": 7
               }
@@ -332,60 +373,18 @@
                 "order": 3
               }
             }
-          },
-          {
-            "title": "Azure Blob Storage Staging",
-            "description": "Recommended for large production workloads for better speed and scalability.",
-            "required": [
-              "method",
-              "azure_blob_storage_account_name",
-              "azure_blob_storage_container_name",
-              "azure_blob_storage_sas_token"
-            ],
-            "properties": {
-              "method": {
-                "title": "",
-                "description": "",
-                "type": "string",
-                "enum": ["Azure Blob Staging"],
-                "default": "Azure Blob Staging",
-                "order": 0
-              },
-              "azure_blob_storage_endpoint_domain_name": {
-                "title": "Azure Blob Storage Endpoint",
-                "type": "string",
-                "default": "blob.core.windows.net",
-                "description": "Enter the Azure Blob Storage <a href=\"https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#storage-account-endpoints\">endpoint domain name</a>",
-                "examples": ["blob.core.windows.net"],
-                "order": 1
-              },
-              "azure_blob_storage_account_name": {
-                "title": "Azure Blob Storage <a href=\"https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#storage-account-endpoints\">account name</a>",
-                "type": "string",
-                "description": "Enter your Azure Blob Storage account name",
-                "examples": ["airbyte5storage"],
-                "order": 2
-              },
-              "azure_blob_storage_container_name": {
-                "title": "Azure Blob Storage Container Name",
-                "type": "string",
-                "description": "Enter your Azure Blob Storage <a href=\"https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names\">container name</a>",
-                "examples": ["airbytetestcontainername"],
-                "order": 3
-              },
-              "azure_blob_storage_sas_token": {
-                "title": "SAS Token",
-                "type": "string",
-                "airbyte_secret": true,
-                "description": "Enter the <a href=\"https://docs.snowflake.com/en/user-guide/data-load-azure-config.html#option-2-generating-a-sas-token\">Shared access signature</a> (SAS) token to grant Snowflake limited access to objects in your Azure Blob Storage account",
-                "examples": [
-                  "?sv=2016-05-31&ss=b&srt=sco&sp=rwdl&se=2018-06-27T10:05:50Z&st=2017-06-27T02:05:50Z&spr=https,http&sig=bgqQwoXwxzuD2GJfagRg7VOS8hzNr3QLT7rhS8OFRLQ%3D"
-                ],
-                "order": 4
-              }
-            }
           }
         ]
+      },
+      "file_buffer_count": {
+        "title": "File Buffer Count",
+        "type": "integer",
+        "minimum": 10,
+        "maximum": 50,
+        "default": 10,
+        "description": "Number of file buffers allocated for writing data. Increasing this number is beneficial for connections using Change Data Capture (CDC) and up to the number of streams within a connection. Increasing the number of file buffers past the maximum number of streams has deteriorating effects",
+        "examples": ["10"],
+        "order": 9
       }
     }
   },

@@ -8,11 +8,11 @@ Flexport source uses [Flexport API](https://developers.flexport.com/s/api) to ex
 
 This Source is capable of syncing the following data as streams:
 
-- [Companies](https://apidocs.flexport.com/reference/company)
-- [Locations](https://apidocs.flexport.com/reference/location)
-- [Products](https://apidocs.flexport.com/reference/product)
-- [Invoices](https://apidocs.flexport.com/reference/invoices)
-- [Shipments](https://apidocs.flexport.com/reference/shipment)
+- [Companies](https://apidocs.flexport.com/v3/tag/Company)
+- [Locations](https://apidocs.flexport.com/v3/tag/Location)
+- [Products](https://apidocs.flexport.com/v3/tag/Product)
+- [Invoices](https://apidocs.flexport.com/v3/tag/Invoices)
+- [Shipments](https://apidocs.flexport.com/v3/tag/Shipment)
 
 ### Data type mapping
 
@@ -40,10 +40,11 @@ This Source is capable of syncing the following data as streams:
 
 ### Authentication
 
-Authentication uses a pre-created API token which can be [created in the UI](https://apidocs.flexport.com/reference/authentication).
+Authentication uses a pre-created API token which can be [created in the UI](https://apidocs.flexport.com/v3/tag/Authentication/).
 
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2022-07-26 | [15033](https://github.com/airbytehq/airbyte/pull/15033) | Source Flexport: Update schemas |
 | 0.1.0 | 2021-12-14 | [8777](https://github.com/airbytehq/airbyte/pull/8777) | New Source: Flexport |

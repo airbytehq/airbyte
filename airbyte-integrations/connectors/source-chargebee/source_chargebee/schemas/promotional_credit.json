@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Payment Source",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "customer_id": {
+      "type": ["string", "null"]
+    },
+    "type": {
+      "type": ["string", "null"],
+      "enum": ["increment", "decrement"]
+    },
+    "amount_in_decimal": {
+      "type": ["string", "null"]
+    },
+    "amount": {
+      "type": ["integer", "null"]
+    },
+    "currency_code": {
+      "type": ["string", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "credit_type": {
+      "type": ["string", "null"],
+      "enum": ["loyalty_credits", "referral_rewards", "general"]
+    },
+    "reference": {
+      "type": ["string", "null"]
+    },
+    "closing_balance": {
+      "type": ["integer", "null"]
+    },
+    "done_by": {
+      "type": ["string", "null"]
+    },
+    "created_at": {
+      "type": ["integer", "null"]
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

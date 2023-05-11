@@ -1,10 +1,10 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import base64
 import logging
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import pendulum
 import requests
@@ -12,6 +12,8 @@ from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
+from facebook_business.adobjects.adimage import AdImage
+from facebook_business.adobjects.user import User
 
 from .base_insight_streams import AdsInsights
 from .base_streams import FBMarketingIncrementalStream, FBMarketingReversedIncrementalStream, FBMarketingStream
@@ -61,11 +63,23 @@ class AdCreatives(FBMarketingStream):
         """Read with super method and append thumbnail_data_url if enabled"""
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             if self._fetch_thumbnail_images:
-                record["thumbnail_data_url"] = fetch_thumbnail_data_url(record.get("thumbnail_url"))
+                thumbnail_url = record.get("thumbnail_url")
+                if thumbnail_url:
+                    record["thumbnail_data_url"] = fetch_thumbnail_data_url(thumbnail_url)
             yield record
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         return self._api.account.get_ad_creatives(params=params)
+
+
+class CustomConversions(FBMarketingStream):
+    """doc: https://developers.facebook.com/docs/marketing-api/reference/custom-conversion"""
+
+    entity_prefix = "customconversion"
+    enable_deleted = False
+
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+        return self._api.account.get_custom_conversions(params=params)
 
 
 class Ads(FBMarketingIncrementalStream):
@@ -134,13 +148,14 @@ class Activities(FBMarketingIncrementalStream):
         return {"since": since.int_timestamp}
 
 
-class Videos(FBMarketingIncrementalStream):
+class Videos(FBMarketingReversedIncrementalStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/video"""
 
     entity_prefix = "video"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ad_videos(params=params)
+        # Remove filtering as it is not working for this stream since 2023-01-13
+        return self._api.account.get_ad_videos(params=params, fields=self.fields)
 
 
 class AdAccount(FBMarketingStream):
@@ -148,6 +163,29 @@ class AdAccount(FBMarketingStream):
 
     use_batch = False
     enable_deleted = False
+
+    def get_task_permissions(self) -> Set[str]:
+        """https://developers.facebook.com/docs/marketing-api/reference/ad-account/assigned_users/"""
+        res = set()
+        me = User(fbid="me", api=self._api.api)
+        for business_user in me.get_business_users():
+            assigned_users = self._api.account.get_assigned_users(params={"business": business_user["business"].get_id()})
+            for assigned_user in assigned_users:
+                if business_user.get_id() == assigned_user.get_id():
+                    res.update(set(assigned_user["tasks"]))
+        return res
+
+    @cached_property
+    def fields(self) -> List[str]:
+        properties = super().fields
+        # https://developers.facebook.com/docs/marketing-apis/guides/javascript-ads-dialog-for-payments/
+        # To access "funding_source_details", the user making the API call must have a MANAGE task permission for
+        # that specific ad account.
+        if "funding_source_details" in properties and "MANAGE" not in self.get_task_permissions():
+            properties.remove("funding_source_details")
+        if "is_prepay_account" in properties and "MANAGE" not in self.get_task_permissions():
+            properties.remove("is_prepay_account")
+        return properties
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         """noop in case of AdAccount"""
@@ -159,6 +197,9 @@ class Images(FBMarketingReversedIncrementalStream):
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         return self._api.account.get_ad_images(params=params, fields=self.fields)
+
+    def get_record_deleted_status(self, record) -> bool:
+        return record[AdImage.Field.status] == AdImage.Status.deleted
 
 
 class AdsInsightsAgeAndGender(AdsInsights):

@@ -28,7 +28,7 @@
     },
     "cadence": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -40,7 +40,7 @@
     },
     "person": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -52,7 +52,7 @@
     },
     "user": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]
@@ -64,7 +64,7 @@
     },
     "latest_action": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "_href": {
           "type": ["null", "string"]

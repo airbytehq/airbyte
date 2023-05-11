@@ -1,7 +1,9 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+
+from typing import Any
 
 from requests import HTTPError
 
@@ -31,3 +33,12 @@ class HubspotAccessDenied(HubspotError):
 
 class HubspotRateLimited(HubspotError):
     """429 Rate Limit Reached"""
+
+
+class InvalidStartDateConfigError(Exception):
+    """Raises when the User inputs wrong or invalid `start_date` in inout configuration"""
+
+    def __init__(self, actual_value: Any, message: str):
+        super().__init__(
+            f"The value for `start_date` entered `{actual_value}` is ivalid and could not be processed.\nPlease use the real date/time value.\nFull message: {message}"
+        )

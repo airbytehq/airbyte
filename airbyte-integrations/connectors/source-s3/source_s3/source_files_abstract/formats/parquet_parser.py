@@ -1,11 +1,16 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 from typing import Any, BinaryIO, Iterator, List, Mapping, TextIO, Tuple, Union
+from urllib.parse import unquote
 
 import pyarrow.parquet as pq
+from airbyte_cdk.models import FailureType
 from pyarrow.parquet import ParquetFile
+from source_s3.exceptions import S3Exception
+from source_s3.source_files_abstract.file_info import FileInfo
 
 from .abstract_file_parser import AbstractFileParser
 from .parquet_spec import ParquetFormat
@@ -18,6 +23,7 @@ PARQUET_TYPES = {
     "boolean": ("boolean", ["BOOLEAN"], None),
     "number": ("number", ["DOUBLE", "FLOAT"], None),
     "integer": ("integer", ["INT32", "INT64", "INT96"], None),
+    "decimal": ("number", ["INT32", "INT64", "FIXED_LEN_BYTE_ARRAY"], None),
     # supported by PyArrow types
     "timestamp": ("string", ["INT32", "INT64", "INT96"], lambda v: v.isoformat()),
     "date": ("string", ["INT32", "INT64", "INT96"], lambda v: v.isoformat()),
@@ -84,7 +90,7 @@ class ParquetParser(AbstractFileParser):
             return func(field_value) if func else field_value
         raise TypeError(f"unsupported field type: {logical_type}, value: {field_value}")
 
-    def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
+    def get_inferred_schema(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> dict:
         """
         https://arrow.apache.org/docs/python/parquet.html#finer-grained-reading-and-writing
 
@@ -93,13 +99,13 @@ class ParquetParser(AbstractFileParser):
         reader = self._init_reader(file)
         schema_dict = {
             field.name: self.parse_field_type(field.logical_type.type.lower(), field.physical_type)[0] for field in reader.schema
-        }
+        } | {x: "string" for x in self.get_partition_columns(file_info.key)}
         if not schema_dict:
             # pyarrow can parse empty parquet files but a connector can't generate dynamic schema
-            raise OSError("empty Parquet file")
+            raise S3Exception(file_info, "empty Parquet file", "The .parquet file is empty!", FailureType.config_error)
         return schema_dict
 
-    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
+    def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html
         PyArrow reads streaming batches from a Parquet file
@@ -115,11 +121,11 @@ class ParquetParser(AbstractFileParser):
         }
         if not reader.schema:
             # pyarrow can parse empty parquet files but a connector can't generate dynamic schema
-            raise OSError("empty Parquet file")
+            raise S3Exception(file_info, "empty Parquet file", "The .parquet file is empty!", FailureType.config_error)
 
         args = self._select_options("columns", "batch_size")  # type: ignore[arg-type]
         self.logger.debug(f"Found the {reader.num_row_groups} Parquet groups")
-
+        partition_columns = self.get_partition_columns(file_info.key)
         # load batches per page
         for num_row_group in range(reader.num_row_groups):
             args["row_groups"] = [num_row_group]
@@ -138,4 +144,17 @@ class ParquetParser(AbstractFileParser):
                     yield {
                         batch_columns[i]: self.convert_field_data(logical_types[batch_columns[i]], record_values[i])
                         for i in range(len(batch_columns))
-                    }
+                    } | partition_columns
+
+    @staticmethod
+    def get_partition_columns(file_path: str) -> Mapping[str, Any]:
+        """
+        Parse file path and return dict of partitioned columns names with values, example:
+        /payroll/Year=2014/Agency_Name=ADMIN/file.parquet -> {"Year": "2014", Agency_Name: "ADMIN"}
+        """
+        partitions_in_path = (unquote(x) for x in file_path.split(os.sep) if "=" in x)
+        return {x.split("=")[0]: x.split("=")[1] for x in partitions_in_path}
+
+    @classmethod
+    def set_minimal_block_size(cls, format: Mapping[str, Any]):
+        format["buffer_size"] = 2

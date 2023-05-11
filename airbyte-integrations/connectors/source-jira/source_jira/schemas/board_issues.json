@@ -58,6 +58,18 @@
     },
     "boardId": {
       "type": "integer"
+    },
+    "created": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "This field transformed from fields attr",
+      "readOnly": true
+    },
+    "updated": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "This field transformed from fields attr",
+      "readOnly": true
     }
   }
 }

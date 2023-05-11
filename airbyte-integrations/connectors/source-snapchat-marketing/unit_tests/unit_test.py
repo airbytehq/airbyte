@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 # from unittest.mock import MagicMock, PropertyMock, patch
@@ -15,6 +15,7 @@ from source_snapchat_marketing.source import (
     AdsStatsDaily,
     AdsStatsLifetime,
     Organizations,
+    SnapchatOauth2Authenticator,
     SourceSnapchatMarketing,
 )
 
@@ -369,3 +370,29 @@ def test_source_check_connection(requests_mock):
 
     results = SourceSnapchatMarketing().check_connection(logger=None, config=source_config)
     assert results == (True, None)
+
+
+def test_retry_get_access_token(requests_mock):
+    requests_mock.register_uri(
+        "POST",
+        "https://accounts.snapchat.com/login/oauth2/access_token",
+        [{"status_code": 429}, {"status_code": 429}, {"status_code": 200, "json": {"access_token": "token", "expires_in": 3600}}],
+    )
+    auth = SnapchatOauth2Authenticator(
+        token_refresh_endpoint="https://accounts.snapchat.com/login/oauth2/access_token",
+        client_id="client_id",
+        client_secret="client_secret",
+        refresh_token="refresh_token",
+    )
+    token = auth.get_access_token()
+    assert len(requests_mock.request_history) == 3
+    assert token == "token"
+
+
+def test_should_retry_403_error(requests_mock):
+    requests_mock.register_uri("GET", "https://adsapi.snapchat.com/v1/me/organizations",
+                               [{"status_code": 403, "json": {"organizations": []}}])
+    stream = Organizations(**config_mock)
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+    assert not records

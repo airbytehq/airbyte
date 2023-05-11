@@ -1,0 +1,135 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "attributes": {
+      "type": ["object", "null"],
+      "description": "The incident's attributes from a response.",
+      "properties": {
+        "created": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Timestamp when the incident was created."
+        },
+        "customer_impact_duration": {
+          "type": ["integer", "null"],
+          "description": "Length of the incident's customer impact in seconds. Equals the difference between customer_impact_start and customer_impact_end."
+        },
+        "customer_impact_end": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Timestamp when customers were no longer impacted by the incident."
+        },
+        "customer_impact_scope": {
+          "type": ["string", "null"],
+          "description": "A summary of the impact customers experienced during the incident."
+        },
+        "customer_impact_start": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Timestamp when customers began being impacted by the incident."
+        },
+        "customer_impacted": {
+          "type": ["boolean", "null"],
+          "description": "A flag indicating whether the incident caused customer impact."
+        },
+        "detected": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Timestamp when the incident was detected."
+        },
+        "fields": {
+          "type": ["object", "null"],
+          "description": "A condensed view of the user-defined fields attached to incidents.",
+          "additionalProperties": true
+        },
+        "modified": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Timestamp when the incident was last modified."
+        },
+        "notification_handles": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "object"
+          },
+          "description": "Notification handles that will be notified of the incident during update."
+        },
+        "public_id": {
+          "type": ["integer", "null"],
+          "description": "The monotonically increasing integer ID for the incident."
+        },
+        "resolved": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Timestamp when the incident's state was last changed from active or stable to resolved or completed."
+        },
+        "time_to_detect": {
+          "type": ["integer", "null"],
+          "description": "The amount of time in seconds to detect the incident. Equals the difference between customer_impact_start and detected."
+        },
+        "time_to_internal_response": {
+          "type": ["integer", "null"],
+          "description": "The amount of time in seconds to call incident after detection. Equals the difference of detected and created."
+        },
+        "time_to_repair": {
+          "type": ["integer", "null"],
+          "description": "The amount of time in seconds to resolve customer impact after detecting the issue. Equals the difference between customer_impact_end and detected."
+        },
+        "time_to_resolve": {
+          "type": ["integer", "null"],
+          "description": "The amount of time in seconds to resolve the incident after it was created. Equals the difference between created and resolved."
+        },
+        "title": {
+          "type": ["string"],
+          "description": "The title of the incident, which summarizes what happened."
+        }
+      },
+      "additionalProperties": true
+    },
+    "id": {
+      "type": ["string"],
+      "description": "The incident's ID.",
+      "readOnly": true
+    },
+    "relationships": {
+      "type": ["object", "null"],
+      "description": "The incident's relationships from a response.",
+      "properties": {
+        "attachments": {
+          "type": ["object", "null"],
+          "description": "A relationship reference for attachments.",
+          "additionalProperties": true
+        },
+        "commander_user": {
+          "type": ["object", "null"],
+          "description": "Relationship to user.",
+          "additionalProperties": true
+        },
+        "created_by_user": {
+          "type": ["object", "null"],
+          "description": "Relationship to user.",
+          "additionalProperties": true
+        },
+        "integrations": {
+          "type": ["object", "null"],
+          "description": "A relationship reference for multiple integration metadata objects.",
+          "additionalProperties": true
+        },
+        "last_modified_by_user": {
+          "type": ["object", "null"],
+          "description": "Relationship to user.",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "type": {
+      "type": ["string"],
+      "enum": ["incidents"],
+      "description": "Incident resource type. Allowed enum values: incidents",
+      "readOnly": true
+    }
+  },
+  "additionalProperties": true
+}

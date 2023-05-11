@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "score": { "type": "integer" },
+    "scoreSum": { "type": "integer" },
+    "metricsType": { "type": "string" },
+    "promoters": { "type": "integer" },
+    "passives": { "type": "integer" },
+    "detractors": { "type": "integer" },
+    "promotersCount": { "type": "integer" },
+    "passivesCount": { "type": "integer" },
+    "detractorsCount": { "type": "integer" },
+    "totalResponses": { "type": "integer" }
+  }
+}

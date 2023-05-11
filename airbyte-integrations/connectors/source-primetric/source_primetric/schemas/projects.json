@@ -1,0 +1,87 @@
+{
+  "type": "object",
+  "properties": {
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "hash_tag_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "start_date": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "end_date": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "last_date": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "tentative": {
+      "type": ["null", "boolean"]
+    },
+    "likelihood": {
+      "type": ["null", "integer"]
+    },
+    "billing_model": {
+      "type": ["null", "integer"]
+    },
+    "hour_rate_source": {
+      "type": ["null", "integer"]
+    },
+    "customer_id": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "currency_rate": {
+      "type": ["null", "string"]
+    },
+    "project_group_id": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "integer"]
+    },
+    "color": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "assigned_manager_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "assigned_manager_readonly_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "is_public": {
+      "type": ["null", "boolean"]
+    },
+    "integrations": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "custom_attributes": {
+      "$ref": "custom_attributes.json"
+    }
+  }
+}

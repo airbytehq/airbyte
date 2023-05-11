@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.io;
@@ -88,9 +88,10 @@ public class IOs {
     try (final ReversedLinesFileReader fileReader = new ReversedLinesFileReader(file, Charsets.UTF_8)) {
       final List<String> lines = new ArrayList<>();
 
-      String line;
-      while ((line = fileReader.readLine()) != null && lines.size() < numLines) {
+      String line = fileReader.readLine();
+      while (line != null && lines.size() < numLines) {
         lines.add(line);
+        line = fileReader.readLine();
       }
 
       Collections.reverse(lines);

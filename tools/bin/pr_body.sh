@@ -14,12 +14,17 @@ echo
 PAGER=cat git log v${PREV_VERSION}..${GIT_REVISION} --oneline --decorate=no
 # The following empty 'echo' is also important for marking the end of the changelog for the Create Release Github action
 echo
-echo "Instructions:"
-echo "- *SQUASH MERGE* this PR - this is necessary to ensure the automated Create Release action is triggered."
-echo "- Double check that the Create Release action was triggered and ran successfully on the commit to master \
+echo "### Instructions"
+echo "1) *SQUASH MERGE* this PR - this is necessary to ensure the automated Create Release action is triggered."
+echo "2) Double check that the [Create Release](https://github.com/airbytehq/airbyte/actions/workflows/create-release.yml) action was triggered and ran successfully on the commit to master \
 (this should only take a few seconds)."
-echo "- If the Create Release action failed due to a transient issue, retry the action. If it failed due to \
-a non-transient issue, you will need to manually create a release by following these steps:"
-echo "    1. Pull most recent version of master"
-echo "    2. Run ./tools/bin/tag_version.sh"
-echo "    3. Create a GitHub release with the changelog"
+echo "3) If the Create Release action failed due to a transient issue, retry the action. If it failed due to \
+a non-transient issue, create a release manually by following the below instructions."
+echo
+echo "<details>"
+echo "<summary>Create the GitHub release manually</summary>"
+echo 
+echo "1. Pull most recent version of master"
+echo "2. Run ./tools/bin/tag_version.sh"
+echo "3. Create a GitHub release with the changelog"
+echo "</details>"

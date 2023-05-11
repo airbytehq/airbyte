@@ -1,8 +1,9 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import copy
+import json
 from abc import ABC
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -34,10 +35,6 @@ class InstagramStream(Stream, ABC):
         non_object_fields = ["page_id", "business_account_id"]
         fields = list(self.get_json_schema().get("properties", {}).keys())
         return list(set(fields) - set(non_object_fields))
-
-    def upgrade_state_to_latest_format(self, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """Upgrade state to latest format and return new state object"""
-        return copy.deepcopy(state)
 
     def request_params(
         self,
@@ -169,6 +166,7 @@ class UserInsights(InstagramIncrementalStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._end_date = pendulum.now()
+        self.should_exit_gracefully = False
 
     def read_records(
         self,
@@ -207,7 +205,20 @@ class UserInsights(InstagramIncrementalStream):
             if not insight_record.get(self.cursor_field):
                 insight_record[self.cursor_field] = insight.get("values")[0]["end_time"]
 
-        yield insight_record
+        complete_records = [insight_record]
+        # if insight_list is empty, we don't want to yield an incomplete record and want to stop syncing this stream gracefully
+        if not insight_list:
+            complete_records = []
+            # https://developers.facebook.com/docs/instagram-api/guides/insights/
+            # If insights data you are requesting does not exist or is currently unavailable
+            # the API will return an empty data set instead of 0 for individual metrics.
+            self.logger.warning(
+                f"No data received for base params {json.dumps(base_params)}. "
+                f"Since we can't know whether there is no data or the data is temporarily unavailable, stop syncing so as not to miss "
+                f"temporarily unavailable data."
+            )
+            self.should_exit_gracefully = True
+        yield from complete_records
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -222,8 +233,13 @@ class UserInsights(InstagramIncrementalStream):
             state_value = stream_state.get(account_id, {}).get(self.cursor_field)
             start_date = pendulum.parse(state_value) if state_value else self._start_date
             start_date = max(start_date, self._start_date, pendulum.now().subtract(days=self.buffer_days))
+            if start_date > pendulum.now():
+                continue
             for since in pendulum.period(start_date, self._end_date).range("days", self.days_increment):
                 until = since.add(days=self.days_increment)
+                if self.should_exit_gracefully:
+                    self.logger.info(f"Stopping syncing stream '{self.name}'")
+                    return
                 self.logger.info(f"Reading insights between {since.date()} and {until.date()}")
                 yield {
                     **stream_slice,
@@ -250,14 +266,6 @@ class UserInsights(InstagramIncrementalStream):
             if not isinstance(value, Mapping):
                 return True
         return False
-
-    def upgrade_state_to_latest_format(self, state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """Upgrade state to latest format and return new state object"""
-        if self._state_has_legacy_format(state):
-            self.logger.info(f"The {self.name} state has old format, converting...")
-            return {account_id: {self.cursor_field: str(cursor_value)} for account_id, cursor_value in state.items()}
-
-        return super().upgrade_state_to_latest_format(state)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """Update stream state from latest record"""
@@ -320,6 +328,7 @@ class MediaInsights(Media):
 
     MEDIA_METRICS = ["engagement", "impressions", "reach", "saved"]
     CAROUSEL_ALBUM_METRICS = ["carousel_album_engagement", "carousel_album_impressions", "carousel_album_reach", "carousel_album_saved"]
+    REELS_METRICS = ["comments", "likes", "reach", "saved", "shares", "total_interactions", "plays"]
 
     def read_records(
         self,
@@ -330,7 +339,7 @@ class MediaInsights(Media):
     ) -> Iterable[Mapping[str, Any]]:
         account = stream_slice["account"]
         ig_account = account["instagram_business_account"]
-        media = ig_account.get_media(params=self.request_params(), fields=["media_type"])
+        media = ig_account.get_media(params=self.request_params(), fields=["media_type", "media_product_type"])
         for ig_media in media:
             account_id = ig_account.get("id")
             insights = self._get_insights(ig_media, account_id)
@@ -344,10 +353,13 @@ class MediaInsights(Media):
 
     def _get_insights(self, item, account_id) -> Optional[MutableMapping[str, Any]]:
         """Get insights for specific media"""
-        if item.get("media_type") == "VIDEO":
+        if item.get("media_product_type") == "REELS":
+            metrics = self.REELS_METRICS
+        elif item.get("media_type") == "VIDEO":
             metrics = self.MEDIA_METRICS + ["video_views"]
         elif item.get("media_type") == "CAROUSEL_ALBUM":
             metrics = self.CAROUSEL_ALBUM_METRICS
+
         else:
             metrics = self.MEDIA_METRICS
 

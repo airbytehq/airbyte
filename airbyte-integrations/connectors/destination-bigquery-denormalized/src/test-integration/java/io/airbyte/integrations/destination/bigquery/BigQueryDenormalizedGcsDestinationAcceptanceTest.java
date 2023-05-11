@@ -1,52 +1,52 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.createGcsConfig;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
+import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import java.io.IOException;
-import java.nio.file.Files;
+import org.junit.jupiter.api.Test;
 
 public class BigQueryDenormalizedGcsDestinationAcceptanceTest extends BigQueryDenormalizedDestinationAcceptanceTest {
 
   @Override
   protected JsonNode createConfig() throws IOException {
-    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
+    return createGcsConfig();
+  }
 
-    final JsonNode fullConfigFromSecretFileJson = Jsons.deserialize(credentialsJsonString);
-    final JsonNode bigqueryConfigFromSecretFile = fullConfigFromSecretFileJson.get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
-    final JsonNode gcsConfigFromSecretFile = fullConfigFromSecretFileJson.get(BigQueryConsts.GCS_CONFIG);
+  /*
+   * FileBuffer Default Tests
+   */
+  @Test
+  public void testGetFileBufferDefault() {
+    final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
+    assertEquals(destination.getNumberOfFileBuffers(config),
+        FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
+  }
 
-    final String projectId = bigqueryConfigFromSecretFile.get(CONFIG_PROJECT_ID).asText();
-    final String datasetLocation = "US";
+  @Test
+  public void testGetFileBufferMaxLimited() {
+    final JsonNode defaultConfig = Jsons.clone(config);
+    ((ObjectNode) defaultConfig).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 100);
+    final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
+    assertEquals(destination.getNumberOfFileBuffers(defaultConfig), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
+  }
 
-    final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
-
-    final JsonNode gcsCredentialFromSecretFile = gcsConfigFromSecretFile.get(BigQueryConsts.CREDENTIAL);
-    final JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.CREDENTIAL_TYPE, gcsCredentialFromSecretFile.get(BigQueryConsts.CREDENTIAL_TYPE))
-        .put(BigQueryConsts.HMAC_KEY_ACCESS_ID, gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_ID))
-        .put(BigQueryConsts.HMAC_KEY_ACCESS_SECRET, gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_SECRET))
-        .build());
-
-    final JsonNode loadingMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.METHOD, BigQueryConsts.GCS_STAGING)
-        .put(BigQueryConsts.GCS_BUCKET_NAME, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_NAME))
-        .put(BigQueryConsts.GCS_BUCKET_PATH, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_PATH).asText() + System.currentTimeMillis())
-        .put(BigQueryConsts.CREDENTIAL, credential)
-        .build());
-
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
-        .put(BigQueryConsts.CONFIG_CREDS, bigqueryConfigFromSecretFile.toString())
-        .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
-        .put(BigQueryConsts.CONFIG_DATASET_LOCATION, datasetLocation)
-        .put(BigQueryConsts.LOADING_METHOD, loadingMethod)
-        .build());
+  @Test
+  public void testGetMinimumFileBufferCount() {
+    final JsonNode defaultConfig = Jsons.clone(config);
+    ((ObjectNode) defaultConfig).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 1);
+    final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
+    // User cannot set number of file counts below the default file buffer count, which is existing
+    // behavior
+    assertEquals(destination.getNumberOfFileBuffers(defaultConfig), FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
   }
 
 }

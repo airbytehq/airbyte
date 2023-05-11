@@ -5,6 +5,9 @@
     "id": {
       "type": ["null", "integer"]
     },
+    "parent_id": {
+      "type": "integer"
+    },
     "amount": {
       "type": ["null", "number"]
     },

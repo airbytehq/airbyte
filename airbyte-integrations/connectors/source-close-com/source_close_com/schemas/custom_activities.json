@@ -1,6 +1,9 @@
 {
   "type": ["null", "object"],
   "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
     "api_create_only": {
       "type": ["null", "boolean"]
     },

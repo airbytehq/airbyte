@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "assigned_location_id": {
       "type": ["null", "integer"]
@@ -59,6 +60,16 @@
     "fulfilled_at": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "fulfill_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "fulfill_by": {
+      "type": ["null", "string"]
+    },
+    "international_duties": {
+      "type": ["null", "string"]
     },
     "fulfillment_holds": {
       "type": ["null", "array"],

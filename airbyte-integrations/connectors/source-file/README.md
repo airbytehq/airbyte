@@ -49,7 +49,7 @@ See `sample_files/sample_config.json` for a sample config file.
 
 In order to run integrations tests in this connector, you need:
 1. Testing Google Cloud Service Storage
-    1. Download and store your Google [Service Account](https://console.cloud.google.com/iam-admin/serviceaccounts) JSON file in `secrets/gcs.json`, it should look something like this:   
+   1. Download and store your Google [Service Account](https://console.cloud.google.com/iam-admin/serviceaccounts) JSON file in `secrets/gcs.json`, it should look something like this:   
         ```
         {
             "type": "service_account",
@@ -64,9 +64,9 @@ In order to run integrations tests in this connector, you need:
             "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/XXXXXXX0XXXXXX.iam.gserviceaccount.com"
         }
         ```
-    1. Your Service Account should have [Storage Admin Rights](https://console.cloud.google.com/iam-admin/iam) (to create Buckets, read and store files in GCS)
+   2. Your Service Account should have [Storage Admin Rights](https://console.cloud.google.com/iam-admin/iam) (to create Buckets, read and store files in GCS)
 
-1. Testing Amazon S3 
+2. Testing Amazon S3 
     1. Create a file at `secrets/aws.json`   
        ```
         {
@@ -75,7 +75,7 @@ In order to run integrations tests in this connector, you need:
         }
        ```
 
-1. Testing Azure Blob Storage
+3. Testing Azure Blob Storage
    1. Create a file at `secrets/azblob.json`
         ```
         {
@@ -91,10 +91,10 @@ and place them into `secrets/config.json`.
 
 ### Locally running the connector
 ```
-python main_dev.py spec
-python main_dev.py check --config secrets/config.json
-python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+python main.py spec
+python main.py check --config secrets/config.json
+python main.py discover --config secrets/config.json
+python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
 ```
 
 ### Unit Tests
@@ -129,8 +129,18 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files 
 
 ### Integration Tests
 1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-file:integrationTest` to run the standard integration test suite.
-1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `python -m pytest -s integration_tests`.
+2. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `python -m pytest -s integration_tests`.
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
+
+#### Acceptance Tests
+Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
+If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
+To run your integration tests with acceptance tests, from the connector root, run
+```
+docker build . --no-cache -t airbyte/source-file:dev \
+&& python -m pytest -p connector_acceptance_test.plugin
+```
+To run your integration tests with docker
 
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.
@@ -138,7 +148,8 @@ All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The re
 ### Publishing a new version of the connector
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
 1. Make sure your changes are passing unit and integration tests
-1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use SemVer).
-1. Create a Pull Request
-1. Pat yourself on the back for being an awesome contributor
-1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master
+2. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use SemVer).
+3. In addition to bumping the connector version of `source-file`, you must also increment the version of `source-file-secure` which depends on this source. The versions of these connectors should always remain in sync. Depending on the changes to `source-file`, you may also need to make changes to `source-file-secure` to retain compatibility.
+4. Create a Pull Request
+5. Pat yourself on the back for being an awesome contributor
+6. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master

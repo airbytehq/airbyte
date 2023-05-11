@@ -1,68 +1,61 @@
 {
-  "properties": {
-    "type": {
-      "type": ["null", "string"]
-    },
-    "text": {
-      "type": ["null", "array"],
-      "items": {
+  "type": ["null", "array"],
+  "items": {
+    "type": ["null", "object"],
+    "additionalProperties": true,
+    "properties": {
+      "type": {
+        "type": ["null", "string"]
+      },
+      "text": {
         "type": ["null", "object"],
-        "additionalProperties": false,
         "properties": {
-          "type": {
+          "content": {
             "type": ["null", "string"]
           },
-          "text": {
+          "link": {
             "type": ["null", "object"],
+            "additionalProperties": true,
             "properties": {
-              "content": {
-                "type": ["null", "string"]
+              "type": {
+                "enum": ["url"]
               },
-              "link": {
-                "type": ["null", "object"],
-                "additionalProperties": false,
-                "properties": {
-                  "type": {
-                    "enum": ["url"]
-                  },
-                  "url": {
-                    "type": ["null", "string"]
-                  }
-                }
-              }
-            }
-          },
-          "annotations": {
-            "type": ["null", "object"],
-            "additionalProperties": false,
-            "properties": {
-              "bold": {
-                "type": ["null", "boolean"]
-              },
-              "italic": {
-                "type": ["null", "boolean"]
-              },
-              "strikethrough": {
-                "type": ["null", "boolean"]
-              },
-              "underline": {
-                "type": ["null", "boolean"]
-              },
-              "code": {
-                "type": ["null", "boolean"]
-              },
-              "color": {
+              "url": {
                 "type": ["null", "string"]
               }
             }
+          }
+        }
+      },
+      "annotations": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "bold": {
+            "type": ["null", "boolean"]
           },
-          "plain_text": {
-            "type": ["null", "string"]
+          "italic": {
+            "type": ["null", "boolean"]
           },
-          "href": {
+          "strikethrough": {
+            "type": ["null", "boolean"]
+          },
+          "underline": {
+            "type": ["null", "boolean"]
+          },
+          "code": {
+            "type": ["null", "boolean"]
+          },
+          "color": {
             "type": ["null", "string"]
           }
         }
+      },
+      "plain_text": {
+        "type": ["null", "string"]
+      },
+      "href": {
+        "type": ["null", "string"]
       }
     }
   }

@@ -2,7 +2,7 @@
       
 
   create  table
-    "integrationtests"."test_normalization"."dedup_exchange_rate_scd__dbt_tmp"
+    "integrationtests".test_normalization_bhhpj."dedup_exchange_rate_scd"
     
     
       compound sortkey(_airbyte_active_row,_airbyte_unique_key_scd,_airbyte_emitted_at)
@@ -14,8 +14,8 @@ with
 
 input_data as (
     select *
-    from "integrationtests"._airbyte_test_normalization."dedup_exchange_rate_stg"
-    -- dedup_exchange_rate from "integrationtests".test_normalization._airbyte_raw_dedup_exchange_rate
+    from "integrationtests"._airbyte_test_normalization_bhhpj."dedup_exchange_rate_stg"
+    -- dedup_exchange_rate from "integrationtests".test_normalization_bhhpj._airbyte_raw_dedup_exchange_rate
 ),
 
 scd_data as (

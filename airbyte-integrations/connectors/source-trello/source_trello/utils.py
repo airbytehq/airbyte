@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -8,6 +8,8 @@ from time import sleep
 
 import requests
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import Stream
 
 
 class TrelloRequestRateLimits:
@@ -75,3 +77,26 @@ class TrelloRequestRateLimits:
             return wrapper_balance_rate_limit
 
         return decorator
+
+
+def read_full_refresh(stream_instance: Stream):
+    slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh)
+    for _slice in slices:
+        records = stream_instance.read_records(stream_slice=_slice, sync_mode=SyncMode.full_refresh)
+        for record in records:
+            yield record
+
+
+def read_all_boards(stream_boards: Stream, stream_organizations: Stream):
+    board_ids = set()
+
+    for record in read_full_refresh(stream_boards):
+        if record["id"] not in board_ids:
+            board_ids.add(record["id"])
+            yield record["id"]
+
+    for record in read_full_refresh(stream_organizations):
+        for board_id in record["idBoards"]:
+            if board_id not in board_ids:
+                board_ids.add(board_id)
+                yield board_id

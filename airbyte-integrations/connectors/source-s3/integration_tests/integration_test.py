@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -29,6 +29,8 @@ LOGGER = AirbyteLogger()
 
 
 class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
+    region = "eu-west-3"
+
     @property
     def stream_class(self) -> type:
         return IncrementalFileStreamS3
@@ -47,12 +49,11 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
         return {"storage": "S3", "bucket": bucket_name}
 
     def _s3_connect(self, credentials: Mapping) -> None:
-        region = "eu-west-3"
         self.s3_client = boto3.client(
             "s3",
             aws_access_key_id=credentials["aws_access_key_id"],
             aws_secret_access_key=credentials["aws_secret_access_key"],
-            region_name=region,
+            region_name=self.region,
         )
         self.s3_resource = boto3.resource(
             "s3", aws_access_key_id=credentials["aws_access_key_id"], aws_secret_access_key=credentials["aws_secret_access_key"]
@@ -60,8 +61,8 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
 
     def cloud_files(self, cloud_bucket_name: str, credentials: Mapping, files_to_upload: List, private: bool = True) -> Iterator[str]:
         self._s3_connect(credentials)
-        region = "eu-west-3"
-        location = {"LocationConstraint": region}
+
+        location = {"LocationConstraint": self.region}
         bucket_name = cloud_bucket_name
 
         print("\n")
@@ -69,8 +70,12 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
         try:
             self.s3_client.head_bucket(Bucket=bucket_name)
         except ClientError:
-            acl = "private" if private else "public-read"
-            self.s3_client.create_bucket(ACL=acl, Bucket=bucket_name, CreateBucketConfiguration=location)
+            if private:
+                self.s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration=location)
+            else:
+                self.s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration=location, ObjectOwnership='ObjectWriter')
+                self.s3_client.delete_public_access_block(Bucket=bucket_name)
+                self.s3_client.put_bucket_acl(Bucket=bucket_name, ACL='public-read')
 
         # wait here until the bucket is ready
         ready = False
@@ -133,5 +138,5 @@ class TestIntegrationCsvFiles:
         minio_credentials["path_pattern"] = "big_files/file.csv"
         minio_credentials["format"]["block_size"] = 5 * 1024**2
         source = SourceS3()
-        catalog = source.read_catalog(HERE / "configured_catalog.json")
+        catalog = source.read_catalog(HERE / "configured_catalogs/csv.json")
         assert self.read_source(minio_credentials, catalog) == expected_count

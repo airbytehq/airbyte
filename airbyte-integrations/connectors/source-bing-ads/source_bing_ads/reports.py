@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC, abstractmethod
@@ -17,6 +17,72 @@ from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord
 from bingads.v13.reporting import ReportingDownloadParameters
 from suds import sudsobject
 
+AVERAGE_FIELD_TYPES = {
+    "AverageCpc": "number",
+    "AveragePosition": "number",
+    "AverageCpm": "number",
+}
+AVERAGE_FIELDS = list(AVERAGE_FIELD_TYPES.keys())
+
+CONVERSION_FIELD_TYPES = {
+    "Conversions": "number",
+    "ConversionRate": "number",
+    "ConversionsQualified": "number",
+}
+CONVERSION_FIELDS = list(CONVERSION_FIELD_TYPES.keys())
+
+ALL_CONVERSION_FIELD_TYPES = {
+    "AllConversions": "integer",
+    "AllConversionRate": "number",
+}
+ALL_CONVERSION_FIELDS = list(ALL_CONVERSION_FIELD_TYPES.keys())
+
+LOW_QUALITY_FIELD_TYPES = {
+    "LowQualityClicks": "integer",
+    "LowQualityClicksPercent": "number",
+    "LowQualityImpressions": "integer",
+    "LowQualitySophisticatedClicks": "integer",
+    "LowQualityConversions": "integer",
+    "LowQualityConversionRate": "number",
+}
+LOW_QUALITY_FIELDS = list(LOW_QUALITY_FIELD_TYPES.keys())
+
+REVENUE_FIELD_TYPES = {
+    "Revenue": "number",
+    "RevenuePerConversion": "number",
+    "RevenuePerAssist": "number",
+}
+REVENUE_FIELDS = list(REVENUE_FIELD_TYPES.keys())
+
+ALL_REVENUE_FIELD_TYPES = {
+    "AllRevenue": "number",
+    "AllRevenuePerConversion": "number",
+}
+ALL_REVENUE_FIELDS = list(ALL_REVENUE_FIELD_TYPES.keys())
+
+IMPRESSION_FIELD_TYPES = {
+    "ImpressionSharePercent": "number",
+    "ImpressionLostToBudgetPercent": "number",
+    "ImpressionLostToRankAggPercent": "number",
+}
+IMPRESSION_FIELDS = list(IMPRESSION_FIELD_TYPES.keys())
+
+
+HISTORICAL_FIELD_TYPES = {
+    "HistoricalQualityScore": "number",
+    "HistoricalExpectedCtr": "number",
+    "HistoricalAdRelevance": "number",
+    "HistoricalLandingPageExperience": "number",
+}
+HISTORICAL_FIELDS = list(HISTORICAL_FIELD_TYPES.keys())
+
+BUDGET_FIELD_TYPES = {
+    "BudgetName": "string",
+    "BudgetStatus": "string",
+    "BudgetAssociationStatus": "string",
+}
+BUDGET_FIELDS = list(BUDGET_FIELD_TYPES.keys())
+
 REPORT_FIELD_TYPES = {
     "AccountId": "integer",
     "AdId": "integer",
@@ -24,15 +90,13 @@ REPORT_FIELD_TYPES = {
     "AdGroupId": "integer",
     "AdRelevance": "number",
     "Assists": "integer",
-    "AverageCpc": "number",
-    "AveragePosition": "number",
+    "AllCostPerConversion": "number",
+    "AllReturnOnAdSpend": "number",
     "BusinessCategoryId": "integer",
     "BusinessListingId": "integer",
     "CampaignId": "integer",
     "ClickCalls": "integer",
     "Clicks": "integer",
-    "ConversionRate": "number",
-    "Conversions": "number",
     "CostPerAssist": "number",
     "CostPerConversion": "number",
     "Ctr": "number",
@@ -45,29 +109,36 @@ REPORT_FIELD_TYPES = {
     "EstimatedImpressionPercent": "number",
     "EstimatedImpressions": "integer",
     "ExactMatchImpressionSharePercent": "number",
-    "HistoricAdRelevance": "number",
     "Impressions": "integer",
     "ImpressionSharePercent": "number",
     "KeywordId": "integer",
     "LandingPageExperience": "number",
-    "LowQualityClicks": "integer",
-    "LowQualityClicksPercent": "number",
-    "LowQualityImpressions": "integer",
-    "LowQualitySophisticatedClicks": "integer",
     "PhoneCalls": "integer",
     "PhoneImpressions": "integer",
+    "Ptr": "number",
     "QualityImpact": "number",
     "QualityScore": "number",
     "ReturnOnAdSpend": "number",
-    "Revenue": "number",
-    "RevenuePerAssist": "number",
-    "RevenuePerConversion": "number",
     "SidebarBid": "number",
     "Spend": "number",
     "MonthlyBudget": "number",
     "DailySpend": "number",
     "MonthToDateSpend": "number",
     "AbsoluteTopImpressionRatePercent": "number",
+    "ViewThroughConversions": "integer",
+    "ViewThroughConversionsQualified": "number",
+    "MainlineBid": "number",
+    "Mainline1Bid": "number",
+    "FirstPageBid": "number",
+    **AVERAGE_FIELD_TYPES,
+    **CONVERSION_FIELD_TYPES,
+    **ALL_CONVERSION_FIELD_TYPES,
+    **LOW_QUALITY_FIELD_TYPES,
+    **REVENUE_FIELD_TYPES,
+    **ALL_REVENUE_FIELD_TYPES,
+    **IMPRESSION_FIELD_TYPES,
+    **HISTORICAL_FIELD_TYPES,
+    **BUDGET_FIELD_TYPES,
 }
 
 
@@ -132,11 +203,7 @@ class ReportsMixin(ABC):
     def request_params(
         self, stream_state: Mapping[str, Any] = None, account_id: str = None, **kwargs: Mapping[str, Any]
     ) -> Mapping[str, Any]:
-        if not stream_state or not account_id or not stream_state.get(account_id, {}).get(self.cursor_field):
-            start_date = self.client.reports_start_date
-        else:
-            # gets starting point for a stream and account
-            start_date = pendulum.from_timestamp(stream_state[account_id][self.cursor_field])
+        start_date = self.get_start_date(stream_state, account_id)
 
         reporting_service = self.client.get_service("ReportingService")
         request_time_zone = reporting_service.factory.create("ReportTimeZone")
@@ -157,12 +224,19 @@ class ReportsMixin(ABC):
             "timeout_in_milliseconds": self.timeout,
         }
 
+    def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
+        if stream_state and account_id:
+            if stream_state.get(account_id, {}).get(self.cursor_field):
+                return pendulum.from_timestamp(stream_state[account_id][self.cursor_field])
+
+        return self.client.reports_start_date
+
     def get_updated_state(
         self,
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
-        account_id = latest_record["AccountId"]
+        account_id = str(latest_record["AccountId"])
         current_stream_state[account_id] = current_stream_state.get(account_id, {})
         current_stream_state[account_id][self.cursor_field] = max(
             self.get_report_record_timestamp(latest_record[self.cursor_field]),
@@ -266,3 +340,15 @@ class ReportsMixin(ABC):
             yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
 
         yield from []
+
+
+class PerformanceReportsMixin(ReportsMixin):
+    def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
+        start_date = super().get_start_date(stream_state, account_id)
+
+        if self.config.get("lookback_window"):
+            # Datetime subtract won't work with days = 0
+            # it'll output an AirbuteError
+            return start_date.subtract(days=self.config["lookback_window"])
+        else:
+            return start_date

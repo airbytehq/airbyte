@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -7,12 +7,13 @@ package io.airbyte.integrations.source.postgres;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -46,6 +47,17 @@ public final class PostgresCdcCatalogHelper {
     return stream;
   }
 
+  /**
+   * This method is used for CDC sync in order to overwrite sync modes for cursor fields cause cdc use
+   * another cursor logic
+   *
+   * @param stream - airbyte stream
+   * @return will return list of sync modes
+   */
+  public static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
+    return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+  }
+
   /*
    * Set all streams that do have incremental to sourceDefined, so that the user cannot set or
    * override a cursor field.
@@ -71,6 +83,21 @@ public final class PostgresCdcCatalogHelper {
     properties.set(DebeziumEventUtils.CDC_UPDATED_AT, stringType);
     properties.set(DebeziumEventUtils.CDC_DELETED_AT, stringType);
 
+    return stream;
+  }
+
+  /**
+   * Modifies streams that are NOT present in the publication to be full-refresh only streams. Users
+   * should be able to replicate these streams, just not in incremental mode as they have no
+   * associated publication.
+   */
+  public static AirbyteStream setFullRefreshForNonPublicationStreams(final AirbyteStream stream,
+                                                                     final Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc) {
+    if (!publicizedTablesInCdc.contains(new AirbyteStreamNameNamespacePair(stream.getName(), stream.getNamespace()))) {
+      stream.setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
+      stream.setSourceDefinedCursor(false);
+      stream.setSourceDefinedPrimaryKey(List.of());
+    }
     return stream;
   }
 

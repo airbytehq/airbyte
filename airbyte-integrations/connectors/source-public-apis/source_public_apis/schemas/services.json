@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "API": {
+      "type": ["null", "string"]
+    },
+    "Description": {
+      "type": ["null", "string"]
+    },
+    "Auth": {
+      "type": ["null", "string"]
+    },
+    "HTTPS": {
+      "type": ["null", "boolean"]
+    },
+    "Cors": {
+      "type": ["null", "string"]
+    },
+    "Link": {
+      "type": ["null", "string"]
+    },
+    "Category": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -1,11 +1,8 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "organization": {
-      "type": ["null", "string"]
-    },
-    "repository": {
       "type": ["null", "string"]
     },
     "id": {
@@ -32,6 +29,9 @@
     "privacy": {
       "type": ["null", "string"]
     },
+    "notification_setting": {
+      "type": ["null", "string"]
+    },
     "permission": {
       "type": ["null", "string"]
     },
@@ -42,7 +42,9 @@
       "type": ["null", "string"]
     },
     "parent": {
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "properties": {},
+      "additionalProperties": true
     }
   }
 }

@@ -14,7 +14,7 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: ["subscription_stream"]
       expect_records:
-        path: "integration_tests/expected_records.txt"
+        path: "integration_tests/expected_records.jsonl"
         extra_fields: no
         exact_order: no
         extra_records: yes

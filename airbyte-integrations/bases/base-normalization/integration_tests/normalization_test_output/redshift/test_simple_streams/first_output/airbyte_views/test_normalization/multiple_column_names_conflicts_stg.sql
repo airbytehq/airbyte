@@ -1,11 +1,11 @@
 
 
-  create view "integrationtests"._airbyte_test_normalization."multiple_column_names_conflicts_stg__dbt_tmp" as (
+  create view "integrationtests"._airbyte_test_normalization_bhhpj."multiple_column_names_conflicts_stg__dbt_tmp" as (
     
 with __dbt__cte__multiple_column_names_conflicts_ab1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
--- depends_on: "integrationtests".test_normalization._airbyte_raw_multiple_column_names_conflicts
+-- depends_on: "integrationtests".test_normalization_bhhpj._airbyte_raw_multiple_column_names_conflicts
 select
     case when _airbyte_data."id" != '' then _airbyte_data."id" end as id,
     case when _airbyte_data."User Id" != '' then _airbyte_data."User Id" end as "user id",
@@ -17,7 +17,7 @@ select
     _airbyte_ab_id,
     _airbyte_emitted_at,
     getdate() as _airbyte_normalized_at
-from "integrationtests".test_normalization._airbyte_raw_multiple_column_names_conflicts as table_alias
+from "integrationtests".test_normalization_bhhpj._airbyte_raw_multiple_column_names_conflicts as table_alias
 -- multiple_column_names_conflicts
 where 1 = 1
 

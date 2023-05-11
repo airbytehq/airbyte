@@ -1,0 +1,26 @@
+[
+  {
+    "self": "https://airbyteio.atlassian.net/rest/api/3/user?accountId=5fc9e78d2730d800760becc4",
+    "accountId": "1",
+    "accountType": "atlassian",
+    "emailAddress": "integration-test@airbyte.io",
+    "avatarUrls": {
+      "48x48": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+      "24x24": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+      "16x16": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+      "32x32": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png"
+    }
+  },
+  {
+    "self": "https://airbyteio.atlassian.net/rest/api/3/user?accountId=5fc9e78d2730d800760becc4",
+    "accountId": "2",
+    "accountType": "atlassian",
+    "emailAddress": "integration-test@airbyte.io",
+    "avatarUrls": {
+      "48x48": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+      "24x24": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+      "16x16": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png",
+      "32x32": "https://secure.gravatar.com/avatar/0a7841feac7218131ce7b427283c24ef?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIT-5.png"
+    }
+  }
+]

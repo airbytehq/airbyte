@@ -1,5 +1,6 @@
 {
   "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "last_order_name": {
       "type": ["null", "string"]
@@ -68,6 +69,21 @@
           "type": ["null", "string"]
         },
         "company": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "email_marketing_consent": {
+      "type": ["null", "object"],
+      "properties": {
+        "consent_updated_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "opt_in_level": {
+          "type": ["null", "string"]
+        },
+        "state": {
           "type": ["null", "string"]
         }
       }
@@ -194,6 +210,27 @@
     "created_at": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "sms_marketing_consent": {
+      "type": ["null", "object"],
+      "properties": {
+        "consent_updated_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "opt_in_level": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "tax_exemptions": {
+      "type": ["null", "string"]
+    },
+    "marketing_opt_in_level": {
+      "type": ["null", "string"]
     }
   }
 }

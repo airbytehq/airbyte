@@ -1,7 +1,11 @@
 {
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
+      "type": ["null", "string"]
+    },
+    "admin_graphql_api_id": {
       "type": ["null", "string"]
     },
     "available": {

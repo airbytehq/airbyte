@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.io.File;
 import java.io.IOException;
@@ -32,12 +32,14 @@ public class OracleSpecTest {
                                               {
                                                 "host": "localhost",
                                                 "port": 1521,
-                                                "sid": "ora_db",
                                                 "username": "ora",
                                                 "password": "pwd",
                                                 "schemas": [
                                                   "public"
                                                 ],
+                                                "connection_data": {
+                                                  "sid": "ora_db"
+                                                },
                                                 "jdbc_url_params": "property1=pValue1&property2=pValue2"
                                               }
                                               """;
@@ -70,7 +72,7 @@ public class OracleSpecTest {
   @Test
   void testSsidMissing() {
     final JsonNode config = Jsons.deserialize(CONFIGURATION);
-    ((ObjectNode) config).remove("sid");
+    ((ObjectNode) (config.get("connection_data"))).remove("sid");
     assertFalse(validator.test(schema, config));
   }
 

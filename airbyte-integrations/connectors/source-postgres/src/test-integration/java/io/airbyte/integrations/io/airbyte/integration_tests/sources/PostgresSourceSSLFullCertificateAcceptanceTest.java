@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -11,7 +11,7 @@ public class PostgresSourceSSLFullCertificateAcceptanceTest extends AbstractPost
   @Override
   public ImmutableMap getCertificateConfiguration() {
     return ImmutableMap.builder()
-        .put("mode", "verify-full")
+        .put("mode", "verify-ca")
         .put("ca_certificate", certs.getCaCertificate())
         .put("client_certificate", certs.getClientCertificate())
         .put("client_key", certs.getClientKey())

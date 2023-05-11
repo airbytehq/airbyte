@@ -1,12 +1,22 @@
 {
   "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "allocation_method": {
+      "type": ["null", "string"]
+    },
+    "admin_graphql_api_id": {
       "type": ["null", "string"]
     },
     "created_at": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "customer_segment_prerequisite_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "updated_at": {
       "type": ["null", "string"],

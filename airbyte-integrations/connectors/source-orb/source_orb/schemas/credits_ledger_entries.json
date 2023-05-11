@@ -37,6 +37,9 @@
     },
     "description": {
       "type": ["null", "string"]
+    },
+    "credit_block_id": {
+      "type": ["null", "string"]
     }
   },
   "required": [
@@ -48,6 +51,7 @@
     "customer_id",
     "entry_type",
     "credit_block_per_unit_cost_basis",
-    "description"
+    "description",
+    "credit_block_id"
   ]
 }

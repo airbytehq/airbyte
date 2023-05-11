@@ -1,0 +1,51 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/genesys",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Genesys Connector Configuration",
+    "type": "object",
+    "required": ["start_date", "tenant_endpoint", "client_id", "client_secret"],
+    "properties": {
+      "client_id": {
+        "type": "string",
+        "title": "Client ID",
+        "description": "Your OAuth user Client ID",
+        "airbyte_secret": true,
+        "order": 0
+      },
+      "client_secret": {
+        "type": "string",
+        "title": "Client Secret",
+        "description": "Your OAuth user Client Secret",
+        "airbyte_secret": true,
+        "order": 1
+      },
+      "tenant_endpoint": {
+        "title": "Tenant Endpoint Location",
+        "type": "string",
+        "description": "Please choose the right endpoint where your Tenant is located. More info by this <a href=\"https://help.mypurecloud.com/articles/aws-regions-for-genesys-cloud-deployment/\">Link</a>",
+        "enum": [
+          "Americas (US East)",
+          "Americas (US East 2)",
+          "Americas (US West)",
+          "Americas (Canada)",
+          "Americas (São Paulo)",
+          "EMEA (Frankfurt)",
+          "EMEA (Dublin)",
+          "EMEA (London)",
+          "Asia Pacific (Mumbai)",
+          "Asia Pacific (Seoul)",
+          "Asia Pacific (Sydney)"
+        ],
+        "order": 2
+      },
+      "start_date": {
+        "type": "string",
+        "title": "Start Date",
+        "description": "Start Date in format: YYYY-MM-DD",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "order": 3
+      }
+    }
+  }
+}

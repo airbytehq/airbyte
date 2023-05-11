@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -42,7 +42,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigint")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("-9223372036854775808", "9223372036854775807", "0", "null")
             .addExpectedValues("-9223372036854775808", "9223372036854775807", "0", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
@@ -51,7 +51,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("null", "-2147483648", "2147483647")
             .addExpectedValues(null, "-2147483648", "2147483647")
             .createTablePatternSql(CREATE_TABLE_SQL)
@@ -60,7 +60,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smallint")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("null", "-32768", "32767")
             .addExpectedValues(null, "-32768", "32767")
             .createTablePatternSql(CREATE_TABLE_SQL)
@@ -69,7 +69,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("tinyint")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("null", "0", "255")
             .addExpectedValues(null, "0", "255")
             .createTablePatternSql(CREATE_TABLE_SQL)
@@ -144,7 +144,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
             .sourceType("date")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'", "null")
-            .addExpectedValues("0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z", "1999-01-08T00:00:00Z", null)
+            .addExpectedValues("0001-01-01", "9999-12-31", "1999-01-08", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -153,7 +153,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
             .sourceType("smalldatetime")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'1900-01-01'", "'2079-06-06'", "null")
-            .addExpectedValues("1900-01-01T00:00:00.000000Z", "2079-06-06T00:00:00.000000Z", null)
+            .addExpectedValues("1900-01-01T00:00:00.000000", "2079-06-06T00:00:00.000000", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -161,10 +161,10 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
         TestDataHolder.builder()
             .sourceType("datetime")
             .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("'1753-01-01'", "'9999-12-31'", "'9999-12-31T13:00:04Z'",
-                "'9999-12-31T13:00:04.123Z'", "null")
-            .addExpectedValues("1753-01-01T00:00:00.000000Z", "9999-12-31T00:00:00.000000Z", "9999-12-31T13:00:04.000000Z",
-                "9999-12-31T13:00:04.123000Z", null)
+            .addInsertValues("'1753-01-01'", "'9999-12-31'", "'9999-12-31T13:00:04'",
+                "'9999-12-31T13:00:04.123'", "null")
+            .addExpectedValues("1753-01-01T00:00:00.000000", "9999-12-31T00:00:00.000000", "9999-12-31T13:00:04",
+                "9999-12-31T13:00:04.123", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -172,8 +172,8 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
         TestDataHolder.builder()
             .sourceType("datetime2")
             .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("'0001-01-01'", "'9999-12-31'", "'9999-12-31T13:00:04.123456Z'", "null")
-            .addExpectedValues("0001-01-01T00:00:00.000000Z", "9999-12-31T00:00:00.000000Z", "9999-12-31T13:00:04.123456Z", null)
+            .addInsertValues("'0001-01-01'", "'9999-12-31'", "'9999-12-31T13:00:04.123456'", "null")
+            .addExpectedValues("0001-01-01T00:00:00.000000", "9999-12-31T00:00:00.000000", "9999-12-31T13:00:04.123456", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 

@@ -2,28 +2,28 @@
 
 AirbyteRecords are required to conform to the Airbyte type system. This means that all sources must produce schemas and records within these types, and all destinations must handle records that conform to this type system.
 
-Because Airybet's interfaces are JSON-based, this type system is realized using [JSON schemas](https://json-schema.org/). In order to work around some limitations of JSON schemas, schemas may declare an additional `airbyte_type` annotation. This is used to disambiguate certain types that JSON schema does not explicitly differentiate between. See the [specific types](#specific-types) section for details.
+Because Airbyte's interfaces are JSON-based, this type system is realized using [JSON schemas](https://json-schema.org/). In order to work around some limitations of JSON schemas, we add an additional `airbyte_type` parameter to define more narrow types.
 
-This type system does not (generally) constrain values. Sources may declare streams using additional features of JSON schema (such as the `length` property for strings), but those constraints will be ignored by all other Airbyte components. The exception is in numeric types; `integer` and `number` fields must be representable within 64-bit primitives.
+This type system does not constrain values. However, destinations may not fully support all values - for example, Avro-based destinations may reject numeric values outside the standard 64-bit representations, or databases may reject timestamps in the BC era.
 
 ## The types
 
 This table summarizes the available types. See the [Specific Types](#specific-types) section for explanation of optional parameters.
 
-| Airbyte type                                                   | JSON Schema                                                                              | Examples                                                                        |
-| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| String                                                         | `{"type": "string"}`                                                                     | `"foo bar"`                                                                     |
-| Date                                                           | `{"type": "string", "format": "date"}`                                                   | `"2021-01-23"`                                                                  |
-| Datetime with timezone                                         | `{"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"}`    | `"2022-11-22T01:23:45+05:00"`                                                   |
-| Datetime without timezone                                      | `{"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"}` | `"2022-11-22T01:23:45"`                                                         |
-| Integer                                                        | `{"type": "integer"}`                                                                    | `42`                                                                            |
-| Big integer (unrepresentable as a 64-bit two's complement int) | `{"type": "string", "airbyte_type": "big_integer"}`                                      | `"123141241234124123141241234124123141241234124123141241234124123141241234124"` |
-| Number                                                         | `{"type": "number"}`                                                                     | `1234.56`                                                                       |
-| Big number (unrepresentable as a 64-bit IEEE 754 float)        | `{"type": "string", "airbyte_type": "big_number"}`                                       | `"1,000,000,...,000.1234"` with 500 0's                                         |
-| Array                                                          | `{"type": "array"}`; optionally `items` and `additionalItems`                            | `[1, 2, 3]`                                                                     |
-| Object                                                         | `{"type": "object"}`; optionally `properties` and `additionalProperties`                 | `{"foo": "bar"}`                                                                |
-| Untyped (i.e. any value is valid)                              | `{}`                                                                                     |                                                                                 |
-| Union                                                          | `{"anyOf": [...]}` or `{"oneOf": [...]}`                                                 |                                                                                 |
+| Airbyte type                                                   | JSON Schema                                                                               | Examples                                                                        |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| String                                                         | `{"type": "string""}`                                                                     | `"foo bar"`                                                                     |
+| Boolean                                                        | `{"type": "boolean"}`                                                                     | `true` or `false`                                                               |
+| Date                                                           | `{"type": "string", "format": "date"}`                                                    | `"2021-01-23"`, `"2021-01-23 BC"`                                               |
+| Timestamp with timezone                                        | `{"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"}`    | `"2022-11-22T01:23:45.123456+05:00"`, `"2022-11-22T01:23:45Z BC"`               |
+| Timestamp without timezone                                     | `{"type": "string", "format": "date-time", "airbyte_type": "timestamp_without_timezone"}` | `"2022-11-22T01:23:45"`, `"2022-11-22T01:23:45.123456 BC"`                      |
+| Time without timezone                                          | `{"type": "string", "airbyte_type": "time_with_timezone"}`                                | `"01:23:45.123456"`, `"01:23:45"`                                               |
+| Time with timezone                                             | `{"type": "string", "airbyte_type": "time_without_timezone"}`                             | `"01:23:45.123456+05:00"`, `"01:23:45Z"`                                        |
+| Integer                                                        | `{"type": "integer"}` or `{"type": "number", "airbyte_type": "integer"}`                  | `42`                                                                            |
+| Number                                                         | `{"type": "number"}`                                                                      | `1234.56`                                                                       |
+| Array                                                          | `{"type": "array"}`; optionally `items`                                                   | `[1, 2, 3]`                                                                     |
+| Object                                                         | `{"type": "object"}`; optionally `properties`                                             | `{"foo": "bar"}`                                                                |
+| Union                                                          | `{"oneOf": [...]}`                                                                        |                                                                                 |ß
 
 ### Record structure
 As a reminder, sources expose a `discover` command, which returns a list of [`AirbyteStreams`](https://github.com/airbytehq/airbyte/blob/111131a193359027d0081de1290eb4bb846662ef/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L122), and a `read` method, which emits a series of [`AirbyteRecordMessages`](https://github.com/airbytehq/airbyte/blob/111131a193359027d0081de1290eb4bb846662ef/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L46-L66). The type system determines what a valid `json_schema` is for an `AirbyteStream`, which in turn dictates what messages `read` is allowed to emit.
@@ -43,8 +43,11 @@ For example, a source could produce this `AirbyteStream` (remember that the `jso
       },
       "appointments": {
         "type": "array",
-        "items": "string",
-        "airbyte_type": "timestamp_with_timezone"
+        "items": {
+          "type": "string",
+          "format": "date-time",
+          "airbyte_type": "timestampt_with_timezone"
+        }
       }
     }
   }
@@ -66,29 +69,10 @@ Along with this `AirbyteRecordMessage` (observe that the `data` field conforms t
 The top-level `object` must conform to the type system. This [means](#objects) that all of the fields must also conform to the type system.
 
 #### Nulls
-Many sources cannot guarantee that all fields are present on all records. As such, they may replace the `type` entry in the schema with `["null", "the_real_type"]`. For example, this schema is the correct way for a source to declare that the `age` field may be missing from some records:
-```json
-{
-  "type": "object",
-  "properties": {
-    "username": {
-      "type": "string"
-    },
-    "age": {
-      "type": ["null", "integer"]
-    }
-  }
-}
-```
-This would then be a valid record:
-```json
-{"username": "someone42"}
-```
-
-Nullable fields are actually the more common case, but this document omits them in other examples for the sake of clarity.
+Many sources cannot guarantee that all fields are present on all records. In these cases, sources should simply not list them as `required` fields. In most cases, sources do not need to list fields as required; by default, all fields are treated as nullable.
 
 #### Unsupported types
-As an escape hatch, destinations which cannot handle a certain type should just fall back to treating those values as strings. For example, let's say a source discovers a stream with this schema:
+Destinations must have handling for all types, but they are free to cast types to a convenient representation. For example, let's say a source discovers a stream with this schema:
 ```json
 {
   "type": "object",
@@ -97,18 +81,19 @@ As an escape hatch, destinations which cannot handle a certain type should just 
       "type": "array",
       "items": {
         "type": "string",
+        "format": "date-time",
         "airbyte_type": "timestamp_with_timezone"
       }
     }
   }
 }
 ```
-Along with records that look like this:
+Along with records which contain data that looks like this:
 ```json
 {"appointments": ["2021-11-22T01:23:45+00:00", "2022-01-22T14:00:00+00:00"]}
 ```
 
-The user then connects this source to a destination that cannot handle `array` fields. The destination connector should simply JSON-serialize the array back to a string when pushing data into the end platform. In other words, the destination connector should behave as though the source declared this schema:
+The user then connects this source to a destination that cannot natively handle `array` fields. The destination connector is free to simply JSON-serialize the array back to a string when pushing data into the end platform. In other words, the destination connector could behave as though the source declared this schema:
 ```json
 {
   "type": "object",
@@ -124,43 +109,51 @@ And emitted this record:
 {"appointments": "[\"2021-11-22T01:23:45+00:00\", \"2022-01-22T14:00:00+00:00\"]"}
 ```
 
+Of course, destinations are free to choose the most convenient/reasonable representation for any given value. JSON serialization is just one possible strategy. For example, many SQL destinations will fall back to a native JSON type (e.g. Postgres' JSONB type, or Snowflake's VARIANT).
+
 ### Specific types
+These sections explain how each specific type should be used.
+
+#### Boolean
+Boolean values are represented as native JSON booleans (i.e. `true` or `false`, case-sensitive). Note that "truthy" and "falsy" values are _not_ acceptable: `"true"`, `"false"`, `1`, and `0` are not valid booleans.
 
 #### Dates and timestamps
-Airbyte has three temporal types: `date`, `timestamp_with_timezone`, and `timestamp_without_timezone`. These are represented as strings with specific `format` (either `date` or `date-time`).
+Airbyte has five temporal types: `date`, `timestamp_with_timezone`, `timestamp_without_timezone`, `time_with_timezone`, and `time_without_timezone`. These are represented as strings with specific `format` (either `date` or `date-time`).
 
-However, JSON schema does not have a built-in way to indicate whether a field includes timezone information. For example, given the schema
+However, JSON schema does not have a built-in way to indicate whether a field includes timezone information. For example, given this JsonSchema:
 ```json
 {
   "type": "object",
   "properties": {
     "created_at": {
       "type": "string",
-      "format": "date-time",
-      "airbyte_type": "timestamp_with_timezone"
+      "format": "date-time"
     }
   }
 }
 ```
-Both `{"created_at": "2021-11-22T01:23:45+00:00"}` and `{"created_at": "2021-11-22T01:23:45"}` are valid records. The `airbyte_type` annotation resolves this ambiguity; sources producing `date-time` fields **must** set the `airbyte_type` to either `timestamp_with_timezone` or `timestamp_without_timezone`.
+Both `{"created_at": "2021-11-22T01:23:45+00:00"}` and `{"created_at": "2021-11-22T01:23:45"}` are valid records.
 
-#### Unrepresentable numbers
-64-bit integers and floating-point numbers (AKA `long` and `double`) cannot represent every number in existence. The `big_integer` and `big_number` types indicate that the source may produce numbers outside the ranges of `long` and `double`s.
+The `airbyte_type` field resolves this ambiguity; sources producing timestamp-ish fields should choose either `timestamp_with_timezone` or `timestamp_without_timezone` (or time with/without timezone).
 
-Note that these are declared as `"type": "string"`. This is intended to make parsing more safe by preventing accidental overflow/loss-of-precision.
+Many sources (which were written before this system was formalized) do not specify the timezone-ness of their fields. Destinations should default to using the `with_timezone` variant in these cases.
+
+All of these must be represented as RFC 3339§5.6 strings, extended with BC era support. See the type definition descriptions for specifics.
+
+#### Numeric values
+The number and integer types can accept any value, without constraint on range. However, this is still subject to compatibility with the destination: the destination (or normalization) _may_ throw an error if it attempts to write a value outside the range supported by the destination warehouse / storage medium.
+
+Airbyte does not currently support infinity/NaN values.
 
 #### Arrays
-Arrays contain 0 or more items, which must have a defined type. These types should also conform to the type system. Arrays may require that all of their elements be the same type (`"items": {whatever type...}`), or they may require specific types for the first N entries (`"items": [{first type...}, {second type...}, ... , {Nth type...}]`, AKA tuple-type).
+Arrays contain 0 or more items, which must have a defined type. These types should also conform to the type system. Arrays may require that all of their elements be the same type (`"items": {whatever type...}`). They may instead require each element to conform to one of a list of types (`"items": [{first type...}, {second type...}, ... , {Nth type...}]`).
 
-Tuple-typed arrays can configure the type of any additional elements using the `additionalItems` field; by default, any type is allowed. They may also pass a boolean to enable/disable additional elements, with `"additionalItems": true` being equivalent to `"additionalItems": {}` and `"additionalItems": false` meaning that only the tuple-defined items are allowed.
-
-Destinations may have a difficult time supporting tuple-typed arrays without very specific handling, and as such are permitted to somewhat loosen their requirements. For example, many Avro-based destinations simply declare an array of a union of all allowed types, rather than requiring the correct type in each position of the array.
+Note that Airbyte's usage of the `items` field is slightly different than JSON schema's usage, in which an `"items": [...]` actually constrains the element correpsonding to the index of that item (AKA tuple-typing). This is becase destinations may have a difficult time supporting tuple-typed arrays without very specific handling, and as such are permitted to somewhat loosen their requirements.
 
 #### Objects
-As with arrays, objects may declare `properties`, each of which should have a type which conforms to the type system. Objects may additionally accept `additionalProperties`, as `true` (any type is acceptable), a specific type (all additional properties must be of that type), or `false` (no additonal properties are allowed).
+As with arrays, objects may declare `properties`, each of which should have a type which conforms to the type system.
 
 #### Unions
-In some cases, sources may want to use multiple types for the same field. For example, a user might have a property which holds either an object, or a `string` explanation of why that data is missing. This is supported with JSON schema's  `oneOf` and `anyOf` types.
+Sources may want to mix different types in a single field, e.g. `"type": ["string", "object"]`. Destinations must handle this case, either using a native union type, or by finding a native type that can accept all of the source's types (this frequently will be `string` or `json`).
 
-#### Untyped values
-In some unusual cases, a property may not have type information associated with it. This is represented by the empty schema `{}`. As many destinations do not allow untyped data, this will frequently trigger the [string-typed escape hatch](#unsupported-types).
+In some cases, sources may want to use multiple types for the same field. For example, a user might have a property which holds one of two object schemas. This is supported with JSON schema's  `oneOf` type. Note that many destinations do not currently support these types, and may not behave as expected.

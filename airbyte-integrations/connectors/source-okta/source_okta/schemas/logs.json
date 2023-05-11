@@ -5,10 +5,7 @@
         "alternateId": {
           "type": ["string", "null"]
         },
-        "detail": {
-          "additionalProperties": {
-            "type": ["object", "null"]
-          },
+        "detailEntry": {
           "type": ["object", "null"]
         },
         "displayName": {
@@ -26,45 +23,15 @@
     "authenticationContext": {
       "properties": {
         "authenticationProvider": {
-          "enum": [
-            "OKTA_AUTHENTICATION_PROVIDER",
-            "ACTIVE_DIRECTORY",
-            "LDAP",
-            "FEDERATION",
-            "SOCIAL",
-            "FACTOR_PROVIDER",
-            null
-          ],
           "type": ["string", "null"]
         },
         "authenticationStep": {
-          "type": ["integer", "null"]
+          "type": ["integer"]
         },
         "credentialProvider": {
-          "enum": [
-            "OKTA_AUTHENTICATION_PROVIDER",
-            "OKTA_CREDENTIAL_PROVIDER",
-            "RSA",
-            "SYMANTEC",
-            "GOOGLE",
-            "DUO",
-            "YUBIKEY",
-            null
-          ],
           "type": ["string", "null"]
         },
         "credentialType": {
-          "enum": [
-            "OTP",
-            "SMS",
-            "PASSWORD",
-            "ASSERTION",
-            "IWA",
-            "EMAIL",
-            "OAUTH2",
-            "JWT",
-            null
-          ],
           "type": ["string", "null"]
         },
         "externalSessionId": {
@@ -103,11 +70,9 @@
             "geolocation": {
               "properties": {
                 "lat": {
-                  "format": "double",
                   "type": ["number", "null"]
                 },
                 "lon": {
-                  "format": "double",
                   "type": ["number", "null"]
                 }
               },
@@ -151,9 +116,6 @@
     "debugContext": {
       "properties": {
         "debugData": {
-          "additionalProperties": {
-            "type": ["object", "null", "string"]
-          },
           "type": ["object", "null"]
         }
       },
@@ -163,7 +125,7 @@
       "type": ["string", "null"]
     },
     "eventType": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "legacyEventType": {
       "type": ["string", "null"]
@@ -181,7 +143,7 @@
     },
     "published": {
       "format": "date-time",
-      "type": "string"
+      "type": ["string", "null"]
     },
     "request": {
       "properties": {
@@ -199,11 +161,9 @@
                   "geolocation": {
                     "properties": {
                       "lat": {
-                        "format": "double",
                         "type": ["number", "null"]
                       },
                       "lon": {
-                        "format": "double",
                         "type": ["number", "null"]
                       }
                     },
@@ -225,7 +185,7 @@
                 "type": ["string", "null"]
               },
               "version": {
-                "type": "string"
+                "type": ["string", "null"]
               }
             },
             "type": ["object", "null"]
@@ -256,8 +216,7 @@
       "type": ["object", "null"]
     },
     "severity": {
-      "enum": ["DEBUG", "INFO", "WARN", "ERROR"],
-      "type": "string"
+      "type": ["string", "null"]
     },
     "target": {
       "items": {
@@ -266,9 +225,6 @@
             "type": ["string", "null"]
           },
           "detailEntry": {
-            "additionalProperties": {
-              "type": ["object", "null", "string"]
-            },
             "type": ["object", "null"]
           },
           "displayName": {
@@ -288,9 +244,6 @@
     "transaction": {
       "properties": {
         "detail": {
-          "additionalProperties": {
-            "type": ["object", "null", "string"]
-          },
           "type": ["object", "null"]
         },
         "id": {
@@ -303,11 +256,11 @@
       "type": ["object", "null"]
     },
     "uuid": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "version": {
-      "type": "string"
+      "type": ["string", "null"]
     }
   },
-  "type": "object"
+  "type": ["object", "null"]
 }

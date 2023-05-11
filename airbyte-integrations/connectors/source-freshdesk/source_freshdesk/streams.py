@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -11,9 +11,12 @@ from urllib import parse
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.auth import AuthBase
+from source_freshdesk.availability_strategy import FreshdeskAvailabilityStrategy
 from source_freshdesk.utils import CallCredit
 
 
@@ -24,6 +27,11 @@ class FreshdeskStream(HttpStream, ABC):
     result_return_limit = 100
     primary_key = "id"
     link_regex = re.compile(r'<(.*?)>;\s*rel="next"')
+    raise_on_http_errors = True
+    forbidden_stream = False
+
+    # regestring the default schema transformation
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, authenticator: AuthBase, config: Mapping[str, Any], *args, **kwargs):
         super().__init__(authenticator=authenticator)
@@ -38,7 +46,11 @@ class FreshdeskStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return parse.urljoin(f"https://{self.domain.rstrip('/')}", "/api/v2")
+        return parse.urljoin(f"https://{self.domain.rstrip('/')}", "/api/v2/")
+
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return FreshdeskAvailabilityStrategy()
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == requests.codes.too_many_requests:
@@ -57,7 +69,7 @@ class FreshdeskStream(HttpStream, ABC):
         return {"per_page": link_query_params["per_page"][0], "page": link_query_params["page"][0]}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {"per_page": self.result_return_limit}
         if next_page_token and "page" in next_page_token:
@@ -81,9 +93,10 @@ class FreshdeskStream(HttpStream, ABC):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         )
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        data = response.json()
-        return data if data else []
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[MutableMapping]:
+        if self.forbidden_stream:
+            return []
+        return response.json() or []
 
 
 class IncrementalFreshdeskStream(FreshdeskStream, IncrementalMixin):
@@ -108,7 +121,7 @@ class IncrementalFreshdeskStream(FreshdeskStream, IncrementalMixin):
         self._cursor_value = value.get(self.cursor_field, self.start_date)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params[self.cursor_filter] = stream_state.get(self.cursor_field, self.start_date)
@@ -136,6 +149,11 @@ class Agents(FreshdeskStream):
 class BusinessHours(FreshdeskStream):
     def path(self, **kwargs) -> str:
         return "business_hours"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[MutableMapping]:
+        for record in super().parse_response(response, **kwargs):
+            record["working_hours"] = record.pop("business_hours", None)
+            yield record
 
 
 class CannedResponseFolders(FreshdeskStream):
@@ -301,7 +319,7 @@ class Tickets(IncrementalFreshdeskStream):
         return "tickets"
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         includes = ["description", "requester", "stats"]

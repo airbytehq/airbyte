@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc;
@@ -8,6 +8,8 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_DECIMAL_DIGITS;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_IS_NULLABLE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_COLUMN_NAME;
@@ -17,13 +19,23 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_DECIMAL_DIGITS;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_INDEX_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_INDEX_NON_UNIQUE;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
@@ -35,10 +47,17 @@ import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.JdbcStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
-import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
+import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
+import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -50,7 +69,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -66,7 +85,7 @@ import org.slf4j.LoggerFactory;
  * relational DB source which can be accessed via JDBC driver. If you are implementing a connector
  * for a relational DB which has a JDBC driver, make an effort to use this class.
  */
-public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbSource<Datatype, JdbcDatabase> implements Source {
+public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Datatype, JdbcDatabase> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
@@ -85,15 +104,41 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     this.sourceOperations = sourceOperations;
   }
 
+  @Override
+  protected AutoCloseableIterator<JsonNode> queryTableFullRefresh(final JdbcDatabase database,
+                                                                  final List<String> columnNames,
+                                                                  final String schemaName,
+                                                                  final String tableName,
+                                                                  final SyncMode syncMode,
+                                                                  final Optional<String> cursorField) {
+    LOGGER.info("Queueing query for table: {}", tableName);
+    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters
+    // as intermediate state messages are emitted.
+    if (syncMode.equals(SyncMode.INCREMENTAL)) {
+      final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
+      return queryTable(database, String.format("SELECT %s FROM %s ORDER BY %s ASC",
+          enquoteIdentifierList(columnNames, getQuoteString()),
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField),
+          tableName, schemaName);
+    } else {
+      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering
+      // of the records.
+      return queryTable(database, String.format("SELECT %s FROM %s",
+          enquoteIdentifierList(columnNames, getQuoteString()),
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())), tableName, schemaName);
+    }
+  }
+
   /**
    * Configures a list of operations that can be used to check the connection to the source.
    *
    * @return list of consumers that run queries for the check command.
    */
-  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
+  @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
+  protected List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
     return ImmutableList.of(database -> {
       LOGGER.info("Attempting to get metadata from the database to see if we can connect.");
-      database.bufferedResultSetQuery(conn -> conn.getMetaData().getCatalogs(), sourceOperations::rowToJson);
+      database.bufferedResultSetQuery(connection -> connection.getMetaData().getCatalogs(), sourceOperations::rowToJson);
     });
   }
 
@@ -114,7 +159,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   private String getCatalog(final SqlDatabase database) {
-    return (database.getSourceConfig().has("database") ? database.getSourceConfig().get("database").asText() : null);
+    return (database.getSourceConfig().has(JdbcUtils.DATABASE_KEY) ? database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText() : null);
   }
 
   @Override
@@ -124,7 +169,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     final Set<JdbcPrivilegeDto> tablesWithSelectGrantPrivilege = getPrivilegesTableForCurrentUser(database, schema);
     return database.bufferedResultSetQuery(
         // retrieve column metadata from the database
-        conn -> conn.getMetaData().getColumns(getCatalog(database), schema, null, null),
+        connection -> connection.getMetaData().getColumns(getCatalog(database), schema, null, null),
         // store essential column metadata to a Json object from the result set about each column
         this::getColumnMetadata)
         .stream()
@@ -140,18 +185,27 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
             .fields(fields.stream()
                 // read the column metadata Json object, and determine its type
                 .map(f -> {
-                  final Datatype datatype = getFieldType(f);
-                  final JsonSchemaType jsonType = getType(datatype);
-                  LOGGER.info("Table {} column {} (type {}[{}]) -> {}",
+                  final Datatype datatype = sourceOperations.getDatabaseFieldType(f);
+                  final JsonSchemaType jsonType = getAirbyteType(datatype);
+                  LOGGER.debug("Table {} column {} (type {}[{}], nullable {}) -> {}",
                       fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_NAME).asText(),
                       f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_SIZE).asInt(),
+                      f.get(INTERNAL_IS_NULLABLE).asBoolean(),
                       jsonType);
                   return new CommonField<Datatype>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {};
                 })
                 .collect(Collectors.toList()))
+            .cursorFields(extractCursorFields(fields))
             .build())
+        .collect(Collectors.toList());
+  }
+
+  private List<String> extractCursorFields(final List<JsonNode> fields) {
+    return fields.stream()
+        .filter(field -> isCursorType(sourceOperations.getDatabaseFieldType(field)))
+        .map(field -> field.get(INTERNAL_COLUMN_NAME).asText())
         .collect(Collectors.toList());
   }
 
@@ -180,7 +234,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    * @return Essential information about a column to determine which table it belongs to and its type.
    */
   private JsonNode getColumnMetadata(final ResultSet resultSet) throws SQLException {
-    return Jsons.jsonNode(ImmutableMap.<String, Object>builder()
+    final var fieldMap = ImmutableMap.<String, Object>builder()
         // we always want a namespace, if we cannot get a schema, use db name.
         .put(INTERNAL_SCHEMA_NAME,
             resultSet.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)
@@ -190,15 +244,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         .put(INTERNAL_COLUMN_TYPE, resultSet.getString(JDBC_COLUMN_DATA_TYPE))
         .put(INTERNAL_COLUMN_TYPE_NAME, resultSet.getString(JDBC_COLUMN_TYPE_NAME))
         .put(INTERNAL_COLUMN_SIZE, resultSet.getInt(JDBC_COLUMN_SIZE))
-        .build());
-  }
-
-  /**
-   * @param field Essential column information returned from
-   *        {@link AbstractJdbcSource#getColumnMetadata}.
-   */
-  public Datatype getFieldType(final JsonNode field) {
-    return sourceOperations.getFieldType(field);
+        .put(INTERNAL_IS_NULLABLE, resultSet.getString(JDBC_IS_NULLABLE));
+    if (resultSet.getString(JDBC_DECIMAL_DIGITS) != null) {
+      fieldMap.put(INTERNAL_DECIMAL_DIGITS, resultSet.getString(JDBC_DECIMAL_DIGITS));
+    }
+    return Jsons.jsonNode(fieldMap.build());
   }
 
   @Override
@@ -208,8 +258,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   @Override
-  public JsonSchemaType getType(final Datatype columnType) {
-    return sourceOperations.getJsonType(columnType);
+  public JsonSchemaType getAirbyteType(final Datatype columnType) {
+    return sourceOperations.getAirbyteType(columnType);
   }
 
   @Override
@@ -220,11 +270,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     try {
       // Get all primary keys without specifying a table name
       final Map<String, List<String>> tablePrimaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
-          conn -> conn.getMetaData().getPrimaryKeys(getCatalog(database), null, null),
+          connection -> connection.getMetaData().getPrimaryKeys(getCatalog(database), null, null),
           r -> {
             final String schemaName =
                 r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? r.getString(JDBC_COLUMN_SCHEMA_NAME) : r.getString(JDBC_COLUMN_DATABASE_NAME);
-            final String streamName = sourceOperations.getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME));
+            final String streamName = JdbcUtils.getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME));
             final String primaryKey = r.getString(JDBC_COLUMN_COLUMN_NAME);
             return new SimpleImmutableEntry<>(streamName, primaryKey);
           }));
@@ -237,14 +287,12 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     // Get primary keys one table at a time
     return tableInfos.stream()
         .collect(Collectors.toMap(
-            tableInfo -> sourceOperations
-                .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
+            tableInfo -> JdbcUtils.getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
             tableInfo -> {
-              final String streamName = sourceOperations
-                  .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName());
+              final String streamName = JdbcUtils.getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName());
               try {
                 final Map<String, List<String>> primaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
-                    conn -> conn.getMetaData().getPrimaryKeys(getCatalog(database), tableInfo.getNameSpace(), tableInfo.getName()),
+                    connection -> connection.getMetaData().getPrimaryKeys(getCatalog(database), tableInfo.getNameSpace(), tableInfo.getName()),
                     r -> new SimpleImmutableEntry<>(streamName, r.getString(JDBC_COLUMN_COLUMN_NAME))));
                 return primaryKeys.getOrDefault(streamName, Collections.emptyList());
               } catch (final SQLException e) {
@@ -260,108 +308,150 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   @Override
+  public boolean isCursorType(final Datatype type) {
+    return sourceOperations.isCursorType(type);
+  }
+
+  @Override
   public AutoCloseableIterator<JsonNode> queryTableIncremental(final JdbcDatabase database,
                                                                final List<String> columnNames,
                                                                final String schemaName,
                                                                final String tableName,
-                                                               final String cursorField,
-                                                               final Datatype cursorFieldType,
-                                                               final String cursor) {
+                                                               final CursorInfo cursorInfo,
+                                                               final Datatype cursorFieldType) {
     LOGGER.info("Queueing query for table: {}", tableName);
+    final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair airbyteStream =
+        AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.unsafeQuery(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
-              final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
-                  sourceOperations.enquoteIdentifierList(connection, columnNames),
-                  sourceOperations
-                      .getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
-                  sourceOperations.enquoteIdentifier(connection, cursorField));
+              final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
+              final String quotedCursorField = enquoteIdentifier(cursorInfo.getCursorField(), getQuoteString());
 
-              final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursor);
-              LOGGER.info("Executing query for table: {}", tableName);
+              final String operator;
+              if (cursorInfo.getCursorRecordCount() <= 0L) {
+                operator = ">";
+              } else {
+                final long actualRecordCount = getActualCursorRecordCount(
+                    connection, fullTableName, quotedCursorField, cursorFieldType, cursorInfo.getCursor());
+                LOGGER.info("Table {} cursor count: expected {}, actual {}", tableName, cursorInfo.getCursorRecordCount(), actualRecordCount);
+                if (actualRecordCount == cursorInfo.getCursorRecordCount()) {
+                  operator = ">";
+                } else {
+                  operator = ">=";
+                }
+              }
+
+              final String wrappedColumnNames = getWrappedColumnNames(database, connection, columnNames, schemaName, tableName);
+              final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE %s %s ?",
+                  wrappedColumnNames,
+                  fullTableName,
+                  quotedCursorField,
+                  operator));
+              // if the connector emits intermediate states, the incremental query must be sorted by the cursor
+              // field
+              if (getStateEmissionFrequency() > 0) {
+                sql.append(String.format(" ORDER BY %s ASC", quotedCursorField));
+              }
+
+              final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
+              LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
+              sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
               return preparedStatement;
             },
             sourceOperations::rowToJson);
-        return AutoCloseableIterators.fromStream(stream);
+        return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final SQLException e) {
         throw new RuntimeException(e);
       }
-    });
+    }, airbyteStream);
   }
 
-  protected DataSource createDataSource(final JsonNode config) {
-    final JsonNode jdbcConfig = toDatabaseConfig(config);
-    final DataSource dataSource = DataSourceFactory.create(
-        jdbcConfig.has("username") ? jdbcConfig.get("username").asText() : null,
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
-        driverClass,
-        jdbcConfig.get("jdbc_url").asText(),
-        getConnectionProperties(config));
-    // Record the data source so that it can be closed.
-    dataSources.add(dataSource);
-    return dataSource;
+  /**
+   * Some databases need special column names in the query.
+   */
+  protected String getWrappedColumnNames(final JdbcDatabase database,
+                                         final Connection connection,
+                                         final List<String> columnNames,
+                                         final String schemaName,
+                                         final String tableName)
+      throws SQLException {
+    return enquoteIdentifierList(columnNames, getQuoteString());
+  }
+
+  protected String getCountColumnName() {
+    return "record_count";
+  }
+
+  protected long getActualCursorRecordCount(final Connection connection,
+                                            final String fullTableName,
+                                            final String quotedCursorField,
+                                            final Datatype cursorFieldType,
+                                            final String cursor)
+      throws SQLException {
+    final String columnName = getCountColumnName();
+    final PreparedStatement cursorRecordStatement;
+    if (cursor == null) {
+      final String cursorRecordQuery = String.format("SELECT COUNT(*) AS %s FROM %s WHERE %s IS NULL",
+          columnName,
+          fullTableName,
+          quotedCursorField);
+      cursorRecordStatement = connection.prepareStatement(cursorRecordQuery);
+    } else {
+      final String cursorRecordQuery = String.format("SELECT COUNT(*) AS %s FROM %s WHERE %s = ?",
+          columnName,
+          fullTableName,
+          quotedCursorField);
+      cursorRecordStatement = connection.prepareStatement(cursorRecordQuery);;
+      sourceOperations.setCursorField(cursorRecordStatement, 1, cursorFieldType, cursor);
+    }
+    final ResultSet resultSet = cursorRecordStatement.executeQuery();
+    if (resultSet.next()) {
+      return resultSet.getLong(columnName);
+    } else {
+      return 0L;
+    }
   }
 
   @Override
-  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
-    final DataSource dataSource = createDataSource(config);
+  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
+    final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
+    // Create the data source
+    final DataSource dataSource = DataSourceFactory.create(
+        jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        driverClass,
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        JdbcDataSourceUtils.getConnectionProperties(sourceConfig));
+    // Record the data source so that it can be closed.
+    dataSources.add(dataSource);
+
     final JdbcDatabase database = new StreamingJdbcDatabase(
         dataSource,
         sourceOperations,
         streamingQueryConfigProvider);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
-
+    database.setSourceConfig(sourceConfig);
+    database.setDatabaseConfig(jdbcConfig);
     return database;
   }
 
   /**
-   * Retrieves connection_properties from config and also validates if custom
-   * jdbc_url parameters overlap with the default properties
+   * {@inheritDoc}
    *
-   * @param config A configuration used to check Jdbc connection
-   * @return A mapping of connection properties
+   * @param database database instance
+   * @param catalog schema of the incoming messages.
+   * @throws SQLException
    */
-  protected Map<String, String> getConnectionProperties(final JsonNode config) {
-    final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config, JdbcUtils.JDBC_URL_PARAMS_KEY);
-    final Map<String, String> defaultProperties = getDefaultConnectionProperties(config);
-    assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
-    return MoreMaps.merge(customProperties, defaultProperties);
-  }
-
-  /**
-   * Validates for duplication parameters
-   *
-   * @param customParameters custom connection properties map as specified by each Jdbc source
-   * @param defaultParameters connection properties map as specified by each Jdbc source
-   * @throws IllegalArgumentException
-   */
-  private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
-      final Map<String, String> defaultParameters) {
-    for (final String key : defaultParameters.keySet()) {
-      if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
-        throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
-      }
-    }
-  }
-
-  /**
-   * Retrieves default connection_properties from config
-   *
-   * TODO: make this method abstract and add parity features to
-   * destination connectors
-   * @param config A configuration used to check Jdbc connection
-   * @return A mapping of the default connection properties
-   */
-  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    return JdbcUtils.parseJdbcParameters(config, "connection_properties", getJdbcParameterDelimiter());
-  };
-
-  protected String getJdbcParameterDelimiter() {
-    return "&";
+  @Override
+  protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
+      throws SQLException {
+    LOGGER.info("Data source product recognized as {}:{}",
+        database.getMetaData().getDatabaseProductName(),
+        database.getMetaData().getDatabaseProductVersion());
   }
 
   @Override
@@ -374,6 +464,23 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
       }
     });
     dataSources.clear();
+  }
+
+  protected List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog, final StateManager stateManager) {
+    final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams = stateManager.getCdcStateManager().getInitialStreamsSynced();
+    if (alreadySyncedStreams.isEmpty() && (stateManager.getCdcStateManager().getCdcState() == null
+        || stateManager.getCdcStateManager().getCdcState().getState() == null)) {
+      return Collections.emptyList();
+    }
+
+    final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
+
+    final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
+
+    return catalog.getStreams().stream()
+        .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
+        .map(Jsons::clone)
+        .collect(Collectors.toList());
   }
 
 }

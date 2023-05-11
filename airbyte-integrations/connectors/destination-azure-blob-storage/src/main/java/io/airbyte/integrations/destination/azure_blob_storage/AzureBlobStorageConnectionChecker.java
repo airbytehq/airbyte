@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.azure_blob_storage;
@@ -10,6 +10,7 @@ import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import com.azure.storage.common.StorageSharedKeyCredential;
+import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -42,6 +43,16 @@ public class AzureBlobStorageConnectionChecker {
             .buildAppendBlobClient();
   }
 
+  public AzureBlobStorageConnectionChecker(final AzureBlobStorageConfig azureBlobStorageConfig) {
+    this.appendBlobClient =
+        new SpecializedBlobClientBuilder()
+            .endpoint(azureBlobStorageConfig.getEndpointUrl())
+            .sasToken(azureBlobStorageConfig.getSasToken())
+            .containerName(azureBlobStorageConfig.getContainerName()) // Like schema in DB
+            .blobName(TEST_BLOB_NAME_PREFIX + UUID.randomUUID()) // Like table in DB
+            .buildAppendBlobClient();
+  }
+
   /*
    * This a kinda test method that is used in CHECK operation to make sure all works fine with the
    * current config
@@ -51,8 +62,7 @@ public class AzureBlobStorageConnectionChecker {
     writeUsingAppendBlock("Some test data");
     listBlobsInContainer()
         .forEach(
-            blobItem -> LOGGER.info(
-                "Blob name: " + blobItem.getName() + "Snapshot: " + blobItem.getSnapshot()));
+            blobItem -> LOGGER.info("Blob name: {}, Snapshot: {}", blobItem.getName(), blobItem.getSnapshot()));
 
     deleteBlob();
   }
@@ -78,13 +88,13 @@ public class AzureBlobStorageConnectionChecker {
    * but those are not supposed to be written here
    */
   public void writeUsingAppendBlock(final String data) {
-    LOGGER.info("Writing test data to Azure Blob storage: " + data);
+    LOGGER.info("Writing test data to Azure Blob storage: {}", data);
     final InputStream dataStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
 
     final Integer blobCommittedBlockCount = appendBlobClient.appendBlock(dataStream, data.length())
         .getBlobCommittedBlockCount();
 
-    LOGGER.info("blobCommittedBlockCount: " + blobCommittedBlockCount);
+    LOGGER.info("blobCommittedBlockCount: {}", blobCommittedBlockCount);
   }
 
   /*
@@ -98,16 +108,16 @@ public class AzureBlobStorageConnectionChecker {
    * Delete the blob we created earlier.
    */
   public void deleteBlob() {
-    LOGGER.info("Deleting blob: " + appendBlobClient.getBlobName());
+    LOGGER.info("Deleting blob: {}", appendBlobClient.getBlobName());
     appendBlobClient.delete(); // remove aka "SQL Table" used
   }
 
   /*
-   * Delete the Container. Be very careful when you ise ir. It removes thw whole bucket and supposed
+   * Delete the Container. Be very careful when you use it. It removes the whole bucket and supposed
    * to be used in check connection ony for writing tmp data
    */
   public void deleteContainer() {
-    LOGGER.info("Deleting blob: " + containerClient.getBlobContainerName());
+    LOGGER.info("Deleting blob: {}", containerClient.getBlobContainerName());
     containerClient.delete(); // remove aka "SQL Schema" used
   }
 

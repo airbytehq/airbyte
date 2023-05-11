@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Iterator, List, Mapping
 from uuid import uuid4
 
+import jsonschema
 import pytest
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -36,7 +37,11 @@ class AbstractTestIncrementalFileStream(ABC):
 
     @pytest.fixture(scope="session")
     def airbyte_system_columns(self) -> Mapping[str, str]:
-        return {FileStream.ab_additional_col: "object", FileStream.ab_last_mod_col: "string", FileStream.ab_file_name_col: "string"}
+        return {
+            FileStream.ab_additional_col: {"type": "object"},
+            FileStream.ab_last_mod_col: {"type": "string", "format": "date-time"},
+            FileStream.ab_file_name_col: {"type": "string"}
+        }
 
     @property
     @abstractmethod
@@ -104,11 +109,15 @@ class AbstractTestIncrementalFileStream(ABC):
         # emulate state for incremental testing
         # since we're not actually saving state out to file here, we pass schema in to our FileStream creation...
         # this isn't how it will work in Airbyte but it's a close enough emulation
-        current_state = state if state is not None else {FileStream.ab_last_mod_col: "1970-01-01T00:00:00+0000"}
+        current_state = state if state is not None else {FileStream.ab_last_mod_col: "1970-01-01T00:00:00Z"}
         if (user_schema is None) and ("schema" in current_state.keys()):
             user_schema = current_state["schema"]
 
-        full_expected_schema = {**expected_schema, **airbyte_system_columns}
+        full_expected_schema = {
+            "type": "object",
+            "properties": {**expected_schema, **airbyte_system_columns},
+        }
+
         str_user_schema = str(user_schema).replace("'", '"') if user_schema is not None else None
         total_num_columns = num_columns + len(airbyte_system_columns.keys())
         provider = {**self.provider(cloud_bucket_name), **self.credentials} if private else self.provider(cloud_bucket_name)
@@ -118,7 +127,7 @@ class AbstractTestIncrementalFileStream(ABC):
             LOGGER.info(f"Testing stream_records() in SyncMode:{sync_mode.value}")
 
             # check we return correct schema from get_json_schema()
-            assert fs._get_schema_map() == full_expected_schema
+            assert fs.get_json_schema() == full_expected_schema
 
             records = []
             for stream_slice in fs.stream_slices(sync_mode=sync_mode, stream_state=current_state):
@@ -128,18 +137,14 @@ class AbstractTestIncrementalFileStream(ABC):
                     for file_dict in stream_slice["files"]:
                         # TODO: if we ever test other filetypes in these tests this will need fixing
                         file_reader = CsvParser(format)
-                        with file_dict["storage_file"].open(file_reader.is_binary) as f:
-                            expected_columns.extend(list(file_reader.get_inferred_schema(f).keys()))
+                        storage_file = file_dict["storage_file"]
+                        with storage_file.open(file_reader.is_binary) as f:
+                            expected_columns.extend(list(file_reader.get_inferred_schema(f, storage_file.file_info).keys()))
                     expected_columns = set(expected_columns)  # de-dupe
 
                     for record in fs.read_records(sync_mode, stream_slice=stream_slice):
                         # check actual record values match expected schema
-                        assert all(
-                            [
-                                isinstance(record[col], JSONTYPE_TO_PYTHONTYPE[typ]) or record[col] is None
-                                for col, typ in full_expected_schema.items()
-                            ]
-                        )
+                        jsonschema.validate(record, full_expected_schema)
                         records.append(record)
 
             assert all([len(r.keys()) == total_num_columns for r in records])
@@ -303,22 +308,6 @@ class AbstractTestIncrementalFileStream(ABC):
                 {"id": "boolean", "name": "boolean", "valid": "boolean"},
                 False,
                 True,
-            ),
-            # multiple file tests (different but merge-able schemas)
-            (  # auto-infer
-                [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
-                ],
-                "**",
-                True,
-                6,
-                17,
-                {"id": "integer", "name": "string", "valid": "boolean", "location": "string", "percentage": "number", "nullable": "string"},
-                None,
-                False,
-                False,
             ),
             (  # provided schema, not containing all columns (extra columns should go into FileStream.ab_additional_col)
                 [
@@ -492,6 +481,7 @@ class AbstractTestIncrementalFileStream(ABC):
         incremental: bool,
         fails: List[bool],
     ) -> None:
+        expected_schema = {k: {"type": ["null", v]} for k, v in expected_schema.items()}
         try:
             if not incremental:  # we expect matching behaviour here in either sync_mode
                 for sync_mode in [

@@ -144,10 +144,25 @@
             "type": ["null", "integer"]
           },
           "value": {
-            "type": ["null", "string", "array"],
-            "items": {
-              "type": ["null", "string"]
-            }
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": true
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "author_id": {
             "type": ["null", "integer"]
@@ -260,7 +275,9 @@
       "type": ["null", "object"],
       "properties": {
         "custom": {
-          "type": ["null", "object"]
+          "type": ["null", "object"],
+          "properties": {},
+          "additionalProperties": true
         },
         "trusted": {
           "type": ["null", "boolean"]

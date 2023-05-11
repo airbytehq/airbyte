@@ -7,6 +7,7 @@ destination_configuration_path: TO_UPDATE_FROM_TEST
 # EDIT THE CONFIGURATION BELOW!
 configuration:
   status: active # REQUIRED | string | Allowed values: active, inactive, deprecated
+  skip_reset: false # OPTIONAL | boolean | Flag to check if the connection should be reset after a connection update
   namespace_definition: source # OPTIONAL | string | Allowed values: source, destination, customformat
   namespace_format: "${SOURCE_NAMESPACE}" # OPTIONAL | string | Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
   prefix: "" # REQUIRED | Prefix that will be prepended to the name of each stream when it is written to the destination
@@ -15,9 +16,11 @@ configuration:
     cpu_request: "" # OPTIONAL
     memory_limit: "" # OPTIONAL
     memory_request: "" # OPTIONAL
-  schedule: # OPTIONAL | object
-    time_unit: hours # REQUIRED | string | Allowed values: minutes, hours, days, weeks, months
-    units: 1 # REQUIRED | integer
+  schedule_type: basic
+  schedule_data:
+    basic_schedule:
+      time_unit: hours # REQUIRED | string | Allowed values: minutes, hours, days, weeks, months
+      units: 1 # REQUIRED | integer
   sync_catalog: # OPTIONAL | object | 🚨 ONLY edit streams.config, streams.stream should not be edited as schema cannot be changed.
     streams:
       - config:

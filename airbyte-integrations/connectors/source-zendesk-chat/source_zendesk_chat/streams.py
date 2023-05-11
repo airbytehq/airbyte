@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -9,6 +9,7 @@ from urllib.parse import parse_qs, urlparse
 
 import pendulum
 import requests
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -16,10 +17,13 @@ class Stream(HttpStream, ABC):
     url_base = "https://www.zopim.com/api/v2/"
     primary_key = "id"
 
-    primary_key = None
     data_field = None
 
     limit = 100
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def request_kwargs(
         self,
@@ -104,6 +108,7 @@ class BaseIncrementalStream(Stream, ABC):
 
 
 class TimeIncrementalStream(BaseIncrementalStream, ABC):
+
     state_checkpoint_interval = 1000
 
     def __init__(self, start_date, **kwargs):
@@ -185,6 +190,7 @@ class AgentTimelines(TimeIncrementalStream):
     Agent Timelines Stream: https://developer.zendesk.com/rest_api/docs/chat/incremental_export#incremental-agent-timeline-export
     """
 
+    primary_key = None
     cursor_field = "start_time"
     data_field = "agent_timeline"
     name = "agent_timeline"
@@ -230,6 +236,17 @@ class Chats(TimeIncrementalStream):
     cursor_field = "update_timestamp"
     data_field = "chats"
     limit = 1000
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        response_data = response.json()
+        if response_data["count"] == self.limit:
+            next_page = {"start_time": response_data["end_time"]}
+
+            start_id = response_data.get("end_id")
+            if start_id:
+                next_page.update({"start_id": start_id})
+
+            return next_page
 
 
 class Shortcuts(Stream):

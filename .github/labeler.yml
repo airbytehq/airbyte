@@ -1,25 +1,17 @@
 # union of frontend, api, server, scheduler, protocol, worker, kubernetes
 area/platform:
-  - airbyte-webapp/*
-  - airbyte-webapp/**/*
   - airbyte-api/*
   - airbyte-api/**/*
+  - airbyte-persistence/*
+  - airbyte-persistence/**/*
   - airbyte-server/*
   - airbyte-server/**/*
-  - airbyte-scheduler/*
-  - airbyte-scheduler/**/*
-  - airbyte-protocol/*
-  - airbyte-protocol/**/*
   - airbyte-workers/*
   - airbyte-workers/**/*
   - kube/*
   - kube/**/*
   - charts/*
   - charts/**/*
-
-team/frontend:
-  - airbyte-webapp/*
-  - airbyte-webapp/**/*
 
 area/api:
   - airbyte-api/*
@@ -28,14 +20,6 @@ area/api:
 area/server:
   - airbyte-server/*
   - airbyte-server/**/*
-
-area/scheduler:
-  - airbyte-scheduler/*
-  - airbyte-scheduler/**/*
-
-area/protocol:
-  - airbyte-protocol/*
-  - airbyte-protocol/**/*
 
 area/worker:
   - airbyte-workers/*
@@ -50,7 +34,6 @@ kubernetes:
 area/connectors:
   - airbyte-integrations/connectors/*
   - airbyte-integrations/connectors/**/*
-  - airbyte-integrations/builds.md
 
 area/documentation:
   - docs/*

@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "integer"]
@@ -38,6 +39,9 @@
       }
     },
     "payment_method": {
+      "type": ["null", "string"]
+    },
+    "shop_url": {
       "type": ["null", "string"]
     }
   }

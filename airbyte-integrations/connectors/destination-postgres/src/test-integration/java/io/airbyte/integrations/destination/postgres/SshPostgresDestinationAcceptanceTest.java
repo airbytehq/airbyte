@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres;
@@ -11,10 +11,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.util.List;
@@ -33,7 +34,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
  */
 public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
   private static final String schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
   private static final Network network = Network.newNetwork();
   private static PostgreSQLContainer<?> db;
@@ -48,7 +49,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db).put("schema", schemaName));
+    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db).put("schema", schemaName), false);
   }
 
   @Override
@@ -68,16 +69,6 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
         .stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
   }
 
   @Override
@@ -115,13 +106,13 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
   private static Database getDatabaseFromConfig(final JsonNode config) {
     return new Database(
         DSLContextFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.POSTGRESQL.getDriverClassName(),
             String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-                config.get("host").asText(),
-                config.get("port").asInt(),
-                config.get("database").asText()),
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
+                config.get(JdbcUtils.DATABASE_KEY).asText()),
             SQLDialect.POSTGRES));
   }
 
@@ -129,8 +120,8 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
-        PostgresDestination.HOST_KEY,
-        PostgresDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(ctx -> {
               ctx.execute("set time zone 'UTC';");
@@ -148,8 +139,8 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
     // do everything in a randomly generated schema so that we can wipe it out at the end.
     SshTunnel.sshWrap(
         getConfig(),
-        PostgresDestination.HOST_KEY,
-        PostgresDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
         });
@@ -171,8 +162,8 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
     // blow away the test schema at the end.
     SshTunnel.sshWrap(
         getConfig(),
-        PostgresDestination.HOST_KEY,
-        PostgresDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP SCHEMA %s CASCADE;", schemaName)));
         });

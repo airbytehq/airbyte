@@ -20,7 +20,8 @@
       }
     },
     "dateCreated": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
     },
     "user": {
       "type": ["null", "object"],

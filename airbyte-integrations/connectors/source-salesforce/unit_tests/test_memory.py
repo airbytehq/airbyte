@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -11,19 +11,13 @@ from conftest import generate_stream
 from source_salesforce.streams import BulkIncrementalSalesforceStream
 
 
-@pytest.fixture(autouse=True)
-def time_sleep_mock(mocker):
-    time_mock = mocker.patch("time.sleep", lambda x: None)
-    yield time_mock
-
-
 @pytest.mark.parametrize(
     "n_records, first_size, first_peak",
     (
         (1000, 0.4, 1),
         (10000, 1, 2),
-        (100000, 4, 7),
-        (200000, 7, 12),
+        (100000, 4, 9),
+        (200000, 7, 19),
     ),
     ids=[
         "1k recods",
@@ -33,7 +27,7 @@ def time_sleep_mock(mocker):
     ],
 )
 def test_memory_download_data(stream_config, stream_api, n_records, first_size, first_peak):
-    job_full_url: str = "https://fase-account.salesforce.com/services/data/v52.0/jobs/query/7504W00000bkgnpQAA"
+    job_full_url: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     content = b'"Id","IsDeleted"'
     for _ in range(n_records):
@@ -42,7 +36,7 @@ def test_memory_download_data(stream_config, stream_api, n_records, first_size, 
     with requests_mock.Mocker() as m:
         m.register_uri("GET", f"{job_full_url}/results", content=content)
         tracemalloc.start()
-        for x in stream.read_with_chunks(stream.download_data(url=job_full_url)):
+        for x in stream.read_with_chunks(*stream.download_data(url=job_full_url)):
             pass
         fs, fp = tracemalloc.get_traced_memory()
         first_size_in_mb, first_peak_in_mb = fs / 1024**2, fp / 1024**2

@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_EVENT_SERIAL_NO;
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_LSN;
 import static io.airbyte.integrations.source.mssql.MssqlSource.DRIVER_CLASS;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_CDC_OFFSET;
@@ -28,14 +29,15 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
-import io.airbyte.integrations.debezium.CdcTargetPosition;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.integrations.debezium.internals.mssql.MssqlCdcTargetPosition;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.debezium.connector.sqlserver.Lsn;
 import java.sql.SQLException;
 import java.util.List;
@@ -43,7 +45,9 @@ import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
@@ -51,12 +55,12 @@ import org.testcontainers.containers.MSSQLServerContainer;
 public class CdcMssqlSourceTest extends CdcSourceTest {
 
   private static final String CDC_ROLE_NAME = "cdc_selector";
-  private static final String TEST_USER_NAME = "tester";
   private static final String TEST_USER_PASSWORD = "testerjester[1]";
+  public static MSSQLServerContainer<?> container;
 
-  private MSSQLServerContainer<?> container;
-
+  private String testUserName;
   private String dbName;
+  private String dbNamewithDot;
   private Database database;
   private JdbcDatabase testJdbcDatabase;
   private MssqlSource source;
@@ -74,26 +78,43 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     grantCorrectPermissions();
   }
 
-  private void init() {
-    container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
-    container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
-    container.start();
+  @BeforeAll
+  public static void createContainer() {
+    if (container == null) {
+      container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-latest").acceptLicense();
+      container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
+      container.start();
+    }
+  }
 
+  @AfterAll
+  public static void closeContainer() {
+    if (container != null) {
+      container.close();
+      container.stop();
+    }
+  }
+
+  private void init() {
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    testUserName = Strings.addRandomSuffix("test", "_", 5).toLowerCase();
+    dbNamewithDot = Strings.addRandomSuffix("db", ".", 10).toLowerCase();
     source = new MssqlSource();
 
     final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
-        "replication_type", "CDC",
+        "method", "CDC",
         "data_to_sync", "Existing and New",
+        "initial_waiting_seconds", INITIAL_WAITING_SECONDS,
         "snapshot_isolation", "Snapshot"));
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", dbName)
-        .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
-        .put("username", TEST_USER_NAME)
-        .put("password", TEST_USER_PASSWORD)
-        .put("replication", replicationConfig)
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
+        .put(JdbcUtils.USERNAME_KEY, testUserName)
+        .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
+        .put("replication_method", replicationConfig)
+        .put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")))
         .build());
 
     dataSource = DataSourceFactory.create(
@@ -102,15 +123,17 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         DRIVER_CLASS,
         String.format("jdbc:sqlserver://%s:%d",
             container.getHost(),
-            container.getFirstMappedPort()));
+            container.getFirstMappedPort()),
+        Map.of("encrypt", "false"));
 
     testDataSource = DataSourceFactory.create(
-        TEST_USER_NAME,
+        testUserName,
         TEST_USER_PASSWORD,
         DRIVER_CLASS,
         String.format("jdbc:sqlserver://%s:%d",
             container.getHost(),
-            container.getFirstMappedPort()));
+            container.getFirstMappedPort()),
+        Map.of("encrypt", "false"));
 
     dslContext = DSLContextFactory.create(dataSource, null);
 
@@ -119,6 +142,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     testJdbcDatabase = new DefaultJdbcDatabase(testDataSource);
 
     executeQuery("CREATE DATABASE " + dbName + ";");
+    executeQuery("CREATE DATABASE [" + dbNamewithDot + "];");
     switchSnapshotIsolation(true, dbName);
   }
 
@@ -129,25 +153,25 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
   private void setupTestUser() {
     executeQuery("USE " + dbName);
-    executeQuery("CREATE LOGIN " + TEST_USER_NAME + " WITH PASSWORD = '" + TEST_USER_PASSWORD + "';");
-    executeQuery("CREATE USER " + TEST_USER_NAME + " FOR LOGIN " + TEST_USER_NAME + ";");
+    executeQuery("CREATE LOGIN " + testUserName + " WITH PASSWORD = '" + TEST_USER_PASSWORD + "';");
+    executeQuery("CREATE USER " + testUserName + " FOR LOGIN " + testUserName + ";");
   }
 
   private void revokeAllPermissions() {
-    executeQuery("REVOKE ALL FROM " + TEST_USER_NAME + " CASCADE;");
-    executeQuery("EXEC sp_msforeachtable \"REVOKE ALL ON '?' TO " + TEST_USER_NAME + ";\"");
+    executeQuery("REVOKE ALL FROM " + testUserName + " CASCADE;");
+    executeQuery("EXEC sp_msforeachtable \"REVOKE ALL ON '?' TO " + testUserName + ";\"");
   }
 
   private void alterPermissionsOnSchema(final Boolean grant, final String schema) {
     final String grantOrRemove = grant ? "GRANT" : "REVOKE";
-    executeQuery(String.format("USE %s;\n" + "%s SELECT ON SCHEMA :: [%s] TO %s", dbName, grantOrRemove, schema, TEST_USER_NAME));
+    executeQuery(String.format("USE %s;\n" + "%s SELECT ON SCHEMA :: [%s] TO %s", dbName, grantOrRemove, schema, testUserName));
   }
 
   private void grantCorrectPermissions() {
     alterPermissionsOnSchema(true, MODELS_SCHEMA);
     alterPermissionsOnSchema(true, MODELS_SCHEMA + "_random");
     alterPermissionsOnSchema(true, "cdc");
-    executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, TEST_USER_NAME));
+    executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, testUserName));
   }
 
   @Override
@@ -155,9 +179,20 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     return "CREATE SCHEMA " + schemaName;
   }
 
+  // TODO : Delete this Override when MSSQL supports individual table snapshot
+  @Override
+  public void newTableSnapshotTest() throws Exception {
+    // Do nothing
+  }
+
+  @Override
+  protected String randomTableSchema() {
+    return MODELS_SCHEMA + "_random";
+  }
+
   private void switchCdcOnDatabase(final Boolean enable, final String db) {
     final String storedProc = enable ? "sys.sp_cdc_enable_db" : "sys.sp_cdc_disable_db";
-    executeQuery("USE " + db + "\n" + "EXEC " + storedProc);
+    executeQuery("USE [" + db + "]\n" + "EXEC " + storedProc);
   }
 
   @Override
@@ -222,7 +257,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
       dslContext.close();
       DataSourceFactory.close(dataSource);
       DataSourceFactory.close(testDataSource);
-      container.close();
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -254,7 +288,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
   @Test
   void testAssertSqlServerAgentRunning() throws InterruptedException {
-    executeQuery(String.format("USE master;\n" + "GRANT VIEW SERVER STATE TO %s", TEST_USER_NAME));
+    executeQuery(String.format("USE master;\n" + "GRANT VIEW SERVER STATE TO %s", testUserName));
     // assert expected failure if sql server agent stopped
     switchSqlServerAgentAndWait(false);
     assertThrows(RuntimeException.class, () -> source.assertSqlServerAgentRunning(testJdbcDatabase));
@@ -275,7 +309,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   @Test
   void testAssertSnapshotIsolationDisabled() {
     final JsonNode replicationConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("replication_type", "CDC")
+        .put("method", "CDC")
         .put("data_to_sync", "New Changes Only")
         // set snapshot_isolation level to "Read Committed" to disable snapshot
         .put("snapshot_isolation", "Read Committed")
@@ -301,7 +335,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
     alterPermissionsOnSchema(true, "cdc");
     // assertSqlServerAgentRunning
-    executeQuery(String.format("USE master;\n" + "GRANT VIEW SERVER STATE TO %s", TEST_USER_NAME));
+    executeQuery(String.format("USE master;\n" + "GRANT VIEW SERVER STATE TO %s", testUserName));
     switchSqlServerAgentAndWait(false);
     status = getSource().check(getConfig());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
@@ -310,6 +344,14 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     switchSnapshotIsolation(false, dbName);
     status = getSource().check(getConfig());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
+  }
+
+  @Test
+  void testCdcCheckOperationsWithDot() throws Exception {
+    // assertCdcEnabledInDb and validate escape with special character
+    switchCdcOnDatabase(true, dbNamewithDot);
+    AirbyteConnectionStatus status = getSource().check(getConfig());
+    assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.SUCCEEDED);
   }
 
   // todo: check LSN returned is actually the max LSN
@@ -331,10 +373,11 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     data.remove(CDC_LSN);
     data.remove(CDC_UPDATED_AT);
     data.remove(CDC_DELETED_AT);
+    data.remove(CDC_EVENT_SERIAL_NO);
   }
 
   @Override
-  protected CdcTargetPosition cdcLatestTargetPosition() {
+  protected MssqlCdcTargetPosition cdcLatestTargetPosition() {
     try {
       // Sleeping because sometimes the db is not yet completely ready and the lsn is not found
       Thread.sleep(5000);
@@ -342,20 +385,21 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
       throw new RuntimeException(e);
     }
     final JdbcDatabase jdbcDatabase = new StreamingJdbcDatabase(
-        DataSourceFactory.create(config.get("username").asText(),
-            config.get("password").asText(),
+        DataSourceFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DRIVER_CLASS,
             String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-                config.get("host").asText(),
-                config.get("port").asInt(),
-                dbName)),
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
+                dbName),
+            Map.of("encrypt", "false")),
         new MssqlSourceOperations(),
         AdaptiveStreamingQueryConfig::new);
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);
   }
 
   @Override
-  protected CdcTargetPosition extractPosition(final JsonNode record) {
+  protected MssqlCdcTargetPosition extractPosition(final JsonNode record) {
     return new MssqlCdcTargetPosition(Lsn.valueOf(record.get(CDC_LSN).asText()));
   }
 
@@ -364,11 +408,13 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertNull(data.get(CDC_LSN));
     assertNull(data.get(CDC_UPDATED_AT));
     assertNull(data.get(CDC_DELETED_AT));
+    assertNull(data.get(CDC_EVENT_SERIAL_NO));
   }
 
   @Override
   protected void assertCdcMetaData(final JsonNode data, final boolean deletedAtNull) {
     assertNotNull(data.get(CDC_LSN));
+    assertNotNull(data.get(CDC_EVENT_SERIAL_NO));
     assertNotNull(data.get(CDC_UPDATED_AT));
     if (deletedAtNull) {
       assertTrue(data.get(CDC_DELETED_AT).isNull());
@@ -386,6 +432,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     properties.set(CDC_LSN, stringType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
+    properties.set(CDC_EVENT_SERIAL_NO, stringType);
 
   }
 

@@ -1,144 +1,391 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
+import datetime
 import json
 import logging
-from datetime import datetime
-from typing import Any, Generator, Mapping, MutableMapping
+import pkgutil
+import uuid
+from abc import ABC
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple
 
-from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStateMessage,
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    Status,
-    SyncMode,
-    Type,
-)
-from airbyte_cdk.sources import Source
-from google.analytics.data_v1beta import RunReportResponse
-from source_google_analytics_data_api.client import DEFAULT_CURSOR_FIELD, Client
+import jsonschema
+import requests
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpStream
+from source_google_analytics_data_api import utils
+from source_google_analytics_data_api.utils import DATE_FORMAT
+
+from .api_quota import GoogleAnalyticsApiQuota
+from .utils import authenticator_class_map, get_dimensions_type, get_metrics_type, metrics_type_to_python
+
+# set the quota handler globaly since limitations are the same for all streams
+# the initial values should be saved once and tracked for each stream, inclusivelly.
+GoogleAnalyticsQuotaHandler: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
 
-class SourceGoogleAnalyticsDataApi(Source):
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
-        """
-        Tests if the input configuration can be used to successfully connect to the integration
-            e.g: if a provided Stripe API token can be used to connect to the Stripe API.
+class ConfigurationError(Exception):
+    pass
 
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-        the properties of the spec.json/spec.yaml file
 
-        :return: AirbyteConnectionStatus indicating a Success or Failure
-        """
-        try:
-            self._run_report(config)
+class MetadataDescriptor:
+    def __init__(self):
+        self._metadata = None
 
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
+    def __get__(self, instance, owner):
+        if not self._metadata:
+            stream = GoogleAnalyticsDataApiMetadataStream(config=instance.config, authenticator=instance.config["authenticator"])
+            metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+            if not metadata:
+                raise Exception("failed to get metadata, over quota, try later")
+            self._metadata = {
+                "dimensions": {m.get("apiName"): m for m in metadata.get("dimensions", [{}])},
+                "metrics": {m.get("apiName"): m for m in metadata.get("metrics", [{}])},
+            }
 
-    def discover(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteCatalog:
-        """
-        Returns an AirbyteCatalog representing the available streams and fields in this integration.
-        For example, given valid credentials to a Postgres database,
-        returns an Airbyte catalog where each postgres table is a stream, and each table column is a field.
+        return self._metadata
 
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-        the properties of the spec.json/spec.yaml file
 
-        :return: AirbyteCatalog is an object describing a list of all available streams in this source.
-            A stream is an AirbyteStream object that includes:
-            - its stream name (or table name in the case of Postgres)
-            - json_schema providing the specifications of expected schema for this stream (a list of columns described
-            by their names and types)
-        """
-        report_name = config.get("report_name")
+class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
+    url_base = "https://analyticsdata.googleapis.com/v1beta/"
+    http_method = "POST"
+    raise_on_http_errors = True
 
-        response = self._run_report(config)
+    def __init__(self, *, config: Mapping[str, Any], **kwargs):
+        super().__init__(**kwargs)
+        self._config = config
 
-        properties = {DEFAULT_CURSOR_FIELD: {"type": "string"}}
+    @property
+    def config(self):
+        return self._config
 
-        for dimension in response.dimension_headers:
-            properties[dimension.name] = {"type": "string"}
+    # handle the quota errors with prepared values for:
+    # `should_retry`, `backoff_time`, `raise_on_http_errors`, `stop_iter` based on quota scenario.
+    @GoogleAnalyticsQuotaHandler.handle_quota()
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == requests.codes.too_many_requests:
+            setattr(self, "raise_on_http_errors", GoogleAnalyticsQuotaHandler.raise_on_http_errors)
+            return GoogleAnalyticsQuotaHandler.should_retry
+        # for all other cases not covered by GoogleAnalyticsQuotaHandler
+        return super().should_retry(response)
 
-        for metric in response.metric_headers:
-            properties[metric.name] = {"type": "number"}
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        # handle the error with prepared GoogleAnalyticsQuotaHandler backoff value
+        if response.status_code == requests.codes.too_many_requests:
+            return GoogleAnalyticsQuotaHandler.backoff_time
+        # for all other cases not covered by GoogleAnalyticsQuotaHandler
+        return super().backoff_time(response)
 
-        json_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": properties,
-        }
 
-        primary_key = list(map(lambda h: [h.name], response.dimension_headers))
+class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
+    """
+    https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport
+    """
 
-        stream = AirbyteStream(
-            name=report_name,
-            json_schema=json_schema,
-            supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
-            source_defined_primary_key=primary_key,
-            default_cursor_field=[DEFAULT_CURSOR_FIELD],
-        )
-        return AirbyteCatalog(streams=[stream])
+    _record_date_format = "%Y%m%d"
+    primary_key = "uuid"
 
-    def read(
-        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
-    ) -> Generator[AirbyteMessage, None, None]:
-        """
-        Returns a generator of the AirbyteMessages generated by reading the source with the given configuration,
-        catalog, and state.
+    metadata = MetadataDescriptor()
 
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-            the properties of the spec.json/spec.yaml file
-        :param catalog: The input catalog is a ConfiguredAirbyteCatalog which is almost the same as AirbyteCatalog
-            returned by discover(), but
-        in addition, it's been configured in the UI! For each particular stream and field, there may have been provided
-        with extra modifications such as: filtering streams and/or columns out, renaming some entities, etc
-        :param state: When a Airbyte reads data from a source, it might need to keep a checkpoint cursor to resume
-            replication in the future from that saved checkpoint.
-            This is the object that is provided with state from previous runs and avoid replicating the entire set of
-            data everytime.
-
-        :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
-        """
-        report_name = config.get("report_name")
-
-        response = self._run_report(config)
-        rows = Client.response_to_list(response)
-
-        last_cursor_value = state.get(report_name, {}).get(DEFAULT_CURSOR_FIELD, "")
-
-        for row in rows:
-            if last_cursor_value <= row[DEFAULT_CURSOR_FIELD]:
-                yield AirbyteMessage(
-                    type=Type.RECORD,
-                    record=AirbyteRecordMessage(stream=report_name, data=row, emitted_at=int(datetime.now().timestamp()) * 1000),
-                )
-
-                last_cursor_value = row[DEFAULT_CURSOR_FIELD]
-
-        yield AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={report_name: {DEFAULT_CURSOR_FIELD: last_cursor_value}}))
+    @property
+    def cursor_field(self) -> Optional[str]:
+        return "date" if "date" in self.config.get("dimensions", {}) else []
 
     @staticmethod
-    def _run_report(config: Mapping[str, Any]) -> RunReportResponse:
-        property_id = config.get("property_id")
-        dimensions = config.get("dimensions", "").split(",")
-        metrics = config.get("metrics", "").split(",")
-        start_date = config.get("date_ranges_start_date")
-        end_date = config.get("date_ranges_end_date")
-        json_credentials = config.get("json_credentials")
+    def add_primary_key() -> dict:
+        return {"uuid": str(uuid.uuid4())}
 
-        return Client(json.loads(json_credentials)).run_report(property_id, dimensions, metrics, start_date, end_date)
+    @staticmethod
+    def add_property_id(property_id):
+        return {"property_id": property_id}
+
+    @staticmethod
+    def add_dimensions(dimensions, row) -> dict:
+        return dict(zip(dimensions, [v["value"] for v in row["dimensionValues"]]))
+
+    @staticmethod
+    def add_metrics(metrics, metric_types, row) -> dict:
+        def _metric_type_to_python(metric_data: Tuple[str, str]) -> Any:
+            metric_name, metric_value = metric_data
+            python_type = metrics_type_to_python(metric_types[metric_name])
+            return metric_name, python_type(metric_value)
+
+        return dict(map(_metric_type_to_python, zip(metrics, [v["value"] for v in row["metricValues"]])))
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """
+        Override get_json_schema CDK method to retrieve the schema information for GoogleAnalyticsV4 Object dynamically.
+        """
+        schema: Dict[str, Any] = {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "type": ["null", "object"],
+            "additionalProperties": True,
+            "properties": {
+                "property_id": {"type": ["string"]},
+                "uuid": {"type": ["string"], "description": "Custom unique identifier for each record, to support primary key"},
+            },
+        }
+
+        schema["properties"].update(
+            {
+                d: {"type": get_dimensions_type(d), "description": self.metadata["dimensions"].get(d, {}).get("description", d)}
+                for d in self.config["dimensions"]
+            }
+        )
+
+        schema["properties"].update(
+            {
+                m: {
+                    "type": ["null", get_metrics_type(self.metadata["metrics"].get(m, {}).get("type"))],
+                    "description": self.metadata["metrics"].get(m, {}).get("description", m),
+                }
+                for m in self.config["metrics"]
+            }
+        )
+
+        return schema
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        r = response.json()
+
+        if all(key in r for key in ["limit", "offset", "rowCount"]):
+            limit, offset, total_rows = r["limit"], r["offset"], r["rowCount"]
+
+            if total_rows <= offset:
+                return None
+
+            return {"limit": limit, "offset": offset + limit}
+
+    def path(
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"properties/{self.config['property_id']}:runReport"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        r = response.json()
+
+        dimensions = [h.get("name") for h in r.get("dimensionHeaders", [{}])]
+        metrics = [h.get("name") for h in r.get("metricHeaders", [{}])]
+        metrics_type_map = {h.get("name"): h.get("type") for h in r.get("metricHeaders", [{}])}
+
+        for row in r.get("rows", []):
+            yield self.add_primary_key() | self.add_property_id(self.config["property_id"]) | self.add_dimensions(
+                dimensions, row
+            ) | self.add_metrics(metrics, metrics_type_map, row)
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        updated_state = utils.string_to_date(latest_record[self.cursor_field], self._record_date_format)
+        stream_state_value = current_stream_state.get(self.cursor_field)
+        if stream_state_value:
+            stream_state_value = utils.string_to_date(stream_state_value, self._record_date_format, old_format=DATE_FORMAT)
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state[self.cursor_field] = updated_state.strftime(self._record_date_format)
+        return current_stream_state
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        payload = {
+            "metrics": [{"name": m} for m in self.config["metrics"]],
+            "dimensions": [{"name": d} for d in self.config["dimensions"]],
+            "dateRanges": [stream_slice],
+            "returnPropertyQuota": True,
+        }
+        return payload
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+
+        today: datetime.date = datetime.date.today()
+
+        start_date = stream_state and stream_state.get(self.cursor_field)
+        if start_date:
+            start_date = utils.string_to_date(start_date, self._record_date_format, old_format=DATE_FORMAT)
+            start_date = max(start_date, self.config["date_ranges_start_date"])
+        else:
+            start_date = self.config["date_ranges_start_date"]
+
+        while start_date <= today:
+            # stop producing slices if 429 + specific scenario is hit
+            # see GoogleAnalyticsQuotaHandler for more info.
+            if GoogleAnalyticsQuotaHandler.stop_iter:
+                return []
+            else:
+                yield {
+                    "startDate": utils.date_to_string(start_date),
+                    "endDate": utils.date_to_string(min(start_date + datetime.timedelta(days=self.config["window_in_days"] - 1), today)),
+                }
+                start_date += datetime.timedelta(days=self.config["window_in_days"])
+
+
+class PivotReport(GoogleAnalyticsDataApiBaseStream):
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        payload = super().request_body_json(stream_state, stream_slice, next_page_token)
+        payload["pivots"] = self.config["pivots"]
+        return payload
+
+    def path(
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"properties/{self.config['property_id']}:runPivotReport"
+
+
+class CohortReportMixin:
+    cursor_field = []
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from [None]
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        # https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/CohortSpec#Cohort.FIELDS.date_range
+        # In a cohort request, this dateRange is required and the dateRanges in the RunReportRequest or RunPivotReportRequest
+        # must be unspecified.
+        payload = super().request_body_json(stream_state, stream_slice, next_page_token)
+        payload.pop("dateRanges")
+        payload["cohortSpec"] = self.config["cohort_spec"]
+        return payload
+
+
+class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream):
+    """
+    https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/getMetadata
+    """
+
+    primary_key = None
+    http_method = "GET"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def path(
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"properties/{self.config['property_id']}/metadata"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield response.json()
+
+
+class SourceGoogleAnalyticsDataApi(AbstractSource):
+    def _validate_and_transform(self, config: Mapping[str, Any], report_names: Set[str]):
+        if "custom_reports" in config:
+            if isinstance(config["custom_reports"], str):
+                try:
+                    config["custom_reports"] = json.loads(config["custom_reports"])
+                except ValueError:
+                    raise ConfigurationError("custom_reports is not valid JSON")
+        else:
+            config["custom_reports"] = []
+
+        schema = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/custom_reports_schema.json"))
+        try:
+            jsonschema.validate(instance=config["custom_reports"], schema=schema)
+        except jsonschema.ValidationError as e:
+            key_path = "custom_reports"
+            if e.path:
+                key_path += "." + ".".join(map(str, e.path))
+            raise ConfigurationError(f"{key_path}: {e.message}")
+
+        existing_names = {r["name"] for r in config["custom_reports"]} & report_names
+        if existing_names:
+            existing_names = ", ".join(existing_names)
+            raise ConfigurationError(f"custom_reports: {existing_names} already exist as a default report(s).")
+
+        if "credentials_json" in config["credentials"]:
+            try:
+                config["credentials"]["credentials_json"] = json.loads(config["credentials"]["credentials_json"])
+            except ValueError:
+                raise ConfigurationError("credentials.credentials_json is not valid JSON")
+
+        try:
+            config["date_ranges_start_date"] = utils.string_to_date(config["date_ranges_start_date"])
+        except ValueError as e:
+            raise ConfigurationError(str(e))
+
+        if not config.get("window_in_days"):
+            source_spec = self.spec(logging.getLogger("airbyte"))
+            config["window_in_days"] = source_spec.connectionSpecification["properties"]["window_in_days"]["default"]
+
+        return config
+
+    def get_authenticator(self, config: Mapping[str, Any]):
+        credentials = config["credentials"]
+        authenticator_class, get_credentials = authenticator_class_map[credentials["auth_type"]]
+        return authenticator_class(**get_credentials(credentials))
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        reports = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/default_reports.json"))
+        try:
+            config = self._validate_and_transform(config, report_names={r["name"] for r in reports})
+        except ConfigurationError as e:
+            return False, str(e)
+        config["authenticator"] = self.get_authenticator(config)
+
+        stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"])
+        metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+        if not metadata:
+            return False, "failed to get metadata, over quota, try later"
+
+        dimensions = {d["apiName"] for d in metadata["dimensions"]}
+        metrics = {d["apiName"] for d in metadata["metrics"]}
+
+        for report in config["custom_reports"]:
+            invalid_dimensions = set(report["dimensions"]) - dimensions
+            if invalid_dimensions:
+                invalid_dimensions = ", ".join(invalid_dimensions)
+                return False, f"custom_reports: invalid dimension(s): {invalid_dimensions} for the custom report: {report['name']}"
+            invalid_metrics = set(report["metrics"]) - metrics
+            if invalid_metrics:
+                invalid_metrics = ", ".join(invalid_metrics)
+                return False, f"custom_reports: invalid metric(s): {invalid_metrics} for the custom report: {report['name']}"
+            report_stream = self.instantiate_report_class(report, config)
+            # check if custom_report dimensions + metrics can be combined and report generated
+            stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
+            next(report_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
+        return True, None
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        reports = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/default_reports.json"))
+        config = self._validate_and_transform(config, report_names={r["name"] for r in reports})
+        config["authenticator"] = self.get_authenticator(config)
+        return [self.instantiate_report_class(report, config) for report in reports + config["custom_reports"]]
+
+    @staticmethod
+    def instantiate_report_class(report: dict, config: Mapping[str, Any]) -> GoogleAnalyticsDataApiBaseStream:
+        cohort_spec = report.get("cohortSpec")
+        pivots = report.get("pivots")
+        stream_config = {"metrics": report["metrics"], "dimensions": report["dimensions"], **config}
+        report_class_tuple = (GoogleAnalyticsDataApiBaseStream,)
+        if pivots:
+            stream_config["pivots"] = pivots
+            report_class_tuple = (PivotReport,)
+        if cohort_spec:
+            stream_config["cohort_spec"] = cohort_spec
+            report_class_tuple = (CohortReportMixin, *report_class_tuple)
+        return type(report["name"], report_class_tuple, {})(config=stream_config, authenticator=config["authenticator"])

@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "webinar_uuid": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "comments": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "custom_questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": []
+      }
+    },
+    "email": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "industry": {
+      "type": "string"
+    },
+    "job_title": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "no_of_employees": {
+      "type": "string"
+    },
+    "org": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "purchasing_time_frame": {
+      "type": "string"
+    },
+    "role_in_purchase_process": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "zip": {
+      "type": "string"
+    },
+    "create_time": {
+      "type": "string"
+    },
+    "join_url": {
+      "type": "string"
+    }
+  },
+  "required": []
+}

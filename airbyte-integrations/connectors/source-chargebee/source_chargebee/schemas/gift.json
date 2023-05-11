@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Gift",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"],
+      "enum": ["scheduled", "unclaimed", "claimed", "cancelled", "expired"]
+    },
+    "scheduled_at": {
+      "type": ["integer", "null"]
+    },
+    "auto_claim": {
+      "type": ["boolean", "null"]
+    },
+    "no_expiry": {
+      "type": ["boolean", "null"]
+    },
+    "claim_expiry_date": {
+      "type": ["integer", "null"]
+    },
+    "resource_version": {
+      "type": ["integer", "null"]
+    },
+    "updated_at": {
+      "type": ["integer", "null"]
+    },
+    "gifter": {
+      "type": ["object", "null"],
+      "properties": {
+        "customer_id": {
+          "type": ["string", "null"]
+        },
+        "invoice_id": {
+          "type": ["string", "null"]
+        },
+        "signature": {
+          "type": ["string", "null"]
+        },
+        "note": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "gift_receiver": {
+      "type": ["object", "null"],
+      "properties": {
+        "customer_id": {
+          "type": ["string", "null"]
+        },
+        "subscription_id": {
+          "type": ["string", "null"]
+        },
+        "first_name": {
+          "type": ["string", "null"]
+        },
+        "last_name": {
+          "type": ["string", "null"]
+        },
+        "email": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "gift_timelines": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "status": {
+            "type": ["string", "null"],
+            "enum": ["scheduled", "unclaimed", "claimed", "cancelled", "expired"]
+          },
+          "occurred_at": {
+            "type": ["integer", "null"]
+          }
+        }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

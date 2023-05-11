@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from __future__ import annotations
@@ -11,5 +11,6 @@ Record = Mapping[str, Any]
 # "hello"}] returns "hello"
 FieldPointer = List[str]
 Config = Mapping[str, Any]
+ConnectionDefinition = Mapping[str, Any]
 StreamSlice = Mapping[str, Any]
 StreamState = Mapping[str, Any]

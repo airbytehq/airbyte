@@ -1,3 +1,81 @@
 {
-  "$ref": "shared-role.json"
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "label": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "created": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "lastUpdated": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "assignmentType": {
+      "type": ["null", "string"]
+    },
+    "resource-set": {
+      "type": ["string", "null"]
+    },
+    "_links": {
+      "type": ["object", "null"],
+      "properties": {
+        "assignee": {
+          "type": ["object", "null"],
+          "properties": {
+            "assignee": {
+              "type": ["object", "null"],
+              "properties": {
+                "herf": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "role": {
+              "type": ["object", "null"],
+              "properties": {
+                "herf": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "resource-set": {
+              "type": ["object", "null"],
+              "properties": {
+                "herf": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "permissions": {
+              "type": ["object", "null"],
+              "properties": {
+                "herf": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "member": {
+              "type": ["object", "null"],
+              "properties": {
+                "herf": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }

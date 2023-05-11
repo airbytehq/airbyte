@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": "integer",
+      "default": 0
+    },
+    "tag_names": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "string",
+        "default": ""
+      }
+    },
+    "name": {
+      "type": "string",
+      "default": ""
+    },
+    "email": {
+      "type": "string",
+      "default": ""
+    },
+    "external_id": {
+      "type": ["null", "integer"],
+      "default": null
+    },
+    "links": {
+      "type": "object",
+      "default": {},
+      "properties": {
+        "circles": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": ["null", "integer"],
+            "default": null
+          }
+        },
+        "organization_ids": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": ["null", "integer"],
+            "default": null
+          }
+        }
+      }
+    }
+  }
+}

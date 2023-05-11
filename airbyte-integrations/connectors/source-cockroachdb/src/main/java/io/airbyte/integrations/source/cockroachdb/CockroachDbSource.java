@@ -1,14 +1,15 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.cockroachdb;
+
+import static io.airbyte.db.jdbc.JdbcUtils.AMPERSAND;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
@@ -20,9 +21,6 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -39,17 +37,16 @@ import org.slf4j.LoggerFactory;
 public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CockroachDbSource.class);
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
-  public static final List<String> HOST_KEY = List.of("host");
-  public static final List<String> PORT_KEY = List.of("port");
 
   public CockroachDbSource() {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new CockroachJdbcSourceOperations());
   }
 
   public static Source sshWrappedSource() {
-    return new SshWrappedSource(new CockroachDbSource(), HOST_KEY, PORT_KEY);
+    return new SshWrappedSource(new CockroachDbSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   @Override
@@ -58,11 +55,15 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     final List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText()));
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asText(),
+        config.get(JdbcUtils.DATABASE_KEY).asText()));
 
-    if (config.has("ssl") && config.get("ssl").asBoolean() || !config.has("ssl")) {
+    if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
+      jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append(AMPERSAND);
+    }
+
+    if (config.has(JdbcUtils.SSL_KEY) && config.get(JdbcUtils.SSL_KEY).asBoolean() || !config.has(JdbcUtils.SSL_KEY)) {
       additionalParameters.add("ssl=true");
       additionalParameters.add("sslmode=require");
     }
@@ -70,13 +71,13 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl.toString());
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
 
     LOGGER.warn(jdbcUrl.toString());
 
-    if (config.has("password")) {
-      configBuilder.put("password", config.get("password").asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
@@ -87,20 +88,6 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     return Set
         .of("information_schema", "pg_catalog", "pg_internal", "catalog_history", "pg_extension",
             "crdb_internal");
-  }
-
-  @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
-                                                    final ConfiguredAirbyteCatalog catalog,
-                                                    final JsonNode state)
-      throws Exception {
-    final AirbyteConnectionStatus check = check(config);
-
-    if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
-      throw new RuntimeException("Unable establish a connection: " + check.getMessage());
-    }
-
-    return super.read(config, catalog, state);
   }
 
   @Override
@@ -116,25 +103,29 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
-  protected DataSource createDataSource(final JsonNode config) {
-    final JsonNode jdbcConfig = toDatabaseConfig(config);
+  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
+    final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
 
+    // Create the JDBC data source
     final DataSource dataSource = DataSourceFactory.create(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
-        jdbcConfig.get("jdbc_url").asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"));
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY));
     dataSources.add(dataSource);
-    return dataSource;
+
+    final JdbcDatabase database = new DefaultJdbcDatabase(dataSource, sourceOperations);
+    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
+    final CockroachJdbcDatabase cockroachJdbcDatabase = new CockroachJdbcDatabase(database, sourceOperations);
+    cockroachJdbcDatabase.setSourceConfig(sourceConfig);
+    cockroachJdbcDatabase.setDatabaseConfig(toDatabaseConfig(sourceConfig));
+    return cockroachJdbcDatabase;
   }
 
   @Override
-  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
-    final DataSource dataSource = createDataSource(config);
-    final JdbcDatabase database = new DefaultJdbcDatabase(dataSource, sourceOperations);
-    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
-    return new CockroachJdbcDatabase(database, sourceOperations);
+  protected int getStateEmissionFrequency() {
+    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
   private CheckedFunction<Connection, PreparedStatement, SQLException> getPrivileges(final JdbcDatabase database) {
@@ -143,7 +134,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
           "SELECT DISTINCT table_catalog, table_schema, table_name, privilege_type\n"
               + "FROM   information_schema.table_privileges\n"
               + "WHERE  (grantee  = ? AND privilege_type in ('SELECT', 'ALL')) OR (table_schema = 'public')");
-      ps.setString(1, database.getDatabaseConfig().get("username").asText());
+      ps.setString(1, database.getDatabaseConfig().get(JdbcUtils.USERNAME_KEY).asText());
       return ps;
     };
   }

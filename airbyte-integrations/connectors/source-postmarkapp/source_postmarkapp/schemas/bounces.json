@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "ID": {
+      "type": "integer"
+    },
+    "Type": {
+      "type": "string"
+    },
+    "TypeCode": {
+      "type": "integer"
+    },
+    "Name": {
+      "type": "string"
+    },
+    "Tag": {
+      "type": "string"
+    },
+    "MessageID": {
+      "type": "string"
+    },
+    "ServerID": {
+      "type": "integer"
+    },
+    "MessageStream": {
+      "type": "string"
+    },
+    "Description": {
+      "type": "string"
+    },
+    "Details": {
+      "type": "string"
+    },
+    "Email": {
+      "type": "string"
+    },
+    "From": {
+      "type": "string"
+    },
+    "BouncedAt": {
+      "type": "string"
+    },
+    "DumpAvailable": {
+      "type": "boolean"
+    },
+    "Inactive": {
+      "type": "boolean"
+    },
+    "CanActivate": {
+      "type": "boolean"
+    },
+    "Subject": {
+      "type": "string"
+    }
+  }
+}
