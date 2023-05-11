@@ -297,6 +297,12 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
           command: curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
+      - name: Run QA checks for ${{ matrix.connector }}
+        id: qa_checks
+        if: always()
+        run: |
+          source venv/bin/activate
+          run-qa-checks ${{ matrix.connector }}
       - name: Publish ${{ matrix.connector }}
         id: publish
         env:
