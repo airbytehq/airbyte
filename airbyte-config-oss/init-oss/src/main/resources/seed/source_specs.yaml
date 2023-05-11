@@ -5311,7 +5311,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-gitlab:1.0.4"
+- dockerImage: "airbyte/source-gitlab:1.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gitlab"
     connectionSpecification:
@@ -14684,7 +14684,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.16"
+- dockerImage: "airbyte/source-snapchat-marketing:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
     connectionSpecification:
