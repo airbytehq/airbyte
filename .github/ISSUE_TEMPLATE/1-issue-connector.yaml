@@ -7,10 +7,10 @@ body:
       value: >
         <p align="center">
           <a target="_blank" href="https://airbyte.com">
-            <picture>
+            <image>
               <source srcset="https://raw.githubusercontent.com/airbytehq/airbyte/master/.github/octavia-issue-template.svg">
               <img alt="octavia-welcome" src="https://raw.githubusercontent.com/airbytehq/airbyte/master/.github/octavia-issue-template.svg" width="auto" height="120">
-            </picture>
+            </image>
           </a>
         </p>
   - type: markdown
@@ -26,9 +26,9 @@ body:
           <li> Source Chargebee: cannot sync transaction objects</li>
           <li> Source Snowflake: support for case sensitive parameters in connection string</li>
           <li> Destination BigQuery: normalization incorrectly processes arrays</li>
-        <ul>
+        </ul>
         <br>
-        <small>Issues not following the template will be closed. </small>
+        <p><small>Issues not following the template will be closed. </small></p>
   - type: input
     id: connector-name
     attributes:
