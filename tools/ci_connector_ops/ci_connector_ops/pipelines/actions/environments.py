@@ -498,7 +498,6 @@ def with_integration_base(context: PipelineContext, build_platform: Platform) ->
 
 
 def with_integration_base_java(context: PipelineContext, build_platform: Platform, jdk_version: str = "17.0.4") -> Container:
-
     integration_base = with_integration_base(context, build_platform)
     return (
         context.dagger_client.container(platform=build_platform)

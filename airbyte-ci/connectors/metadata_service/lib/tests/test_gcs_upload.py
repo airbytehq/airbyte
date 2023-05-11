@@ -47,7 +47,7 @@ def test_upload_metadata_to_gcs_valid_metadata(
     expected_latest_key = f"metadata/{metadata.data.dockerRepository}/latest/{METADATA_FILE_NAME}"
 
     service_account_json = '{"type": "service_account"}'
-    mocker.patch.dict('os.environ', {'GCS_CREDENTIALS': service_account_json})
+    mocker.patch.dict("os.environ", {"GCS_CREDENTIALS": service_account_json})
     mock_credentials = mocker.Mock()
     mock_storage_client = mocker.Mock()
 

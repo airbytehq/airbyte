@@ -56,7 +56,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path) -> Tuple[
     raw_metadata = yaml.safe_load(metadata_file_path.read_text())
     metadata = ConnectorMetadataDefinitionV0.parse_obj(raw_metadata)
 
-    service_account_info = json.loads(os.environ.get('GCS_CREDENTIALS'))
+    service_account_info = json.loads(os.environ.get("GCS_CREDENTIALS"))
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
     storage_client = storage.Client(credentials=credentials)
     bucket = storage_client.bucket(bucket_name)

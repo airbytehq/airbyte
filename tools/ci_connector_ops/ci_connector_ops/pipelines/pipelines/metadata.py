@@ -260,10 +260,7 @@ async def run_metadata_upload_pipeline(
         pipeline_context.dagger_client = dagger_client.pipeline(pipeline_context.pipeline_name)
         async with pipeline_context:
             results = await execute_concurrently(
-                [
-                    MetadataUpload(pipeline_context, metadata_path, gcs_bucket_name).run
-                    for metadata_path in metadata_to_upload
-                ]
+                [MetadataUpload(pipeline_context, metadata_path, gcs_bucket_name).run for metadata_path in metadata_to_upload]
             )
             pipeline_context.report = Report(pipeline_context, results, name="METADATA UPLOAD RESULTS")
 
