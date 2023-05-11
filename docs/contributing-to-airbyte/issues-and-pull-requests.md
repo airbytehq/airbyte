@@ -15,7 +15,7 @@ _good PR title_: `Source MySQL: update acceptance tests to connect to SSL-enable
 ### Pull Request Title Convention
 
 When creating a pull request follow the naming conventions depending on the change being made.
-In general the pull request title starts with an emoji with the connector you're doing the changes, eg (✨ Source E-Commerce: add new stream `Users`). 
+In general the pull request title starts with an emoji with the connector you're doing the changes, eg (✨ Source E-Commerce: add new stream `Users`).
 Airbyte uses this pattern to automatically assign team reviews and build the product release notes.
 
 | Pull Request Type | Emoji | Examples |
