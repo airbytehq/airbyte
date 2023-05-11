@@ -12,7 +12,7 @@ from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, Destin
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from pydantic.error_wrappers import ValidationError
-from source_facebook_marketing.api import API
+from source_facebook_marketing.api import API, FacebookAPIException
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
     Activities,
@@ -66,6 +66,8 @@ class SourceFacebookMarketing(AbstractSource):
 
             api = API(account_id=config.account_id, access_token=config.access_token)
             logger.info(f"Select account {api.account}")
+        except FacebookAPIException as e:
+            return False, e
         except (requests.exceptions.RequestException, ValidationError) as e:
             return False, e
 
