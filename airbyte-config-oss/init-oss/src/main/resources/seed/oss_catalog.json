@@ -694,7 +694,7 @@
     "destinationDefinitionId": "22f6c74f-5699-40ff-833c-4a879ea40133",
     "name": "BigQuery",
     "dockerRepository": "airbyte/destination-bigquery",
-    "dockerImageTag": "1.3.4",
+    "dockerImageTag": "1.4.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/bigquery",
     "icon": "bigquery.svg",
     "spec": {
@@ -872,7 +872,7 @@
     "destinationDefinitionId": "079d5540-f236-4294-ba7c-ade8fd918496",
     "name": "BigQuery (denormalized typed struct)",
     "dockerRepository": "airbyte/destination-bigquery-denormalized",
-    "dockerImageTag": "1.3.3",
+    "dockerImageTag": "1.4.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/bigquery",
     "icon": "bigquery.svg",
     "spec": {
@@ -2692,7 +2692,7 @@
     "destinationDefinitionId": "ca8f6566-e555-4b40-943a-545bf123117a",
     "name": "Google Cloud Storage (GCS)",
     "dockerRepository": "airbyte/destination-gcs",
-    "dockerImageTag": "0.2.17",
+    "dockerImageTag": "0.3.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/gcs",
     "icon": "googlecloudstorage.svg",
     "spec": {
@@ -5792,7 +5792,7 @@
     "destinationDefinitionId": "4816b78f-1489-44c1-9060-4b19d5fa9362",
     "name": "S3",
     "dockerRepository": "airbyte/destination-s3",
-    "dockerImageTag": "0.3.25",
+    "dockerImageTag": "0.4.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/s3",
     "icon": "s3.svg",
     "spec": {
@@ -6143,7 +6143,7 @@
     "destinationDefinitionId": "471e5cab-8ed1-49f3-ba11-79c687784737",
     "name": "S3 Glue",
     "dockerRepository": "airbyte/destination-s3-glue",
-    "dockerImageTag": "0.1.6",
+    "dockerImageTag": "0.1.7",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/s3-glue",
     "icon": "s3-glue.svg",
     "spec": {
@@ -6421,7 +6421,7 @@
     "destinationDefinitionId": "424892c4-daac-4491-b35d-c6688ba547ba",
     "name": "Snowflake",
     "dockerRepository": "airbyte/destination-snowflake",
-    "dockerImageTag": "0.4.63",
+    "dockerImageTag": "1.0.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/snowflake",
     "icon": "snowflake.svg",
     "spec": {
@@ -6740,50 +6740,6 @@
                   "airbyte_secret": true,
                   "multiline": true,
                   "order": 3
-                }
-              }
-            }, {
-              "title": "Azure Blob Storage Staging",
-              "description": "Recommended for large production workloads for better speed and scalability.",
-              "required": [ "method", "azure_blob_storage_account_name", "azure_blob_storage_container_name", "azure_blob_storage_sas_token" ],
-              "properties": {
-                "method": {
-                  "title": "",
-                  "description": "",
-                  "type": "string",
-                  "enum": [ "Azure Blob Staging" ],
-                  "default": "Azure Blob Staging",
-                  "order": 0
-                },
-                "azure_blob_storage_endpoint_domain_name": {
-                  "title": "Azure Blob Storage Endpoint",
-                  "type": "string",
-                  "default": "blob.core.windows.net",
-                  "description": "Enter the Azure Blob Storage <a href=\"https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#storage-account-endpoints\">endpoint domain name</a>",
-                  "examples": [ "blob.core.windows.net" ],
-                  "order": 1
-                },
-                "azure_blob_storage_account_name": {
-                  "title": "Azure Blob Storage <a href=\"https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#storage-account-endpoints\">account name</a>",
-                  "type": "string",
-                  "description": "Enter your Azure Blob Storage account name",
-                  "examples": [ "airbyte5storage" ],
-                  "order": 2
-                },
-                "azure_blob_storage_container_name": {
-                  "title": "Azure Blob Storage Container Name",
-                  "type": "string",
-                  "description": "Enter your Azure Blob Storage <a href=\"https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names\">container name</a>",
-                  "examples": [ "airbytetestcontainername" ],
-                  "order": 3
-                },
-                "azure_blob_storage_sas_token": {
-                  "title": "SAS Token",
-                  "type": "string",
-                  "airbyte_secret": true,
-                  "description": "Enter the <a href=\"https://docs.snowflake.com/en/user-guide/data-load-azure-config.html#option-2-generating-a-sas-token\">Shared access signature</a> (SAS) token to grant Snowflake limited access to objects in your Azure Blob Storage account",
-                  "examples": [ "?sv=2016-05-31&ss=b&srt=sco&sp=rwdl&se=2018-06-27T10:05:50Z&st=2017-06-27T02:05:50Z&spr=https,http&sig=bgqQwoXwxzuD2GJfagRg7VOS8hzNr3QLT7rhS8OFRLQ%3D" ],
-                  "order": 4
                 }
               }
             } ]
@@ -8773,7 +8729,7 @@
     "sourceDefinitionId": "c6b0a29e-1da9-4512-9002-7bfd0cba2246",
     "name": "Amazon Ads",
     "dockerRepository": "airbyte/source-amazon-ads",
-    "dockerImageTag": "1.0.3",
+    "dockerImageTag": "1.0.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-ads",
     "icon": "amazonads.svg",
     "sourceType": "api",
@@ -9217,7 +9173,7 @@
     "sourceDefinitionId": "fa9f58c6-2d03-4237-aaa4-07d75e0c1396",
     "name": "Amplitude",
     "dockerRepository": "airbyte/source-amplitude",
-    "dockerImageTag": "0.2.3",
+    "dockerImageTag": "0.2.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/amplitude",
     "icon": "amplitude.svg",
     "sourceType": "api",
@@ -10070,7 +10026,7 @@
     "sourceDefinitionId": "47f25999-dd5e-4636-8c39-e7cea2453331",
     "name": "Bing Ads",
     "dockerRepository": "airbyte/source-bing-ads",
-    "dockerImageTag": "0.1.20",
+    "dockerImageTag": "0.1.22",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/bing-ads",
     "icon": "bingads.svg",
     "sourceType": "api",
@@ -10860,7 +10816,7 @@
     "sourceDefinitionId": "dfffecb7-9a13-43e9-acdc-b92af7997ca9",
     "name": "Close.com",
     "dockerRepository": "airbyte/source-close-com",
-    "dockerImageTag": "0.2.1",
+    "dockerImageTag": "0.2.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/close-com",
     "icon": "close.svg",
     "sourceType": "api",
@@ -12437,7 +12393,7 @@
     "sourceDefinitionId": "e7778cfc-e97c-4458-9ecb-b4f2bba8946c",
     "name": "Facebook Marketing",
     "dockerRepository": "airbyte/source-facebook-marketing",
-    "dockerImageTag": "0.3.5",
+    "dockerImageTag": "0.3.6",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/facebook-marketing",
     "icon": "facebook.svg",
     "sourceType": "api",
@@ -12470,7 +12426,8 @@
             "order": 2,
             "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
             "examples": [ "2017-01-26T00:00:00Z" ],
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
           },
           "access_token": {
             "title": "Access Token",
@@ -12688,7 +12645,7 @@
     "sourceDefinitionId": "dfd88b22-b603-4c3d-aad7-3701784586b1",
     "name": "Sample Data (Faker)",
     "dockerRepository": "airbyte/source-faker",
-    "dockerImageTag": "2.0.3",
+    "dockerImageTag": "2.1.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/faker",
     "icon": "faker.svg",
     "sourceType": "api",
@@ -12912,7 +12869,7 @@
     "sourceDefinitionId": "778daa7c-feaf-4db6-96f3-70fd645acc77",
     "name": "File (CSV, JSON, Excel, Feather, Parquet)",
     "dockerRepository": "airbyte/source-file",
-    "dockerImageTag": "0.3.2",
+    "dockerImageTag": "0.3.3",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/file",
     "icon": "file.svg",
     "sourceType": "file",
@@ -12981,6 +12938,7 @@
                 "service_account_json": {
                   "type": "string",
                   "title": "Service Account JSON",
+                  "airbyte_secret": true,
                   "description": "In order to access private Buckets stored on Google Cloud, this connector would need a service account json credentials with the proper permissions as described <a href=\"https://cloud.google.com/iam/docs/service-accounts\" target=\"_blank\">here</a>. Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary."
                 }
               }
@@ -13646,7 +13604,7 @@
     "sourceDefinitionId": "ef69ef6e-aa7f-4af1-a01d-ef775033524e",
     "name": "GitHub",
     "dockerRepository": "airbyte/source-github",
-    "dockerImageTag": "0.4.8",
+    "dockerImageTag": "0.4.9",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/github",
     "icon": "github.svg",
     "sourceType": "api",
@@ -13799,7 +13757,7 @@
     "sourceDefinitionId": "5e6175e5-68e1-4c17-bff9-56103bbb0d80",
     "name": "Gitlab",
     "dockerRepository": "airbyte/source-gitlab",
-    "dockerImageTag": "1.0.4",
+    "dockerImageTag": "1.1.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/gitlab",
     "icon": "gitlab.svg",
     "sourceType": "api",
@@ -16079,7 +16037,7 @@
     "sourceDefinitionId": "68e63de2-bb83-4c7e-93fa-a8a9051e3993",
     "name": "Jira",
     "dockerRepository": "airbyte/source-jira",
-    "dockerImageTag": "0.3.7",
+    "dockerImageTag": "0.3.8",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/jira",
     "icon": "jira.svg",
     "sourceType": "api",
@@ -17161,7 +17119,7 @@
     "sourceDefinitionId": "b03a9f3e-22a5-11eb-adc1-0242ac120002",
     "name": "Mailchimp",
     "dockerRepository": "airbyte/source-mailchimp",
-    "dockerImageTag": "0.4.0",
+    "dockerImageTag": "0.4.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mailchimp",
     "icon": "mailchimp.svg",
     "sourceType": "api",
@@ -17653,7 +17611,7 @@
     "sourceDefinitionId": "b5ea17b1-f170-46dc-bc31-cc744ca984c1",
     "name": "Microsoft SQL Server (MSSQL)",
     "dockerRepository": "airbyte/source-mssql",
-    "dockerImageTag": "1.0.15",
+    "dockerImageTag": "1.0.16",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mssql",
     "icon": "mssql.svg",
     "sourceType": "database",
@@ -18151,7 +18109,7 @@
     "sourceDefinitionId": "12928b32-bf0a-4f1e-964f-07e12e37153a",
     "name": "Mixpanel",
     "dockerRepository": "airbyte/source-mixpanel",
-    "dockerImageTag": "0.1.32",
+    "dockerImageTag": "0.1.33",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mixpanel",
     "icon": "mixpanel.svg",
     "sourceType": "api",
@@ -18621,7 +18579,7 @@
     "sourceDefinitionId": "435bb9a5-7887-4809-aa58-28c27df0d7ad",
     "name": "MySQL",
     "dockerRepository": "airbyte/source-mysql",
-    "dockerImageTag": "2.0.19",
+    "dockerImageTag": "2.0.21",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mysql",
     "icon": "mysql.svg",
     "sourceType": "database",
@@ -20745,7 +20703,7 @@
     "sourceDefinitionId": "5cb7e5fe-38c2-11ec-8d3d-0242ac130003",
     "name": "Pinterest",
     "dockerRepository": "airbyte/source-pinterest",
-    "dockerImageTag": "0.2.6",
+    "dockerImageTag": "0.3.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/pinterest",
     "icon": "pinterest.svg",
     "sourceType": "api",
@@ -22552,12 +22510,12 @@
     "sourceDefinitionId": "db04ecd1-42e7-4115-9cec-95812905c626",
     "name": "Retently",
     "dockerRepository": "airbyte/source-retently",
-    "dockerImageTag": "0.1.3",
+    "dockerImageTag": "0.1.5",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/retently",
     "icon": "retently.svg",
     "sourceType": "api",
     "spec": {
-      "documentationUrl": "https://docsurl.com",
+      "documentationUrl": "https://docs.airbyte.com/integrations/sources/retently",
       "connectionSpecification": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "title": "Retently Api Spec",
@@ -22857,7 +22815,7 @@
     "sourceDefinitionId": "69589781-7828-43c5-9f63-8925b1c1ccc2",
     "name": "S3",
     "dockerRepository": "airbyte/source-s3",
-    "dockerImageTag": "2.1.4",
+    "dockerImageTag": "2.2.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/s3",
     "icon": "s3.svg",
     "sourceType": "file",
@@ -23227,7 +23185,7 @@
     "sourceDefinitionId": "b117307c-14b6-41aa-9422-947e34922962",
     "name": "Salesforce",
     "dockerRepository": "airbyte/source-salesforce",
-    "dockerImageTag": "2.0.11",
+    "dockerImageTag": "2.0.12",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/salesforce",
     "icon": "salesforce.svg",
     "sourceType": "api",
@@ -23638,7 +23596,7 @@
     "sourceDefinitionId": "9da77001-af33-4bcd-be46-6252bf9342b9",
     "name": "Shopify",
     "dockerRepository": "airbyte/source-shopify",
-    "dockerImageTag": "0.3.3",
+    "dockerImageTag": "0.3.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/shopify",
     "icon": "shopify.svg",
     "sourceType": "api",
@@ -23655,6 +23613,7 @@
             "type": "string",
             "title": "Shopify Store",
             "description": "The name of your Shopify store found in the URL. For example, if your URL was https://NAME.myshopify.com, then the name would be 'NAME'.",
+            "pattern": "^(?!https://)(?!http://)(?!.*\\.myshopify\\.)(?!.*\\.myshopify).*",
             "order": 1
           },
           "credentials": {
@@ -24220,7 +24179,7 @@
     "sourceDefinitionId": "200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b",
     "name": "Snapchat Marketing",
     "dockerRepository": "airbyte/source-snapchat-marketing",
-    "dockerImageTag": "0.1.16",
+    "dockerImageTag": "0.2.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/snapchat-marketing",
     "icon": "snapchat.svg",
     "sourceType": "api",
@@ -24596,7 +24555,7 @@
     "sourceDefinitionId": "77225a51-cd15-4a13-af02-65816bd0ecf4",
     "name": "Square",
     "dockerRepository": "airbyte/source-square",
-    "dockerImageTag": "0.2.2",
+    "dockerImageTag": "1.0.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/square",
     "icon": "square.svg",
     "sourceType": "api",
@@ -24619,9 +24578,9 @@
               "type": "object",
               "required": [ "auth_type", "client_id", "client_secret", "refresh_token" ],
               "properties": {
-                "credentials_title": {
+                "auth_type": {
                   "type": "string",
-                  "const": "OAuth Credentials",
+                  "const": "OAuth",
                   "order": 0
                 },
                 "client_id": {
@@ -24648,10 +24607,10 @@
               "type": "object",
               "required": [ "auth_type", "api_key" ],
               "properties": {
-                "credentials_title": {
+                "auth_type": {
                   "type": "string",
                   "const": "API Key",
-                  "order": 0
+                  "order": 1
                 },
                 "api_key": {
                   "type": "string",
@@ -24701,7 +24660,7 @@
       "advanced_auth": {
         "auth_flow_type": "oauth2.0",
         "predicate_key": [ "credentials", "auth_type" ],
-        "predicate_value": "Oauth",
+        "predicate_value": "OAuth",
         "oauth_config_specification": {
           "complete_oauth_output_specification": {
             "type": "object",
@@ -24907,7 +24866,7 @@
     "sourceDefinitionId": "e094cb9a-26de-4645-8761-65c0c425d1de",
     "name": "Stripe",
     "dockerRepository": "airbyte/source-stripe",
-    "dockerImageTag": "3.4.1",
+    "dockerImageTag": "3.4.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/stripe",
     "icon": "stripe.svg",
     "sourceType": "api",
@@ -26188,7 +26147,7 @@
     "sourceDefinitionId": "8da67652-004c-11ec-9a03-0242ac130003",
     "name": "Trello",
     "dockerRepository": "airbyte/source-trello",
-    "dockerImageTag": "0.3.1",
+    "dockerImageTag": "0.3.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/trello",
     "icon": "trello.svg",
     "sourceType": "api",

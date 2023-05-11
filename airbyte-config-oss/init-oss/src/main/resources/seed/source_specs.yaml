@@ -852,7 +852,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:1.0.3"
+- dockerImage: "airbyte/source-amazon-ads:1.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -1344,7 +1344,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.2.3"
+- dockerImage: "airbyte/source-amplitude:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
@@ -2042,7 +2042,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.20"
+- dockerImage: "airbyte/source-bing-ads:0.1.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bing-ads"
     connectionSpecification:
@@ -2751,7 +2751,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-close-com:0.2.1"
+- dockerImage: "airbyte/source-close-com:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/close-com"
     connectionSpecification:
@@ -4001,7 +4001,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.3.5"
+- dockerImage: "airbyte/source-facebook-marketing:0.3.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -4042,6 +4042,7 @@
           examples:
           - "2017-01-26T00:00:00Z"
           type: "string"
+          format: "date-time"
         access_token:
           title: "Access Token"
           description: "The value of the generated access token. From your App’s Dashboard,\
@@ -4415,7 +4416,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-faker:2.0.3"
+- dockerImage: "airbyte/source-faker:2.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
@@ -4590,7 +4591,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.3.2"
+- dockerImage: "airbyte/source-file:0.3.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -4672,6 +4673,7 @@
               service_account_json:
                 type: "string"
                 title: "Service Account JSON"
+                airbyte_secret: true
                 description: "In order to access private Buckets stored on Google\
                   \ Cloud, this connector would need a service account json credentials\
                   \ with the proper permissions as described <a href=\"https://cloud.google.com/iam/docs/service-accounts\"\
@@ -5194,7 +5196,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.4.8"
+- dockerImage: "airbyte/source-github:0.4.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -5333,7 +5335,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-gitlab:1.0.4"
+- dockerImage: "airbyte/source-gitlab:1.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gitlab"
     connectionSpecification:
@@ -7459,7 +7461,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.3.7"
+- dockerImage: "airbyte/source-jira:0.3.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/jira"
     connectionSpecification:
@@ -8388,7 +8390,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mailchimp:0.4.0"
+- dockerImage: "airbyte/source-mailchimp:0.4.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailchimp"
     connectionSpecification:
@@ -8762,7 +8764,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:1.0.15"
+- dockerImage: "airbyte/source-mssql:1.0.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -9232,7 +9234,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mixpanel:0.1.32"
+- dockerImage: "airbyte/source-mixpanel:0.1.33"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mixpanel"
     connectionSpecification:
@@ -9639,7 +9641,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.19"
+- dockerImage: "airbyte/source-mysql:2.0.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -11744,7 +11746,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pinterest:0.2.6"
+- dockerImage: "airbyte/source-pinterest:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pinterest"
     connectionSpecification:
@@ -13241,9 +13243,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-retently:0.1.3"
+- dockerImage: "airbyte/source-retently:0.1.5"
   spec:
-    documentationUrl: "https://docsurl.com"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/retently"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Retently Api Spec"
@@ -13472,7 +13474,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:2.1.4"
+- dockerImage: "airbyte/source-s3:2.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -13853,7 +13855,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:2.0.11"
+- dockerImage: "airbyte/source-salesforce:2.0.12"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -14224,7 +14226,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-shopify:0.3.3"
+- dockerImage: "airbyte/source-shopify:0.3.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/shopify"
     connectionSpecification:
@@ -14241,6 +14243,7 @@
           title: "Shopify Store"
           description: "The name of your Shopify store found in the URL. For example,\
             \ if your URL was https://NAME.myshopify.com, then the name would be 'NAME'."
+          pattern: "^(?!https://)(?!http://)(?!.*\\.myshopify\\.)(?!.*\\.myshopify).*"
           order: 1
         credentials:
           title: "Shopify Authorization Method"
@@ -14706,7 +14709,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.16"
+- dockerImage: "airbyte/source-snapchat-marketing:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
     connectionSpecification:
@@ -15020,7 +15023,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-square:0.2.2"
+- dockerImage: "airbyte/source-square:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/square"
     connectionSpecification:
@@ -15045,9 +15048,9 @@
             - "client_secret"
             - "refresh_token"
             properties:
-              credentials_title:
+              auth_type:
                 type: "string"
-                const: "OAuth Credentials"
+                const: "OAuth"
                 order: 0
               client_id:
                 type: "string"
@@ -15071,10 +15074,10 @@
             - "auth_type"
             - "api_key"
             properties:
-              credentials_title:
+              auth_type:
                 type: "string"
                 const: "API Key"
-                order: 0
+                order: 1
               api_key:
                 type: "string"
                 title: "API key token"
@@ -15121,7 +15124,7 @@
       predicate_key:
       - "credentials"
       - "auth_type"
-      predicate_value: "Oauth"
+      predicate_value: "OAuth"
       oauth_config_specification:
         complete_oauth_output_specification:
           type: "object"
@@ -15274,7 +15277,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:3.4.1"
+- dockerImage: "airbyte/source-stripe:3.4.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
@@ -16379,7 +16382,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-trello:0.3.1"
+- dockerImage: "airbyte/source-trello:0.3.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/trello"
     connectionSpecification:
