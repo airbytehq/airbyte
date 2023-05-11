@@ -782,7 +782,7 @@
   sourceDefinitionId: ed799e2b-2158-4c66-8da4-b40fe63bc72a
   dockerRepository: yuanrui2014/source-plaid
   dockerImageTag: 0.0.1
-  documentationUrl: https://docs.airbyte.io/integrations/sources/plaid
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/plaid
   icon: plaid.svg
   sourceType: api
   releaseStage: alpha
