@@ -137,7 +137,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
           Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, NORMALIZE_STEP),
           Collections.emptyMap(),
           Collections.emptyMap(),
-          Collections.emptyMap(), args);
+          Collections.emptyMap(),
+          args);
 
       try (final InputStream stdout = process.getInputStream()) {
         // finds and collects any AirbyteMessages from stdout
