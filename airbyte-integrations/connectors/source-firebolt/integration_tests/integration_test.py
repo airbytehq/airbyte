@@ -63,7 +63,8 @@ def table_schema() -> str:
             },
             # If column check fails you mignt not have the latest Firebolt version
             # with Decimal data type enabled
-            "column5": {"type": ["null", "string"], "airbyte_type": "big_number"},
+            # Removed as part of PR 25965 because... it just didn't work?
+            "column5": {"type": ["null", "string"]},
             "column6": {"type": "array", "items": {"type": ["null", "integer"]}},
             "column7": {"type": ["null", "integer"]},
         },
