@@ -199,6 +199,6 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 
 
 
-docker build . -t airbyte/source-hubspot:2.0.0 --platform linux/amd64
-docker tag airbyte/source-hubspot:2.0.0 askeladden/source-hubspot:2.0.0
-docker push askeladden/source-hubspot:2.0.0
+docker build . -t airbyte/source-hubspot:2.0.1 --platform linux/amd64
+docker tag airbyte/source-hubspot:2.0.1 askeladden/source-hubspot:2.0.1
+docker push askeladden/source-hubspot:2.0.1

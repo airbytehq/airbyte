@@ -1028,7 +1028,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         return list(stream_records.values()), raw_response
 
     def _read_associations(self, records: Iterable) -> Iterable[Mapping[str, Any]]:
-        records_by_pk = {record[self.primary_key]                         : record for record in records}
+        records_by_pk = {record[self.primary_key]: record for record in records}
         identifiers = list(map(lambda x: x[self.primary_key], records))
         associations_stream = AssociationsStream(
             api=self._api, start_date=self._start_date, credentials=self._credentials, parent_stream=self, identifiers=identifiers
@@ -1653,6 +1653,20 @@ class DealsHistory(Stream):
     """
     url = "/crm/v3/objects/deals?limit=30&propertiesWithHistory=" + \
         '%2C'.join(relevant_rebil_properties) + '&archived=false'
+    updated_at_field = "updatedAt"
+    created_at_field = "createdAt"
+    primary_key = "id"
+    scopes = {"crm.objects.owners.read", "crm.objects.deals.read"}
+
+
+class DealsWithPropertiesHistory(Stream):
+    """Deals, API v3
+    Docs: https://legacydocs.hubspot.com/docs/methods/deals
+    """
+    url = "/crm/v3/objects/deals?limit=30&properties=" + \
+        '%2C'.join(relevant_rebil_properties) + "&propertiesWithHistory=" + \
+        '%2C'.join(relevant_rebil_properties) + '&archived=false'
+
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     primary_key = "id"
