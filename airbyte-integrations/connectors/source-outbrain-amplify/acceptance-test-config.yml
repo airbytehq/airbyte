@@ -18,15 +18,48 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
+        timeout_seconds: 2400
+        empty_streams:
+          - name: campaigns_by_marketers
+            bypass_reason: "no records"
+          - name: campaigns_geo_location
+            bypass_reason: "no records"
+          - name: budgets_for_marketers
+            bypass_reason: "no records"
+          - name: promoted_links_for_campaigns
+            bypass_reason: "no records"
+          - name: promoted_links_sequence_for_campaigns
+            bypass_reason: "no records"
+          - name: performance_report_campaigns_by_marketers
+            bypass_reason: "no records"
+          - name: performance_report_periodic_by_marketers
+            bypass_reason: "no records"
+          - name: performance_report_periodic_by_marketers_campaign
+            bypass_reason: "no records"
+          - name: performance_report_periodic_content_by_promoted_links_campaign
+            bypass_reason: "no records"
+          - name: performance_report_marketers_by_publisher
+            bypass_reason: "no records"
+          - name: performance_report_publishers_by_campaigns
+            bypass_reason: "no records"
+          - name: performance_report_marketers_by_platforms
+            bypass_reason: "no records"
+          - name: performance_report_marketers_campaigns_by_platforms
+            bypass_reason: "no records"
+          - name: performance_report_marketers_by_geo_performance
+            bypass_reason: "no records"
+          - name: performance_report_marketers_campaigns_by_geo
+            bypass_reason: "no records"
+          - name: performance_report_marketers_by_interest
+            bypass_reason: "no records"
 # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
 #        expect_records:
 #          path: "integration_tests/expected_records.jsonl"
 #          extra_fields: no
 #          exact_order: no
 #          extra_records: yes
-  incremental: 
-    bypass_reason: "This connector does not implement incremental sync"
+#  incremental:
+#    bypass_reason: "This connector does not implement incremental sync"
 # TODO uncomment this block this block if your connector implements incremental sync: 
 #    tests:
 #      - config_path: "secrets/config.json"

@@ -1,131 +1,88 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-    "results": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "metadata": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "targetingStatus": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "id",
-              "name",
-              "targetingStatus"
-            ]
-          },
-          "metrics": {
-            "type": "object",
-            "properties": {
-              "impressions": {
-                "type": "number"
-              },
-              "clicks": {
-                "type": "number"
-              },
-              "totalConversions": {
-                "type": "number"
-              },
-              "conversions": {
-                "type": "number"
-              },
-              "viewConversions": {
-                "type": "integer"
-              },
-              "spend": {
-                "type": "number"
-              },
-              "ecpc": {
-                "type": "number"
-              },
-              "ctr": {
-                "type": "number"
-              },
-              "conversionRate": {
-                "type": "number"
-              },
-              "viewConversionRate": {
-                "type": "number"
-              },
-              "cpa": {
-                "type": "number"
-              },
-              "totalCpa": {
-                "type": "number"
-              },
-              "totalSumValue": {
-                "type": "number"
-              },
-              "sumValue": {
-                "type": "number"
-              },
-              "viewSumValue": {
-                "type": "integer"
-              },
-              "totalAverageValue": {
-                "type": "number"
-              },
-              "averageValue": {
-                "type": "number"
-              },
-              "viewAverageValue": {
-                "type": "integer"
-              },
-              "totalRoas": {
-                "type": "number"
-              },
-              "roas": {
-                "type": "number"
-              }
-            },
-            "required": [
-              "averageValue",
-              "clicks",
-              "conversionRate",
-              "conversions",
-              "cpa",
-              "ctr",
-              "ecpc",
-              "impressions",
-              "roas",
-              "spend",
-              "sumValue",
-              "totalAverageValue",
-              "totalConversions",
-              "totalCpa",
-              "totalRoas",
-              "totalSumValue",
-              "viewAverageValue",
-              "viewConversionRate",
-              "viewConversions",
-              "viewSumValue"
-            ]
-          }
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["string", "null"]
         },
-        "required": [
-          "metadata",
-          "metrics"
-        ]
+        "name": {
+          "type": ["string", "null"]
+        },
+        "targetingStatus": {
+          "type": ["string", "null"]
+        }
       }
     },
-    "totalResults": {
-      "type": "integer"
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "impressions": {
+          "type": ["number", "null"]
+        },
+        "clicks": {
+          "type": ["number", "null"]
+        },
+        "totalConversions": {
+          "type": ["number", "null"]
+        },
+        "conversions": {
+          "type": ["number", "null"]
+        },
+        "viewConversions": {
+          "type": ["integer", "null"]
+        },
+        "spend": {
+          "type": ["number", "null"]
+        },
+        "ecpc": {
+          "type": ["number", "null"]
+        },
+        "ctr": {
+          "type": ["number", "null"]
+        },
+        "conversionRate": {
+          "type": ["number", "null"]
+        },
+        "viewConversionRate": {
+          "type": ["number", "null"]
+        },
+        "cpa": {
+          "type": ["number", "null"]
+        },
+        "totalCpa": {
+          "type": ["number", "null"]
+        },
+        "totalSumValue": {
+          "type": ["number", "null"]
+        },
+        "sumValue": {
+          "type": ["number", "null"]
+        },
+        "viewSumValue": {
+          "type": ["integer", "null"]
+        },
+        "totalAverageValue": {
+          "type": ["number", "null"]
+        },
+        "averageValue": {
+          "type": ["number", "null"]
+        },
+        "viewAverageValue": {
+          "type": ["integer", "null"]
+        },
+        "totalRoas": {
+          "type": ["number", "null"]
+        },
+        "roas": {
+          "type": ["number", "null"]
+        }
+      }
+    },
+    "marketer_id": {
+      "type": ["string", "null"]
     }
-  },
-  "required": [
-    "results",
-    "totalResults"
-  ]
+  }
 }

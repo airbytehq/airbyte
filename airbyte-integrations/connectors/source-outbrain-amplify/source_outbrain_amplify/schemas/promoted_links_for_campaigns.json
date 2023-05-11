@@ -3,125 +3,91 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "text": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "creationTime": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "lastModified": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "url": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "siteName": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "sectionName": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "status": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "enabled": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "campaignId": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "archived": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "documentLanguage": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "onAirStatus": {
       "type": "object",
       "properties": {
         "onAir": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         },
         "reason": {
-          "type": "string"
+          "type": ["string", "null"]
         }
-      },
-      "required": [
-        "onAir",
-        "reason"
-      ]
+      }
     },
     "baseUrl": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "documentId": {
-      "type": "string"
+      "type": ["string", "null"]
+    },
+    "metaData": {
+      "type": ["string", "null"]
     },
     "approvalStatus": {
       "type": "object",
       "properties": {
         "status": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "isEditable": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         }
-      },
-      "required": [
-        "isEditable",
-        "status"
-      ]
+      }
+    },
+    "description": {
+      "type": ["string", "null"]
     },
     "callToAction": {
       "type": "object",
       "properties": {
         "type": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "value": {
-          "type": "string"
+          "type": ["string", "null"]
         }
-      },
-      "required": [
-        "type",
-        "value"
-      ]
+      }
     },
     "imageType": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "language": {
-      "type": "string"
-    },
-    "description": {
-      "type": "string"
-    },
-    "metaData": {
-      "type": "string"
+      "type": ["string", "null"]
     }
-  },
-  "required": [
-    "approvalStatus",
-    "archived",
-    "baseUrl",
-    "campaignId",
-    "creationTime",
-    "documentId",
-    "documentLanguage",
-    "enabled",
-    "id",
-    "imageType",
-    "language",
-    "lastModified",
-    "onAirStatus",
-    "sectionName",
-    "siteName",
-    "status",
-    "text",
-    "url",
-    "description",
-    "metaData"
-  ]
+  }
 }

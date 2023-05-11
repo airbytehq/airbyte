@@ -3,31 +3,31 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "enabled": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "creationTime": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "lastModified": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "cpc": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "autoArchived": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "minimumCpc": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "currency": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "targeting": {
       "type": "object",
@@ -35,115 +35,92 @@
         "platform": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         },
         "language": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "excludeAdBlockUsers": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         },
         "nativePlacements": {
           "type": "object",
           "properties": {
             "enabled": {
-              "type": "boolean"
+              "type": ["boolean", "null"]
             }
-          },
-          "required": [
-            "enabled"
-          ]
+          }
         },
         "includeCellularNetwork": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         },
         "nativePlacementsEnabled": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         },
         "locationsVersion": {
-          "type": "string"
+          "type": ["string", "null"]
         }
-      },
-      "required": [
-        "excludeAdBlockUsers",
-        "includeCellularNetwork",
-        "language",
-        "locationsVersion",
-        "nativePlacements",
-        "nativePlacementsEnabled",
-        "platform"
-      ]
+      }
     },
     "marketerId": {
-      "type": "string"
+      "type": ["string", "null"]
+    },
+    "autoExpirationOfAds": {
+      "type": ["integer", "null"]
     },
     "contentType": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "budget": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "name": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "shared": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         },
         "amount": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "currency": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "creationTime": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "lastModified": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "startDate": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "endDate": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "runForever": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         },
         "type": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "pacing": {
-          "type": "string"
+          "type": ["string", "null"]
         }
-      },
-      "required": [
-        "amount",
-        "creationTime",
-        "currency",
-        "endDate",
-        "id",
-        "lastModified",
-        "name",
-        "pacing",
-        "runForever",
-        "shared",
-        "startDate",
-        "type"
-      ]
+      }
     },
     "prefixTrackingCode": {
       "type": "object",
       "properties": {
         "prefix": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "encode": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         }
       }
     },
@@ -151,68 +128,67 @@
       "type": "object",
       "properties": {
         "onAirReason": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "campaignOnAir": {
-          "type": "boolean"
+          "type": ["boolean", "null"]
         },
         "amountSpent": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "onAirModificationTime": {
-          "type": "string"
+          "type": ["string", "null"]
         }
-      },
-      "required": [
-        "amountSpent",
-        "campaignOnAir",
-        "onAirModificationTime",
-        "onAirReason"
-      ]
+      }
     },
     "readonly": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "startHour": {
-      "type": "string"
+      "type": ["string", "null"]
+    },
+    "trackingPixels": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": ["boolean", "null"]
+        },
+        "urls": {
+          "type": "array",
+          "items": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "pixels": {
+      "type": "object",
+      "properties": {
+        "impressionPixels": {
+          "type": "array",
+          "items": {
+            "type": ["string", "null"]
+          }
+        },
+        "trackingPixels": {
+          "type": "array",
+          "items": {
+            "type": ["string", "null"]
+          }
+        }
+      }
     },
     "onAirType": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "objective": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "creativeFormat": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "dynamicRetargeting": {
-      "type": "boolean"
-    },
-    "autoExpirationOfAds": {
-      "type": "integer"
+      "type": ["boolean", "null"]
     }
-  },
-  "required": [
-    "autoArchived",
-    "budget",
-    "contentType",
-    "cpc",
-    "creationTime",
-    "creativeFormat",
-    "currency",
-    "dynamicRetargeting",
-    "enabled",
-    "id",
-    "lastModified",
-    "liveStatus",
-    "marketerId",
-    "minimumCpc",
-    "name",
-    "objective",
-    "onAirType",
-    "prefixTrackingCode",
-    "readonly",
-    "startHour",
-    "targeting"
-  ]
+  }
 }

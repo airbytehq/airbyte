@@ -2,21 +2,234 @@
   "streams": [
     {
       "stream": {
-        "name": "customers",
+        "name": "marketers",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "append_dedup"
     },
     {
       "stream": {
-        "name": "employees",
+        "name": "campaigns_geo_location",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_campaigns_by_marketers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_periodic_by_marketers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_periodic_by_marketers_campaign",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_periodic_content_by_promoted_links_campaign",
+        "json_schema": {
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["string", "null"]
+        },
+        "fromDate": {
+          "type": ["string", "null"]
+        },
+        "toDate": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "impressions": {
+          "type": ["number", "null"]
+        },
+        "clicks": {
+          "type": ["number", "null"]
+        },
+        "totalConversions": {
+          "type": ["number", "null"]
+        },
+        "conversions": {
+          "type": ["number", "null"]
+        },
+        "viewConversions": {
+          "type": ["number", "null"]
+        },
+        "spend": {
+          "type": ["number", "null"]
+        },
+        "ecpc": {
+          "type": ["number", "null"]
+        },
+        "ctr": {
+          "type": ["number", "null"]
+        },
+        "conversionRate": {
+          "type": ["number", "null"]
+        },
+        "viewConversionRate": {
+          "type": ["number", "null"]
+        },
+        "cpa": {
+          "type": ["number", "null"]
+        },
+        "totalCpa": {
+          "type": ["number", "null"]
+        },
+        "totalSumValue": {
+          "type": ["number", "null"]
+        },
+        "sumValue": {
+          "type": ["number", "null"]
+        },
+        "viewSumValue": {
+          "type": ["number", "null"]
+        },
+        "totalAverageValue": {
+          "type": ["number", "null"]
+        },
+        "averageValue": {
+          "type": ["number", "null"]
+        },
+        "viewAverageValue": {
+          "type": ["number", "null"]
+        },
+        "totalRoas": {
+          "type": ["number", "null"]
+        },
+        "roas": {
+          "type": ["number", "null"]
+        },
+        "videoReachedFirstQ": {
+          "type": ["integer", "null"]
+        },
+        "videoReachedSecondQ": {
+          "type": ["integer", "null"]
+        },
+        "videoReachedThirdQ": {
+          "type": ["integer", "null"]
+        },
+        "videoReachedCompletion": {
+          "type": ["integer", "null"]
+        },
+        "videoViewDuration": {
+          "type": ["integer", "null"]
+        },
+        "videoAvgViewDuration": {
+          "type": ["integer", "null"]
+        },
+        "videoPlays": {
+          "type": ["integer", "null"]
+        }
+      }
+    },
+    "marketer_id": {
+      "type": ["string", "null"]
+    },
+    "campaign_id": {
+      "type": ["string", "null"]
+    },
+    "promoted_link_id": {
+      "type": ["string", "null"]
+    }
+  }
+},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_marketers_by_publisher",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_publishers_by_campaigns",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_marketers_by_platforms",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_marketers_campaigns_by_platforms",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_marketers_by_geo_performance",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_marketers_campaigns_by_geo",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_marketers_by_interest",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
     }
   ]
 }

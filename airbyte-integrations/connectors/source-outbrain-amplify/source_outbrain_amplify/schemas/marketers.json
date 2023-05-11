@@ -1,119 +1,92 @@
 {
   "$schema":"http://json-schema.org/schema#",
-  "type":"object",
+  "type": "object",
   "properties":{
     "id":{
-      "type":"string"
+      "type":["string", "null"]
     },
     "name":{
-      "type":"string"
+      "type":["string", "null"]
     },
     "enabled":{
-      "type":"boolean"
+      "type":["boolean", "null"]
     },
     "currency":{
-      "type":"string"
+      "type":["string", "null"]
     },
     "creationTime":{
-      "type":"string"
+      "type":["string", "null"]
     },
     "lastModified":{
-      "type":"string"
+      "type":["string", "null"]
     },
     "blockedSites":{
       "type":"object",
       "properties":{
         "blockedPublishers":{
-          "type":"array",
+          "type": "array",
           "items":{
             "type":"object",
             "properties":{
               "id":{
-                "type":"string"
+                "type":["string", "null"]
               },
               "name":{
-                "type":"string"
+                "type":["string", "null"]
               },
               "creationTime":{
-                "type":"string"
+                "type":["string", "null"]
               },
               "modifiedBy":{
-                "type":"string"
+                "type":["string", "null"]
               }
-            },
-            "required":[
-              "creationTime",
-              "id",
-              "name"
-            ]
+            }
           }
         },
         "blockedSections":{
-          "type":"array",
+          "type": "array",
           "items":{
             "type":"object",
             "properties":{
               "id":{
-                "type":"string"
+                "type":["string", "null"]
               },
               "name":{
-                "type":"string"
+                "type":["string", "null"]
               },
               "publisher":{
                 "type":"object",
                 "properties":{
                   "id":{
-                    "type":"string"
+                    "type":["string", "null"]
                   },
                   "name":{
-                    "type":"string"
+                    "type":["string", "null"]
                   }
-                },
-                "required":[
-                  "id",
-                  "name"
-                ]
+                }
               },
               "creationTime":{
-                "type":"string"
+                "type":["string", "null"]
               },
               "modifiedBy":{
-                "type":"string"
+                "type":["string", "null"]
               }
-            },
-            "required":[
-              "creationTime",
-              "id",
-              "name",
-              "publisher"
-            ]
+            }
           }
         }
       }
     },
     "useFirstPartyCookie":{
-      "type":"boolean"
+      "type":["boolean", "null"]
     },
     "role":{
-      "type":"string"
+      "type":["string", "null"]
     },
     "permissions":{
-      "type":"array",
+      "type": "array",
       "items":{
-        "type":"string"
+        "type":["string", "null"]
       }
     }
-  },
-  "required":[
-    "blockedSites",
-    "creationTime",
-    "currency",
-    "enabled",
-    "id",
-    "lastModified",
-    "name",
-    "permissions",
-    "role",
-    "useFirstPartyCookie"
-  ]
+  }
 }

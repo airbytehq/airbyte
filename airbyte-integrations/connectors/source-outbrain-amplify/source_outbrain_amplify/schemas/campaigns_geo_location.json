@@ -2,42 +2,43 @@
   "$schema": "http://json-schema.org/schema#",
   "type": "object",
   "properties": {
-    "geoLocations": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "geoType": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "canonicalName": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          }
+    "id": {
+      "type": ["string", "null"]
+    },
+    "geoType": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "canonicalName": {
+      "type": ["string", "null"]
+    },
+    "code": {
+      "type": ["string", "null"]
+    },
+    "parent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["string", "null"]
         },
-        "required": [
-          "canonicalName",
-          "code",
-          "geoType",
-          "id",
-          "name"
-        ]
+        "geoType": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "canonicalName": {
+          "type": ["string", "null"]
+        },
+        "code": {
+          "type": ["string", "null"]
+        }
       }
     },
-    "excludedGeoLocations": {
-      "type": "array"
+    "campaign_id": {
+      "type": ["string", "null"]
     }
-  },
-  "required": [
-    "excludedGeoLocations",
-    "geoLocations"
-  ]
+  }
 }

@@ -1,5 +1,14 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+  "marketers": {
+    "id": "$#@!1"
+  },
+  "campaigns_by_marketers": {
+    "id": "$#@!1"
+  },
+  "promoted_links_for_campaigns": {
+    "id": "$#@!1"
+  },
+  "budgets_for_marketers": {
+    "id": "$#@!1"
   }
 }

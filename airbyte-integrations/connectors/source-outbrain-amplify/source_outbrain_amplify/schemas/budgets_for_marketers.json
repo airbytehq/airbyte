@@ -3,66 +3,49 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "shared": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "amount": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "currency": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "amountRemaining": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "amountSpent": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "creationTime": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "lastModified": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "startDate": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "endDate": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "runForever": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "type": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "pacing": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "marketer_id": {
-      "type": "string"
+      "type": ["string", "null"]
     }
-  },
-  "required": [
-    "amount",
-    "amountRemaining",
-    "amountSpent",
-    "creationTime",
-    "currency",
-    "endDate",
-    "id",
-    "lastModified",
-    "name",
-    "pacing",
-    "runForever",
-    "shared",
-    "startDate",
-    "type",
-    "marketer_id"
-  ]
+  }
 }

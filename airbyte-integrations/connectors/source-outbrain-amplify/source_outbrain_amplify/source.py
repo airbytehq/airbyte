@@ -160,7 +160,7 @@ class CampaignsByMarketers(OutbrainAmplifyStream, HttpSubStream):
 # Retrieve Campaign GeoLocations.
 # A new endpoint has been added which returns all targeted and excluded locations of a given campaign. It can be called in order to retrieve a campaign's geotargeting.
 class CampaignsGeoLocation(OutbrainAmplifyStream, HttpSubStream):
-    primary_key = "id"
+    primary_key = None
 
     def __init__(self, authenticator, config, parent: CampaignsByMarketers, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -263,7 +263,7 @@ class PromotedLinksForCampaigns(OutbrainAmplifyStream, HttpSubStream):
 # List PromotedLinksSequences for Campaign.
 # Collection of all PromotedLinksSequences for the specified Campaign.
 class PromotedLinksSequenceForCampaigns(OutbrainAmplifyStream, HttpSubStream):
-    primary_key = "id"
+    primary_key = None
 
     def __init__(self, authenticator, config, parent: CampaignsByMarketers, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -366,7 +366,7 @@ class BudgetsForMarketers(OutbrainAmplifyStream, HttpSubStream):
 # Retrieve campaigns with performance statistics for a Marketer.
 # The API in this sub-section allows retrieving marketer campaigns data with performance statistics.
 class PerformanceReportCampaignsByMarketers(OutbrainAmplifyStream, HttpSubStream):
-    primary_key = "id"
+    primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -427,7 +427,7 @@ class PerformanceReportCampaignsByMarketers(OutbrainAmplifyStream, HttpSubStream
 # Retrieve periodic performance statistics for a Marketer.
 # The API in this sub-section allows retrieving performance statistics by periodic breakdown at different levels: marketer, budget, campaign and promoted link.
 class PerformanceReportPeriodicByMarketers(OutbrainAmplifyStream, HttpSubStream):
-    primary_key = "id"
+    primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -489,7 +489,7 @@ class PerformanceReportPeriodicByMarketers(OutbrainAmplifyStream, HttpSubStream)
 # Retrieve performance statistics for all marketer campaigns by periodic breakdown.
 # A special endpoint for retrieving periodic data by campaign breakdown. Now supports all breakdowns: daily, weekly, monthly, hourOfDay, dayOfWeek and dayOfWeekByHour.
 class PerformanceReportPeriodicByMarketersCampaign(OutbrainAmplifyStream, HttpSubStream):
-    primary_key = "id"
+    primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -553,7 +553,7 @@ class PerformanceReportPeriodicByMarketersCampaign(OutbrainAmplifyStream, HttpSu
 # Retrieve periodic performance statistics by promoted link for a campaign. HERE
 # A special endpoint for retrieving periodic data by promoted link breakdown for a given campaign.
 class PerformanceReportPeriodicContentByPromotedLinksCampaign(OutbrainAmplifyStream, HttpSubStream):
-    primary_key = "id"
+    primary_key = None
 
     def __init__(self, authenticator, config, parent: CampaignsByMarketers, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -618,7 +618,7 @@ class PerformanceReportPeriodicContentByPromotedLinksCampaign(OutbrainAmplifyStr
 # Retrieve performance statistics for a Marketer by publisher.
 # Marketer performance statistics with breakdown by publisher with publishers that are already blocked at the marketer or campaign level.
 class PerformanceReportMarketersByPublisher(OutbrainAmplifyStream, HttpSubStream):
-    primary_key = "id"
+    primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -679,7 +679,7 @@ class PerformanceReportMarketersByPublisher(OutbrainAmplifyStream, HttpSubStream
 # Retrieve performance statistics for all marketer campaigns by publisher
 # A special endpoint for retrieving publishers data by campaign breakdown.
 class PerformanceReportPublishersByCampaigns(OutbrainAmplifyStream, HttpSubStream):
-    primary_key = "id"
+    primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -866,7 +866,7 @@ class PerformanceReportMarketersCampaignsByPlatforms(OutbrainAmplifyStream, Http
 # Retrieve geo performance statistics for a Marketer.
 # The API in this sub-section allows retrieving performance statistics by geographic breakdown at different levels: country, region, and subregion.
 class PerformanceReportMarketersByGeoPerformance(OutbrainAmplifyStream, HttpSubStream):
-    primary_key = "id"
+    primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -928,7 +928,7 @@ class PerformanceReportMarketersByGeoPerformance(OutbrainAmplifyStream, HttpSubS
 # Retrieve performance statistics for all marketer campaigns by geo.
 # A special endpoint for retrieving geo data by campaign breakdown.
 class PerformanceReportMarketersCampaignsByGeo(OutbrainAmplifyStream, HttpSubStream):
-    primary_key = "id"
+    primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -992,7 +992,7 @@ class PerformanceReportMarketersCampaignsByGeo(OutbrainAmplifyStream, HttpSubStr
 # Retrieve performance statistics for a Marketer by interest.
 # The API in this sub-section allows retrieving performance statistics by interest at different levels: marketer and campaign.
 class PerformanceReportMarketersByInterest(OutbrainAmplifyStream, HttpSubStream):
-    primary_key = "id"
+    primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
         super().__init__(parent=parent, **kwargs)

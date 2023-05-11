@@ -3,198 +3,145 @@
   "type": "object",
   "properties": {
     "sequences": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "campaignId": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "title": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "enabled": {
-            "type": "boolean"
+            "type": ["boolean", "null"]
           },
           "onAirStatus": {
             "type": "object",
             "properties": {
               "onAir": {
-                "type": "boolean"
+                "type": ["boolean", "null"]
               },
               "reason": {
-                "type": "string"
+                "type": ["string", "null"]
               }
-            },
-            "required": [
-              "onAir",
-              "reason"
-            ]
+            }
           },
           "cachedLogoUrl": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "sponsor": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "promotedLinks": {
-            "type": "array",
+            "type": ["array", "null"],
             "items": {
               "type": "object",
               "properties": {
                 "id": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 },
                 "text": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 },
                 "creationTime": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 },
                 "lastModified": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 },
                 "url": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 },
                 "siteName": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 },
                 "sectionName": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 },
                 "status": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 },
                 "enabled": {
-                  "type": "boolean"
+                  "type": ["boolean", "null"]
                 },
                 "cachedImageUrl": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 },
                 "campaignId": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 },
                 "archived": {
-                  "type": "boolean"
+                  "type": ["boolean", "null"]
                 },
                 "documentLanguage": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 },
                 "onAirStatus": {
                   "type": "object",
                   "properties": {
                     "onAir": {
-                      "type": "boolean"
+                      "type": ["boolean", "null"]
                     },
                     "reason": {
-                      "type": "string"
+                      "type": ["string", "null"]
                     }
-                  },
-                  "required": [
-                    "onAir",
-                    "reason"
-                  ]
+                  }
                 },
                 "baseUrl": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 },
                 "documentId": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 },
                 "sequenceSettings": {
                   "type": "object",
                   "properties": {
                     "sequenceId": {
-                      "type": "string"
+                      "type": ["string", "null"]
                     },
                     "sequenceOrder": {
-                      "type": "integer"
+                      "type": ["integer", "null"]
                     }
-                  },
-                  "required": [
-                    "sequenceId",
-                    "sequenceOrder"
-                  ]
+                  }
                 },
                 "approvalStatus": {
                   "type": "object",
                   "properties": {
                     "status": {
-                      "type": "string"
+                      "type": ["string", "null"]
                     },
                     "isEditable": {
-                      "type": "boolean"
+                      "type": ["boolean", "null"]
                     }
-                  },
-                  "required": [
-                    "isEditable",
-                    "status"
-                  ]
+                  }
                 },
                 "imageType": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 },
                 "language": {
-                  "type": "string"
+                  "type": ["string", "null"]
                 }
-              },
-              "required": [
-                "approvalStatus",
-                "archived",
-                "baseUrl",
-                "cachedImageUrl",
-                "campaignId",
-                "creationTime",
-                "documentId",
-                "documentLanguage",
-                "enabled",
-                "id",
-                "lastModified",
-                "onAirStatus",
-                "sectionName",
-                "sequenceSettings",
-                "siteName",
-                "status",
-                "text",
-                "url"
-              ]
+              }
             }
           },
           "creationTime": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "lastModified": {
-            "type": "string"
+            "type": ["string", "null"]
           }
-        },
-        "required": [
-          "cachedLogoUrl",
-          "campaignId",
-          "creationTime",
-          "enabled",
-          "id",
-          "lastModified",
-          "onAirStatus",
-          "promotedLinks",
-          "sponsor",
-          "title"
-        ]
+        }
       }
     },
     "totalCount": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "count": {
-      "type": "integer"
+      "type": ["integer", "null"]
     }
-  },
-  "required": [
-    "count",
-    "sequences",
-    "totalCount"
-  ]
+  }
 }
