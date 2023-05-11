@@ -442,7 +442,7 @@ class Client:
                 fields[col] = self.dtype_to_json_type(prev_frame_column_type, df_type)
         return {
             field: (
-                {"type": ["string", "null"], "format": "date-time"} if fields[field] == "datetime" else {"type": [fields[field], "null"]}
+                {"type": ["string", "null"], "format": "date-time"} if fields[field] == "date-time" else {"type": [fields[field], "null"]}
             )
             for field in fields
         }
