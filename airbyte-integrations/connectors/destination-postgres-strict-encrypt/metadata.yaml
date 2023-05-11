@@ -16,7 +16,7 @@ data:
   normalizationConfig:
     normalizationIntegrationType: postgres
     normalizationRepository: airbyte/normalization
-    normalizationTag: 0.4.0
+    normalizationTag: 0.4.1
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/postgres
   supportsDbt: true
