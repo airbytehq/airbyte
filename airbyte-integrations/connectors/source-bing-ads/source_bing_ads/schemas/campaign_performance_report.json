@@ -47,6 +47,9 @@
     "CampaignStatus": {
       "type": ["null", "string"]
     },
+    "CampaignLabels": {
+      "type": ["null", "string"]
+    },
     "Impressions": {
       "type": ["null", "integer"]
     },
