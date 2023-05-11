@@ -1344,7 +1344,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.2.3"
+- dockerImage: "airbyte/source-amplitude:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
@@ -2042,7 +2042,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.22"
+- dockerImage: "airbyte/source-bing-ads:0.1.23"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bing-ads"
     connectionSpecification:
@@ -5311,7 +5311,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-gitlab:1.0.4"
+- dockerImage: "airbyte/source-gitlab:1.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gitlab"
     connectionSpecification:
@@ -9617,7 +9617,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.20"
+- dockerImage: "airbyte/source-mysql:2.0.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -11722,7 +11722,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pinterest:0.2.6"
+- dockerImage: "airbyte/source-pinterest:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pinterest"
     connectionSpecification:
@@ -13450,7 +13450,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:2.1.4"
+- dockerImage: "airbyte/source-s3:2.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -14202,7 +14202,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-shopify:0.3.3"
+- dockerImage: "airbyte/source-shopify:0.3.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/shopify"
     connectionSpecification:
@@ -14219,6 +14219,7 @@
           title: "Shopify Store"
           description: "The name of your Shopify store found in the URL. For example,\
             \ if your URL was https://NAME.myshopify.com, then the name would be 'NAME'."
+          pattern: "^(?!https://)(?!http://)(?!.*\\.myshopify\\.)(?!.*\\.myshopify).*"
           order: 1
         credentials:
           title: "Shopify Authorization Method"
@@ -14684,7 +14685,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.16"
+- dockerImage: "airbyte/source-snapchat-marketing:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
     connectionSpecification:
