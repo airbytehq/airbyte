@@ -113,11 +113,17 @@ class IncrementalAuth0Stream(Auth0Stream, IncrementalMixin):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         entities = response.json()
+        print("VG 118")
+        print(entities)
         if entities:
             last_item = entities[-1]
             self.state = last_item
         yield from entities
 
+
+class Clients(Auth0Stream):
+    primary_key = "client_id"
+    resource_name = "clients"
 
 class Users(IncrementalAuth0Stream):
     min_id = "1900-01-01T00:00:00.000Z"
@@ -148,4 +154,4 @@ class SourceAuth0(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         initialization_params = {"authenticator": initialize_authenticator(config), "url_base": config.get("base_url")}
-        return [Users(**initialization_params)]
+        return [Clients(**initialization_params), Users(**initialization_params)]
