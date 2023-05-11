@@ -40,6 +40,22 @@ class SourceAirtable(AbstractSource):
         except Exception as e:
             return False, str(e)
 
+    def _remove_missed_streams_from_catalog(self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog) -> ConfiguredAirbyteCatalog:
+        config, _ = split_config(config)
+        stream_instances = {s.name: s for s in self.streams(config)}
+        for index, configured_stream in enumerate(catalog.streams):
+            stream_instance = stream_instances.get(configured_stream.stream.name)
+            if not stream_instance:
+                table_id = configured_stream.stream.name.split("/")[2]
+                similar_streams = [s for s in stream_instances if s.endswith(table_id)]
+                logger.warn(
+                    f"The requested stream {configured_stream.stream.name} was not found in the source. Please check if this stream was renamed or removed previously and reset data, removing from catalog for this sync run. For more information please refer to documentation: https://docs.airbyte.com/integrations/sources/airtable/#note-on-changed-table-names"
+                    f" Similar streams: {similar_streams}"
+                    f" Available streams: {stream_instances.keys()}"
+                )
+                del catalog.streams[index]
+        return catalog
+
     def read(
         self,
         logger: logging.Logger,
@@ -47,60 +63,9 @@ class SourceAirtable(AbstractSource):
         catalog: ConfiguredAirbyteCatalog,
         state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
     ) -> Iterator[AirbyteMessage]:
-        """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/."""
-        logger.info(f"Starting syncing {self.name}")
-        config, internal_config = split_config(config)
-        # TODO assert all streams exist in the connector
-        # get the streams once in case the connector needs to make any queries to generate them
-        stream_instances = {s.name: s for s in self.streams(config)}
-        state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
-        self._stream_to_instance_map = stream_instances
-        with create_timer(self.name) as timer:
-            for configured_stream in catalog.streams:
-                stream_instance = stream_instances.get(configured_stream.stream.name)
-                if not stream_instance:
-                    table_id = configured_stream.stream.name.split("/")[2]
-                    similar_streams = [s for s in stream_instances if s.endswith(table_id)]
-                    logger.warn(
-                        f"The requested stream {configured_stream.stream.name} was not found in the source. Please check if this stream was renamed or removed previously and reset data, skipping it for now. For more information please refer to documentation: https://docs.airbyte.com/integrations/sources/airtable/#note-on-changed-table-names"
-                        f" Similar streams: {similar_streams}"
-                        f" Available streams: {stream_instances.keys()}"
-                    )
-                    continue
-                stream_is_available, error = stream_instance.check_availability(logger, self)
-                if not stream_is_available:
-                    logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. Error: {error}")
-                    continue
-                try:
-                    timer.start_event(f"Syncing stream {configured_stream.stream.name}")
-                    logger.info(f"Marking stream {configured_stream.stream.name} as STARTED")
-                    yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.STARTED)
-                    yield from self._read_stream(
-                        logger=logger,
-                        stream_instance=stream_instance,
-                        configured_stream=configured_stream,
-                        state_manager=state_manager,
-                        internal_config=internal_config,
-                    )
-                    logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
-                    yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.COMPLETE)
-                except AirbyteTracedException as e:
-                    yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.INCOMPLETE)
-                    raise e
-                except Exception as e:
-                    logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
-                    logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
-                    yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.INCOMPLETE)
-                    display_message = stream_instance.get_error_display_message(e)
-                    if display_message:
-                        raise AirbyteTracedException.from_exception(e, message=display_message) from e
-                    raise e
-                finally:
-                    timer.finish_event()
-                    logger.info(f"Finished syncing {configured_stream.stream.name}")
-                    logger.info(timer.report())
-
-        logger.info(f"Finished syncing {self.name}")
+        """Override to provide filtering of catalog in case if streams were renamed/removed previously"""
+        catalog = self._remove_missed_streams_from_catalog(logger, config, catalog)
+        return super().read(logger, config, catalog, state)
 
     def discover(self, logger: AirbyteLogger, config) -> AirbyteCatalog:
         """
