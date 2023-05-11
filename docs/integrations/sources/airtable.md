@@ -111,7 +111,7 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version | Date       | Pull Request                                             | Subject                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------|
-| 3.0.1   | 2023-05-10 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Skip stream if it does not appear in catalog                                  |
+| 3.0.1   | 2023-05-10 | [25946](https://github.com/airbytehq/airbyte/pull/25946) | Skip stream if it does not appear in catalog                                  |
 | 3.0.0   | 2023-03-20 | [22704](https://github.com/airbytehq/airbyte/pull/22704) | Fix for stream name uniqueness                                  |
 | 2.0.4   | 2023-03-15 | [24093](https://github.com/airbytehq/airbyte/pull/24093) | Update spec and doc                                             |
 | 2.0.3   | 2023-02-02 | [22311](https://github.com/airbytehq/airbyte/pull/22311) | Fix for `singleSelect` types when discovering the schema        |
