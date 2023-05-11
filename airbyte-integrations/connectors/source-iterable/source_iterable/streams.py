@@ -20,6 +20,7 @@ from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from pendulum.datetime import DateTime
 from requests import codes
 from requests.exceptions import ChunkedEncodingError
+from source_iterable.availability_strategy import IterableAvailabilityStrategy
 from source_iterable.slice_generators import AdjustableSliceGenerator, RangeSliceGenerator, StreamSlice
 from source_iterable.utils import dateutil_parse
 
@@ -61,15 +62,7 @@ class IterableStream(HttpStream, ABC):
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
-
-    def check_unauthorized_key(self, response: requests.Response) -> bool:
-        if response.status_code == codes.UNAUTHORIZED:
-            self.logger.warn(f"Provided API Key has not sufficient permissions to read from stream: {self.data_field}")
-            self.ignore_further_slices = True
-            setattr(self, "raise_on_http_errors", False)
-            return False
-        return True
+        return IterableAvailabilityStrategy()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -78,8 +71,6 @@ class IterableStream(HttpStream, ABC):
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if not self.check_unauthorized_key(response):
-            return []
         response_json = response.json() or {}
         records = response_json.get(self.data_field, [])
 
@@ -96,9 +87,6 @@ class IterableStream(HttpStream, ABC):
                 return True
 
     def should_retry(self, response: requests.Response) -> bool:
-        # check the authentication
-        if not self.check_unauthorized_key(response):
-            return False
         if self.check_generic_error(response):
             return True
         return super().should_retry(response)
@@ -195,8 +183,6 @@ class IterableExportStream(IterableStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if not self.check_unauthorized_key(response):
-            return []
         for obj in response.iter_lines():
             record = json.loads(obj)
             record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
@@ -351,8 +337,6 @@ class ListUsers(IterableStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if not response.ok:
-            if not self.check_unauthorized_key(response):
-                return []
             # Avoid block whole of sync if a slice is broken. Skip current slice on 500 Internal Server Error.
             # See on-call: https://github.com/airbytehq/oncall/issues/1592#issuecomment-1499109251
             if response.status_code == codes.INTERNAL_SERVER_ERROR:
@@ -416,8 +400,6 @@ class CampaignsMetrics(IterableStream):
             yield {"campaign_ids": campaign_ids}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if not self.check_unauthorized_key(response):
-            return []
         content = response.content.decode()
         records = self._parse_csv_string_to_dict(content)
 
@@ -515,8 +497,6 @@ class Events(IterableStream):
         Put common event fields at the top level.
         Put the rest of the fields in the `data` subobject.
         """
-        if not self.check_unauthorized_key(response):
-            return []
         jsonl_records = StringIO(response.text)
         for record in jsonl_records:
             record_dict = json.loads(record)
@@ -678,8 +658,6 @@ class Templates(IterableExportStreamRanged):
                 yield from super().read_records(stream_slice=stream_slice, **kwargs)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if not self.check_unauthorized_key(response):
-            return []
         response_json = response.json()
         records = response_json.get(self.data_field, [])
 
@@ -691,11 +669,3 @@ class Templates(IterableExportStreamRanged):
 class Users(IterableExportStreamRanged):
     data_field = "user"
     cursor_field = "profileUpdatedAt"
-
-
-class AccessCheck(ListUsers):
-    # since 401 error is failed silently in all the streams,
-    # we need another class to distinguish an empty stream from 401 response
-    def check_unauthorized_key(self, response: requests.Response) -> bool:
-        # this allows not retrying 401 and raising the error upstream
-        return response.status_code != codes.UNAUTHORIZED

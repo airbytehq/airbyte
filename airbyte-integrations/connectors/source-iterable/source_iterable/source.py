@@ -11,7 +11,6 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 from .streams import (
-    AccessCheck,
     Campaigns,
     CampaignsMetrics,
     Channels,
@@ -78,7 +77,7 @@ class SourceIterable(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         def all_streams_accessible():
-            access_check_stream = AccessCheck(authenticator=authenticator)
+            access_check_stream = ListUsers(authenticator=authenticator)
             slice_ = next(iter(access_check_stream.stream_slices(sync_mode=SyncMode.full_refresh)))
             try:
                 list(access_check_stream.read_records(stream_slice=slice_, sync_mode=SyncMode.full_refresh))
