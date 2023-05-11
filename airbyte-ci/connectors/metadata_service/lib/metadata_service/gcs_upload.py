@@ -7,6 +7,8 @@ from typing import Tuple
 import yaml
 import base64
 import hashlib
+import json
+import os
 
 from google.cloud import storage
 from google.oauth2 import service_account
@@ -37,7 +39,7 @@ def compute_gcs_md5(file_name):
     return base64.b64encode(hash_md5.digest()).decode("utf8")
 
 
-def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, service_account_file_path: Path) -> Tuple[bool, str]:
+def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path) -> Tuple[bool, str]:
     """Upload a metadata file to a GCS bucket.
 
     If the per 'version' key already exists it won't be overwritten.
@@ -54,7 +56,8 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, service_a
     raw_metadata = yaml.safe_load(metadata_file_path.read_text())
     metadata = ConnectorMetadataDefinitionV0.parse_obj(raw_metadata)
 
-    credentials = service_account.Credentials.from_service_account_file(service_account_file_path)
+    service_account_info = json.loads(os.environ.get("GCS_CREDENTIALS"))
+    credentials = service_account.Credentials.from_service_account_info(service_account_info)
     storage_client = storage.Client(credentials=credentials)
     bucket = storage_client.bucket(bucket_name)
 

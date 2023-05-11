@@ -70,7 +70,6 @@ class VersionCheck(Step, ABC):
 
 
 class VersionIncrementCheck(VersionCheck):
-
     title = "Connector version increment check."
 
     BYPASS_CHECK_FOR = [
@@ -106,7 +105,6 @@ class VersionIncrementCheck(VersionCheck):
 
 
 class VersionFollowsSemverCheck(VersionCheck):
-
     title = "Connector version semver check."
 
     @property
