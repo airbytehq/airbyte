@@ -37,8 +37,9 @@
 {"type":"RECORD","record":{"stream":"dedup_cdc_excluded","data":{"id":6,"name":null,"_ab_cdc_updated_at":1623850868371,"_ab_cdc_lsn":27010232,"_ab_cdc_deleted_at":1623850868371},"emitted_at":1623861660}}
 // these messages have the same _ab_cdc_updated_at, but different _ab_cdc_lsn. They should each get an entry in the SCD model, and the final table should reflect the highest lsn's data.
 {"type":"RECORD","record":{"stream":"dedup_cdc_excluded","data":{"id":8,"name":"foo1","_ab_cdc_updated_at":1623850900000,"_ab_cdc_lsn":27010232,"_ab_cdc_deleted_at":null},"emitted_at":1623861660}}
-{"type":"RECORD","record":{"stream":"dedup_cdc_excluded","data":{"id":8,"name":"foo3","_ab_cdc_updated_at":1623850900000,"_ab_cdc_lsn":27010234,"_ab_cdc_deleted_at":null},"emitted_at":1623861660}}
-{"type":"RECORD","record":{"stream":"dedup_cdc_excluded","data":{"id":8,"name":"foo2","_ab_cdc_updated_at":1623850900000,"_ab_cdc_lsn":27010233,"_ab_cdc_deleted_at":null},"emitted_at":1623861660}}
+// for now - increment lsn by 100 because mysql/mssql/tidb round are truncating it at the hundreds digit
+{"type":"RECORD","record":{"stream":"dedup_cdc_excluded","data":{"id":8,"name":"foo3","_ab_cdc_updated_at":1623850900000,"_ab_cdc_lsn":27010432,"_ab_cdc_deleted_at":null},"emitted_at":1623861660}}
+{"type":"RECORD","record":{"stream":"dedup_cdc_excluded","data":{"id":8,"name":"foo2","_ab_cdc_updated_at":1623850900000,"_ab_cdc_lsn":27010332,"_ab_cdc_deleted_at":null},"emitted_at":1623861660}}
 
 {"type":"RECORD","record":{"stream":"pos_dedup_cdcx","data":{"id":1,"name":"mazda","_ab_cdc_updated_at":1623849130530,"_ab_cdc_lsn":26971624,"_ab_cdc_log_pos": 33274,"_ab_cdc_deleted_at":null},"emitted_at":1623859926}}
 {"type":"RECORD","record":{"stream":"pos_dedup_cdcx","data":{"id":2,"name":"toyata","_ab_cdc_updated_at":1623849130549,"_ab_cdc_lsn":26971624,"_ab_cdc_log_pos": 33275,"_ab_cdc_deleted_at":null},"emitted_at":1623859926}}
