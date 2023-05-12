@@ -354,7 +354,8 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"])
             metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
         except HTTPError as e:
-            if e.response.status_code == HTTPStatus.BAD_REQUEST or e.response.status_code == HTTPStatus.FORBIDDEN:
+            error_list = [HTTPStatus.BAD_REQUEST, HTTPStatus.FORBIDDEN]
+            if e.response.status_code in error_list:
                 internal_message = f"Incorrect Property ID: {config['property_id']}"
                 property_id_docs_url = (
                     "https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id"
