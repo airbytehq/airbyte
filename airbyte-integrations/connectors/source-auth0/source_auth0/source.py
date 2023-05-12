@@ -113,8 +113,6 @@ class IncrementalAuth0Stream(Auth0Stream, IncrementalMixin):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         entities = response.json()
-        print("VG 118")
-        print(entities)
         if entities:
             last_item = entities[-1]
             self.state = last_item
