@@ -32,7 +32,6 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -85,24 +84,24 @@ public class PerformanceTest {
     final var allowedHosts = new AllowedHosts().withHosts(List.of("*"));
     final var jobRoot = "/";
 
-//    final var dstIntegtationLauncher = new AirbyteIntegrationLauncher(
-//        "1",
-//        0,
-//        this.imageName,
-//        processFactory,
-//        resourceReqs,
-//        allowedHosts,
-//        false,
-//        new EnvVariableFeatureFlags());
-//    this.destination = new DefaultAirbyteDestination(dstIntegtationLauncher);
-//    final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig()
-//        .withDestinationConnectionConfiguration(this.config)
-//        .withState(null)
-//        .withCatalog(convertProtocolObject(this.catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
+    // final var dstIntegtationLauncher = new AirbyteIntegrationLauncher(
+    // "1",
+    // 0,
+    // this.imageName,
+    // processFactory,
+    // resourceReqs,
+    // allowedHosts,
+    // false,
+    // new EnvVariableFeatureFlags());
+    // this.destination = new DefaultAirbyteDestination(dstIntegtationLauncher);
+    // final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig()
+    // .withDestinationConnectionConfiguration(this.config)
+    // .withState(null)
+    // .withCatalog(convertProtocolObject(this.catalog,
+    // io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
 
     // USES setup from source-performance START
-    final var dstIntegtationLauncher = new
-        AirbyteIntegrationLauncher("2",
+    final var dstIntegtationLauncher = new AirbyteIntegrationLauncher("2",
         0,
         "airbyte/destination-dev-null:0.2.7",
         processFactory,
@@ -137,23 +136,23 @@ public class PerformanceTest {
 
     while (!destination.isFinished()) {
       try (reader) {
-//        log.info("*** reading row");
-//        final var row = Arrays.asList(pattern.split(reader.readLine()));
-//        log.info("*** row {}", row);
-//        assert (row.size() == columns.size());
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("{");
-//        Iterator<String> rowIterator = row.iterator();
-//        Iterator<String> colIterator = columns.iterator();
-//        ArrayList<String> combined = new ArrayList<>(columns.size());
-//        while (colIterator.hasNext() && rowIterator.hasNext()) {
-//          combined.add("\"%s\":\"%s\"".formatted(colIterator.next(), rowIterator.next()));
-//        }
-//        sb.append(String.join(",", combined));
-//        sb.append("}");
-//        final String recordString = sb.toString();
-//        log.info("*** RECORD: {}", recordString); // TEMP
-//        totalBytes += recordString.length();
+        // log.info("*** reading row");
+        // final var row = Arrays.asList(pattern.split(reader.readLine()));
+        // log.info("*** row {}", row);
+        // assert (row.size() == columns.size());
+        // StringBuilder sb = new StringBuilder();
+        // sb.append("{");
+        // Iterator<String> rowIterator = row.iterator();
+        // Iterator<String> colIterator = columns.iterator();
+        // ArrayList<String> combined = new ArrayList<>(columns.size());
+        // while (colIterator.hasNext() && rowIterator.hasNext()) {
+        // combined.add("\"%s\":\"%s\"".formatted(colIterator.next(), rowIterator.next()));
+        // }
+        // sb.append(String.join(",", combined));
+        // sb.append("}");
+        // final String recordString = sb.toString();
+        // log.info("*** RECORD: {}", recordString); // TEMP
+        // totalBytes += recordString.length();
 
         final AirbyteMessage airbyteMessage = new AirbyteMessage().withRecord(new AirbyteRecordMessage()
             .withStream(catalog.getStreams().get(0).getStream().getName())
@@ -163,13 +162,14 @@ public class PerformanceTest {
       }
 
       // counter isn't getting updated so commenting out
-//      if (counter == 1000) { // TEMP
-//        break;
-//      }
-//      if (counter > 0 && counter % MEGABYTE == 0) {
-//        log.info("current throughput: {} total MB {}", (totalBytes / MEGABYTE) / ((System.currentTimeMillis() - start) / 1000.0),
-//            totalBytes / MEGABYTE);
-//      }
+      // if (counter == 1000) { // TEMP
+      // break;
+      // }
+      // if (counter > 0 && counter % MEGABYTE == 0) {
+      // log.info("current throughput: {} total MB {}", (totalBytes / MEGABYTE) /
+      // ((System.currentTimeMillis() - start) / 1000.0),
+      // totalBytes / MEGABYTE);
+      // }
     }
 
     log.info("Test ended successfully");
