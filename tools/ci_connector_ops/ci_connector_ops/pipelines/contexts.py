@@ -126,7 +126,6 @@ class PipelineContext:
     @report.setter
     def report(self, report: Report):  # noqa D102
         self._report = report
-        self.state = ContextState.SUCCESSFUL if report.success else ContextState.FAILURE
 
     @property
     def github_commit_status(self) -> dict:
@@ -183,7 +182,7 @@ class PipelineContext:
             message += "🟠"
         if self.state is ContextState.SUCCESSFUL:
             message += "🟢"
-        if self.state is ContextState.FAILURE:
+        if self.state in [ContextState.FAILURE, ContextState.ERROR]:
             message += "🔴"
         message += f" {self.state.value['description']}"
 
@@ -207,6 +206,26 @@ class PipelineContext:
             await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel)
         return self
 
+    @staticmethod
+    def determine_final_state(report: Optional[Report], exception_value: Optional[BaseException]) -> ContextState:
+        """Determine the final state of the context from the report or the exception value.
+
+        Args:
+            report (Optional[Report]): The pipeline report if any.
+            exception_value (Optional[BaseException]): The exception value if an exception was raised in the context execution, None otherwise.
+        Returns:
+            ContextState: The final state of the context.
+        """
+        if exception_value is not None or report is None:
+            return ContextState.ERROR
+        if report is not None and report.failed_steps:
+            return ContextState.FAILURE
+        if report is not None and report.success:
+            return ContextState.SUCCESSFUL
+        raise Exception(
+            f"The final state of the context could not be determined for the report and exception value provided. Report: {report}, Exception: {exception_value}"
+        )
+
     async def __aexit__(
         self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]
     ) -> bool:
@@ -226,13 +245,12 @@ class PipelineContext:
         Returns:
             bool: Whether the teardown operation ran successfully.
         """
+        self.state = self.determine_final_state(self.report, exception_value)
+
         if exception_value:
             self.logger.error("An error was handled by the Pipeline", exc_info=True)
-            self.state = ContextState.ERROR
-
         if self.report is None:
             self.logger.error("No test report was provided. This is probably due to an upstream error")
-            self.state = ContextState.ERROR
             self.report = Report(self, steps_results=[])
 
         self.report.print()
@@ -372,12 +390,11 @@ class ConnectorContext(PipelineContext):
         Returns:
             bool: Whether the teardown operation ran successfully.
         """
+        self.state = self.determine_final_state(self.report, exception_value)
         if exception_value:
             self.logger.error("An error got handled by the ConnectorContext", exc_info=True)
-            self.state = ContextState.ERROR
         if self.report is None:
             self.logger.error("No test report was provided. This is probably due to an upstream error")
-            self.state = ContextState.ERROR
             self.report = ConnectorReport(self, [])
 
         if self.should_save_updated_secrets:
@@ -418,7 +435,7 @@ class ConnectorContext(PipelineContext):
             message += "🟠"
         if self.state is ContextState.SUCCESSFUL:
             message += "🟢"
-        if self.state is ContextState.FAILURE:
+        if self.state in [ContextState.FAILURE, ContextState.ERROR]:
             message += "🔴"
         message += f" {self.state.value['description']}"
         # TODO: renable this when pipeline is stable
