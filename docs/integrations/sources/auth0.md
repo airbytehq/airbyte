@@ -52,3 +52,4 @@ The connector is restricted by Auth0 [rate limits](https://auth0.com/docs/troubl
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
 | 0.1.0  | 2022-10-21 | TBD | Add Auth0 and Users stream |
+| 0.2.0  | 2022-10-21 | TBD | Add Clients stream |
