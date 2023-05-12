@@ -117,7 +117,10 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         if self.token_expiry_date_format:
             self._token_expiry_date = pendulum.from_format(value, self.token_expiry_date_format)
         else:
-            self._token_expiry_date = pendulum.now().add(seconds=value)
+            try:
+                self._token_expiry_date = pendulum.now().add(seconds=int(float(value)))
+            except ValueError:
+                raise ValueError(f"Invalid token expiry value {value}; a number is required.")
 
     @property
     def access_token(self) -> str:
