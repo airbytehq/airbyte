@@ -79,7 +79,9 @@
       "property_id": {
         "type": "string",
         "title": "Property ID",
-        "description": "A Google Analytics GA4 property identifier whose events are tracked. Specified in the URL path and not the body",
+        "description": "A Google Analytics GA4 property identifier whose events are tracked. Specified in the URL path and not the body such as \"123...\". See <a href=\"https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id\">the docs</a> for more details.",
+        "pattern": "^[0-9]*$",
+        "pattern_descriptor": "such as \"123...\"",
         "order": 1
       },
       "date_ranges_start_date": {

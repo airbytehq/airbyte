@@ -72,7 +72,7 @@ def test_parse_GAQL_ok():
 def test_parse_GAQL_fail():
     with pytest.raises(Exception) as e:
         GAQL.parse("SELECT field1, field2 FROM x_Table2")
-    assert str(e.value) == "incorrect GAQL query statement: 'SELECT field1, field2 FROM x_Table2'"
+    assert str(e.value) == "Incorrect GAQL query statement: 'SELECT field1, field2 FROM x_Table2'"
 
     with pytest.raises(Exception) as e:
         GAQL.parse("SELECT field1, field2 FROM x_Table WHERE ")
