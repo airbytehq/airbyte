@@ -4,9 +4,7 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
-      - "airbyte-integrations/connectors/source-**"
-      - "airbyte-integrations/connectors/destination-**"
-      - "airbyte-integrations/connectors/third-party/**"
+      - "airbyte-integrations/connectors/**/metadata.yaml"
 
 jobs:
   connectors_metadata_validation:
