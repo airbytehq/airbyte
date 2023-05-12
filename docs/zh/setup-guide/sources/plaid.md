@@ -20,10 +20,10 @@
 ### 第一步：获取Plaid设置相关信息
 
 1. **访问您的[Plaid dashboard](https://dashboard.plaid.com/overview)：** 点击**Team Settings**下拉列表中的**Keys**。
-![Plaid Keys](/assets/images/plaid-keys.jpg "Plaid Keys")
+![Plaid Keys](../../.gitbook/assets/plaid-keys.jpg "Plaid Keys")
 
 2. **获取客户端ID和API密钥：** 在Keys页面上，复制您的**client_id**和Sandbox **secret**。
-![Plaid Client Id Secret](/assets/images/plaid-client-id-secret.jpg "Plaid Client Id Secret")
+![Plaid Client Id Secret](../../.gitbook/assets/plaid-client-id-secret.jpg "Plaid Client Id Secret")
 
 3. **创建访问令牌：** 首先您需要创建一个公共令牌密钥，然后您可以使用它创建访问令牌。
 
