@@ -1,9 +1,12 @@
-import sys
-import requests
-from typing import Any, Mapping
-from requests.auth import HTTPBasicAuth
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
+from typing import Any, Mapping
+
+import requests
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from requests.auth import HTTPBasicAuth
 
 
 class OutbrainAmplifyAuthenticator(TokenAuthenticator):
@@ -12,13 +15,12 @@ class OutbrainAmplifyAuthenticator(TokenAuthenticator):
         self.url_auth = url_base + "login"
         self.token = ""
 
-    def generate_cache_token(self,):
+    def generate_cache_token(
+        self,
+    ):
         r = requests.get(
             self.url_auth,
-            auth=HTTPBasicAuth(
-                self.config.get("credentials").get("username"),
-                self.config.get("credentials").get("password")
-            )
+            auth=HTTPBasicAuth(self.config.get("credentials").get("username"), self.config.get("credentials").get("password")),
         )
         if r.status_code == 200:
             self.token = r.json().get("OB-TOKEN-V1")

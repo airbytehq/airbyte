@@ -1,18 +1,18 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-import requests
 import pendulum
-from airbyte_cdk.sources import AbstractSource
+import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+
 from .auth import OutbrainAmplifyAuthenticator
 
 DEFAULT_END_DATE = pendulum.now()
@@ -31,18 +31,14 @@ class OutbrainAmplifyStream(HttpStream, ABC):
             if current_page < total_pages - 1:
                 diff = (total_pages - current_page) - 1
                 if diff < current_page + 1:
-                    return {'offset': current_page + 1}
+                    return {"offset": current_page + 1}
             else:
                 return None
         else:
             return None
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, any] = None,
-            next_page_token: Mapping[str, Any] = None,
-            **kwargs
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(next_page_token=next_page_token, stream_state=stream_state, **kwargs)
         if next_page_token:
@@ -54,8 +50,7 @@ class OutbrainAmplifyStream(HttpStream, ABC):
 
     @staticmethod
     def _get_time_interval(
-            start_date: Union[pendulum.datetime, str],
-            ending_date: Union[pendulum.datetime, str]
+        start_date: Union[pendulum.datetime, str], ending_date: Union[pendulum.datetime, str]
     ) -> Iterable[Tuple[pendulum.datetime, pendulum.datetime]]:
         if isinstance(start_date, str):
             start_date = pendulum.parse(start_date)
@@ -75,7 +70,7 @@ class Marketers(OutbrainAmplifyStream):
         self._session = requests.sessions.Session()
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -91,20 +86,20 @@ class Marketers(OutbrainAmplifyStream):
         return "marketers.yml"
 
     def parse_response(
-            self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
+        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping]:
         if response.json():
-            for x in response.json().get('marketers'):
+            for x in response.json().get("marketers"):
                 yield x
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "marketers/"
 
 
 class CampaignsByMarketers(OutbrainAmplifyStream, HttpSubStream):
-    primary_key = "id"
+    primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -122,37 +117,34 @@ class CampaignsByMarketers(OutbrainAmplifyStream, HttpSubStream):
         return "campaigns.yml"
 
     def stream_slices(
-            self, sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.incremental,
-            cursor_field=cursor_field,
-            stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
             for record in parent_records:
-                yield {"marketer_id": record.get('id')}
+                yield {"marketer_id": record.get("id")}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         if response.json():
-            for x in response.json().get('campaigns'):
+            for x in response.json().get("campaigns"):
                 yield x
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"marketers/{stream_slice['marketer_id']}/campaigns"
 
@@ -169,7 +161,7 @@ class CampaignsGeoLocation(OutbrainAmplifyStream, HttpSubStream):
         self._session = requests.sessions.Session()
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -177,38 +169,35 @@ class CampaignsGeoLocation(OutbrainAmplifyStream, HttpSubStream):
         return None
 
     def stream_slices(
-            self, sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.incremental,
-            cursor_field=cursor_field,
-            stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
             for record in parent_records:
-                yield {"campaign_id": record.get('id')}
+                yield {"campaign_id": record.get("id")}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         if response.json():
-            for x in response.json().get('geoLocations'):
-                x["campaign_id"] = stream_slice['campaign_id']
+            for x in response.json().get("geoLocations"):
+                x["campaign_id"] = stream_slice["campaign_id"]
                 yield x
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"campaigns/{stream_slice['campaign_id']}/locations"
 
@@ -216,7 +205,7 @@ class CampaignsGeoLocation(OutbrainAmplifyStream, HttpSubStream):
 # List PromotedLinks for Campaign.
 # Collection of all PromotedLinks for the specified Campaign.
 class PromotedLinksForCampaigns(OutbrainAmplifyStream, HttpSubStream):
-    primary_key = "id"
+    primary_key = None
 
     def __init__(self, authenticator, config, parent: CampaignsByMarketers, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -225,37 +214,34 @@ class PromotedLinksForCampaigns(OutbrainAmplifyStream, HttpSubStream):
         self._session = requests.sessions.Session()
 
     def stream_slices(
-            self, sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.incremental,
-            cursor_field=cursor_field,
-            stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
             for record in parent_records:
-                yield {"campaign_id": record.get('id')}
+                yield {"campaign_id": record.get("id")}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         if response.json():
-            for x in response.json().get('promotedLinks'):
+            for x in response.json().get("promotedLinks"):
                 yield x
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"campaigns/{stream_slice['campaign_id']}/promotedLinks"
 
@@ -272,37 +258,34 @@ class PromotedLinksSequenceForCampaigns(OutbrainAmplifyStream, HttpSubStream):
         self._session = requests.sessions.Session()
 
     def stream_slices(
-            self, sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.incremental,
-            cursor_field=cursor_field,
-            stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
             for record in parent_records:
-                yield {"campaign_id": record.get('id')}
+                yield {"campaign_id": record.get("id")}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         if response.json():
-            for x in response.json().get('sequences'):
+            for x in response.json().get("sequences"):
                 yield x
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"campaigns/{stream_slice['campaign_id']}/promotedLinksSequences"
 
@@ -310,7 +293,7 @@ class PromotedLinksSequenceForCampaigns(OutbrainAmplifyStream, HttpSubStream):
 # List Budgets for a Marketer.
 # Retrieve a collection of all Budgets for the specified Marketer.
 class BudgetsForMarketers(OutbrainAmplifyStream, HttpSubStream):
-    primary_key = "id"
+    primary_key = None
 
     def __init__(self, authenticator, config, parent: Marketers, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -319,7 +302,7 @@ class BudgetsForMarketers(OutbrainAmplifyStream, HttpSubStream):
         self._session = requests.sessions.Session()
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -327,38 +310,35 @@ class BudgetsForMarketers(OutbrainAmplifyStream, HttpSubStream):
         return None
 
     def stream_slices(
-            self, sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.incremental,
-            cursor_field=cursor_field,
-            stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
             for record in parent_records:
-                yield {"marketer_id": record.get('id')}
+                yield {"marketer_id": record.get("id")}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         if response.json():
-            for x in response.json().get('budgets'):
-                x["marketer_id"] = stream_slice['marketer_id']
+            for x in response.json().get("budgets"):
+                x["marketer_id"] = stream_slice["marketer_id"]
                 yield x
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"marketers/{stream_slice['marketer_id']}/budgets"
 
@@ -375,7 +355,7 @@ class PerformanceReportCampaignsByMarketers(OutbrainAmplifyStream, HttpSubStream
         self._session = requests.sessions.Session()
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -383,45 +363,45 @@ class PerformanceReportCampaignsByMarketers(OutbrainAmplifyStream, HttpSubStream
         return None
 
     def stream_slices(
-            self, sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.incremental,
-            cursor_field=cursor_field,
-            stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
             for record in parent_records:
-                yield {"marketer_id": record.get('id')}
+                yield {"marketer_id": record.get("id")}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         if response.json():
-            for x in response.json().get('results'):
-                x["marketer_id"] = stream_slice['marketer_id']
+            for x in response.json().get("results"):
+                x["marketer_id"] = stream_slice["marketer_id"]
                 yield x
 
     def path(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        stream_start, stream_end = self._get_time_interval(self.config.get('start_date'), self.config.get('end_date'))
-        return f"reports/marketers/{stream_slice['marketer_id']}/campaigns?from=" + str(stream_start.date()) + "&to=" + str(
-            stream_end.date()) + "&limit=500" + "&includeVideoStats=true"
+        stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        return (
+            f"reports/marketers/{stream_slice['marketer_id']}/campaigns?from="
+            + str(stream_start.date())
+            + "&to="
+            + str(stream_end.date())
+            + "&limit=500"
+            + "&includeVideoStats=true"
+        )
 
 
 # Retrieve periodic performance statistics for a Marketer.
@@ -436,7 +416,7 @@ class PerformanceReportPeriodicByMarketers(OutbrainAmplifyStream, HttpSubStream)
         self._session = requests.sessions.Session()
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -444,46 +424,47 @@ class PerformanceReportPeriodicByMarketers(OutbrainAmplifyStream, HttpSubStream)
         return None
 
     def stream_slices(
-            self, sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.incremental,
-            cursor_field=cursor_field,
-            stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
             for record in parent_records:
-                yield {"marketer_id": record.get('id')}
+                yield {"marketer_id": record.get("id")}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         if response.json():
-            for x in response.json().get('results'):
-                x["marketer_id"] = stream_slice['marketer_id']
+            for x in response.json().get("results"):
+                x["marketer_id"] = stream_slice["marketer_id"]
                 yield x
 
     def path(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        stream_start, stream_end = self._get_time_interval(self.config.get('start_date'), self.config.get('end_date'))
-        return f"reports/marketers/{stream_slice['marketer_id']}/periodic?from=" + str(stream_start.date()) + "&to=" + str(
-            stream_end.date()) + "&breakdown=" + str(
-            self.config.get('report_granularity', DEFAULT_REPORT_GRANULARITY)) + "&limit=500" + "&includeVideoStats=true"
+        stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        return (
+            f"reports/marketers/{stream_slice['marketer_id']}/periodic?from="
+            + str(stream_start.date())
+            + "&to="
+            + str(stream_end.date())
+            + "&breakdown="
+            + str(self.config.get("report_granularity", DEFAULT_REPORT_GRANULARITY))
+            + "&limit=500"
+            + "&includeVideoStats=true"
+        )
 
 
 # Retrieve performance statistics for all marketer campaigns by periodic breakdown.
@@ -498,7 +479,7 @@ class PerformanceReportPeriodicByMarketersCampaign(OutbrainAmplifyStream, HttpSu
         self._session = requests.sessions.Session()
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -506,48 +487,49 @@ class PerformanceReportPeriodicByMarketersCampaign(OutbrainAmplifyStream, HttpSu
         return None
 
     def stream_slices(
-            self, sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.incremental,
-            cursor_field=cursor_field,
-            stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
             for record in parent_records:
-                yield {"marketer_id": record.get('id')}
+                yield {"marketer_id": record.get("id")}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         if response.json():
-            for results in response.json().get('campaignResults'):
-                for x in results.get('results'):
-                    x["marketer_id"] = stream_slice['marketer_id']
-                    x["campaign_id"] = results.get('campaignId')
+            for results in response.json().get("campaignResults"):
+                for x in results.get("results"):
+                    x["marketer_id"] = stream_slice["marketer_id"]
+                    x["campaign_id"] = results.get("campaignId")
                     yield x
 
     def path(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        stream_start, stream_end = self._get_time_interval(self.config.get('start_date'), self.config.get('end_date'))
-        return f"reports/marketers/{stream_slice['marketer_id']}/campaigns/periodic?from=" + str(stream_start.date()) + "&to=" + str(
-            stream_end.date()) + "&breakdown=" + str(
-            self.config.get('report_granularity', DEFAULT_REPORT_GRANULARITY)) + "&limit=500" + "&includeVideoStats=true"
+        stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        return (
+            f"reports/marketers/{stream_slice['marketer_id']}/campaigns/periodic?from="
+            + str(stream_start.date())
+            + "&to="
+            + str(stream_end.date())
+            + "&breakdown="
+            + str(self.config.get("report_granularity", DEFAULT_REPORT_GRANULARITY))
+            + "&limit=500"
+            + "&includeVideoStats=true"
+        )
 
 
 # Retrieve periodic performance statistics by promoted link for a campaign. HERE
@@ -562,7 +544,7 @@ class PerformanceReportPeriodicContentByPromotedLinksCampaign(OutbrainAmplifyStr
         self._session = requests.sessions.Session()
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -570,49 +552,50 @@ class PerformanceReportPeriodicContentByPromotedLinksCampaign(OutbrainAmplifyStr
         return None
 
     def stream_slices(
-            self, sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.incremental,
-            cursor_field=cursor_field,
-            stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
             for record in parent_records:
-                yield {"marketer_id": record.get('marketerId'), "campaign_id": record.get('id')}
+                yield {"marketer_id": record.get("marketerId"), "campaign_id": record.get("id")}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         if response.json():
-            for results in response.json().get('promotedLinkResults'):
-                for x in results.get('results'):
-                    x["marketer_id"] = stream_slice['marketer_id']
-                    x["campaign_id"] = stream_slice['campaign_id']
-                    x["promoted_link_id"] = results.get('promotedLinkId')
+            for results in response.json().get("promotedLinkResults"):
+                for x in results.get("results"):
+                    x["marketer_id"] = stream_slice["marketer_id"]
+                    x["campaign_id"] = stream_slice["campaign_id"]
+                    x["promoted_link_id"] = results.get("promotedLinkId")
                     yield x
 
     def path(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        stream_start, stream_end = self._get_time_interval(self.config.get('start_date'), self.config.get('end_date'))
-        return f"reports/marketers/{stream_slice['marketer_id']}/campaigns/{stream_slice['campaign_id']}/periodicContent?from=" + str(
-            stream_start.date()) + "&to=" + str(stream_end.date()) + "&breakdown=" + str(
-            self.config.get('report_granularity', DEFAULT_REPORT_GRANULARITY)) + "&limit=500" + "&includeVideoStats=true"
+        stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        return (
+            f"reports/marketers/{stream_slice['marketer_id']}/campaigns/{stream_slice['campaign_id']}/periodicContent?from="
+            + str(stream_start.date())
+            + "&to="
+            + str(stream_end.date())
+            + "&breakdown="
+            + str(self.config.get("report_granularity", DEFAULT_REPORT_GRANULARITY))
+            + "&limit=500"
+            + "&includeVideoStats=true"
+        )
 
 
 # Retrieve performance statistics for a Marketer by publisher.
@@ -627,7 +610,7 @@ class PerformanceReportMarketersByPublisher(OutbrainAmplifyStream, HttpSubStream
         self._session = requests.sessions.Session()
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -635,45 +618,45 @@ class PerformanceReportMarketersByPublisher(OutbrainAmplifyStream, HttpSubStream
         return None
 
     def stream_slices(
-            self, sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.incremental,
-            cursor_field=cursor_field,
-            stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
             for record in parent_records:
-                yield {"marketer_id": record.get('id')}
+                yield {"marketer_id": record.get("id")}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         if response.json():
-            for x in response.json().get('results'):
-                x["marketer_id"] = stream_slice['marketer_id']
+            for x in response.json().get("results"):
+                x["marketer_id"] = stream_slice["marketer_id"]
                 yield x
 
     def path(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        stream_start, stream_end = self._get_time_interval(self.config.get('start_date'), self.config.get('end_date'))
-        return f"reports/marketers/{stream_slice['marketer_id']}/publishers?from=" + str(stream_start.date()) + "&to=" + str(
-            stream_end.date()) + "&limit=500" + "&includeVideoStats=true"
+        stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        return (
+            f"reports/marketers/{stream_slice['marketer_id']}/publishers?from="
+            + str(stream_start.date())
+            + "&to="
+            + str(stream_end.date())
+            + "&limit=500"
+            + "&includeVideoStats=true"
+        )
 
 
 # Retrieve performance statistics for all marketer campaigns by publisher
@@ -688,7 +671,7 @@ class PerformanceReportPublishersByCampaigns(OutbrainAmplifyStream, HttpSubStrea
         self._session = requests.sessions.Session()
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -696,47 +679,47 @@ class PerformanceReportPublishersByCampaigns(OutbrainAmplifyStream, HttpSubStrea
         return None
 
     def stream_slices(
-            self, sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.incremental,
-            cursor_field=cursor_field,
-            stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
             for record in parent_records:
-                yield {"marketer_id": record.get('id')}
+                yield {"marketer_id": record.get("id")}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         if response.json():
-            for fetched in response.json().get('campaignResults'):
-                for x in fetched.get('results'):
-                    x["marketer_id"] = stream_slice['marketer_id']
-                    x["campaign_id"] = fetched.get('campaignId')
+            for fetched in response.json().get("campaignResults"):
+                for x in fetched.get("results"):
+                    x["marketer_id"] = stream_slice["marketer_id"]
+                    x["campaign_id"] = fetched.get("campaignId")
                     yield x
 
     def path(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        stream_start, stream_end = self._get_time_interval(self.config.get('start_date'), self.config.get('end_date'))
-        return f"reports/marketers/{stream_slice['marketer_id']}/campaigns/publishers?from=" + str(stream_start.date()) + "&to=" + str(
-            stream_end.date()) + "&limit=500" + "&includeVideoStats=true"
+        stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        return (
+            f"reports/marketers/{stream_slice['marketer_id']}/campaigns/publishers?from="
+            + str(stream_start.date())
+            + "&to="
+            + str(stream_end.date())
+            + "&limit=500"
+            + "&includeVideoStats=true"
+        )
 
 
 # Retrieve performance statistics for a Marketer by platform.
@@ -751,7 +734,7 @@ class PerformanceReportMarketersByPlatforms(OutbrainAmplifyStream, HttpSubStream
         self._session = requests.sessions.Session()
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -759,45 +742,45 @@ class PerformanceReportMarketersByPlatforms(OutbrainAmplifyStream, HttpSubStream
         return None
 
     def stream_slices(
-            self, sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.incremental,
-            cursor_field=cursor_field,
-            stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
             for record in parent_records:
-                yield {"marketer_id": record.get('id')}
+                yield {"marketer_id": record.get("id")}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         if response.json():
-            for x in response.json().get('results'):
-                x["marketer_id"] = stream_slice['marketer_id']
+            for x in response.json().get("results"):
+                x["marketer_id"] = stream_slice["marketer_id"]
                 yield x
 
     def path(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        stream_start, stream_end = self._get_time_interval(self.config.get('start_date'), self.config.get('end_date'))
-        return f"reports/marketers/{stream_slice['marketer_id']}/platforms?from=" + str(stream_start.date()) + "&to=" + str(
-            stream_end.date()) + "&limit=500" + "&includeVideoStats=true"
+        stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        return (
+            f"reports/marketers/{stream_slice['marketer_id']}/platforms?from="
+            + str(stream_start.date())
+            + "&to="
+            + str(stream_end.date())
+            + "&limit=500"
+            + "&includeVideoStats=true"
+        )
 
 
 # Retrieve performance statistics for all marketer campaigns by platform.
@@ -812,7 +795,7 @@ class PerformanceReportMarketersCampaignsByPlatforms(OutbrainAmplifyStream, Http
         self._session = requests.sessions.Session()
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -820,47 +803,47 @@ class PerformanceReportMarketersCampaignsByPlatforms(OutbrainAmplifyStream, Http
         return None
 
     def stream_slices(
-            self, sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.incremental,
-            cursor_field=cursor_field,
-            stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
             for record in parent_records:
-                yield {"marketer_id": record.get('id')}
+                yield {"marketer_id": record.get("id")}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         if response.json():
-            for fetched in response.json().get('campaignResults'):
-                for x in fetched.get('results'):
-                    x["marketer_id"] = stream_slice['marketer_id']
-                    x["campaign_id"] = fetched.get('campaignId')
+            for fetched in response.json().get("campaignResults"):
+                for x in fetched.get("results"):
+                    x["marketer_id"] = stream_slice["marketer_id"]
+                    x["campaign_id"] = fetched.get("campaignId")
                     yield x
 
     def path(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        stream_start, stream_end = self._get_time_interval(self.config.get('start_date'), self.config.get('end_date'))
-        return f"reports/marketers/{stream_slice['marketer_id']}/campaigns/platforms?from=" + str(stream_start.date()) + "&to=" + str(
-            stream_end.date()) + "&limit=500" + "&includeVideoStats=true"
+        stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        return (
+            f"reports/marketers/{stream_slice['marketer_id']}/campaigns/platforms?from="
+            + str(stream_start.date())
+            + "&to="
+            + str(stream_end.date())
+            + "&limit=500"
+            + "&includeVideoStats=true"
+        )
 
 
 # Retrieve geo performance statistics for a Marketer.
@@ -875,7 +858,7 @@ class PerformanceReportMarketersByGeoPerformance(OutbrainAmplifyStream, HttpSubS
         self._session = requests.sessions.Session()
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -883,46 +866,47 @@ class PerformanceReportMarketersByGeoPerformance(OutbrainAmplifyStream, HttpSubS
         return None
 
     def stream_slices(
-            self, sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.incremental,
-            cursor_field=cursor_field,
-            stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
             for record in parent_records:
-                yield {"marketer_id": record.get('id')}
+                yield {"marketer_id": record.get("id")}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         if response.json():
-            for x in response.json().get('results'):
-                x["marketer_id"] = stream_slice['marketer_id']
+            for x in response.json().get("results"):
+                x["marketer_id"] = stream_slice["marketer_id"]
                 yield x
 
     def path(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        stream_start, stream_end = self._get_time_interval(self.config.get('start_date'), self.config.get('end_date'))
-        return f"reports/marketers/{stream_slice['marketer_id']}/geo?from=" + str(stream_start.date()) + "&to=" + str(
-            stream_end.date()) + "&breakdown=" + str(
-            self.config.get("geo_location_breakdown", DEFAULT_GEO_LOCATION_BREAKDOWN)) + "&limit=500" + "&includeVideoStats=true"
+        stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        return (
+            f"reports/marketers/{stream_slice['marketer_id']}/geo?from="
+            + str(stream_start.date())
+            + "&to="
+            + str(stream_end.date())
+            + "&breakdown="
+            + str(self.config.get("geo_location_breakdown", DEFAULT_GEO_LOCATION_BREAKDOWN))
+            + "&limit=500"
+            + "&includeVideoStats=true"
+        )
 
 
 # Retrieve performance statistics for all marketer campaigns by geo.
@@ -937,7 +921,7 @@ class PerformanceReportMarketersCampaignsByGeo(OutbrainAmplifyStream, HttpSubStr
         self._session = requests.sessions.Session()
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -945,48 +929,49 @@ class PerformanceReportMarketersCampaignsByGeo(OutbrainAmplifyStream, HttpSubStr
         return None
 
     def stream_slices(
-            self, sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.incremental,
-            cursor_field=cursor_field,
-            stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
             for record in parent_records:
-                yield {"marketer_id": record.get('id')}
+                yield {"marketer_id": record.get("id")}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         if response.json():
-            for fetched in response.json().get('campaignResults'):
-                for x in fetched.get('results'):
-                    x["marketer_id"] = stream_slice['marketer_id']
-                    x["campaign_id"] = fetched.get('campaignId')
+            for fetched in response.json().get("campaignResults"):
+                for x in fetched.get("results"):
+                    x["marketer_id"] = stream_slice["marketer_id"]
+                    x["campaign_id"] = fetched.get("campaignId")
                     yield x
 
     def path(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        stream_start, stream_end = self._get_time_interval(self.config.get('start_date'), self.config.get('end_date'))
-        return f"reports/marketers/{stream_slice['marketer_id']}/campaigns/geo?from=" + str(stream_start.date()) + "&to=" + str(
-            stream_end.date()) + "&breakdown=" + str(
-            self.config.get("geo_location_breakdown", DEFAULT_GEO_LOCATION_BREAKDOWN)) + "&limit=500" + "&includeVideoStats=true"
+        stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        return (
+            f"reports/marketers/{stream_slice['marketer_id']}/campaigns/geo?from="
+            + str(stream_start.date())
+            + "&to="
+            + str(stream_end.date())
+            + "&breakdown="
+            + str(self.config.get("geo_location_breakdown", DEFAULT_GEO_LOCATION_BREAKDOWN))
+            + "&limit=500"
+            + "&includeVideoStats=true"
+        )
 
 
 # Retrieve performance statistics for a Marketer by interest.
@@ -1001,7 +986,7 @@ class PerformanceReportMarketersByInterest(OutbrainAmplifyStream, HttpSubStream)
         self._session = requests.sessions.Session()
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {}
 
@@ -1009,45 +994,45 @@ class PerformanceReportMarketersByInterest(OutbrainAmplifyStream, HttpSubStream)
         return None
 
     def stream_slices(
-            self, sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.incremental,
-            cursor_field=cursor_field,
-            stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         for stream_slice in parent_stream_slices:
             parent_records = self.parent.read_records(
-                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
             )
 
             for record in parent_records:
-                yield {"marketer_id": record.get('id')}
+                yield {"marketer_id": record.get("id")}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         if response.json():
-            for x in response.json().get('results'):
-                x["marketer_id"] = stream_slice['marketer_id']
+            for x in response.json().get("results"):
+                x["marketer_id"] = stream_slice["marketer_id"]
                 yield x
 
     def path(
-            self,
-            stream_state: Mapping[str, Any] = None,
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        stream_start, stream_end = self._get_time_interval(self.config.get('start_date'), self.config.get('end_date'))
-        return f"reports/marketers/{stream_slice['marketer_id']}/interests?from=" + str(stream_start.date()) + "&to=" + str(
-            stream_end.date()) + "&limit=500" + "&includeVideoStats=true"
+        stream_start, stream_end = self._get_time_interval(self.config.get("start_date"), self.config.get("end_date"))
+        return (
+            f"reports/marketers/{stream_slice['marketer_id']}/interests?from="
+            + str(stream_start.date())
+            + "&to="
+            + str(stream_end.date())
+            + "&limit=500"
+            + "&includeVideoStats=true"
+        )
 
 
 class IncrementalOutbrainAmplifyStream(OutbrainAmplifyStream, ABC):
@@ -1064,7 +1049,6 @@ class IncrementalOutbrainAmplifyStream(OutbrainAmplifyStream, ABC):
 
 # Source
 class SourceOutbrainAmplify(AbstractSource):
-
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         url_base = OutbrainAmplifyStream.url_base
         auth = OutbrainAmplifyAuthenticator(url_base=url_base, config=config)
@@ -1089,9 +1073,11 @@ class SourceOutbrainAmplify(AbstractSource):
         stream.extend(
             [
                 CampaignsByMarketers(authenticator=auth, config=config, parent=Marketers(authenticator=auth, config=config)),
-                CampaignsGeoLocation(authenticator=auth, config=config, parent=CampaignsByMarketers(authenticator=auth, config=config,
-                                                                                                    parent=Marketers(authenticator=auth,
-                                                                                                                     config=config)))
+                CampaignsGeoLocation(
+                    authenticator=auth,
+                    config=config,
+                    parent=CampaignsByMarketers(authenticator=auth, config=config, parent=Marketers(authenticator=auth, config=config)),
+                ),
             ]
         )
 
@@ -1101,44 +1087,67 @@ class SourceOutbrainAmplify(AbstractSource):
 
         # Promoted Links stream.
         # 1. Promoted Links stream for campaigns.
-        stream.extend([PromotedLinksForCampaigns(authenticator=auth, config=config,
-                                                 parent=CampaignsByMarketers(authenticator=auth, config=config,
-                                                                             parent=Marketers(authenticator=auth, config=config)))])
+        stream.extend(
+            [
+                PromotedLinksForCampaigns(
+                    authenticator=auth,
+                    config=config,
+                    parent=CampaignsByMarketers(authenticator=auth, config=config, parent=Marketers(authenticator=auth, config=config)),
+                )
+            ]
+        )
 
         # Promoted Links Sequences stream.
         # 1. Promoted Links Sequences stream for campaigns.
-        stream.extend([PromotedLinksSequenceForCampaigns(authenticator=auth, config=config,
-                                                         parent=CampaignsByMarketers(authenticator=auth, config=config,
-                                                                                     parent=Marketers(authenticator=auth, config=config)))])
+        stream.extend(
+            [
+                PromotedLinksSequenceForCampaigns(
+                    authenticator=auth,
+                    config=config,
+                    parent=CampaignsByMarketers(authenticator=auth, config=config, parent=Marketers(authenticator=auth, config=config)),
+                )
+            ]
+        )
 
         # Performance Reporting.
         # 1. Streams to retrieve performance statistics.
         stream.extend(
             [
-                PerformanceReportCampaignsByMarketers(authenticator=auth, config=config,
-                                                      parent=Marketers(authenticator=auth, config=config)),
-                PerformanceReportPeriodicByMarketers(authenticator=auth, config=config,
-                                                     parent=Marketers(authenticator=auth, config=config)),
-                PerformanceReportPeriodicByMarketersCampaign(authenticator=auth, config=config,
-                                                             parent=Marketers(authenticator=auth, config=config)),
-                PerformanceReportPeriodicContentByPromotedLinksCampaign(authenticator=auth, config=config,
-                                                                        parent=CampaignsByMarketers(authenticator=auth, config=config,
-                                                                                                    parent=Marketers(authenticator=auth,
-                                                                                                                     config=config))),
-                PerformanceReportMarketersByPublisher(authenticator=auth, config=config,
-                                                      parent=Marketers(authenticator=auth, config=config)),
-                PerformanceReportPublishersByCampaigns(authenticator=auth, config=config,
-                                                       parent=Marketers(authenticator=auth, config=config)),
-                PerformanceReportMarketersByPlatforms(authenticator=auth, config=config,
-                                                      parent=Marketers(authenticator=auth, config=config)),
-                PerformanceReportMarketersCampaignsByPlatforms(authenticator=auth, config=config,
-                                                               parent=Marketers(authenticator=auth, config=config)),
-                PerformanceReportMarketersByGeoPerformance(authenticator=auth, config=config,
-                                                           parent=Marketers(authenticator=auth, config=config)),
-                PerformanceReportMarketersCampaignsByGeo(authenticator=auth, config=config,
-                                                         parent=Marketers(authenticator=auth, config=config)),
-                PerformanceReportMarketersByInterest(authenticator=auth, config=config,
-                                                     parent=Marketers(authenticator=auth, config=config)),
+                PerformanceReportCampaignsByMarketers(
+                    authenticator=auth, config=config, parent=Marketers(authenticator=auth, config=config)
+                ),
+                PerformanceReportPeriodicByMarketers(
+                    authenticator=auth, config=config, parent=Marketers(authenticator=auth, config=config)
+                ),
+                PerformanceReportPeriodicByMarketersCampaign(
+                    authenticator=auth, config=config, parent=Marketers(authenticator=auth, config=config)
+                ),
+                PerformanceReportPeriodicContentByPromotedLinksCampaign(
+                    authenticator=auth,
+                    config=config,
+                    parent=CampaignsByMarketers(authenticator=auth, config=config, parent=Marketers(authenticator=auth, config=config)),
+                ),
+                PerformanceReportMarketersByPublisher(
+                    authenticator=auth, config=config, parent=Marketers(authenticator=auth, config=config)
+                ),
+                PerformanceReportPublishersByCampaigns(
+                    authenticator=auth, config=config, parent=Marketers(authenticator=auth, config=config)
+                ),
+                PerformanceReportMarketersByPlatforms(
+                    authenticator=auth, config=config, parent=Marketers(authenticator=auth, config=config)
+                ),
+                PerformanceReportMarketersCampaignsByPlatforms(
+                    authenticator=auth, config=config, parent=Marketers(authenticator=auth, config=config)
+                ),
+                PerformanceReportMarketersByGeoPerformance(
+                    authenticator=auth, config=config, parent=Marketers(authenticator=auth, config=config)
+                ),
+                PerformanceReportMarketersCampaignsByGeo(
+                    authenticator=auth, config=config, parent=Marketers(authenticator=auth, config=config)
+                ),
+                PerformanceReportMarketersByInterest(
+                    authenticator=auth, config=config, parent=Marketers(authenticator=auth, config=config)
+                ),
             ]
         )
         return stream

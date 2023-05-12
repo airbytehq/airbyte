@@ -1,14 +1,14 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import inspect
+import json
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-import json
 import requests
-import inspect
 from source_outbrain_amplify.source import OutbrainAmplifyStream
 
 
@@ -98,4 +98,4 @@ def test_get_time_interval(patch_base_class):
     try:
         stream._get_time_interval(start_date, ending_date)
     except ValueError as e:
-        assert ValueError
+        assert e
