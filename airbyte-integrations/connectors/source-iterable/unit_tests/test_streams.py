@@ -194,32 +194,24 @@ def test_stream_stops_on_401(mock_lists_resp):
 @responses.activate
 def test_listuser_stream_keep_working_on_500():
     users_stream = ListUsers(authenticator=None)
-    responses.add(
-        responses.GET,
-        "https://api.iterable.com/api/lists",
-        json={"lists": [{"id": 1000}, {"id": 2000}]},
-        status=200
-    )
-    responses.add(
-        responses.GET,
-        "https://api.iterable.com/api/lists/getUsers?listId=1000",
-        json={
-            "msg": "An error occurred. Please try again later. If problem persists, please contact your CSM",
-            "code": "GenericError",
-            "params": None
-        },
-        status=500
-    )
-    responses.add(
-        responses.GET,
-        "https://api.iterable.com/api/lists/getUsers?listId=2000",
-        body="one@example.com\ntwo@example.com\nthree@example.com",
-        status=200
-    )
+
+    msg_error = "An error occurred. Please try again later. If problem persists, please contact your CSM"
+    generic_error1 = {"msg": msg_error, "code": "GenericError"}
+    generic_error2 = {"msg": msg_error, "code": "Generic Error"}
+
+    responses.get("https://api.iterable.com/api/lists", json={"lists": [{"id": 1000}, {"id": 2000}, {"id": 3000}]})
+    responses.get("https://api.iterable.com/api/lists/getUsers?listId=1000", json=generic_error1, status=500)
+    responses.get("https://api.iterable.com/api/lists/getUsers?listId=2000", body="one@d1.com\ntwo@d1.com\nthree@d1.com")
+    responses.get("https://api.iterable.com/api/lists/getUsers?listId=3000", json=generic_error2, status=500)
+    responses.get("https://api.iterable.com/api/lists/getUsers?listId=3000", body="one@d2.com\ntwo@d2.com\nthree@d2.com")
+
     expected_records = [
-        {'email': 'one@example.com', 'listId': 2000},
-        {'email': 'two@example.com', 'listId': 2000},
-        {'email': 'three@example.com', 'listId': 2000}
+        {'email': 'one@d1.com', 'listId': 2000},
+        {'email': 'two@d1.com', 'listId': 2000},
+        {'email': 'three@d1.com', 'listId': 2000},
+        {'email': 'one@d2.com', 'listId': 3000},
+        {'email': 'two@d2.com', 'listId': 3000},
+        {'email': 'three@d2.com', 'listId': 3000},
     ]
 
     records = list(read_full_refresh(users_stream))
