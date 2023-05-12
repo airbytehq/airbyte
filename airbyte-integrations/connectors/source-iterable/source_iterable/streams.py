@@ -37,6 +37,7 @@ class IterableStream(HttpStream, ABC):
 
     def __init__(self, authenticator):
         self._cred = authenticator
+        self._slice_retry = 0
         super().__init__(authenticator)
 
     @property
@@ -93,6 +94,14 @@ class IterableStream(HttpStream, ABC):
         for record in records:
             yield record
 
+    def should_retry(self, response: requests.Response) -> bool:
+        if self.check_generic_error(response):
+            self._slice_retry += 1
+            if self._slice_retry < 3:
+                return True
+            return False
+        return super().should_retry(response)
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -100,6 +109,7 @@ class IterableStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        self._slice_retry = 0
         if self.ignore_further_slices:
             return
 

@@ -222,7 +222,7 @@ def test_listuser_stream_keep_working_on_500():
 def test_events_read_full_refresh():
     stream = Events(authenticator=None)
     responses.get("https://api.iterable.com/api/lists", json={"lists": [{"id": 1}]})
-    responses.get("https://api.iterable.com/api/lists/getUsers?listId=1", body='user1\nuser2\nuser3\nuser4\nuser5')
+    responses.get("https://api.iterable.com/api/lists/getUsers?listId=1", body='user1\nuser2\nuser3\nuser4\nuser5\nuser6')
 
     def get_body(emails):
         return "\n".join([json.dumps({"email": email}) for email in emails]) + "\n"
@@ -241,7 +241,11 @@ def test_events_read_full_refresh():
     responses.get("https://api.iterable.com/api/export/userEvents?email=user4&includeCustomEvents=true", json=generic_error1, status=500)
 
     responses.get("https://api.iterable.com/api/export/userEvents?email=user5&includeCustomEvents=true", json=generic_error2, status=500)
+    responses.get("https://api.iterable.com/api/export/userEvents?email=user5&includeCustomEvents=true", json=generic_error2, status=500)
     responses.get("https://api.iterable.com/api/export/userEvents?email=user5&includeCustomEvents=true", body=get_body(["user5"]))
+
+    m = responses.get("https://api.iterable.com/api/export/userEvents?email=user6&includeCustomEvents=true", json=generic_error2, status=500)
 
     records = list(read_full_refresh(stream))
     assert [r["email"] for r in records] == ['user1', 'user2', 'user3', 'user5']
+    assert m.call_count == 3
