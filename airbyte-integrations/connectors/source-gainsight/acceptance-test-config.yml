@@ -21,6 +21,10 @@ acceptance_tests:
         empty_streams:
           - name: accounts
             bypass_reason: "Sandbox account cannot seed the stream"
+          - name: articles
+            bypass_reason: "Sandbox account cannot seed the stream"
+          - name: feature
+            bypass_reason: "Sandbox account cannot seed the stream"
           - name: segments
             bypass_reason: "Sandbox account cannot seed the stream"
           - name: kcbot

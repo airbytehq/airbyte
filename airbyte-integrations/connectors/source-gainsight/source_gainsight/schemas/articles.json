@@ -1,31 +1,31 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "KCBot Schema",
+  "title": "Articles Schema",
   "additionalProperties": true,
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
-    "createdBy": {
-      "type": ["null", "object"],
-      "properties": {
-        "id": {
-          "type": ["null", "string"]
-        },
-        "name": {
-          "type": ["null", "string"]
+    "articleKCs": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "kcId": {
+            "type": ["null", "string"]
+          },
+          "kcName": {
+            "type": ["null", "string"]
+          }
         }
       }
     },
-    "createdDate": {
-      "type": ["null", "number"]
-    },
-    "description": {
+    "articleName": {
       "type": ["null", "string"]
     },
-    "environments": {
-      "type": "array",
-      "items": {
-        "type": ["null", "string"]
-      }
+    "author": {
+      "type": ["null", "string"]
+    },
+    "createdDate": {
+      "type": ["null", "number"]
     },
     "id": {
       "type": ["null", "string"]
@@ -44,19 +44,16 @@
     "modifiedDate": {
       "type": ["null", "number"]
     },
-    "name": {
-      "type": ["null", "string"]
-    },
-    "priority": {
-      "type": ["null", "number"]
-    },
     "productId": {
       "type": ["null", "string"]
     },
     "productName": {
       "type": ["null", "string"]
     },
-    "status": {
+    "releaseDate": {
+      "type": ["null", "string"]
+    },
+    "viewType": {
       "type": ["null", "string"]
     }
   }

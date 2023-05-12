@@ -62,6 +62,26 @@ definitions:
     name: "admin_attributes"
     primary_key: "id"
 
+  articles_stream:
+    $parameters:
+      path: "articles"
+      extractorPath: "articleExternalViewList"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/custom_retriever"
+    name: "articles"
+    primary_key: "id"
+
+  feature_stream:
+    $parameters:
+      path: "feature"
+      extractorPath: "features"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/custom_retriever"
+    name: "feature"
+    primary_key: "id"
+
   segments_stream:
     $parameters:
       path: "segment"
@@ -79,6 +99,7 @@ definitions:
     retriever:
       $ref: "#/definitions/custom_retriever"
     name: "kcbot"
+    primary_key: "id"
 
   user_attributes_stream:
     $parameters:
@@ -100,6 +121,8 @@ definitions:
 streams:
   - "#/definitions/accounts_stream"
   - "#/definitions/admin_attributes_stream"
+  - "#/definitions/articles_stream"
+  - "#/definitions/feature_stream"
   - "#/definitions/segments_stream"
   - "#/definitions/kcbot_stream"
   - "#/definitions/user_attributes_stream"
@@ -110,6 +133,8 @@ check:
   stream_names:
     - "accounts"
     - "admin_attributes"
+    - "articles"
+    - "feature"
     - "segments"
     - "kcbot"
     - "user_attributes"
