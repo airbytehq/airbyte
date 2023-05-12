@@ -496,12 +496,13 @@ class Lists(SemiIncrementalMarketoStream):
     API Docs: https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Static_Lists/getListsUsingGET
     """
 
+
 class Segmentations(MarketoStream):
     """
     This stream is similar to Programs but don't support to filter using created or update at parameters
     API Docs: https://developers.marketo.com/rest-api/endpoint-reference/asset-endpoint-reference/#!/Segments/getSegmentationUsingGET
     """
-    
+
     page_size = 200
     offset = 0
 
@@ -510,7 +511,7 @@ class Segmentations(MarketoStream):
 
     def path(self, **kwargs) -> str:
         return "rest/asset/v1/segmentation.json"
-    
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         data = response.json().get(self.data_field)
 
@@ -586,6 +587,5 @@ class SourceMarketo(AbstractSource):
             # instantiate a stream with config
             stream_instance = stream_class(config)
             streams.append(stream_instance)
-        
 
         return streams

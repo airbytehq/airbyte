@@ -13,6 +13,7 @@ import pytest
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from source_marketo.source import Activities, Campaigns, Leads, MarketoStream, Programs, SourceMarketo
 
+
 def test_create_export_job(mocker, send_email_stream, caplog):
     mocker.patch("time.sleep")
     caplog.set_level(logging.WARNING)
