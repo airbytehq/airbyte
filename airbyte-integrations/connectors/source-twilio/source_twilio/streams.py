@@ -446,7 +446,7 @@ class Recordings(IncrementalTwilioStream, TwilioNestedStream):
 
 class Services(TwilioStream):
     """
-    https://www.twilio.com/docs/chat/rest/service-resource#create-a-service-resource
+    https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources
     """
 
     url_base = TWILIO_CHAT_BASE
