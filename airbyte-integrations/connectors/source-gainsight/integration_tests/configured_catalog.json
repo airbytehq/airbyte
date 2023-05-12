@@ -20,7 +20,16 @@
     },
     {
       "stream": {
-        "name": "survey_response",
+        "name": "segments",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "kcbot",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

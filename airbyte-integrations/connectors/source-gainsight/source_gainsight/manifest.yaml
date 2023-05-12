@@ -62,14 +62,23 @@ definitions:
     name: "admin_attributes"
     primary_key: "id"
 
-  survey_response_stream:
+  segments_stream:
     $parameters:
-      path: "survey/responses"
-      extractorPath: "externalapierror"
+      path: "segment"
+      extractorPath: "segments"
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/custom_retriever"
-    name: "survey_response"
+    name: "segments"
+
+  kcbot_stream:
+    $parameters:
+      path: "kcbot"
+      extractorPath: "kcList"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/custom_retriever"
+    name: "kcbot"
 
   user_attributes_stream:
     $parameters:
@@ -91,7 +100,8 @@ definitions:
 streams:
   - "#/definitions/accounts_stream"
   - "#/definitions/admin_attributes_stream"
-  - "#/definitions/survey_response_stream"
+  - "#/definitions/segments_stream"
+  - "#/definitions/kcbot_stream"
   - "#/definitions/user_attributes_stream"
   - "#/definitions/users_stream"
 
@@ -100,7 +110,8 @@ check:
   stream_names:
     - "accounts"
     - "admin_attributes"
-    - "survey_response"
+    - "segments"
+    - "kcbot"
     - "user_attributes"
     - "users"
 

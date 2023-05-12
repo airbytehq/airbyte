@@ -52,7 +52,8 @@ The Gainsight-API source connector supports the following [sync modes](https://d
 
 - accounts
 - admin_attributes
-- survey_response
+- kcbot
+- segments
 - user_attributes
 - users
 

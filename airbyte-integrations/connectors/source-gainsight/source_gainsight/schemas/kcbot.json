@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Survey Response Schema",
+  "additionalProperties": true,
+  "type": "object",
+  "properties": {
+    "createdBy": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "createdDate": {
+      "type": ["null", "number"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "environments": {
+      "type": "array",
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "modifiedBy": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "modifiedDate": {
+      "type": ["null", "number"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "priority": {
+      "type": ["null", "number"]
+    },
+    "productId": {
+      "type": ["null", "string"]
+    },
+    "productName": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    }
+  }
+}
