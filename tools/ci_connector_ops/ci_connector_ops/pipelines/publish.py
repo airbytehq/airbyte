@@ -173,14 +173,11 @@ async def run_connector_publish_pipeline(
     """
     async with semaphore:
         async with context:
-            metadata_service_account: dagger.Secret = context.dagger_client.set_secret(
-                "metadata_service_account_key", sanitize_gcs_service_account_key(os.environ["METADATA_SERVICE_ACCOUNT_KEY"])
-            )
             spec_cache_service_account: dagger.Secret = context.dagger_client.set_secret(
                 "spec_cache_service_account_key", sanitize_gcs_service_account_key(os.environ["SPEC_CACHE_SERVICE_ACCOUNT_KEY"])
             )
             metadata_upload_step = metadata.MetadataUpload(
-                context, context.metadata_path, metadata_bucket_name, await metadata_service_account.plaintext()
+                context, context.metadata_path, metadata_bucket_name
             )
             steps_before_ready_to_publish = [
                 metadata.MetadataValidation(context, context.metadata_path),
