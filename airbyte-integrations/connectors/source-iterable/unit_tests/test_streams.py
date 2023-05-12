@@ -222,9 +222,7 @@ def test_listuser_stream_keep_working_on_500():
         {'email': 'three@example.com', 'listId': 2000}
     ]
 
-    records = []
-    for stream_slice in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-        records += list(users_stream.read_records(stream_slice=stream_slice, sync_mode=SyncMode.full_refresh))
+    records = list(read_full_refresh(users_stream))
     assert records == expected_records
 
 
