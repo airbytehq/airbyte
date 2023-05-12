@@ -196,12 +196,16 @@ It's mainly purposed for CI use to release a connector update.
 Publish all connectors modified in the head commit: `airbyte-ci connectors --modified publish`
 
 ### Options
-| Option                             | Required | Mapped environment variable    | Description                                                                           |
-|------------------------------------|----------|--------------------------------|---------------------------------------------------------------------------------------|
-| `--spec-cache-service-account-key` | True     | `SPEC_CACHE_SERVICE_ACCOUNT`   | The service account key to upload files to the GCS bucket hosting spec cache.         |
-| `--spec-cache-bucket-name`         | True     | `SPEC_CACHE_BUCKET_NAME`       | The name of the GCS bucket where specs will be cached.                                |
-| `--metadata-service-account-key`   | True     | `METADATA_SERVICE_ACCOUNT_KEY` | The service account key to upload files to the GCS bucket hosting the metadata files. |
-| `----metadata-service-bucket-name` | True     | `METADATA_SERVICE_BUCKET_NAME` | The name of the GCS bucket where metadata files will be uploaded.                     |
+| Option                               | Required | Mapped environment variable        | Description                                                                           |
+| ------------------------------------ | -------- | ---------------------------------- | ------------------------------------------------------------------------------------- |
+| `--spec-cache-gcs-credentials`       | True     | `SPEC_CACHE_GCS_CREDENTIALS`       | The service account key to upload files to the GCS bucket hosting spec cache.         |
+| `--spec-cache-bucket-name`           | True     | `SPEC_CACHE_BUCKET_NAME`           | The name of the GCS bucket where specs will be cached.                                |
+| `--metadata-service-gcs-credentials` | True     | `METADATA_SERVICE_GCS_CREDENTIALS` | The service account key to upload files to the GCS bucket hosting the metadata files. |
+| `--metadata-service-bucket-name`     | True     | `METADATA_SERVICE_BUCKET_NAME`     | The name of the GCS bucket where metadata files will be uploaded.                     |
+| `--docker-hub-username`              | True     | `DOCKER_HUB_USERNAME`              | Your username to connect to DockerHub.                                                |
+| `--docker-hub-password`              | True     | `DOCKER_HUB_PASSWORD`              | Your password to connect to DockerHub.                                                |
+| `--slack-webhook`                    | False    | `SLACK_WEBHOOK`                    | The Slack webhook URL to send notifications to.                                       |
+| `--slack-channel`                    | False    | `SLACK_CHANNEL`                    | The Slack channel name to send notifications to.                                      |
 
 #### What it runs
 ```mermaid
@@ -233,9 +237,9 @@ Validate all `metadata.yaml` files in the repo:
 `airbyte-ci metadata validate --all`
 
 #### Options
-| Option             | Default      | Description                                                                                                                 |
-|--------------------|--------------|-----------------------------------------------------------------------------------------------------------------------------|
-| `--modified/--all` | `--modified` | Flag to run validation of `metadata.yaml` files on the modified files in the head commit or all the `metadata.yaml` files.  |
+| Option             | Default      | Description                                                                                                                |
+| ------------------ | ------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `--modified/--all` | `--modified` | Flag to run validation of `metadata.yaml` files on the modified files in the head commit or all the `metadata.yaml` files. |
 
 ### <a id="metadata-upload-command"></a>`metadata upload` command
 This command upload the modified `metadata.yaml` files in the head commit, or all the `metadata.yaml` files, to a GCS bucket.
@@ -245,9 +249,9 @@ Upload all the `metadata.yaml` files to a GCS bucket:
 `airbyte-ci metadata upload --all <gcs-bucket-name>`
 
 #### Options
-| Option              | Required | Default    | Mapped environment variable | Description                                                                                                              |
-|---------------------|----------|------------|-----------------------------|--------------------------------------------------------------------------------------------------------------------------|
-| `--gcs-credentials` | True     |            | `GCS_CREDENTIALS`           | Service account credentials in JSON format with permission to get and upload on the GCS bucket                           |
+| Option              | Required | Default      | Mapped environment variable | Description                                                                                                              |
+| ------------------- | -------- | ------------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `--gcs-credentials` | True     |              | `GCS_CREDENTIALS`           | Service account credentials in JSON format with permission to get and upload on the GCS bucket                           |
 | `--modified/--all`  | True     | `--modified` |                             | Flag to upload the modified `metadata.yaml` files in the head commit or all the  `metadata.yaml`  files to a GCS bucket. |
 
 ### <a id="metadata-upload-orchestrator"></a>`metadata deploy orchestrator` command
@@ -276,9 +280,9 @@ This command runs tests for the metadata service orchestrator.
 `airbyte-ci metadata test orchestrator`
 
 ## Changelog 
-| Version | PR | Description                                                                                |
-|---------|----|--------------------------------------------------------------------------------------------|
-| 0.1.0   |    | Alpha version not in production yet. All the commands described in this doc are available. |
+| Version | PR  | Description                                                                                |
+| ------- | --- | ------------------------------------------------------------------------------------------ |
+| 0.1.0   |     | Alpha version not in production yet. All the commands described in this doc are available. |
 
 ## More info
 This project is owned by the Connectors Operations team.

@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import os
 import uuid
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
@@ -413,7 +414,7 @@ def with_gradle(
         .with_mounted_cache("/airbyte/.gradle", airbyte_gradle_cache, sharing=CacheSharingMode.LOCKED)
         .with_workdir("/airbyte")
     )
-    if context.is_ci:
+    if context.is_ci and "S3_BUILD_CACHE_ACCESS_KEY_ID" in os.environ and "S3_BUILD_CACHE_SECRET_KEY" in os.environ:
         openjdk_with_docker = (
             openjdk_with_docker.with_env_variable("CI", "true")
             .with_secret_variable(
