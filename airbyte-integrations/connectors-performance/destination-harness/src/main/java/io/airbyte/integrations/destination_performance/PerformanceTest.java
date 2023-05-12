@@ -34,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -84,10 +85,26 @@ public class PerformanceTest {
     final var allowedHosts = new AllowedHosts().withHosts(List.of("*"));
     final var jobRoot = "/";
 
-    final var dstIntegtationLauncher = new AirbyteIntegrationLauncher(
-        "1",
+//    final var dstIntegtationLauncher = new AirbyteIntegrationLauncher(
+//        "1",
+//        0,
+//        this.imageName,
+//        processFactory,
+//        resourceReqs,
+//        allowedHosts,
+//        false,
+//        new EnvVariableFeatureFlags());
+//    this.destination = new DefaultAirbyteDestination(dstIntegtationLauncher);
+//    final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig()
+//        .withDestinationConnectionConfiguration(this.config)
+//        .withState(null)
+//        .withCatalog(convertProtocolObject(this.catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
+
+    // USES setup from source-performance START
+    final var dstIntegtationLauncher = new
+        AirbyteIntegrationLauncher("2",
         0,
-        this.imageName,
+        "airbyte/destination-dev-null:0.2.7",
         processFactory,
         resourceReqs,
         allowedHosts,
@@ -95,12 +112,12 @@ public class PerformanceTest {
         new EnvVariableFeatureFlags());
     this.destination = new DefaultAirbyteDestination(dstIntegtationLauncher);
     final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig()
-        .withDestinationConnectionConfiguration(this.config)
-        .withState(null)
-        .withCatalog(convertProtocolObject(this.catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
+        .withDestinationConnectionConfiguration(Jsons.jsonNode(Collections.singletonMap("type",
+            "SILENT")));
+    // STOP - uses setup from source-performance
 
     log.info("reader first line");
-    BufferedReader reader = new BufferedReader(new InputStreamReader(
+    final BufferedReader reader = new BufferedReader(new InputStreamReader(
         new URL("https://storage.googleapis.com/airbyte-performance-testing-public/sample-data/faker_1m/users.csv").openStream(),
         StandardCharsets.UTF_8));
     final var columnsString = reader.readLine();
@@ -112,46 +129,47 @@ public class PerformanceTest {
     log.info("Destination starting");
     destination.start(dstConfig, Path.of(jobRoot));
 
-    var totalBytes = 0.0;
-    var counter = 0L;
+    final var totalBytes = 0.0;
+    final var counter = 0L;
     final var start = System.currentTimeMillis();
 
     log.info("Starting Test {}", destination.isFinished());
 
     while (!destination.isFinished()) {
       try (reader) {
-        log.info("*** reading row");
-        final var row = Arrays.asList(pattern.split(reader.readLine()));
-        log.info("*** row {}", row);
-        assert (row.size() == columns.size());
-        StringBuilder sb = new StringBuilder();
-        sb.append("{");
-        Iterator<String> rowIterator = row.iterator();
-        Iterator<String> colIterator = columns.iterator();
-        ArrayList<String> combined = new ArrayList<>(columns.size());
-        while (colIterator.hasNext() && rowIterator.hasNext()) {
-          combined.add("\"%s\":\"%s\"".formatted(colIterator.next(), rowIterator.next()));
-        }
-        sb.append(String.join(",", combined));
-        sb.append("}");
-        final String recordString = sb.toString();
-        log.info("*** RECORD: {}", recordString); // TEMP
-        totalBytes += recordString.length();
+//        log.info("*** reading row");
+//        final var row = Arrays.asList(pattern.split(reader.readLine()));
+//        log.info("*** row {}", row);
+//        assert (row.size() == columns.size());
+//        StringBuilder sb = new StringBuilder();
+//        sb.append("{");
+//        Iterator<String> rowIterator = row.iterator();
+//        Iterator<String> colIterator = columns.iterator();
+//        ArrayList<String> combined = new ArrayList<>(columns.size());
+//        while (colIterator.hasNext() && rowIterator.hasNext()) {
+//          combined.add("\"%s\":\"%s\"".formatted(colIterator.next(), rowIterator.next()));
+//        }
+//        sb.append(String.join(",", combined));
+//        sb.append("}");
+//        final String recordString = sb.toString();
+//        log.info("*** RECORD: {}", recordString); // TEMP
+//        totalBytes += recordString.length();
 
         final AirbyteMessage airbyteMessage = new AirbyteMessage().withRecord(new AirbyteRecordMessage()
             .withStream(catalog.getStreams().get(0).getStream().getName())
             .withNamespace(catalog.getStreams().get(0).getStream().getNamespace())
-            .withData(Jsons.deserialize(recordString)));
+            .withData(Jsons.deserialize("{\"key\": \"1\"}")));
         destination.accept(airbyteMessage);
       }
 
-      if (counter == 1000) { // TEMP
-        break;
-      }
-      if (counter > 0 && counter % MEGABYTE == 0) {
-        log.info("current throughput: {} total MB {}", (totalBytes / MEGABYTE) / ((System.currentTimeMillis() - start) / 1000.0),
-            totalBytes / MEGABYTE);
-      }
+      // counter isn't getting updated so commenting out
+//      if (counter == 1000) { // TEMP
+//        break;
+//      }
+//      if (counter > 0 && counter % MEGABYTE == 0) {
+//        log.info("current throughput: {} total MB {}", (totalBytes / MEGABYTE) / ((System.currentTimeMillis() - start) / 1000.0),
+//            totalBytes / MEGABYTE);
+//      }
     }
 
     log.info("Test ended successfully");

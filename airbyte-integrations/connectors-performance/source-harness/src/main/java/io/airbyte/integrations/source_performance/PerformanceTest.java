@@ -88,16 +88,20 @@ public class PerformanceTest {
         .withState(null)
         .withCatalog(convertProtocolObject(this.catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
 
-    // Uncomment to add destination
-    /*
-     * /////////// destiantion /////////// final var dstIntegtationLauncher = new
-     * AirbyteIntegrationLauncher("2", 0, "airbyte/destination-dev-null:0.2.7", processFactory,
-     * resourceReqs, allowedHosts, false, new EnvVariableFeatureFlags()); this.destination = new
-     * DefaultAirbyteDestination(dstIntegtationLauncher); final WorkerDestinationConfig dstConfig = new
-     * WorkerDestinationConfig()
-     * .withDestinationConnectionConfiguration(Jsons.jsonNode(Collections.singletonMap("type",
-     * "SILENT"))); destination.start(dstConfig, Path.of(jobRoot)); ///////////////////////////////////
-     */
+//     final var dstIntegtationLauncher = new
+//     AirbyteIntegrationLauncher("2",
+//         0,
+//         "airbyte/destination-dev-null:0.2.7",
+//         processFactory,
+//         resourceReqs,
+//         allowedHosts,
+//         false,
+//         new EnvVariableFeatureFlags());
+//     this.destination = new DefaultAirbyteDestination(dstIntegtationLauncher);
+//     final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig()
+//        .withDestinationConnectionConfiguration(Jsons.jsonNode(Collections.singletonMap("type",
+//            "SILENT")));
+//     destination.start(dstConfig, Path.of(jobRoot));
 
     // final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>>
     // validationErrors = new ConcurrentHashMap();
