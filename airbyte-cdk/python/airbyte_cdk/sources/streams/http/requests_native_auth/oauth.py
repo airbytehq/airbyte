@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Sequence, Tuple, Union
+from typing import Any, List, Mapping, Optional, Sequence, Tuple, Union
 
 import dpath
 import pendulum
@@ -22,7 +22,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         token_refresh_endpoint: str,
         client_id: str,
         client_secret: str,
-        refresh_token: str,
+        refresh_token,
         scopes: List[str] = None,
         token_expiry_date: pendulum.DateTime = None,
         token_expiry_date_format: str = None,
