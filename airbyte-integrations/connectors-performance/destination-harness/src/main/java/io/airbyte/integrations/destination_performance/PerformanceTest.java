@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination_performance;
 
+import static java.lang.Thread.sleep;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,21 +31,16 @@ import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.net.InetAddress;
 import java.nio.file.Path;
-<<<<<<< HEAD
+import java.util.*;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-=======
-import java.util.*;
->>>>>>> ec5b29c78a2 (Checkpoint: This is working!.)
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-
-import static java.lang.Thread.sleep;
 
 @Slf4j
 public class PerformanceTest {
@@ -87,7 +84,7 @@ public class PerformanceTest {
     var dstIntegtationLauncher = new AirbyteIntegrationLauncher("2", 0, "airbyte/destination-e2e-test:dev", processFactory, resourceReqs,
         allowedHosts, false, new EnvVariableFeatureFlags());
     final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig().withDestinationConnectionConfiguration(Jsons.jsonNode(
-        Map.of("type","THROTTLED", "millis_per_record", 1)));
+        Map.of("type", "THROTTLED", "millis_per_record", 1)));
     final var jobRoot = "/";
     this.destination = new DefaultAirbyteDestination(dstIntegtationLauncher);
     destination.start(dstConfig, Path.of(jobRoot));
@@ -115,53 +112,55 @@ public class PerformanceTest {
 
     while (true) {
       final AirbyteMessage airbyteMessage = new AirbyteMessage().withRecord(new AirbyteRecordMessage()
-              .withStream(catalog.getStreams().get(0).getStream().getName())
-              .withNamespace(catalog.getStreams().get(0).getStream().getNamespace())
-              .withData(Jsons.deserialize("{\"id\":\"1\"}")));
+          .withStream(catalog.getStreams().get(0).getStream().getName())
+          .withNamespace(catalog.getStreams().get(0).getStream().getNamespace())
+          .withData(Jsons.deserialize("{\"id\":\"1\"}")));
       destination.accept(airbyteMessage);
       log.info("=== harness emitted");
       sleep(500);
     }
 
-//    log.info("Test ended successfully");
-//    final var end = System.currentTimeMillis();
-//    final var totalMB = totalBytes / MEGABYTE;
-//    final var totalTimeSecs = (end - start) / 1000.0;
-//    final var rps = counter / totalTimeSecs;
-//
-//    log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
-//    while (true) {
-//      sleep(10000);
-//      log.info("=== snooze");
-//    }
-//    destination.close();
-//    try (reader) {
-//      log.info("*** reading row");
-//      final var row = Arrays.asList(pattern.split(reader.readLine()));
-//      log.info("*** row {}", row);
-//      assert (row.size() == columns.size());
-//      StringBuilder sb = new StringBuilder();
-//      sb.append("{");
-//      Iterator<String> rowIterator = row.iterator();
-//      Iterator<String> colIterator = columns.iterator();
-//      ArrayList<String> combined = new ArrayList<>(columns.size());
-//      while (colIterator.hasNext() && rowIterator.hasNext()) {
-//        combined.add("\"%s\":\"%s\"".formatted(colIterator.next(), rowIterator.next()));
-//      }
-//      sb.append(String.join(",", combined));
-//      sb.append("}");
-//      final String recordString = sb.toString();
-//      log.info("*** RECORD: {}", recordString); // TEMP
-//      totalBytes += recordString.length();
-//      log.info("*** true");
-//    }
-//    if (counter == 1000) { // TEMP
-//      break;
-//    }
-//    if (counter > 0 && counter % MEGABYTE == 0) {
-//      log.info("current throughput: {} total MB {}", (totalBytes / MEGABYTE) / ((System.currentTimeMillis() - start) / 1000.0),
-//              totalBytes / MEGABYTE);
-//    }
+    // log.info("Test ended successfully");
+    // final var end = System.currentTimeMillis();
+    // final var totalMB = totalBytes / MEGABYTE;
+    // final var totalTimeSecs = (end - start) / 1000.0;
+    // final var rps = counter / totalTimeSecs;
+    //
+    // log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB,
+    // rps, totalMB / totalTimeSecs);
+    // while (true) {
+    // sleep(10000);
+    // log.info("=== snooze");
+    // }
+    // destination.close();
+    // try (reader) {
+    // log.info("*** reading row");
+    // final var row = Arrays.asList(pattern.split(reader.readLine()));
+    // log.info("*** row {}", row);
+    // assert (row.size() == columns.size());
+    // StringBuilder sb = new StringBuilder();
+    // sb.append("{");
+    // Iterator<String> rowIterator = row.iterator();
+    // Iterator<String> colIterator = columns.iterator();
+    // ArrayList<String> combined = new ArrayList<>(columns.size());
+    // while (colIterator.hasNext() && rowIterator.hasNext()) {
+    // combined.add("\"%s\":\"%s\"".formatted(colIterator.next(), rowIterator.next()));
+    // }
+    // sb.append(String.join(",", combined));
+    // sb.append("}");
+    // final String recordString = sb.toString();
+    // log.info("*** RECORD: {}", recordString); // TEMP
+    // totalBytes += recordString.length();
+    // log.info("*** true");
+    // }
+    // if (counter == 1000) { // TEMP
+    // break;
+    // }
+    // if (counter > 0 && counter % MEGABYTE == 0) {
+    // log.info("current throughput: {} total MB {}", (totalBytes / MEGABYTE) /
+    // ((System.currentTimeMillis() - start) / 1000.0),
+    // totalBytes / MEGABYTE);
+    // }
   }
 
   private static void populateStreamToAllFields(final ConfiguredAirbyteCatalog catalog,
