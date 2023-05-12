@@ -96,6 +96,7 @@ public class IntegrationRunner {
 
   @Trace(operationName = "RUN_OPERATION")
   public void run(final String[] args) throws Exception {
+    LOGGER.info("*** run");
     final IntegrationConfig parsed = cliParser.parse(args);
     try {
       runInternal(parsed);
@@ -144,11 +145,14 @@ public class IntegrationRunner {
         }
         // destination only
         case WRITE -> {
+          LOGGER.info("*** WRITE");
           final JsonNode config = parseConfig(parsed.getConfigPath());
           validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
           try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
+            LOGGER.info("*** runConsumer");
             runConsumer(consumer);
+            LOGGER.info("*** runConsumer done");
           }
         }
         default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
@@ -198,16 +202,23 @@ public class IntegrationRunner {
 
   @VisibleForTesting
   static void consumeWriteStream(final AirbyteMessageConsumer consumer) throws Exception {
+    LOGGER.info("*** consumeWriteStream");
     // use a Scanner that only processes new line characters to strictly abide with the
     // https://jsonlines.org/ standard
     final Scanner input = new Scanner(System.in, StandardCharsets.UTF_8).useDelimiter("[\r\n]+");
+    LOGGER.info("*** after input");
     consumer.start();
+    LOGGER.info("*** consumer started {}", consumer);
     int numMessages = 0;
+    LOGGER.info("*** input.hasNext() {}", input.hasNext());
     while (input.hasNext()) {
+      LOGGER.info("*** inside while");
       if (numMessages++ % 100 == 0) {
         LOGGER.info("Message Count: " + numMessages);
       }
+      LOGGER.info("*** consuming message");
       consumeMessage(consumer, input.next());
+      LOGGER.info("*** consumed");
     }
   }
 
@@ -292,9 +303,10 @@ public class IntegrationRunner {
    */
   @VisibleForTesting
   static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString) throws Exception {
-
+    LOGGER.info("*** consumeMessage");
     final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
     if (messageOptional.isPresent()) {
+      LOGGER.info("*** accept");
       consumer.accept(messageOptional.get());
     } else {
       if (isStateMessage(inputString)) {
