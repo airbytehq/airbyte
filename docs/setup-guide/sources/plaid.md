@@ -20,10 +20,10 @@ This page contains the setup guide and reference information for Plaid.
 ### Step 1: Obtain Plaid setup details
 
 1. **Visit your [Plaid dashboard](https://dashboard.plaid.com/overview):** Click **Keys** from the **Team Settings** dropdown.
-![Plaid Keys](/assets/images/plaid-keys.jpg "Plaid Keys")
+![Plaid Keys](../../.gitbook/assets/plaid-keys.jpg "Plaid Keys")
 
 2. **Get Client id and API key:** On the Keys page, copy your **client_id** and Sandbox **secret**.
-![Plaid Client Id Secret](/assets/images/plaid-client-id-secret.jpg "Plaid Client Id Secret")
+![Plaid Client Id Secret](../../.gitbook/assets/plaid-client-id-secret.jpg "Plaid Client Id Secret")
 
 3. **Create an Access Token:** First you have to create a public token key and then you can create an access token.
 
