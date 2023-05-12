@@ -122,7 +122,6 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
             except ValueError:
                 raise ValueError(f"Invalid token expiry value {value}; a number is required.")
 
-
     @property
     def access_token(self) -> str:
         return self._access_token
