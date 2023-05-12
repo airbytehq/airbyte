@@ -67,9 +67,7 @@ class SourceFacebookMarketing(AbstractSource):
 
             api = API(account_id=config.account_id, access_token=config.access_token)
             logger.info(f"Select account {api.account}")
-        except FacebookAPIException as e:
-            return False, e
-        except (requests.exceptions.RequestException, ValidationError) as e:
+        except (requests.exceptions.RequestException, ValidationError, FacebookAPIException) as e:
             return False, e
 
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
