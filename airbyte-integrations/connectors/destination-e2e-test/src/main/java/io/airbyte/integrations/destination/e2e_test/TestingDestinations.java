@@ -69,6 +69,7 @@ public class TestingDestinations extends BaseConnector implements Destination {
   public static void main(final String[] args) throws Exception {
     final Destination destination = new TestingDestinations();
     LOGGER.info("starting destination: {}", TestingDestinations.class);
+    LOGGER.info("===== poop");
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", TestingDestinations.class);
   }
