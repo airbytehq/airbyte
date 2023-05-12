@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Faker Source Spec",
     "type": "object",
-    "required": ["count"],
+    "required": ["count", "new_field"],
     "additionalProperties": true,
     "properties": {
       "count": {
@@ -45,6 +45,12 @@
         "minimum": 1,
         "default": 4,
         "order": 4
+      },
+      "new_field": {
+        "title": "My Custom Field",
+        "description": "idk but make sure you fill this in",
+        "type": "string",
+        "order": 5
       }
     }
   }
