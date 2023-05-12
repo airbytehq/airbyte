@@ -264,7 +264,7 @@ def test_stream_repositories_404():
 
 
 @responses.activate
-def test_stream_repositories_404(caplog):
+def test_stream_repositories_401(caplog):
     organization_args = {"organizations": ["org_name"], "access_token_type": constants.PERSONAL_ACCESS_TOKEN_TITLE}
     stream = Repositories(**organization_args)
 
