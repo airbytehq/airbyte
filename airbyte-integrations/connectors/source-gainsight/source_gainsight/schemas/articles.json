@@ -4,6 +4,20 @@
   "additionalProperties": true,
   "type": ["null", "object"],
   "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "modifiedBy": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
     "articleKCs": {
       "type": ["null", "array"],
       "items": {
@@ -26,20 +40,6 @@
     },
     "createdDate": {
       "type": ["null", "number"]
-    },
-    "id": {
-      "type": ["null", "string"]
-    },
-    "modifiedBy": {
-      "type": ["null", "object"],
-      "properties": {
-        "id": {
-          "type": ["null", "string"]
-        },
-        "name": {
-          "type": ["null", "string"]
-        }
-      }
     },
     "modifiedDate": {
       "type": ["null", "number"]
