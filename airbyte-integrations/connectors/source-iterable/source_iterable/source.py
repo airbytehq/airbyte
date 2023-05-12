@@ -81,7 +81,7 @@ class SourceIterable(AbstractSource):
         def all_streams_accessible():
             access_check_stream = AccessCheck(authenticator=authenticator)
             try:
-                next(read_full_refresh(access_check_stream))
+                next(read_full_refresh(access_check_stream), None)
             except requests.exceptions.RequestException as e:
                 if e.response.status_code == requests.codes.UNAUTHORIZED:
                     return False
