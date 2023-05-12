@@ -43,6 +43,7 @@ def test_task_stream(requests_mock, stream, config, mock_responses):
 @patch.multiple(DatadogStream, __abstractmethods__=set())
 def test_next_page_token(config):
     stream = DatadogStream(
+        site=config["site"],
         query=config["query"],
         max_records_per_request=config["max_records_per_request"],
         start_date=config["start_date"],
@@ -50,6 +51,14 @@ def test_next_page_token(config):
     )
     inputs = {"response": MagicMock()}
     assert stream.next_page_token(**inputs) is None
+
+
+def test_site_config(config):
+    assert config['site'] == 'datadoghq.com'
+
+
+def test_site_config_eu(config_eu):
+    assert config_eu['site'] == 'datadoghq.eu'
 
 
 @pytest.mark.parametrize(
@@ -98,3 +107,32 @@ def test_next_page_token_paginated(stream, config):
     response._content = json.dumps(body_content).encode("utf-8")
     result = instance.next_page_token(response=response)
     assert result.get("offset") == 999
+
+
+@patch.multiple(DatadogStream, __abstractmethods__=set())
+def test_site_parameter_is_set(config):
+    site = "example.com"
+    stream = DatadogStream(
+        site=site,
+        query=config["query"],
+        max_records_per_request=config["max_records_per_request"],
+        start_date=config["start_date"],
+        end_date=config["end_date"],
+    )
+    url_base = stream.url_base
+    expected_url_base = f"https://api.{site}/api"
+    assert url_base == expected_url_base
+
+
+@patch.multiple(DatadogStream, __abstractmethods__=set())
+def test_site_parameter_is_not_set(config):
+    stream = DatadogStream(
+        site=config["site"],
+        query=config["query"],
+        max_records_per_request=config["max_records_per_request"],
+        start_date=config["start_date"],
+        end_date=config["end_date"],
+    )
+    url_base = stream.url_base
+    expected_url_base = "https://api.datadoghq.com/api"
+    assert url_base == expected_url_base
