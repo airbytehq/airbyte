@@ -92,12 +92,11 @@ class TestOauth2Authenticator:
     @pytest.mark.parametrize(
         "expires_in_response, token_expiry_date_format",
         [
-            (86400, None),
             ("2020-01-02T00:00:00Z", "YYYY-MM-DDTHH:mm:ss[Z]"),
             ("2020-01-02T00:00:00.000000+00:00", "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"),
             ("2020-01-02", "YYYY-MM-DD"),
         ],
-        ids=["time_in_seconds", "rfc3339", "iso8601", "simple_date"],
+        ids=["rfc3339", "iso8601", "simple_date"],
     )
     @freezegun.freeze_time("2020-01-01")
     def test_refresh_access_token_expire_format(self, mocker, expires_in_response, token_expiry_date_format):
@@ -126,6 +125,46 @@ class TestOauth2Authenticator:
         token = oauth.get_access_token()
         assert "access_token" == token
         assert oauth.get_token_expiry_date() == pendulum.parse(next_day)
+
+    @pytest.mark.parametrize(
+        "expires_in_response, next_day, raises",
+        [
+            (86400, "2020-01-02T00:00:00Z", False),
+            (86400.1, "2020-01-02T00:00:00Z", False),
+            ("86400", "2020-01-02T00:00:00Z", False),
+            ("86400.1", "2020-01-02T00:00:00Z", False),
+            ("2020-01-02T00:00:00Z", "2020-01-02T00:00:00Z", True),
+        ],
+        ids=["time_in_seconds", "time_in_seconds_float", "time_in_seconds_str", "time_in_seconds_str_float", "invalid"],
+    )
+    @freezegun.freeze_time("2020-01-01")
+    def test_set_token_expiry_date_no_format(self, mocker, expires_in_response, next_day, raises):
+        config.update({"token_expiry_date": pendulum.parse(next_day).subtract(days=2).to_rfc3339_string()})
+        oauth = DeclarativeOauth2Authenticator(
+            token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
+            client_id="{{ config['client_id'] }}",
+            client_secret="{{ config['client_secret'] }}",
+            refresh_token="{{ config['refresh_token'] }}",
+            config=config,
+            scopes=["scope1", "scope2"],
+            refresh_request_body={
+                "custom_field": "{{ config['custom_field'] }}",
+                "another_field": "{{ config['another_field'] }}",
+                "scopes": ["no_override"],
+            },
+            parameters={},
+        )
+
+        resp.status_code = 200
+        mocker.patch.object(resp, "json", return_value={"access_token": "access_token", "expires_in": expires_in_response})
+        mocker.patch.object(requests, "request", side_effect=mock_request, autospec=True)
+        if raises:
+            with pytest.raises(ValueError):
+                oauth.get_access_token()
+        else:
+            token = oauth.get_access_token()
+            assert "access_token" == token
+            assert oauth.get_token_expiry_date() == pendulum.parse(next_day)
 
 
 def mock_request(method, url, data):
