@@ -32,7 +32,6 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -85,9 +84,10 @@ public class PerformanceTest {
         .withMemoryLimit("1Gi")
         .withMemoryRequest("1Gi");
     final var allowedHosts = new AllowedHosts().withHosts(List.of("*"));
-    var dstIntegtationLauncher = new AirbyteIntegrationLauncher("2", 0, "airbyte/destination-dev-null:dev", processFactory,resourceReqs, allowedHosts, false, new EnvVariableFeatureFlags());
+    var dstIntegtationLauncher = new AirbyteIntegrationLauncher("2", 0, "airbyte/destination-dev-null:dev", processFactory, resourceReqs,
+        allowedHosts, false, new EnvVariableFeatureFlags());
     final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig().withDestinationConnectionConfiguration(Jsons.jsonNode(
-        Collections.singletonMap("type","SILENT")));
+        Collections.singletonMap("type", "SILENT")));
     final var jobRoot = "/";
     this.destination = new DefaultAirbyteDestination(dstIntegtationLauncher);
     destination.start(dstConfig, Path.of(jobRoot));
@@ -102,30 +102,32 @@ public class PerformanceTest {
       log.info("ran async");
     });
 
-//    final var workerConfigs = new WorkerConfigs(new EnvConfigs(Map.of("LOG_LEVEL", "DEBUG")));
-//    final var processFactory = new KubeProcessFactory(workerConfigs, "default", fabricClient, kubeHeartbeatUrl, false);
-//    final ResourceRequirements resourceReqs = new ResourceRequirements()
-//        .withCpuLimit("2.5")
-//        .withCpuRequest("2.5")
-//        .withMemoryLimit("2Gi")
-//        .withMemoryRequest("2Gi");
-//    final var allowedHosts = new AllowedHosts().withHosts(List.of("*"));
-//    final var jobRoot = "/";
+    // final var workerConfigs = new WorkerConfigs(new EnvConfigs(Map.of("LOG_LEVEL", "DEBUG")));
+    // final var processFactory = new KubeProcessFactory(workerConfigs, "default", fabricClient,
+    // kubeHeartbeatUrl, false);
+    // final ResourceRequirements resourceReqs = new ResourceRequirements()
+    // .withCpuLimit("2.5")
+    // .withCpuRequest("2.5")
+    // .withMemoryLimit("2Gi")
+    // .withMemoryRequest("2Gi");
+    // final var allowedHosts = new AllowedHosts().withHosts(List.of("*"));
+    // final var jobRoot = "/";
 
-//    final var dstIntegtationLauncher = new AirbyteIntegrationLauncher(
-//        "2",
-//        0,
-//        this.imageName,
-//        processFactory,
-//        resourceReqs,
-//        allowedHosts,
-//        false,
-//        new EnvVariableFeatureFlags());
-//    this.destination = new DefaultAirbyteDestination(dstIntegtationLauncher);
-//    final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig()
-//        .withDestinationConnectionConfiguration(this.config)
-//        .withState(null)
-//        .withCatalog(convertProtocolObject(this.catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
+    // final var dstIntegtationLauncher = new AirbyteIntegrationLauncher(
+    // "2",
+    // 0,
+    // this.imageName,
+    // processFactory,
+    // resourceReqs,
+    // allowedHosts,
+    // false,
+    // new EnvVariableFeatureFlags());
+    // this.destination = new DefaultAirbyteDestination(dstIntegtationLauncher);
+    // final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig()
+    // .withDestinationConnectionConfiguration(this.config)
+    // .withState(null)
+    // .withCatalog(convertProtocolObject(this.catalog,
+    // io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
 
     log.info("reader first line");
     BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -138,8 +140,8 @@ public class PerformanceTest {
     log.info("*** columns {}", columns);
 
     log.info("Destination starting");
-//    System.out.println("hello from harness");
-//    destination.start(dstConfig, Path.of(jobRoot));
+    // System.out.println("hello from harness");
+    // destination.start(dstConfig, Path.of(jobRoot));
 
     var totalBytes = 0.0;
     var counter = 0L;
@@ -149,23 +151,23 @@ public class PerformanceTest {
 
     while (!destination.isFinished()) {
       try (reader) {
-//        log.info("*** reading row");
-//        final var row = Arrays.asList(pattern.split(reader.readLine()));
-//        log.info("*** row {}", row);
-//        assert (row.size() == columns.size());
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("{");
-//        Iterator<String> rowIterator = row.iterator();
-//        Iterator<String> colIterator = columns.iterator();
-//        ArrayList<String> combined = new ArrayList<>(columns.size());
-//        while (colIterator.hasNext() && rowIterator.hasNext()) {
-//          combined.add("\"%s\":\"%s\"".formatted(colIterator.next(), rowIterator.next()));
-//        }
-//        sb.append(String.join(",", combined));
-//        sb.append("}");
-//        final String recordString = sb.toString();
-//        log.info("*** RECORD: {}", recordString); // TEMP
-//        totalBytes += recordString.length();
+        // log.info("*** reading row");
+        // final var row = Arrays.asList(pattern.split(reader.readLine()));
+        // log.info("*** row {}", row);
+        // assert (row.size() == columns.size());
+        // StringBuilder sb = new StringBuilder();
+        // sb.append("{");
+        // Iterator<String> rowIterator = row.iterator();
+        // Iterator<String> colIterator = columns.iterator();
+        // ArrayList<String> combined = new ArrayList<>(columns.size());
+        // while (colIterator.hasNext() && rowIterator.hasNext()) {
+        // combined.add("\"%s\":\"%s\"".formatted(colIterator.next(), rowIterator.next()));
+        // }
+        // sb.append(String.join(",", combined));
+        // sb.append("}");
+        // final String recordString = sb.toString();
+        // log.info("*** RECORD: {}", recordString); // TEMP
+        // totalBytes += recordString.length();
 
         final AirbyteMessage airbyteMessage = new AirbyteMessage().withRecord(new AirbyteRecordMessage()
             .withStream(catalog.getStreams().get(0).getStream().getName())
