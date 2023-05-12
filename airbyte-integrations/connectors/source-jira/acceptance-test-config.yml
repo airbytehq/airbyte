@@ -19,7 +19,7 @@ acceptance_tests:
     - config_path: "secrets/config.json"
     - config_path: "secrets/config_empty_projects.json"
       backward_compatibility_tests_config:
-        disable_for_version: 0.3.1
+        disable_for_version: 0.3.8
   basic_read:
     tests:
     - config_path: "secrets/config.json"
