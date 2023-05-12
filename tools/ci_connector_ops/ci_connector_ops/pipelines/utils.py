@@ -357,7 +357,13 @@ async def export_container_to_tarball(
 
 
 def sanitize_gcs_credentials(raw_value: str) -> str:
-    try:
-        return json.dumps(json.loads(raw_value))
-    except json.JSONDecodeError:
-        return raw_value
+    """Try to parse the raw string input that should contain a json object with the GCS credentials.
+    It will raise an exception if the parsing fails and help us to fail fast on invalid credentials input.
+
+    Args:
+        raw_value (str): A string representing a json object with the GCS credentials.
+
+    Returns:
+        str: The raw value string if it was successfully parsed.
+    """
+    return json.dumps(json.loads(raw_value))
