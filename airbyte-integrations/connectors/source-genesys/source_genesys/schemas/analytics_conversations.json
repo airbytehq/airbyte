@@ -1,39 +1,33 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
+    "additionalProperties": true,
     "properties": {
         "interval_start": {
-            "type": "string",
+            "type": ["null", "string"],
             "format": "date-time"
         },
         "interval_end": {
-            "type": "string",
+            "type": ["null", "string"],
             "format": "date-time"
         },
         "min": {
-            "type": "integer"
+            "type": ["null","integer"]
         },
         "metric": {
-            "type": "string"
+            "type": ["null", "string"]
         },
         "max": {
-            "type": "integer"
+            "type": ["null","integer"]
         },
         "count": {
-            "type": "integer"
+            "type": ["null","integer"]
         },
         "media_type": {
-            "type": "string"
+            "type": ["null", "string"]
         },
         "sum": {
-            "type": "integer"
+            "type": ["null","integer"]
         }
-    },
-    "required": [
-        "interval_start",
-        "interval_end",
-        "metric",
-        "count",
-        "media_type"
-    ]
+    }
 }
