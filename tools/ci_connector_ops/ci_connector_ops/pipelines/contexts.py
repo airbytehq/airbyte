@@ -19,7 +19,7 @@ from ci_connector_ops.pipelines.actions import remote_storage, secrets
 from ci_connector_ops.pipelines.bases import ConnectorReport, Report
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.slack import send_message_to_webhook
-from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, sanitize_gcs_service_account_key
+from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, sanitize_gcs_credentials
 from ci_connector_ops.utils import Connector
 from dagger import Client, Directory, Secret
 
@@ -432,9 +432,9 @@ class PublishConnectorContext(ConnectorContext):
         connector: Connector,
         pre_release: bool,
         modified_files: List[str],
-        spec_cache_service_account_key: str,
+        spec_cache_gcs_credentials: str,
         spec_cache_bucket_name: str,
-        metadata_service_account_key: str,
+        metadata_service_gcs_credentials: str,
         metadata_bucket_name: str,
         docker_hub_username: str,
         docker_hub_password: str,
@@ -450,8 +450,8 @@ class PublishConnectorContext(ConnectorContext):
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
         self.metadata_bucket_name = metadata_bucket_name
-        self.spec_cache_service_account_key = sanitize_gcs_service_account_key(spec_cache_service_account_key)
-        self.metadata_service_account_key = sanitize_gcs_service_account_key(metadata_service_account_key)
+        self.spec_cache_gcs_credentials = sanitize_gcs_credentials(spec_cache_gcs_credentials)
+        self.metadata_service_gcs_credentials = sanitize_gcs_credentials(metadata_service_gcs_credentials)
         self.docker_hub_username = docker_hub_username
         self.docker_hub_password = docker_hub_password
 
@@ -482,12 +482,12 @@ class PublishConnectorContext(ConnectorContext):
         return self.dagger_client.set_secret("docker_hub_password", self.docker_hub_password)
 
     @property
-    def metadata_service_account_key_secret(self) -> Secret:
-        return self.dagger_client.set_secret("metadata_service_account_key", self.metadata_service_account_key)
+    def metadata_service_gcs_credentials_secret(self) -> Secret:
+        return self.dagger_client.set_secret("metadata_service_gcs_credentials", self.metadata_service_gcs_credentials)
 
     @property
-    def spec_cache_service_account_key_secret(self) -> Secret:
-        return self.dagger_client.set_secret("spec_cache_service_account_key", self.spec_cache_service_account_key)
+    def spec_cache_gcs_credentials_secret(self) -> Secret:
+        return self.dagger_client.set_secret("spec_cache_gcs_credentials", self.spec_cache_gcs_credentials)
 
     @property
     def docker_image_name(self):

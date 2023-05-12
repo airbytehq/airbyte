@@ -356,7 +356,7 @@ async def export_container_to_tarball(
         return None, None
 
 
-def sanitize_gcs_service_account_key(raw_value: str) -> str:
+def sanitize_gcs_credentials(raw_value: str) -> str:
     try:
         return json.dumps(json.loads(raw_value))
     except json.JSONDecodeError:
