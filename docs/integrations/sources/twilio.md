@@ -75,7 +75,7 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 * [Outgoing Caller Ids](https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource)
 * [Queues](https://www.twilio.com/docs/voice/api/queue-resource#read-multiple-queue-resources)
 * [Recordings](https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources) \(Incremental\)
-* [Services](https://www.twilio.com/docs/chat/rest/service-resource#create-a-service-resource)
+* [Services](https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources)
 * [Roles](https://www.twilio.com/docs/chat/rest/role-resource#read-multiple-role-resources)
 * [Transcriptions](https://www.twilio.com/docs/voice/api/recording-transcription?code-sample=code-read-list-all-transcriptions&code-language=curl&code-sdk-version=json#read-multiple-transcription-resources)
 * [Usage Records](https://www.twilio.com/docs/usage/api/usage-record#read-multiple-usagerecord-resources) \(Incremental\)
