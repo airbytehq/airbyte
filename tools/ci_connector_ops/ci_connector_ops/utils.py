@@ -7,6 +7,7 @@ import os
 from dataclasses import dataclass
 from enum import Enum
 from functools import cached_property
+from glob import glob
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
@@ -42,6 +43,7 @@ def download_catalog(catalog_url):
 
 
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
+METADATA_FILE_NAME = "metadata.yaml"
 
 
 class ConnectorInvalidNameError(Exception):
@@ -131,6 +133,10 @@ class Connector:
         return Path(f"./airbyte-integrations/connectors/{self.technical_name}")
 
     @property
+    def metadata(self) -> dict:
+        return yaml.safe_load((self.code_directory / METADATA_FILE_NAME).read_text())["data"]
+
+    @property
     def language(self) -> ConnectorLanguage:
         if Path(self.code_directory / self.technical_name.replace("-", "_") / "manifest.yaml").is_file():
             return ConnectorLanguage.LOW_CODE
@@ -147,6 +153,10 @@ class Connector:
 
     @property
     def version(self) -> str:
+        return self.metadata["dockerImageTag"]
+
+    @property
+    def version_in_dockerfile_label(self) -> str:
         with open(self.code_directory / "Dockerfile") as f:
             for line in f:
                 if "io.airbyte.version" in line:
@@ -232,5 +242,8 @@ def get_changed_connectors() -> Set[Connector]:
 
 
 def get_all_released_connectors() -> Set:
-    all_definitions = OSS_CATALOG["sources"] + OSS_CATALOG["destinations"]
-    return {Connector(definition["dockerRepository"].replace("airbyte/", "")) for definition in all_definitions}
+    return {
+        Connector(Path(metadata_file).parent.name)
+        for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
+        if "-scaffold-" not in metadata_file
+    }

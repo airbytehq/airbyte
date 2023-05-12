@@ -234,35 +234,23 @@ def persist_metadata_definitions(context: OpExecutionContext, overrode_metadata_
 
 
 @asset(group_name=GROUP_NAME)
-def cloud_registry_diff(cloud_registry_from_metadata: ConnectorRegistryV0, legacy_cloud_registry: ConnectorRegistryV0) -> dict:
+def cloud_registry_diff(latest_cloud_registry: ConnectorRegistryV0, legacy_cloud_registry: ConnectorRegistryV0) -> str:
     """
     Compares the cloud registry from the metadata with the latest OSS registry.
     """
-    cloud_registry_from_metadata_dict = json.loads(cloud_registry_from_metadata.json())
+    latest_cloud_registry_dict = json.loads(latest_cloud_registry.json())
     legacy_cloud_registry_dict = json.loads(legacy_cloud_registry.json())
-    return diff_registries(legacy_cloud_registry_dict, cloud_registry_from_metadata_dict).to_dict()
+    return diff_registries(legacy_cloud_registry_dict, latest_cloud_registry_dict).to_json()
 
 
 @asset(group_name=GROUP_NAME)
-def oss_registry_diff(oss_registry_from_metadata: ConnectorRegistryV0, legacy_oss_registry: ConnectorRegistryV0) -> dict:
+def oss_registry_diff(latest_oss_registry: ConnectorRegistryV0, legacy_oss_registry: ConnectorRegistryV0) -> str:
     """
     Compares the OSS registry from the metadata with the latest OSS registry.
     """
-    oss_registry_from_metadata_dict = json.loads(oss_registry_from_metadata.json())
+    latest_oss_registry_dict = json.loads(latest_oss_registry.json())
     legacy_oss_registry_dict = json.loads(legacy_oss_registry.json())
-    return diff_registries(legacy_oss_registry_dict, oss_registry_from_metadata_dict).to_dict()
-
-
-@asset(group_name=GROUP_NAME)
-def cloud_registry_diff_dataframe(cloud_registry_diff: dict) -> OutputDataFrame:
-    diff_df = pd.DataFrame.from_dict(cloud_registry_diff)
-    return output_dataframe(diff_df)
-
-
-@asset(group_name=GROUP_NAME)
-def oss_registry_diff_dataframe(oss_registry_diff: dict) -> OutputDataFrame:
-    diff_df = pd.DataFrame.from_dict(oss_registry_diff)
-    return output_dataframe(diff_df)
+    return diff_registries(legacy_oss_registry_dict, latest_oss_registry_dict).to_json()
 
 
 @asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME)
@@ -275,28 +263,24 @@ def metadata_directory_report(context: OpExecutionContext):
 
 
 @asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
-def oss_registry_diff_report(context: OpExecutionContext, oss_registry_diff_dataframe: pd.DataFrame):
-    markdown = oss_registry_diff_dataframe.to_markdown()
-
+def oss_registry_diff_report(context: OpExecutionContext, oss_registry_diff: str):
     registry_report_directory_manager = context.resources.registry_report_directory_manager
-    file_handle = registry_report_directory_manager.write_data(markdown.encode(), ext="md", key="dev/oss_registry_diff_report")
+    file_handle = registry_report_directory_manager.write_data(oss_registry_diff.encode(), ext="json", key="dev/oss_registry_diff_report")
 
     metadata = {
-        "preview": MetadataValue.md(markdown),
-        "gcs_path": MetadataValue.url(file_handle.gcs_path),
+        "link": MetadataValue.url(file_handle.public_url),
     }
     return Output(metadata=metadata, value=file_handle)
 
 
 @asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
-def cloud_registry_diff_report(context: OpExecutionContext, cloud_registry_diff_dataframe: pd.DataFrame):
-    markdown = cloud_registry_diff_dataframe.to_markdown()
-
+def cloud_registry_diff_report(context: OpExecutionContext, cloud_registry_diff: str):
     registry_report_directory_manager = context.resources.registry_report_directory_manager
-    file_handle = registry_report_directory_manager.write_data(markdown.encode(), ext="md", key="dev/cloud_registry_diff_report")
+    file_handle = registry_report_directory_manager.write_data(
+        cloud_registry_diff.encode(), ext="json", key="dev/cloud_registry_diff_report"
+    )
 
     metadata = {
-        "preview": MetadataValue.md(markdown),
-        "gcs_path": MetadataValue.url(file_handle.gcs_path),
+        "link": MetadataValue.url(file_handle.public_url),
     }
     return Output(metadata=metadata, value=file_handle)
