@@ -1,0 +1,22 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Survey Response Schema",
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": ["null", "string"]
+      },
+      "timestamp": {
+        "type": ["null", "string"]
+      },
+      "message": {
+        "type": ["null", "string"]
+      },
+      "debugMessage": {
+        "type": ["null", "string"]
+      },
+      "subErrors": {
+        "type": ["null", "string"]
+      }
+    }
+  }

@@ -62,6 +62,15 @@ definitions:
     name: "admin_attributes"
     primary_key: "id"
 
+  survey_response_stream:
+    $parameters:
+      path: "survey/responses"
+      extractorPath: "externalapierror"
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/custom_retriever"
+    name: "survey_response"
+
   user_attributes_stream:
     $parameters:
       path: "admin/model/user/attributes"
@@ -82,6 +91,7 @@ definitions:
 streams:
   - "#/definitions/accounts_stream"
   - "#/definitions/admin_attributes_stream"
+  - "#/definitions/survey_response_stream"
   - "#/definitions/user_attributes_stream"
   - "#/definitions/users_stream"
 
@@ -90,6 +100,7 @@ check:
   stream_names:
     - "accounts"
     - "admin_attributes"
+    - "survey_response"
     - "user_attributes"
     - "users"
 
