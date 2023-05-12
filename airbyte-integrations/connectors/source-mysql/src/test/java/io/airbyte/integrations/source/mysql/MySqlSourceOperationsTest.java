@@ -302,4 +302,5 @@ public class MySqlSourceOperationsTest {
       throw new RuntimeException(e);
     }
   }
+  
 }
