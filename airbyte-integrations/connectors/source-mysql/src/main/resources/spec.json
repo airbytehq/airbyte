@@ -47,13 +47,6 @@
         "type": "string",
         "order": 5
       },
-      "ssl": {
-        "title": "SSL Connection",
-        "description": "Encrypt data using SSL.",
-        "type": "boolean",
-        "default": true,
-        "order": 6
-      },
       "ssl_mode": {
         "title": "SSL modes",
         "description": "SSL connection modes. Read more <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html\"> in the docs</a>.",
