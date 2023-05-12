@@ -204,8 +204,8 @@ Publish all connectors modified in the head commit: `airbyte-ci connectors --mod
 | `--metadata-service-bucket-name`     | True     | `METADATA_SERVICE_BUCKET_NAME`     | The name of the GCS bucket where metadata files will be uploaded.                     |
 | `--docker-hub-username`              | True     | `DOCKER_HUB_USERNAME`              | Your username to connect to DockerHub.                                                |
 | `--docker-hub-password`              | True     | `DOCKER_HUB_PASSWORD`              | Your password to connect to DockerHub.                                                |
-| `--slack-webhook`                    | True     | `SLACK_WEBHOOK`                    | The Slack webhook URL to send notifications to.                                       |
-| `--slack-channel`                    | True     | `SLACK_CHANNEL`                    | The Slack channel name to send notifications to.                                       |
+| `--slack-webhook`                    | False    | `SLACK_WEBHOOK`                    | The Slack webhook URL to send notifications to.                                       |
+| `--slack-channel`                    | False    | `SLACK_CHANNEL`                    | The Slack channel name to send notifications to.                                      |
 
 #### What it runs
 ```mermaid

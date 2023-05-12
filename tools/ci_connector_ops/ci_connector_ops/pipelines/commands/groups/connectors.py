@@ -247,11 +247,11 @@ def build(ctx: click.Context) -> bool:
 @connectors.command(cls=DaggerPipelineCommand, help="Publish all images for the selected connectors.")
 @click.option("--pre-release/--main-release", help="Use this flag if you want to publish pre-release images.", default=True, type=bool)
 @click.option(
-    "--spec-cache-service-account-key",
+    "--spec-cache-gcs-credentials",
     help="The service account key to upload files to the GCS bucket hosting spec cache.",
     type=click.STRING,
     required=True,
-    envvar="SPEC_CACHE_SERVICE_ACCOUNT_KEY",
+    envvar="SPEC_CACHE_GCS_CREDENTIALS",
 )
 @click.option(
     "--spec-cache-bucket-name",
@@ -261,11 +261,11 @@ def build(ctx: click.Context) -> bool:
     envvar="SPEC_CACHE_BUCKET_NAME",
 )
 @click.option(
-    "--metadata-service-account-key",
+    "--metadata-service-gcs-credentials",
     help="The service account key to upload files to the GCS bucket hosting the metadata files.",
     type=click.STRING,
     required=True,
-    envvar="METADATA_SERVICE_ACCOUNT_KEY",
+    envvar="METADATA_SERVICE_GCS_CREDENTIALS",
 )
 @click.option(
     "--metadata-service-bucket-name",
@@ -292,14 +292,12 @@ def build(ctx: click.Context) -> bool:
     "--slack-webhook",
     help="The Slack webhook URL to send notifications to.",
     type=click.STRING,
-    required=True,
     envvar="SLACK_WEBHOOK",
 )
 @click.option(
     "--slack-channel",
     help="The Slack webhook URL to send notifications to.",
     type=click.STRING,
-    required=True,
     envvar="SLACK_CHANNEL",
     default="#publish-on-merge-updates",
 )
@@ -307,10 +305,10 @@ def build(ctx: click.Context) -> bool:
 def publish(
     ctx: click.Context,
     pre_release: bool,
-    spec_cache_service_account_key: str,
+    spec_cache_gcs_credentials: str,
     spec_cache_bucket_name: str,
     metadata_service_bucket_name: str,
-    metadata_service_account_key: str,
+    metadata_service_gcs_credentials: str,
     docker_hub_username: str,
     docker_hub_password: str,
     slack_webhook: str,
@@ -336,9 +334,9 @@ def publish(
             connector,
             pre_release,
             modified_files,
-            spec_cache_service_account_key,
+            spec_cache_gcs_credentials,
             spec_cache_bucket_name,
-            metadata_service_account_key,
+            metadata_service_gcs_credentials,
             metadata_service_bucket_name,
             docker_hub_username,
             docker_hub_password,
