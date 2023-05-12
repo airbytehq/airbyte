@@ -7,6 +7,25 @@
       "description": "The URL of the status.",
       "readOnly": true
     },
+    "untranslatedName": {
+      "type" : ["null", "string"]
+    },
+    "scope": {
+      "type": "object",
+      "properties" : {
+        "project": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      }
+    },
     "description": {
       "type": "string",
       "description": "The description of the status.",

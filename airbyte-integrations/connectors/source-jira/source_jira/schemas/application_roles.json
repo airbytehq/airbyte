@@ -6,6 +6,23 @@
       "type": "string",
       "description": "The key of the application role."
     },
+    "defaultGroupsDetails": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "groupId": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "self": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
     "groups": {
       "uniqueItems": true,
       "type": "array",

@@ -140,6 +140,12 @@
           }
         }
       }
+    },
+    "updated": {
+      "type": ["null", "string"]
+    },
+    "created": {
+      "type": ["null", "string"]
     }
   },
   "readOnly": true

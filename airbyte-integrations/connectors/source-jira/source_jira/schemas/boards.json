@@ -19,6 +19,32 @@
     },
     "projectKey": {
       "type": "string"
+    },
+    "location": {
+      "type": ["null", "object"],
+      "properties" : {
+        "avatarURI": {
+          "type" : ["null", "string"]
+        },
+        "displayName": {
+          "type" : ["null", "string"]
+        },
+        "name": {
+          "type" : ["null", "string"]
+        },
+        "projectId": {
+          "type" : ["null", "number"]
+        },
+        "projectKey": {
+          "type" : ["null", "string"]
+        },
+        "projectName": {
+          "type" : ["null", "string"]
+        },
+        "projectTypeKey": {
+          "type" : ["null", "string"]
+        }
+      }
     }
   }
 }

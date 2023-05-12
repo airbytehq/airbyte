@@ -17,6 +17,15 @@
       "type": "string",
       "description": "The name of the dashboard."
     },
+    "isWritable": {
+      "type": ["null", "boolean"]
+    },
+    "editPermissions": {
+      "type": ["null", "array"]
+    },
+    "systemDashboard": {
+      "type": ["null", "boolean"]
+    },
     "owner": {
       "description": "The owner of the dashboard.",
       "type": "object",

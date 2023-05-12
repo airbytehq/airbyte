@@ -533,6 +533,143 @@
       "description": "The ID of the project the component is assigned to.",
       "format": "int64",
       "readOnly": true
+    },
+    "componentBean": {
+      "type": "object",
+      "properties" : {
+        "assignee": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": ["null", "string"]
+            },
+            "active": {
+              "type": ["null", "boolean"]
+            },
+            "avatarUrls": {
+              "type" : "object",
+              "properties" : {
+                "16x16": {
+                  "type": ["null", "string"]
+                },
+                "24x24": {
+                  "type": ["null", "string"]
+                },
+                "32x32": {
+                  "type": ["null", "string"]
+                },
+                "48x48": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "displayName": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "assigneeType": {
+          "type": ["null", "string"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        },
+        "isAssigneeTypeValid": {
+          "type": ["null", "boolean"]
+        },
+        "lead": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": ["null", "string"]
+            },
+            "active": {
+              "type": ["null", "boolean"]
+            },
+            "avatarUrls": {
+              "type" : "object",
+              "properties" : {
+                "16x16": {
+                  "type": ["null", "string"]
+                },
+                "24x24": {
+                  "type": ["null", "string"]
+                },
+                "32x32": {
+                  "type": ["null", "string"]
+                },
+                "48x48": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "displayName": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "project": {
+          "type": ["null", "string"]
+        },
+        "projectId": {
+          "type": ["null", "integer"]
+        },
+        "realAssignee": {
+          "type": "object",
+          "properties" : {
+            "accountId": {
+              "type": ["null", "string"]
+            },
+            "active": {
+              "type": ["null", "boolean"]
+            },
+            "avatarUrls": {
+              "type" : "object",
+              "properties" : {
+                "16x16": {
+                  "type": ["null", "string"]
+                },
+                "24x24": {
+                  "type": ["null", "string"]
+                },
+                "32x32": {
+                  "type": ["null", "string"]
+                },
+                "48x48": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "displayName": {
+              "type": ["null", "string"]
+            },
+            "self": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "realAssigneeType": {
+          "type": ["null", "string"]
+        },
+        "self": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "issueCount": {
+      "type": ["null", "integer"]
     }
   },
   "additionalProperties": true,

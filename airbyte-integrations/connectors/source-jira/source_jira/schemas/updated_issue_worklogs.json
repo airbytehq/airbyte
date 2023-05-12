@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "worklogId": {
+      "type": "number"
+    },
+    "updatedTime": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": true,
+  "description": "List of updated issue worklogs"
+}
