@@ -551,7 +551,7 @@ class TestStreamConnection(GoogleAnalyticsV4Stream):
 
     def parse_response(self, response: requests.Response, **kwargs: Any) -> Iterable[Mapping]:
         res = response.json()
-        return res.get("reports", {})[0].get("data")
+        return res.get("reports", [{}])[0].get("data")
 
 
 class SourceGoogleAnalyticsV4(AbstractSource):
