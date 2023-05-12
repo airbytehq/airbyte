@@ -5,8 +5,6 @@ The connector builder UI provides an intuitive UI on top of the [low-code YAML f
 :::note
 The connector builder UI is in beta, which means it’s still in active development and may include backward-incompatible changes. Share feedback and requests with us on our Slack channel or email us at feedback@airbyte.io
 
-**The connector builder does not yet have a link in the sidebar, to navigate to it manually change the URL path in your browser's address bar to `/<your workspace id>/connector-builder`**
-
 Developer updates will be announced via our #help-connector-development Slack channel. If you are using the CDK, please join to stay up to date on changes and issues.
 :::
 
@@ -67,12 +65,6 @@ Create a low-code connector module using the connector generator (see [this YAML
 Follow the instructions in the connector README to build the Docker image. Typically this will be something like `docker build . -t airbyte/source-<name>:<version>`.
 
 From this point on your connector is a regular low-code CDK connector and can be distributed as a docker image and made part of the regular Airbyte connector catalog - you can find the [publish process on the overview page](/connector-development/#publishing-a-connector).
-
-### Building the connector image
-
-Follow the instructions in the connector README to build the Docker image. Typically this will be something like `docker build . -t airbyte/source-<name>:<version>`.
-
-Once you've built the connector image, [follow these instructions](https://docs.airbyte.com/integrations/custom-connectors#adding-your-connectors-in-the-ui) to add your connector to your Airbyte instance.
 
 ## Examples
 
