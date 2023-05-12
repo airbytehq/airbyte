@@ -24,7 +24,7 @@ STRIPE_ERROR_CODES: List = [
 
 class StripeStream(HttpStream, ABC):
     url_base = "https://api.stripe.com/v1/"
-    api_version = "2022-08-01"
+    api_version = "2022-11-15"
     primary_key = "id"
     DEFAULT_SLICE_RANGE = 365
     NOW_TIMESTAMP = pendulum.now().int_timestamp
