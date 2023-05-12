@@ -60,6 +60,7 @@ def config_gen(config):
         # WARNING, no support deep dictionaries
         new_config.update(kwargs)
         return {k: v for k, v in new_config.items() if v is not ...}
+
     return inner
 
 
@@ -101,8 +102,7 @@ def test_check(requests_mock, config_gen, config_values, status, message):
     requests_mock.register_uri("GET", "https://analyticsdata.googleapis.com/v1beta/properties/108176369/metadata",
                                json={"dimensions": [{"apiName": "date"}, {"apiName": "country"},
                                                     {"apiName": "language"}, {"apiName": "browser"}],
-                                     "metrics": [{"apiName": "totalUsers"}, {"apiName": "screenPageViews"}, {"apiName": "sessions"}],
-    })
+                                     "metrics": [{"apiName": "totalUsers"}, {"apiName": "screenPageViews"}, {"apiName": "sessions"}]})
     requests_mock.register_uri("POST", "https://analyticsdata.googleapis.com/v1beta/properties/108176369:runReport",
                                json={"dimensionHeaders": [{"name": "date"}, {"name": "country"}],
                                      "metricHeaders": [{"name": "totalUsers", "type": "s"},
@@ -111,7 +111,6 @@ def test_check(requests_mock, config_gen, config_values, status, message):
                                      })
     requests_mock.register_uri("GET", "https://analyticsdata.googleapis.com/v1beta/properties/UA-11111111/metadata",
                                json={}, status_code=403)
-
 
     source = SourceGoogleAnalyticsDataApi()
     logger = MagicMock()
