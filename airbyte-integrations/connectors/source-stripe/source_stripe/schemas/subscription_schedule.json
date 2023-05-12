@@ -123,7 +123,7 @@
                       },
                       "created": {
                         "type": ["null", "string"],
-                        "format": "datetime"
+                        "format": "date-time"
                       },
                       "display_name": {
                         "type": ["null", "string"]
