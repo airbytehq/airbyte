@@ -85,9 +85,9 @@ public class PerformanceTest {
         .withMemoryLimit("1Gi")
         .withMemoryRequest("1Gi");
     final var allowedHosts = new AllowedHosts().withHosts(List.of("*"));
-    var dstIntegtationLauncher = new AirbyteIntegrationLauncher("2", 0, "airbyte/destination-dev-null:dev", processFactory,resourceReqs, allowedHosts, false, new EnvVariableFeatureFlags());
+    var dstIntegtationLauncher = new AirbyteIntegrationLauncher("2", 0, "airbyte/destination-e2e-test:dev", processFactory,resourceReqs, allowedHosts, false, new EnvVariableFeatureFlags());
     final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig().withDestinationConnectionConfiguration(Jsons.jsonNode(
-        Collections.singletonMap("type","SILENT")));
+        Map.of("type","THROTTLED", "millis_per_record", "1")));
     final var jobRoot = "/";
     this.destination = new DefaultAirbyteDestination(dstIntegtationLauncher);
     destination.start(dstConfig, Path.of(jobRoot));
@@ -101,6 +101,7 @@ public class PerformanceTest {
       System.out.println("\r\n");
       log.info("ran async");
     });
+
 
 //    final var workerConfigs = new WorkerConfigs(new EnvConfigs(Map.of("LOG_LEVEL", "DEBUG")));
 //    final var processFactory = new KubeProcessFactory(workerConfigs, "default", fabricClient, kubeHeartbeatUrl, false);
@@ -128,14 +129,14 @@ public class PerformanceTest {
 //        .withCatalog(convertProtocolObject(this.catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
 
     log.info("reader first line");
-    BufferedReader reader = new BufferedReader(new InputStreamReader(
-        new URL("https://storage.googleapis.com/airbyte-performance-testing-public/sample-data/faker_1m/users.csv").openStream(),
-        StandardCharsets.UTF_8));
-    final var columnsString = reader.readLine();
-    log.info("*** columns string: {}", columnsString);
-    final Pattern pattern = Pattern.compile(",");
-    final var columns = Arrays.asList(pattern.split(columnsString));
-    log.info("*** columns {}", columns);
+//    BufferedReader reader = new BufferedReader(new InputStreamReader(
+//        new URL("https://storage.googleapis.com/airbyte-performance-testing-public/sample-data/faker_1m/users.csv").openStream(),
+//        StandardCharsets.UTF_8));
+//    final var columnsString = reader.readLine();
+//    log.info("*** columns string: {}", columnsString);
+//    final Pattern pattern = Pattern.compile(",");
+//    final var columns = Arrays.asList(pattern.split(columnsString));
+//    log.info("*** columns {}", columns);
 
     log.info("Destination starting");
 //    System.out.println("hello from harness");
@@ -145,10 +146,10 @@ public class PerformanceTest {
     var counter = 0L;
     final var start = System.currentTimeMillis();
 
-    log.info("Starting Test {}", destination.isFinished());
+//    log.info("Starting Test {}", destination.isFinished());
 
-    while (!destination.isFinished()) {
-      try (reader) {
+    while (true) {
+//      try (reader) {
 //        log.info("*** reading row");
 //        final var row = Arrays.asList(pattern.split(reader.readLine()));
 //        log.info("*** row {}", row);
@@ -166,31 +167,32 @@ public class PerformanceTest {
 //        final String recordString = sb.toString();
 //        log.info("*** RECORD: {}", recordString); // TEMP
 //        totalBytes += recordString.length();
-
+//        log.info("*** true");
         final AirbyteMessage airbyteMessage = new AirbyteMessage().withRecord(new AirbyteRecordMessage()
             .withStream(catalog.getStreams().get(0).getStream().getName())
             .withNamespace(catalog.getStreams().get(0).getStream().getNamespace())
             .withData(Jsons.deserialize("{\"id\":\"1\"}")));
+//        log.info("*** accept");
         destination.accept(airbyteMessage);
-      }
+//      }
 
-      if (counter == 1000) { // TEMP
-        break;
-      }
-      if (counter > 0 && counter % MEGABYTE == 0) {
-        log.info("current throughput: {} total MB {}", (totalBytes / MEGABYTE) / ((System.currentTimeMillis() - start) / 1000.0),
-            totalBytes / MEGABYTE);
-      }
+//      if (counter == 1000) { // TEMP
+//        break;
+//      }
+//      if (counter > 0 && counter % MEGABYTE == 0) {
+//        log.info("current throughput: {} total MB {}", (totalBytes / MEGABYTE) / ((System.currentTimeMillis() - start) / 1000.0),
+//            totalBytes / MEGABYTE);
+//      }
     }
 
-    log.info("Test ended successfully");
-    final var end = System.currentTimeMillis();
-    final var totalMB = totalBytes / MEGABYTE;
-    final var totalTimeSecs = (end - start) / 1000.0;
-    final var rps = counter / totalTimeSecs;
-
-    log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
-    destination.close();
+//    log.info("Test ended successfully");
+//    final var end = System.currentTimeMillis();
+//    final var totalMB = totalBytes / MEGABYTE;
+//    final var totalTimeSecs = (end - start) / 1000.0;
+//    final var rps = counter / totalTimeSecs;
+//
+//    log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
+//    destination.close();
   }
 
   private static void populateStreamToAllFields(final ConfiguredAirbyteCatalog catalog,

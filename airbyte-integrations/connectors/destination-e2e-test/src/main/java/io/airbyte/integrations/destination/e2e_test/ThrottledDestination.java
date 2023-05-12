@@ -56,7 +56,7 @@ public class ThrottledDestination extends BaseConnector implements Destination {
     @Override
     public void accept(final AirbyteMessage message) throws Exception {
       sleep(millisPerRecord);
-
+      LOGGER.info("*** message {}", message.toString());
       if (message.getType() == Type.STATE) {
         LOGGER.info("Emitting state: {}", message);
         outputRecordCollector.accept(message);
