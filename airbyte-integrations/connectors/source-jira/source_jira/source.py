@@ -13,6 +13,7 @@ from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
 from pydantic.error_wrappers import ValidationError
 
 from .streams import (
+    AllIssueWorklogs,
     ApplicationRoles,
     Avatars,
     BoardIssues,
@@ -116,6 +117,10 @@ class SourceJira(AbstractSource):
             experimental_streams.append(
                 PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
             )
+        issue_worklog_stream = AllIssueWorklogs
+        if config.get("projects"):
+            issue_worklog_stream = IssueWorklogs
+
         return [
             ApplicationRoles(**args),
             Avatars(**args),
@@ -142,7 +147,7 @@ class SourceJira(AbstractSource):
             IssueTypeScreenSchemes(**args),
             IssueVotes(**incremental_args),
             IssueWatchers(**incremental_args),
-            IssueWorklogs(**incremental_args),
+            issue_worklog_stream(**incremental_args),
             JiraSettings(**args),
             Labels(**args),
             Permissions(**args),
