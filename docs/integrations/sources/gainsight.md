@@ -52,7 +52,9 @@ The Gainsight-API source connector supports the following [sync modes](https://d
 
 - accounts
 - admin_attributes
+- survey_response
 - user_attributes
+- users
 
 ## API method example
 
