@@ -14,5 +14,5 @@ ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 
 
-LABEL io.airbyte.version=3.4.1
+LABEL io.airbyte.version=3.4.3
 LABEL io.airbyte.name=airbyte/source-stripe

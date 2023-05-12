@@ -47,6 +47,9 @@
     "CampaignStatus": {
       "type": ["null", "string"]
     },
+    "CampaignLabels": {
+      "type": ["null", "string"]
+    },
     "Impressions": {
       "type": ["null", "integer"]
     },
@@ -103,6 +106,9 @@
     },
     "AllConversions": {
       "type": ["null", "integer"]
+    },
+    "ConversionsQualified": {
+      "type": ["null", "number"]
     },
     "AllConversionRate": {
       "type": ["null", "number"]
