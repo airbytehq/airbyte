@@ -11,8 +11,9 @@ import pytest
 import requests
 import responses
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
+from requests import HTTPError
 from responses import matchers
-from source_github import streams
+from source_github import streams, constants
 from source_github.streams import (
     Branches,
     Collaborators,
@@ -260,6 +261,26 @@ def test_stream_repositories_404():
     assert list(read_full_refresh(stream)) == []
     assert len(responses.calls) == 1
     assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
+
+
+@responses.activate
+def test_stream_repositories_404(caplog):
+    organization_args = {"organizations": ["org_name"], "access_token_type": constants.PERSONAL_ACCESS_TOKEN_TITLE}
+    stream = Repositories(**organization_args)
+
+    responses.add(
+        "GET",
+        "https://api.github.com/orgs/org_name/repos",
+        status=requests.codes.UNAUTHORIZED,
+        json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
+    )
+
+    with pytest.raises(HTTPError):
+        assert list(read_full_refresh(stream)) == []
+
+    assert len(responses.calls) == 1
+    assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
+    assert "Personal Access Token renewal is required: Bad credentials" in caplog.messages
 
 
 @responses.activate
