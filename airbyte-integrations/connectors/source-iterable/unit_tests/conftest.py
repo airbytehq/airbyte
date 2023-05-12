@@ -37,12 +37,11 @@ def mock_lists_resp(mocker):
 @pytest.fixture(name="lists_stream")
 def lists_stream():
     # local imports
-    from airbyte_cdk.sources.streams.http.auth import NoAuth
     from source_iterable.streams import Lists
 
     # return the instance of the stream so we could make global tests on it,
     # to cover the different `should_retry` logic
-    return Lists(authenticator=NoAuth())
+    return Lists(authenticator=None)
 
 
 @pytest.fixture(autouse=True)

@@ -2,12 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
+
 import pendulum
 import pytest
 import requests
 import responses
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_iterable.streams import (
     Campaigns,
     CampaignsMetrics,
@@ -21,6 +22,8 @@ from source_iterable.streams import (
     Users,
 )
 from source_iterable.utils import dateutil_parse
+
+from .utils import read_full_refresh
 
 
 @pytest.mark.parametrize(
@@ -38,7 +41,7 @@ from source_iterable.utils import dateutil_parse
     ],
 )
 def test_path(config, stream, date, slice, expected_path):
-    args = {"authenticator": NoAuth()}
+    args = {"authenticator": None}
     if date:
         args["start_date"] = "2019-10-10T00:00:00"
 
@@ -64,19 +67,19 @@ def test_list_users_get_list_id(url, id):
 
 
 def test_campaigns_metrics_request_params():
-    stream = CampaignsMetrics(authenticator=NoAuth(), start_date="2019-10-10T00:00:00")
+    stream = CampaignsMetrics(authenticator=None, start_date="2019-10-10T00:00:00")
     params = stream.request_params(stream_slice={"campaign_ids": "c101"}, stream_state=None)
     assert params == {"campaignId": "c101", "startDateTime": "2019-10-10T00:00:00"}
 
 
 def test_events_request_params():
-    stream = Events(authenticator=NoAuth())
+    stream = Events(authenticator=None)
     params = stream.request_params(stream_slice={"email": "a@a.a"}, stream_state=None)
     assert params == {"email": "a@a.a", "includeCustomEvents": "true"}
 
 
 def test_templates_parse_response():
-    stream = Templates(authenticator=NoAuth(), start_date="2019-10-10T00:00:00")
+    stream = Templates(authenticator=None, start_date="2019-10-10T00:00:00")
     with responses.RequestsMock() as rsps:
         rsps.add(
             responses.GET,
@@ -93,7 +96,7 @@ def test_templates_parse_response():
 
 
 def test_list_users_parse_response():
-    stream = ListUsers(authenticator=NoAuth())
+    stream = ListUsers(authenticator=None)
     with responses.RequestsMock() as rsps:
         rsps.add(
             responses.GET,
@@ -111,7 +114,7 @@ def test_list_users_parse_response():
 
 def test_campaigns_metrics_parse_response():
 
-    stream = CampaignsMetrics(authenticator=NoAuth(), start_date="2019-10-10T00:00:00")
+    stream = CampaignsMetrics(authenticator=None, start_date="2019-10-10T00:00:00")
     with responses.RequestsMock() as rsps:
         rsps.add(
             responses.GET,
@@ -134,7 +137,7 @@ def test_campaigns_metrics_parse_response():
 
 
 def test_iterable_stream_parse_response():
-    stream = Lists(authenticator=NoAuth())
+    stream = Lists(authenticator=None)
     with responses.RequestsMock() as rsps:
         rsps.add(
             responses.GET,
@@ -151,40 +154,13 @@ def test_iterable_stream_parse_response():
 
 
 def test_iterable_stream_backoff_time():
-    stream = Lists(authenticator=NoAuth())
+    stream = Lists(authenticator=None)
     assert stream.backoff_time(response=None) is None
 
 
 def test_iterable_export_stream_backoff_time():
-    stream = Users(authenticator=NoAuth(), start_date="2019-10-10T00:00:00")
+    stream = Users(authenticator=None, start_date="2019-10-10T00:00:00")
     assert stream.backoff_time(response=None) is None
-
-
-@pytest.mark.parametrize(
-    "status, json, expected",
-    [
-        (429, {}, True),
-        # for 500 - Generic error we should make 2 retry attempts
-        # and give up on third one!
-        (500, {"msg": "...Please try again later...1", "code": "Generic Error"}, True),
-        (500, {"msg": "...Please try again later...2", "code": "Generic Error"}, True),
-        # This one should return False
-        (500, {"msg": "...Please try again later...3", "code": "Generic Error"}, False)
-    ],
-    ids=[
-        "Retry on 429",
-        "Retry on 500 - Generic (first)",
-        "Retry on 500 - Generic (second)",
-        "Retry on 500 - Generic (third)",
-    ]
-)
-def test_should_retry(status, json, expected, requests_mock, lists_stream):
-    stream = lists_stream
-    url = f"{stream.url_base}/{stream.path()}"
-    requests_mock.get(url, json=json, status_code=status)
-    test_response = requests.get(url)
-    result = stream.should_retry(test_response)
-    assert result is expected
 
 
 @pytest.mark.parametrize(
@@ -196,7 +172,7 @@ def test_should_retry(status, json, expected, requests_mock, lists_stream):
     ],
 )
 def test_get_updated_state(current_state, record_date, expected_state):
-    stream = Users(authenticator=NoAuth(), start_date="2019-10-10T00:00:00")
+    stream = Users(authenticator=None, start_date="2019-10-10T00:00:00")
     state = stream.get_updated_state(
         current_stream_state=current_state,
         latest_record={"profileUpdatedAt": pendulum.parse(record_date)},
@@ -207,7 +183,7 @@ def test_get_updated_state(current_state, record_date, expected_state):
 @responses.activate
 def test_stream_stops_on_401(mock_lists_resp):
     # no requests should be made after getting 401 error despite the multiple slices
-    users_stream = ListUsers(authenticator=NoAuth())
+    users_stream = ListUsers(authenticator=None)
     responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=1", json={}, status=401)
     slices = 0
     for slice_ in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
@@ -219,7 +195,7 @@ def test_stream_stops_on_401(mock_lists_resp):
 
 @responses.activate
 def test_listuser_stream_keep_working_on_500():
-    users_stream = ListUsers(authenticator=NoAuth())
+    users_stream = ListUsers(authenticator=None)
     responses.add(
         responses.GET,
         "https://api.iterable.com/api/lists",
@@ -252,3 +228,32 @@ def test_listuser_stream_keep_working_on_500():
     for stream_slice in users_stream.stream_slices(sync_mode=SyncMode.full_refresh):
         records += list(users_stream.read_records(stream_slice=stream_slice, sync_mode=SyncMode.full_refresh))
     assert records == expected_records
+
+
+@responses.activate
+def test_events_read_full_refresh():
+    stream = Events(authenticator=None)
+    responses.get("https://api.iterable.com/api/lists", json={"lists": [{"id": 1}]})
+    responses.get("https://api.iterable.com/api/lists/getUsers?listId=1", body='user1\nuser2\nuser3\nuser4\nuser5')
+
+    def get_body(emails):
+        return "\n".join([json.dumps({"email": email}) for email in emails]) + "\n"
+
+    msg_error = "An error occurred. Please try again later. If problem persists, please contact your CSM"
+    generic_error1 = {"msg": msg_error, "code": "GenericError"}
+    generic_error2 = {"msg": msg_error, "code": "Generic Error"}
+
+    responses.get("https://api.iterable.com/api/export/userEvents?email=user1&includeCustomEvents=true", body=get_body(["user1"]))
+
+    responses.get("https://api.iterable.com/api/export/userEvents?email=user2&includeCustomEvents=true", json=generic_error1, status=500)
+    responses.get("https://api.iterable.com/api/export/userEvents?email=user2&includeCustomEvents=true", body=get_body(["user2"]))
+
+    responses.get("https://api.iterable.com/api/export/userEvents?email=user3&includeCustomEvents=true", body=get_body(["user3"]))
+
+    responses.get("https://api.iterable.com/api/export/userEvents?email=user4&includeCustomEvents=true", json=generic_error1, status=500)
+
+    responses.get("https://api.iterable.com/api/export/userEvents?email=user5&includeCustomEvents=true", json=generic_error2, status=500)
+    responses.get("https://api.iterable.com/api/export/userEvents?email=user5&includeCustomEvents=true", body=get_body(["user5"]))
+
+    records = list(read_full_refresh(stream))
+    assert [r["email"] for r in records] == ['user1', 'user2', 'user3', 'user5']
