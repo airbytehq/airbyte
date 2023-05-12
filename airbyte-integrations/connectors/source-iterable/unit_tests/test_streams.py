@@ -21,9 +21,7 @@ from source_iterable.streams import (
     Templates,
     Users,
 )
-from source_iterable.utils import dateutil_parse
-
-from .utils import read_full_refresh
+from source_iterable.utils import dateutil_parse, read_full_refresh
 
 
 @pytest.mark.parametrize(
