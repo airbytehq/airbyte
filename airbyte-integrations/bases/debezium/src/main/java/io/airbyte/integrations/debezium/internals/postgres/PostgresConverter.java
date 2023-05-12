@@ -10,6 +10,7 @@ import static io.airbyte.db.jdbc.DateTimeConverter.convertToTimestamp;
 import static io.airbyte.db.jdbc.DateTimeConverter.convertToTimestampWithTimezone;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_BOOLEAN_SCHEMA;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_FLOAT64_SCHEMA;
+import static org.apache.kafka.connect.data.Schema.OPTIONAL_INT64_SCHEMA;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_STRING_SCHEMA;
 
 import io.airbyte.db.jdbc.DateTimeConverter;
@@ -34,6 +35,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.postgresql.jdbc.PgArray;
 import org.postgresql.util.PGInterval;
@@ -76,10 +78,17 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
     }
   }
 
-  private void registerArray(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
+  private void registerArray(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     final String fieldType = field.typeName().toUpperCase();
     final SchemaBuilder arraySchema = switch (fieldType) {
-      case "_NUMERIC", "_MONEY" -> SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA);
+      case "_NUMERIC" -> {
+        // Checks for the scale of the _NUMERIC field type
+        // use the INT64 (semantically equivalent to BigInt and Long) if there is no decimal scale
+        // use FLOAT64 if there is
+        final Schema schema = field.scale().orElse(0) == 0 ? OPTIONAL_INT64_SCHEMA : OPTIONAL_FLOAT64_SCHEMA;
+        yield SchemaBuilder.array(schema);
+      }
+      case "_MONEY" -> SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA);
       case "_NAME", "_DATE", "_TIME", "_TIMESTAMP", "_TIMESTAMPTZ", "_TIMETZ", "_BYTEA" -> SchemaBuilder.array(OPTIONAL_STRING_SCHEMA);
       case "_BIT" -> SchemaBuilder.array(OPTIONAL_BOOLEAN_SCHEMA);
       default -> SchemaBuilder.array(OPTIONAL_STRING_SCHEMA);
@@ -164,7 +173,18 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
             .map(Double::valueOf)
             .collect(Collectors.toList());
       case "_NUMERIC":
-        return Arrays.stream(getArray(x)).map(value -> value == null ? null : Double.valueOf(value.toString())).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> {
+          if (value == null) {
+            return null;
+          } else {
+            final int valueScale = new BigDecimal(value.toString()).scale();
+            if (valueScale == 0) {
+              return Long.parseLong(value.toString());
+            } else {
+              return Double.valueOf(value.toString());
+            }
+          }
+        }).collect(Collectors.toList());
       case "_TIME":
         return Arrays.stream(getArray(x)).map(value -> value == null ? null : convertToTime(value)).collect(Collectors.toList());
       case "_DATE":

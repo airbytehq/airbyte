@@ -751,29 +751,33 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
             .addExpectedValues("[\"object\",\"integer\"]")
             .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("numeric_array")
-            .fullSourceDataType("NUMERIC[]")
-            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-                    .build())
-                .build())
-            .addInsertValues("'{131070.23,231072.476596593}'")
-            .addExpectedValues("[131070.23,231072.476596593]")
-            .build());
+    for (final String type : Set.of("numeric", "decimal")) {
+      // This verifies NUMERIC/DECIMAL[] types to have
+      // default precision of (38, 0) if not specified
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(String.format("%s_array", type))
+              .fullSourceDataType(String.format("%s[]", type.toUpperCase()))
+              .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                  .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                      .build())
+                  .build())
+              .addInsertValues("'{131070,231072}'")
+              .addExpectedValues("[131070,231072]")
+              .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("decimal_array")
-            .fullSourceDataType("DECIMAL[]")
-            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-                    .build())
-                .build())
-            .addInsertValues("'{131070.23,231072.476596593}'")
-            .addExpectedValues("[131070.23,231072.476596593]")
-            .build());
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(String.format("%s_array", type))
+              .fullSourceDataType(String.format("%s(30,9)[]", type.toUpperCase()))
+              .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                  .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                      .build())
+                  .build())
+              .addInsertValues("'{131070.23,231072.476596593}'")
+              .addExpectedValues("[131070.23,231072.476596593]")
+              .build());
+    }
 
     addDataTypeTestData(
         TestDataHolder.builder()
