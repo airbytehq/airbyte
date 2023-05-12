@@ -23,7 +23,7 @@ Premier Support comes with:
 If you need better SLA times, we can definitely discuss this, don't hesitate to [talk to our team](https://airbyte.com/talk-to-sales) about it. You can also see more details about it in our pricing page.
 
 ## Office Hour
-Airbyte provides a [Daily Office Hour](https://airbyte.com/weekly-office-hours) to discuss issues. 
+Airbyte provides a [Daily Office Hour](https://airbyte.com/daily-office-hour) to discuss issues. 
 It is a 45 minute meeting, the first 20 minutes are reserved to a weekly topic presentation about Airbyte concepts and the others 25 minutes are for general questions. The schedule is:
 * Monday, Wednesday and Fridays: 1 PM PST/PDT 
 * Tuesday and Thursday: 4 PM CEST
