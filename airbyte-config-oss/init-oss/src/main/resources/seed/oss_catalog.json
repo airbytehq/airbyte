@@ -694,7 +694,7 @@
     "destinationDefinitionId": "22f6c74f-5699-40ff-833c-4a879ea40133",
     "name": "BigQuery",
     "dockerRepository": "airbyte/destination-bigquery",
-    "dockerImageTag": "1.4.0",
+    "dockerImageTag": "1.4.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/bigquery",
     "icon": "bigquery.svg",
     "spec": {
@@ -864,7 +864,7 @@
     },
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "bigquery"
     },
     "supportsDbt": true
@@ -1380,7 +1380,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-clickhouse",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "clickhouse"
     },
     "supportsDbt": false
@@ -3843,7 +3843,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-mssql",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "mssql"
     },
     "supportsDbt": true
@@ -4312,7 +4312,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-mysql",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "mysql"
     },
     "supportsDbt": true
@@ -4549,7 +4549,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-oracle",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "oracle"
     },
     "supportsDbt": true
@@ -4873,7 +4873,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "postgres"
     },
     "supportsDbt": true
@@ -5611,7 +5611,7 @@
     },
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-redshift",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "redshift"
     },
     "supportsDbt": true
@@ -6788,7 +6788,7 @@
     },
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-snowflake",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "snowflake"
     },
     "supportsDbt": true
@@ -7338,7 +7338,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-tidb",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "tidb"
     },
     "supportsDbt": true
@@ -9985,7 +9985,7 @@
     "sourceDefinitionId": "47f25999-dd5e-4636-8c39-e7cea2453331",
     "name": "Bing Ads",
     "dockerRepository": "airbyte/source-bing-ads",
-    "dockerImageTag": "0.1.22",
+    "dockerImageTag": "0.1.23",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/bing-ads",
     "icon": "bingads.svg",
     "sourceType": "api",
@@ -12828,7 +12828,7 @@
     "sourceDefinitionId": "778daa7c-feaf-4db6-96f3-70fd645acc77",
     "name": "File (CSV, JSON, Excel, Feather, Parquet)",
     "dockerRepository": "airbyte/source-file",
-    "dockerImageTag": "0.3.3",
+    "dockerImageTag": "0.3.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/file",
     "icon": "file.svg",
     "sourceType": "file",
@@ -14139,7 +14139,7 @@
     "sourceDefinitionId": "253487c0-2246-43ba-a21f-5116b20a2c50",
     "name": "Google Ads",
     "dockerRepository": "airbyte/source-google-ads",
-    "dockerImageTag": "0.2.14",
+    "dockerImageTag": "0.2.16",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-ads",
     "icon": "google-adwords.svg",
     "sourceType": "api",
@@ -14416,7 +14416,7 @@
     "sourceDefinitionId": "3cc2eafd-84aa-4dca-93af-322d9dfeec1a",
     "name": "Google Analytics 4 (GA4)",
     "dockerRepository": "airbyte/source-google-analytics-data-api",
-    "dockerImageTag": "0.2.0",
+    "dockerImageTag": "0.2.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-analytics-data-api",
     "icon": "google-analytics.svg",
     "sourceType": "api",
@@ -24825,7 +24825,7 @@
     "sourceDefinitionId": "e094cb9a-26de-4645-8761-65c0c425d1de",
     "name": "Stripe",
     "dockerRepository": "airbyte/source-stripe",
-    "dockerImageTag": "3.4.2",
+    "dockerImageTag": "3.4.3",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/stripe",
     "icon": "stripe.svg",
     "sourceType": "api",
@@ -28601,7 +28601,7 @@
     "sourceDefinitionId": "6f2ac653-8623-43c4-8950-19218c7caf3d",
     "name": "Firebolt",
     "dockerRepository": "airbyte/source-firebolt",
-    "dockerImageTag": "0.2.0",
+    "dockerImageTag": "0.2.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/firebolt",
     "icon": "firebolt.svg",
     "sourceType": "database",
