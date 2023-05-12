@@ -316,7 +316,7 @@ class DaggerPipelineCommand(click.Command):
                 raise DaggerError(f"Dagger Command {command_name} failed.")
         except DaggerError as e:
             click.secho(str(e), err=True, fg="red")
-            return sys.exit(1)
+            sys.exit(1)
 
 
 async def execute_concurrently(steps: List[Callable], concurrency=5):

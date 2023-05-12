@@ -14,7 +14,7 @@ import anyio
 import click
 import dagger
 from ci_connector_ops.pipelines.builds import run_connector_build_pipeline
-from ci_connector_ops.pipelines.contexts import CIContext, ConnectorContext, ContextState
+from ci_connector_ops.pipelines.contexts import CIContext, ConnectorContext, ContextState, PublishConnectorContext
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_pipelines
 from ci_connector_ops.pipelines.publish import run_connector_publish_pipeline
@@ -274,6 +274,35 @@ def build(ctx: click.Context) -> bool:
     required=True,
     envvar="METADATA_SERVICE_BUCKET_NAME",
 )
+@click.option(
+    "--docker-hub-username",
+    help="Your username to connect to DockerHub.",
+    type=click.STRING,
+    required=True,
+    envvar="DOCKER_HUB_USERNAME",
+)
+@click.option(
+    "--docker-hub-password",
+    help="Your password to connect to DockerHub.",
+    type=click.STRING,
+    required=True,
+    envvar="DOCKER_HUB_PASSWORD",
+)
+@click.option(
+    "--slack-webhook",
+    help="The Slack webhook URL to send notifications to.",
+    type=click.STRING,
+    required=True,
+    envvar="SLACK_WEBHOOK",
+)
+@click.option(
+    "--slack-channel",
+    help="The Slack webhook URL to send notifications to.",
+    type=click.STRING,
+    required=True,
+    envvar="SLACK_CHANNEL",
+    default="#publish-on-merge-updates",
+)
 @click.pass_context
 def publish(
     ctx: click.Context,
@@ -282,7 +311,12 @@ def publish(
     spec_cache_bucket_name: str,
     metadata_service_bucket_name: str,
     metadata_service_account_key: str,
+    docker_hub_username: str,
+    docker_hub_password: str,
+    slack_webhook: str,
+    slack_channel: str,
 ):
+
     if ctx.obj["is_local"]:
         click.confirm(
             "Publishing from a local environment is not recommend and requires to be logged in Airbyte's DockerHub registry, do you want to continue?",
@@ -297,35 +331,35 @@ def publish(
 
     click.secho(f"Will publish the following connectors: {', '.join(selected_connectors_names)}.", fg="green")
 
-    os.environ["SPEC_CACHE_SERVICE_ACCOUNT_KEY"] = spec_cache_service_account_key
-    os.environ["METADATA_SERVICE_ACCOUNT_KEY"] = metadata_service_account_key
-
-    connectors_contexts = [
-        ConnectorContext(
-            pipeline_name="Publish",
-            connector=connector,
-            is_local=ctx.obj["is_local"],
-            git_branch=ctx.obj["git_branch"],
-            git_revision=ctx.obj["git_revision"],
-            modified_files=modified_files,
-            s3_report_key="python-poc/publish/history/",
-            use_remote_secrets=ctx.obj["use_remote_secrets"],
+    publish_connector_contexts = [
+        PublishConnectorContext(
+            connector,
+            pre_release,
+            modified_files,
+            spec_cache_service_account_key,
+            spec_cache_bucket_name,
+            metadata_service_account_key,
+            metadata_service_bucket_name,
+            docker_hub_username,
+            docker_hub_password,
+            slack_webhook,
+            slack_channel,
+            ctx.obj["is_local"],
+            ctx.obj["git_branch"],
+            ctx.obj["git_revision"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
-            reporting_slack_channel="publish-on-merge-updates",
         )
         for connector, modified_files in selected_connectors_and_files.items()
     ]
-    connectors_contexts = anyio.run(
+
+    publish_connector_contexts = anyio.run(
         run_connectors_pipelines,
-        connectors_contexts,
+        publish_connector_contexts,
         run_connector_publish_pipeline,
         "Publish pipeline",
         ctx.obj["concurrency"],
         ctx.obj["execute_timeout"],
-        pre_release,
-        spec_cache_bucket_name,
-        metadata_service_bucket_name,
     )
-    return all(context.state is ContextState.SUCCESSFUL for context in connectors_contexts)
+    return all(context.state is ContextState.SUCCESSFUL for context in publish_connector_contexts)
