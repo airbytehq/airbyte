@@ -185,14 +185,14 @@ public class PerformanceTest {
 //      }
     }
 
-//    log.info("Test ended successfully");
-//    final var end = System.currentTimeMillis();
-//    final var totalMB = totalBytes / MEGABYTE;
-//    final var totalTimeSecs = (end - start) / 1000.0;
-//    final var rps = counter / totalTimeSecs;
-//
-//    log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
-//    destination.close();
+    log.info("Test ended successfully");
+    final var end = System.currentTimeMillis();
+    final var totalMB = totalBytes / MEGABYTE;
+    final var totalTimeSecs = (end - start) / 1000.0;
+    final var rps = counter / totalTimeSecs;
+
+    log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
+    destination.close();
   }
 
   private static void populateStreamToAllFields(final ConfiguredAirbyteCatalog catalog,
