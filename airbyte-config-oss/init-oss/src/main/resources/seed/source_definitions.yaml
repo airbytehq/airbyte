@@ -325,7 +325,7 @@
 - name: Close.com
   sourceDefinitionId: dfffecb7-9a13-43e9-acdc-b92af7997ca9
   dockerRepository: airbyte/source-close-com
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/close-com
   icon: close.svg
   sourceType: api
@@ -1956,7 +1956,7 @@
 - name: Smartsheets
   sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
   dockerRepository: airbyte/source-smartsheets
-  dockerImageTag: 1.0.1
+  dockerImageTag: 1.0.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/smartsheets
   icon: smartsheet.svg
   sourceType: api
@@ -2060,7 +2060,7 @@
 - name: SurveyMonkey
   sourceDefinitionId: badc5925-0485-42be-8caa-b34096cb71b5
   dockerRepository: airbyte/source-surveymonkey
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/surveymonkey
   icon: surveymonkey.svg
   sourceType: api
@@ -2121,7 +2121,7 @@
 - name: TikTok Marketing
   sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
   dockerRepository: airbyte/source-tiktok-marketing
-  dockerImageTag: 3.0.1
+  dockerImageTag: 3.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
   icon: tiktok.svg
   sourceType: api
