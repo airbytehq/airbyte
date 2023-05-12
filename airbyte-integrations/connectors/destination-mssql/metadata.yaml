@@ -11,7 +11,7 @@ data:
   normalizationConfig:
     normalizationIntegrationType: mssql
     normalizationRepository: airbyte/normalization-mssql
-    normalizationTag: 0.4.1
+    normalizationTag: 0.4.3
   registries:
     cloud:
       dockerRepository: airbyte/destination-mssql-strict-encrypt

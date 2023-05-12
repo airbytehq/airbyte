@@ -11,7 +11,7 @@ data:
   normalizationConfig:
     normalizationIntegrationType: redshift
     normalizationRepository: airbyte/normalization-redshift
-    normalizationTag: 0.4.1
+    normalizationTag: 0.4.3
   registries:
     cloud:
       enabled: true
