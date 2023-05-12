@@ -240,6 +240,17 @@ def issue_worklogs_response():
 
 
 @fixture
+def updated_issue_worklogs_response():
+    return json.loads(load_file("updated_issue_worklogs.json"))\
+
+
+
+@fixture
+def all_issue_worklogs_response():
+    return json.loads(load_file("all_issue_worklogs.json"))
+
+
+@fixture
 def issue_watchers_response():
     return json.loads(load_file("issue_watchers.json"))
 

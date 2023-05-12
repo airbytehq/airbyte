@@ -8,6 +8,7 @@ from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
 from source_jira.source import SourceJira
 from source_jira.streams import (
+    AllIssueWorklogs,
     ApplicationRoles,
     Avatars,
     BoardIssues,
@@ -809,6 +810,26 @@ def test_issue_worklogs_stream(config, issues_response, issue_worklogs_response)
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = IssueWorklogs(**args)
+    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
+    assert len(records) == 1
+    assert len(responses.calls) == 2
+
+
+@responses.activate
+def test_all_issue_worklogs(config, updated_issue_worklogs_response, all_issue_worklogs_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/worklog/updated",
+        json=updated_issue_worklogs_response,
+    )
+    responses.add(
+        responses.POST,
+        f"https://{config['domain']}/rest/api/3/worklog/list?maxResults=50",
+        json=all_issue_worklogs_response
+    )
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+    stream = AllIssueWorklogs(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 1
     assert len(responses.calls) == 2

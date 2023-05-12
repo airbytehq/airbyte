@@ -10,16 +10,38 @@ acceptance_tests:
     tests:
     - config_path: "secrets/config.json"
       status: "succeed"
+    - config_path: "secrets/config_empty_projects.json"
+      status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
   discovery:
     tests:
     - config_path: "secrets/config.json"
+    - config_path: "secrets/config_empty_projects.json"
+      backward_compatibility_tests_config:
+        disable_for_version: 0.3.1
   basic_read:
     tests:
     - config_path: "secrets/config.json"
       expect_records:
         path: "integration_tests/expected_records.jsonl"
+      empty_streams:
+        - name: "issue_properties"
+          bypass_reason: "unable to populate"
+        - name: "project_permission_schemes"
+          bypass_reason: "unable to populate"
+        - name: "screen_tab_fields"
+          bypass_reason: "unable to populate"
+      ignored_fields:
+        sprint_issues:
+          - name: updated
+            bypass_reason: "Unstable data"
+          - name: fields/updated
+            bypass_reason: "Unstable data"
+      timeout_seconds: 2400
+    - config_path: "secrets/config_empty_projects.json"
+      expect_records:
+        path: "integration_tests/expected_records_all_issue_worklogs.jsonl"
       empty_streams:
       - name: "issue_properties"
         bypass_reason: "unable to populate"
@@ -34,14 +56,19 @@ acceptance_tests:
           - name: fields/updated
             bypass_reason: "Unstable data"
       timeout_seconds: 2400
-      fail_on_extra_columns: false
   incremental:
     tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       future_state:
         future_state_path: "integration_tests/abnormal_state.json"
+    - config_path: "secrets/config_empty_projects.json"
+      configured_catalog_path: "integration_tests/configured_catalog_all_issue_worklogs.json"
+      future_state:
+        future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+    - config_path: "secrets/config_empty_projects.json"
+      configured_catalog_path: "integration_tests/configured_catalog_all_issue_worklogs.json"
