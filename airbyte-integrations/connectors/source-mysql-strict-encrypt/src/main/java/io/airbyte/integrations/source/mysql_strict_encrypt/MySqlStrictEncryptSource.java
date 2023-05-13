@@ -32,6 +32,8 @@ public class MySqlStrictEncryptSource extends SpecModifyingSource implements Sou
   public static final String SSL_MODE_PREFERRED = "preferred";
   public static final String SSL_MODE_REQUIRED = "required";
 
+  public static final String SSL_MODE_DISABLE = "disable";
+
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlStrictEncryptSource.class);
   private static final String SSL_MODE_DESCRIPTION = "SSL connection modes. " +
       "<li><b>required</b> - Always connect with SSL. If the MySQL server doesn’t support SSL, the connection will not be established. Certificate Authority (CA) and Hostname are not verified.</li>"
@@ -59,8 +61,8 @@ public class MySqlStrictEncryptSource extends SpecModifyingSource implements Sou
         && config.get(TUNNEL_METHOD).get(TUNNEL_METHOD).asText().equals(NO_TUNNEL)) {
       // If no SSH tunnel
       if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
-        if (Set.of(SSL_MODE_PREFERRED).contains(config.get(SSL_MODE).get(MODE).asText())) {
-          // Fail in case SSL mode is preferred
+        if (Set.of(SSL_MODE_DISABLE, SSL_MODE_PREFERRED).contains(config.get(SSL_MODE).get(MODE).asText())) {
+          // Fail in case SSL mode is disable, preferred
           return new AirbyteConnectionStatus()
               .withStatus(Status.FAILED)
               .withMessage(
