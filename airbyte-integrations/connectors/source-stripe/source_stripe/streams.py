@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import datetime
+from datetime import datetime
 import math
 from abc import ABC, abstractmethod
 from itertools import chain
