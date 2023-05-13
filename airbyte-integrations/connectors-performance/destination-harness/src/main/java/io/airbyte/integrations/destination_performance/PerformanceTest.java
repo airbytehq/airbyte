@@ -33,13 +33,11 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -129,19 +127,20 @@ public class PerformanceTest {
     fileOutputStream.close();
     log.info("done saving {} ({})", temp.toString(), bytes);
     BufferedReader reader = new BufferedReader(new FileReader(temp.toString()));
-//    BufferedReader reader = new BufferedReader(new InputStreamReader(
-//        new URL("https://storage.googleapis.com/airbyte-performance-testing-public/sample-data/faker_10m/users.csv").openStream(),
-//        StandardCharsets.UTF_8));
+    // BufferedReader reader = new BufferedReader(new InputStreamReader(
+    // new
+    // URL("https://storage.googleapis.com/airbyte-performance-testing-public/sample-data/faker_10m/users.csv").openStream(),
+    // StandardCharsets.UTF_8));
 
-//      try (reader) {
-//        while (reader != null) {
-//          if (reader.readLine() == null) {
-//            log.info("is null {}", counter);
-//          } else {
-//            counter++;
-//          }
-//        }
-//      }
+    // try (reader) {
+    // while (reader != null) {
+    // if (reader.readLine() == null) {
+    // log.info("is null {}", counter);
+    // } else {
+    // counter++;
+    // }
+    // }
+    // }
 
     final var columnsString = reader.readLine();
     log.info("*** columns string: {}", columnsString);
@@ -155,7 +154,7 @@ public class PerformanceTest {
     try (reader) {
       while (true) {
 
-//        log.info("*** reading row");
+        // log.info("*** reading row");
         String line = reader.readLine();
         if (line == null) {
           log.info("*** empty line {}", counter);
@@ -164,7 +163,7 @@ public class PerformanceTest {
         final List row;
         try {
           row = Arrays.asList(pattern.split(line));
-//        log.info("*** row {}", row);
+          // log.info("*** row {}", row);
         } catch (NullPointerException npe) {
           log.warn("*** bad line: {} {} {}", line, counter, totalBytes);
           continue;
@@ -181,15 +180,15 @@ public class PerformanceTest {
         sb.append(String.join(",", combined));
         sb.append("}");
         final String recordString = sb.toString();
-//        log.info("*** RECORD: {}", recordString); // TEMP
+        // log.info("*** RECORD: {}", recordString); // TEMP
         totalBytes += recordString.length();
         counter++;
         final AirbyteMessage airbyteMessage = new AirbyteMessage()
             .withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage()
-            .withStream(catalog.getStreams().get(0).getStream().getName())
-            .withNamespace(catalog.getStreams().get(0).getStream().getNamespace())
-            .withData(Jsons.deserialize(recordString)));
+                .withStream(catalog.getStreams().get(0).getStream().getName())
+                .withNamespace(catalog.getStreams().get(0).getStream().getNamespace())
+                .withData(Jsons.deserialize(recordString)));
         airbyteMessage.getRecord().setEmittedAt(start);
         destination.accept(airbyteMessage);
 
