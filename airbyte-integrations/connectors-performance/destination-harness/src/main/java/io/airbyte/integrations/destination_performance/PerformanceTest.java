@@ -16,11 +16,11 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.internal.DefaultAirbyteDestination;
@@ -118,11 +118,12 @@ public class PerformanceTest {
       final AirbyteMessage airbyteMessage = new AirbyteMessage()
           .withType(Type.RECORD)
           .withRecord(new AirbyteRecordMessage()
-            .withStream(catalog.getStreams().get(0).getStream().getName())
-            .withNamespace(catalog.getStreams().get(0).getStream().getNamespace())
-            .withEmittedAt(Instant.now().toEpochMilli())
-//          .withData(Jsons.deserialize(recordString)));
-            .withData(Jsons.deserialize("{\"id\":\"20\",\"age\":\"28\",\"name\":\"Letisha\",\"email\":\"tommy1999@outlook.com\",\"title\":\"M.Sc.Tech.\",\"gender\":\"Male\",\"height\":\"1.69\",\"weight\":\"88\",\"language\":\"Lao\",\"telephone\":\"1-369-690-9292\",\"blood_type\":\"B−\",\"created_at\":\"2004-04-29 01:19:04+00\",\"occupation\":\"Gynaecologist\",\"updated_at\":\"2010-11-21 13:03:47+00\",\"nationality\":\"Russian\",\"academic_degree\":\"PhD\"}")));
+              .withStream(catalog.getStreams().get(0).getStream().getName())
+              .withNamespace(catalog.getStreams().get(0).getStream().getNamespace())
+              .withEmittedAt(Instant.now().toEpochMilli())
+              // .withData(Jsons.deserialize(recordString)));
+              .withData(Jsons.deserialize(
+                  "{\"id\":\"20\",\"age\":\"28\",\"name\":\"Letisha\",\"email\":\"tommy1999@outlook.com\",\"title\":\"M.Sc.Tech.\",\"gender\":\"Male\",\"height\":\"1.69\",\"weight\":\"88\",\"language\":\"Lao\",\"telephone\":\"1-369-690-9292\",\"blood_type\":\"B−\",\"created_at\":\"2004-04-29 01:19:04+00\",\"occupation\":\"Gynaecologist\",\"updated_at\":\"2010-11-21 13:03:47+00\",\"nationality\":\"Russian\",\"academic_degree\":\"PhD\"}")));
       destination.accept(airbyteMessage);
       log.info("=== harness emitted");
       sleep(500);
