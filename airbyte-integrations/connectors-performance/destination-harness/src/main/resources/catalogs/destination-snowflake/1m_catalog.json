@@ -3,7 +3,7 @@
     {
       "stream": {
         "name": "users",
-        "namespace": "performance_1m",
+        "namespace": "PERF_TEST_HARNESS",
         "json_schema": {
           "type": "object",
           "properties": {
