@@ -1519,7 +1519,6 @@ definitions:
     type: object
     required:
       - type
-      - page_size
     properties:
       type:
         type: string
@@ -1532,6 +1531,7 @@ definitions:
           - type: string
         interpolation_context:
           - config
+          - response
         examples:
           - 100
           - "{{ config['page_size'] }}"
@@ -1544,7 +1544,6 @@ definitions:
     type: object
     required:
       - type
-      - page_size
     properties:
       type:
         type: string
