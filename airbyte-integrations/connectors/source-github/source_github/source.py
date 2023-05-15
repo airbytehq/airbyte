@@ -102,14 +102,10 @@ class SourceGithub(AbstractSource):
         """
         config_repositories = SourceGithub._get_and_prepare_repositories_config(config)
         if not SourceGithub._is_repositories_config_valid(config_repositories):
-            user_message = (
-                f"You provided invalid format of repositories config: {' '.join(config_repositories)}."
-                "Repositories with the wrong name, or repositories that do not exist, or have the wrong name format, "
-                "or do not belong to your account are not allowed."
+            raise Exception(
+                f"You provided invalid format of repositories config: {' ' .join(config_repositories)}."
                 f" Valid examples: airbytehq/airbyte airbytehq/another-repo airbytehq/* airbytehq/airbyte"
             )
-            message = "You provided invalid format of repositories config: {' '.join(config_repositories)}."
-            raise AirbyteTracedException(internal_message=message, message=user_message, failure_type=FailureType.config_error)
 
         if not config_repositories:
             raise Exception("Field `repository` required to be provided for connect to Github API")
