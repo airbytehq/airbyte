@@ -314,7 +314,6 @@ def publish(
     slack_webhook: str,
     slack_channel: str,
 ):
-
     if ctx.obj["is_local"]:
         click.confirm(
             "Publishing from a local environment is not recommend and requires to be logged in Airbyte's DockerHub registry, do you want to continue?",
