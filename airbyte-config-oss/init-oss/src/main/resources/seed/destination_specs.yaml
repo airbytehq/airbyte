@@ -1350,7 +1350,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-clickhouse:0.2.3"
+- dockerImage: "airbyte/destination-clickhouse:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/clickhouse"
     connectionSpecification:
@@ -1402,12 +1402,6 @@
           title: "JDBC URL Params"
           type: "string"
           order: 5
-        ssl:
-          title: "SSL Connection"
-          description: "Encrypt data using SSL."
-          type: "boolean"
-          default: false
-          order: 6
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"

@@ -1209,7 +1209,7 @@
     "destinationDefinitionId": "ce0d828e-1dc4-496c-b122-2da42e637e48",
     "name": "Clickhouse",
     "dockerRepository": "airbyte/destination-clickhouse",
-    "dockerImageTag": "0.2.3",
+    "dockerImageTag": "0.2.4",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/clickhouse",
     "icon": "clickhouse.svg",
     "spec": {
@@ -1261,13 +1261,6 @@
             "title": "JDBC URL Params",
             "type": "string",
             "order": 5
-          },
-          "ssl": {
-            "title": "SSL Connection",
-            "description": "Encrypt data using SSL.",
-            "type": "boolean",
-            "default": false,
-            "order": 6
           },
           "tunnel_method": {
             "type": "object",
