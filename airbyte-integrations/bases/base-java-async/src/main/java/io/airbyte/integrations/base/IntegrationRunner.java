@@ -108,6 +108,7 @@ public class IntegrationRunner {
     LOGGER.info("Running integration: {}", integration.getClass().getName());
     LOGGER.info("Command: {}", parsed.getCommand());
     LOGGER.info("Integration config: {}", parsed);
+
     try {
       switch (parsed.getCommand()) {
         // common

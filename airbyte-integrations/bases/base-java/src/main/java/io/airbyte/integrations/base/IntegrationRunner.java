@@ -202,7 +202,6 @@ public class IntegrationRunner {
     // https://jsonlines.org/ standard
     final Scanner input = new Scanner(System.in, StandardCharsets.UTF_8).useDelimiter("[\r\n]+");
     consumer.start();
-    int numMessages = 0;
     while (input.hasNext()) {
       consumeMessage(consumer, input.next());
     }
@@ -289,6 +288,7 @@ public class IntegrationRunner {
    */
   @VisibleForTesting
   static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString) throws Exception {
+
     final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
     if (messageOptional.isPresent()) {
       consumer.accept(messageOptional.get());
