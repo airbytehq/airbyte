@@ -25,7 +25,7 @@ public class ClickhouseDestinationStrictEncrypt extends SpecModifyingDestination
   @Override
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
-    ((ObjectNode) spec.getConnectionSpecification().get("properties"))remove(JdbcUtils.SSL_KEY);
+    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
     return spec;
   }
 
