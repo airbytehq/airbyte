@@ -99,10 +99,11 @@ class UploadSpecToCache(Step):
             try:
                 parsed_json = json.loads(line)
                 if parsed_json["type"] == "SPEC":
-                    return json.dumps(parsed_json["spec"])
-            except (json.JSONDecodeError, KeyError):
-                continue
-        raise InvalidSpecOutputError("Could not parse the output of the spec command.")
+                    parsed_spec = parsed_json["spec"]
+                    ConnectorSpecification.parse_obj(parsed_spec)
+                    return json.dumps(parsed_spec)
+            except (json.JSONDecodeError, KeyError, ValidationError, ValueError):
+                raise InvalidSpecOutputError("Could not parse the output of the SPEC command to a valid spec.")
 
     async def _get_connector_spec(self, connector: Container, deployment_mode: str) -> str:
         spec_output = await connector.with_env_variable("DEPLOYMENT_MODE", deployment_mode).with_exec(["spec"]).stdout()
@@ -111,17 +112,12 @@ class UploadSpecToCache(Step):
     def _get_spec_as_file(self, spec: str, name="spec_to_cache.json") -> File:
         return self.context.get_connector_dir().with_new_file(name, spec).file(name)
 
-    async def spec_is_valid(self, spec_file: File) -> bool:
-        raw_spec = await spec_file.contents()
-        try:
-            json_spec = json.loads(raw_spec)
-            ConnectorSpecification.parse_obj(**json_spec)
-        except (ValidationError, json.JSONDecodeError):
-            return False
-
     async def _run(self, built_connector: Container) -> StepResult:
-        oss_spec: str = await self._get_connector_spec(built_connector, "OSS")
-        cloud_spec: str = await self._get_connector_spec(built_connector, "CLOUD")
+        try:
+            oss_spec: str = await self._get_connector_spec(built_connector, "OSS")
+            cloud_spec: str = await self._get_connector_spec(built_connector, "CLOUD")
+        except InvalidSpecOutputError as e:
+            return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
 
         specs_to_uploads: List[Tuple[str, File]] = [(self.oss_spec_key, self._get_spec_as_file(oss_spec))]
 
@@ -129,12 +125,6 @@ class UploadSpecToCache(Step):
             specs_to_uploads.append(self.cloud_spec_key, self._get_spec_as_file(cloud_spec, "cloud_spec_to_cache.json"))
 
         for key, file in specs_to_uploads:
-            valid_spec = await self.spec_is_valid(file)
-            if not valid_spec:
-                return StepResult(
-                    self, status=StepStatus.FAILURE, stderr="The spec is not valid. Please fix it before publishing the connector."
-                )
-
             exit_code, stdout, stderr = await upload_to_gcs(
                 self.context.dagger_client,
                 file,

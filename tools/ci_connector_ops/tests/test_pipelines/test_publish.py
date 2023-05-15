@@ -89,7 +89,8 @@ class TestUploadSpecToCache:
         mocker.patch.object(
             publish, "upload_to_gcs", mocker.AsyncMock(return_value=(upload_exit_code, "upload_to_gcs_stdout", "upload_to_gcs_stderr"))
         )
-        mocker.patch.object(publish.UploadSpecToCache, "spec_is_valid", mocker.AsyncMock(return_value=valid_spec))
+        if not valid_spec:
+            mocker.patch.object(publish.ConnectorSpecification, "parse_obj", mocker.Mock(side_effect=ValueError("Invalid spec.")))
         context = mocker.MagicMock(
             dagger_client=dagger_client, get_connector_dir=mocker.MagicMock(return_value=tmp_dir), docker_image_name=image_name
         )
@@ -118,7 +119,7 @@ class TestUploadSpecToCache:
             assert step_result.stderr == "upload_to_gcs_stderr"
         if (not valid_spec and successful_upload) or (not valid_spec and not successful_upload):
             assert step_result.status == StepStatus.FAILURE
-            assert step_result.stderr == "The spec is not valid. Please fix it before publishing the connector."
+            assert step_result.stderr == "Could not parse the output of the SPEC command to a valid spec."
             assert step_result.stdout is None
             publish.upload_to_gcs.assert_not_called()
 
