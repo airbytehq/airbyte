@@ -2042,7 +2042,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.22"
+- dockerImage: "airbyte/source-bing-ads:0.1.23"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bing-ads"
     connectionSpecification:
@@ -2727,7 +2727,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-close-com:0.2.2"
+- dockerImage: "airbyte/source-close-com:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/close-com"
     connectionSpecification:
@@ -4567,7 +4567,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.3.3"
+- dockerImage: "airbyte/source-file:0.3.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/file"
     connectionSpecification:
@@ -5311,7 +5311,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-gitlab:1.0.4"
+- dockerImage: "airbyte/source-gitlab:1.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gitlab"
     connectionSpecification:
@@ -5795,7 +5795,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.2.14"
+- dockerImage: "airbyte/source-google-ads:0.2.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -6087,7 +6087,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-data-api:0.2.0"
+- dockerImage: "airbyte/source-google-analytics-data-api:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-data-api"
     connectionSpecification:
@@ -6162,7 +6162,11 @@
           type: "string"
           title: "Property ID"
           description: "A Google Analytics GA4 property identifier whose events are\
-            \ tracked. Specified in the URL path and not the body"
+            \ tracked. Specified in the URL path and not the body such as \"123...\"\
+            . See <a href=\"https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id\"\
+            >the docs</a> for more details."
+          pattern: "^[0-9]*$"
+          pattern_descriptor: "such as \"123...\""
           order: 1
         date_ranges_start_date:
           type: "string"
@@ -8613,7 +8617,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-marketo:1.0.4"
+- dockerImage: "airbyte/source-marketo:1.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/marketo"
     connectionSpecification:
@@ -9617,7 +9621,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:2.0.20"
+- dockerImage: "airbyte/source-mysql:2.0.21"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -11722,7 +11726,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pinterest:0.2.6"
+- dockerImage: "airbyte/source-pinterest:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pinterest"
     connectionSpecification:
@@ -14202,7 +14206,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-shopify:0.3.3"
+- dockerImage: "airbyte/source-shopify:0.3.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/shopify"
     connectionSpecification:
@@ -14219,6 +14223,7 @@
           title: "Shopify Store"
           description: "The name of your Shopify store found in the URL. For example,\
             \ if your URL was https://NAME.myshopify.com, then the name would be 'NAME'."
+          pattern: "^(?!https://)(?!http://)(?!.*\\.myshopify\\.)(?!.*\\.myshopify).*"
           order: 1
         credentials:
           title: "Shopify Authorization Method"
@@ -14549,7 +14554,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-smartsheets:1.0.1"
+- dockerImage: "airbyte/source-smartsheets:1.0.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/smartsheets"
     connectionSpecification:
@@ -14684,7 +14689,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.16"
+- dockerImage: "airbyte/source-snapchat-marketing:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
     connectionSpecification:
@@ -15252,7 +15257,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:3.4.2"
+- dockerImage: "airbyte/source-stripe:3.4.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
@@ -15364,7 +15369,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-surveymonkey:0.2.1"
+- dockerImage: "airbyte/source-surveymonkey:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/surveymonkey"
     connectionSpecification:
@@ -15941,7 +15946,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:3.0.1"
+- dockerImage: "airbyte/source-tiktok-marketing:3.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
@@ -18385,7 +18390,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-firebolt:0.2.0"
+- dockerImage: "airbyte/source-firebolt:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/firebolt"
     connectionSpecification:
