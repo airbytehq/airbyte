@@ -89,11 +89,7 @@ class SourceGoogleAds(AbstractSource):
         return False
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-
-        try:
-            config = self._validate_and_transform(config)
-        except QueryParseException as e:
-            return False, str(e)
+        config = self._validate_and_transform(config)
 
         try:
             logger.info("Checking the config")

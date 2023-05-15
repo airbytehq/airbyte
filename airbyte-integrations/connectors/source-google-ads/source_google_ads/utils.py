@@ -10,10 +10,6 @@ from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 
 
-class QueryParseException(Exception):
-    """Raised if the GAQL query failed to be parsed"""
-
-
 @dataclass(repr=False, eq=False, frozen=True)
 class GAQL:
     """
