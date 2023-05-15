@@ -2091,10 +2091,9 @@ interpolation:
     - title: Format Datetime
       description: Converts a datetime or a datetime-string to the specified format.
       arguments:
-        datetime: The datetime object or a string to convert. If datetime is a string, it must be formatted as ISO8601. Use %s to format the datetime as an epoch time (Unix timestamp)
+        datetime: The datetime object or a string to convert. If datetime is a string, it must be formatted as ISO8601.
         format: The datetime format
       return_type: str
       examples:
         - "{{ format_datetime(config['start_time'], '%Y-%m-%d') }}"
         - "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
-        - "{{ format_datetime(config['start_time'], '%s') }}"
