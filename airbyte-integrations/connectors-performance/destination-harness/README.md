@@ -1,4 +1,4 @@
-# source-harness
+# destination-harness
 
 Performance harness for destination connectors.
 
