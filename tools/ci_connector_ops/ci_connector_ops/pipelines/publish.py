@@ -12,7 +12,7 @@ from ci_connector_ops.pipelines.actions.remote_storage import upload_to_gcs
 from ci_connector_ops.pipelines.bases import ConnectorReport, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import PublishConnectorContext
 from ci_connector_ops.pipelines.pipelines import metadata
-from ci_connector_ops.pipelines.utils import with_exit_code, with_stderr, with_stdout
+from ci_connector_ops.pipelines.utils import with_stderr, with_stdout
 from dagger import Container, File, QueryError
 
 
@@ -23,13 +23,11 @@ class CheckConnectorImageDoesNotExist(Step):
         manifest_inspect = (
             environments.with_docker_cli(self.context)
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-            .with_exec(["docker", "manifest", "inspect", self.context.docker_image_name])
+            .with_exec(["sh", "-c", f"docker manifest inspect {self.context.docker_image_name} || true"])
         )
-        manifest_inspect_exit_code = await with_exit_code(manifest_inspect)
         manifest_inspect_stderr = await with_stderr(manifest_inspect)
         manifest_inspect_stdout = await with_stdout(manifest_inspect)
-
-        if manifest_inspect_exit_code != 0 and "no such manifest" in manifest_inspect_stderr:
+        if "no such manifest" in manifest_inspect_stderr:
             return StepResult(self, status=StepStatus.SUCCESS, stdout=f"No manifest found for {self.context.docker_image_from_metadata}.")
         else:
             try:
