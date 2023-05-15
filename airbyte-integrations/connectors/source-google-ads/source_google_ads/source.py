@@ -90,7 +90,6 @@ class SourceGoogleAds(AbstractSource):
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         config = self._validate_and_transform(config)
-
         try:
             logger.info("Checking the config")
             google_api = GoogleAds(credentials=self.get_credentials(config))
