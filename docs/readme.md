@@ -14,8 +14,7 @@ Browse the [connector catalog](https://docs.airbyte.com/integrations/) to find t
 
 Next, check out the [Airbyte Open Source QuickStart](https://docs.airbyte.com/quickstart/deploy-airbyte). Then learn how to [deploy](https://docs.airbyte.com/deploying-airbyte/local-deployment) and [manage](https://docs.airbyte.com/operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure. 
 
-
-To get help with Airbyte deployments, check out the [Troubleshooting & FAQ](https://docs.airbyte.com/troubleshooting/), chat with Support on [Discourse](https://discuss.airbyte.io/), or join us on [Community Slack](https://slack.airbyte.io/).
+Our team offers [premium support](https://airbyte.com/talk-to-sales-premium-support) if you need help. You can also leverage our [Community Slack](https://slack.airbyte.io/) and [Discourse](https://discuss.airbyte.io/) for help from the community.
 
 ### For Airbyte contributors
 
