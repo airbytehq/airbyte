@@ -27,6 +27,10 @@ def test_cursor_field(patch_incremental_base_class):
 
 
 def test_incremental_params(patch_incremental_base_class):
+    """
+    After talking to the insightly team we learned that the DATE_UPDATED_UTC
+    cursor is exclusive. Subtracting 1 second from the previous state makes it inclusive.
+    """
     stream = IncrementalInsightlyStream(authenticator=authenticator, start_date=start_date)
     inputs = {
         "stream_slice": None,
