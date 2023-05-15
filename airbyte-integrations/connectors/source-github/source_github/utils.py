@@ -71,6 +71,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
             return True
 
     def _refill(self):
+        """refill all needed tokens"""
         now = time.time()
         for token, ns in self._tokens.items():
             if now - ns.update_at >= self.DURATION:
@@ -78,6 +79,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
                 ns.count = self._requests_per_hour
 
     def _sleep(self):
+        """sleep only if all tokens is exhausted"""
         now = time.time()
         if sum([ns.count for ns in self._tokens.values()]) == 0:
             sleep_time = self.DURATION - (now - min([ns.update_at for ns in self._tokens.values()]))

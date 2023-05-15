@@ -183,10 +183,29 @@ def test_multiple_token_authenticator_with_rate_limiter(monkeypatch):
 
     with freeze_time("2021-01-01 12:00:00") as frozen_time:
 
-        authenticator = MultipleTokenAuthenticatorWithRateLimiter(tokens=["token1", "token2"], requests_per_hour=1000)
-        for _ in range(2000):
-            authenticator.token
-            frozen_time.tick(delta=datetime.timedelta(seconds=1))
+        authenticator = MultipleTokenAuthenticatorWithRateLimiter(tokens=["token1", "token2"], requests_per_hour=4)
+        authenticator._tokens["token1"].count = 2
+
+        assert authenticator.token == "Bearer token1"
+        frozen_time.tick(delta=datetime.timedelta(seconds=1))
+        assert authenticator.token == "Bearer token2"
+        frozen_time.tick(delta=datetime.timedelta(seconds=1))
+        assert authenticator.token == "Bearer token1"
+        frozen_time.tick(delta=datetime.timedelta(seconds=1))
+        assert authenticator.token == "Bearer token2"
+        frozen_time.tick(delta=datetime.timedelta(seconds=1))
+
+        # token1 is fully exhausted, token2 is still used
+        assert authenticator._tokens["token1"].count == 0
+        assert authenticator.token == "Bearer token2"
+        frozen_time.tick(delta=datetime.timedelta(seconds=1))
+        assert authenticator.token == "Bearer token2"
+        frozen_time.tick(delta=datetime.timedelta(seconds=1))
         assert called_args == []
-        authenticator.token
-        assert called_args == [1600.0]
+
+        # now we have to sleep because all tokens are exhausted
+        assert authenticator.token == "Bearer token1"
+        assert called_args == [3594.0]
+
+        assert authenticator._tokens["token1"].count == 3
+        assert authenticator._tokens["token2"].count == 4
