@@ -9,10 +9,10 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class AsyncStreamConsumer implements AirbyteMessageConsumer {
@@ -22,8 +22,8 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
   private final UploadWorkers uploadWorkers;
 
   public AsyncStreamConsumer(final BufferManager bufferManager) {
-    bufferManagerEnqueue = bufferManager.bufferManagerEnqueue;
-    uploadWorkers = new UploadWorkers(bufferManager.bufferManagerDequeue);
+    bufferManagerEnqueue = bufferManager.getBufferManagerEnqueue();
+    uploadWorkers = new UploadWorkers(bufferManager.getBufferManagerDequeue());
   }
 
   @Override
@@ -80,16 +80,25 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
     public BufferManager() {
       buffers = new HashMap<>();
+      bufferManagerEnqueue = new BufferManagerEnqueue(buffers);
+      bufferManagerDequeue = new BufferManagerDequeue(buffers);
+    }
 
+    public BufferManagerEnqueue getBufferManagerEnqueue() {
+      return bufferManagerEnqueue;
+    }
+
+    public BufferManagerDequeue getBufferManagerDequeue() {
+      return bufferManagerDequeue;
     }
 
   }
 
   static class BufferManagerEnqueue {
 
-    Map<StreamDescriptor, BlockingQueue<AirbyteMessage>> buffers;
+    Map<StreamDescriptor, LinkedBlockingQueue<AirbyteMessage>> buffers;
 
-    public BufferManagerEnqueue(final Map<StreamDescriptor, BlockingQueue<AirbyteMessage>> buffers) {
+    public BufferManagerEnqueue(final Map<StreamDescriptor, LinkedBlockingQueue<AirbyteMessage>> buffers) {
       this.buffers = buffers;
     }
 
@@ -105,19 +114,30 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
   static class BufferManagerDequeue {
 
-    Map<StreamDescriptor, BlockingQueue<AirbyteMessage>> buffers;
+    Map<StreamDescriptor, LinkedBlockingQueue<AirbyteMessage>> buffers;
 
-    public BufferManagerDequeue(final Map<StreamDescriptor, BlockingQueue<AirbyteMessage>> buffers) {
+    public BufferManagerDequeue(final Map<StreamDescriptor, LinkedBlockingQueue<AirbyteMessage>> buffers) {
       this.buffers = buffers;
     }
 
-    // dequeue
-    Map<StreamDescriptor, BlockingQueue<AirbyteMessage>> getBuffers() {
+    public Map<StreamDescriptor, LinkedBlockingQueue<AirbyteMessage>> getBuffers() {
       return new HashMap<>(buffers);
     }
 
-    BlockingQueue<AirbyteMessage> getQueue(final StreamDescriptor streamDescriptor) {
+    public LinkedBlockingQueue<AirbyteMessage> getBuffer(final StreamDescriptor streamDescriptor) {
       return buffers.get(streamDescriptor);
+    }
+
+    public int getTotalGlobalQueueSizeInMb() {
+      return 0;
+    }
+
+    public int getQueueSizeInMb(final StreamDescriptor streamDescriptor) {
+      return 0;
+    }
+
+    public Instant getTimeOfLastRecord(final StreamDescriptor streamDescriptor) {
+      return null;
     }
 
   }
@@ -130,7 +150,6 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     private final BufferManagerDequeue bufferManagerDequeue;
 
     public UploadWorkers(final BufferManagerDequeue bufferManagerDequeue) {
-
       this.bufferManagerDequeue = bufferManagerDequeue;
     }
 
