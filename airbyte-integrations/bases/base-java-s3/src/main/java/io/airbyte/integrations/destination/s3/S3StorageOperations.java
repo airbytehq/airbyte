@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -8,6 +8,7 @@ import static org.apache.logging.log4j.util.Strings.isNotBlank;
 
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
@@ -15,12 +16,14 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateManager;
 import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
+import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -95,22 +98,14 @@ public class S3StorageOperations extends BlobStorageOperations {
 
   /**
    * Create a directory object at the specified location. Creates the bucket if necessary.
-   *
-   * @param objectPath The directory to create. Must be a nonempty string.
    */
   @Override
-  public void createBucketObjectIfNotExists(final String objectPath) {
+  public void createBucketIfNotExists() {
     final String bucket = s3Config.getBucketName();
-    final String folderPath = objectPath.endsWith("/") ? objectPath : objectPath + "/";
     if (!doesBucketExist(bucket)) {
       LOGGER.info("Bucket {} does not exist; creating...", bucket);
       s3Client.createBucket(bucket);
       LOGGER.info("Bucket {} has been created.", bucket);
-    }
-    if (!s3Client.doesObjectExist(bucket, folderPath)) {
-      LOGGER.info("Storage Object {}/{} does not exist in bucket; creating...", bucket, objectPath);
-      s3Client.putObject(bucket, folderPath, "");
-      LOGGER.info("Storage Object {}/{} has been created in bucket.", bucket, objectPath);
     }
   }
 
@@ -132,13 +127,25 @@ public class S3StorageOperations extends BlobStorageOperations {
       }
 
       try {
-        return loadDataIntoBucket(objectPath, recordsData);
+        final String fileName = loadDataIntoBucket(objectPath, recordsData);
+        LOGGER.info("Successfully loaded records to stage {} with {} re-attempt(s)", objectPath, exceptionsThrown.size());
+        return fileName;
       } catch (final Exception e) {
         LOGGER.error("Failed to upload records into storage {}", objectPath, e);
         exceptionsThrown.add(e);
       }
     }
-    throw new RuntimeException(String.format("Exceptions thrown while uploading records into storage: %s", Strings.join(exceptionsThrown, "\n")));
+    // Verifying that ALL exceptions are authentication related before assuming this is a configuration
+    // issue reduces risk of misidentifying errors or reporting a transient error.
+    final boolean areAllExceptionsAuthExceptions = exceptionsThrown.stream().filter(e -> e instanceof AmazonS3Exception)
+        .map(s3e -> ((AmazonS3Exception) s3e).getStatusCode())
+        .filter(ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES::contains)
+        .count() == exceptionsThrown.size();
+    if (areAllExceptionsAuthExceptions) {
+      throw new ConfigErrorException(exceptionsThrown.get(0).getMessage(), exceptionsThrown.get(0));
+    } else {
+      throw new RuntimeException(String.format("Exceptions thrown while uploading records into storage: %s", Strings.join(exceptionsThrown, "\n")));
+    }
   }
 
   /**

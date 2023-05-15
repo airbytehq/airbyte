@@ -1,11 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
 
 import static io.airbyte.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
-import static io.airbyte.db.DataTypeUtils.TIMETZ_FORMATTER;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,11 +20,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
+import java.time.*;
 import java.time.chrono.IsoEra;
+import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import javax.xml.bind.DatatypeConverter;
 
@@ -121,17 +118,21 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DataTypeUtils.toISO8601String(resultSet.getDate(index)));
+    node.put(columnName, resultSet.getString(index));
   }
 
   protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DataTypeUtils.toISO8601String(resultSet.getTime(index)));
+    node.put(columnName, DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime.class)));
   }
 
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
-    final Instant instant = resultSet.getTimestamp(index).toInstant();
-    node.put(columnName, DataTypeUtils.toISO8601StringWithMicroseconds(instant));
+    try {
+      node.put(columnName, DateTimeConverter.convertToTimestamp(getObject(resultSet, index, LocalDateTime.class)));
+    } catch (Exception e) {
+      // for backward compatibility
+      final Instant instant = resultSet.getTimestamp(index).toInstant();
+      node.put(columnName, DataTypeUtils.toISO8601StringWithMicroseconds(instant));
+    }
   }
 
   protected void putBinary(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
@@ -143,37 +144,30 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void setTime(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    setTimestamp(preparedStatement, parameterIndex, value);
+    try {
+      preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      setTimestamp(preparedStatement, parameterIndex, value);
+    }
   }
 
   protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    // parse time, and timestamp the same way. this seems to not cause an problems and allows us
-    // to treat them all as ISO8601. if this causes any problems down the line, we can adjust.
-    // Parsing TIME as a TIMESTAMP might potentially break for ClickHouse cause it doesn't expect TIME
-    // value in the following format
     try {
-      var valueWithoutMicros = value;
-      final StringBuilder nanos = new StringBuilder();
-      final var dotIndex = value.indexOf(".");
-      if (dotIndex > 0) {
-        final var micro = value.substring(value.lastIndexOf('.') + 1, value.length() - 1);
-        nanos.append(micro);
-        valueWithoutMicros = value.replace("." + micro, "");
-      }
-      while (nanos.length() != 9) {
-        nanos.append("0");
-      }
-
-      final var timestamp = Timestamp
-          .from(DataTypeUtils.getDateFormat().parse(valueWithoutMicros).toInstant());
-      timestamp.setNanos(Integer.parseInt(nanos.toString()));
-      preparedStatement.setTimestamp(parameterIndex, timestamp);
-    } catch (final ParseException e) {
-      throw new RuntimeException(e);
+      preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
     }
   }
 
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    try {
+      preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
+    } catch (final DateTimeParseException e) {
+      setDateAsTimestamp(preparedStatement, parameterIndex, value);
+    }
+  }
+
+  private void setDateAsTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     try {
       final Timestamp from = Timestamp.from(DataTypeUtils.getDateFormat().parse(value).toInstant());
       preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
@@ -203,7 +197,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void setBigInteger(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    preparedStatement.setLong(parameterIndex, Long.parseLong(value));
+    preparedStatement.setLong(parameterIndex, new BigDecimal(value).toBigInteger().longValue());
   }
 
   protected void setDouble(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
@@ -232,7 +226,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   protected void putTimeWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     final OffsetTime timetz = getObject(resultSet, index, OffsetTime.class);
-    node.put(columnName, timetz.format(TIMETZ_FORMATTER));
+    node.put(columnName, DateTimeConverter.convertToTimeWithTimezone(timetz));
   }
 
   protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)

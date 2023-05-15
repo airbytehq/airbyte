@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -146,7 +146,7 @@ class Customers(IncrementalBigcommerceStream):
 
 class Products(IncrementalBigcommerceStream):
     data_field = "products"
-    # Override `order_field` bacause Products API do not acept `asc` value
+    # Override `order_field` because Products API does not accept `asc` value
     order_field = "date_modified"
 
     def path(self, **kwargs) -> str:
@@ -180,6 +180,60 @@ class Pages(IncrementalBigcommerceStream):
 
     def path(self, **kwargs) -> str:
         return f"content/{self.data_field}"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
+
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        slice = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state)
+        yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
+
+
+class Brands(IncrementalBigcommerceStream):
+    data_field = "brands"
+    cursor_field = "id"
+    order_field = "id"
+
+    def path(self, **kwargs) -> str:
+        return f"catalog/{self.data_field}"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = {"limit": self.limit}
+        params.update({"sort": self.order_field})
+        if next_page_token:
+            params.update(**next_page_token)
+        return params
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
+
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        slice = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state)
+        yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
+
+
+class Categories(IncrementalBigcommerceStream):
+    data_field = "categories"
+    cursor_field = "id"
+    order_field = "id"
+
+    def path(self, **kwargs) -> str:
+        return f"catalog/{self.data_field}"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = {"limit": self.limit}
+        params.update({"sort": self.order_field})
+        if next_page_token:
+            params.update(**next_page_token)
+        return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
@@ -303,4 +357,6 @@ class SourceBigcommerce(AbstractSource):
             Channels(**args),
             Store(**args),
             OrderProducts(**args),
+            Brands(**args),
+            Categories(**args),
         ]

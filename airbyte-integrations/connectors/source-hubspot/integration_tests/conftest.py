@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -9,7 +9,7 @@ import pytest
 
 @pytest.fixture(scope="session", name="config")
 def config_fixture():
-    with open("secrets/config.json", "r") as config_file:
+    with open("secrets/config_oauth.json", "r") as config_file:
         return json.load(config_file)
 
 

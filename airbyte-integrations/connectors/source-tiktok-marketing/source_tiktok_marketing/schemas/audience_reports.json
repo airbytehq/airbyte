@@ -1,5 +1,5 @@
 {
-  "type": ["null", "object"],
+  "type": "object",
   "additionalProperties": true,
   "properties": {
     "advertiser_id": {
@@ -16,11 +16,25 @@
     },
     "stat_time_day": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "stat_time_hour": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "country_code": {
+      "type": ["null", "string"]
+    },
+    "platform": {
+      "type": ["null", "string"]
+    },
+    "gender": {
+      "type": ["null", "string"]
+    },
+    "age": {
+      "type": ["null", "string"]
     },
     "metrics": {
       "type": ["null", "object"],
@@ -34,7 +48,7 @@
         "adgroup_name": {
           "type": ["null", "string"]
         },
-        "placement": {
+        "placement_type": {
           "type": ["null", "string"]
         },
         "adgroup_id": {
@@ -47,7 +61,7 @@
           "type": ["null", "string"]
         },
         "tt_app_id": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "tt_app_name": {
           "type": ["null", "string"]
@@ -62,64 +76,64 @@
           "type": ["null", "string"]
         },
         "spend": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "cpc": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "cpm": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "impressions": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "clicks": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "ctr": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "reach": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "cost_per_1000_reached": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "conversion": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "cost_per_conversion": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "conversion_rate": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "real_time_conversion": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "real_time_cost_per_conversion": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "real_time_conversion_rate": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "result": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "cost_per_result": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "result_rate": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "real_time_result": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "real_time_cost_per_result": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         },
         "real_time_result_rate": {
-          "type": ["null", "number"]
+          "type": ["null", "string"]
         }
       }
     },

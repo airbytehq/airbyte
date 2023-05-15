@@ -8,12 +8,14 @@ Deploying Airbyte Open-Source just takes two steps.
 ```bash
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
-docker-compose up
+./run-ab-platform.sh 
 ```
 
 Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000](http://localhost:8000)! You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy airbyte to your servers, **be sure to change these** in your `.env` file.
 
 Alternatively, if you have an Airbyte Cloud invite, just follow [these steps.](../deploying-airbyte/on-cloud.md)
+
+If you need direct access to our team for any kind of assistance, don't hesitate to [talk to our team](https://airbyte.com/talk-to-sales-premium-support) to discuss about our premium support offers."
 
 ## FAQ
 

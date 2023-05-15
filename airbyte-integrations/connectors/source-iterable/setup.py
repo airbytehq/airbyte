@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -12,7 +12,7 @@ MAIN_REQUIREMENTS = [
     "requests~=2.25",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "responses==0.13.3", "freezegun==1.1.0"]
+TEST_REQUIREMENTS = ["pytest~=6.1", "responses==0.23.1", "freezegun==1.1.0"]
 
 
 setup(

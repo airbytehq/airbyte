@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -38,6 +38,7 @@ def before_tests(request):
         ("Hello World", "MySQL", True),
         ("Hello World", "MSSQL", True),
         ("Hello World", "TiDB", True),
+        ("Hello World", "DuckDB", True),
         # Reserved Word for BigQuery and MySQL only
         ("Groups", "Postgres", False),
         ("Groups", "BigQuery", True),
@@ -46,6 +47,7 @@ def before_tests(request):
         ("Groups", "MySQL", True),
         ("Groups", "MSSQL", False),
         ("Groups", "TiDB", True),
+        ("Groups", "DuckDB", True),
         # Doesnt start with alpha or underscore
         ("100x200", "Postgres", True),
         ("100x200", "BigQuery", False),
@@ -54,6 +56,7 @@ def before_tests(request):
         ("100x200", "MySQL", True),
         ("100x200", "MSSQL", True),
         ("100x200", "TiDB", True),
+        ("100x200", "DuckDB", True),
         # Contains non alpha numeric
         ("post.wall", "Postgres", True),
         ("post.wall", "BigQuery", False),
@@ -62,6 +65,7 @@ def before_tests(request):
         ("post.wall", "MySQL", True),
         ("post.wall", "MSSQL", True),
         ("post.wall", "TiDB", True),
+        ("post.wall", "DuckDB", True),
     ],
 )
 def test_needs_quote(input_str: str, destination_type: str, expected: bool):
@@ -113,6 +117,7 @@ def test_transform_standard_naming(input_str: str, expected: str):
         ("Identifier Name", "MySQL", "{{ adapter.quote('Identifier Name') }}", "adapter.quote('Identifier Name')"),
         ("Identifier Name", "MSSQL", "{{ adapter.quote('Identifier Name') }}", "adapter.quote('Identifier Name')"),
         ("Identifier Name", "TiDB", "{{ adapter.quote('Identifier Name') }}", "adapter.quote('Identifier Name')"),
+        ("Identifier Name", "DuckDB", "{{ adapter.quote('Identifier Name') }}", "adapter.quote('Identifier Name')"),
         # Reserved Word for BigQuery and MySQL only
         ("Groups", "Postgres", "groups", "'groups'"),
         ("Groups", "BigQuery", "{{ adapter.quote('Groups') }}", "adapter.quote('Groups')"),
@@ -121,6 +126,7 @@ def test_transform_standard_naming(input_str: str, expected: str):
         ("Groups", "MySQL", "{{ adapter.quote('Groups') }}", "adapter.quote('Groups')"),
         ("Groups", "MSSQL", "groups", "'groups'"),
         ("Groups", "TiDB", "{{ adapter.quote('Groups') }}", "adapter.quote('Groups')"),
+        ("Groups", "DuckDB", "{{ adapter.quote('Groups') }}", "adapter.quote('Groups')"),
     ],
 )
 def test_normalize_column_name(input_str: str, destination_type: str, expected: str, expected_in_jinja: str):
@@ -171,6 +177,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ("Identifier Name5", "MySQL", "identifier_name5", "{{ adapter.quote('Identifier Name5') }}"),
         ("Identifier Name6", "MSSQL", "identifier_name6", "{{ adapter.quote('Identifier Name6') }}"),
         ("Identifier Name7", "TiDB", "identifier_name7", "{{ adapter.quote('Identifier Name7') }}"),
+        ("Identifier Name8", "DuckDB", "identifier_name8", "{{ adapter.quote('Identifier Name8') }}"),
         # Unicode
         ("a-Unicode_name_文1", "Postgres", "a_unicode_name__1", "{{ adapter.quote('a-Unicode_name_文1') }}"),
         ("a-Unicode_name_文2", "BigQuery", "a_Unicode_name__2", "a_Unicode_name__2"),
@@ -179,6 +186,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ("a-Unicode_name_文5", "MySQL", "a_unicode_name__5", "{{ adapter.quote('a-Unicode_name_文5') }}"),
         ("a-Unicode_name_文6", "MSSQL", "a_unicode_name__6", "{{ adapter.quote('a-Unicode_name_文6') }}"),
         ("a-Unicode_name_文7", "TiDB", "a_unicode_name__7", "{{ adapter.quote('a-Unicode_name_文7') }}"),
+        ("a-Unicode_name_文8", "DuckDB", "a_unicode_name__8", "{{ adapter.quote('a-Unicode_name_文8') }}"),
         # Doesnt start with alpha or underscore
         ("100x2001", "Postgres", "100x2001", "{{ adapter.quote('100x2001') }}"),
         ("100x2002", "BigQuery", "100x2002", "_100x2002"),
@@ -188,6 +196,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ("100x2005", "MySQL", "100x2005", "{{ adapter.quote('100x2005') }}"),
         ("100x2006", "MSSQL", "_100x2006", "{{ adapter.quote('100x2006') }}"),
         ("100x2007", "TiDB", "100x2007", "{{ adapter.quote('100x2007') }}"),
+        ("100x2008", "DuckDB", "100x2008", "{{ adapter.quote('100x2008') }}"),
         # Reserved Keywords in BQ and MySQL
         ("Groups", "Postgres", "groups", "groups"),
         ("Groups", "BigQuery", "Groups", "{{ adapter.quote('Groups') }}"),
@@ -196,6 +205,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ("Groups", "MySQL", "Groups", "{{ adapter.quote('Groups') }}"),
         ("Groups", "MSSQL", "groups", "groups"),
         ("Groups", "TiDB", "Groups", "{{ adapter.quote('Groups') }}"),
+        ("Groups", "DuckDB", "Groups", "{{ adapter.quote('Groups') }}"),
         # Reserved Keywords
         ("DisTincT", "Postgres", "DisTincT", "{{ adapter.quote('DisTincT') }}"),
         ("DisTincT", "BigQuery", "DisTincT", "{{ adapter.quote('DisTincT') }}"),
@@ -204,6 +214,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ("DisTincT", "MySQL", "DisTincT", "{{ adapter.quote('DisTincT') }}"),
         ("DisTincT", "MSSQL", "DisTincT", "{{ adapter.quote('DisTincT') }}"),
         ("DisTincT", "TiDB", "DisTincT", "{{ adapter.quote('DisTincT') }}"),
+        ("DisTincT", "DuckDB", "DisTincT", "{{ adapter.quote('DisTincT') }}"),
         # Quoted identifiers
         ("'QuoTed1 IdenTifiER'", "Postgres", "_quoted1_identifier_", "{{ adapter.quote('\\'QuoTed1 IdenTifiER\\'') }}"),
         ("'QuoTed2 IdenTifiER'", "BigQuery", "_QuoTed2_IdenTifiER_", "_QuoTed2_IdenTifiER_"),
@@ -212,6 +223,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ("'QuoTed5 IdenTifiER'", "MySQL", "_quoted5_identifier_", "{{ adapter.quote('\\'QuoTed5 IdenTifiER\\'') }}"),
         ("'QuoTed6 IdenTifiER'", "MSSQL", "_quoted6_identifier_", "{{ adapter.quote('\\'QuoTed6 IdenTifiER\\'') }}"),
         ("'QuoTed7 IdenTifiER'", "TiDB", "_quoted7_identifier_", "{{ adapter.quote('\\'QuoTed7 IdenTifiER\\'') }}"),
+        ("'QuoTed8 IdenTifiER'", "DuckDB", "_quoted8_identifier_", "{{ adapter.quote('\\'QuoTed8 IdenTifiER\\'') }}"),
         # Double Quoted identifiers
         ('"QuoTed7 IdenTifiER"', "Postgres", "_quoted7_identifier_", '{{ adapter.quote(\'""QuoTed7 IdenTifiER""\') }}'),
         ('"QuoTed8 IdenTifiER"', "BigQuery", "_QuoTed8_IdenTifiER_", "_QuoTed8_IdenTifiER_"),
@@ -220,6 +232,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ('"QuoTed11 IdenTifiER"', "MySQL", "_quoted11_identifier_", "{{ adapter.quote('\"QuoTed11 IdenTifiER\"') }}"),
         ('"QuoTed12 IdenTifiER"', "MSSQL", "_quoted12_identifier_", '{{ adapter.quote(\'""QuoTed12 IdenTifiER""\') }}'),
         ('"QuoTed13 IdenTifiER"', "TiDB", "_quoted13_identifier_", "{{ adapter.quote('\"QuoTed13 IdenTifiER\"') }}"),
+        ('"QuoTed14 IdenTifiER"', "DuckDB", "_quoted14_identifier_", "{{ adapter.quote('\"QuoTed14 IdenTifiER\"') }}"),
         # Back Quoted identifiers
         ("`QuoTed13 IdenTifiER`", "Postgres", "_quoted13_identifier_", "{{ adapter.quote('`QuoTed13 IdenTifiER`') }}"),
         ("`QuoTed14 IdenTifiER`", "BigQuery", "_QuoTed14_IdenTifiER_", "_QuoTed14_IdenTifiER_"),
@@ -228,6 +241,7 @@ def test_truncate_identifier(input_str: str, expected: str):
         ("`QuoTed17 IdenTifiER`", "MySQL", "_quoted17_identifier_", "{{ adapter.quote('_QuoTed17 IdenTifiER_') }}"),
         ("`QuoTed18 IdenTifiER`", "MSSQL", "_quoted18_identifier_", "{{ adapter.quote('`QuoTed18 IdenTifiER`') }}"),
         ("`QuoTed17 IdenTifiER`", "TiDB", "_quoted17_identifier_", "{{ adapter.quote('_QuoTed17 IdenTifiER_') }}"),
+        ("`QuoTed19 IdenTifiER`", "DuckDB", "_quoted19_identifier_", "{{ adapter.quote('_QuoTed19 IdenTifiER_') }}"),
     ],
 )
 def test_normalize_name(input_str: str, destination_type: str, expected: str, expected_column: str):

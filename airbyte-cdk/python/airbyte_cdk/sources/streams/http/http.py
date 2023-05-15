@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -13,7 +13,9 @@ from urllib.parse import urljoin
 import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream, StreamData
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from requests.auth import AuthBase
 from requests_cache.session import CachedSession
 
@@ -112,6 +114,10 @@ class HttpStream(Stream, ABC):
     @property
     def authenticator(self) -> HttpAuthenticator:
         return self._authenticator
+
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return HttpAvailabilityStrategy()
 
     @abstractmethod
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -260,7 +266,7 @@ class HttpStream(Stream, ABC):
         json: Any = None,
         data: Any = None,
     ) -> requests.PreparedRequest:
-        args = {"method": self.http_method, "url": urljoin(self.url_base, path), "headers": headers, "params": params}
+        args = {"method": self.http_method, "url": self._join_url(self.url_base, path), "headers": headers, "params": params}
         if self.http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
@@ -272,6 +278,10 @@ class HttpStream(Stream, ABC):
                 args["data"] = data
 
         return self._session.prepare_request(requests.Request(**args))
+
+    @classmethod
+    def _join_url(cls, url_base: str, path: str):
+        return urljoin(url_base, path)
 
     def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         """

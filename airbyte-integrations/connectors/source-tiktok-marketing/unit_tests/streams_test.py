@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock, PropertyMock, patch
@@ -78,9 +78,10 @@ def test_get_time_interval_past(pendulum_now_mock_past):
     assert len(list(intervals)) == 1
 
 
+@patch("source_tiktok_marketing.streams.AdvertiserIds.read_records", MagicMock(return_value=[{"advertiser_id": i} for i in range(354)]))
 def test_stream_slices_advertisers():
     slices = Advertisers(**CONFIG).stream_slices()
-    assert list(slices) == [None]
+    assert len(list(slices)) == 4  # math.ceil(354 / 100)
 
 
 @pytest.mark.parametrize(
@@ -161,7 +162,7 @@ def test_basic_reports_get_metrics_lifetime(stream, metrics_number):
         (AdGroupsReports, ["adgroup_id"]),
         (AdvertisersReports, ["advertiser_id"]),
         (CampaignsReports, ["campaign_id"]),
-        (AdvertisersAudienceReports, ["advertiser_id"]),
+        (AdvertisersAudienceReports, ["advertiser_id", "gender", "age"]),
     ],
 )
 def test_basic_reports_get_reporting_dimensions_lifetime(stream, dimensions_expected):
@@ -176,7 +177,7 @@ def test_basic_reports_get_reporting_dimensions_lifetime(stream, dimensions_expe
         (AdGroupsReports, ["adgroup_id", "stat_time_day"]),
         (AdvertisersReports, ["advertiser_id", "stat_time_day"]),
         (CampaignsReports, ["campaign_id", "stat_time_day"]),
-        (AdvertisersAudienceReports, ["advertiser_id", "stat_time_day"]),
+        (AdvertisersAudienceReports, ["advertiser_id", "stat_time_day", "gender", "age"]),
     ],
 )
 def test_basic_reports_get_reporting_dimensions_day(stream, dimensions_expected):
@@ -189,7 +190,7 @@ def test_basic_reports_get_reporting_dimensions_day(stream, dimensions_expected)
     [
         (Daily, "stat_time_day"),
         (Hourly, "stat_time_hour"),
-        (Lifetime, "stat_time_day"),
+        (Lifetime, []),
     ],
 )
 def test_basic_reports_cursor_field(granularity, cursor_field_expected):

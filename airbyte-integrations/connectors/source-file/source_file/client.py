@@ -1,15 +1,17 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 import json
+import sys
 import tempfile
 import traceback
 import urllib
 from os import environ
 from typing import Iterable
 from urllib.parse import urlparse
+from zipfile import BadZipFile
 
 import backoff
 import boto3
@@ -19,11 +21,15 @@ import numpy as np
 import pandas as pd
 import smart_open
 from airbyte_cdk.entrypoint import logger
-from airbyte_cdk.models import AirbyteStream, SyncMode
+from airbyte_cdk.models import AirbyteStream, FailureType, SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
 from azure.storage.blob import BlobServiceClient
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
+from openpyxl import load_workbook
+from openpyxl.utils.exceptions import InvalidFileException
+from urllib3.exceptions import ProtocolError
 from yaml import safe_load
 
 from .utils import backoff_handler
@@ -185,8 +191,8 @@ class URLFile:
             try:
                 credentials = json.loads(self._provider["service_account_json"])
             except json.decoder.JSONDecodeError as err:
-                error_msg = f"Failed to parse gcs service account json: {repr(err)}\n{traceback.format_exc()}"
-                logger.error(error_msg)
+                error_msg = f"Failed to parse gcs service account json: {repr(err)}"
+                logger.error(f"{error_msg}\n{traceback.format_exc()}")
                 raise ConfigurationError(error_msg) from err
 
         if credentials:
@@ -288,11 +294,12 @@ class Client:
         if self._reader_format == "yaml":
             return pd.DataFrame(safe_load(fp))
 
-    def load_dataframes(self, fp, skip_data=False) -> Iterable:
+    def load_dataframes(self, fp, skip_data=False, read_sample_chunk: bool = False) -> Iterable:
         """load and return the appropriate pandas dataframe.
 
         :param fp: file-like object to read from
         :param skip_data: limit reading data
+        :param read_sample_chunk: indicates whether a single chunk should only be read to generate schema
         :return: a list of dataframe loaded from files described in the configuration
         """
         readers = {
@@ -314,26 +321,40 @@ class Client:
         try:
             reader = readers[self._reader_format]
         except KeyError as err:
-            error_msg = f"Reader {self._reader_format} is not supported\n{traceback.format_exc()}"
-            logger.error(error_msg)
+            error_msg = f"Reader {self._reader_format} is not supported."
+            logger.error(f"{error_msg}\n{traceback.format_exc()}")
             raise ConfigurationError(error_msg) from err
 
         reader_options = {**self._reader_options}
         try:
             if self._reader_format == "csv":
+                bytes_read = 0
                 reader_options["chunksize"] = self.CSV_CHUNK_SIZE
                 if skip_data:
                     reader_options["nrows"] = 0
                     reader_options["index_col"] = 0
-                yield from reader(fp, **reader_options)
+                for record in reader(fp, **reader_options):
+                    bytes_read += sys.getsizeof(record)
+                    yield record
+                    if read_sample_chunk and bytes_read >= self.CSV_CHUNK_SIZE:
+                        return
             elif self._reader_options == "excel_binary":
                 reader_options["engine"] = "pyxlsb"
                 yield from reader(fp, **reader_options)
+            elif self._reader_format == "excel":
+                # Use openpyxl to read new-style Excel (xlsx) file; return to pandas for others
+                try:
+                    yield from self.openpyxl_chunk_reader(fp, **reader_options)
+                except (InvalidFileException, BadZipFile):
+                    yield reader(fp, **reader_options)
             else:
                 yield reader(fp, **reader_options)
         except UnicodeDecodeError as err:
-            error_msg = f"File {fp} can't be parsed with reader of chosen type ({self._reader_format})\n{traceback.format_exc()}"
-            logger.error(error_msg)
+            error_msg = (
+                f"File {fp} can't be parsed with reader of chosen type ({self._reader_format}). "
+                f"Please check provided Format and Reader Options. {repr(err)}."
+            )
+            logger.error(f"{error_msg}\n{traceback.format_exc()}")
             raise ConfigurationError(error_msg) from err
 
     @staticmethod
@@ -350,10 +371,12 @@ class Client:
             return current_type
         if dtype == object:
             return "string"
-        if dtype in number_types and (not current_type or current_type in number_types):
+        if dtype in number_types and (not current_type or current_type == "number"):
             return "number"
         if dtype == "bool" and (not current_type or current_type == "boolean"):
             return "boolean"
+        if dtype == "datetime64[ns]":
+            return "date-time"
         return "string"
 
     @property
@@ -384,6 +407,12 @@ class Client:
             except ConnectionResetError:
                 logger.info(f"Catched `connection reset error - 104`, stream: {self.stream_name} ({self.reader.full_url})")
                 raise ConnectionResetError
+            except ProtocolError as err:
+                error_msg = (
+                    f"File {fp} can not be opened due to connection issues on provider side. Please check provided links and options"
+                )
+                logger.error(f"{error_msg}\n{traceback.format_exc()}")
+                raise ConfigurationError(error_msg) from err
 
     def _cache_stream(self, fp):
         """cache stream to file"""
@@ -393,23 +422,32 @@ class Client:
         fp.close()
         return fp_tmp
 
-    def _stream_properties(self, fp):
+    def _stream_properties(self, fp, empty_schema: bool = False, read_sample_chunk: bool = False):
+        """
+        empty_schema param is used to check connectivity, i.e. we only read a header and do not produce stream properties
+        read_sample_chunk is used to determine if just one chunk should be read to generate schema
+        """
         if self._reader_format == "yaml":
             df_list = [self.load_yaml(fp)]
         else:
             if self.binary_source:
                 fp = self._cache_stream(fp)
-            df_list = self.load_dataframes(fp, skip_data=False)
+            df_list = self.load_dataframes(fp, skip_data=empty_schema, read_sample_chunk=read_sample_chunk)
         fields = {}
         for df in df_list:
             for col in df.columns:
                 # if data type of the same column differs in dataframes, we choose the broadest one
                 prev_frame_column_type = fields.get(col)
-                fields[col] = self.dtype_to_json_type(prev_frame_column_type, df[col].dtype)
-        return {field: {"type": [fields[field], "null"]} for field in fields}
+                df_type = df[col].dtype
+                fields[col] = self.dtype_to_json_type(prev_frame_column_type, df_type)
+        return {
+            field: (
+                {"type": ["string", "null"], "format": "date-time"} if fields[field] == "date-time" else {"type": [fields[field], "null"]}
+            )
+            for field in fields
+        }
 
-    @property
-    def streams(self) -> Iterable:
+    def streams(self, empty_schema: bool = False) -> Iterable:
         """Discovers available streams"""
         # TODO handle discovery of directories of multiple files instead
         with self.reader.open() as fp:
@@ -419,6 +457,29 @@ class Client:
                 json_schema = {
                     "$schema": "http://json-schema.org/draft-07/schema#",
                     "type": "object",
-                    "properties": self._stream_properties(fp),
+                    "properties": self._stream_properties(fp, empty_schema=empty_schema, read_sample_chunk=True),
                 }
         yield AirbyteStream(name=self.stream_name, json_schema=json_schema, supported_sync_modes=[SyncMode.full_refresh])
+
+    def openpyxl_chunk_reader(self, file, **kwargs):
+        """Use openpyxl lazy loading feature to read excel files (xlsx only) in chunks of 500 lines at a time"""
+        work_book = load_workbook(filename=file, read_only=True)
+        user_provided_column_names = kwargs.get("names")
+        for sheetname in work_book.sheetnames:
+            work_sheet = work_book[sheetname]
+            data = work_sheet.values
+            end = work_sheet.max_row
+            if end == 1 and not user_provided_column_names:
+                message = "Please provide column names for table in reader options field"
+                logger.error(message)
+                raise AirbyteTracedException(
+                    message="Config validation error: " + message,
+                    internal_message=message,
+                    failure_type=FailureType.config_error,
+                )
+            cols, start = (next(data), 1) if not user_provided_column_names else (user_provided_column_names, 0)
+            step = 500
+            while start <= end:
+                df = pd.DataFrame(data=(next(data) for _ in range(start, min(start + step, end))), columns=cols)
+                yield df
+                start += step

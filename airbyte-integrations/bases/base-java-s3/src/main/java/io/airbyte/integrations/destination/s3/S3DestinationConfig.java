@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -18,6 +18,7 @@ import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.retry.RetryMode;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -244,6 +245,11 @@ public class S3DestinationConfig {
       return AmazonS3ClientBuilder.standard()
           .withRegion(bucketRegion)
           .withCredentials(credentialsProvider)
+          // the SDK defaults to RetryMode.LEGACY
+          // (https://docs.aws.amazon.com/sdkref/latest/guide/feature-retry-behavior.html)
+          // this _can_ be configured via environment variable, but it seems more reliable to configure it
+          // programmatically
+          .withClientConfiguration(new ClientConfiguration().withRetryMode(RetryMode.STANDARD))
           .build();
     }
 

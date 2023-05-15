@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.avro;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import java.util.Arrays;
 
 /**
@@ -14,7 +14,7 @@ import java.util.Arrays;
  * <li>Reference: https://avro.apache.org/docs/current/spec.html#names</li>
  * </ul>
  */
-public class AvroNameTransformer extends ExtendedNameTransformer {
+public class AvroNameTransformer extends StandardNameTransformer {
 
   @Override
   public String applyDefaultCase(final String input) {

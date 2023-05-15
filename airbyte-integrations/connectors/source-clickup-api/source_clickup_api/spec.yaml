@@ -34,3 +34,10 @@ connectionSpecification:
       description: >-
         The ID of your list in your folder. Retrieve it from the `/folder/{folder_id}/list` of the ClickUp API. See <a
         href="https://clickup.com/api/clickupreference/operation/GetLists/">here</a>.
+    include_closed_tasks:
+      title: Include Closed Tasks
+      type: boolean
+      default: false
+      description: >-
+        Include or exclude closed tasks. By default, they are excluded. See <a
+        https://clickup.com/api/clickupreference/operation/GetTasks/#!in=query&path=include_closed&t=request">here</a>.

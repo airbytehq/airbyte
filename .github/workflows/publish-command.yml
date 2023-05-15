@@ -28,6 +28,10 @@ on:
         description: "Should run tests when publishing"
         required: true
         default: "true"
+      pre-release:
+        description: "Should publish a pre-release version"
+        required: true
+        default: false
 
 jobs:
   ## Gradle Build
@@ -47,10 +51,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -75,10 +77,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -103,10 +103,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -131,10 +129,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -159,10 +155,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -209,13 +203,13 @@ jobs:
           body: |
             <br>
 
-            | Connector | Did it publish? | Were definitions generated? |
+            | Connector | Version | Did it publish? | Were definitions generated? |
       - name: Create table separator
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            | --- | --- | --- |
+            | --- | --- | --- | --- |
   publish-image:
     timeout-minutes: 240
     needs:
@@ -228,7 +222,6 @@ jobs:
       matrix:
         connector: ${{ fromJSON(needs.preprocess-matrix.outputs.connectorjson) }}
     runs-on: runner-pool-${{ github.run_id }}
-    environment: more-secrets
     steps:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v0
@@ -250,7 +243,7 @@ jobs:
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
-          token: ${{ secrets.OCTAVIA_PAT }}
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
       - name: Install Java
         uses: actions/setup-java@v3
         with:
@@ -260,25 +253,23 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-      - name: Install Pyenv and Tox
+      - name: Install Pyenv
         run: |
           python3 -m pip install --quiet virtualenv==16.7.9 --user
           rm -r venv || echo "no pre-existing venv"
           python3 -m virtualenv venv
           source venv/bin/activate
-          pip install --quiet tox==3.24.4
       - name: Install yq
-        if: github.event.inputs.auto-bump-version == 'true' && success()
+        if: github.event.inputs.auto-bump-version == 'true' && github.event.inputs.pre-release != 'true' && success()
         run: |
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64
           sudo add-apt-repository ppa:rmescandon/yq
           sudo apt update
           sudo apt install yq -y
-      - name: Test and install CI scripts
+      - name: Install CI scripts
         # all CI python packages have the prefix "ci_"
         run: |
           source venv/bin/activate
-          tox -r -c ./tools/tox_ci.ini
           pip install --quiet -e ./tools/ci_*
       - name: Write Integration Test Credentials for ${{ matrix.connector }}
         run: |
@@ -298,7 +289,7 @@ jobs:
           source tools/lib/lib.sh
           DOCKERFILE=airbyte-integrations/${{ matrix.connector }}/Dockerfile
           echo "IMAGE_NAME=$(echo ${{ matrix.connector }} | cut -d"/" -f2)" >> $GITHUB_ENV
-          echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE})" >> $GITHUB_ENV
+          echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE} ${{ github.event.inputs.pre-release }})" >> $GITHUB_ENV
       - name: Prepare Sentry
         if: startsWith(matrix.connector, 'connectors')
         uses: Wandalen/wretry.action@master
@@ -306,6 +297,12 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
           command: curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
+      - name: Run QA checks for ${{ matrix.connector }}
+        id: qa_checks
+        if: always()
+        run: |
+          source venv/bin/activate
+          run-qa-checks ${{ matrix.connector }}
       - name: Publish ${{ matrix.connector }}
         id: publish
         env:
@@ -317,7 +314,7 @@ jobs:
         with:
           command: |
             echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
-            ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
+            ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache ${{ github.event.inputs.pre-release == 'true' && '--pre_release' || '' }}
           attempt_limit: 3
           attempt_delay: 5000 in # ms
       - name: Update Integration Test Credentials after test run for ${{ github.event.inputs.connector }}
@@ -344,20 +341,20 @@ jobs:
           SENTRY_ORG: airbytehq
           SENTRY_PROJECT: connector-incident-management
       - name: Check if connector in definitions yaml
-        if: github.event.inputs.auto-bump-version == 'true' && success()
+        if: github.event.inputs.auto-bump-version == 'true' && github.event.inputs.pre-release != 'true' && success()
         run: |
           connector="airbyte/${{ env.IMAGE_NAME }}"
-          definitionpath=./airbyte-config/init/src/main/resources/seed/
+          definitionpath=./airbyte-config-oss/init-oss/src/main/resources/seed/
           sourcecheck=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitionpath"source_definitions.yaml)
           destcheck=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitionpath"destination_definitions.yaml)
           if [[ (-z "$sourcecheck" && -z "$destcheck") ]]
           then exit 1
           fi
       - name: Bump version in definitions yaml
-        if: github.event.inputs.auto-bump-version == 'true' && success()
+        if: github.event.inputs.auto-bump-version == 'true' && github.event.inputs.pre-release != 'true' && success()
         run: |
           connector="airbyte/${{ env.IMAGE_NAME }}"
-          definitionpath=./airbyte-config/init/src/main/resources/seed/
+          definitionpath=./airbyte-config-oss/init-oss/src/main/resources/seed/
           sourcename=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"source_definitions.yaml)
           destname=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"destination_definitions.yaml)
           if [ -z "$sourcename" ]
@@ -365,10 +362,10 @@ jobs:
           else yq e "(.[] | select(.name == \"$sourcename\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"source_definitions.yaml
           fi
       - name: Run gradle process changes
-        if: github.event.inputs.auto-bump-version == 'true' && success()
+        if: github.event.inputs.auto-bump-version == 'true' && github.event.inputs.pre-release != 'true' && success()
         uses: Wandalen/wretry.action@master
         with:
-          command: ./gradlew :airbyte-config:init:processResources
+          command: ./gradlew :airbyte-config-oss:init-oss:processResources
           attempt_limit: 3
           attempt_delay: 5000 # in ms
       - name: git config
@@ -377,7 +374,7 @@ jobs:
           git config user.name 'Octavia Squidington III'
           git config user.email 'octavia-squidington-iii@users.noreply.github.com'
       - name: git commit and push
-        if: github.event.inputs.auto-bump-version == 'true' && success()
+        if: github.event.inputs.auto-bump-version == 'true' && github.event.inputs.pre-release != 'true' && success()
         run: |
           git add -u
           git commit -m "auto-bump connector version"
@@ -403,7 +400,7 @@ jobs:
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            | ${{ matrix.connector }} | ${{ env.PUBLISH_OUTCOME }} | ${{ env.AUTO_BUMP_OUTCOME }} |
+            | ${{ matrix.connector }} | ${{ env.IMAGE_VERSION }} | ${{ env.PUBLISH_OUTCOME }} | ${{ env.AUTO_BUMP_OUTCOME }} |
   add-helpful-info-to-git-comment:
     if: ${{ always() && github.event.inputs.comment-id }}
     name: Add extra info to git comment
@@ -442,10 +439,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: airbytehq/ec2-github-runner@base64v1.1.0
         with:
@@ -499,10 +494,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: airbytehq/ec2-github-runner@base64v1.1.0
         with:

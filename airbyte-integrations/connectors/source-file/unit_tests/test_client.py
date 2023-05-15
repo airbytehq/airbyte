@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -8,6 +8,7 @@ from unittest.mock import patch
 import pytest
 from pandas import read_csv, read_excel
 from source_file.client import Client, ConfigurationError, URLFile
+from urllib3.exceptions import ProtocolError
 
 
 @pytest.fixture
@@ -89,8 +90,11 @@ def test_load_nested_json(client, absolute_path, test_files):
         ("string", "string", "string"),
         ("", object, "string"),
         ("", "int64", "number"),
+        ("", "float64", "number"),
         ("boolean", "bool", "boolean"),
-        ("integer", "int64", "string"),
+        ("number", "int64", "number"),
+        ("number", "float64", "number"),
+        ("number", "datetime64[ns]", "date-time"),
     ],
 )
 def test_dtype_to_json_type(client, current_type, dtype, expected):
@@ -147,3 +151,11 @@ def test_read(test_read_config):
         except ConnectionResetError:
             print("Exception has been raised correctly!")
         mock_method.assert_called()
+
+
+def test_read_network_issues(test_read_config):
+    test_read_config.update(format='excel')
+    client = Client(**test_read_config)
+    client.sleep_on_retry_sec = 0  # just for test
+    with patch.object(client, "_cache_stream", side_effect=ProtocolError), pytest.raises(ConfigurationError):
+        next(client.read(["date", "key"]))

@@ -6,6 +6,8 @@ This tutorial will describe how to determine if you need to run this upgrade pro
 
 When Airbyte is upgraded, it will attempt to upgrade some connector versions. It follows the following rules: 1. if a connector is not used, it will be upgraded to the latest version 2. if a connector is used, it will NOT be upgraded to avoid disrupting working workflows. If you want to upgrade a connector, do so in the settings page in the webapp.
 
+If you need help from our team for your upgrades, we offer premium support to our open-source users, [talk to our team](https://airbyte.com/talk-to-sales-premium-support) to get access to it.
+
 ## Determining if you need to Upgrade
 
 Airbyte intelligently performs upgrades automatically based off of your version defined in your `.env` file and will handle data migration for you.
@@ -25,28 +27,34 @@ To upgrade to v0.32.0-alpha-patch-1, follow the steps in the following sections,
    git checkout v0.32.0-alpha-patch-1
    ```
 
-2. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/v0.32.0-alpha-patch-1/{.env,docker-compose.yaml}` to pull this version and overwrite both files.
+2. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/v0.32.0-alpha-patch-1/{.env,flags.yml,docker-compose.yaml}` to pull this version and overwrite both files.
 
 If you use custom connectors, this upgrade requires all of your connector specs to be retrievable from the node running Airbyte, or Airbyte will fail on startup. If the specs are not retrievable, you need to fix this before proceeding. Alternatively, you could delete the custom connector definitions from Airbyte upon upgrade by setting the `VERSION_0_32_0_FORCE_UPGRADE` environment variable to true. This will cause the server to delete any connectors for which specs cannot be retrieved, as well as any connections built on top of them.
 
 ## Upgrading on Docker
 
+:::note
+
+Airbyte version 0.40.27 or later requires [Docker Compose V2](https://docs.docker.com/compose/compose-v2/) to be [installed](https://docs.docker.com/compose/install/) before upgrading.
+
+:::
+
 1. In a terminal, on the host where Airbyte is running, turn off Airbyte.
 
    ```bash
-   docker-compose down
+   docker compose down
    ```
 
 2. Upgrade the docker instance to new version.
 
    i. If you are running Airbyte from a cloned version of the Airbyte GitHub repo and want to use the current most recent stable version, just `git pull`.
 
-   ii. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}` to pull the latest versions and overwrite both files.
+   ii. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte-platform/main/{.env,flags.yml,docker-compose.yaml}` to pull the latest versions and overwrite both files.
 
 3. Bring Airbyte back online.
 
    ```bash
-   docker-compose up
+   docker compose up
    ```
 
 ### Resetting your Configuration
@@ -103,7 +111,7 @@ If you are upgrading from (i.e. your current version of Airbyte is) Airbyte vers
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
    ```bash
-   docker run --rm -v /tmp:/config airbyte/migration:0.40.26 --\
+   docker run --rm -v /tmp:/config airbyte/migration:0.44.4 --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
    ```

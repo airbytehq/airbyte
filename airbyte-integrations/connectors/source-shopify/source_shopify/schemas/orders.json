@@ -202,6 +202,38 @@
     "device_id": {
       "type": ["null", "string"]
     },
+    "discount_applications": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "type": {
+            "type": ["null", "string"]
+          },
+          "title": {
+            "type": ["null", "string"]
+          },
+          "description": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "value_type": {
+            "type": ["null", "string"]
+          },
+          "allocation_method": {
+            "type": ["null", "string"]
+          },
+          "target_selection": {
+            "type": ["null", "string"]
+          },
+          "target_type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
     "discount_codes": {
       "type": ["null", "array"],
       "items": {
@@ -222,6 +254,9 @@
     "email": {
       "type": ["null", "string"]
     },
+    "estimated_taxes": {
+      "type": ["null", "boolean"]
+    },
     "financial_status": {
       "type": ["null", "string"]
     },
@@ -239,6 +274,9 @@
     },
     "location_id": {
       "type": ["null", "integer"]
+    },
+    "merchant_of_record_app_id": {
+      "type": ["null", "string"]
     },
     "name": {
       "type": ["null", "string"]
@@ -277,6 +315,9 @@
       "items": {
         "type": ["null", "string"]
       }
+    },
+    "payment_terms": {
+      "type": ["null", "string"]
     },
     "phone": {
       "type": ["null", "string"]

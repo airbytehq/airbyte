@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.snowflake;
 
+import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLTime;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
@@ -23,7 +24,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,6 +70,15 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
 
   @Override
   protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    preparedStatement.setString(parameterIndex, value);
+  }
+
+  protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value)
+      throws SQLException {
+    preparedStatement.setString(parameterIndex, value);
+  }
+
+  protected void setTimeWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     preparedStatement.setString(parameterIndex, value);
   }
 
@@ -126,16 +135,12 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    final Date date = resultSet.getDate(index);
-    node.put(columnName, DateTimeConverter.convertToDate(date));
-  }
-
-  @Override
-  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    // resultSet.getTime() will lose nanoseconds precision
-    final LocalTime localTime = resultSet.getTimestamp(index).toLocalDateTime().toLocalTime();
-    node.put(columnName, DateTimeConverter.convertToTime(localTime));
+  protected void putTime(final ObjectNode node,
+                         final String columnName,
+                         final ResultSet resultSet,
+                         final int index)
+      throws SQLException {
+    putJavaSQLTime(node, columnName, resultSet, index);
   }
 
 }

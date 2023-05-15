@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from datetime import datetime
@@ -9,19 +9,19 @@ import pendulum
 import pytest
 import requests
 from pydantic import BaseModel
-from source_klaviyo.streams import Events, IncrementalKlaviyoStream, KlaviyoStream, ReverseIncrementalKlaviyoStream
+from source_klaviyo.streams import EmailTemplates, Events, IncrementalKlaviyoStreamV1, KlaviyoStreamV1, ReverseIncrementalKlaviyoStreamV1
 
 START_DATE = pendulum.datetime(2020, 10, 10)
 
 
-class SomeStream(KlaviyoStream):
+class SomeStream(KlaviyoStreamV1):
     schema = mock.Mock(spec=BaseModel)
 
     def path(self, **kwargs) -> str:
         return "sub_path"
 
 
-class SomeIncrementalStream(IncrementalKlaviyoStream):
+class SomeIncrementalStream(IncrementalKlaviyoStreamV1):
     schema = mock.Mock(spec=BaseModel)
     cursor_field = "updated_at"
 
@@ -29,7 +29,7 @@ class SomeIncrementalStream(IncrementalKlaviyoStream):
         return "sub_path"
 
 
-class SomeReverseIncrementalStream(ReverseIncrementalKlaviyoStream):
+class SomeReverseIncrementalStream(ReverseIncrementalKlaviyoStreamV1):
     schema = mock.Mock(spec=BaseModel)
     cursor_field = "updated_at"
 
@@ -42,7 +42,7 @@ def response_fixture(mocker):
     return mocker.Mock(spec=requests.Response)
 
 
-class TestKlaviyoStream:
+class TestKlaviyoStreamV1:
     @pytest.mark.parametrize(
         ["response_json", "next_page_token"],
         [
@@ -79,12 +79,12 @@ class TestKlaviyoStream:
         assert list(result) == response.json.return_value["data"]
 
 
-class TestIncrementalKlaviyoStream:
+class TestIncrementalKlaviyoStreamV1:
     def test_cursor_field_is_required(self):
         with pytest.raises(
-            TypeError, match="Can't instantiate abstract class IncrementalKlaviyoStream with abstract methods cursor_field, path"
+            TypeError, match="Can't instantiate abstract class IncrementalKlaviyoStreamV1 with abstract methods cursor_field, path"
         ):
-            IncrementalKlaviyoStream(api_key="some_key", start_date=START_DATE.isoformat())
+            IncrementalKlaviyoStreamV1(api_key="some_key", start_date=START_DATE.isoformat())
 
     @pytest.mark.parametrize(
         ["next_page_token", "stream_state", "expected_params"],
@@ -159,13 +159,13 @@ class TestIncrementalKlaviyoStream:
         assert result == next_page_token
 
 
-class TestReverseIncrementalKlaviyoStream:
+class TestReverseIncrementalKlaviyoStreamV1:
     def test_cursor_field_is_required(self):
         with pytest.raises(
             TypeError,
-            match="Can't instantiate abstract class ReverseIncrementalKlaviyoStream with abstract methods cursor_field, path",
+            match="Can't instantiate abstract class ReverseIncrementalKlaviyoStreamV1 with abstract methods cursor_field, path",
         ):
-            ReverseIncrementalKlaviyoStream(api_key="some_key", start_date=START_DATE.isoformat())
+            ReverseIncrementalKlaviyoStreamV1(api_key="some_key", start_date=START_DATE.isoformat())
 
     def test_state_checkpoint_interval(self):
         stream = SomeReverseIncrementalStream(api_key="some_key", start_date=START_DATE.isoformat())
@@ -290,4 +290,19 @@ class TestEventsStream:
                 "flow_id": "advanced",
                 "flow_message_id": "nice to meet you",
             },
+        ]
+
+
+class TestEmailTemplatesStream:
+    def test_parse_response(self, mocker):
+        stream = EmailTemplates(api_key="some_key")
+        json = {
+            "data": [
+               {"object": "email-template", "id": "id", "name": "Newsletter #1", "html": "<!DOCTYPE html></html>", "is_writeable": "true", "created": "2023-02-18T11:18:22+00:00", "updated": "2023-02-18T12:01:12+00:00"},
+            ]
+        }
+        records = list(stream.parse_response(mocker.Mock(json=mocker.Mock(return_value=json))))
+
+        assert records == [
+            {"object": "email-template", "id": "id", "name": "Newsletter #1", "html": "<!DOCTYPE html></html>", "is_writeable": "true", "created": "2023-02-18T11:18:22+00:00", "updated": "2023-02-18T12:01:12+00:00"}
         ]

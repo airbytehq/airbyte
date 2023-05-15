@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc.test;
@@ -222,12 +222,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
     streamName = TABLE_NAME;
 
-    dataSource = DataSourceFactory.create(
-        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
-        getDriverClass(),
-        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY, getJdbcParameterDelimiter()));
+    dataSource = getDataSource(jdbcConfig);
 
     database = new StreamingJdbcDatabase(dataSource,
         getDefaultSourceOperations(),
@@ -288,6 +283,15 @@ public abstract class JdbcSourceAcceptanceTest {
               getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)));
 
     });
+  }
+
+  protected DataSource getDataSource(final JsonNode jdbcConfig) {
+    return DataSourceFactory.create(
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        getDriverClass(),
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY, getJdbcParameterDelimiter()));
   }
 
   public void tearDown() throws SQLException {
@@ -385,7 +389,8 @@ public abstract class JdbcSourceAcceptanceTest {
   @Test
   void testDiscoverWithMultipleSchemas() throws Exception {
     // clickhouse and mysql do not have a concept of schemas, so this test does not make sense for them.
-    if (getDriverClass().toLowerCase().contains("mysql") || getDriverClass().toLowerCase().contains("clickhouse")) {
+    String driverClass = getDriverClass().toLowerCase();
+    if (driverClass.contains("mysql") || driverClass.contains("clickhouse") || driverClass.contains("teradata")) {
       return;
     }
 
@@ -635,8 +640,8 @@ public abstract class JdbcSourceAcceptanceTest {
   protected void incrementalDateCheck() throws Exception {
     incrementalCursorCheck(
         COL_UPDATED_AT,
-        "2005-10-18T00:00:00Z",
-        "2006-10-19T00:00:00Z",
+        "2005-10-18",
+        "2006-10-19",
         List.of(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
@@ -704,13 +709,13 @@ public abstract class JdbcSourceAcceptanceTest {
             .withData(Jsons.jsonNode(Map
                 .of(COL_ID, ID_VALUE_4,
                     COL_NAME, "riker",
-                    COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
+                    COL_UPDATED_AT, "2006-10-19")))));
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
             .withData(Jsons.jsonNode(Map
                 .of(COL_ID, ID_VALUE_5,
                     COL_NAME, "data",
-                    COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
+                    COL_UPDATED_AT, "2006-10-19")))));
     final DbStreamState state = new DbStreamState()
         .withStreamName(streamName)
         .withStreamNamespace(namespace)
@@ -832,10 +837,11 @@ public abstract class JdbcSourceAcceptanceTest {
 
   // See https://github.com/airbytehq/airbyte/issues/14732 for rationale and details.
   @Test
-  void testIncrementalWithConcurrentInsertion() throws Exception {
+  public void testIncrementalWithConcurrentInsertion() throws Exception {
+    final String driverName = getDriverClass().toLowerCase();
     final String namespace = getDefaultNamespace();
     final String fullyQualifiedTableName = getFullyQualifiedTableName(TABLE_NAME_AND_TIMESTAMP);
-    final String columnDefinition = String.format("name VARCHAR(200) NOT NULL, timestamp %s NOT NULL", COL_TIMESTAMP_TYPE);
+    final String columnDefinition = String.format("name VARCHAR(200) NOT NULL, %s %s NOT NULL", COL_TIMESTAMP, COL_TIMESTAMP_TYPE);
 
     // 1st sync
     database.execute(ctx -> {
@@ -873,7 +879,12 @@ public abstract class JdbcSourceAcceptanceTest {
         .filter(r -> r.getType() == Type.RECORD)
         .map(r -> r.getRecord().getData().get(COL_NAME).asText())
         .toList();
-    assertEquals(List.of("a", "b"), firstSyncNames);
+    // teradata doesn't make insertion order guarantee when equal ordering value
+    if (driverName.contains("teradata")) {
+      assertThat(List.of("a", "b"), Matchers.containsInAnyOrder(firstSyncNames.toArray()));
+    } else {
+      assertEquals(List.of("a", "b"), firstSyncNames);
+    }
 
     // 2nd sync
     database.execute(ctx -> {
@@ -923,7 +934,14 @@ public abstract class JdbcSourceAcceptanceTest {
         .filter(r -> r.getType() == Type.RECORD)
         .map(r -> r.getRecord().getData().get(COL_NAME).asText())
         .toList();
-    assertEquals(List.of("c", "d", "e", "f"), thirdSyncExpectedNames);
+
+    // teradata doesn't make insertion order guarantee when equal ordering value
+    if (driverName.contains("teradata")) {
+      assertThat(List.of("c", "d", "e", "f"), Matchers.containsInAnyOrder(thirdSyncExpectedNames.toArray()));
+    } else {
+      assertEquals(List.of("c", "d", "e", "f"), thirdSyncExpectedNames);
+    }
+
   }
 
   private JsonNode getStateData(final AirbyteMessage airbyteMessage, final String streamName) {
@@ -1035,20 +1053,20 @@ public abstract class JdbcSourceAcceptanceTest {
                 .withData(Jsons.jsonNode(Map
                     .of(COL_ID, ID_VALUE_1,
                         COL_NAME, "picard",
-                        COL_UPDATED_AT, "2004-10-19T00:00:00Z")))),
+                        COL_UPDATED_AT, "2004-10-19")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(Map
                     .of(COL_ID, ID_VALUE_2,
                         COL_NAME, "crusher",
                         COL_UPDATED_AT,
-                        "2005-10-19T00:00:00Z")))),
+                        "2005-10-19")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(Map
                     .of(COL_ID, ID_VALUE_3,
                         COL_NAME, "vash",
-                        COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
+                        COL_UPDATED_AT, "2006-10-19")))));
   }
 
   protected List<AirbyteMessage> createExpectedTestMessages(final List<DbStreamState> states) {
@@ -1154,7 +1172,8 @@ public abstract class JdbcSourceAcceptanceTest {
 
   protected String getDefaultNamespace() {
     // mysql does not support schemas. it namespaces using database names instead.
-    if (getDriverClass().toLowerCase().contains("mysql") || getDriverClass().toLowerCase().contains("clickhouse")) {
+    if (getDriverClass().toLowerCase().contains("mysql") || getDriverClass().toLowerCase().contains("clickhouse") ||
+        getDriverClass().toLowerCase().contains("teradata")) {
       return config.get(JdbcUtils.DATABASE_KEY).asText();
     } else {
       return SCHEMA_NAME;

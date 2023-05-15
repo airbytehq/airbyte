@@ -16,12 +16,10 @@
       "maxLength": 100
     },
     "type": {
-      "type": ["string", "null"],
-      "enum": ["recommended", "mandatory", "optional"]
+      "type": ["string", "null"]
     },
     "status": {
-      "type": ["string", "null"],
-      "enum": ["active", "archived", "deleted"]
+      "type": ["string", "null"]
     },
     "quantity": {
       "type": ["integer", "null"],
@@ -36,15 +34,7 @@
       "minimum": 1
     },
     "charge_on_event": {
-      "type": ["string", "null"],
-      "enum": [
-        "subscription_creation",
-        "subscription_trial_start",
-        "plan_activation",
-        "subscription_activation",
-        "contract_termination",
-        "on_demand"
-      ]
+      "type": ["string", "null"]
     },
     "charge_once": {
       "type": ["boolean", "null"]

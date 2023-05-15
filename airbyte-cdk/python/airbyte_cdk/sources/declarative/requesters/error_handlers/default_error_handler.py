@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import InitVar, dataclass, field
@@ -16,11 +16,10 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_fil
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.types import Config
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
+class DefaultErrorHandler(ErrorHandler):
     """
     Default error handler.
 
@@ -92,27 +91,26 @@ class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
 
     DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
 
-    config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     config: Config
     response_filters: Optional[List[HttpResponseFilter]] = None
     max_retries: Optional[int] = 5
     _max_retries: int = field(init=False, repr=False, default=5)
     backoff_strategies: Optional[List[BackoffStrategy]] = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         self.response_filters = self.response_filters or []
 
         if not self.response_filters:
             self.response_filters.append(
                 HttpResponseFilter(
-                    ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS, config=self.config, options={}
+                    ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS, config=self.config, parameters={}
                 )
             )
-            self.response_filters.append(HttpResponseFilter(ResponseAction.IGNORE, config={}, options={}))
+            self.response_filters.append(HttpResponseFilter(ResponseAction.IGNORE, config={}, parameters={}))
 
         if not self.backoff_strategies:
-            self.backoff_strategies = [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY(options=options, config=self.config)]
+            self.backoff_strategies = [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY(parameters=parameters, config=self.config)]
 
         self._last_request_to_attempt_count: MutableMapping[requests.PreparedRequest, int] = {}
 

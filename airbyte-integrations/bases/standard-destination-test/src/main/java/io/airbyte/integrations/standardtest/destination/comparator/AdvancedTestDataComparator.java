@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.standardtest.destination.comparator;
@@ -105,8 +105,10 @@ public class AdvancedTestDataComparator implements TestDataComparator {
       return compareDateTimeValues(expectedValue.asText(), actualValue.asText());
     } else if (isDateValue(expectedValue.asText())) {
       return compareDateValues(expectedValue.asText(), actualValue.asText());
-    } else if (isTimeWithTimezone(expectedValue.asText()) || isTimeWithoutTimezone(expectedValue.asText())) {
-      return compareTime(expectedValue.asText(), actualValue.asText());
+    } else if (isTimeWithTimezone(expectedValue.asText())) {
+      return compareTimeWithTimeZone(expectedValue.asText(), actualValue.asText());
+    } else if (isTimeWithoutTimezone(expectedValue.asText())) {
+      return compareTimeWithoutTimeZone(expectedValue.asText(), actualValue.asText());
     } else if (expectedValue.isArray()) {
       return compareArrays(expectedValue, actualValue);
     } else if (expectedValue.isObject()) {
@@ -215,7 +217,11 @@ public class AdvancedTestDataComparator implements TestDataComparator {
     return compareTextValues(airbyteMessageValue, destinationValue);
   }
 
-  protected boolean compareTime(final String airbyteMessageValue, final String destinationValue) {
+  protected boolean compareTimeWithoutTimeZone(final String airbyteMessageValue, final String destinationValue) {
+    return compareTextValues(airbyteMessageValue, destinationValue);
+  }
+
+  protected boolean compareTimeWithTimeZone(final String airbyteMessageValue, final String destinationValue) {
     return compareTextValues(airbyteMessageValue, destinationValue);
   }
 
