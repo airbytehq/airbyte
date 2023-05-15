@@ -694,7 +694,7 @@
     "destinationDefinitionId": "22f6c74f-5699-40ff-833c-4a879ea40133",
     "name": "BigQuery",
     "dockerRepository": "airbyte/destination-bigquery",
-    "dockerImageTag": "1.4.0",
+    "dockerImageTag": "1.4.1",
     "documentationUrl": "https://docs.airbyte.com/integrations/destinations/bigquery",
     "icon": "bigquery.svg",
     "spec": {
@@ -864,7 +864,7 @@
     },
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "bigquery"
     },
     "supportsDbt": true
@@ -1380,7 +1380,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-clickhouse",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "clickhouse"
     },
     "supportsDbt": false
@@ -3843,7 +3843,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-mssql",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "mssql"
     },
     "supportsDbt": true
@@ -4312,7 +4312,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-mysql",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "mysql"
     },
     "supportsDbt": true
@@ -4549,7 +4549,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-oracle",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "oracle"
     },
     "supportsDbt": true
@@ -4873,7 +4873,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "postgres"
     },
     "supportsDbt": true
@@ -5611,7 +5611,7 @@
     },
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-redshift",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "redshift"
     },
     "supportsDbt": true
@@ -6788,7 +6788,7 @@
     },
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-snowflake",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "snowflake"
     },
     "supportsDbt": true
@@ -7338,7 +7338,7 @@
     "releaseStage": "alpha",
     "normalizationConfig": {
       "normalizationRepository": "airbyte/normalization-tidb",
-      "normalizationTag": "0.4.1",
+      "normalizationTag": "0.4.3",
       "normalizationIntegrationType": "tidb"
     },
     "supportsDbt": true
@@ -10775,7 +10775,7 @@
     "sourceDefinitionId": "dfffecb7-9a13-43e9-acdc-b92af7997ca9",
     "name": "Close.com",
     "dockerRepository": "airbyte/source-close-com",
-    "dockerImageTag": "0.2.2",
+    "dockerImageTag": "0.3.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/close-com",
     "icon": "close.svg",
     "sourceType": "api",
@@ -14139,7 +14139,7 @@
     "sourceDefinitionId": "253487c0-2246-43ba-a21f-5116b20a2c50",
     "name": "Google Ads",
     "dockerRepository": "airbyte/source-google-ads",
-    "dockerImageTag": "0.2.16",
+    "dockerImageTag": "0.2.17",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-ads",
     "icon": "google-adwords.svg",
     "sourceType": "api",
@@ -14416,7 +14416,7 @@
     "sourceDefinitionId": "3cc2eafd-84aa-4dca-93af-322d9dfeec1a",
     "name": "Google Analytics 4 (GA4)",
     "dockerRepository": "airbyte/source-google-analytics-data-api",
-    "dockerImageTag": "0.2.1",
+    "dockerImageTag": "0.2.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-analytics-data-api",
     "icon": "google-analytics.svg",
     "sourceType": "api",
@@ -14496,7 +14496,9 @@
           "property_id": {
             "type": "string",
             "title": "Property ID",
-            "description": "A Google Analytics GA4 property identifier whose events are tracked. Specified in the URL path and not the body",
+            "description": "A Google Analytics GA4 property identifier whose events are tracked. Specified in the URL path and not the body such as \"123...\". See <a href=\"https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id\">the docs</a> for more details.",
+            "pattern": "^[0-9]*$",
+            "pattern_descriptor": "such as \"123...\"",
             "order": 1
           },
           "date_ranges_start_date": {
@@ -15891,7 +15893,7 @@
     "sourceDefinitionId": "2e875208-0c0b-4ee4-9e92-1cb3156ea799",
     "name": "Iterable",
     "dockerRepository": "airbyte/source-iterable",
-    "dockerImageTag": "0.1.27",
+    "dockerImageTag": "0.1.28",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/iterable",
     "icon": "iterable.svg",
     "sourceType": "api",
@@ -17412,7 +17414,7 @@
     "sourceDefinitionId": "9e0556f4-69df-4522-a3fb-03264d36b348",
     "name": "Marketo",
     "dockerRepository": "airbyte/source-marketo",
-    "dockerImageTag": "1.0.4",
+    "dockerImageTag": "1.1.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/marketo",
     "icon": "marketo.svg",
     "sourceType": "api",
@@ -22774,7 +22776,7 @@
     "sourceDefinitionId": "69589781-7828-43c5-9f63-8925b1c1ccc2",
     "name": "S3",
     "dockerRepository": "airbyte/source-s3",
-    "dockerImageTag": "2.2.0",
+    "dockerImageTag": "3.0.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/s3",
     "icon": "s3.svg",
     "sourceType": "file",
@@ -23985,7 +23987,7 @@
     "sourceDefinitionId": "374ebc65-6636-4ea0-925c-7d35999a8ffc",
     "name": "Smartsheets",
     "dockerRepository": "airbyte/source-smartsheets",
-    "dockerImageTag": "1.0.1",
+    "dockerImageTag": "1.0.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/smartsheets",
     "icon": "smartsheet.svg",
     "sourceType": "api",
@@ -24953,7 +24955,7 @@
     "sourceDefinitionId": "badc5925-0485-42be-8caa-b34096cb71b5",
     "name": "SurveyMonkey",
     "dockerRepository": "airbyte/source-surveymonkey",
-    "dockerImageTag": "0.2.1",
+    "dockerImageTag": "0.2.2",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/surveymonkey",
     "icon": "surveymonkey.svg",
     "sourceType": "api",
@@ -25617,7 +25619,7 @@
     "sourceDefinitionId": "4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35",
     "name": "TikTok Marketing",
     "dockerRepository": "airbyte/source-tiktok-marketing",
-    "dockerImageTag": "3.0.1",
+    "dockerImageTag": "3.1.0",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/tiktok-marketing",
     "icon": "tiktok.svg",
     "sourceType": "api",
