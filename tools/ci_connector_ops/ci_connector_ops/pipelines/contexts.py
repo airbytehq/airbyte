@@ -304,6 +304,7 @@ class ConnectorContext(PipelineContext):
         self.s3_report_key = s3_report_key
         self._secrets_dir = None
         self._updated_secrets_dir = None
+        self._metadata = yaml.safe_load(self.metadata_path.read_text())["data"]
         super().__init__(
             pipeline_name=pipeline_name,
             is_local=is_local,
@@ -352,7 +353,7 @@ class ConnectorContext(PipelineContext):
 
     @property
     def metadata(self) -> dict:
-        return yaml.safe_load(self.metadata_path.read_text())["data"]
+        return self._metadata
 
     @property
     def docker_image_from_metadata(self) -> str:
@@ -438,8 +439,8 @@ class PublishConnectorContext(ConnectorContext):
         metadata_bucket_name: str,
         docker_hub_username: str,
         docker_hub_password: str,
-        slack_webhook: str,
-        reporting_slack_channel: str,
+        slack_webhook: Optional[str],
+        reporting_slack_channel: Optional[str],
         is_local: bool,
         git_branch: bool,
         git_revision: bool,
