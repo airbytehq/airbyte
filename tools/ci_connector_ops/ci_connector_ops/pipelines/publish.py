@@ -2,50 +2,32 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import json
-import os
 import uuid
-from abc import ABC
 from typing import List, Tuple
 
 import anyio
-import dagger
 from ci_connector_ops.pipelines import builds
 from ci_connector_ops.pipelines.actions import environments, run_steps
 from ci_connector_ops.pipelines.actions.remote_storage import upload_to_gcs
 from ci_connector_ops.pipelines.bases import ConnectorReport, Step, StepResult, StepStatus
-from ci_connector_ops.pipelines.contexts import ConnectorContext
+from ci_connector_ops.pipelines.contexts import PublishConnectorContext
 from ci_connector_ops.pipelines.pipelines import metadata
-from ci_connector_ops.pipelines.utils import sanitize_gcs_service_account_key, with_exit_code, with_stderr, with_stdout
-from dagger import Container, File, QueryError, Secret
+from ci_connector_ops.pipelines.utils import with_stderr, with_stdout
+from dagger import Container, File, QueryError
 
 
-class PublishStep(Step, ABC):
-    @property
-    def docker_image_name(self):
-        if self.pre_release:
-            return f"{self.context.docker_image_from_metadata}-dev.{self.context.git_revision[:10]}"
-        else:
-            return self.context.docker_image_from_metadata
-
-    def __init__(self, context: ConnectorContext, pre_release: bool = True) -> None:
-        super().__init__(context)
-        self.pre_release = pre_release
-
-
-class CheckConnectorImageDoesNotExist(PublishStep):
+class CheckConnectorImageDoesNotExist(Step):
     title = "Check if the connector docker image does not exist on the registry."
 
     async def _run(self) -> StepResult:
         manifest_inspect = (
             environments.with_docker_cli(self.context)
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-            .with_exec(["docker", "manifest", "inspect", self.docker_image_name])
+            .with_exec(["sh", "-c", f"docker manifest inspect {self.context.docker_image_name} || true"])
         )
-        manifest_inspect_exit_code = await with_exit_code(manifest_inspect)
         manifest_inspect_stderr = await with_stderr(manifest_inspect)
         manifest_inspect_stdout = await with_stdout(manifest_inspect)
-
-        if manifest_inspect_exit_code != 0 and "no such manifest" in manifest_inspect_stderr:
+        if "no such manifest" in manifest_inspect_stderr:
             return StepResult(self, status=StepStatus.SUCCESS, stdout=f"No manifest found for {self.context.docker_image_from_metadata}.")
         else:
             try:
@@ -74,7 +56,7 @@ class BuildConnectorForPublish(Step):
         return StepResult(self, status=StepStatus.SUCCESS, output_artifact=built_connectors_platform_variants)
 
 
-class PushConnectorImageToRegistry(PublishStep):
+class PushConnectorImageToRegistry(Step):
     title = "Push connector image to registry"
 
     @property
@@ -84,9 +66,9 @@ class PushConnectorImageToRegistry(PublishStep):
     async def _run(self, built_containers_per_platform: List[Container]) -> StepResult:
         try:
             image_ref = await built_containers_per_platform[0].publish(
-                f"docker.io/{self.docker_image_name}", platform_variants=built_containers_per_platform[1:]
+                f"docker.io/{self.context.docker_image_name}", platform_variants=built_containers_per_platform[1:]
             )
-            if not self.pre_release:
+            if not self.context.pre_release:
                 image_ref = await built_containers_per_platform[0].publish(
                     f"docker.io/{self.latest_docker_image_name}", platform_variants=built_containers_per_platform[1:]
                 )
@@ -99,14 +81,14 @@ class InvalidSpecOutputError(Exception):
     pass
 
 
-class UploadSpecToCache(PublishStep):
+class UploadSpecToCache(Step):
     title = "Upload connector spec to spec cache bucket"
     default_spec_file_name = "spec.json"
     cloud_spec_file_name = "spec.cloud.json"
 
     @property
     def spec_key_prefix(self):
-        return "specs/" + self.docker_image_name.replace(":", "/")
+        return "specs/" + self.context.docker_image_name.replace(":", "/")
 
     @property
     def cloud_spec_key(self):
@@ -115,11 +97,6 @@ class UploadSpecToCache(PublishStep):
     @property
     def oss_spec_key(self):
         return f"{self.spec_key_prefix}/{self.default_spec_file_name}"
-
-    def __init__(self, context: ConnectorContext, pre_release: bool, spec_bucket_name: str, gcs_credentials: Secret) -> None:
-        super().__init__(context, pre_release)
-        self.spec_bucket_name = spec_bucket_name
-        self.gcs_credentials = gcs_credentials
 
     def _parse_spec_output(self, spec_output: str) -> str:
         for line in spec_output.split("\n"):
@@ -149,16 +126,18 @@ class UploadSpecToCache(PublishStep):
 
         for key, file in specs_to_uploads:
             exit_code, stdout, stderr = await upload_to_gcs(
-                self.context.dagger_client, file, key, self.spec_bucket_name, self.gcs_credentials
+                self.context.dagger_client,
+                file,
+                key,
+                self.context.spec_cache_bucket_name,
+                self.context.spec_cache_gcs_credentials_secret,
             )
             if exit_code != 0:
                 return StepResult(self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr)
         return StepResult(self, status=StepStatus.SUCCESS)
 
 
-async def run_connector_publish_pipeline(
-    context: ConnectorContext, semaphore: anyio.Semaphore, pre_release: bool, spec_bucket_name: str, metadata_bucket_name: str
-) -> ConnectorReport:
+async def run_connector_publish_pipeline(context: PublishConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
     """Run a publish pipeline for a single connector.
 
     1. Validate the metadata file.
@@ -173,18 +152,11 @@ async def run_connector_publish_pipeline(
     """
     async with semaphore:
         async with context:
-            metadata_service_account: dagger.Secret = context.dagger_client.set_secret(
-                "metadata_service_account_key", sanitize_gcs_service_account_key(os.environ["METADATA_SERVICE_ACCOUNT_KEY"])
-            )
-            spec_cache_service_account: dagger.Secret = context.dagger_client.set_secret(
-                "spec_cache_service_account_key", sanitize_gcs_service_account_key(os.environ["SPEC_CACHE_SERVICE_ACCOUNT_KEY"])
-            )
-            metadata_upload_step = metadata.MetadataUpload(
-                context, context.metadata_path, metadata_bucket_name, await metadata_service_account.plaintext()
-            )
+
+            metadata_upload_step = metadata.MetadataUpload(context)
             steps_before_ready_to_publish = [
                 metadata.MetadataValidation(context, context.metadata_path),
-                CheckConnectorImageDoesNotExist(context, pre_release),
+                CheckConnectorImageDoesNotExist(context),
             ]
             steps_before_ready_to_publish_results = await run_steps(steps_before_ready_to_publish)
 
@@ -213,10 +185,10 @@ async def run_connector_publish_pipeline(
 
             steps_to_publish = [
                 (
-                    UploadSpecToCache(context, pre_release, spec_bucket_name, spec_cache_service_account),
+                    UploadSpecToCache(context),
                     (built_connector_platform_variants[0],),
                 ),
-                (PushConnectorImageToRegistry(context, pre_release), (built_connector_platform_variants,)),
+                (PushConnectorImageToRegistry(context), (built_connector_platform_variants,)),
                 metadata_upload_step,
             ]
 
