@@ -228,9 +228,10 @@ def test_read_with_chunks_should_return_only_object_data_type(stream_config, str
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
 
     with requests_mock.Mocker() as m:
-        m.register_uri("GET", f"{job_full_url}/results", content=b'"IsDeleted","Age"\n"0014W000027f6UwQAI","false",24\n')
+        m.register_uri("GET", f"{job_full_url}/results", content=b'"IsDeleted","Age"\n"false",24\n')
         res = list(stream.read_with_chunks(*stream.download_data(url=job_full_url)))
         assert res == [{"IsDeleted": "false", "Age": "24"}]
+
 
 def test_read_with_chunks_should_return_a_string_when_a_string_with_only_digits_is_provided(stream_config, stream_api):
     job_full_url: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
