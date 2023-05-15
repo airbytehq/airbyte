@@ -188,6 +188,7 @@ public class StagingConsumerFactory {
                                           final List<WriteConfig> writeConfigs,
                                           final ConfiguredAirbyteCatalog catalog) {
     // TODO: (ryankfu) move this block of code that executes before the lambda to #onStartFunction
+    // this is evaluated immediately when the destination is set up
     final Set<WriteConfig> conflictingStreams = new HashSet<>();
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = new HashMap<>();
     for (final WriteConfig config : writeConfigs) {
@@ -207,7 +208,9 @@ public class StagingConsumerFactory {
           conflictingStreams.stream().map(config -> config.getNamespace() + "." + config.getStreamName()).collect(joining(", ")));
       throw new ConfigErrorException(message);
     }
+    // this is evaluated later when the anonymous function is called
     return (pair, writer) -> {
+      // create the write config here for that specific stream
       LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!pairToWriteConfig.containsKey(pair)) {
         throw new IllegalArgumentException(

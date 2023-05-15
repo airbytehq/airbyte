@@ -6,21 +6,20 @@ package io.airbyte.integrations.destination_async;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.*;
 
+@Slf4j
 public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
   private static final String NON_STREAM_STATE_IDENTIFIER = "GLOBAL";
@@ -160,14 +159,27 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
     private static final long SUPERVISOR_INITIAL_DELAY_SECS = 0L;
     private static final long SUPERVISOR_PERIOD_SECS = 1L;
-    private final BufferManagerDequeue bufferManagerDequeue;
     private final ScheduledExecutorService supervisorThread = Executors.newScheduledThreadPool(1);
     // note: this queue size is unbounded.
     private final Executor workerPool = Executors.newFixedThreadPool(5);
-    Map<StreamDescriptor, WriteConfig> pairToWriteConfig
+    // using a random string here as a placeholder for the moment.
+    // This would avoid mixing data in the staging area between different syncs (especially if they
+    // manipulate streams with similar names)
+    // if we replaced the random connection id by the actual connection_id, we'd gain the opportunity to
+    // leverage data that was uploaded to stage
+    // in a previous attempt but failed to load to the warehouse for some reason (interrupted?) instead.
+    // This would also allow other programs/scripts
+    // to load (or reload backups?) in the connection's staging area to be loaded at the next sync.
+    // This could be random for every upload command, we keep it stable to preserve the StagingConsumerFactory behaviour.
+    private final UUID RANDOM_CONNECTION_ID = UUID.randomUUID();
+    private final BufferManagerDequeue bufferManagerDequeue;
+    private final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig;
+    private final StagingOperations stagingOperations;
 
-    public UploadWorkers(final BufferManagerDequeue bufferManagerDequeue) {
+    public UploadWorkers(final BufferManagerDequeue bufferManagerDequeue,
+                         final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig) {
       this.bufferManagerDequeue = bufferManagerDequeue;
+      this.streamDescToWriteConfig = streamDescToWriteConfig;
     }
 
     public void start() {
@@ -195,16 +207,37 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     }
 
     private void flushAll() {
-      for (StreamDescriptor desc: bufferManagerDequeue.getBuffers().keySet()) {
+      for (final StreamDescriptor desc: bufferManagerDequeue.getBuffers().keySet()) {
         flush(desc);
       }
     }
 
-    private void flush(StreamDescriptor desc) {
+    private void flush(final StreamDescriptor desc) {
       workerPool.execute(() -> {
         // create a file buffer
+        log.info("Flushing buffer for stream {} ({}) to staging", desc.getName(),
+                FileUtils.byteCountToDisplaySize(writer.getByteCount()));
+        if (!streamDescToWriteConfig.containsKey(desc)) {
+          throw new IllegalArgumentException(String.format("Message contained record from a stream that was not in the catalog."));
+        }
+
         // upload this
         // copy this
+        final WriteConfig writeConfig = streamDescToWriteConfig.get(desc);
+        final String schemaName = writeConfig.outputSchemaName();
+        final String stageName = stagingOperations.getStageName(schemaName, writeConfig.streamName());
+        final String stagingPath =
+                stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, writeConfig.streamName()), writeConfig.writeDateTime());
+        try (writer) {
+          writer.flush();
+          final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
+          copyIntoTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(), schemaName,
+                  stagingOperations);
+        } catch (final Exception e) {
+          log.error("Failed to flush and commit buffer data into destination's raw table", e);
+          throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
+        }
+      };
       });
 
 //      return (pair, writer) -> {
