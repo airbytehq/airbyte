@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["string"]
+    },
+    "properties": {
+      "createdate": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "email": {
+        "type": ["string"]
+      },
+      "firstname": {
+        "type": ["string"]
+      },
+      "hs_object_id": {
+        "type": ["string"]
+      },
+      "lastmodifieddate": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "lastname": {
+        "type": ["string"]
+      }
+    },
+    "propertiesWithHistory": {
+      "type": ["object"]
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

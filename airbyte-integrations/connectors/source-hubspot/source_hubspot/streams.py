@@ -8,7 +8,7 @@ import time
 from abc import ABC, abstractmethod
 from functools import cached_property, lru_cache
 from http import HTTPStatus
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import backoff
 import pendulum as pendulum
@@ -23,7 +23,15 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
-from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
+from source_hubspot.helpers import (
+    APIv1Property,
+    APIv3Property,
+    APIv3PropertyWithHistory,
+    GroupByKey,
+    IRecordPostProcessor,
+    IURLPropertyRepresentation,
+    StoreAsIs,
+)
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -286,14 +294,17 @@ class Stream(HttpStream, ABC):
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
         properties: IURLPropertyRepresentation = None,
+        url: str = None,
     ) -> requests.Response:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         if properties:
             request_params.update(properties.as_url_param())
 
+        url_path = self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token) if not url else url
+
         request = self._create_prepared_request(
-            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            path=url_path,
             headers=dict(request_headers, **self.authenticator.get_auth_header()),
             params=request_params,
             json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
@@ -319,6 +330,7 @@ class Stream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
+        url: str = None,
     ) -> Tuple[List, Any]:
 
         #  TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams
@@ -334,9 +346,9 @@ class Stream(HttpStream, ABC):
         properties = self._property_wrapper
         for chunk in properties.split():
             response = self.handle_request(
-                stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token, properties=chunk
+                stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token, properties=chunk, url=url
             )
-            for record in self._transform(self.parse_response(response, stream_state=stream_state)):
+            for record in self._transform(self.parse_response(response)):
                 post_processor.add_record(record)
 
         return post_processor.flat, response
@@ -369,7 +381,7 @@ class Stream(HttpStream, ABC):
                         next_page_token=next_page_token,
                         properties=properties,
                     )
-                    records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+                    records = self._transform(self.parse_response(response))
 
                 if self.filter_old_records:
                     records = self._filter_old_records(records)
@@ -502,6 +514,13 @@ class Stream(HttpStream, ABC):
 
         return record
 
+    def _transform_single_record(self, record: Mapping) -> Mapping:
+        """Preprocess a single record"""
+        record = self._cast_record_fields_if_needed(record)
+        if self.created_at_field and self.updated_at_field and record.get(self.updated_at_field) is None:
+            record[self.updated_at_field] = record[self.created_at_field]
+        return record
+
     def _transform(self, records: Iterable) -> Iterable:
         """Preprocess record before emitting"""
         for record in records:
@@ -548,10 +567,6 @@ class Stream(HttpStream, ABC):
     def parse_response(
         self,
         response: requests.Response,
-        *,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         response = self._parse_response(response)
 
@@ -955,7 +970,7 @@ class CRMSearchStream(IncrementalStream, ABC):
             payload.update(next_page_token["payload"])
 
         response, raw_response = self.search(url=self.url, data=payload)
-        for record in self._transform(self.parse_response(raw_response, stream_state=stream_state, stream_slice=stream_slice)):
+        for record in self._transform(self.parse_response(raw_response)):
             stream_records[record["id"]] = record
 
         return list(stream_records.values()), raw_response
@@ -1065,6 +1080,75 @@ class CRMSearchStream(IncrementalStream, ABC):
                     self._state = self._start_date
                 else:
                     self._state = self._start_date = max(self._state, self._start_date)
+
+
+class CRMSearchStreamWithHistory(CRMSearchStream):
+    @property
+    def url(self):
+        return f"/crm/v3/objects/{self.entity}/search"
+
+    @property
+    def list_url(self):
+        return f"/crm/v3/objects/{self.entity}"
+
+    def history_url(self, id: str):
+        return f"/crm/v3/objects/{self.entity}/{id}"
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        stream_state = stream_state or {}
+        pagination_complete = False
+        next_page_token = None
+
+        latest_cursor = None
+
+        while not pagination_complete:
+            if self.state:
+                records, raw_response = self._process_search(
+                    next_page_token=next_page_token,
+                    stream_state=stream_state,
+                    stream_slice=stream_slice,
+                )
+                records = self._read_associations(records)
+            else:
+                records, raw_response = self._read_stream_records(
+                    stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token, url=self.list_url
+                )
+                records = self._flat_associations(records)
+            records = self._filter_old_records(records)
+
+            for record in records:
+                properties = record["properties"].keys()
+                response = self.handle_request(None, None, None, APIv3PropertyWithHistory(properties), url=self.history_url(record["id"]))
+
+                record_with_history = self._transform_single_record(response.json())
+                record_with_history["propertiesWithHistory"] = json.dumps(record_with_history["propertiesWithHistory"])
+
+                cursor = self._field_to_datetime(record_with_history[self.updated_at_field])
+                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                yield record_with_history
+
+            next_page_token = self.next_page_token(raw_response)
+            if not next_page_token:
+                pagination_complete = True
+            elif self.state and next_page_token["payload"]["after"] >= 10000:
+                # Hubspot documentation states that the search endpoints are limited to 10,000 total results
+                # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
+                # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
+                # start a new search query with the latest state that has been collected.
+                self._update_state(latest_cursor=latest_cursor)
+                next_page_token = None
+
+        # Since Search stream does not have slices is safe to save the latest
+        # state as the initial sync date
+        self._update_state(latest_cursor=latest_cursor, is_last_record=True)
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
 
 
 class CRMObjectStream(Stream):
@@ -1233,6 +1317,16 @@ class Deals(CRMSearchStream):
     scopes = {"contacts", "crm.objects.deals.read"}
 
 
+class DealsWithHistory(CRMSearchStreamWithHistory):
+    """Deals, API v3"""
+
+    entity = "deal"
+    last_modified_field = "hs_lastmodifieddate"
+    associations = ["contacts", "companies", "line_items"]
+    primary_key = "id"
+    scopes = {"contacts", "crm.objects.deals.read"}
+
+
 class DealsArchived(ClientSideIncrementalStream):
     """Archived Deals, API v3"""
 
@@ -1372,7 +1466,7 @@ class Engagements(IncrementalStream):
 
         while not pagination_complete:
             response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
-            records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+            records = self._transform(self.parse_response(response))
 
             if self.filter_old_records:
                 records = self._filter_old_records(records)
@@ -1505,57 +1599,18 @@ class Owners(ClientSideIncrementalStream):
     scopes = {"crm.objects.owners.read"}
 
 
-class PropertyHistory(Stream):
-    """Contacts Endpoint, API v1
+class ContactsWithHistory(CRMSearchStreamWithHistory):
+    """Contacts Endpoint, API v3
     Is used to get all Contacts and the history of their respective
     Properties. Whenever a property is changed it is added here.
     Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts
     """
 
-    more_key = "has-more"
-    url = "/contacts/v1/lists/all/contacts/all"
-    updated_at_field = "timestamp"
-    created_at_field = "timestamp"
     entity = "contacts"
-    data_field = "contacts"
-    page_field = "vid-offset"
-    page_filter = "vidOffset"
-    denormalize_records = True
-    limit_field = "count"
-    limit = 100
+    associations = ["contacts"]
+    last_modified_field = "lastmodifieddate"
+    primary_key = "id"
     scopes = {"crm.objects.contacts.read"}
-    properties_scopes = {"crm.schemas.contacts.read"}
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = {self.limit_field: self.limit, "propertyMode": "value_and_history"}
-        if next_page_token:
-            params.update(next_page_token)
-        return params
-
-    def _transform(self, records: Iterable) -> Iterable:
-        for record in records:
-            properties = record.get("properties")
-            vid = record.get("vid")
-            value_dict: Dict
-            for key, value_dict in properties.items():
-                versions = value_dict.get("versions")
-                if key == "lastmodifieddate":
-                    # Skipping the lastmodifieddate since it only returns the value
-                    # when one field of a contact was changed no matter which
-                    # field was changed. It therefore creates overhead, since for
-                    # every changed property there will be the date it was changed in itself
-                    # and a change in the lastmodifieddate field.
-                    continue
-                if versions:
-                    for version in versions:
-                        version["property"] = key
-                        version["vid"] = vid
-                        yield version
 
 
 class SubscriptionChanges(IncrementalStream):
@@ -1585,6 +1640,14 @@ class Workflows(ClientSideIncrementalStream):
 
 
 class Companies(CRMSearchStream):
+    entity = "company"
+    last_modified_field = "hs_lastmodifieddate"
+    associations = ["contacts"]
+    primary_key = "id"
+    scopes = {"crm.objects.contacts.read", "crm.objects.companies.read"}
+
+
+class CompaniesWithHistory(CRMSearchStreamWithHistory):
     entity = "company"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts"]
@@ -1654,13 +1717,35 @@ class LineItems(CRMObjectIncrementalStream):
     scopes = {"e-commerce"}
 
 
+class LineItemsWithHistory(CRMSearchStreamWithHistory):
+    entity = "line_item"
+    primary_key = "id"
+    last_modified_field = "hs_lastmodifieddate"
+    scopes = {"crm.objects.line_items.read"}
+
+
 class Products(CRMObjectIncrementalStream):
     entity = "product"
     primary_key = "id"
     scopes = {"e-commerce"}
 
 
+class ProductsWithHistory(CRMSearchStreamWithHistory):
+    entity = "product"
+    primary_key = "id"
+    last_modified_field = "hs_lastmodifieddate"
+    scopes = {"e-commerce"}
+
+
 class Tickets(CRMSearchStream):
+    entity = "ticket"
+    associations = ["contacts", "deals", "companies"]
+    primary_key = "id"
+    scopes = {"tickets"}
+    last_modified_field = "hs_lastmodifieddate"
+
+
+class TicketsWithHistory(CRMSearchStreamWithHistory):
     entity = "ticket"
     associations = ["contacts", "deals", "companies"]
     primary_key = "id"

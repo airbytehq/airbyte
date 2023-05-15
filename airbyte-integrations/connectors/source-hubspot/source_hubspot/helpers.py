@@ -111,3 +111,10 @@ class APIv3Property(IURLPropertyRepresentation):
 
     def as_url_param(self):
         return {"properties": ",".join(self.properties)}
+
+
+class APIv3PropertyWithHistory(IURLPropertyRepresentation):
+    _term_representation = "{property},"
+
+    def as_url_param(self):
+        return {"propertiesWithHistory": ",".join(self.properties)}

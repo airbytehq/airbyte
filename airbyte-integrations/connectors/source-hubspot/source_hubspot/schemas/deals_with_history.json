@@ -1,0 +1,346 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "properties": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "string"]
+        },
+        "amount_in_home_currency": {
+          "type": ["null", "string"]
+        },
+        "closed_lost_reason": {
+          "type": ["null", "string"]
+        },
+        "closed_won_reason": {
+          "type": ["null", "string"]
+        },
+        "closedate": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "createdate": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "days_to_close": {
+          "type": ["null", "string"]
+        },
+        "dealname": {
+          "type": ["null", "string"]
+        },
+        "dealstage": {
+          "type": ["null", "string"]
+        },
+        "dealtype": {
+          "type": ["null", "string"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "engagements_last_meeting_booked": {
+          "type": ["null", "string"]
+        },
+        "engagements_last_meeting_booked_campaign": {
+          "type": ["null", "string"]
+        },
+        "engagements_last_meeting_booked_medium": {
+          "type": ["null", "string"]
+        },
+        "engagements_last_meeting_booked_source": {
+          "type": ["null", "string"]
+        },
+        "hs_acv": {
+          "type": ["null", "string"]
+        },
+        "hs_all_accessible_team_ids": {
+          "type": ["null", "string"]
+        },
+        "hs_all_assigned_business_unit_ids": {
+          "type": ["null", "string"]
+        },
+        "hs_all_owner_ids": {
+          "type": ["null", "string"]
+        },
+        "hs_all_team_ids": {
+          "type": ["null", "string"]
+        },
+        "hs_analytics_source": {
+          "type": ["null", "string"]
+        },
+        "hs_analytics_source_data_1": {
+          "type": ["null", "string"]
+        },
+        "hs_analytics_source_data_2": {
+          "type": ["null", "string"]
+        },
+        "hs_arr": {
+          "type": ["null", "string"]
+        },
+        "hs_closed_amount": {
+          "type": ["null", "string"]
+        },
+        "hs_closed_amount_in_home_currency": {
+          "type": ["null", "string"]
+        },
+        "hs_created_by_user_id": {
+          "type": ["null", "string"]
+        },
+        "hs_createdate": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_date_entered_9567448": {
+          "type": ["null", "string"]
+        },
+        "hs_date_entered_9567449": {
+          "type": ["null", "string"]
+        },
+        "hs_date_entered_appointmentscheduled": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_date_entered_closedlost": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_date_entered_closedwon": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_date_entered_contractsent": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_date_entered_customclosedwonstage": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_date_entered_decisionmakerboughtin": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_date_entered_presentationscheduled": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_date_entered_qualifiedtobuy": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_date_exited_9567448": {
+          "type": ["null", "string"]
+        },
+        "hs_date_exited_9567449": {
+          "type": ["null", "string"]
+        },
+        "hs_date_exited_appointmentscheduled": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_date_exited_closedlost": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_date_exited_closedwon": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_date_exited_contractsent": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_date_exited_customclosedwonstage": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_date_exited_decisionmakerboughtin": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_date_exited_presentationscheduled": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_date_exited_qualifiedtobuy": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_deal_amount_calculation_preference": {
+          "type": ["null", "string"]
+        },
+        "hs_deal_stage_probability": {
+          "type": ["null", "string"]
+        },
+        "hs_deal_stage_probability_shadow": {
+          "type": ["null", "string"]
+        },
+        "hs_forecast_amount": {
+          "type": ["null", "string"]
+        },
+        "hs_forecast_probability": {
+          "type": ["null", "string"]
+        },
+        "hs_is_closed": {
+          "type": ["null", "string"]
+        },
+        "hs_is_closed_won": {
+          "type": ["null", "string"]
+        },
+        "hs_lastmodifieddate": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_latest_meeting_activity": {
+          "type": ["null", "string"]
+        },
+        "hs_likelihood_to_close": {
+          "type": ["null", "string"]
+        },
+        "hs_line_item_global_term_hs_discount_percentage": {
+          "type": ["null", "string"]
+        },
+        "hs_line_item_global_term_hs_discount_percentage_enabled": {
+          "type": ["null", "string"]
+        },
+        "hs_line_item_global_term_hs_recurring_billing_period": {
+          "type": ["null", "string"]
+        },
+        "hs_line_item_global_term_hs_recurring_billing_period_enabled": {
+          "type": ["null", "string"]
+        },
+        "hs_line_item_global_term_hs_recurring_billing_start_date": {
+          "type": ["null", "string"]
+        },
+        "hs_line_item_global_term_hs_recurring_billing_start_date_enabled": {
+          "type": ["null", "string"]
+        },
+        "hs_line_item_global_term_recurringbillingfrequency": {
+          "type": ["null", "string"]
+        },
+        "hs_line_item_global_term_recurringbillingfrequency_enabled": {
+          "type": ["null", "string"]
+        },
+        "hs_manual_forecast_category": {
+          "type": ["null", "string"]
+        },
+        "hs_merged_object_ids": {
+          "type": ["null", "string"]
+        },
+        "hs_mrr": {
+          "type": ["null", "string"]
+        },
+        "hs_next_step": {
+          "type": ["null", "string"]
+        },
+        "hs_num_target_accounts": {
+          "type": ["null", "string"]
+        },
+        "hs_object_id": {
+          "type": ["null", "string"]
+        },
+        "hs_predicted_amount": {
+          "type": ["null", "string"]
+        },
+        "hs_predicted_amount_in_home_currency": {
+          "type": ["null", "string"]
+        },
+        "hs_priority": {
+          "type": ["null", "string"]
+        },
+        "hs_projected_amount": {
+          "type": ["null", "string"]
+        },
+        "hs_projected_amount_in_home_currency": {
+          "type": ["null", "string"]
+        },
+        "hs_sales_email_last_replied": {
+          "type": ["null", "string"]
+        },
+        "hs_tcv": {
+          "type": ["null", "string"]
+        },
+        "hs_unique_creation_key": {
+          "type": ["null", "string"]
+        },
+        "hs_updated_by_user_id": {
+          "type": ["null", "string"]
+        },
+        "hs_user_ids_of_all_notification_followers": {
+          "type": ["null", "string"]
+        },
+        "hs_user_ids_of_all_notification_unfollowers": {
+          "type": ["null", "string"]
+        },
+        "hs_user_ids_of_all_owners": {
+          "type": ["null", "string"]
+        },
+        "hubspot_owner_assigneddate": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hubspot_owner_id": {
+          "type": ["null", "string"]
+        },
+        "hubspot_team_id": {
+          "type": ["null", "string"]
+        },
+        "notes_last_contacted": {
+          "type": ["null", "string"]
+        },
+        "notes_last_updated": {
+          "type": ["null", "string"]
+        },
+        "notes_next_activity_date": {
+          "type": ["null", "string"]
+        },
+        "num_associated_contacts": {
+          "type": ["null", "string"]
+        },
+        "num_contacted_notes": {
+          "type": ["null", "string"]
+        },
+        "num_notes": {
+          "type": ["null", "string"]
+        },
+        "pipeline": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "companies": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "contacts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "line_items": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    }
+  }
+}
