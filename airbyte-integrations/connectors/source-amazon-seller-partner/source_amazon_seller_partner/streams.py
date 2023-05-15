@@ -855,7 +855,7 @@ class IncrementalAnalyticsStream(AnalyticsStream):
 
         # Not all (partial) responses include the request date, so adding it manually here
         for record in document_records:
-            if stream_slice.get("dataEndTime"):
+            if stream_slice and stream_slice.get("dataEndTime"):
                 record["queryEndDate"] = pendulum.parse(stream_slice["dataEndTime"]).strftime("%Y-%m-%d")
             yield record
 
