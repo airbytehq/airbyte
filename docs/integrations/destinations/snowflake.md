@@ -273,6 +273,7 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.3           | 2023-05-15 | [\#26081](https://github.com/airbytehq/airbyte/pull/26081) | Reverts splits bases                                                                                                                                |
 | 1.0.2           | 2023-05-05 | [\#25649](https://github.com/airbytehq/airbyte/pull/25649) | Splits bases (reverted)                                                                                                                             | 
 | 1.0.1           | 2023-04-29 | [\#25570](https://github.com/airbytehq/airbyte/pull/25570) | Internal library update                                                                                                                             |
 | 1.0.0           | 2023-05-02 | [\#25739](https://github.com/airbytehq/airbyte/pull/25739) | Removed Azure Blob Storage as a loading method                                                                                                      |
