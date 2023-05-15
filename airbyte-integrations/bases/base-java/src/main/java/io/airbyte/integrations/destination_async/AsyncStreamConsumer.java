@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination_async;
 
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
@@ -13,9 +14,12 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.LinkedBlockingQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AsyncStreamConsumer implements AirbyteMessageConsumer {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AsyncStreamConsumer.class);
 
   private static final String NON_STREAM_STATE_IDENTIFIER = "GLOBAL";
   private final BufferManagerEnqueue bufferManagerEnqueue;
@@ -73,7 +77,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
   static class BufferManager {
 
-    Map<StreamDescriptor, LinkedBlockingQueue<AirbyteMessage>> buffers;
+    Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
 
     BufferManagerEnqueue bufferManagerEnqueue;
     BufferManagerDequeue bufferManagerDequeue;
@@ -96,48 +100,58 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
   static class BufferManagerEnqueue {
 
-    Map<StreamDescriptor, LinkedBlockingQueue<AirbyteMessage>> buffers;
+    private final RecordSizeEstimator recordSizeEstimator;
+    private final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
 
-    public BufferManagerEnqueue(final Map<StreamDescriptor, LinkedBlockingQueue<AirbyteMessage>> buffers) {
+    public BufferManagerEnqueue(final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
       this.buffers = buffers;
+      recordSizeEstimator = new RecordSizeEstimator();
     }
 
     public void addRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message) {
+      // todo (cgardens) - share the total memory across multiple queues.
+      final long availableMemory = (long) (Runtime.getRuntime().maxMemory() * 0.8);
+      LOGGER.info("available memory: " + availableMemory);
+
       // todo (cgardens) - replace this with fancy logic to make sure we don't oom.
       if (!buffers.containsKey(streamDescriptor)) {
-        buffers.put(streamDescriptor, new LinkedBlockingQueue<>());
+        buffers.put(streamDescriptor, new MemoryBoundedLinkedBlockingQueue<>(10)); // todo
       }
-      buffers.get(streamDescriptor).add(message);
+
+      // todo (cgardens) - handle estimating state message size.
+      final long messageSize = message.getType() == Type.RECORD ? recordSizeEstimator.getEstimatedByteSize(message.getRecord()) : 1024;
+      buffers.get(streamDescriptor).offer(message, messageSize);
     }
 
   }
 
+  // todo (cgardens) - make all the metadata methods more efficient.
   static class BufferManagerDequeue {
 
-    Map<StreamDescriptor, LinkedBlockingQueue<AirbyteMessage>> buffers;
+    Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
 
-    public BufferManagerDequeue(final Map<StreamDescriptor, LinkedBlockingQueue<AirbyteMessage>> buffers) {
+    public BufferManagerDequeue(final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
       this.buffers = buffers;
     }
 
-    public Map<StreamDescriptor, LinkedBlockingQueue<AirbyteMessage>> getBuffers() {
+    public Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> getBuffers() {
       return new HashMap<>(buffers);
     }
 
-    public LinkedBlockingQueue<AirbyteMessage> getBuffer(final StreamDescriptor streamDescriptor) {
+    public MemoryBoundedLinkedBlockingQueue<AirbyteMessage> getBuffer(final StreamDescriptor streamDescriptor) {
       return buffers.get(streamDescriptor);
     }
 
-    public int getTotalGlobalQueueSizeInMb() {
-      return 0;
+    public long getTotalGlobalQueueSizeInMb() {
+      return buffers.values().stream().map(MemoryBoundedLinkedBlockingQueue::getCurrentMemoryUsage).mapToLong(Long::longValue).sum();
     }
 
-    public int getQueueSizeInMb(final StreamDescriptor streamDescriptor) {
-      return 0;
+    public long getQueueSizeInMb(final StreamDescriptor streamDescriptor) {
+      return getBuffer(streamDescriptor).getCurrentMemoryUsage();
     }
 
-    public Instant getTimeOfLastRecord(final StreamDescriptor streamDescriptor) {
-      return null;
+    public Optional<Instant> getTimeOfLastRecord(final StreamDescriptor streamDescriptor) {
+      return getBuffer(streamDescriptor).getTimeOfLastMessage();
     }
 
   }
