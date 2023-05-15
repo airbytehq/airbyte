@@ -11,13 +11,6 @@ This page contains the setup guide and reference information for the google sear
 * Enable Google Search Console API
 
 
-:::note
-
-Since Google has deprecated certain [OAuth workflows](https://developers.google.com/identity/protocols/oauth2/resources/oob-migration), OAuth isn't supported for this connector at this time.
-
-:::
-
-
 ## Setup guide
 ### Step 1: Set up google search console
 
