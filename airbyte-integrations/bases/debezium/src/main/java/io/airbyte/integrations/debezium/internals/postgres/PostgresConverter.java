@@ -35,7 +35,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.postgresql.jdbc.PgArray;
 import org.postgresql.util.PGInterval;
@@ -55,6 +54,11 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   private final String[] NUMERIC_TYPES = {"NUMERIC", "DECIMAL"};
   private final String[] ARRAY_TYPES = {"_NAME", "_NUMERIC", "_BYTEA", "_MONEY", "_BIT", "_DATE", "_TIME", "_TIMETZ", "_TIMESTAMP", "_TIMESTAMPTZ"};
   private final String BYTEA_TYPE = "BYTEA";
+
+  // Debezium is manually setting the variable scale decimal length (precision)
+  // of numeric_array columns to 131089 if not specified. e.g: NUMERIC vs NUMERIC(38,0)
+  // https://github.com/debezium/debezium/blob/main/debezium-connector-postgres/src/main/java/io/debezium/connector/postgresql/PostgresValueConverter.java#L113
+  private final int VARIABLE_SCALE_DECIMAL_LENGTH = 131089;
 
   @Override
   public void configure(final Properties props) {}
@@ -82,11 +86,13 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
     final String fieldType = field.typeName().toUpperCase();
     final SchemaBuilder arraySchema = switch (fieldType) {
       case "_NUMERIC" -> {
-        // Checks for the scale of the _NUMERIC field type
-        // use the INT64 (semantically equivalent to BigInt and Long) if there is no decimal scale
-        // use FLOAT64 if there is
-        final Schema schema = field.scale().orElse(0) == 0 ? OPTIONAL_INT64_SCHEMA : OPTIONAL_FLOAT64_SCHEMA;
-        yield SchemaBuilder.array(schema);
+        // If a numeric_array column does not have variable precision AND scale is 0
+        // then we know the precision and scale are purposefully chosen
+        if (numericArrayColumnPrecisionIsNotVariable(field) && field.scale().orElse(0) == 0) {
+          yield SchemaBuilder.array(OPTIONAL_INT64_SCHEMA);
+        } else {
+          yield SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA);
+        }
       }
       case "_MONEY" -> SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA);
       case "_NAME", "_DATE", "_TIME", "_TIMESTAMP", "_TIMESTAMPTZ", "_TIMETZ", "_BYTEA" -> SchemaBuilder.array(OPTIONAL_STRING_SCHEMA);
@@ -177,8 +183,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
           if (value == null) {
             return null;
           } else {
-            final int valueScale = new BigDecimal(value.toString()).scale();
-            if (valueScale == 0) {
+            if (numericArrayColumnPrecisionIsNotVariable(field) && field.scale().orElse(0) == 0) {
               return Long.parseLong(value.toString());
             } else {
               return Double.valueOf(value.toString());
@@ -350,4 +355,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
         || pgInterval.getWholeSeconds() < 0;
   }
 
+  private boolean numericArrayColumnPrecisionIsNotVariable(final RelationalColumn column) {
+    return column.length().orElse(VARIABLE_SCALE_DECIMAL_LENGTH) != VARIABLE_SCALE_DECIMAL_LENGTH;
+  }
 }

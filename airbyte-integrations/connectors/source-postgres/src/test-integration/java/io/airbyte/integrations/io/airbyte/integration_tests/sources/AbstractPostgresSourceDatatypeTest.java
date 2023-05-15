@@ -293,12 +293,35 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                 "08:00:2b:01:02:03:04:07")
             .build());
 
-    // Edge case of a column type being a NUMERIC data type
-    // with no decimal precision
+    /*
+     * Verify NUMERIC/DECIMAL Datatypes has
+     *  - the default precision of 131089 (See PostgresConverter)
+     *  - unspecified scale - any decimal value is preserved
+     */
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("numeric")
-            .fullSourceDataType("NUMERIC(38,0)")
+            .fullSourceDataType("NUMERIC")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .addInsertValues("'33'")
+            .addExpectedValues("33")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("numeric")
+            .fullSourceDataType("NUMERIC")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .addInsertValues("'33.345'")
+            .addExpectedValues("33.345")
+            .build());
+
+    // case of a column type being a NUMERIC data type
+    // with precision but no decimal
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("numeric")
+            .fullSourceDataType("NUMERIC(38)")
             .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("'33'")
             .addExpectedValues("33")
@@ -752,8 +775,11 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
             .build());
 
     for (final String type : Set.of("numeric", "decimal")) {
-      // This verifies NUMERIC/DECIMAL[] types to have
-      // default precision of (38, 0) if not specified
+      /*
+       * Verify NUMERIC[]/DECIMAL[] Datatypes has
+       *  - the default precision of 131089 (See PostgresConverter)
+       *  - unspecified scale - any decimal value is preserved
+       */
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(String.format("%s_array", type))
@@ -762,6 +788,21 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                   .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
                       .build())
                   .build())
+              .addInsertValues("'{131070.23,231072.476596593}'")
+              .addExpectedValues("[131070.23,231072.476596593]")
+              .build());
+      /*
+       * Verify NUMERIC(`anyNumber`)[]/DECIMAL(`anyNumber`)[] Datatypes has
+       * default scale of 0 if the Precision is set
+       */
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(String.format("%s_array", type))
+              .fullSourceDataType(String.format("%s(20)[]", type.toUpperCase()))
+              .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                               .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                                              .build())
+                               .build())
               .addInsertValues("'{131070,231072}'")
               .addExpectedValues("[131070,231072]")
               .build());
@@ -769,13 +810,13 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(String.format("%s_array", type))
-              .fullSourceDataType(String.format("%s(30,9)[]", type.toUpperCase()))
+              .fullSourceDataType(String.format("%s(30,2)[]", type.toUpperCase()))
               .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                   .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
                       .build())
                   .build())
               .addInsertValues("'{131070.23,231072.476596593}'")
-              .addExpectedValues("[131070.23,231072.476596593]")
+              .addExpectedValues("[131070.23,231072.48]")
               .build());
     }
 

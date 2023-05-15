@@ -177,7 +177,9 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "_varchar", "_char", "_bpchar", "_text", "_name" -> putArray(json, columnName, resultSet, colIndex);
         case "_int2", "_int4", "_int8", "_oid" -> putLongArray(json, columnName, resultSet, colIndex);
         case "_numeric", "_decimal" -> {
-          if (metadata.getScale(colIndex) == 0) {
+          // If a numeric_array column precision is not 0 AND scale is 0,
+          // then we know the precision and scale are purposefully chosen
+          if (metadata.getPrecision(colIndex) != 0 && metadata.getScale(colIndex) == 0) {
             putBigIntArray(json, columnName, resultSet, colIndex);
           } else {
             putBigDecimalArray(json, columnName, resultSet, colIndex);
@@ -202,7 +204,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
             case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
             case REAL -> putFloat(json, columnName, resultSet, colIndex);
             case NUMERIC, DECIMAL -> {
-              if (metadata.getScale(colIndex) == 0) {
+              if (metadata.getPrecision(colIndex) != 0 && metadata.getScale(colIndex) == 0) {
                 putBigInt(json, columnName, resultSet, colIndex);
               } else {
                 putBigDecimal(json, columnName, resultSet, colIndex);
