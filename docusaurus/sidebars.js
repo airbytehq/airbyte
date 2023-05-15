@@ -176,6 +176,7 @@ const buildAConnector = {
     },
     "connector-development/connector-specification-reference",
     "connector-development/schema-reference",
+    "connector-development/connector-metadata-file",
     "connector-development/best-practices",
     "connector-development/ux-handbook",
   ],
