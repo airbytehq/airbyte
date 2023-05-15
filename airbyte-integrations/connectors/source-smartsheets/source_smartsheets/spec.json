@@ -15,7 +15,13 @@
           {
             "type": "object",
             "title": "OAuth2.0",
-            "required": ["client_id", "client_secret", "refresh_token", "access_token", "token_expiry_date"],
+            "required": [
+              "client_id",
+              "client_secret",
+              "refresh_token",
+              "access_token",
+              "token_expiry_date"
+            ],
             "properties": {
               "auth_type": {
                 "type": "string",

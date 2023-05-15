@@ -37,10 +37,7 @@
         "name": "campaigns_report_daily",
         "source_defined_cursor": true,
         "source_defined_primary_key": [["date"], ["campaignId"]],
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "destination_sync_mode": "append",
       "sync_mode": "incremental"
@@ -52,10 +49,7 @@
         "name": "adgroups_report_daily",
         "source_defined_cursor": true,
         "source_defined_primary_key": [["date"], ["adGroupId"]],
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "destination_sync_mode": "append",
       "sync_mode": "incremental"
@@ -67,10 +61,7 @@
         "name": "keywords_report_daily",
         "source_defined_cursor": true,
         "source_defined_primary_key": [["date"], ["keywordId"]],
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ]
+        "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "destination_sync_mode": "append",
       "sync_mode": "incremental"

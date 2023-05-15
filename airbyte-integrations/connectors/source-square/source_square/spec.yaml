@@ -79,13 +79,13 @@ authSpecification:
   auth_type: oauth2.0
   oauth2Specification:
     rootObject:
-    - credentials
-    - "0"
+      - credentials
+      - "0"
     oauthFlowInitParameters:
-    - ["client_id"]
-    - ["client_secret"]
+      - ["client_id"]
+      - ["client_secret"]
     oauthFlowOutputParameters:
-    - ["refresh_token"]
+      - ["refresh_token"]
 advanced_auth:
   auth_flow_type: oauth2.0
   predicate_key:

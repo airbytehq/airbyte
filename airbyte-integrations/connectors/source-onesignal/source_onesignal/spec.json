@@ -4,7 +4,12 @@
     "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "OneSignal Source Spec",
     "type": "object",
-    "required": ["user_auth_key", "start_date", "outcome_names", "applications"],
+    "required": [
+      "user_auth_key",
+      "start_date",
+      "outcome_names",
+      "applications"
+    ],
     "additionalProperties": true,
     "properties": {
       "user_auth_key": {

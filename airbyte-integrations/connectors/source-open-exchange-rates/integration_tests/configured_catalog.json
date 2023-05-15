@@ -16,1043 +16,526 @@
               "type": "object",
               "properties": {
                 "AED": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "AFN": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "ALL": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "AMD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "ANG": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "AOA": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "ARS": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "AUD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "AWG": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "AZN": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "BAM": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "BBD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "BDT": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "BGN": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "BHD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "BIF": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "BMD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "BND": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "BOB": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "BRL": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "BSD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "BTC": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "BTN": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "BWP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "BYN": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "BZD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "CAD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "CDF": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "CHF": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "CLF": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "CLP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "CNH": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "CNY": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "COP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "CRC": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "CUC": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "CUP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "CVE": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "CZK": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "DJF": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "DKK": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "DOP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "DZD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "EGP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "ERN": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "ETB": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "EUR": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "FJD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "FKP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "GBP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "GEL": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "GGP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "GHS": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "GIP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "GMD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "GNF": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "GTQ": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "GYD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "HKD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "HNL": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "HRK": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "HTG": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "HUF": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "IDR": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "ILS": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "IMP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "INR": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "IQD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "IRR": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "ISK": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "JEP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "JMD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "JOD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "JPY": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "KES": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "KGS": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "KHR": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "KMF": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "KPW": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "KRW": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "KWD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "KYD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "KZT": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "LAK": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "LBP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "LKR": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "LRD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "LSL": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "LYD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "MAD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "MDL": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "MGA": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "MKD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "MMK": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "MNT": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "MOP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "MRO": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "MRU": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "MUR": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "MVR": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "MWK": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "MXN": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "MYR": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "MZN": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "NAD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "NGN": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "NIO": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "NOK": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "NPR": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "NZD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "OMR": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "PAB": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "PEN": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "PGK": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "PHP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "PKR": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "PLN": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "PYG": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "QAR": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "RON": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "RSD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "RUB": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "RWF": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "SAR": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "SBD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "SCR": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "SDG": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "SEK": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "SGD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "SHP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "SLL": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "SOS": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "SRD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "SSP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "STD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "STN": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "SVC": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "SYP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "SZL": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "THB": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "TJS": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "TMT": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "TND": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "TOP": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "TRY": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "TTD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "TWD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "TZS": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "UAH": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "UGX": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "USD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "UYU": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "UZS": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "VES": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "VND": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "VUV": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "WST": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "XAF": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "XAG": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "XAU": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "XCD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "XDR": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "XOF": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "XPD": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "XPF": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "XPT": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "YER": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "ZAR": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "ZMW": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 },
                 "ZWL": {
-                  "type": [
-                    "null",
-                    "number"
-                  ]
+                  "type": ["null", "number"]
                 }
               }
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "timestamp"
-        ]
+        "default_cursor_field": ["timestamp"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
-      "cursor_field": [
-        "timestamp"
-      ]
+      "cursor_field": ["timestamp"]
     }
   ]
 }

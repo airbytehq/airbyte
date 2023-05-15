@@ -117,19 +117,10 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
@@ -206,19 +197,10 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
@@ -304,19 +286,10 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
@@ -396,19 +369,10 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
@@ -491,18 +455,10 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -618,18 +574,10 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -679,18 +627,10 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -737,18 +677,10 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -795,18 +727,10 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -871,18 +795,10 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -959,18 +875,10 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -1026,18 +934,10 @@
             }
           }
         },
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
+        "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"

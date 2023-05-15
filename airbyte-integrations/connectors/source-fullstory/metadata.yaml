@@ -15,4 +15,4 @@ data:
       enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/fullstory
-metadataSpecVersion: '1.0'
+metadataSpecVersion: "1.0"

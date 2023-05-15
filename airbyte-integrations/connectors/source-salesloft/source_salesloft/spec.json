@@ -15,7 +15,14 @@
           {
             "title": "Authenticate via OAuth",
             "type": "object",
-            "required": ["client_id", "client_secret", "refresh_token", "access_token", "token_expiry_date", "auth_type"],
+            "required": [
+              "client_id",
+              "client_secret",
+              "refresh_token",
+              "access_token",
+              "token_expiry_date",
+              "auth_type"
+            ],
             "properties": {
               "auth_type": {
                 "type": "string",

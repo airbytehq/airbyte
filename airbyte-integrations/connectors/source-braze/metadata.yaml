@@ -6,7 +6,6 @@ data:
   icon: braze.svg
   dockerRepository: airbyte/source-braze
   githubIssueLabel: source-braze
-  icon: braze.svg
   license: MIT
   name: Braze
   registries:

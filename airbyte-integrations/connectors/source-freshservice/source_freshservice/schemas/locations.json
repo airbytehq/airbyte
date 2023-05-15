@@ -15,9 +15,9 @@
     "zipcode": { "type": ["null", "string"] },
     "created_at": { "type": ["null", "string"] },
     "updated_at": { "type": ["null", "string"] },
-    "email": {"type": ["null", "string"] },
-    "phone": {"type": ["null", "string"] },
-    "address": {"type": ["null", "string"] }, 
-    "contact_name": {"type": ["null", "string"] }
+    "email": { "type": ["null", "string"] },
+    "phone": { "type": ["null", "string"] },
+    "address": { "type": ["null", "string"] },
+    "contact_name": { "type": ["null", "string"] }
   }
 }

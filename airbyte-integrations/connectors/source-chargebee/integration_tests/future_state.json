@@ -97,14 +97,14 @@
       "stream_descriptor": { "name": "quote" }
     }
   },
-    {
+  {
     "type": "STREAM",
     "stream": {
       "stream_state": { "occurred_at": 2147483647 },
       "stream_descriptor": { "name": "event" }
     }
   },
-    {
+  {
     "type": "STREAM",
     "stream": {
       "stream_state": { "updated_at": 2147483647 },

@@ -776,7 +776,7 @@
       }
     },
     "AdhocDisbursementEventList": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
@@ -845,7 +845,7 @@
       }
     },
     "ChargeRefundEventList": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
@@ -859,7 +859,7 @@
       }
     },
     "FailedAdhocDisbursementEventList": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {
@@ -889,7 +889,7 @@
       }
     },
     "ValueAddedServiceChargeEventList": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
         "properties": {

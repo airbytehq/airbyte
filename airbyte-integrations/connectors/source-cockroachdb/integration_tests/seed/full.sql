@@ -1,15 +1,454 @@
-CREATE SCHEMA COCKROACHDB_FULL;
-CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');
+CREATE
+    SCHEMA COCKROACHDB_FULL;
 
-CREATE TABLE COCKROACHDB_FULL.TEST_DATASET(id INTEGER PRIMARY KEY, test_column_1 STRING[],test_column_10 blob,test_column_11 character,test_column_12 character(8),test_column_13 varchar,test_column_14 character(12),test_column_15 date,test_column_16 float8,test_column_17 float,test_column_18 inet,test_column_19 int,test_column_2 BIT(3),test_column_20 interval,test_column_21 json,test_column_22 jsonb,test_column_23 numeric,test_column_24 decimal,test_column_25 smallint,test_column_26 text,test_column_27 time,test_column_28 timetz,test_column_29 timestamp,test_column_3 bigint,test_column_30 uuid,test_column_31 mood,test_column_32 text[],test_column_33 int[],test_column_4 bigserial,test_column_5 serial,test_column_6 smallserial,test_column_7 BIT VARYING(5),test_column_8 boolean,test_column_9 bytea[] );
+CREATE
+    TYPE mood AS ENUM(
+        'sad',
+        'ok',
+        'happy'
+    );
 
-INSERT INTO COCKROACHDB_FULL.TEST_DATASET VALUES (1, ARRAY['sky', 'road', 'car'], decode('1234', 'hex'), 'a', '{asb123}', 'a', 'a', '1999-01-08', '123', '123', '198.24.10.0/24', null, B'101', null, null, null, '99999', '+inf', null, 'a', '04:05:06', '04:05:06Z', TIMESTAMP '2004-10-19 10:23:54', -9223372036854775808, 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'happy', '{10000, 10000, 10000, 10000}', '{10000, 10000, 10000, 10000}', 1, 1, 1, B'101', true, ARRAY['☃'::bytes, 'ї'::bytes]);
-INSERT INTO COCKROACHDB_FULL.TEST_DATASET VALUES (2, null, null, '*', '{asb12}', 'abc', 'abc', null, '1234567890.1234567', '1234567890.1234567', '198.24.10.0', -2147483648, null, 'P1Y2M3DT4H5M6S', '{"a": 10, "b": 15}', '[1, 2, 3]'::jsonb, null, 999, -32768, 'abc', null, null, TIMESTAMP '2004-10-19 10:23:54.123456', 9223372036854775807, null, null, null, null, 9223372036854775807, 2147483647, 32767, null, 'yes', null);
-INSERT INTO COCKROACHDB_FULL.TEST_DATASET VALUES (3, null, null, null, null, 'Миші йдуть на південь, не питай чому;', 'Миші йдуть;', null, null, null, '198.10/8', 2147483647, null, '-178000000', null, null, null, '-inf', 32767, 'Миші йдуть;', null, null, null, 0, null, null, null, null, 0, 0, 0, null, '1', null);
-INSERT INTO COCKROACHDB_FULL.TEST_DATASET VALUES (4, null, null, null, null, '櫻花分店', '櫻花分店', null, 'infinity', 'infinity', null, null, null, '178000000', null, null, null, '+infinity', null, '櫻花分店', null, null, null, null, null, null, null, null, -9223372036854775808, -2147483647, -32767, null, false, null);
-INSERT INTO COCKROACHDB_FULL.TEST_DATASET VALUES (5, null, null, null, null, '', '', null, '+infinity', '+infinity', null, null, null, null, null, null, null, '-infinity', null, '', null, null, null, null, null, null, null, null, null, null, null, null, 'no', null);
-INSERT INTO COCKROACHDB_FULL.TEST_DATASET VALUES (6, null, null, null, null, null, null, null, '+inf', '+inf', null, null, null, null, null, null, null, 'nan', null, null, null, null, null, null, null, null, null, null, null, null, null, null, '0', null);
-INSERT INTO COCKROACHDB_FULL.TEST_DATASET VALUES (7, null, null, null, null, '\xF0\x9F\x9A\x80', null, null, 'inf', 'inf', null, null, null, null, null, null, null, null, null, '\xF0\x9F\x9A\x80', null, null, null, null, null, null, null, null, null, null, null, null, null, null);
-INSERT INTO COCKROACHDB_FULL.TEST_DATASET VALUES (8, null, null, null, null, null, null, null, '-inf', '-inf', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
-INSERT INTO COCKROACHDB_FULL.TEST_DATASET VALUES (9, null, null, null, null, null, null, null, '-infinity', '-infinity', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
-INSERT INTO COCKROACHDB_FULL.TEST_DATASET VALUES (10, null, null, null, null, null, null, null, 'nan', 'nan', null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+CREATE
+    TABLE
+        COCKROACHDB_FULL.TEST_DATASET(
+            id INTEGER PRIMARY KEY,
+            test_column_1 STRING [],
+            test_column_10 BLOB,
+            test_column_11 CHARACTER,
+            test_column_12 CHARACTER(8),
+            test_column_13 VARCHAR,
+            test_column_14 CHARACTER(12),
+            test_column_15 DATE,
+            test_column_16 float8,
+            test_column_17 FLOAT,
+            test_column_18 inet,
+            test_column_19 INT,
+            test_column_2 BIT(3),
+            test_column_20 INTERVAL,
+            test_column_21 json,
+            test_column_22 jsonb,
+            test_column_23 NUMERIC,
+            test_column_24 DECIMAL,
+            test_column_25 SMALLINT,
+            test_column_26 text,
+            test_column_27 TIME,
+            test_column_28 timetz,
+            test_column_29 TIMESTAMP,
+            test_column_3 BIGINT,
+            test_column_30 uuid,
+            test_column_31 mood,
+            test_column_32 text [],
+            test_column_33 INT [],
+            test_column_4 bigserial,
+            test_column_5 serial,
+            test_column_6 smallserial,
+            test_column_7 BIT VARYING(5),
+            test_column_8 BOOLEAN,
+            test_column_9 bytea []
+        );
+
+INSERT
+    INTO
+        COCKROACHDB_FULL.TEST_DATASET
+    VALUES(
+        1,
+        ARRAY [ 'sky',
+        'road',
+        'car' ],
+        decode(
+            '1234',
+            'hex'
+        ),
+        'a',
+        '{asb123}',
+        'a',
+        'a',
+        '1999-01-08',
+        '123',
+        '123',
+        '198.24.10.0/24',
+        NULL,
+        B'101',
+        NULL,
+        NULL,
+        NULL,
+        '99999',
+        '+inf',
+        NULL,
+        'a',
+        '04:05:06',
+        '04:05:06Z',
+        TIMESTAMP '2004-10-19 10:23:54',
+        - 9223372036854775808,
+        'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+        'happy',
+        '{10000, 10000, 10000, 10000}',
+        '{10000, 10000, 10000, 10000}',
+        1,
+        1,
+        1,
+        B'101',
+        TRUE,
+        ARRAY [ '☃'::bytes,
+        'ї'::bytes ]
+    );
+
+INSERT
+    INTO
+        COCKROACHDB_FULL.TEST_DATASET
+    VALUES(
+        2,
+        NULL,
+        NULL,
+        '*',
+        '{asb12}',
+        'abc',
+        'abc',
+        NULL,
+        '1234567890.1234567',
+        '1234567890.1234567',
+        '198.24.10.0',
+        - 2147483648,
+        NULL,
+        'P1Y2M3DT4H5M6S',
+        '{"a": 10, "b": 15}',
+        '[1, 2, 3]'::jsonb,
+        NULL,
+        999,
+        - 32768,
+        'abc',
+        NULL,
+        NULL,
+        TIMESTAMP '2004-10-19 10:23:54.123456',
+        9223372036854775807,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        9223372036854775807,
+        2147483647,
+        32767,
+        NULL,
+        'yes',
+        NULL
+    );
+
+INSERT
+    INTO
+        COCKROACHDB_FULL.TEST_DATASET
+    VALUES(
+        3,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        'Миші йдуть на південь, не питай чому;',
+        'Миші йдуть;',
+        NULL,
+        NULL,
+        NULL,
+        '198.10/8',
+        2147483647,
+        NULL,
+        '-178000000',
+        NULL,
+        NULL,
+        NULL,
+        '-inf',
+        32767,
+        'Миші йдуть;',
+        NULL,
+        NULL,
+        NULL,
+        0,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        0,
+        0,
+        0,
+        NULL,
+        '1',
+        NULL
+    );
+
+INSERT
+    INTO
+        COCKROACHDB_FULL.TEST_DATASET
+    VALUES(
+        4,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        '櫻花分店',
+        '櫻花分店',
+        NULL,
+        'infinity',
+        'infinity',
+        NULL,
+        NULL,
+        NULL,
+        '178000000',
+        NULL,
+        NULL,
+        NULL,
+        '+infinity',
+        NULL,
+        '櫻花分店',
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        - 9223372036854775808,
+        - 2147483647,
+        - 32767,
+        NULL,
+        FALSE,
+        NULL
+    );
+
+INSERT
+    INTO
+        COCKROACHDB_FULL.TEST_DATASET
+    VALUES(
+        5,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        '',
+        '',
+        NULL,
+        '+infinity',
+        '+infinity',
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        '-infinity',
+        NULL,
+        '',
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        'no',
+        NULL
+    );
+
+INSERT
+    INTO
+        COCKROACHDB_FULL.TEST_DATASET
+    VALUES(
+        6,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        '+inf',
+        '+inf',
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        'nan',
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        '0',
+        NULL
+    );
+
+INSERT
+    INTO
+        COCKROACHDB_FULL.TEST_DATASET
+    VALUES(
+        7,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        '\xF0\x9F\x9A\x80',
+        NULL,
+        NULL,
+        'inf',
+        'inf',
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        '\xF0\x9F\x9A\x80',
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+    );
+
+INSERT
+    INTO
+        COCKROACHDB_FULL.TEST_DATASET
+    VALUES(
+        8,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        '-inf',
+        '-inf',
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+    );
+
+INSERT
+    INTO
+        COCKROACHDB_FULL.TEST_DATASET
+    VALUES(
+        9,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        '-infinity',
+        '-infinity',
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+    );
+
+INSERT
+    INTO
+        COCKROACHDB_FULL.TEST_DATASET
+    VALUES(
+        10,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        'nan',
+        'nan',
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+    );

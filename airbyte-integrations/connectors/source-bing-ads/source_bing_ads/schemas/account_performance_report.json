@@ -82,7 +82,7 @@
     "Conversions": {
       "type": ["null", "number"]
     },
-    "ConversionsQualified":{
+    "ConversionsQualified": {
       "type": ["null", "number"]
     },
     "ConversionRate": {
