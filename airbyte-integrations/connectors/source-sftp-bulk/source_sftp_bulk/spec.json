@@ -81,6 +81,30 @@
         "examples": ["/logs/2022"],
         "order": 8
       },
+      "depth": {
+        "title": "Recursion depth (Optional)",
+        "description": "Number of levels to search for files in the folder path",
+        "type": "integer",
+        "default": "0",
+        "examples": ["0", "1"],
+        "order": 9
+      },
+	  "column_names": {
+		"title": "Column names at the header, separated by | (Optional)",
+		"description": "A separable string of column names. If _None_ is passed, the header will be used as column names",
+		"type": "string",
+		"default": "_None_",
+		"examples": ["some_col_A|some_col_B"],
+		"order": 10
+	  },
+	  "column_names_separator": {
+        "title": "Separator used to separate the header (Optional)",
+        "description": "A character used to split the column names listed at column_names",
+        "type": "string",
+        "default": "|",
+        "examples": ["|", "#"],
+        "order": 11
+      },
       "file_pattern": {
         "title": "File Pattern (Optional)",
         "description": "The regular expression to specify files for sync in a chosen Folder Path",
@@ -89,14 +113,14 @@
         "examples": [
           "log-([0-9]{4})([0-9]{2})([0-9]{2}) - This will filter files which  `log-yearmmdd`"
         ],
-        "order": 9
+        "order": 12
       },
       "file_most_recent": {
         "title": "Most recent file (Optional)",
         "description": "Sync only the most recent file for the configured folder path and file pattern",
         "type": "boolean",
         "default": false,
-        "order": 10
+        "order": 13
       },
       "start_date": {
         "type": "string",
@@ -105,7 +129,7 @@
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-25T00:00:00Z"],
         "description": "The date from which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
-        "order": 11
+        "order": 14
       }
     }
   }
