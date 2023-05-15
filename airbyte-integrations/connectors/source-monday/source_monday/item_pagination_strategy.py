@@ -7,7 +7,13 @@ class ItemPaginationStrategy(PageIncrement):
     """
     Page increment strategy with subpages for the `items` stream.
 
-    See Monday API documentation https://developer.monday.com/api-reference/docs.
+    From the `items` documentation https://developer.monday.com/api-reference/docs/items:
+        Please note that you cannot return more than 100 items per query when using items at the root.
+        To adjust your query, try only returning items on a specific board, nesting items inside a boards query,
+        looping through the boards on your account, or querying less than 100 items at a time.
+
+    This pagination strategy supports nested loop through `boards` on the top level and `items` on the second.
+    See boards documentation for more details: https://developer.monday.com/api-reference/docs/boards#queries.
     """
 
     def __post_init__(self, parameters: Mapping[str, Any]):
