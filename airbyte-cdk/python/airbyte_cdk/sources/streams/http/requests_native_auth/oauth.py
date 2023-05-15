@@ -22,7 +22,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         token_refresh_endpoint: str,
         client_id: str,
         client_secret: str,
-        refresh_token,
+        refresh_token: str,
         scopes: List[str] = None,
         token_expiry_date: pendulum.DateTime = None,
         token_expiry_date_format: str = None,
