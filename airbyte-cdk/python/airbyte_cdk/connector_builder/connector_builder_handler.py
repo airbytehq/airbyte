@@ -20,7 +20,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE = 5
 DEFAULT_MAXIMUM_NUMBER_OF_SLICES = 5
-DEFAULT_MAXIMUM_RECORDS = 100
+DEFAULT_MAXIMUM_RECORDS = 1000
 
 MAX_PAGES_PER_SLICE_KEY = "max_pages_per_slice"
 MAX_SLICES_KEY = "max_slices"
