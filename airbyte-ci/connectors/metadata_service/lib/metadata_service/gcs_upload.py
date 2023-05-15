@@ -38,6 +38,7 @@ def compute_gcs_md5(file_name: str) -> str:
 
     return base64.b64encode(hash_md5.digest()).decode("utf8")
 
+
 def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: str) -> bool:
     """Uploads a file to the bucket."""
     print(f"Uploading {file_path} to {blob_to_save.name}...")
