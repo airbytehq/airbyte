@@ -3,7 +3,8 @@
 #
 
 import pytest
-from source_google_ads.utils import GAQL, QueryParseException
+from airbyte_cdk.utils import AirbyteTracedException
+from source_google_ads.utils import GAQL
 
 
 def test_parse_GAQL_ok():
@@ -70,20 +71,20 @@ def test_parse_GAQL_ok():
 
 
 def test_parse_GAQL_fail():
-    with pytest.raises(QueryParseException) as e:
+    with pytest.raises(AirbyteTracedException) as e:
         GAQL.parse("SELECT field1, field2 FROM x_Table2")
     assert str(e.value) == "Incorrect GAQL query statement: 'SELECT field1, field2 FROM x_Table2'"
 
-    with pytest.raises(QueryParseException) as e:
+    with pytest.raises(AirbyteTracedException) as e:
         GAQL.parse("SELECT field1, field2 FROM x_Table WHERE ")
-    with pytest.raises(QueryParseException) as e:
+    with pytest.raises(AirbyteTracedException) as e:
         GAQL.parse("SELECT field1, , field2 FROM table")
-    with pytest.raises(QueryParseException) as e:
+    with pytest.raises(AirbyteTracedException) as e:
         GAQL.parse("SELECT fie ld1, field2 FROM table")
 
-    with pytest.raises(QueryParseException) as e:
+    with pytest.raises(AirbyteTracedException) as e:
         GAQL.parse("SELECT field1, field2 FROM customer, campaign_labels")
-    assert str(e.value) == "incorrect GAQL query: multiple resources 'customer, campaign_labels' is not allowed"
+    assert str(e.value) == "Incorrect GAQL query: multiple resources 'customer, campaign_labels' is not allowed"
 
 
 @pytest.mark.parametrize(
