@@ -104,6 +104,8 @@ class SourceGithub(AbstractSource):
         if not SourceGithub._is_repositories_config_valid(config_repositories):
             raise Exception(
                 f"You provided invalid format of repositories config: {' ' .join(config_repositories)}."
+                "Repositories with the wrong name, or repositories that do not exist, or have the wrong name format, "
+                "or do not belong to your account are not allowed."
                 f" Valid examples: airbytehq/airbyte airbytehq/another-repo airbytehq/* airbytehq/airbyte"
             )
 
