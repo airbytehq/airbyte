@@ -95,15 +95,22 @@ class UploadSpecToCache(Step):
         return f"{self.spec_key_prefix}/{self.default_spec_file_name}"
 
     def _parse_spec_output(self, spec_output: str) -> str:
+        parsed_spec_message = None
         for line in spec_output.split("\n"):
             try:
                 parsed_json = json.loads(line)
                 if parsed_json["type"] == "SPEC":
-                    parsed_spec = parsed_json["spec"]
-                    ConnectorSpecification.parse_obj(parsed_spec)
-                    return json.dumps(parsed_spec)
-            except (json.JSONDecodeError, KeyError, ValidationError, ValueError) as e:
-                raise InvalidSpecOutputError(f"Could not parse the output of the SPEC command to a valid spec: {str(e)}")
+                    parsed_spec_message = parsed_json
+                    break
+            except (json.JSONDecodeError, KeyError):
+                continue
+        if parsed_spec_message:
+            parsed_spec = parsed_spec_message["spec"]
+            try:
+                ConnectorSpecification.parse_obj(parsed_spec)
+                return json.dumps(parsed_spec)
+            except (ValidationError, ValueError) as e:
+                raise InvalidSpecOutputError(f"The SPEC message did not pass schema validation: {str(e)}.")
         raise InvalidSpecOutputError("No spec found in the output of the SPEC command.")
 
     async def _get_connector_spec(self, connector: Container, deployment_mode: str) -> str:

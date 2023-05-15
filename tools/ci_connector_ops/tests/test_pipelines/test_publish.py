@@ -63,6 +63,14 @@ class TestUploadSpecToCache:
     def random_connector(self, oss_registry):
         return random.choice(oss_registry["sources"] + oss_registry["destinations"])
 
+    @pytest.fixture
+    def context(self, mocker, dagger_client, random_connector, tmpdir):
+        image_name = f"{random_connector['dockerRepository']}:{random_connector['dockerImageTag']}"
+        tmp_dir = dagger_client.host().directory(str(tmpdir))
+        return mocker.MagicMock(
+            dagger_client=dagger_client, get_connector_dir=mocker.MagicMock(return_value=tmp_dir), docker_image_name=image_name
+        )
+
     @pytest.mark.slow
     @pytest.mark.parametrize(
         "valid_spec, successful_upload",
@@ -73,7 +81,7 @@ class TestUploadSpecToCache:
             [False, False],
         ],
     )
-    async def test_run(self, mocker, dagger_client, tmpdir, valid_spec, successful_upload, random_connector):
+    async def test_run(self, mocker, dagger_client, valid_spec, successful_upload, random_connector, context):
         """Test that the spec is correctly uploaded to the spec cache bucket.
         We pick a random connector from the oss registry, by nature this connector should have a valid spec and be published.
         We use load this connector as a Dagger container and run spec against it.
@@ -84,16 +92,15 @@ class TestUploadSpecToCache:
         expected_spec = random_connector["spec"]
         connector_container = dagger_client.container().from_(image_name)
 
-        tmp_dir = dagger_client.host().directory(str(tmpdir))
         upload_exit_code = 0 if successful_upload else 1
         mocker.patch.object(
             publish, "upload_to_gcs", mocker.AsyncMock(return_value=(upload_exit_code, "upload_to_gcs_stdout", "upload_to_gcs_stderr"))
         )
         if not valid_spec:
-            mocker.patch.object(publish.ConnectorSpecification, "parse_obj", mocker.Mock(side_effect=ValueError("Invalid spec.")))
-        context = mocker.MagicMock(
-            dagger_client=dagger_client, get_connector_dir=mocker.MagicMock(return_value=tmp_dir), docker_image_name=image_name
-        )
+            mocker.patch.object(
+                publish.UploadSpecToCache, "_get_connector_spec", mocker.Mock(side_effect=publish.InvalidSpecOutputError("Invalid spec."))
+            )
+
         step = publish.UploadSpecToCache(context)
         step_result = await step.run(connector_container)
         if valid_spec:
@@ -119,9 +126,34 @@ class TestUploadSpecToCache:
             assert step_result.stderr == "upload_to_gcs_stderr"
         if (not valid_spec and successful_upload) or (not valid_spec and not successful_upload):
             assert step_result.status == StepStatus.FAILURE
-            assert step_result.stderr == "Could not parse the output of the SPEC command to a valid spec: Invalid spec."
+            assert step_result.stderr == "Invalid spec."
             assert step_result.stdout is None
             publish.upload_to_gcs.assert_not_called()
+
+    def test_parse_spec_output_valid(self, context, random_connector):
+        step = publish.UploadSpecToCache(context)
+        correct_spec_message = json.dumps({"type": "SPEC", "spec": random_connector["spec"]})
+        spec_output = f'random_stuff\n{{"type": "RANDOM_MESSAGE"}}\n{correct_spec_message}'
+        result = step._parse_spec_output(spec_output)
+        assert json.loads(result) == random_connector["spec"]
+
+    def test_parse_spec_output_invalid_json(self, context):
+        step = publish.UploadSpecToCache(context)
+        spec_output = "Invalid JSON"
+        with pytest.raises(publish.InvalidSpecOutputError):
+            step._parse_spec_output(spec_output)
+
+    def test_parse_spec_output_invalid_key(self, context):
+        step = publish.UploadSpecToCache(context)
+        spec_output = '{"type": "SPEC", "spec": {"invalid_key": "value"}}'
+        with pytest.raises(publish.InvalidSpecOutputError):
+            step._parse_spec_output(spec_output)
+
+    def test_parse_spec_output_no_spec(self, context):
+        step = publish.UploadSpecToCache(context)
+        spec_output = '{"type": "OTHER"}'
+        with pytest.raises(publish.InvalidSpecOutputError):
+            step._parse_spec_output(spec_output)
 
 
 STEPS_TO_PATCH = [
