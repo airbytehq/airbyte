@@ -3,9 +3,8 @@
 #
 
 
-import time
 from logging import Logger
-from typing import Any, Iterable, List, Mapping, Optional, cast
+from typing import Any, Iterable, List, Mapping, cast
 
 import requests
 from airbyte_cdk.destinations import Destination
@@ -45,20 +44,18 @@ class DestinationConvex(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
         config = cast(ConvexConfig, config)
-        timestamp = str(int(time.time()))
-        writer = ConvexWriter(ConvexClient(config, self.table_metadata(configured_catalog.streams, timestamp)))
+        writer = ConvexWriter(ConvexClient(config, self.__stream_metadata(configured_catalog.streams)))
 
         # Setup: Clear tables if in overwrite mode; add indexes if in append_dedup mode.
-        streams_to_replace = {}
+        streams_to_delete = []
         indexes_to_add = {}
-        sync_mode_for_table = {}
         for configured_stream in configured_catalog.streams:
-            table_name = self.table_name_for_stream(configured_stream.stream.namespace, configured_stream.stream.name)
-            sync_mode_for_table[table_name] = configured_stream.destination_sync_mode
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                streams_to_replace[self.temp_table_name(table_name, timestamp)] = table_name
+                streams_to_delete.append(configured_stream.stream.name)
             elif configured_stream.destination_sync_mode == DestinationSyncMode.append_dedup and configured_stream.primary_key:
                 indexes_to_add[configured_stream.stream.name] = configured_stream.primary_key
+        if len(streams_to_delete) != 0:
+            writer.delete_stream_entries(streams_to_delete)
         if len(indexes_to_add) != 0:
             writer.add_indexes(indexes_to_add)
 
@@ -70,16 +67,9 @@ class DestinationConvex(Destination):
                 writer.flush()
                 yield message
             elif message.type == Type.RECORD and message.record is not None:
-                table_name = self.table_name_for_stream(
-                    message.record.namespace,
-                    message.record.stream,
-                )
-                if sync_mode_for_table[table_name] == DestinationSyncMode.overwrite:
-                    table_name = self.temp_table_name(table_name, timestamp)
-                msg = {
-                    "tableName": table_name,
-                    "data": message.record.data,
-                }
+                if message.record.namespace is not None:
+                    message.record.stream = f"{message.record.namespace}_{message.record.stream}"
+                msg = message.record.dict()
                 writer.queue_write_operation(msg)
             else:
                 # ignore other message types for now
