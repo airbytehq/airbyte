@@ -20,9 +20,9 @@ class ConvexWriter:
     def __init__(self, client: ConvexClient):
         self.client = client
 
-    def delete_stream_entries(self, stream_names: List[str]) -> None:
+    def delete_tables(self, table_names: List[str]) -> None:
         """Deletes all the records belonging to the input stream"""
-        if len(stream_names) > 0:
+        if len(table_names) > 0:
             self.client.delete(table_names)
 
     def add_indexes(self, indexes: Mapping[str, List[List[str]]]) -> None:

@@ -4,7 +4,7 @@
 
 
 from logging import Logger
-from typing import Any, Iterable, List, Mapping, cast
+from typing import Any, Iterable, List, Mapping, Optional, cast
 
 import requests
 from airbyte_cdk.destinations import Destination
@@ -44,7 +44,7 @@ class DestinationConvex(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
         config = cast(ConvexConfig, config)
-        writer = ConvexWriter(ConvexClient(config, self.__stream_metadata(configured_catalog.streams)))
+        writer = ConvexWriter(ConvexClient(config, self.table_metadata(configured_catalog.streams)))
 
         # Setup: Clear tables if in overwrite mode; add indexes if in append_dedup mode.
         streams_to_delete = []
@@ -55,7 +55,7 @@ class DestinationConvex(Destination):
             elif configured_stream.destination_sync_mode == DestinationSyncMode.append_dedup and configured_stream.primary_key:
                 indexes_to_add[configured_stream.stream.name] = configured_stream.primary_key
         if len(streams_to_delete) != 0:
-            writer.delete_stream_entries(streams_to_delete)
+            writer.delete_tables(streams_to_delete)
         if len(indexes_to_add) != 0:
             writer.add_indexes(indexes_to_add)
 
@@ -78,21 +78,14 @@ class DestinationConvex(Destination):
         # Make sure to flush any records still in the queue
         writer.flush()
 
-        if len(streams_to_replace) != 0:
-            writer.replace_streams(streams_to_replace)
-
     def table_name_for_stream(self, namespace: Optional[str], stream_name: str) -> str:
         if namespace is not None:
             return f"{namespace}_{stream_name}"
         return stream_name
 
-    def temp_table_name(self, table_name: str, timestamp: str) -> str:
-        return f"temp_{timestamp}_{table_name}"
-
     def table_metadata(
         self,
         streams: List[ConfiguredAirbyteStream],
-        timestamp: str,
     ) -> Mapping[str, Any]:
         table_metadata = {}
         for s in streams:
@@ -107,8 +100,6 @@ class DestinationConvex(Destination):
                 s.stream.namespace,
                 s.stream.name,
             )
-            if s.destination_sync_mode == DestinationSyncMode.overwrite:
-                name = self.temp_table_name(name, timestamp)
             table_metadata[name] = stream
         return table_metadata
 
