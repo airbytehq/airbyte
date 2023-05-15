@@ -325,16 +325,6 @@ const deployAirbyte = {
   ],
 };
 
-const troubleshoot = {
-  type: 'category',
-  label: 'Troubleshooting',
-  items: [
-    'troubleshooting/README',
-    'troubleshooting/on-deploying',
-    'troubleshooting/new-connection',
-    'troubleshooting/running-sync',
-  ],
-};
 
 const operatorGuide = {
   type: 'category',
@@ -435,7 +425,10 @@ module.exports = {
     ossGettingStarted,
     deployAirbyte,
     operatorGuide,
-    troubleshoot,
+    {
+      type: 'doc',
+      id: "troubleshooting",
+    },
     sectionHeader("Developer Guides"),
     {
       type: 'doc',
