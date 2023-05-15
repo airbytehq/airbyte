@@ -31,8 +31,9 @@
 We believe that only an **open-source** solution to data movement can cover the **long tail of data sources** while empowering data engineers to **customize existing connectors**. Our ultimate vision is to help you move data from any source to any destination. Airbyte already provides [300+ connectors](https://docs.airbyte.com/integrations/) for popular APIs, databases, data warehouses, and data lakes.
 
 You can implement Airbyte connectors in any language and take the form of a Docker image that follows the [Airbyte specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/). You can create new connectors very fast with:
- - The [low-code Connector Development Kit](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview) (CDK) for API connectors ([demo](https://www.youtube.com/watch?v=i7VSL2bDvmw))
- - The [Python CDK](https://docs.airbyte.com/connector-development/cdk-python/) ([tutorial](https://docs.airbyte.com/connector-development/tutorials/cdk-speedrun))
+
+- The [low-code Connector Development Kit](https://docs.airbyte.com/connector-development/config-based/low-code-cdk-overview) (CDK) for API connectors ([demo](https://www.youtube.com/watch?v=i7VSL2bDvmw))
+- The [Python CDK](https://docs.airbyte.com/connector-development/cdk-python/) ([tutorial](https://docs.airbyte.com/connector-development/tutorials/cdk-speedrun))
 
 Airbyte has a built-in scheduler and uses [Temporal](https://airbyte.com/blog/scale-workflow-orchestration-with-temporal) to orchestrate jobs and ensure reliability at scale. Airbyte leverages [dbt](https://www.youtube.com/watch?v=saXwh6SpeHA) to normalize extracted data and can trigger custom transformations in SQL and dbt. You can also orchestrate Airbyte syncs with [Airflow](https://docs.airbyte.com/operator-guides/using-the-airflow-airbyte-operator), [Prefect](https://docs.airbyte.com/operator-guides/using-prefect-task), or [Dagster](https://docs.airbyte.com/operator-guides/using-dagster-integration).
 
@@ -103,6 +104,7 @@ See the [LICENSE](docs/project-overview/licenses/) file for licensing informatio
 
 ## Resources
 
+- [Connectors Registry Report](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html) for a list of connectors available in Airbyte and Airbyte Cloud
 - [Weekly office hours](https://airbyte.io/weekly-office-hours/) for live informal sessions with the Airbyte team
 - [Slack](https://slack.airbyte.io) for quick discussion with the Community and Airbyte team
 - [Discourse](https://discuss.airbyte.io/) for deeper conversations about features, connectors, and problems
@@ -112,3 +114,8 @@ See the [LICENSE](docs/project-overview/licenses/) file for licensing informatio
 - [Blog](https://airbyte.com/blog) for data insights articles, tutorials and updates
 - [Docs](https://docs.airbyte.com/) for Airbyte features
 - [Roadmap](https://app.harvestr.io/roadmap/view/pQU6gdCyc/launch-week-roadmap) for planned features
+
+## Thank You
+
+Airbyte would not be possible without the support and assistance of other open-source tools and companies. Visit our [thank you page](THANK-YOU.md) to lear more about how we build Airbyte.
+

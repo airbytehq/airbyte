@@ -31,7 +31,7 @@ IGNORED_DESTINATIONS = [
     re.compile(".*-strict-encrypt$"),
     re.compile("^destination-dev-null$"),
     re.compile("^destination-scaffold-destination-python$"),
-    re.compile("^destination-jdbc$")
+    re.compile("^bases-destination-jdbc$")
 ]
 COMMENT_TEMPLATE_PATH = ".github/comment_templates/connector_dependency_template.md"
 

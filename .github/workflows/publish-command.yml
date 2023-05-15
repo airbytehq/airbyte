@@ -203,13 +203,13 @@ jobs:
           body: |
             <br>
 
-            | Connector | Did it publish? | Were definitions generated? |
+            | Connector | Version | Did it publish? | Were definitions generated? |
       - name: Create table separator
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            | --- | --- | --- |
+            | --- | --- | --- | --- |
   publish-image:
     timeout-minutes: 240
     needs:
@@ -297,6 +297,12 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
           command: curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
+      - name: Run QA checks for ${{ matrix.connector }}
+        id: qa_checks
+        if: always()
+        run: |
+          source venv/bin/activate
+          run-qa-checks ${{ matrix.connector }}
       - name: Publish ${{ matrix.connector }}
         id: publish
         env:
@@ -394,7 +400,7 @@ jobs:
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            | ${{ matrix.connector }} | ${{ env.PUBLISH_OUTCOME }} | ${{ env.AUTO_BUMP_OUTCOME }} |
+            | ${{ matrix.connector }} | ${{ env.IMAGE_VERSION }} | ${{ env.PUBLISH_OUTCOME }} | ${{ env.AUTO_BUMP_OUTCOME }} |
   add-helpful-info-to-git-comment:
     if: ${{ always() && github.event.inputs.comment-id }}
     name: Add extra info to git comment

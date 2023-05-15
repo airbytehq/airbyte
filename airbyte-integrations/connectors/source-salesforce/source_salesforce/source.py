@@ -147,7 +147,8 @@ class SourceSalesforce(AbstractSource):
         except exceptions.HTTPError as error:
             error_data = error.response.json()[0]
             error_code = error_data.get("errorCode")
+            url = error.response.url
             if error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
-                logger.warn(f"API Call limit is exceeded. Error message: '{error_data.get('message')}'")
+                logger.warning(f"API Call {url} limit is exceeded. Error message: '{error_data.get('message')}'")
                 raise AirbyteStopSync()  # if got 403 rate limit response, finish the sync with success.
             raise error

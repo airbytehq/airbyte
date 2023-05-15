@@ -25,9 +25,13 @@ Currently, this source connector works with `Standard` subscription plan only. `
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Airtable connector and select **Airtable** from the Source type dropdown.
 4. You can use OAuth or a Personal Access Token to authenticate your Airtable account. We recommend using OAuth for Airbyte Cloud.
-   - To authenticate using OAuth, select **OAuth2.0** from the Authentication dropdown click **Authenticate your Airtable account** to sign in with Airtable, select required workspaces you want to sync and authorize your account. 
+   - To authenticate using OAuth, select **OAuth2.0** from the Authentication dropdown click **Authenticate your Airtable account** to sign in with Airtable, select required workspaces you want to sync and authorize your account.
    - To authenticate using a Personal Access Token, select **Personal Access Token** from the Authentication dropdown and enter the Access Token for your Airtable account.
-5. Click **Set up source**.
+:::info
+When using OAuth, you may see a `400` or `401` error causing a failed sync. You can re-authenticate your Airtable connector to solve the issue temporarily. We are working on a permanent fix that you can follow [here](https://github.com/airbytehq/airbyte/issues/25278).
+:::
+
+1. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
