@@ -1395,6 +1395,73 @@
           type: "string"
           airbyte_secret: true
           order: 4
+        ssl_mode:
+          title: "SSL modes"
+          description: "SSL connection modes. \n <b>disable</b> - Chose this mode\
+            \ to disable encryption of communication between Airbyte and destination\
+            \ database\n <b>allow</b> - Chose this mode to enable encryption only\
+            \ when required by the source database\n <b>prefer</b> - Chose this mode\
+            \ to allow unencrypted connection only if the source database does not\
+            \ support encryption\n <b>require</b> - Chose this mode to always require\
+            \ encryption. If the source database server does not support encryption,\
+            \ connection will fail\n   See more information - <a href=\"\
+            https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the\
+            \ docs</a>."
+          type: "object"
+          order: 7
+          oneOf:
+            - title: "disable"
+              additionalProperties: false
+              description: "Disable SSL."
+              required:
+                - "mode"
+              properties:
+                mode:
+                  type: "string"
+                  const: "disable"
+                  enum:
+                    - "disable"
+                  default: "disable"
+                  order: 0
+            - title: "allow"
+              additionalProperties: false
+              description: "Allow SSL mode."
+              required:
+                - "mode"
+              properties:
+                mode:
+                  type: "string"
+                  const: "allow"
+                  enum:
+                    - "allow"
+                  default: "allow"
+                  order: 0
+            - title: "prefer"
+              additionalProperties: false
+              description: "Prefer SSL mode."
+              required:
+                - "mode"
+              properties:
+                mode:
+                  type: "string"
+                  const: "prefer"
+                  enum:
+                    - "prefer"
+                  default: "prefer"
+                  order: 0
+            - title: "require"
+              additionalProperties: false
+              description: "Require SSL mode."
+              required:
+                - "mode"
+              properties:
+                mode:
+                  type: "string"
+                  const: "require"
+                  enum:
+                    - "require"
+                  default: "require"
+                  order: 0
         jdbc_url_params:
           description: "Additional properties to pass to the JDBC URL string when\
             \ connecting to the database formatted as 'key=value' pairs separated\
