@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.37.0
+low-code: Make refresh token in oauth authenticator optional
+
 ## 0.36.5
 Unfreeze requests version and test new pipeline
 
