@@ -85,6 +85,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -700,4 +701,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return result.get(0).get("count").asLong();
   }
 
+  @Override
+  protected Optional<String> getMD5ColumnHashQueryFragment(final List<String> selectedColumns) {
+      if(selectedColumns==null || selectedColumns.isEmpty())
+        return super.getMD5ColumnHashQueryFragment(selectedColumns);
+
+      return Optional.ofNullable(String.format("md5(ROW(%s)::TEXT)", String.join(",", selectedColumns)));
+  }
 }

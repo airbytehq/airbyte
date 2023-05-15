@@ -351,6 +351,15 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   /**
+   * Return a fragment that will be append to the sql query for getting md5 hash of selected columns.
+   * @param selectedColumns list of selected columns.
+   * @return A String that will be append to select query if present.
+   */
+  protected Optional<String> getMD5ColumnHashQueryFragment(final List<String> selectedColumns) {
+    return Optional.empty();
+  }
+
+  /**
    * ReadIterator is used to retrieve records from a source connector
    *
    * @param database Source Database

@@ -123,7 +123,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     } else {
       // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering
       // of the records.
-      return queryTable(database, String.format("SELECT %s FROM %s",
+      final Optional<String> md5ColumnsHash = getMD5ColumnHashQueryFragment(columnNames);
+      final String query = md5ColumnsHash.isEmpty() ?
+          "SELECT %s FROM %s" : String.format("SELECT %%s ,%s FROM %%s", md5ColumnsHash.get());
+
+      return queryTable(database, String.format(query,
           enquoteIdentifierList(columnNames, getQuoteString()),
           getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())), tableName, schemaName);
     }
