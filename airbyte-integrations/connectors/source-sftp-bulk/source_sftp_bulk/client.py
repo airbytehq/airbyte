@@ -10,7 +10,7 @@ import re
 import socket
 import stat
 from datetime import datetime
-from typing import Any, Dict, List, Mapping, Tuple
+from typing import Any, Dict, List, Mapping, Tuple, Optional
 
 import backoff
 import numpy as np
@@ -64,7 +64,7 @@ class SFTPClient:
             # set request timeout
             socket.settimeout(self.timeout)
 
-        except (AuthenticationException) as ex:
+        except AuthenticationException as ex:
             raise Exception("Authentication failed: %s" % ex)
         except Exception as ex:
             raise Exception("SSH Connection failed: %s" % ex)
@@ -96,7 +96,12 @@ class SFTPClient:
 
     # backoff for 60 seconds as there is possibility the request will backoff again in 'discover.get_schema'
     @backoff.on_exception(backoff.constant, (socket.timeout), max_time=60, interval=10, jitter=None)
-    def get_files_by_prefix(self, prefix: str) -> List[File]:
+    def get_files_by_prefix(
+        self,
+        prefix: str,
+        current_level: int = 0,
+        max_level: int = 0,
+    ) -> List[File]:
         def is_empty(a):
             return a.st_size == 0
 
@@ -116,7 +121,17 @@ class SFTPClient:
         for file_attr in result:
             # NB: This only looks at the immediate level beneath the prefix directory
             if is_directory(file_attr):
-                logger.info("Skipping directory: %s", file_attr.filename)
+                if current_level <= max_level:
+                    files.extend(
+                        self.get_files_by_prefix(
+                            prefix=prefix + "/" + file_attr.filename,
+                            current_level=current_level + 1,
+                            max_level=max_level,
+                        )
+                    )
+                else:
+                    logger.info("Skipping directory: %s (max depth exceeded)", file_attr.filename)
+
             else:
                 if is_empty(file_attr):
                     logger.info("Skipping empty file: %s", file_attr.filename)
@@ -135,11 +150,22 @@ class SFTPClient:
                         "last_modified": datetime.utcfromtimestamp(last_modified).replace(tzinfo=None),
                     }
                 )
-
         return files
 
-    def get_files(self, prefix, search_pattern=None, modified_since=None, most_recent_only=False) -> List[File]:
-        files = self.get_files_by_prefix(prefix)
+    def get_files(
+        self,
+        prefix,
+        search_pattern=None,
+        modified_since=None,
+        most_recent_only=False,
+        max_level=0,
+        current_level=0,
+    ) -> List[File]:
+        files = self.get_files_by_prefix(
+            prefix,
+            current_level=current_level,
+            max_level=max_level,
+        )
 
         if files:
             logger.info('Found %s files in "%s"', len(files), prefix)
@@ -176,7 +202,13 @@ class SFTPClient:
         return line
 
     @backoff.on_exception(backoff.expo, (socket.timeout), max_tries=5, factor=2)
-    def fetch_file(self, fn: Mapping[str, Any], separator, file_type="csv") -> pd.DataFrame:
+    def fetch_file(
+        self,
+        fn: Mapping[str, Any],
+        separator,
+        file_type="csv",
+        header_names: Optional[list[str]] = None,
+    ) -> pd.DataFrame:
         try:
             with self._connection.open(fn["filepath"], "r") as f:
                 df: pd.DataFrame = None
@@ -187,7 +219,13 @@ class SFTPClient:
 
                 # Using pandas to make reading files in different formats easier
                 if file_type == "csv":
-                    df = pd.read_csv(f, engine="python", sep=separator)
+                    header = header_names if header_names is not None else 0
+                    df = pd.read_csv(
+                        f,
+                        engine="python",
+                        sep=separator,
+                        header=header,
+                    )
                 elif file_type == "json":
                     df = pd.read_json(f, lines=True)
                 else:

@@ -81,7 +81,7 @@
         "examples": ["/logs/2022"],
         "order": 8
       },
-      "depth": {
+      "max_depth": {
         "title": "Recursion depth (Optional)",
         "description": "Number of levels to search for files in the folder path",
         "type": "integer",
@@ -90,7 +90,7 @@
         "order": 9
       },
 	  "column_names": {
-		"title": "Column names at the header, separated by | (Optional)",
+		"title": "Column names (Optional)",
 		"description": "A separable string of column names. If _None_ is passed, the header will be used as column names",
 		"type": "string",
 		"default": "_None_",

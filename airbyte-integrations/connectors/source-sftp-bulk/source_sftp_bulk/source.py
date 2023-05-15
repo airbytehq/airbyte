@@ -45,9 +45,18 @@ class SourceFtp(AbstractSource):
 
         return json_schema
 
-    def _infer_json_schema(self, config: Mapping[str, Any], connection: SFTPClient) -> Dict[str, Any]:
+    def _infer_json_schema(
+        self,
+        config: Mapping[str, Any],
+        connection: SFTPClient,
+    ) -> Dict[str, Any]:
         file_pattern = config.get("file_pattern")
-        files = connection.get_files(config["folder_path"], file_pattern)
+
+        files = connection.get_files(
+            config["folder_path"],
+            file_pattern,
+            max_level=config.get("max_depth", 0),
+        )
 
         if len(files) == 0:
             logger.warning(f"No files found in folder {config['folder_path']} with pattern {file_pattern}")
@@ -55,12 +64,30 @@ class SourceFtp(AbstractSource):
 
         # Get last file to infer schema
         # Use pandas `infer_objects` to infer dtypes
-        df = connection.fetch_file(fn=files[-1], file_type=config["file_type"], separator=config.get("separator"))
+        column_names = config.get("column_names", None)
+        column_names_separator = config.get("column_names_separator", None)
+        header_names = None
+
+        if column_names and column_names_separator:
+            if column_names == "_None_":
+                header_names = None
+            else:
+                header_names = column_names.split(column_names_separator)
+
+        df = connection.fetch_file(
+            fn=files[-1],
+            file_type=config["file_type"],
+            separator=config.get("separator"),
+            header_names=header_names,
+        )
         df = df.infer_objects()
 
         # Default column used for incremental sync
         # Contains the date when a file was last modified or added
         df["last_modified"] = files[-1]["last_modified"]
+
+        # store the original file name
+        df["filepath"] = files[-1]["filepath"]
 
         if len(df) < 1:
             logger.warning(f"No records found in file {files[0]}, can't infer json schema")
