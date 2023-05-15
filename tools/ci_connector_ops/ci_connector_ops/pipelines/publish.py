@@ -6,14 +6,16 @@ import uuid
 from typing import List, Tuple
 
 import anyio
+from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification
 from ci_connector_ops.pipelines import builds
-from ci_connector_ops.pipelines.actions import environments, run_steps
+from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.actions.remote_storage import upload_to_gcs
 from ci_connector_ops.pipelines.bases import ConnectorReport, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import PublishConnectorContext
 from ci_connector_ops.pipelines.pipelines import metadata
 from ci_connector_ops.pipelines.utils import with_stderr, with_stdout
 from dagger import Container, File, QueryError
+from pydantic import ValidationError
 
 
 class CheckConnectorImageDoesNotExist(Step):
@@ -28,18 +30,12 @@ class CheckConnectorImageDoesNotExist(Step):
         manifest_inspect_stderr = await with_stderr(manifest_inspect)
         manifest_inspect_stdout = await with_stdout(manifest_inspect)
         if "no such manifest" in manifest_inspect_stderr:
-            return StepResult(self, status=StepStatus.SUCCESS, stdout=f"No manifest found for {self.context.docker_image_from_metadata}.")
+            return StepResult(self, status=StepStatus.SUCCESS, stdout=f"No manifest found for {self.context.docker_image_name}.")
         else:
             try:
-                manifests = json.loads(manifest_inspect_stdout.replace("\n", "")).get("manifests", [])
-                available_platforms = {f"{manifest['platform']['os']}/{manifest['platform']['architecture']}" for manifest in manifests}
-                if set(builds.BUILD_PLATFORMS).issubset(available_platforms):
-                    return StepResult(self, status=StepStatus.SKIPPED, stderr=f"{self.context.docker_image_from_metadata} already exists.")
-                else:
-                    return StepResult(
-                        self, status=StepStatus.SUCCESS, stdout=f"No all manifests found for {self.context.docker_image_from_metadata}."
-                    )
-            except json.JSONDecodeError:
+                json.loads(manifest_inspect_stdout.replace("\n", ""))["manifests"]
+                return StepResult(self, status=StepStatus.SKIPPED, stderr=f"{self.context.docker_image_name} already exists.")
+            except (json.JSONDecodeError, KeyError):
                 return StepResult(self, status=StepStatus.FAILURE, stderr=manifest_inspect_stderr, stdout=manifest_inspect_stdout)
 
 
@@ -99,14 +95,23 @@ class UploadSpecToCache(Step):
         return f"{self.spec_key_prefix}/{self.default_spec_file_name}"
 
     def _parse_spec_output(self, spec_output: str) -> str:
+        parsed_spec_message = None
         for line in spec_output.split("\n"):
             try:
                 parsed_json = json.loads(line)
                 if parsed_json["type"] == "SPEC":
-                    return json.dumps(parsed_json)
+                    parsed_spec_message = parsed_json
+                    break
             except (json.JSONDecodeError, KeyError):
                 continue
-        raise InvalidSpecOutputError("Could not parse the output of the spec command.")
+        if parsed_spec_message:
+            parsed_spec = parsed_spec_message["spec"]
+            try:
+                ConnectorSpecification.parse_obj(parsed_spec)
+                return json.dumps(parsed_spec)
+            except (ValidationError, ValueError) as e:
+                raise InvalidSpecOutputError(f"The SPEC message did not pass schema validation: {str(e)}.")
+        raise InvalidSpecOutputError("No spec found in the output of the SPEC command.")
 
     async def _get_connector_spec(self, connector: Container, deployment_mode: str) -> str:
         spec_output = await connector.with_env_variable("DEPLOYMENT_MODE", deployment_mode).with_exec(["spec"]).stdout()
@@ -116,8 +121,11 @@ class UploadSpecToCache(Step):
         return self.context.get_connector_dir().with_new_file(name, spec).file(name)
 
     async def _run(self, built_connector: Container) -> StepResult:
-        oss_spec: str = await self._get_connector_spec(built_connector, "OSS")
-        cloud_spec: str = await self._get_connector_spec(built_connector, "CLOUD")
+        try:
+            oss_spec: str = await self._get_connector_spec(built_connector, "OSS")
+            cloud_spec: str = await self._get_connector_spec(built_connector, "CLOUD")
+        except InvalidSpecOutputError as e:
+            return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
 
         specs_to_uploads: List[Tuple[str, File]] = [(self.oss_spec_key, self._get_spec_as_file(oss_spec))]
 
@@ -134,7 +142,7 @@ class UploadSpecToCache(Step):
             )
             if exit_code != 0:
                 return StepResult(self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr)
-        return StepResult(self, status=StepStatus.SUCCESS)
+        return StepResult(self, status=StepStatus.SUCCESS, stdout="Uploaded connector spec to spec cache bucket.")
 
 
 async def run_connector_publish_pipeline(context: PublishConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
@@ -143,55 +151,55 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
     1. Validate the metadata file.
     2. Check if the connector image already exists.
     3. Build the connector, with platform variants.
-    4. Upload its spec to the spec cache bucket.
-    5. Push the connector to DockerHub, with platform variants.
+    4. Push the connector to DockerHub, with platform variants.
+    5. Upload its spec to the spec cache bucket.
     6. Upload its metadata file to the metadata service bucket.
 
     Returns:
         ConnectorReport: The reports holding publish results.
     """
+
+    def create_connector_report(results: List[StepResult]) -> ConnectorReport:
+        report = ConnectorReport(context, results, name="PUBLISH RESULTS")
+        context.report = report
+        return report
+
     async with semaphore:
         async with context:
+            results = []
+            metadata_validation_results = await metadata.MetadataValidation(context, context.metadata_path).run()
+            results.append(metadata_validation_results)
+            if metadata_validation_results.status is not StepStatus.SUCCESS:
+                return create_connector_report(results)
 
-            metadata_upload_step = metadata.MetadataUpload(context)
-            steps_before_ready_to_publish = [
-                metadata.MetadataValidation(context, context.metadata_path),
-                CheckConnectorImageDoesNotExist(context),
-            ]
-            steps_before_ready_to_publish_results = await run_steps(steps_before_ready_to_publish)
-
-            if steps_before_ready_to_publish_results[-1].status is not StepStatus.SUCCESS:
-                if steps_before_ready_to_publish_results[-1].status is StepStatus.SKIPPED:
+            check_connector_image_results = await CheckConnectorImageDoesNotExist(context).run()
+            results.append(check_connector_image_results)
+            if check_connector_image_results.status is not StepStatus.SUCCESS:
+                if check_connector_image_results.status is StepStatus.SKIPPED:
                     context.logger.info(
                         "The connector version is already published. Let's upload metadata.yaml to GCS even if no version bump happened."
                     )
-                    metadata_upload_results = await metadata_upload_step.run()
-                    context.report = ConnectorReport(
-                        context, steps_before_ready_to_publish_results + [metadata_upload_results], name="PUBLISH RESULTS"
-                    )
-                else:
-                    context.report = ConnectorReport(context, steps_before_ready_to_publish_results, name="PUBLISH RESULTS")
-                return context.report
-            else:
-                step_results = steps_before_ready_to_publish_results
+                    metadata_upload_results = await metadata.MetadataUpload(context).run()
+                    results.append(metadata_upload_results)
+                return create_connector_report(results)
 
             build_connector_results = await BuildConnectorForPublish(context).run()
-            step_results.append(build_connector_results)
+            results.append(build_connector_results)
             if build_connector_results.status is not StepStatus.SUCCESS:
-                context.report = ConnectorReport(context, step_results, name="PUBLISH RESULTS")
-                return context.report
+                return create_connector_report(results)
 
             built_connector_platform_variants = build_connector_results.output_artifact
 
-            steps_to_publish = [
-                (
-                    UploadSpecToCache(context),
-                    (built_connector_platform_variants[0],),
-                ),
-                (PushConnectorImageToRegistry(context), (built_connector_platform_variants,)),
-                metadata_upload_step,
-            ]
+            push_connector_image_results = await PushConnectorImageToRegistry(context).run(built_connector_platform_variants)
+            results.append(push_connector_image_results)
+            if push_connector_image_results.status is not StepStatus.SUCCESS:
+                return create_connector_report(results)
 
-            step_results = await run_steps(steps_to_publish, results=step_results)
-            context.report = ConnectorReport(context, step_results, name="PUBLISH RESULTS")
-        return context.report
+            upload_to_spec_cache_results = await UploadSpecToCache(context).run(built_connector_platform_variants[0])
+            results.append(upload_to_spec_cache_results)
+            if upload_to_spec_cache_results.status is not StepStatus.SUCCESS:
+                return create_connector_report(results)
+
+            metadata_upload_results = await metadata.MetadataUpload(context).run()
+            results.append(metadata_upload_results)
+            return create_connector_report(results)

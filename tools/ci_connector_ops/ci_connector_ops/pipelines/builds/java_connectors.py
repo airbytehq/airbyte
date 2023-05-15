@@ -4,8 +4,9 @@
 
 
 from ci_connector_ops.pipelines.actions import environments
-from ci_connector_ops.pipelines.bases import GradleTask, StepResult, StepStatus
+from ci_connector_ops.pipelines.bases import StepResult, StepStatus
 from ci_connector_ops.pipelines.builds.common import BuildConnectorImageBase
+from ci_connector_ops.pipelines.gradle import GradleTask
 from dagger import File, QueryError
 
 
