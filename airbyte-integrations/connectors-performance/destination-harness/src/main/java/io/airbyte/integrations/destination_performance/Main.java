@@ -8,11 +8,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -55,6 +63,13 @@ public class Main {
       throw new IllegalStateException("Failed to read catalog", ex);
     }
 
+    final String datasource;
+    try {
+      datasource = getDatasource(dataset, connector);
+    } catch (final IOException ex) {
+      throw new IllegalStateException("Failed to read datasource", ex);
+    }
+
     if (StringUtils.isAnyBlank(config.toString(), catalog.toString(), image)) {
       throw new IllegalStateException("Missing harness configuration: config [%s] catalog [%s] image [%s]".formatted(config, catalog, image));
     }
@@ -64,7 +79,8 @@ public class Main {
       final PerformanceTest test = new PerformanceTest(
           image,
           config.toString(),
-          catalog.toString());
+          catalog.toString(),
+          datasource);
 
       // final ExecutorService executors = Executors.newFixedThreadPool(2);
       // final CompletableFuture<Void> readSrcAndWriteDstThread = CompletableFuture.runAsync(() -> {
@@ -99,4 +115,12 @@ public class Main {
     return objectMapper.readTree(is);
   }
 
+  static String getDatasource(final String dataset, final String connector) throws IOException {
+    final ObjectMapper objectMapper = new ObjectMapper();
+    final String datasourceFilename = "catalogs/%s/%s_datasource.txt".formatted(connector, dataset);
+    log.info("datasourceFilename {}", datasourceFilename);
+    try (final var reader = new BufferedReader(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(datasourceFilename)))) {
+      return reader.readLine();
+    }
+  }
 }

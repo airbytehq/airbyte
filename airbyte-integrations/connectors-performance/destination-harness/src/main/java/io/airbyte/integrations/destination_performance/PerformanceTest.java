@@ -18,10 +18,7 @@ import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.internal.DefaultAirbyteDestination;
 import io.airbyte.workers.internal.exception.DestinationException;
@@ -40,17 +37,15 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 
 @Slf4j
 public class PerformanceTest {
@@ -66,14 +61,16 @@ public class PerformanceTest {
   private final String imageName;
   private final JsonNode config;
   private final ConfiguredAirbyteCatalog catalog;
+  private final String dataSourceURL;
 
   private DefaultAirbyteDestination destination;
 
-  PerformanceTest(final String imageName, final String config, final String catalog) throws JsonProcessingException {
+  PerformanceTest(final String imageName, final String config, final String catalog, final String datasource) throws JsonProcessingException {
     final ObjectMapper mapper = new ObjectMapper();
     this.imageName = imageName;
     this.config = mapper.readTree(config);
     this.catalog = Jsons.deserialize(catalog, ConfiguredAirbyteCatalog.class);
+    this.dataSourceURL = datasource;
   }
 
   void runTest() throws Exception {
@@ -86,29 +83,30 @@ public class PerformanceTest {
     final var workerConfigs = new WorkerConfigs(new EnvConfigs());
     final var processFactory = new KubeProcessFactory(workerConfigs, "default", fabricClient, kubeHeartbeatUrl, false);
     final ResourceRequirements resourceReqs = new ResourceRequirements()
-        .withCpuLimit("1")
-        .withCpuRequest("1")
-        .withMemoryLimit("1Gi")
-        .withMemoryRequest("1Gi");
+        .withCpuLimit("2.5")
+        .withCpuRequest("2.5")
+        .withMemoryLimit("2Gi")
+        .withMemoryRequest("2Gi");
     final var allowedHosts = new AllowedHosts().withHosts(List.of("*"));
-    var dstIntegtationLauncher = new AirbyteIntegrationLauncher("2", 0, "airbyte/destination-snowflake:latest", processFactory, resourceReqs,
+    var dstIntegtationLauncher = new AirbyteIntegrationLauncher("1", 0, this.imageName, processFactory, resourceReqs,
         allowedHosts, false, new EnvVariableFeatureFlags());
     final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig()
         .withDestinationConnectionConfiguration(this.config)
         .withState(null)
         .withCatalog(convertProtocolObject(this.catalog, ConfiguredAirbyteCatalog.class));
-    final var jobRoot = "/";
     this.destination = new DefaultAirbyteDestination(dstIntegtationLauncher);
+    final var jobRoot = "/";
+    log.info("Destination starting");
     destination.start(dstConfig, Path.of(jobRoot));
 
     // Try read logs.
-    CompletableFuture.runAsync(() -> {
-      log.info("=== listening to dst logs");
+    final var logListener = CompletableFuture.runAsync(() -> {
+      log.info("Listening to destination logs");
       while (!destination.isFinished()) {
         final Optional<AirbyteMessage> messageOptional;
         try {
           messageOptional = destination.attemptRead();
-          messageOptional.ifPresent(airbyteMessage -> log.info("=== dst read: {}", airbyteMessage));
+          messageOptional.ifPresent(airbyteMessage -> log.info("dst log: {}", airbyteMessage));
 
         } catch (final Exception e) {
           throw new DestinationException("Destination process read attempt failed", e);
@@ -116,56 +114,39 @@ public class PerformanceTest {
       }
     });
 
-    log.info("reader first line");
+    log.info("Get datasource {}", this.dataSourceURL);
     Path temp = Files.createTempFile("", ".tmp");
-    final URL url = new URL("https://storage.googleapis.com/airbyte-performance-testing-public/sample-data/faker_10m/users.csv");
+    final URL url = new URL(this.dataSourceURL.trim());
     ReadableByteChannel readableByteChannel = Channels.newChannel(url.openStream());
     FileOutputStream fileOutputStream = new FileOutputStream(temp.toString());
     FileChannel fileChannel = fileOutputStream.getChannel();
     final var bytes = fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
     readableByteChannel.close();
     fileOutputStream.close();
-    log.info("done saving {} ({})", temp.toString(), bytes);
+    log.info("done saving datasource {} ({})", temp.toString(), bytes);
     BufferedReader reader = new BufferedReader(new FileReader(temp.toString()));
-    // BufferedReader reader = new BufferedReader(new InputStreamReader(
-    // new
-    // URL("https://storage.googleapis.com/airbyte-performance-testing-public/sample-data/faker_10m/users.csv").openStream(),
-    // StandardCharsets.UTF_8));
 
-    // try (reader) {
-    // while (reader != null) {
-    // if (reader.readLine() == null) {
-    // log.info("is null {}", counter);
-    // } else {
-    // counter++;
-    // }
-    // }
-    // }
-
+    log.info("Reading datasource header");
     final var columnsString = reader.readLine();
-    log.info("*** columns string: {}", columnsString);
+    log.info("header line: {}", columnsString);
     final Pattern pattern = Pattern.compile(",");
     final var columns = Arrays.asList(pattern.split(columnsString));
-    log.info("*** columns {}", columns);
     var totalBytes = 0.0;
     var counter = 0L;
     final var start = System.currentTimeMillis();
 
     try (reader) {
       while (true) {
-
-        // log.info("*** reading row");
         String line = reader.readLine();
         if (line == null) {
-          log.info("*** empty line {}", counter);
+          log.info("End of datasource after {} lines", counter);
           break;
         }
         final List row;
         try {
           row = Arrays.asList(pattern.split(line));
-          // log.info("*** row {}", row);
         } catch (NullPointerException npe) {
-          log.warn("*** bad line: {} {} {}", line, counter, totalBytes);
+          log.warn("Bad line: {} {} {}", line, counter, totalBytes);
           continue;
         }
         assert (row.size() == columns.size());
@@ -200,10 +181,11 @@ public class PerformanceTest {
     }
     destination.notifyEndOfInput();
     while (!destination.isFinished()) {
-      log.info("*** waiting for destination to finish");
-      sleep(100);
+      log.info("Waiting for destination to finish");
+      sleep(500);
     }
     destination.close();
+    logListener.cancel(true);
     log.info("Test ended successfully");
     final var end = System.currentTimeMillis();
     final var totalMB = totalBytes / MEGABYTE;
@@ -212,76 +194,7 @@ public class PerformanceTest {
 
     log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
   }
-
-  private static void populateStreamToAllFields(final ConfiguredAirbyteCatalog catalog,
-                                                final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields) {
-    final Iterator var2 = catalog.getStreams().iterator();
-
-    while (var2.hasNext()) {
-      final ConfiguredAirbyteStream s = (ConfiguredAirbyteStream) var2.next();
-      final Set<String> fields = new HashSet();
-      final JsonNode propertiesNode = s.getStream().getJsonSchema().findPath("properties");
-      if (!propertiesNode.isObject()) {
-        throw new RuntimeException("No properties node in stream schema");
-      }
-
-      propertiesNode.fieldNames().forEachRemaining((fieldName) -> {
-        fields.add(fieldName);
-      });
-      streamToAllFields.put(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(s), fields);
-    }
-
-  }
-
-  private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,
-                                     final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields,
-                                     final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields,
-                                     final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors,
-                                     final AirbyteMessage message) {
-    if (message.getRecord() != null) {
-      final AirbyteRecordMessage record = message.getRecord();
-      final AirbyteStreamNameNamespacePair messageStream = AirbyteStreamNameNamespacePair.fromRecordMessage(record);
-      final boolean streamHasLessThenTenErrs =
-          validationErrors.get(messageStream) == null || (Integer) ((ImmutablePair) validationErrors.get(messageStream)).getRight() < 10;
-      if (streamHasLessThenTenErrs) {
-        recordSchemaValidator.validateSchema(record, messageStream, validationErrors);
-        final Set<String> unexpectedFieldNames = (Set) unexpectedFields.getOrDefault(messageStream, new HashSet());
-        populateUnexpectedFieldNames(record, (Set) streamToAllFields.get(messageStream), unexpectedFieldNames);
-        unexpectedFields.put(messageStream, unexpectedFieldNames);
-      }
-
-    }
-  }
-
-  private static void populateUnexpectedFieldNames(final AirbyteRecordMessage record,
-                                                   final Set<String> fieldsInCatalog,
-                                                   final Set<String> unexpectedFieldNames) {
-    final JsonNode data = record.getData();
-    if (data.isObject()) {
-      final Iterator<String> fieldNamesInRecord = data.fieldNames();
-
-      while (fieldNamesInRecord.hasNext()) {
-        final String fieldName = (String) fieldNamesInRecord.next();
-        if (!fieldsInCatalog.contains(fieldName)) {
-          unexpectedFieldNames.add(fieldName);
-        }
-      }
-    }
-
-  }
-
   private static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {
     return Jsons.object(Jsons.jsonNode(v1), klass);
   }
-
-  // Uncomment to add destination
-  /*
-   * void readFromDst() { if (this.destination != null) { log.info("Start read from destination");
-   * while (!this.destination.isFinished()) { final Optional messageOptional =
-   * this.destination.attemptRead();
-   *
-   * if (messageOptional.isPresent()) { log.info("msg"); final AirbyteMessage message =
-   * (AirbyteMessage)messageOptional.get(); if (message.getType() == Type.STATE) { message.getState();
-   * } } } } log.info("Done read from destination"); }
-   */
 }
