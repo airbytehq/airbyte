@@ -4,16 +4,22 @@
 
 package io.airbyte.integrations.destination_async;
 
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import org.apache.commons.io.FileUtils;
+
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.*;
 
 public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
@@ -147,15 +153,85 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
    */
   static class UploadWorkers implements AutoCloseable {
 
+    private static final double TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = Runtime.getRuntime().maxMemory() * 0.8;
+    private static final double MAX_CONCURRENT_QUEUES = 10.0;
+    private static final double MAX_QUEUE_SIZE_BYTES = TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES / MAX_CONCURRENT_QUEUES;
+    private static final long MAX_TIME_BETWEEN_REC_MINS = 15L;
+
+    private static final long SUPERVISOR_INITIAL_DELAY_SECS = 0L;
+    private static final long SUPERVISOR_PERIOD_SECS = 1L;
     private final BufferManagerDequeue bufferManagerDequeue;
+    private final ScheduledExecutorService supervisorThread = Executors.newScheduledThreadPool(1);
+    // note: this queue size is unbounded.
+    private final Executor workerPool = Executors.newFixedThreadPool(5);
+    Map<StreamDescriptor, WriteConfig> pairToWriteConfig
 
     public UploadWorkers(final BufferManagerDequeue bufferManagerDequeue) {
       this.bufferManagerDequeue = bufferManagerDequeue;
     }
 
     public void start() {
-
+      supervisorThread.scheduleAtFixedRate(this::retrieveWork, SUPERVISOR_INITIAL_DELAY_SECS, SUPERVISOR_PERIOD_SECS,
+              TimeUnit.SECONDS);
     }
+
+    private void retrieveWork() {
+      // if the total size is > n, flush all buffers
+      if (bufferManagerDequeue.getTotalGlobalQueueSizeInMb() > TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES) {
+        flushAll();
+      }
+
+      // otherwise, if each individual stream has crossed a specific threshold, flush
+      for (Map.Entry<StreamDescriptor, LinkedBlockingQueue<AirbyteMessage>> entry:
+              bufferManagerDequeue.getBuffers().entrySet()) {
+        final var stream = entry.getKey();
+        final var exceedSize = bufferManagerDequeue.getQueueSizeInMb(stream) >= MAX_QUEUE_SIZE_BYTES;
+        final var tooLongSinceLastRecord = bufferManagerDequeue.getTimeOfLastRecord(stream)
+                .isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES));
+        if (exceedSize || tooLongSinceLastRecord) {
+          flush(stream);
+        }
+      }
+    }
+
+    private void flushAll() {
+      for (StreamDescriptor desc: bufferManagerDequeue.getBuffers().keySet()) {
+        flush(desc);
+      }
+    }
+
+    private void flush(StreamDescriptor desc) {
+      workerPool.execute(() -> {
+        // create a file buffer
+        // upload this
+        // copy this
+      });
+
+//      return (pair, writer) -> {
+//        // create the write config here for that specific stream
+//        LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
+//        if (!pairToWriteConfig.containsKey(pair)) {
+//          throw new IllegalArgumentException(
+//                  String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));
+//        }
+//
+//        final WriteConfig writeConfig = pairToWriteConfig.get(pair);
+//        final String schemaName = writeConfig.getOutputSchemaName();
+//        final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
+//        final String stagingPath =
+//                stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(), writeConfig.getWriteDatetime());
+//        try (writer) {
+//          writer.flush();
+//          final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
+//          copyIntoTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(), schemaName,
+//                  stagingOperations);
+//        } catch (final Exception e) {
+//          LOGGER.error("Failed to flush and commit buffer data into destination's raw table", e);
+//          throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
+//        }
+//      };
+    }
+
 
     @Override
     public void close() throws Exception {
