@@ -233,7 +233,7 @@ class FileStream(Stream, ABC):
         :param target_columns: list of column names to mutate this record into (obtained via self._schema.keys() as of now)
         :return: mutated record with columns lining up to target_columns
         """
-        compare_columns = [c for c in target_columns if c not in [self.ab_last_mod_col, self.ab_file_name_col]]        # missing columns
+        compare_columns = [c for c in target_columns if c not in [self.ab_last_mod_col, self.ab_file_name_col]]  # missing columns
         for c in compare_columns:
             if c not in record.keys():
                 record[c] = None
