@@ -114,4 +114,5 @@ public class PerformanceTest {
   private static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {
     return Jsons.object(Jsons.jsonNode(v1), klass);
   }
+
 }

@@ -9,18 +9,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.NoSuchElementException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -119,8 +113,10 @@ public class Main {
     final ObjectMapper objectMapper = new ObjectMapper();
     final String datasourceFilename = "catalogs/%s/%s_datasource.txt".formatted(connector, dataset);
     log.info("datasourceFilename {}", datasourceFilename);
-    try (final var reader = new BufferedReader(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(datasourceFilename)))) {
+    try (final var reader =
+        new BufferedReader(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(datasourceFilename)))) {
       return reader.readLine();
     }
   }
+
 }

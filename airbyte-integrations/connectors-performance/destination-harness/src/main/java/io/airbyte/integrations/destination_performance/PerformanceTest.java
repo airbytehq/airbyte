@@ -194,7 +194,9 @@ public class PerformanceTest {
 
     log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
   }
+
   private static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {
     return Jsons.object(Jsons.jsonNode(v1), klass);
   }
+
 }
