@@ -46,7 +46,7 @@ public class TestingDestinations extends BaseConnector implements Destination {
   }
 
   private Destination selectDestination(final JsonNode config) {
-    return destinationMap.get(TestDestinationType.valueOf(config.get("type").asText()));
+    return destinationMap.get(TestDestinationType.valueOf(config.get("test_destination").get("test_destination_type").asText()));
   }
 
   @Override
