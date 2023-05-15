@@ -60,8 +60,7 @@ class GAQL:
         resource_names = re.split(r"\s*,\s*", m.group("ResourceNames"))
         if len(resource_names) > 1:
             message = f"Incorrect GAQL query: multiple resources '{', '.join(resource_names)}' is not allowed"
-            internal_message = f"Incorrect GAQL query: multiple resources '{', '.join(resource_names)}' is not allowed"
-            raise AirbyteTracedException(message=message, internal_message=internal_message, failure_type=FailureType.config_error)
+            raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
         resource_name = resource_names[0]
 
         where = cls._normalize(m.group("WhereClause") or "")
