@@ -18538,7 +18538,7 @@
     "sourceDefinitionId": "435bb9a5-7887-4809-aa58-28c27df0d7ad",
     "name": "MySQL",
     "dockerRepository": "airbyte/source-mysql",
-    "dockerImageTag": "2.0.21",
+    "dockerImageTag": "2.0.22",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/mysql",
     "icon": "mysql.svg",
     "sourceType": "database",
@@ -18590,13 +18590,6 @@
             "title": "JDBC URL Parameters (Advanced)",
             "type": "string",
             "order": 5
-          },
-          "ssl": {
-            "title": "SSL Connection",
-            "description": "Encrypt data using SSL.",
-            "type": "boolean",
-            "default": true,
-            "order": 6
           },
           "ssl_mode": {
             "title": "SSL modes",
