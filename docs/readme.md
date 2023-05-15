@@ -1,6 +1,8 @@
 # Welcome to Airbyte Docs
 
-Whether you are an Airbyte user or contributor, we have docs for you! 
+Whether you are an Airbyte user or contributor, we have docs for you!
+
+## For Airbyte Users
 
 ### For Airbyte Cloud users
 
@@ -14,10 +16,8 @@ Browse the [connector catalog](https://docs.airbyte.com/integrations/) to find t
 
 Next, check out the [Airbyte Open Source QuickStart](https://docs.airbyte.com/quickstart/deploy-airbyte). Then learn how to [deploy](https://docs.airbyte.com/deploying-airbyte/local-deployment) and [manage](https://docs.airbyte.com/operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure. 
 
-Our team offers [premium support](https://airbyte.com/talk-to-sales-premium-support) if you need help. You can also leverage our [Community Slack](https://slack.airbyte.io/) and [Discourse](https://discuss.airbyte.io/) for help from the community.
-
 ### For Airbyte contributors
 
-To contribute to Airbyte code, connectors, and documentation, refer to our [Contributing Guide](https://docs.airbyte.com/contributing-to-airbyte/). 
+To contribute to Airbyte code, connectors, and documentation, refer to our [Contributing Guide](https://docs.airbyte.com/contributing-to-airbyte/).
 
 [![GitHub stars](https://img.shields.io/github/stars/airbytehq/airbyte?style=social&label=Star&maxAge=2592000)](https://GitHub.com/airbytehq/airbyte/stargazers/) [![License](https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md) [![License](https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md)

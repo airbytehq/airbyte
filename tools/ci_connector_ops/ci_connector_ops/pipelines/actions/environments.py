@@ -6,11 +6,12 @@
 
 from __future__ import annotations
 
+import os
 import uuid
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
-from ci_connector_ops.pipelines.utils import get_file_contents, get_version_from_dockerfile, should_enable_sentry, slugify
-from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Secret
+from ci_connector_ops.pipelines.utils import get_file_contents, slugify, with_exit_code
+from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Platform, Secret
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
@@ -55,7 +56,7 @@ def with_python_base(context: PipelineContext, python_image_name: str = "python:
     base_container = (
         context.dagger_client.container()
         .from_(python_image_name)
-        .with_mounted_cache("/root/.cache/pip", pip_cache, sharing=CacheSharingMode.LOCKED)
+        .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_mounted_directory("/tools", context.get_repo_dir("tools", include=["ci_credentials", "ci_common_utils"]))
         .with_exec(["pip", "install", "--upgrade", "pip"])
     )
@@ -150,7 +151,7 @@ async def with_installed_python_package(
     return container
 
 
-def with_airbyte_connector(context: ConnectorContext) -> Container:
+def with_python_connector_installed(context: ConnectorContext) -> Container:
     """Load an airbyte connector source code in a testing environment.
 
     Args:
@@ -230,7 +231,7 @@ def with_pip_packages(base_container: Container, packages_to_install: List[str])
         Container: A container with the pip packages installed.
 
     """
-    package_install_command = ["python", "-m", "pip", "install"]
+    package_install_command = ["pip", "install"]
     return base_container.with_exec(package_install_command + packages_to_install)
 
 
@@ -346,6 +347,7 @@ async def with_connector_acceptance_test(context: ConnectorContext, connector_un
         with_bound_docker_host(context, cat_container, shared_tmp_volume, docker_service_name="cat")
         .with_entrypoint([])
         .with_exec(["pip", "install", "pytest-custom_exit_code"])
+        .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
         .with_mounted_directory("/test_input", context.get_connector_dir(exclude=["secrets", ".venv"]))
         .with_directory("/test_input/secrets", context.secrets_dir)
         .with_workdir("/test_input")
@@ -407,12 +409,24 @@ def with_gradle(
         .with_env_variable("VERSION", "23.0.1")
         .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
         .with_exec(["mkdir", "/root/.gradle"])
-        .with_mounted_cache("/root/.gradle", root_gradle_cache, sharing=CacheSharingMode.LOCKED)
         .with_exec(["mkdir", "/airbyte"])
         .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
         .with_mounted_cache("/airbyte/.gradle", airbyte_gradle_cache, sharing=CacheSharingMode.LOCKED)
         .with_workdir("/airbyte")
     )
+    if context.is_ci and "S3_BUILD_CACHE_ACCESS_KEY_ID" in os.environ and "S3_BUILD_CACHE_SECRET_KEY" in os.environ:
+        openjdk_with_docker = (
+            openjdk_with_docker.with_env_variable("CI", "true")
+            .with_secret_variable(
+                "S3_BUILD_CACHE_ACCESS_KEY_ID", context.dagger_client.host().env_variable("S3_BUILD_CACHE_ACCESS_KEY_ID").secret()
+            )
+            .with_secret_variable(
+                "S3_BUILD_CACHE_SECRET_KEY", context.dagger_client.host().env_variable("S3_BUILD_CACHE_SECRET_KEY").secret()
+            )
+        )
+    else:
+        openjdk_with_docker = openjdk_with_docker.with_mounted_cache("/root/.gradle", root_gradle_cache, sharing=CacheSharingMode.LOCKED)
+
     if bind_to_docker_host:
         return with_bound_docker_host(context, openjdk_with_docker, shared_tmp_volume, docker_service_name=docker_service_name)
     else:
@@ -431,11 +445,20 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
     # Hacky way to make sure the image is always loaded
     tar_name = f"{str(uuid.uuid4())}.tar"
     docker_cli = with_docker_cli(context, docker_service_name=docker_service_name).with_mounted_file(tar_name, tar_file)
+
+    # Remove a previously existing image with the same tag if any.
+    docker_image_rm_exit_code = await with_exit_code(
+        docker_cli.with_env_variable("CACHEBUSTER", tar_name).with_exec(["docker", "image", "rm", image_tag])
+    )
+    if docker_image_rm_exit_code == 0:
+        context.logger.info(f"Removed an existing image tagged {image_tag}")
     image_load_output = await docker_cli.with_exec(["docker", "load", "--input", tar_name]).stdout()
+    context.logger.info(image_load_output)
     # Not tagged images only have a sha256 id the load output shares.
     if "sha256:" in image_load_output:
         image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
-        await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).exit_code()
+        docker_tag_output = await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).stdout()
+        context.logger.info(docker_tag_output)
 
 
 def with_poetry(context: PipelineContext) -> Container:
@@ -450,10 +473,10 @@ def with_poetry(context: PipelineContext) -> Container:
     python_with_git = with_debian_packages(python_base_environment, ["git"])
     python_with_poetry = with_pip_packages(python_with_git, ["poetry"])
 
-    poetry_cache: CacheVolume = context.dagger_client.cache_volume("poetry_cache")
-    poetry_with_cache = python_with_poetry.with_mounted_cache("/root/.cache/pypoetry", poetry_cache, sharing=CacheSharingMode.SHARED)
+    # poetry_cache: CacheVolume = context.dagger_client.cache_volume("poetry_cache")
+    # poetry_with_cache = python_with_poetry.with_mounted_cache("/root/.cache/pypoetry", poetry_cache, sharing=CacheSharingMode.SHARED)
 
-    return poetry_with_cache
+    return python_with_poetry
 
 
 def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_path: str) -> Container:
@@ -474,77 +497,235 @@ def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_p
     )
 
 
-def with_integration_base(context: PipelineContext, build_platform: str, jdk_version: str = "17.0.4") -> Container:
-    """Create an integration base container.
-
-    Reproduce with Dagger the Dockerfile defined here: airbyte-integrations/bases/base/Dockerfile
-    """
-    base_sh = context.get_repo_dir("airbyte-integrations/bases/base", include=["base.sh"]).file("base.sh")
-
+def with_integration_base(context: PipelineContext, build_platform: Platform) -> Container:
     return (
         context.dagger_client.container(platform=build_platform)
-        .from_(f"amazoncorretto:{jdk_version}")
+        .from_("amazonlinux:2022.0.20220831.1")
         .with_workdir("/airbyte")
-        .with_file("base.sh", base_sh)
+        .with_file("base.sh", context.get_repo_dir("airbyte-integrations/bases/base", include=["base.sh"]).file("base.sh"))
         .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/base.sh")
         .with_label("io.airbyte.version", "0.1.0")
         .with_label("io.airbyte.name", "airbyte/integration-base")
     )
 
 
-async def with_java_base(context: PipelineContext, build_platform: str, jdk_version: str = "17.0.4") -> Container:
-    """Create a java base container.
-
-    Reproduce with Dagger the Dockerfile defined here: airbyte-integrations/bases/base-java/Dockerfile_
-    """
-    datadog_java_agent = context.dagger_client.http("https://dtdg.co/latest-java-tracer")
-    javabase_sh = context.get_repo_dir("airbyte-integrations/bases/base-java", include=["javabase.sh"]).file("javabase.sh")
-    dockerfile = context.get_repo_dir("airbyte-integrations/bases/base-java", include=["Dockerfile"]).file("Dockerfile")
-    java_base_version = await get_version_from_dockerfile(dockerfile)
-
+def with_integration_base_java(context: PipelineContext, build_platform: Platform, jdk_version: str = "17.0.4") -> Container:
+    integration_base = with_integration_base(context, build_platform)
     return (
-        with_integration_base(context, build_platform, jdk_version)
+        context.dagger_client.container(platform=build_platform)
+        .from_(f"amazoncorretto:{jdk_version}")
+        .with_directory("/airbyte", integration_base.directory("/airbyte"))
         .with_exec(["yum", "install", "-y", "tar", "openssl"])
         .with_exec(["yum", "clean", "all"])
         .with_workdir("/airbyte")
-        .with_file("dd-java-agent.jar", datadog_java_agent)
-        .with_file("javabase.sh", javabase_sh)
+        .with_file("dd-java-agent.jar", context.dagger_client.http("https://dtdg.co/latest-java-tracer"))
+        .with_file("javabase.sh", context.get_repo_dir("airbyte-integrations/bases/base-java", include=["javabase.sh"]).file("javabase.sh"))
         .with_env_variable("AIRBYTE_SPEC_CMD", "/airbyte/javabase.sh --spec")
         .with_env_variable("AIRBYTE_CHECK_CMD", "/airbyte/javabase.sh --check")
         .with_env_variable("AIRBYTE_DISCOVER_CMD", "/airbyte/javabase.sh --discover")
         .with_env_variable("AIRBYTE_READ_CMD", "/airbyte/javabase.sh --read")
         .with_env_variable("AIRBYTE_WRITE_CMD", "/airbyte/javabase.sh --write")
         .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/base.sh")
-        .with_label("io.airbyte.version", java_base_version)
+        .with_label("io.airbyte.version", "0.1.2")
         .with_label("io.airbyte.name", "airbyte/integration-base-java")
     )
 
 
-async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: str):
-    dockerfile = context.get_connector_dir(include=["Dockerfile"]).file("Dockerfile")
-    connector_version = await get_version_from_dockerfile(dockerfile)
-    application = context.connector.technical_name
-    java_base = await with_java_base(context, build_platform)
-    enable_sentry = await should_enable_sentry(dockerfile)
+BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
+    "destination-bigquery": {
+        "dockerfile": "Dockerfile",
+        "dbt_adapter": "dbt-bigquery==1.0.0",
+        "integration_name": "bigquery",
+        "supports_in_connector_normalization": True,
+    },
+    "destination-clickhouse": {
+        "dockerfile": "clickhouse.Dockerfile",
+        "dbt_adapter": "dbt-clickhouse>=1.4.0",
+        "integration_name": "clickhouse",
+        "supports_in_connector_normalization": False,
+    },
+    "destination-duckdb": {
+        "dockerfile": "duckdb.Dockerfile",
+        "dbt_adapter": "dbt-duckdb==1.0.1",
+        "integration_name": "duckdb",
+        "supports_in_connector_normalization": False,
+    },
+    "destination-mssql": {
+        "dockerfile": "mssql.Dockerfile",
+        "dbt_adapter": "dbt-sqlserver==1.0.0",
+        "integration_name": "mssql",
+        "supports_in_connector_normalization": False,
+    },
+    "destination-mysql": {
+        "dockerfile": "mysql.Dockerfile",
+        "dbt_adapter": "dbt-mysql==1.0.0",
+        "integration_name": "mysql",
+        "supports_in_connector_normalization": False,
+    },
+    "destination-oracle": {
+        "dockerfile": "oracle.Dockerfile",
+        "dbt_adapter": "dbt-oracle==0.4.3",
+        "integration_name": "oracle",
+        "supports_in_connector_normalization": False,
+    },
+    "destination-postgres": {
+        "dockerfile": "Dockerfile",
+        "dbt_adapter": "dbt-postgres==1.0.0",
+        "integration_name": "postgres",
+        "supports_in_connector_normalization": False,
+    },
+    "destination-redshift": {
+        "dockerfile": "redshift.Dockerfile",
+        "dbt_adapter": "dbt-redshift==1.0.0",
+        "integration_name": "redshift",
+        "supports_in_connector_normalization": False,
+    },
+    "destination-snowflake": {
+        "dockerfile": "snowflake.Dockerfile",
+        "dbt_adapter": "dbt-snowflake==1.0.0",
+        "integration_name": "snowflake",
+        "supports_in_connector_normalization": False,
+    },
+    "destination-tidb": {
+        "dockerfile": "tidb.Dockerfile",
+        "dbt_adapter": "dbt-tidb==1.0.1",
+        "integration_name": "tidb",
+        "supports_in_connector_normalization": False,
+    },
+}
 
-    return (
-        java_base.with_workdir("/airbyte")
-        .with_env_variable("APPLICATION", application)
-        .with_file(f"{application}.tar", connector_java_tar_file)
-        .with_exec(["tar", "xf", f"{application}.tar", "--strip-components=1"])
-        .with_exec(["rm", "-rf", f"{application}.tar"])
-        .with_label("io.airbyte.version", connector_version)
-        .with_label("io.airbyte.name", f"airbyte/{application}")
-        .with_env_variable("ENABLE_SENTRY", str(enable_sentry).lower())
-        .with_entrypoint("/airbyte/base.sh")
-    )
+DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
+    **BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION,
+    **{f"{k}-strict-encrypt": v for k, v in BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION.items()},
+}
 
 
-def with_normalization(context, normalization_dockerfile_name: str) -> Container:
+def with_normalization(context: ConnectorContext) -> Container:
     normalization_directory = context.get_repo_dir("airbyte-integrations/bases/base-normalization")
     sshtunneling_file = context.get_repo_dir(
         "airbyte-connector-test-harnesses/acceptance-test-harness/src/main/resources", include="sshtunneling.sh"
     ).file("sshtunneling.sh")
     normalization_directory_with_build = normalization_directory.with_new_directory("build")
     normalization_directory_with_sshtunneling = normalization_directory_with_build.with_file("build/sshtunneling.sh", sshtunneling_file)
+    normalization_dockerfile_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dockerfile"]
     return normalization_directory_with_sshtunneling.docker_build(normalization_dockerfile_name)
+
+
+def with_integration_base_java_and_normalization(context: PipelineContext, build_platform: Platform) -> Container:
+    yum_packages_to_install = [
+        "python3",
+        "python3-devel",
+        "jq",
+        "sshpass",
+        "git",
+    ]
+
+    dbt_adapter_package = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dbt_adapter"]
+    normalization_integration_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["integration_name"]
+
+    pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
+
+    return (
+        with_integration_base_java(context, build_platform)
+        .with_exec(["yum", "install", "-y"] + yum_packages_to_install)
+        .with_exec(["alternatives", "--install", "/usr/bin/python", "python", "/usr/bin/python3", "60"])
+        .with_mounted_cache("/root/.cache/pip", pip_cache)
+        .with_exec(["python", "-m", "ensurepip", "--upgrade"])
+        .with_exec(["pip3", "install", dbt_adapter_package])
+        .with_directory("airbyte_normalization", with_normalization(context).directory("/airbyte"))
+        .with_workdir("airbyte_normalization")
+        .with_exec(["sh", "-c", "mv * .."])
+        .with_workdir("/airbyte")
+        .with_exec(["rm", "-rf", "airbyte_normalization"])
+        .with_workdir("/airbyte/base_python_structs")
+        .with_exec(["pip3", "install", "."])
+        .with_workdir("/airbyte/normalization_code")
+        .with_exec(["pip3", "install", "."])
+        .with_workdir("/airbyte/normalization_code/dbt-template/")
+        # amazon linux 2 isn't compatible with urllib3 2.x, so force 1.x
+        .with_exec(["pip3", "install", "urllib3<2"])
+        .with_exec(["dbt", "deps"])
+        .with_workdir("/airbyte")
+        .with_file(
+            "run_with_normalization.sh",
+            context.get_repo_dir("airbyte-integrations/bases/base-java", include=["run_with_normalization.sh"]).file(
+                "run_with_normalization.sh"
+            ),
+        )
+        .with_env_variable("AIRBYTE_NORMALIZATION_INTEGRATION", normalization_integration_name)
+        .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/run_with_normalization.sh")
+    )
+
+
+async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: Platform):
+    application = context.connector.technical_name
+
+    build_stage = (
+        with_integration_base_java(context, build_platform)
+        .with_workdir("/airbyte")
+        .with_env_variable("APPLICATION", context.connector.technical_name)
+        .with_file(f"{application}.tar", connector_java_tar_file)
+        .with_exec(["tar", "xf", f"{application}.tar", "--strip-components=1"])
+        .with_exec(["rm", "-rf", f"{application}.tar"])
+    )
+
+    if (
+        context.connector.supports_normalization
+        and DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["supports_in_connector_normalization"]
+    ):
+        base = with_integration_base_java_and_normalization(context, build_platform)
+        entrypoint = ["/airbyte/run_with_normalization.sh"]
+    else:
+        base = with_integration_base_java(context, build_platform)
+        entrypoint = ["/airbyte/base.sh"]
+
+    return (
+        base.with_workdir("/airbyte")
+        .with_env_variable("APPLICATION", application)
+        .with_directory("builts_artifacts", build_stage.directory("/airbyte"))
+        .with_exec(["sh", "-c", "mv builts_artifacts/* ."])
+        .with_exec(["rm", "-rf", "builts_artifacts"])
+        .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
+        .with_label("io.airbyte.name", context.metadata["dockerRepository"])
+        .with_entrypoint(entrypoint)
+    )
+
+
+def with_airbyte_python_connector(context: ConnectorContext, build_platform):
+    pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
+    return (
+        context.dagger_client.container(platform=build_platform)
+        .with_mounted_cache("/root/.cache/pip", pip_cache)
+        .build(context.get_connector_dir())
+        .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
+        .with_label("io.airbyte.name", context.metadata["dockerRepository"])
+    )
+
+
+def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_platform: Platform):
+    pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
+    base = context.dagger_client.container(platform=build_platform).from_("python:3.9.11-alpine3.15")
+    snake_case_name = context.connector.technical_name.replace("-", "_")
+    entrypoint = ["python", "/airbyte/integration_code/main.py"]
+    builder = (
+        base.with_workdir("/airbyte/integration_code")
+        .with_exec(["apk", "--no-cache", "upgrade"])
+        .with_mounted_cache("/root/.cache/pip", pip_cache)
+        .with_exec(["pip", "install", "--upgrade", "pip"])
+        .with_exec(["apk", "--no-cache", "add", "tzdata", "build-base"])
+        .with_file("setup.py", context.get_connector_dir(include="setup.py").file("setup.py"))
+        .with_exec(["pip", "install", "--prefix=/install", "."])
+    )
+    return (
+        base.with_workdir("/airbyte/integration_code")
+        .with_directory("/usr/local", builder.directory("/install"))
+        .with_file("/usr/localtime", builder.file("/usr/share/zoneinfo/Etc/UTC"))
+        .with_new_file("/etc/timezone", "Etc/UTC")
+        .with_exec(["apk", "--no-cache", "add", "bash"])
+        .with_file("main.py", context.get_connector_dir(include="main.py").file("main.py"))
+        .with_directory(snake_case_name, context.get_connector_dir(include=snake_case_name).directory(snake_case_name))
+        .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
+        .with_entrypoint(entrypoint)
+        .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
+        .with_label("io.airbyte.name", context.metadata["dockerRepository"])
+    )

@@ -5,10 +5,17 @@ from pathlib import Path
 from typing import Tuple
 
 import yaml
+import base64
+import hashlib
+import json
+import os
+
 from google.cloud import storage
 from google.oauth2 import service_account
-from metadata_service.models.generated.ConnectorMetadataDefinitionV1 import ConnectorMetadataDefinitionV1
+
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
+from metadata_service.validators.metadata_validator import validate_metadata_images_in_dockerhub
 
 
 def get_metadata_file_path(dockerRepository: str, version: str) -> str:
@@ -23,7 +30,16 @@ def get_metadata_file_path(dockerRepository: str, version: str) -> str:
     return f"{METADATA_FOLDER}/{dockerRepository}/{version}/{METADATA_FILE_NAME}"
 
 
-def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, service_account_file_path: Path) -> Tuple[bool, str]:
+def compute_gcs_md5(file_name):
+    hash_md5 = hashlib.md5()
+    with open(file_name, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+
+    return base64.b64encode(hash_md5.digest()).decode("utf8")
+
+
+def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path) -> Tuple[bool, str]:
     """Upload a metadata file to a GCS bucket.
 
     If the per 'version' key already exists it won't be overwritten.
@@ -38,9 +54,10 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, service_a
     """
     uploaded = False
     raw_metadata = yaml.safe_load(metadata_file_path.read_text())
-    metadata = ConnectorMetadataDefinitionV1.parse_obj(raw_metadata)
+    metadata = ConnectorMetadataDefinitionV0.parse_obj(raw_metadata)
 
-    credentials = service_account.Credentials.from_service_account_file(service_account_file_path)
+    service_account_info = json.loads(os.environ.get("GCS_CREDENTIALS"))
+    credentials = service_account.Credentials.from_service_account_info(service_account_info)
     storage_client = storage.Client(credentials=credentials)
     bucket = storage_client.bucket(bucket_name)
 
@@ -49,9 +66,40 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, service_a
 
     version_blob = bucket.blob(version_path)
     latest_blob = bucket.blob(latest_path)
-    if not version_blob.exists():
+
+    # reload the blobs to get the md5_hash
+    if version_blob.exists():
+        version_blob.reload()
+    if latest_blob.exists():
+        latest_blob.reload()
+
+    metadata_file_md5_hash = compute_gcs_md5(metadata_file_path)
+    version_blob_md5_hash = version_blob.md5_hash if version_blob.exists() else None
+    latest_blob_md5_hash = latest_blob.md5_hash if latest_blob.exists() else None
+
+    print(f"Local Metadata md5_hash: {metadata_file_md5_hash}")
+    print(f"Current Version blob md5_hash: {version_blob_md5_hash}")
+    print(f"Latest blob md5_hash: {latest_blob_md5_hash}")
+
+    trigger_version_upload = metadata_file_md5_hash != version_blob_md5_hash
+    trigger_latest_upload = metadata_file_md5_hash != latest_blob_md5_hash
+
+    # Validate that the images are on DockerHub
+    if trigger_version_upload or trigger_latest_upload:
+        print("Validating that the images are on DockerHub...")
+        is_valid, error = validate_metadata_images_in_dockerhub(metadata)
+        if not is_valid:
+            raise ValueError(error)
+
+    # upload if md5_hash is different
+    if trigger_version_upload:
+        print(f"Uploading {metadata_file_path} to {version_path}...")
         version_blob.upload_from_filename(str(metadata_file_path))
         uploaded = True
-    if version_blob.etag != latest_blob.etag:
+
+    if trigger_latest_upload:
+        print(f"Uploading {metadata_file_path} to {latest_path}...")
         latest_blob.upload_from_filename(str(metadata_file_path))
+        uploaded = True
+
     return uploaded, version_blob.id

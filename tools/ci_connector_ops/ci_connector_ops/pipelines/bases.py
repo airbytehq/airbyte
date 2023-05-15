@@ -11,12 +11,12 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, ClassVar, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Tuple
 
 import asyncer
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.utils import check_path_in_workdir, slugify, with_exit_code, with_stderr, with_stdout
-from ci_connector_ops.utils import console
+from ci_connector_ops.utils import Connector, console
 from dagger import CacheVolume, Container, Directory, QueryError
 from rich.console import Group
 from rich.panel import Panel
@@ -49,13 +49,11 @@ class StepStatus(Enum):
         """
         if exit_code == 0:
             return StepStatus.SUCCESS
-        if exit_code == 1:
-            return StepStatus.FAILURE
         # pytest returns a 5 exit code when no test is found.
-        if exit_code == 5:
+        elif exit_code == 5:
             return StepStatus.SKIPPED
         else:
-            raise ValueError(f"No step status is mapped to exit code {exit_code}")
+            return StepStatus.FAILURE
 
     def get_rich_style(self) -> Style:
         """Match color used in the console output to the step status."""
@@ -128,7 +126,13 @@ class Step(ABC):
             soon_exit_code = task_group.soonify(with_exit_code)(container)
             soon_stderr = task_group.soonify(with_stderr)(container)
             soon_stdout = task_group.soonify(with_stdout)(container)
-        return StepResult(self, StepStatus.from_exit_code(soon_exit_code.value), stderr=soon_stderr.value, stdout=soon_stdout.value)
+        return StepResult(
+            self,
+            StepStatus.from_exit_code(soon_exit_code.value),
+            stderr=soon_stderr.value,
+            stdout=soon_stdout.value,
+            output_artifact=container,
+        )
 
 
 class PytestStep(Step, ABC):
@@ -145,7 +149,7 @@ class PytestStep(Step, ABC):
             StepResult: The inferred step result according to the log.
         """
         last_log_line = logs.split("\n")[-2]
-        if "failed" in last_log_line:
+        if "failed" in last_log_line or "errors" in last_log_line:
             return StepResult(self, StepStatus.FAILURE, stderr=logs)
         elif "no tests ran" in last_log_line:
             return StepResult(self, StepStatus.SKIPPED, stdout=logs)
@@ -196,6 +200,7 @@ class StepResult:
     created_at: datetime = field(default_factory=datetime.utcnow)
     stderr: Optional[str] = None
     stdout: Optional[str] = None
+    output_artifact: Any = None
 
     def __repr__(self) -> str:  # noqa D105
         return f"{self.step.title}: {self.status.value}"
@@ -224,7 +229,7 @@ class Report:
 
     @property
     def success(self) -> bool:  # noqa D102
-        return len(self.failed_steps) == 0 and len(self.steps_results) > 0
+        return len(self.failed_steps) == 0
 
     @property
     def run_duration(self) -> int:  # noqa D102
@@ -416,6 +421,19 @@ class GradleTask(Step, ABC):
     def connector_java_build_cache(self) -> CacheVolume:
         return self.context.dagger_client.cache_volume("connector_java_build_cache")
 
+    def get_related_connectors(self) -> List[Connector]:
+        """Retrieve the list of related connectors.
+        This is used to include source code of non strict-encrypt connectors when running build for a strict-encrypt connector.
+
+        Returns:
+            List[Connector]: The list of related connectors.
+        """
+        if self.context.connector.technical_name.endswith("-strict-encrypt"):
+            return [Connector(self.context.connector.technical_name.replace("-strict-encrypt", ""))]
+        if self.context.connector.technical_name == "source-file-secure":
+            return [Connector("source-file")]
+        return []
+
     @property
     def build_include(self) -> List[str]:
         """Retrieve the list of source code directory required to run a Java connector Gradle task.
@@ -425,12 +443,17 @@ class GradleTask(Step, ABC):
         Returns:
             List[str]: List of directories or files to be mounted to the container to run a Java connector Gradle task.
         """
+        to_include = self.JAVA_BUILD_INCLUDE
+
         if self.context.connector.connector_type == "source":
-            return self.JAVA_BUILD_INCLUDE + self.SOURCE_BUILD_INCLUDE
+            to_include += self.SOURCE_BUILD_INCLUDE
         elif self.context.connector.connector_type == "destination":
-            return self.JAVA_BUILD_INCLUDE + self.DESTINATION_BUILD_INCLUDE
+            to_include += self.DESTINATION_BUILD_INCLUDE
         else:
             raise ValueError(f"{self.context.connector.connector_type} is not supported")
+
+        with_related_connectors_source_code = to_include + [str(connector.code_directory) for connector in self.get_related_connectors()]
+        return with_related_connectors_source_code
 
     async def _get_patched_connector_dir(self) -> Directory:
         """Patch the build.gradle file of the connector under test by removing the lines declared in LINES_TO_REMOVE_FROM_GRADLE_FILE.

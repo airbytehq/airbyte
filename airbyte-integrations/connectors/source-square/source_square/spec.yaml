@@ -21,9 +21,9 @@ connectionSpecification:
             - client_secret
             - refresh_token
           properties:
-            credentials_title:
+            auth_type:
               type: string
-              const: OAuth Credentials
+              const: OAuth
               order: 0
             client_id:
               type: string
@@ -46,10 +46,10 @@ connectionSpecification:
             - auth_type
             - api_key
           properties:
-            credentials_title:
+            auth_type:
               type: string
               const: API Key
-              order: 0
+              order: 1
             api_key:
               type: string
               title: API key token
@@ -91,7 +91,7 @@ advanced_auth:
   predicate_key:
     - credentials
     - auth_type
-  predicate_value: Oauth
+  predicate_value: OAuth
   oauth_config_specification:
     complete_oauth_output_specification:
       type: object
