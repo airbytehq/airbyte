@@ -37,7 +37,7 @@ jobs:
   write-deprecation-message:
     name: Set up git comment
     if: github.event.inputs.comment-id
-    runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
+    runs-on: ubuntu-latest
     steps:
       - name: Print deprecation message
         if: github.event.inputs.comment-id
