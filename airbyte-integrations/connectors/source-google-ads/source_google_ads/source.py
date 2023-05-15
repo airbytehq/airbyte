@@ -35,7 +35,7 @@ from .streams import (
     ShoppingPerformanceReport,
     UserLocationReport,
 )
-from .utils import GAQL, QueryParseException
+from .utils import GAQL
 
 FULL_REFRESH_CUSTOM_TABLE = ["geo_target_constant", "custom_audience"]
 
