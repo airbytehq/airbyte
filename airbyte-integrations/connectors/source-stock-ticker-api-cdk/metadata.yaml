@@ -1,0 +1,20 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 260422f0-9559-40f2-9d00-a2fb9a1fb653
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-stock-ticker-api-cdk
+  githubIssueLabel: source-stock-ticker-api-cdk
+  icon: stock-ticker-api-cdk.svg
+  license: MIT
+  name: Stock Ticker Api Cdk
+  releaseDate: TODO
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/stock-ticker-api-cdk
+metadataSpecVersion: "1.0"
