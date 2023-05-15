@@ -76,13 +76,17 @@ class PushConnectorImageToRegistry(Step):
 class PullConnectorImageFromRegistry(Step):
     title = "Pull connector image from registry"
 
-    async def _run(self) -> StepResult:
+    async def _run(self, attempt: int = 3) -> StepResult:
         try:
             exit_code = await with_exit_code(
                 self.context.dagger_client.container().from_(f"docker.io/{self.context.docker_image_name}").with_exec(["spec"])
             )
             if exit_code != 0:
-                return StepResult(self, status=StepStatus.FAILURE, stderr=f"Failed to pull {self.context.docker_image_name}")
+                if attempt > 0:
+                    await anyio.sleep(10)
+                    return await self._run(attempt - 1)
+                else:
+                    return StepResult(self, status=StepStatus.FAILURE, stderr=f"Failed to pull {self.context.docker_image_name}")
             return StepResult(self, status=StepStatus.SUCCESS, stdout=f"Pulled {self.context.docker_image_name} and ran spec command")
         except QueryError as e:
             return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
