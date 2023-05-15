@@ -13,7 +13,7 @@ import responses
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 from requests import HTTPError
 from responses import matchers
-from source_github import streams, constants
+from source_github import constants
 from source_github.streams import (
     Branches,
     Collaborators,
@@ -1025,7 +1025,7 @@ def test_stream_workflow_runs_read_incremental(monkeypatch):
         "start_date": "2022-01-01T00:00:00Z",
     }
 
-    monkeypatch.setattr(streams, "DEFAULT_PAGE_SIZE", 1)
+    monkeypatch.setattr(constants, "DEFAULT_PAGE_SIZE", 1)
     stream = WorkflowRuns(**repository_args_with_start_date)
 
     data = [
