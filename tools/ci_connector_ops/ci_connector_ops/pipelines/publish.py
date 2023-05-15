@@ -89,6 +89,9 @@ class PullConnectorImageFromRegistry(Step):
                     return StepResult(self, status=StepStatus.FAILURE, stderr=f"Failed to pull {self.context.docker_image_name}")
             return StepResult(self, status=StepStatus.SUCCESS, stdout=f"Pulled {self.context.docker_image_name} and ran spec command")
         except QueryError as e:
+            if attempt > 0:
+                await anyio.sleep(10)
+                return await self._run(attempt - 1)
             return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
 
 
