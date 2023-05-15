@@ -647,7 +647,6 @@ definitions:
       - type
       - client_id
       - client_secret
-      - refresh_token
       - token_refresh_endpoint
     properties:
       type:
