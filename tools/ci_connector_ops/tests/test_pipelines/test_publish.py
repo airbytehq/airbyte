@@ -119,7 +119,7 @@ class TestUploadSpecToCache:
             assert step_result.stderr == "upload_to_gcs_stderr"
         if (not valid_spec and successful_upload) or (not valid_spec and not successful_upload):
             assert step_result.status == StepStatus.FAILURE
-            assert step_result.stderr == "Could not parse the output of the SPEC command to a valid spec."
+            assert step_result.stderr == "Could not parse the output of the SPEC command to a valid spec: Invalid spec."
             assert step_result.stdout is None
             publish.upload_to_gcs.assert_not_called()
 
