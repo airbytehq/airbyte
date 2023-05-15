@@ -12,7 +12,7 @@ from ci_connector_ops import utils
 class TestConnector:
 
     @pytest.mark.parametrize(
-        "technical_name, expected_type, expected_name, expected_error", 
+        "technical_name, expected_type, expected_name, expected_error",
         [
             ("source-faker", "source", "faker", does_not_raise()),
             ("source-facebook-marketing", "source", "facebook-marketing", does_not_raise()),
@@ -27,7 +27,7 @@ class TestConnector:
             assert connector.connector_type == expected_type
 
     @pytest.mark.parametrize(
-        "connector, exists", 
+        "connector, exists",
         [
             (utils.Connector("source-faker"), True),
             (utils.Connector("source-notpublished"), False),
@@ -38,15 +38,15 @@ class TestConnector:
         assert connector.code_directory == Path(f"./airbyte-integrations/connectors/{connector.technical_name}")
         assert connector.acceptance_test_config_path == connector.code_directory / utils.ACCEPTANCE_TEST_CONFIG_FILE_NAME
         assert connector.documentation_file_path == Path(f"./docs/integrations/{connector.connector_type}s/{connector.name}.md")
-        
+
         if exists:
-            assert isinstance(connector.definition, dict)
+            assert isinstance(connector.metadata, dict)
             assert isinstance(connector.release_stage, str)
             assert isinstance(connector.acceptance_test_config, dict)
-            assert connector.icon_path == Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{connector.definition['icon']}")
+            assert connector.icon_path == Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{connector.metadata['icon']}")
             assert len(connector.version.split(".")) == 3
         else:
-            assert connector.definition is None
+            assert connector.metadata is None
             assert connector.release_stage is None
             assert connector.acceptance_test_config is None
             assert connector.icon_path == Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{connector.name}.svg")
