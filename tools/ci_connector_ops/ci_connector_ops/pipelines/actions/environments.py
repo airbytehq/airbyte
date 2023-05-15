@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import os
 import uuid
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
@@ -408,13 +409,24 @@ def with_gradle(
         .with_env_variable("VERSION", "23.0.1")
         .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
         .with_exec(["mkdir", "/root/.gradle"])
-        .with_mounted_cache("/root/.gradle", root_gradle_cache, sharing=CacheSharingMode.LOCKED)
-        .with_exec(["rm", "-f", "/root/.gradle/caches/journal-1/journal-1.lock"])
         .with_exec(["mkdir", "/airbyte"])
         .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
         .with_mounted_cache("/airbyte/.gradle", airbyte_gradle_cache, sharing=CacheSharingMode.LOCKED)
         .with_workdir("/airbyte")
     )
+    if context.is_ci and "S3_BUILD_CACHE_ACCESS_KEY_ID" in os.environ and "S3_BUILD_CACHE_SECRET_KEY" in os.environ:
+        openjdk_with_docker = (
+            openjdk_with_docker.with_env_variable("CI", "true")
+            .with_secret_variable(
+                "S3_BUILD_CACHE_ACCESS_KEY_ID", context.dagger_client.host().env_variable("S3_BUILD_CACHE_ACCESS_KEY_ID").secret()
+            )
+            .with_secret_variable(
+                "S3_BUILD_CACHE_SECRET_KEY", context.dagger_client.host().env_variable("S3_BUILD_CACHE_SECRET_KEY").secret()
+            )
+        )
+    else:
+        openjdk_with_docker = openjdk_with_docker.with_mounted_cache("/root/.gradle", root_gradle_cache, sharing=CacheSharingMode.LOCKED)
+
     if bind_to_docker_host:
         return with_bound_docker_host(context, openjdk_with_docker, shared_tmp_volume, docker_service_name=docker_service_name)
     else:

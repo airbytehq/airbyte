@@ -140,7 +140,7 @@ public class PostgresSpecTest {
         .put("replication_slot", "replication_slot")
         .put("publication", "PUBLICATION")
         .put("plugin", "pgoutput")
-        .put("initial_waiting_seconds", 5)
+        .put("initial_waiting_seconds", 30)
         .put("lsn_commit_behaviour", commitBehaviour)
         .build());
 
