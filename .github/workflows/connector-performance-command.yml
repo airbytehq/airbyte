@@ -140,8 +140,8 @@ jobs:
         env:
           CONN: ${{ github.event.inputs.connector }}
           DS: ${{ github.event.inputs.dataset }}
-          prefix: '{"type":"LOG","log":{"level":"INFO","message":"INFO i.a.i.p.PerformanceTest(runTest):165'
-          suffix: '"}}'
+          PREFIX: '{"type":"LOG","log":{"level":"INFO","message":"INFO i.a.i.p.PerformanceTest(runTest):165'
+          SUFFIX: '"}}'
           HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
         run: |
           kubectl apply -f ./tools/bin/admin-service-account.yaml
@@ -158,7 +158,7 @@ jobs:
           kubectl logs --follow $POD
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "RUN_RESULT<<$EOF" >> $GITHUB_OUTPUT
-          kubectl logs --tail=1 $POD | while read line ; do line=${line#"$prefix"}; line=${line%"$suffix"}; echo $line >> $GITHUB_OUTPUT ; done 
+          kubectl logs --tail=1 $POD | while read line ; do line=${line#"$PREFIX"}; line=${line%"$SUFFIX"}; echo $line >> $GITHUB_OUTPUT ; done 
           echo "$EOF" >> $GITHUB_OUTPUT
       - name: Link comment to workflow run
         uses: peter-evans/create-or-update-comment@v2
