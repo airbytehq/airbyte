@@ -4,33 +4,29 @@ This page contains the setup guide and reference information for the [SpaceX-API
 
 ## Prerequisites
 
-No prerequisites, but a dummy api_key is required as it enhances security in future build. Please check the available routes at [SpaceX Routes](https://github.com/r-spacex/SpaceX-API/tree/master/routes).
+To set up the SpaceX-API connector, you need to have an API key. If you do not already have one, you can generate a dummy API key (Example: 12345) as it enhances security in future builds. 
+
+Please check the available routes at [SpaceX Routes](https://github.com/r-spacex/SpaceX-API/tree/master/routes) to obtain the necessary information for the `id` property.
 
 ## Setup guide
 
 ### Step 1: Set up SpaceX connection
 
-- Have a dummy API key (Example: 12345)
-- A specific id (If specific info is needed)
+1. Obtain your dummy API key from the [SpaceX-API repository](https://github.com/r-spacex/SpaceX-API).
+2. If you need specific information, check the available routes at [SpaceX Routes](https://github.com/r-spacex/SpaceX-API/tree/master/routes) and obtain the necessary `id`.
+3. Record your API key and ID for use in the next step.
 
-## Step 2: Set up the SpaceX-API connector in Airbyte
+### Step 2: Set up the SpaceX-API connector in Airbyte
 
-### For Airbyte Cloud:
+1. Navigate to the Airbyte Connector form. 
+2. Enter the required `id` and `options` in the respective fields according to the provided Airbyte Connector spec.
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the SpaceX-API connector and select **Spacex-API** from the Source type dropdown.
-4. Enter your `api_key`.
-5. Enter your `id` if needed. (Optional)
-6. Click **Set up source**.
+    - The `id` field is optional and is used to specify a specific target source.
+    - The `options` field is optional and specifies possible values for an endpoint. Example values for various endpoints are [available here](https://github.com/r-spacex/SpaceX-API/tree/master/docs). 
 
-### For Airbyte OSS:
-
-1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source.
-3. Enter your `api_key`.
-5. Enter your `id` if needed. (Optional)
-6. Click **Set up source**.
+3. Enter the API key you obtained in Step 1 in the `api_key` field.
+4. Click **Test connection** to ensure the connector is working correctly.
+5. Click **Save** to finalize the setup.
 
 ## Supported sync modes
 
