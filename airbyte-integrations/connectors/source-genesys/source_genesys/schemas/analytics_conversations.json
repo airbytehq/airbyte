@@ -3,6 +3,12 @@
     "type": "object",
     "additionalProperties": true,
     "properties": {
+        "client_id": {
+            "type": ["null","string"]
+        },
+        "unique_id": {
+            "type": ["null","string"]
+        },
         "interval_start": {
             "type": ["null", "string"],
             "format": "date-time"
@@ -14,7 +20,7 @@
         "min": {
             "type": ["null","integer"]
         },
-        "metric": {
+        "metric_name": {
             "type": ["null", "string"]
         },
         "max": {
