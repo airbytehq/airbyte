@@ -26,20 +26,22 @@ The Plaid connector should not run into Stripe API limitations under normal usag
 
 ## Getting started
 
+To set up the Plaid Source connector in Airbyte:
+
 ### Requirements
 
 - Plaid Account \(with client_id and API key\)
 - Access Token
 
-### Setup guide for Sandbox
+### Generating API Keys
 
-This guide will walk through how to create the credentials you need to run this source in the sandbox of a new plaid account. For production use, consider using the Link functionality that Plaid provides [here](https://plaid.com/docs/api/tokens/#linktokencreate)
+You can find your Plaid API keys on the Plaid dashboard. Follow these steps to generate them:
 
-- **Create a Plaid account** Go to the [plaid website](https://plaid.com/) and click "Get API Keys". Follow the instructions to create an account.
-- **Get Client id and API key** Go to the [keys page](https://dashboard.plaid.com/team/keys) where you will find the client id and your Sandbox API Key \(in the UI this key is just called "Sandbox"\).
-- **Create an Access Token** First you have to create a public token key and then you can create an access token.
+1. **Create a Plaid account** Go to the [plaid website](https://plaid.com/) and click "Get API Keys". Follow the instructions to create an account.
 
-  - **Create public key** Make this API call described in [plaid docs](https://plaid.com/docs/api/sandbox/#sandboxpublic_tokencreate)
+2. **Generate Client id and API key** Go to the [keys page](https://dashboard.plaid.com/team/keys) where you will find the client id and your Sandbox API Key \(in the UI this key is just called "Sandbox"\).
+
+3. **Create an Access Token** Before you create an access token, you need to create a public key. Make an API call to generate a public key by running the following command in your terminal or command-line interface:
 
     ```bash
       curl --location --request POST 'https://sandbox.plaid.com/sandbox/public_token/create' \
@@ -52,7 +54,9 @@ This guide will walk through how to create the credentials you need to run this 
           }'
     ```
 
-  - **Exchange public key for access token** Make this API call described in [plaid docs](https://plaid.com/docs/api/tokens/#itempublic_tokenexchange). The public token used in this request, is the token returned in the response of the previous request. This request will return an `access_token`, which is the last field we need to generate for the config for this source!
+    This will return a JSON object that includes a `public_token`. Save this `public_token` as you will need it to generate the access token in the next step.
+
+4. **Exchange public key for access token** Using your `public_token` from the previous step, request an access token by running the following command:
 
     ```bash
     curl --location --request POST 'https://sandbox.plaid.com/item/public_token/exchange' \
@@ -60,11 +64,28 @@ This guide will walk through how to create the credentials you need to run this 
       --data-raw '{
           "client_id": "<your-client-id>",
           "secret": "<your-sandbox-api-key>",
-          "public_token": "<public-token-returned-by-previous-request>"
+          "public_token": "<public-token>"
       }'
     ```
 
-- We should now have everything we need to configure this source in the UI.
+   This will return a JSON object that includes an `access_token`. Save this `access_token` as you will need it to set up the Plaid Source connector in Airbyte.
+
+### Configuring the Plaid Source connector in Airbyte
+
+1. Open the Plaid Source connector configuration form in Airbyte.
+
+2. Enter the `access_token`, `api_key`, `client_id`, and `plaid_env` in the fields as follows:
+        
+    - `access_token` is the access token you generated in step 4 of the previous section.
+    - `api_key` is the API key you generated in step 2 of the previous section.
+    - `client_id` is the client ID you generated in step 2 of the previous section.
+    - `plaid_env` is the Plaid environment you are using (options are sandbox, development, or production).
+
+3. If you wish, you can also set the `start_date` field if you want to replicate data starting from a specific date. The date should be formatted as YYYY-MM-DD.
+
+4. Click "Test connection" to verify that the connection to the Plaid Source is working correctly.
+
+5. Click "Save" to save your configuration.
 
 ## Changelog
 
