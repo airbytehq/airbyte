@@ -133,8 +133,6 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
         final AirbyteMessage message = messageIterator.next();
         if (message.getRecord().getData().hasNonNull(cursorField)) {
           final String cursorCandidate = getCursorCandidate(message);
-          LOGGER.info("current max cursor +++{}", currentMaxCursor);
-          LOGGER.info("CURSOR CANDIDATE +++{}", cursorCandidate);
 //          final int cursorComparison = IncrementalUtils.compareCursors(currentMaxCursor, cursorCandidate, cursorType);
           final int cursorComparison = IncrementalUtils.compareCtid(currentMaxCursor, cursorCandidate);
           if (cursorComparison < 0) {
