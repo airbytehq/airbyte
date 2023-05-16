@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -67,9 +67,14 @@ class DestinationConvex(Destination):
                 writer.flush()
                 yield message
             elif message.type == Type.RECORD and message.record is not None:
-                if message.record.namespace is not None:
-                    message.record.stream = f"{message.record.namespace}_{message.record.stream}"
-                msg = message.record.dict()
+                table_name = self.table_name_for_stream(
+                    message.record.namespace,
+                    message.record.stream,
+                )
+                msg = {
+                    "tableName": table_name,
+                    "data": message.record.data,
+                }
                 writer.queue_write_operation(msg)
             else:
                 # ignore other message types for now
