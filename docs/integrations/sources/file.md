@@ -191,6 +191,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
+| 0.3.6   | 2023-05-16 | [26115](https://github.com/airbytehq/airbyte/pull/26115) | Add retry on SSHException('Error reading SSH protocol banner')                                          |
 | 0.3.5   | 2023-05-16 | [26117](https://github.com/airbytehq/airbyte/pull/26117) | Check if reader options is a valid JSON object                                                          |
 | 0.3.4   | 2023-05-10 | [25965](https://github.com/airbytehq/airbyte/pull/25965) | fix Pandas date-time parsing to airbyte type                                                            |
 | 0.3.3   | 2023-05-04 | [25819](https://github.com/airbytehq/airbyte/pull/25819) | GCP service_account_json is a secret                                                                    |
