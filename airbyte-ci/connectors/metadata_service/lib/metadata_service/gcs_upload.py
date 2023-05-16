@@ -81,7 +81,7 @@ def upload_file_if_changed(local_file_path: Path, bucket: storage.bucket.Bucket,
         uploaded =  _save_blob_to_gcs(remote_blob, local_file_path, disable_cache=disable_cache)
         return uploaded, remote_blob.id
 
-    return False
+    return False, remote_blob.id
 
 
 

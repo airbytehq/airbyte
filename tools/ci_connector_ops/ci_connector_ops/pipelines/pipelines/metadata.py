@@ -10,7 +10,7 @@ from ci_connector_ops.pipelines.actions import run_steps
 from ci_connector_ops.pipelines.actions.environments import with_pip_packages, with_poetry_module, with_python_base
 from ci_connector_ops.pipelines.bases import Report, Step, StepResult
 from ci_connector_ops.pipelines.contexts import PipelineContext, PublishConnectorContext
-from ci_connector_ops.pipelines.utils import DAGGER_CONFIG, METADATA_FILE_NAME, execute_concurrently
+from ci_connector_ops.pipelines.utils import DAGGER_CONFIG, METADATA_FILE_NAME, execute_concurrently, METADATA_ICON_FILE_NAME
 
 METADATA_DIR = "airbyte-ci/connectors/metadata_service"
 METADATA_LIB_MODULE_PATH = "lib"
@@ -27,6 +27,9 @@ def get_metadata_file_from_path(context: PipelineContext, metadata_path: Path) -
     if not metadata_path.exists():
         raise FileNotFoundError(f"{str(metadata_path)} does not exist.")
     return context.get_repo_dir(str(metadata_path.parent), include=[METADATA_FILE_NAME]).file(METADATA_FILE_NAME)
+
+def get_metadata_icon_file_from_path(context: PipelineContext, metadata_icon_path: Path) -> dagger.File:
+    return context.get_repo_dir(str(metadata_icon_path.parent), include=[METADATA_ICON_FILE_NAME]).file(METADATA_ICON_FILE_NAME)
 
 
 # STEPS
