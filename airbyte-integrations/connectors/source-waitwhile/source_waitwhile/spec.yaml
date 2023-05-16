@@ -7,6 +7,7 @@ connectionSpecification:
     - apikey
     - start_date
     - n_days_availability_horizon
+    - use_start_date_availability
   properties:
     apikey:
       title: API token
@@ -29,9 +30,22 @@ connectionSpecification:
       examples:
         - 30
       default: 3
+    n_days_availabilty_lookback:
+      title: Availability lookback
+      type: integer
+      description: Number of days to fetch availability for into the past. Only relevant for LocationsAvailability stream.
+      examples:
+        - 30
+      default: 30
+    use_start_date_availability:
+      title: Use start date for availability stream?
+      type: boolean
+      description: if true, the start_date will be used for the availability stream and lookback will be ignored.
+      default: false
     lookback_window:
       type: integer
-      description: If set to a number, sync_from is irrelevant and data from today()-loocback_window days will be fetched. Only relevant for Visits stream. This setting does not make any sense if the stream is incremental.
+      description: If set to a number, sync_from is irrelevant and data from today()-loocback_window days will be fetched. Will be ignored if <0. Only relevant for Visits stream. This setting does not make any sense if the stream is incremental.
+      default: -1
     delta_from_start:
       type: integer
       description: If set to a number, only data up to and including start+delta_from_start days will be fetched. Will be ignored if <0. Only relevant for Visits stream.

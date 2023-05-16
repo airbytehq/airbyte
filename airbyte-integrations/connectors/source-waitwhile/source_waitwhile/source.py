@@ -39,8 +39,6 @@ class WaitwhileStream(HttpStream, ABC):
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {"limit": self.limit, "desc": False}
-
-        last_stream_state = stream_state.get("updated")
         if next_page_token:
             params.update(**next_page_token)
 
@@ -62,6 +60,7 @@ class WaitwhileStream(HttpStream, ABC):
         """
         :return an iterable containing each record in the response
         """
+        print(response.url)
         yield from self.adapt_datetatime_fields(response.json().get("results", []))
 
 
@@ -70,17 +69,26 @@ class IncrementalWaitwhileStream(WaitwhileStream, ABC):
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__(config=config, **kwargs)
+        self.use_lookback = False
+        self.lookback_window = config.get("lookback_window", -1)
+        self.delta_from_start = config.get("delta_from_start", -1)
 
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
-
-        last_stream_state = stream_state.get(self.cursor_field)
-        if last_stream_state:
-            params.update({"fromTime": pendulum.parse(last_stream_state)})
+        if self.use_lookback:
+            start = pendulum.today().subtract(days=self.lookback_window)
+            params.update({"fromBookingDate": str(start)[:16]})
+            if self.delta_from_start >= 0:
+                params.update({"toBookingDate": str(
+                    start.add(days=self.delta_from_start+1))[:16]})
         else:
-            params.update({"fromTime": pendulum.parse(self.start_date)})
+            last_stream_state = stream_state.get(self.cursor_field)
+            if last_stream_state:
+                params.update({"fromTime": pendulum.parse(last_stream_state)})
+            else:
+                params.update({"fromTime": pendulum.parse(self.start_date)})
         return params
 
     @property
@@ -102,7 +110,7 @@ class IncrementalWaitwhileStream(WaitwhileStream, ABC):
             self.cursor_field, self.start_date)
         last_record_value = latest_record.get(
             self.cursor_field, self.start_date)
-        return {self.cursor_field: max(current_state_value, last_record_value)}
+        return {self.cursor_field: max(current_state_value, last_record_value)} if not self.use_lookback else current_stream_state
 
 
 class Locations(WaitwhileStream):
@@ -182,10 +190,15 @@ class LocationStatus(WaitwhileStream):
 class Visits(IncrementalWaitwhileStream):
     """
     List location status data source.
+    If lookback window is set to >=0, then the stream will use the lookback window to get the data and incremental behavior will be ignored.
+    The main difference is that fromBookingDate, which looks at 'date' field, is used instead of fromTime, which looks at 'updated' field.
     """
 
-    cursor_field = "updated"
     primary_key = "id"
+
+    def __init__(self, config: Mapping[str, Any], **kwargs):
+        super().__init__(config=config, **kwargs)
+        self.use_lookback = config.get("lookback_window", -1) >= 0
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
@@ -221,7 +234,6 @@ class LocationsAvailability(HttpSubStream):
     """
 
     url_base = "https://api.waitwhile.com/v2/"
-    cursor_field = "date"
     step_size = 10
 
     primary_key = None
@@ -229,9 +241,13 @@ class LocationsAvailability(HttpSubStream):
     def __init__(self, parent: Locations, config: Mapping[str, Any], **kwargs):
         super().__init__(parent=parent, authenticator=TokenAuthenticator(
             config.get("apikey")), **kwargs)
+        self.location_id = None
         self.start_date = pendulum.parse(config.get("start_date"))
         self.n_days_availability_horizon = config.get(
             "n_days_availability_horizon", 0)
+        self.n_days_availability_lookback = config.get(
+            "n_days_availabilty_lookback", 0)
+        self.use_start_date = config.get("use_start_date_availability", False)
 
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -259,20 +275,6 @@ class LocationsAvailability(HttpSubStream):
 
         return None
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-
-        state_mapping = current_stream_state.get(self.cursor_field, {})
-
-        last_record_value = latest_record.get(self.cursor_field)
-        if last_record_value:
-            state_mapping.update({self.location_id: last_record_value})
-
-        return {self.cursor_field: state_mapping}
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
@@ -281,11 +283,12 @@ class LocationsAvailability(HttpSubStream):
         response_json = response.json()
         response_json = [dict(x, **{"locationId": self.location_id})
                          for x in response_json]
+        print(response.url)
         if response_json:
             yield from response_json
         return []
 
-    def get_start_date(self, stream_state: Mapping[str, Any] = None) -> pendulum.DateTime:
+    def get_start_date(self) -> pendulum.DateTime:
         """
         Get start date for stream based on stream_state. If date is not in stream stade, then the start date from the config is used.
         Args:
@@ -294,10 +297,8 @@ class LocationsAvailability(HttpSubStream):
         Returns:
             pendulum.DateTime: start date.
         """
-        stream_start_date = str(self.start_date)[:16]
-        last_stream_date = stream_state.get("date", {}).get(
-            self.location_id, stream_start_date)
-        return pendulum.parse(str(last_stream_date)[:16])
+        print("lookback", self.n_days_availability_lookback)
+        return pendulum.today().subtract(days=self.n_days_availability_lookback) if not self.use_start_date else self.start_date
 
     def get_stop_date(self) -> pendulum.DateTime:
         """
@@ -305,7 +306,7 @@ class LocationsAvailability(HttpSubStream):
         Returns:
             pendulum.DateTime: DateTime object representing the stop date.
         """
-        return pendulum.today().add(days=self.n_days_availability_horizon)
+        return pendulum.today().add(days=self.n_days_availability_horizon+1)
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -321,7 +322,7 @@ class LocationsAvailability(HttpSubStream):
             Iterable[Optional[Mapping[str, Any]]]: Slices (dict with location id, from and to dates) for slice.
         """
         parent_stream_slices = self.parent.stream_slices(
-            sync_mode=SyncMode.full_refresh, cursor_field=self.parent.cursor_field, stream_state=stream_state
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
         )
 
         # iterate over all parent stream_slices
@@ -333,17 +334,18 @@ class LocationsAvailability(HttpSubStream):
             # iterate over all parent records with current stream_slice
             for record in parent_records:
                 self.location_id = record["id"]
-                start_date = self.get_start_date(stream_state)
-                for start, end in self.chunk_dates(start_date):
+                print("Location", self.location_id)
+                for start, end in self.chunk_dates():
+                    print(start, "-", end)
                     yield {"parent": record, "from": start, "to": end}
 
-    def chunk_dates(self, start_date: pendulum.DateTime) -> Iterable[Tuple[str, str]]:
+    def chunk_dates(self) -> Iterable[Tuple[str, str]]:
         stop = self.get_stop_date()
-        after = start_date
+        after = self.get_start_date()
         while after < stop:
             before = min(stop, after.add(days=self.step_size))
             yield str(after)[:16], str(before)[:16]
-            after = before.add(minutes=1)
+            after = before.add(minutes=0)
 
 
 class SourceWaitwhile(AbstractSource):
@@ -362,13 +364,6 @@ class SourceWaitwhile(AbstractSource):
             return True, None
         except Exception as e:
             return False, e
-
-    def get_location_ids(self, config):
-        headers = dict(Accept="application/json", apikey=config["apikey"])
-        url = "https://api.waitwhile.com/v2/locations?limit=100"
-        resp = requests.get(url, headers=headers)
-        location_ids = [x.get("id") for x in resp.json()["results"]]
-        return iter(location_ids)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
