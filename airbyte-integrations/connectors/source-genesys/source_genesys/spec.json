@@ -39,12 +39,22 @@
         ],
         "order": 2
       },
+      "analytics_metrics": {
+        "type": "string",
+        "title": "Analytics Metrics",
+        "default": "THandle,TTALK",
+        "examples": [
+          "nBlindTransferred,nCobrowseSessions,nConnected,nConsult,nConsultTransferred,nError,nOffered,nOutbound,nOutboundAbandoned,nOutboundAttempted,nOutboundConnected,nOverSla,nStateTransitionError,nTransferred,oExternalMediaCount,oMediaCount,oMessageTurn,oServiceLevel,oServiceTarget,tAbandon,tAcd,tAcw,tAgentResponseTime,tAlert,tAnswered,tCoaching,tCoachingComplete,tConnected,tContacting,tDialing,tFirstConnect,tFirstDial,tFlowOut,tHandle,tHeld,tHeldComplete,tIvr,tMonitoring,tNotResponding,tShortAbandon,tTalk,tTalkComplete,tUserResponseTime,tVoicemail,tWait"
+        ],
+        "description": "(Optional) Comma-separated list of metrics to query the against the analytics API streams (Comma delimited). Example: 'THandle, TTALK' ",
+        "order": 3
+      },
       "start_date": {
         "type": "string",
         "title": "Start Date",
         "description": "Start Date in format: YYYY-MM-DD",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-        "order": 3
+        "order": 4
       }
     }
   }
