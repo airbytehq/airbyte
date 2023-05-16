@@ -253,18 +253,14 @@ class SourceGithub(AbstractSource):
         page_size = config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
         access_token_type, _ = self.get_access_token(config)
 
-        organization_args = {
-            "authenticator": authenticator,
-            "organizations": organizations,
-            "access_token_type": access_token_type
-        }
+        organization_args = {"authenticator": authenticator, "organizations": organizations, "access_token_type": access_token_type}
         organization_args_with_start_date = {**organization_args, "start_date": config["start_date"]}
 
         repository_args = {
             "authenticator": authenticator,
             "repositories": repositories,
             "page_size_for_large_streams": page_size,
-            "access_token_type": access_token_type
+            "access_token_type": access_token_type,
         }
         repository_args_with_start_date = {**repository_args, "start_date": config["start_date"]}
 
