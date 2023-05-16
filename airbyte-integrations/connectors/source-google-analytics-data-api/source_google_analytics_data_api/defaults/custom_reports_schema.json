@@ -21,6 +21,23 @@
           "type": "string"
         }
       },
+      "dimensionFilter": {
+        "$ref": "#/$defs/filterExpression"
+      },
+      "metricFilter": {
+        "$ref": "#/$defs/filterExpression"
+      },
+      "offset": {
+        "type": ["integer", "string"],
+        "minimum": 0,
+        "pattern": "^[0-9]+$"
+      },
+      "limit": {
+        "type": ["integer", "string"],
+        "minimum": 0,
+        "maximum": 250000,
+        "pattern": "^([0-9]|[1-9][0-9]{1,4}|1[0-9]{5}|2[0-4][0-9]{4}|250000)$"
+      },
       "cohortSpec": {
         "type": ["null", "object"],
         "properties": {
@@ -129,6 +146,124 @@
             "metricAggregations": {
               "type": ["null", "string"],
               "enum": ["COUNT", "TOTAL", "MAXIMUM", "MINIMUM"]
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "filterExpressionList": {
+      "type": "object",
+      "properties": {
+        "expressions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/filterExpression"
+          }
+        }
+      }
+    },
+    "filterExpression": {
+      "type": "object",
+      "properties": {
+        "andGroup": {
+          "$ref": "#/$defs/filterExpressionList"
+        },
+        "orGroup": {
+          "$ref": "#/$defs/filterExpressionList"
+        },
+        "notExpression": {
+          "$ref": "#/$defs/filterExpression"
+        },
+        "filter": {
+          "type": "object",
+          "required": ["fieldName"],
+          "properties": {
+            "fieldName": {
+              "type": "string"
+            },
+            "stringFilter": {
+              "type": "object",
+              "required": ["value"],
+              "properties": {
+                "matchType": {
+                  "type": "string",
+                  "enum": ["MATCH_TYPE_UNSPECIFIED", "EXACT", "BEGINS_WITH", "ENDS_WITH", "CONTAINS", "FULL_REGEXP", "PARTIAL_REGEXP"]
+                },
+                "value": {"type": "string"},
+                "caseSensitive": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "inListFilter": {
+              "type": "object",
+              "required": ["values"],
+              "properties": {
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                },
+                "caseSensitive": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "numericFilter": {
+              "type": "object",
+              "required": ["value"],
+              "properties": {
+                "operation": {
+                  "type": "string",
+                  "enum": ["OPERATION_UNSPECIFIED", "EQUAL", "LESS_THAN", "LESS_THAN_OR_EQUAL", "GREATER_THAN", "GREATER_THAN_OR_EQUAL"]
+                },
+                "value": {
+                  "type": "object",
+                  "properties": {
+                    "int64Value": {
+                      "type": "string",
+                      "pattern": "^[0-9]+$"
+                    },
+                    "doubleValue": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            },
+            "betweenFilter": {
+              "type": "object",
+              "required": ["fromValue", "toValue"],
+              "properties": {
+                "fromValue": {
+                  "type": "object",
+                  "properties": {
+                    "int64Value": {
+                      "type": "string",
+                      "pattern": "^[0-9]+$"
+                    },
+                    "doubleValue": {
+                      "type": "number"
+                    }
+                  }
+                },
+                "toValue": {
+                  "type": "object",
+                  "properties": {
+                    "int64Value": {
+                      "type": "string",
+                      "pattern": "^[0-9]+$"
+                    },
+                    "doubleValue": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
             }
           }
         }

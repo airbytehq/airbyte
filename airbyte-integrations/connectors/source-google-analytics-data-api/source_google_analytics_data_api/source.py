@@ -155,12 +155,20 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         r = response.json()
 
         if "rowCount" in r:
-            limit, offset, total_rows = int(self.config["limit"]), int(self.config["offset"]), r["rowCount"]
+            limit = int(self.config["limit"])
+            total_rows = r["rowCount"]
+            if "next_page_offset" in self.config and self.config["next_page_offset"] is not None:
+                offset = int(self.config["next_page_offset"])
+            else:
+                offset = int(self.config["offset"])
 
-            if total_rows <= offset:
+            if total_rows <= offset + limit:
+                self.config["next_page_offset"] = None
                 return None
 
-            return {"limit": str(limit), "offset": str(offset + limit)}
+            self.config["next_page_offset"] = str(offset + limit)
+
+            return {"limit": str(limit), "next_page_offset": str(offset + limit)}
 
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -202,19 +210,16 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
 
-        self.config["limit"] = str(self.config["initial_limit"])
-        self.config["offset"] = str(self.config["initial_offset"])
-
-        if next_page_token:
-            self.config.update(next_page_token)
+        self.config["offset"] = str(self.config.get("offset", "0"))
+        self.config["limit"] = str(self.config.get("limit", "10000"))
 
         payload = {
             "metrics": [{"name": m} for m in self.config["metrics"]],
             "dimensions": [{"name": d} for d in self.config["dimensions"]],
             "dateRanges": [stream_slice],
             "returnPropertyQuota": True,
-            "limit": self.config["limit"],
-            "offset": self.config["offset"]
+            "offset": self.config['next_page_offset'] if next_page_token else self.config["offset"],
+            "limit": self.config["limit"]
         }
         if "dimensionFilter" in self.config:
             payload.update({"dimensionFilter": self.config["dimensionFilter"]})
@@ -416,8 +421,8 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         stream_config = {
             "metrics": report["metrics"],
             "dimensions": report["dimensions"],
-            "initial_offset": report.get("offset", "0"),
-            "initial_limit": report.get("limit", "10000"),
+            "offset": report.get("offset", "0"),
+            "limit": report.get("limit", "10000"),
             **config
         }
         report_class_tuple = (GoogleAnalyticsDataApiBaseStream,)
