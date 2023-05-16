@@ -10,15 +10,11 @@ import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
-import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.*;
@@ -40,7 +36,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
   private final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
 
   private final BufferManager bufferManager;
-  private final BufferManagerEnqueue bufferManagerEnqueue;
+  private final BufferManager.BufferManagerEnqueue bufferManagerEnqueue;
   private final UploadWorkers uploadWorkers;
   private final Set<StreamDescriptor> streamNames;
   private final IgnoredRecordsTracker ignoredRecordsTracker;
@@ -102,7 +98,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     // assume the closing upload workers will flush all accepted records.
     onClose.call();
     uploadWorkers.close();
-    // bufferManager.close();
+    bufferManager.close();
     ignoredRecordsTracker.report();
     LOGGER.info("{} closed.", AsyncStreamConsumer.class);
   }
@@ -162,99 +158,6 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     throw new IllegalArgumentException(
         String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
             Jsons.serialize(catalog), Jsons.serialize(message)));
-  }
-
-  public static class BufferManager implements AutoCloseable {
-
-    Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
-
-    BufferManagerEnqueue bufferManagerEnqueue;
-    BufferManagerDequeue bufferManagerDequeue;
-
-    public BufferManager() {
-      buffers = new HashMap<>();
-      bufferManagerEnqueue = new BufferManagerEnqueue(buffers);
-      bufferManagerDequeue = new BufferManagerDequeue(buffers);
-    }
-
-    public BufferManagerEnqueue getBufferManagerEnqueue() {
-      return bufferManagerEnqueue;
-    }
-
-    public BufferManagerDequeue getBufferManagerDequeue() {
-      return bufferManagerDequeue;
-    }
-
-    /**
-     * Closing a queue will flush all items from it. For this reason, this method needs to be called
-     * after {@link UploadWorkers#close()}. This allows the upload workers to make sure all items in the
-     * queue has been flushed.
-     */
-    @Override
-    public void close() throws Exception {
-      buffers.forEach(((streamDescriptor, queue) -> queue.clear()));
-      log.info("Buffers cleared..");
-    }
-
-  }
-
-  static class BufferManagerEnqueue {
-
-    private final RecordSizeEstimator recordSizeEstimator;
-    private final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
-
-    public BufferManagerEnqueue(final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
-      this.buffers = buffers;
-      recordSizeEstimator = new RecordSizeEstimator();
-    }
-
-    public void addRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message) {
-      // todo (cgardens) - share the total memory across multiple queues.
-      final long availableMemory = (long) (Runtime.getRuntime().maxMemory() * 0.8);
-      LOGGER.info("available memory: " + availableMemory);
-
-      // todo (cgardens) - replace this with fancy logic to make sure we don't oom.
-      if (!buffers.containsKey(streamDescriptor)) {
-        buffers.put(streamDescriptor, new MemoryBoundedLinkedBlockingQueue<>(1024 * 1024 * 50)); // todo
-      }
-
-      // todo (cgardens) - handle estimating state message size.
-      final long messageSize = message.getType() == Type.RECORD ? recordSizeEstimator.getEstimatedByteSize(message.getRecord()) : 1024;
-      var queue = buffers.get(streamDescriptor);
-      queue.offer(message, messageSize);
-    }
-
-  }
-
-  // todo (cgardens) - make all the metadata methods more efficient.
-  static class BufferManagerDequeue {
-
-    Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
-
-    public BufferManagerDequeue(final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
-      this.buffers = buffers;
-    }
-
-    public Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> getBuffers() {
-      return new HashMap<>(buffers);
-    }
-
-    public MemoryBoundedLinkedBlockingQueue<AirbyteMessage> getBuffer(final StreamDescriptor streamDescriptor) {
-      return buffers.get(streamDescriptor);
-    }
-
-    public long getTotalGlobalQueueSizeInMb() {
-      return buffers.values().stream().map(MemoryBoundedLinkedBlockingQueue::getCurrentMemoryUsage).mapToLong(Long::longValue).sum();
-    }
-
-    public long getQueueSizeInMb(final StreamDescriptor streamDescriptor) {
-      return getBuffer(streamDescriptor).getCurrentMemoryUsage();
-    }
-
-    public Optional<Instant> getTimeOfLastRecord(final StreamDescriptor streamDescriptor) {
-      return getBuffer(streamDescriptor).getTimeOfLastMessage();
-    }
-
   }
 
 }

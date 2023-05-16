@@ -10,6 +10,9 @@ import java.util.stream.Stream;
 
 public interface StreamDestinationFlusher {
 
+  // looking at SerializableBuffer, it seems getFile and getInputStream are both ways this can happen.
   void flush(StreamDescriptor decs, Stream<AirbyteMessage> stream) throws Exception;
+
+  long getOptimalBatchSizeBytes();
 
 }

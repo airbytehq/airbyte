@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.destination_async;
 
+import static io.airbyte.integrations.destination_async.BufferManager.MAX_QUEUE_SIZE_BYTES;
+import static io.airbyte.integrations.destination_async.BufferManager.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES;
+
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
@@ -22,9 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UploadWorkers implements AutoCloseable {
 
-  private static final double TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = Runtime.getRuntime().maxMemory() * 0.8;
-  private static final double MAX_CONCURRENT_QUEUES = 10.0;
-  private static final double MAX_QUEUE_SIZE_BYTES = TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES / MAX_CONCURRENT_QUEUES;
   private static final long MAX_TIME_BETWEEN_REC_MINS = 15L;
 
   private static final long SUPERVISOR_INITIAL_DELAY_SECS = 0L;
@@ -32,10 +32,10 @@ public class UploadWorkers implements AutoCloseable {
   private final ScheduledExecutorService supervisorThread = Executors.newScheduledThreadPool(1);
   // note: this queue size is unbounded.
   private final ExecutorService workerPool = Executors.newFixedThreadPool(5);
-  private final AsyncStreamConsumer.BufferManagerDequeue bufferManagerDequeue;
+  private final BufferManager.BufferManagerDequeue bufferManagerDequeue;
   private final StreamDestinationFlusher flusher;
 
-  public UploadWorkers(final AsyncStreamConsumer.BufferManagerDequeue bufferManagerDequeue, final StreamDestinationFlusher flusher1) {
+  public UploadWorkers(final BufferManager.BufferManagerDequeue bufferManagerDequeue, final StreamDestinationFlusher flusher1) {
     this.bufferManagerDequeue = bufferManagerDequeue;
     this.flusher = flusher1;
   }
@@ -76,19 +76,15 @@ public class UploadWorkers implements AutoCloseable {
       log.info("Worker picked up work..");
       final var queue = bufferManagerDequeue.getBuffer(desc);
       // todo(charles): should not need to know about memory blocking nonsense.
+      // how do we tune the size to read from the queue on a per-stream basis?
       try {
-        log.info("Attempting to read from queue {}..", desc);
-        log.info("before size: {}", queue.size());
-        var s = Stream.generate(() -> {
-          try {
-            return queue.take();
-          } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-          }
-        }).map(MemoryBoundedLinkedBlockingQueue.MemoryItem::item);
-        flusher.flush(desc, s);
-        log.info("after size: {}", queue.size());
-        log.info("Worker finished flushing..");
+        log.info("Attempting to read from queue {}. Current queue size: {}", desc, queue.size());
+
+        try (var a = bufferManagerDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
+          flusher.flush(desc, a.batch.stream());
+        }
+
+        log.info("Worker finished flushing. Current queue size: {}", queue.size());
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
@@ -100,13 +96,21 @@ public class UploadWorkers implements AutoCloseable {
     flushAll();
 
     supervisorThread.shutdown();
-    var supervisorShut = supervisorThread.awaitTermination(5L, TimeUnit.MINUTES);
+    final var supervisorShut = supervisorThread.awaitTermination(5L, TimeUnit.MINUTES);
     log.info("Supervisor shut status: {}", supervisorShut);
 
     log.info("Starting worker pool shutdown..");
     workerPool.shutdown();
-    var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
+    final var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
     log.info("Workers shut status: {}", workersShut);
   }
 
 }
+
+//        var s = Stream.generate(() -> {
+//          try {
+//            return queue.take();
+//          } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//          }
+//        }).map(MemoryBoundedLinkedBlockingQueue.MemoryItem::item);
