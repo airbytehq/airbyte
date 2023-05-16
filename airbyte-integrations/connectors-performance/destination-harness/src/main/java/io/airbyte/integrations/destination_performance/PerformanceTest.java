@@ -30,8 +30,10 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
@@ -47,6 +49,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * This is a crude copy of {@link io.airbyte.workers.general.DefaultReplicationWorker} where if that
+ * class changes this class will need to be updated to match as this class mocks the functionality of
+ * the platform from the perspectives of the platform communicating with the destination by sending
+ * AirbyteRecordMessages the same way platform pipes data into the destination
+ */
 @Slf4j
 public class PerformanceTest {
 
@@ -73,23 +81,16 @@ public class PerformanceTest {
     this.dataSourceURL = datasource;
   }
 
+  /**
+   * Runs performance test
+   * <p>1. Spins up a destination connector
+   * <p>2. Loads data from URL
+   * <p>3. Processes each record and sends to destination
+   * <p>4. Tears down destination after completion
+   * @throws Exception
+   */
   void runTest() throws Exception {
-    KubePortManagerSingleton.init(PORTS);
-
-    final KubernetesClient fabricClient = new DefaultKubernetesClient();
-    final String localIp = InetAddress.getLocalHost().getHostAddress();
-    final String kubeHeartbeatUrl = localIp + ":" + 9000;
-
-    final var workerConfigs = new WorkerConfigs(new EnvConfigs());
-    final var processFactory = new KubeProcessFactory(workerConfigs, "default", fabricClient, kubeHeartbeatUrl, false);
-    final ResourceRequirements resourceReqs = new ResourceRequirements()
-        .withCpuLimit("2.5")
-        .withCpuRequest("2.5")
-        .withMemoryLimit("2Gi")
-        .withMemoryRequest("2Gi");
-    final var allowedHosts = new AllowedHosts().withHosts(List.of("*"));
-    var dstIntegtationLauncher = new AirbyteIntegrationLauncher("1", 0, this.imageName, processFactory, resourceReqs,
-        allowedHosts, false, new EnvVariableFeatureFlags());
+    final AirbyteIntegrationLauncher dstIntegtationLauncher = getAirbyteIntegrationLauncher();
     final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig()
         .withDestinationConnectionConfiguration(this.config)
         .withState(null)
@@ -114,30 +115,19 @@ public class PerformanceTest {
       }
     });
 
-    log.info("Get datasource {}", this.dataSourceURL);
-    Path temp = Files.createTempFile("", ".tmp");
-    final URL url = new URL(this.dataSourceURL.trim());
-    ReadableByteChannel readableByteChannel = Channels.newChannel(url.openStream());
-    FileOutputStream fileOutputStream = new FileOutputStream(temp.toString());
-    FileChannel fileChannel = fileOutputStream.getChannel();
-    final var bytes = fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-    readableByteChannel.close();
-    fileOutputStream.close();
-    log.info("done saving datasource {} ({})", temp.toString(), bytes);
-    BufferedReader reader = new BufferedReader(new FileReader(temp.toString()));
+    final BufferedReader reader = loadFileFromUrl();
 
-    log.info("Reading datasource header");
-    final var columnsString = reader.readLine();
-    log.info("header line: {}", columnsString);
     final Pattern pattern = Pattern.compile(",");
-    final var columns = Arrays.asList(pattern.split(columnsString));
-    var totalBytes = 0.0;
-    var counter = 0L;
-    final var start = System.currentTimeMillis();
+    final String columnsString = reader.readLine();
+    log.info("header line: {}", columnsString);
+    final List<String> columns = Arrays.asList(pattern.split(columnsString));
+    double totalBytes = 0.0;
+    long counter = 0L;
+    final long start = System.currentTimeMillis();
 
     try (reader) {
       while (true) {
-        String line = reader.readLine();
+        final String line = reader.readLine();
         if (line == null) {
           log.info("End of datasource after {} lines", counter);
           break;
@@ -145,25 +135,12 @@ public class PerformanceTest {
         final List row;
         try {
           row = Arrays.asList(pattern.split(line));
-        } catch (NullPointerException npe) {
+        } catch (final NullPointerException npe) {
           log.warn("Bad line: {} {} {}", line, counter, totalBytes);
           continue;
         }
         assert (row.size() == columns.size());
-        StringBuilder sb = new StringBuilder();
-        sb.append("{");
-        Iterator<String> rowIterator = row.iterator();
-        Iterator<String> colIterator = columns.iterator();
-        ArrayList<String> combined = new ArrayList<>(columns.size());
-        while (colIterator.hasNext() && rowIterator.hasNext()) {
-          combined.add("\"%s\":\"%s\"".formatted(colIterator.next(), rowIterator.next()));
-        }
-        sb.append(String.join(",", combined));
-        sb.append("}");
-        final String recordString = sb.toString();
-        // log.info("*** RECORD: {}", recordString); // TEMP
-        totalBytes += recordString.length();
-        counter++;
+        final String recordString = buildRecordString(columns, row);
         final AirbyteMessage airbyteMessage = new AirbyteMessage()
             .withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage()
@@ -173,6 +150,8 @@ public class PerformanceTest {
         airbyteMessage.getRecord().setEmittedAt(start);
         destination.accept(airbyteMessage);
 
+        totalBytes += recordString.length();
+        counter++;
         if (counter > 0 && counter % MEGABYTE == 0) {
           log.info("current throughput({}): {} total MB {}", counter, (totalBytes / MEGABYTE) / ((System.currentTimeMillis() - start) / 1000.0),
               totalBytes / MEGABYTE);
@@ -187,16 +166,65 @@ public class PerformanceTest {
     destination.close();
     logListener.cancel(true);
     log.info("Test ended successfully");
+    computeThroughput(totalBytes, counter, start);
+  }
+
+  private void computeThroughput(final double totalBytes, final long counter, final long start) {
     final var end = System.currentTimeMillis();
     final var totalMB = totalBytes / MEGABYTE;
     final var totalTimeSecs = (end - start) / 1000.0;
     final var rps = counter / totalTimeSecs;
-
     log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
+  }
+
+  private AirbyteIntegrationLauncher getAirbyteIntegrationLauncher() throws UnknownHostException {
+    KubePortManagerSingleton.init(PORTS);
+
+    final KubernetesClient fabricClient = new DefaultKubernetesClient();
+    final String localIp = InetAddress.getLocalHost().getHostAddress();
+    final String kubeHeartbeatUrl = localIp + ":" + 9000;
+
+    final var workerConfigs = new WorkerConfigs(new EnvConfigs());
+    final var processFactory = new KubeProcessFactory(workerConfigs, "default", fabricClient, kubeHeartbeatUrl, false);
+    final ResourceRequirements resourceReqs = new ResourceRequirements()
+        .withCpuLimit("2.5")
+        .withCpuRequest("2.5")
+        .withMemoryLimit("2Gi")
+        .withMemoryRequest("2Gi");
+    final AllowedHosts allowedHosts = new AllowedHosts().withHosts(List.of("*"));
+    return new AirbyteIntegrationLauncher("1", 0, this.imageName, processFactory, resourceReqs,
+        allowedHosts, false, new EnvVariableFeatureFlags());
+  }
+
+  private String buildRecordString(final List<String> columns, final List row) {
+    final StringBuilder sb = new StringBuilder();
+    sb.append("{");
+    final Iterator<String> rowIterator = row.iterator();
+    final Iterator<String> colIterator = columns.iterator();
+    final ArrayList<String> combined = new ArrayList<>(columns.size());
+    while (colIterator.hasNext() && rowIterator.hasNext()) {
+      combined.add("\"%s\":\"%s\"".formatted(colIterator.next(), rowIterator.next()));
+    }
+    sb.append(String.join(",", combined));
+    sb.append("}");
+    return sb.toString();
+  }
+
+  private BufferedReader loadFileFromUrl() throws IOException {
+    log.info("Get datasource {}", this.dataSourceURL);
+    final Path temp = Files.createTempFile("", ".tmp");
+    final URL url = new URL(this.dataSourceURL.trim());
+    final ReadableByteChannel readableByteChannel = Channels.newChannel(url.openStream());
+    final FileOutputStream fileOutputStream = new FileOutputStream(temp.toString());
+    final FileChannel fileChannel = fileOutputStream.getChannel();
+    final long bytes = fileChannel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+    readableByteChannel.close();
+    fileOutputStream.close();
+    log.info("done saving datasource {} ({})", temp, bytes);
+    return new BufferedReader(new FileReader(temp.toString()));
   }
 
   private static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {
     return Jsons.object(Jsons.jsonNode(v1), klass);
   }
-
 }
