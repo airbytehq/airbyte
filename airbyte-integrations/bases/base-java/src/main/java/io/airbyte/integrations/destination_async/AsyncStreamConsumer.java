@@ -17,6 +17,11 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -25,6 +30,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AsyncStreamConsumer.class);
@@ -46,6 +52,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
   public AsyncStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                              final OnStartFunction onStart,
                              final OnCloseFunction2 onClose,
+                             final StreamDestinationFlusher flusher,
                              final ConfiguredAirbyteCatalog catalog,
                              final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
                              final BufferManager bufferManager) {
@@ -58,9 +65,9 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     this.catalog = catalog;
     this.isValidRecord = isValidRecord;
     bufferManagerEnqueue = bufferManager.getBufferManagerEnqueue();
-    uploadWorkers = new UploadWorkers(bufferManager.getBufferManagerDequeue());
     streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
     ignoredRecordsTracker = new IgnoredRecordsTracker();
+    uploadWorkers = new UploadWorkers(bufferManager.getBufferManagerDequeue(), flusher);
   }
 
   @Override
@@ -242,20 +249,70 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
    */
   static class UploadWorkers implements AutoCloseable {
 
-    private final BufferManagerDequeue bufferManagerDequeue;
+    private static final double TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = Runtime.getRuntime().maxMemory() * 0.8;
+    private static final double MAX_CONCURRENT_QUEUES = 10.0;
+    private static final double MAX_QUEUE_SIZE_BYTES = TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES / MAX_CONCURRENT_QUEUES;
+    private static final long MAX_TIME_BETWEEN_REC_MINS = 15L;
 
-    public UploadWorkers(final BufferManagerDequeue bufferManagerDequeue) {
+    private static final long SUPERVISOR_INITIAL_DELAY_SECS = 0L;
+    private static final long SUPERVISOR_PERIOD_SECS = 1L;
+    private final ScheduledExecutorService supervisorThread = Executors.newScheduledThreadPool(1);
+    // note: this queue size is unbounded.
+    private final Executor workerPool = Executors.newFixedThreadPool(5);
+    private final BufferManagerDequeue bufferManagerDequeue;
+    private final StreamDestinationFlusher flusher;
+
+    public UploadWorkers(final BufferManagerDequeue bufferManagerDequeue, final StreamDestinationFlusher flusher1) {
       this.bufferManagerDequeue = bufferManagerDequeue;
+      this.flusher = flusher1;
     }
 
     public void start() {
+      supervisorThread.scheduleAtFixedRate(this::retrieveWork, SUPERVISOR_INITIAL_DELAY_SECS, SUPERVISOR_PERIOD_SECS,
+          TimeUnit.SECONDS);
+    }
 
+    private void retrieveWork() {
+      // if the total size is > n, flush all buffers
+      if (bufferManagerDequeue.getTotalGlobalQueueSizeInMb() > TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES) {
+        flushAll();
+      }
+
+      // otherwise, if each individual stream has crossed a specific threshold, flush
+      for (Map.Entry<StreamDescriptor, LinkedBlockingQueue<AirbyteMessage>> entry : bufferManagerDequeue.getBuffers().entrySet()) {
+        final var stream = entry.getKey();
+        final var exceedSize = bufferManagerDequeue.getQueueSizeInMb(stream) >= MAX_QUEUE_SIZE_BYTES;
+        final var tooLongSinceLastRecord = bufferManagerDequeue.getTimeOfLastRecord(stream)
+            .isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES));
+        if (exceedSize || tooLongSinceLastRecord) {
+          flush(stream);
+        }
+      }
+    }
+
+    private void flushAll() {
+      for (final StreamDescriptor desc : bufferManagerDequeue.getBuffers().keySet()) {
+        flush(desc);
+      }
+    }
+
+    private void flush(final StreamDescriptor desc) {
+      workerPool.execute(() -> {
+        final var queue = bufferManagerDequeue.getBuffer(desc);
+        flusher.flush(desc, queue.stream());
+      });
     }
 
     @Override
     public void close() throws Exception {
 
     }
+
+  }
+
+  interface StreamDestinationFlusher {
+
+    void flush(StreamDescriptor decs, Stream<AirbyteMessage> stream);
 
   }
 
