@@ -8,6 +8,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_DECIMAL_DIGITS;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_IS_NULLABLE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
@@ -18,8 +19,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.JDBC_INDEX_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.JDBC_INDEX_NON_UNIQUE;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_DECIMAL_DIGITS;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
@@ -110,7 +110,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                                                                   final SyncMode syncMode,
                                                                   final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters as intermediate state messages are emitted.
+    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters
+    // as intermediate state messages are emitted.
     if (syncMode.equals(SyncMode.INCREMENTAL)) {
       final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
       return queryTable(database, String.format("SELECT %s FROM %s ORDER BY %s ASC",
@@ -118,7 +119,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
           getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField),
           tableName, schemaName);
     } else {
-      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering of the records.
+      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering
+      // of the records.
       return queryTable(database, String.format("SELECT %s FROM %s",
           enquoteIdentifierList(columnNames, getQuoteString()),
           getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())), tableName, schemaName);
@@ -230,7 +232,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
    * @return Essential information about a column to determine which table it belongs to and its type.
    */
   private JsonNode getColumnMetadata(final ResultSet resultSet) throws SQLException {
-    return Jsons.jsonNode(ImmutableMap.<String, Object>builder()
+    final var fieldMap = ImmutableMap.<String, Object>builder()
         // we always want a namespace, if we cannot get a schema, use db name.
         .put(INTERNAL_SCHEMA_NAME,
             resultSet.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)
@@ -240,8 +242,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         .put(INTERNAL_COLUMN_TYPE, resultSet.getString(JDBC_COLUMN_DATA_TYPE))
         .put(INTERNAL_COLUMN_TYPE_NAME, resultSet.getString(JDBC_COLUMN_TYPE_NAME))
         .put(INTERNAL_COLUMN_SIZE, resultSet.getInt(JDBC_COLUMN_SIZE))
-        .put(INTERNAL_IS_NULLABLE, resultSet.getString(JDBC_IS_NULLABLE))
-        .build());
+        .put(INTERNAL_IS_NULLABLE, resultSet.getString(JDBC_IS_NULLABLE));
+    if (resultSet.getString(JDBC_DECIMAL_DIGITS) != null) {
+      fieldMap.put(INTERNAL_DECIMAL_DIGITS, resultSet.getString(JDBC_DECIMAL_DIGITS));
+    }
+    return Jsons.jsonNode(fieldMap.build());
   }
 
   @Override
@@ -434,6 +439,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
   /**
    * {@inheritDoc}
+   *
    * @param database database instance
    * @param catalog schema of the incoming messages.
    * @throws SQLException
@@ -444,24 +450,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     LOGGER.info("Data source product recognized as {}:{}",
         database.getMetaData().getDatabaseProductName(),
         database.getMetaData().getDatabaseProductVersion());
-
-    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      final String streamName = stream.getStream().getName();
-      final String schemaName = stream.getStream().getNamespace();
-      final ResultSet indexInfo = database.getMetaData().getIndexInfo(null,
-          schemaName,
-          streamName,
-          false,
-          false);
-      LOGGER.info("Discovering indexes for schema \"{}\", table \"{}\"", schemaName, streamName);
-      while (indexInfo.next()) {
-        LOGGER.info("Index name: {}, Column: {}, Unique: {}",
-            indexInfo.getString(JDBC_INDEX_NAME),
-            indexInfo.getString(JDBC_COLUMN_COLUMN_NAME),
-            !indexInfo.getBoolean(JDBC_INDEX_NON_UNIQUE));
-      }
-      indexInfo.close();
-    }
   }
 
   @Override

@@ -5,7 +5,6 @@
 
 import json
 from abc import ABC, abstractmethod
-from copy import deepcopy
 from datetime import datetime, timedelta
 from functools import cached_property, lru_cache
 from traceback import format_exc
@@ -43,10 +42,9 @@ class FileStream(Stream, ABC):
         "jsonl": JsonlParser,
     }
     # TODO: make these user configurable in spec.json
-    ab_additional_col = "_ab_additional_properties"
     ab_last_mod_col = "_ab_source_file_last_modified"
     ab_file_name_col = "_ab_source_file_url"
-    airbyte_columns = [ab_additional_col, ab_last_mod_col, ab_file_name_col]
+    airbyte_columns = [ab_last_mod_col, ab_file_name_col]
     datetime_format_string = "%Y-%m-%dT%H:%M:%SZ"
     # In version 2.0.1 the datetime format has been changed. Since the state may still store values in the old datetime format,
     # we need to support both of them for a while
@@ -179,15 +177,20 @@ class FileStream(Stream, ABC):
 
     @property
     def _schema(self) -> Mapping[str, Any]:
-        extra_fields = {self.ab_additional_col: "object", self.ab_last_mod_col: "string", self.ab_file_name_col: "string"}
+        extra_fields = {
+            self.ab_last_mod_col: {"type": "string"},
+            self.ab_file_name_col: {"type": "string"},
+        }
         schema = self._raw_schema
         return {**schema, **extra_fields}
 
     def get_json_schema(self) -> Mapping[str, Any]:
         # note: making every non-airbyte column nullable for compatibility
-        properties: Mapping[str, Any] = {
-            column: {"type": ["null", typ]} if column not in self.airbyte_columns else {"type": typ} for column, typ in self._schema.items()
-        }
+        properties: Mapping[str, Any] = (
+            {column: {"type": ["null", typ]} if column not in self.airbyte_columns else typ for column, typ in self._schema.items()}
+            if self._format["filetype"] != "avro"
+            else self._schema
+        )
         properties[self.ab_last_mod_col]["format"] = "date-time"
         return {"type": "object", "properties": properties}
 
@@ -230,20 +233,13 @@ class FileStream(Stream, ABC):
         :param target_columns: list of column names to mutate this record into (obtained via self._schema.keys() as of now)
         :return: mutated record with columns lining up to target_columns
         """
-        compare_columns = [c for c in target_columns if c not in [self.ab_last_mod_col, self.ab_file_name_col]]
-        # check if we're already matching to avoid unnecessary iteration
-        if set(list(record.keys()) + [self.ab_additional_col]) == set(compare_columns):
-            record[self.ab_additional_col] = {}
-            return record
-        # missing columns
-        for c in [col for col in compare_columns if col != self.ab_additional_col]:
+        compare_columns = [c for c in target_columns if c not in [self.ab_last_mod_col, self.ab_file_name_col]]  # missing columns
+        for c in compare_columns:
             if c not in record.keys():
                 record[c] = None
-        # additional columns
-        record[self.ab_additional_col] = {c: deepcopy(record[c]) for c in record.keys() if c not in compare_columns}
-        for c in record[self.ab_additional_col]:
-            del record[c]
-
+        for c in record.copy():
+            if c not in compare_columns:
+                del record[c]
         return record
 
     def _add_extra_fields_from_map(self, record: Dict[str, Any], extra_map: Mapping[str, Any]) -> Mapping[str, Any]:
