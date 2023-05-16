@@ -11,10 +11,9 @@ source of information and services for millions of visitors to federal lands,
 historic sites, museums, waterways and other activities and destinations.
 
 This source retrieves data from the [Recreation API](https://ridb.recreation.gov/landing).
+
 ### Output schema
-
 This source is capable of syncing the following streams:
-
 * Activities
 * Campsites
 * Events
@@ -32,8 +31,8 @@ This source is capable of syncing the following streams:
 
 | Feature           | Supported? \(Yes/No\) | Notes |
 |:------------------|:----------------------|:------|
-| Full Refresh Sync | Yes                   |       |
-| Incremental Sync  | No                    |       |
+| Full Refresh Sync  | Yes                   |       |
+| Incremental Sync   | No                    |       |
 
 ### Performance considerations
 
@@ -48,12 +47,15 @@ The Recreation API has a rate limit of 50 requests per minute.
 
 ### Setup guide
 
-The following fields are required fields for the connector to work:
+To set up the Recreation Source connector in Airbyte, follow these steps:
+
+1. In the **Airbyte UI**, navigate to the **Recreation Source** connector configuration page.
+2. Input the following fields in the configuration form:
 
 - `api_key`: Your Recreation API key.
 
-## Changelog
+3. Click **Test Connection** to confirm that the API key has been authorized.
+4. Once the connection is successful, click **Create** to save the configuration.
+5. You are now ready to sync data from the Recreation API.
 
-| Version | Date       | Pull Request | Subject      |
-|:--------|:-----------|:-------------|:-------------|
-| 0.1.0   | 2022-11-02 | TBA          | First Commit |
+For more information on the Recreation API, see the [documentation](https://ridb.recreation.gov/landing).
