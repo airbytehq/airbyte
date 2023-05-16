@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 import pytest
 import responses
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_github.source import SourceGithub
 
 
@@ -165,3 +166,9 @@ def test_config_validation(repos_config, expected):
 def tests_get_and_prepare_repositories_config(config, expected):
     actual = SourceGithub._get_and_prepare_repositories_config(config)
     assert actual == expected
+
+
+def test_streams_no_streams_available_error():
+    with pytest.raises(AirbyteTracedException) as e:
+        SourceGithub().streams(config={"access_token": "test_token", "repository": "airbytehq/airbyte-test"})
+    assert str(e.value) == "No streams available. Please check permissions"
