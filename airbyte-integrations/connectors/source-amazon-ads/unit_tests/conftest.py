@@ -177,8 +177,3 @@ def attribution_report_response():
         return json.dumps(responses[report_type])
 
     return _internal
-
-
-@fixture
-def attribution_report_bad_response():
-    return "bad response"
