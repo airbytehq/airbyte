@@ -356,7 +356,7 @@ async def export_container_to_tarball(
         return None, None
 
 
-def sanitize_gcs_credentials(raw_value: str) -> str:
+def sanitize_gcs_credentials(raw_value: Optional[str]) -> Optional[str]:
     """Try to parse the raw string input that should contain a json object with the GCS credentials.
     It will raise an exception if the parsing fails and help us to fail fast on invalid credentials input.
 
@@ -366,4 +366,6 @@ def sanitize_gcs_credentials(raw_value: str) -> str:
     Returns:
         str: The raw value string if it was successfully parsed.
     """
+    if raw_value is None:
+        return None
     return json.dumps(json.loads(raw_value))
