@@ -41,12 +41,12 @@
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 1.4.0
+  dockerImageTag: 1.4.1
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   icon: bigquery.svg
   normalizationConfig:
     normalizationRepository: airbyte/normalization
-    normalizationTag: 0.4.1
+    normalizationTag: 0.4.3
     normalizationIntegrationType: bigquery
   supportsDbt: true
   resourceRequirements:
@@ -99,7 +99,7 @@
   releaseStage: alpha
   normalizationConfig:
     normalizationRepository: airbyte/normalization-clickhouse
-    normalizationTag: 0.4.1
+    normalizationTag: 0.4.3
     normalizationIntegrationType: clickhouse
   supportsDbt: false
 - name: Cloudflare R2
@@ -140,7 +140,7 @@
 - name: E2E Testing
   destinationDefinitionId: 2eb65e87-983a-4fd7-b3e3-9d9dc6eb8537
   dockerRepository: airbyte/destination-e2e-test
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/e2e-test
   icon: airbyte.svg
 - destinationDefinitionId: 68f351a7-2745-4bef-ad7f-996b8e51bb8c
@@ -235,7 +235,7 @@
   releaseStage: alpha
   normalizationConfig:
     normalizationRepository: airbyte/normalization-mssql
-    normalizationTag: 0.4.1
+    normalizationTag: 0.4.3
     normalizationIntegrationType: mssql
   supportsDbt: true
 - name: MeiliSearch
@@ -261,7 +261,7 @@
   releaseStage: alpha
   normalizationConfig:
     normalizationRepository: airbyte/normalization-mysql
-    normalizationTag: 0.4.1
+    normalizationTag: 0.4.3
     normalizationIntegrationType: mysql
   supportsDbt: true
 - name: Oracle
@@ -273,7 +273,7 @@
   releaseStage: alpha
   normalizationConfig:
     normalizationRepository: airbyte/normalization-oracle
-    normalizationTag: 0.4.1
+    normalizationTag: 0.4.3
     normalizationIntegrationType: oracle
   supportsDbt: true
 - name: Postgres
@@ -285,7 +285,7 @@
   releaseStage: alpha
   normalizationConfig:
     normalizationRepository: airbyte/normalization
-    normalizationTag: 0.4.1
+    normalizationTag: 0.4.3
     normalizationIntegrationType: postgres
   supportsDbt: true
 - name: Pulsar
@@ -317,7 +317,7 @@
   icon: redshift.svg
   normalizationConfig:
     normalizationRepository: airbyte/normalization-redshift
-    normalizationTag: 0.4.1
+    normalizationTag: 0.4.3
     normalizationIntegrationType: redshift
   supportsDbt: true
   resourceRequirements:
@@ -377,12 +377,12 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 1.0.2
+  dockerImageTag: 1.0.1
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   icon: snowflake.svg
   normalizationConfig:
     normalizationRepository: airbyte/normalization-snowflake
-    normalizationTag: 0.4.1
+    normalizationTag: 0.4.3
     normalizationIntegrationType: snowflake
   supportsDbt: true
   resourceRequirements:
@@ -436,7 +436,7 @@
   releaseStage: alpha
   normalizationConfig:
     normalizationRepository: airbyte/normalization-tidb
-    normalizationTag: 0.4.1
+    normalizationTag: 0.4.3
     normalizationIntegrationType: tidb
   supportsDbt: true
 - name: Typesense
