@@ -104,7 +104,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     // assume the closing upload workers will flush all accepted records.
     onClose.call();
     uploadWorkers.close();
-    bufferManager.close();
+//    bufferManager.close();
     ignoredRecordsTracker.report();
     LOGGER.info("{} closed.", AsyncStreamConsumer.class);
   }
@@ -217,12 +217,13 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
       // todo (cgardens) - replace this with fancy logic to make sure we don't oom.
       if (!buffers.containsKey(streamDescriptor)) {
-        buffers.put(streamDescriptor, new MemoryBoundedLinkedBlockingQueue<>(10)); // todo
+        buffers.put(streamDescriptor, new MemoryBoundedLinkedBlockingQueue<>(1024 * 1024 * 50)); // todo
       }
 
       // todo (cgardens) - handle estimating state message size.
       final long messageSize = message.getType() == Type.RECORD ? recordSizeEstimator.getEstimatedByteSize(message.getRecord()) : 1024;
-      buffers.get(streamDescriptor).offer(message, messageSize);
+      var queue = buffers.get(streamDescriptor);
+      queue.offer(message, messageSize);
     }
 
   }
@@ -306,6 +307,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     }
 
     private void flushAll() {
+      log.info("Flushing all buffers..");
       for (final StreamDescriptor desc : bufferManagerDequeue.getBuffers().keySet()) {
         flush(desc);
       }
@@ -313,10 +315,22 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
     private void flush(final StreamDescriptor desc) {
       workerPool.submit(() -> {
+        log.info("Worker picked up work..");
         final var queue = bufferManagerDequeue.getBuffer(desc);
         // todo(charles): should not need to know about memory blocking nonsense.
         try {
-          flusher.flush(desc, queue.stream().map(MemoryBoundedLinkedBlockingQueue.MemoryItem::item));
+          log.info("Attempting to read from queue {}..", desc);
+          log.info("before size: {}", queue.size());
+          var s = Stream.generate(() -> {
+            try {
+              return queue.take();
+            } catch (InterruptedException e) {
+              throw new RuntimeException(e);
+            }
+          }).map(MemoryBoundedLinkedBlockingQueue.MemoryItem::item);
+          flusher.flush(desc, s);
+          log.info("after size: {}", queue.size());
+          log.info("Worker finished flushing..");
         } catch (final Exception e) {
           throw new RuntimeException(e);
         }
@@ -331,6 +345,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
       var supervisorShut = supervisorThread.awaitTermination(5L, TimeUnit.MINUTES);
       log.info("Supervisor shut status: {}", supervisorShut);
 
+      log.info("Starting worker pool shutdown..");
       workerPool.shutdown();
       var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
       log.info("Workers shut status: {}", workersShut);
