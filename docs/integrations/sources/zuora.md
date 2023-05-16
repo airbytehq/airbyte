@@ -18,7 +18,7 @@ The discovering of Zuora Account objects schema may take a while, if you add the
 
 ### Note:
 
-Some of the Zuora Objects may not be available for sync due to limitations of Zuora Supscription Plan, Permissions. For details refer to the [Availability of Data Source Objects](https://knowledgecenter.zuora.com/DC_Developers/M_Export_ZOQL) section in the Zuora documentation.
+Some of the Zuora Objects may not be available for sync due to limitations of Zuora Subscription Plan, Permissions. For details refer to the [Availability of Data Source Objects](https://knowledgecenter.zuora.com/DC_Developers/M_Export_ZOQL) section in the Zuora documentation.
 
 ### Data type mapping
 
@@ -51,31 +51,21 @@ Some of the Zuora Objects may not be available for sync due to limitations of Zu
 
 Any other data type not listed in the table above will be treated as `string`.
 
-### Features
-
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Overwrite Sync | Yes |  |
-| Full Refresh Append Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Incremental - Append + Deduplication Sync | Yes |  |
-| Namespaces | No |  |
-
-## Supported Environments for Zuora
+## Supported environments for Zuora
 
 | Environment | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
-| Production | Yes | Select from exising options while setup |
-| Sandbox | Yes | Select from exising options while setup |
+| Production | Yes | Select from existing options while setup |
+| Sandbox | Yes | Select from existing options while setup |
 
-## Supported Data Query options
+## Supported data query options
 
 | Option | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | LIVE | Yes | Run data queries against Zuora live transactional databases |
-| UNLIMITED | Yes | Run data queries against an optimized, replicated database at 12 hours freshness for high volume extraction use cases (Early Adoption, additionall access required, contact [Zuora Support](http://support.zuora.com/hc/en-us) in order to request this feature enabled for your account beforehand.) |
+| UNLIMITED | Yes | Run data queries against an optimized, replicated database at 12 hours freshness for high-volume extraction use cases (Early Adoption, additional access required, contact [Zuora Support](http://support.zuora.com/hc/en-us) in order to request this feature enabled for your account beforehand.) |
 
-## List of Supported Environments for Zuora
+## List of supported endpoints for Zuora
 
 ### Production
 
@@ -101,54 +91,42 @@ Any other data type not listed in the table above will be treated as `string`.
 | :--- | :--- |
 | US Performance Test | rest.pt1.zuora.com |
 
-For more information about available environments, please visit [this page](https://knowledgecenter.zuora.com/BB_Introducing_Z_Business/D_Zuora_Environments)
+For more information about available endpoints, please visit [this page](https://knowledgecenter.zuora.com/BB_Introducing_Z_Business/D_Zuora_Environments)
 
 ### Performance considerations
 
-If you experience the long time for sync operation, please consider:
+If you experience a long time for sync operation, please consider:
 
 * to increase the `window_in_days` parameter inside Zuora source configuration
 * use the smaller date range by tuning `start_date` parameter.
 
 ### Note
 
-Usually, the very first sync operation for all of the objects inside Zuora account takes up to 25-45-60 min, the more data you have, the more time you'll need.
+Usually, the very first sync operation for all of the objects inside Zuora account may take up to 25-45-60 min, depending on the amount of data you have.
 
 ## Getting started
 
 ### Create an API user role
 
-1. Log in to your `Zuora acccount`.
-2. In the top right corner of the Zuora dashboard, select `Settings` &gt; `Administration Settings`.
-3. Select `Manage User Roles`.
-4. Select `Add new role` to create a new role, and fill in neccessary information up to the form.
+1. Log in to your Zuora account.
+2. In the top right corner of the Zuora dashboard, select **Settings** &gt; **Administration Settings**.
+3. Select **Manage User Roles**.
+4. Select **Add new role** to create a new role, and fill in necessary information up to the form.
 
 ### Assign the role to a user
 
-1. From the `administration` page, click `Manage Users`.
-2. Click `add single user`.
-3. Create a user and assign it to the role you created in `Create an API user role` section.
+1. From the administration page, click **Manage Users**.
+2. Click **Add Single User**.
+3. Create a user and assign it to the role you created in the **Create an API user role** section.
 4. You should receive an email with activation instructions. Follow them to activate your API user.
 
-   For more information visit [Create an API User page](https://knowledgecenter.zuora.com/Billing/Tenant_Management/A_Administrator_Settings/Manage_Users/Create_an_API_User)
+For more information, visit the [Create an API User page](https://knowledgecenter.zuora.com/Billing/Tenant_Management/A_Administrator_Settings/Manage_Users/Create_an_API_User).
 
-### Create Client ID and Client Secret
+### Create client ID and client secret
 
-1. From the `administration` page, click `Manage Users`.
-2. Click on User Name of the target user.
-3. Enter a client name and description and click `create`.
+1. From the administration page, click **Manage Users**.
+2. Click on the User Name of the target user.
+3. Enter a client name and description and click **Create**.
 4. A pop-up will open with your Client ID and Client Secret.
 
-   Make a note of your Client ID and Client Secret because they will never be shown again. You will need them to configure Airbyte Zuora Connector.
-
-5. You're ready to set up Zuora connector in Airbyte, using created `Client ID` and `Client Secret`!
-
-## Changelog
-
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.3 | 2021-10-16 | [7053](https://github.com/airbytehq/airbyte/pull/7093) | Added support of `Unlimited` option for `Data Query` |
-| 0.1.2 | 2021-10-11 | [6960](https://github.com/airbytehq/airbyte/pull/6960) | Change minimum value for `Window_in_days` to 1, instead of 30 |
-| 0.1.1 | 2021-10-01 | [6575](https://github.com/airbytehq/airbyte/pull/6575) | Added OAuth support for Airbyte Cloud |
-| 0.1.0 | 2021-08-01 | [4661](https://github.com/airbytehq/airbyte/pull/4661) | Initial release of Native Zuora connector for Airbyte |
-
+   Make a note of your Client ID and Client Secret because they will never be shown again. You will need them to configure
