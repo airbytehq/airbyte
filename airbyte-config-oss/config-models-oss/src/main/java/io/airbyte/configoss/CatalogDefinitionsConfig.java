@@ -10,7 +10,7 @@ public class CatalogDefinitionsConfig {
 
   private static final String SEED_SUBDIRECTORY = "seed/";
   private static final String ICON_SUBDIRECTORY = "icons/";
-  private static final String LOCAL_CONNECTOR_CATALOG_FILE_NAME = "oss_catalog.json";
+  private static final String LOCAL_CONNECTOR_CATALOG_FILE_NAME = "oss_registry.json";
   private static final String DEFAULT_LOCAL_CONNECTOR_CATALOG_PATH =
       SEED_SUBDIRECTORY + LOCAL_CONNECTOR_CATALOG_FILE_NAME;
 
