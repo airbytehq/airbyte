@@ -95,7 +95,7 @@ Airbyte converts any invalid characters into `_` characters when writing data. H
 ## Data type map
 
 | Airbyte type                        | BigQuery type | BigQuery denormalized type |
-|:------------------------------------|:--------------|:---------------------------|
+| :---------------------------------- | :------------ | :------------------------- |
 | DATE                                | DATE          | DATE                       |
 | STRING (BASE64)                     | STRING        | STRING                     |
 | NUMBER                              | FLOAT         | NUMBER                     |
