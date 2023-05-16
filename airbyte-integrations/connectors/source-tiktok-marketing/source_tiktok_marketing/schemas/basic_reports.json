@@ -156,6 +156,12 @@
         "cta_purchase": {
           "type": ["null", "string"]
         },
+        "cta_conversion": {
+          "type": ["null", "string"]
+        },
+        "vta_conversion": {
+          "type": ["null", "string"]
+        },
         "total_pageview": {
           "type": ["null", "string"]
         }

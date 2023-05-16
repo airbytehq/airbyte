@@ -670,7 +670,9 @@ class BasicReports(IncrementalTiktokStream, ABC):
                 "total_onsite_shopping_value",
                 "onsite_shopping",
                 "vta_purchase",
+                "vta_conversion",
                 "cta_purchase",
+                "cta_conversion",
                 "total_pageview",
             ])
 
