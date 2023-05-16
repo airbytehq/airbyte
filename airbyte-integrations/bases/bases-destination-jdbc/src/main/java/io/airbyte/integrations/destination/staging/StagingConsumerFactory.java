@@ -22,6 +22,7 @@ import io.airbyte.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.integrations.destination.record_buffer.FlushBufferFunction;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
+import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -81,6 +82,26 @@ public class StagingConsumerFactory {
         onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData),
         catalog,
         stagingOperations::isValidData);
+  }
+
+  public AirbyteMessageConsumer createAsync(final Consumer<AirbyteMessage> outputRecordCollector,
+                                            final JdbcDatabase database,
+                                            final StagingOperations stagingOperations,
+                                            final NamingConventionTransformer namingResolver,
+                                            final BufferCreateFunction onCreateBuffer,
+                                            final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final boolean purgeStagingData) {
+    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
+
+    return new AsyncStreamConsumer(
+            outputRecordCollector,
+            onStartFunction(database, stagingOperations, writeConfigs),
+            // todo (cgardens) - wrapping the old close function to avoid more code churn.
+            () -> onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData).accept(false),
+            catalog,
+            stagingOperations::isValidData,
+            new AsyncStreamConsumer.BufferManager());
   }
 
   /**
