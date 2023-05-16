@@ -1,4 +1,4 @@
-use std::{pin::Pin, sync::{Arc}, ops::DerefMut, time::{Instant, Duration}};
+use std::{pin::Pin, sync::{Arc}, ops::DerefMut, time::Instant};
 
 use flow_cli_common::LogArgs;
 use futures::{channel::{oneshot,mpsc}, stream, StreamExt, TryStreamExt};

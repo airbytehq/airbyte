@@ -53,7 +53,9 @@ fn normalize_to_rfc3339(doc: &mut serde_json::Value, ptr: doc::Pointer) {
             match Format::DateTime.validate(v) {
                 ValidationResult::Valid => (), // Already a valid date
                 _ => {
-                    let parsed = parse(v);
+                    let parsed = parse(v).or_else(|_|
+                        chrono::DateTime::parse_from_str(v, "%Y-%m-%dT%H:%M:%S%.3f%z").map(|d| d.with_timezone(&chrono::Utc))
+                    );
                     if let Ok(parsed) = parsed {
                         let formatted = parsed.to_rfc3339_opts(SecondsFormat::AutoSi, true);
                             ptr.create_value(doc)
@@ -160,14 +162,29 @@ mod tests {
                         "created": {
                             "type": "string",
                             "format": "date-time"
+                        },
+                        "nested": {
+                            "type": "object",
+                            "properties": {
+                                "x": {
+                                    "type": ["string", "null"],
+                                    "format": "date-time"
+                                }
+                            }
                         }
                     }
                 }),
                 serde_json::json!({
-                    "created": "2023-01-30 02:34:15"
+                    "created": "2023-01-30 02:34:15",
+                    "nested": {
+                        "x": "2020-03-25T21:03:18.000+0000"
+                    }
                 }),
                 serde_json::json!({
                     "created": "2023-01-30T02:34:15Z",
+                    "nested": {
+                        "x": "2020-03-25T21:03:18Z"
+                    }
                 }),
             )
         ];
