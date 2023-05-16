@@ -16,6 +16,8 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+
+import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -301,7 +303,11 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
       workerPool.execute(() -> {
         final var queue = bufferManagerDequeue.getBuffer(desc);
         // todo(charles): should not need to know about memory blocking nonsense.
-        flusher.flush(desc, queue.stream().map(MemoryBoundedLinkedBlockingQueue.MemoryItem::item));
+        try {
+          flusher.flush(desc, queue.stream().map(MemoryBoundedLinkedBlockingQueue.MemoryItem::item));
+        } catch (final Exception e) {
+          throw new RuntimeException(e);
+        }
       });
     }
 
@@ -314,7 +320,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
   public interface StreamDestinationFlusher {
 
-    void flush(StreamDescriptor decs, Stream<AirbyteMessage> stream);
+    void flush(StreamDescriptor decs, Stream<AirbyteMessage> stream) throws Exception;
 
   }
 
