@@ -26,7 +26,7 @@
         "oneOf": [
           {
             "type": "object",
-            "title": "OAuth2.0"
+            "title": "OAuth2.0",
             "required": [
               "auth_type",
               "client_id",
