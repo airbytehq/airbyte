@@ -9,45 +9,57 @@ This source can sync data for the [Commercetools API](https://docs.commercetools
 ### Output schema
 
 This Source is capable of syncing the following core Streams:
-
-* [Customers](https://docs.commercetools.com/api/projects/customers)
-* [Orders](https://docs.commercetools.com/api/projects/orders)
-* [Products](https://docs.commercetools.com/api/projects/products)
-* [DiscountCodes](https://docs.commercetools.com/api/projects/discountCodes)
-* [Payments](https://docs.commercetools.com/api/projects/payments)
+- Customers
+- Orders
+- Products
+- DiscountCodes
+- Payments
 
 ### Data type mapping
 
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
-
-### Features
-
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Namespaces | No |  |
-
-### Performance considerations
-
-Commercetools has some [rate limit restrictions](https://docs.commercetools.com/api/limits).
+| Integration Type | Airbyte Type | Notes                    |
+|------------------|--------------|-------------------------|
+| `string`         | `string`     |                         |
+| `number`         | `number`     |                         |
+| `array`          | `array`      |                         |
+| `object`         | `object`     |                         |
 
 ## Getting started
 
-1. Create an API Client in the admin interface
-2. Decide scopes for the API client. Airbyte only needs read-level access.
-    * Note: The UI will show all possible data sources and will show errors when syncing if it doesn't have permissions to access a resource.
-3. The `projectKey` of the store, the generated `client_id` and `client_secret` are required for the integration
-5. You're ready to set up Commercetools in Airbyte!
+Here are the steps to set up Commercetools as an Airbyte Source Connector.
 
+1. Log in to the [Commercetools Merchant Center](https://login.commercetools.com/signin).
 
-## Changelog
+2. Click on the **API Clients** link on the sidebar navigation menu.
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.0  | 2021-08-19 | [5957](https://github.com/airbytehq/airbyte/pull/5957) | Initial Release. Source Commercetools |
+3. Click the **Create new client** button.
+
+4. Enter a friendly **Client Name**.
+
+5. Make sure the **Grant Type** is set to **Confidential**.
+
+6. In the **Scopes** section, select the needed permissions. For Airbyte, only the **View Data** permission is needed.
+
+7. Click **Create API Client**.
+
+8. You will see a page with your client's **Client ID** and **Client Secret**. Copy these values, as you will need them later.
+
+9. In the Airbyte UI, in the Commercetools configuration screen, enter the following values:
+
+     - **Region**: The region of the platform. Examples: `"us-central1"`, `"australia-southeast1"`.
+     - **Host**: The cloud provider your shop is hosted. Choose from `"gcp"`, `"aws"`.
+     - **Start Date**: The date you would like to replicate data. Format: `YYYY-MM-DD`.
+     - **Project Key**: The project key.
+
+10. In the `credentials` field enter a JSON object with the following structure:
+
+```json
+{
+  "client_id": "your_client_id",
+  "client_secret": "your_client_secret"
+}
+```
+
+11. Save the configuration.
+
+You are now ready to set up Commercetools in Airbyte!
