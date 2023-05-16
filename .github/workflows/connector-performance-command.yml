@@ -148,6 +148,7 @@ jobs:
           connector_name=$(echo $CONN | cut -d / -f 2)
           kind load docker-image airbyte/$connector_name:dev --name chart-testing
           kind load docker-image airbyte/$HARNESS_TYPE:dev --name chart-testing
+          # envsubst requires variables to be exported
           export CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
           export DATASET=$DS
           export HARNESS=$HARNESS_TYPE
