@@ -57,12 +57,11 @@ public class IncrementalUtils {
   }
 
   /**
-   * Comparator where if original is less than candidate then value less than 0, if greater than
-   * candidate then value greater than 0, else 0
+   * Comparator where if original is less than candidate then value less than 0, if greater than candidate then value greater than 0, else 0
    *
-   * @param original the first value to compare
+   * @param original  the first value to compare
    * @param candidate the second value to compare
-   * @param type primitive type used to determine comparison
+   * @param type      primitive type used to determine comparison
    * @return
    */
   public static int compareCursors(final String original, final String candidate, final JsonSchemaPrimitive type) {
@@ -94,4 +93,47 @@ public class IncrementalUtils {
     }
   }
 
+  public static int compareCtid(final String original, final String candidate) {
+    if (original == null && candidate == null) {
+      return 0;
+    }
+
+    if (candidate == null) {
+      return 1;
+    }
+
+    if (original == null) {
+      return -1;
+    }
+
+    final int originalBlock = getBlockNumber(original);
+    final int candidateBlock = getBlockNumber(candidate);
+
+    final int originalIndex = getIndex(original);
+    final int candidateIndex = getIndex(candidate);
+
+
+    if (originalBlock < candidateBlock) {
+      return 1;
+    } else if (originalBlock > candidateBlock) {
+      return -1;
+    } else {
+      if (originalIndex < candidateIndex) {
+        return 1;
+      } else if (originalIndex > candidateIndex) {
+        return -1;
+      } else {
+        return 0;
+      }
+    }
+  }
+
+
+  private static int getBlockNumber(String ctid) {
+    return Integer.parseInt(ctid.replaceAll("[\\[\\](){}]", "").split(",")[0].trim());
+  }
+
+  private static int getIndex(String ctid) {
+    return Integer.parseInt(ctid.replaceAll("[\\[\\](){}]", "").split(",")[1].trim());
+  }
 }

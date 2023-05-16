@@ -87,7 +87,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   }
 
   private String getCursorCandidate(final AirbyteMessage message) {
-    final String cursorCandidate = message.getRecord().getData().get(cursorField).asText();
+    final String cursorCandidate = message.getRecord().getData().get("ctid").asText();
     return (cursorCandidate != null ? replaceNull(cursorCandidate) : null);
   }
 
@@ -133,7 +133,10 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
         final AirbyteMessage message = messageIterator.next();
         if (message.getRecord().getData().hasNonNull(cursorField)) {
           final String cursorCandidate = getCursorCandidate(message);
-          final int cursorComparison = IncrementalUtils.compareCursors(currentMaxCursor, cursorCandidate, cursorType);
+          LOGGER.info("current max cursor +++{}", currentMaxCursor);
+          LOGGER.info("CURSOR CANDIDATE +++{}", cursorCandidate);
+//          final int cursorComparison = IncrementalUtils.compareCursors(currentMaxCursor, cursorCandidate, cursorType);
+          final int cursorComparison = IncrementalUtils.compareCtid(currentMaxCursor, cursorCandidate);
           if (cursorComparison < 0) {
             // Update the current max cursor only when current max cursor < cursor candidate from the message
             if (stateEmissionFrequency > 0 && !Objects.equals(currentMaxCursor, initialCursor) && messageIterator.hasNext()) {
