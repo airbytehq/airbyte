@@ -4,16 +4,21 @@ This page contains the setup guide and reference information for the Delighted s
 
 ## Prerequisites
 
-To set up the Delighted source connector, you'll need the [Delighted API key](https://app.delighted.com/docs/api#authentication).
+To set up the Delighted source connector, you'll need the [Delighted API key](https://app.delighted.com/docs/api#authentication). If you're not sure how to generate an API key in Delighted, please follow these steps:
+
+1. Log into your Delighted account at https://delighted.com/.
+2. Click on your name in the top right corner and select "Account" from the dropdown menu.
+3. Click on the "API" tab.
+4. Click "Generate new API key".
+5. Copy the generated key to your clipboard.
 
 ## Set up the Delighted connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, enter the name for the Delighted connector and select **Delighted** from the Source type dropdown.
-4. For **Since**, enter the date in a Unix Timestamp format. The data added on and after this date will be replicated.
-5. For **API Key**, enter your [Delighted `API Key`](https://delighted.com/account/api).
-6. Click **Set up source**.
+1. In the Airbyte UI, navigate to the Delighted configuration form.
+2. For **Since**, enter the date from which you'd like to replicate the data in the format `yyyy-mm-ddThh:mm:ss` (e.g., `2022-01-01T00:00:00`).
+3. For **API Key**, paste in the API key you generated from your Delighted account.
+4. Click **Test** to verify the connection between Airbyte and Delighted.
+5. If the connection test completes successfully, click **Save** to save and activate the Delighted connector.
 
 ## Supported sync modes
 
