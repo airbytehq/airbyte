@@ -26,6 +26,7 @@ import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStra
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
+import io.airbyte.integrations.destination_async.StreamDestinationFlusher;
 import io.airbyte.protocol.models.v0.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -281,14 +282,14 @@ public class StagingConsumerFactory {
     }
     if (!conflictingStreams.isEmpty()) {
       final String message = String.format(
-              "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using ${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
-              conflictingStreams.stream().map(config -> config.getNamespace() + "." + config.getStreamName()).collect(joining(", ")));
+          "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using ${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
+          conflictingStreams.stream().map(config -> config.getNamespace() + "." + config.getStreamName()).collect(joining(", ")));
       throw new ConfigErrorException(message);
     }
     return streamDescToWriteConfig;
   }
 
-  class StagingAsyncFlusher implements AsyncStreamConsumer.StreamDestinationFlusher {
+  class StagingAsyncFlusher implements StreamDestinationFlusher {
 
     private final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig;
     private final StagingOperations stagingOperations;

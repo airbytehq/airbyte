@@ -4,13 +4,12 @@
 
 package io.airbyte.integrations.destination_async;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class MemoryBoundedLinkedBlockingQueue<E> extends LinkedBlockingQueue<MemoryBoundedLinkedBlockingQueue.MemoryItem<E>> {
