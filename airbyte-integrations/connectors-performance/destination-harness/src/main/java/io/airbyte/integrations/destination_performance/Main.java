@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -92,11 +93,11 @@ public class Main {
   }
 
   static String getDatasource(final String dataset, final String connector) throws IOException {
-    final ObjectMapper objectMapper = new ObjectMapper();
     final String datasourceFilename = "catalogs/%s/%s_datasource.txt".formatted(connector, dataset);
     log.info("datasourceFilename {}", datasourceFilename);
     try (final var reader =
-        new BufferedReader(new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(datasourceFilename)))) {
+        new BufferedReader(new InputStreamReader(Objects.requireNonNull(
+            Thread.currentThread().getContextClassLoader().getResourceAsStream(datasourceFilename))))) {
       return reader.readLine();
     }
   }

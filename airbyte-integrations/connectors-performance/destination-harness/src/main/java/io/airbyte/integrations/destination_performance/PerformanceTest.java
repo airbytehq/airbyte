@@ -37,6 +37,7 @@ import java.net.UnknownHostException;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -226,7 +227,7 @@ public class PerformanceTest {
     readableByteChannel.close();
     fileOutputStream.close();
     log.info("done saving datasource {} ({})", temp, bytes);
-    return new BufferedReader(new FileReader(temp.toString()));
+    return Files.newBufferedReader(temp, StandardCharsets.UTF_8);
   }
 
   private static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {
