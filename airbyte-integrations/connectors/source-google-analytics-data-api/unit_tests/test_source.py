@@ -93,6 +93,24 @@ def config_gen(config):
                             "\"2020-09-15\" }], \"dimensions\": [\"browser\", \"country\", \"language\"], \"metrics\": [\"sessions\"], "
                             "\"pivots\": {}}]"},
          Status.FAILED, '"custom_reports.0.pivots: {} is not of type \'null\', \'array\'"'),
+        ({"custom_reports": "[{\"name\": \"name\", \"dimensions\": [\"country\"], \"metrics\": [\"sessions\"], "
+                            "\"limit\": \"1\", \"offset\": \"1\"}]"},
+         Status.SUCCEEDED, None),
+        ({"custom_reports": "[{\"name\": \"name\", \"dimensions\": [\"country\"], \"metrics\": [\"sessions\"], "
+                            "\"limit\": 1, \"offset\": 1}]"},
+         Status.SUCCEEDED, None),
+        ({"custom_reports": "[{\"name\": \"name\", \"dimensions\": [\"country\"], \"metrics\": [\"sessions\"], "
+                            "\"limit\": 1.2, \"offset\": 1}]"},
+         Status.FAILED, '"custom_reports.0.limit: 1.2 is not of type \'integer\', \'string\'"'),
+        ({"custom_reports": "[{\"name\": \"name\", \"dimensions\": [\"country\"], \"metrics\": [\"sessions\"], "
+                            "\"limit\": 1, \"offset\": 1.2}]"},
+         Status.FAILED, '"custom_reports.0.offset: 1.2 is not of type \'integer\', \'string\'"'),
+        ({"custom_reports": "[{\"name\": \"name\", \"dimensions\": [\"country\"], \"metrics\": [\"sessions\"], "
+                            "\"limit\": \"1.2\", \"offset\": \"1\"}]"},
+         Status.FAILED, '"custom_reports.0.limit: \'1.2\' does not match \'^([0-9]|[1-9][0-9]{1,4}|1[0-9]{5}|2[0-4][0-9]{4}|250000)$\'"'),
+        ({"custom_reports": "[{\"name\": \"name\", \"dimensions\": [\"country\"], \"metrics\": [\"sessions\"], "
+                            "\"limit\": \"1\", \"offset\": \"1.2\"}]"},
+         Status.FAILED, '"custom_reports.0.offset: \'1.2\' does not match \'^[0-9]+$\'"')
     ],
 )
 def test_check(requests_mock, config_gen, config_values, status, message):
