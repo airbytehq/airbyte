@@ -82,7 +82,7 @@ public class PerformanceTest {
   }
 
   /**
-   * Runs performance test
+   * Runs destination performance test
    * <p>
    * 1. Spins up a destination connector
    * <p>
