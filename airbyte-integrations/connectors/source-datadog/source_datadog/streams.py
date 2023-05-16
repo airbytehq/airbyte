@@ -3,6 +3,7 @@
 #
 
 from datetime import datetime
+from dateutil.parser import parse
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
@@ -301,11 +302,11 @@ class Users(PaginatedBasedListStream):
         return next_page_token
 
 
-class SeriesStream(V2ApiDatadogStream, ABC):
+class SeriesStream(IncrementalSearchableStream, ABC):
     """
     https://docs.datadoghq.com/api/latest/metrics/?code-lang=curl#query-timeseries-data-across-multiple-products
     """
-
+    primary_key: Optional[str] = None
     parse_response_root: Optional[str] = "data"
 
     def __init__(self, name, data_source, query_string, **kwargs):
@@ -329,6 +330,10 @@ class SeriesStream(V2ApiDatadogStream, ABC):
     def name(self, value):
         self._name = value
 
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return "sync_date"
+
     def request_body_json(
         self,
         stream_state: Mapping[str, Any],
@@ -336,11 +341,10 @@ class SeriesStream(V2ApiDatadogStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
 
-        # Set end_date to the current time and start_date to 24 hours before end_date
         end_date = int(datetime.now().timestamp()) * 1000
-        start_date = int((datetime.now() - timedelta(hours=24)).timestamp()) * 1000
+        start_date = int(parse(self._cursor_value).timestamp() * 1000) if self._cursor_value else int(
+            (datetime.now() - timedelta(hours=24)).timestamp()) * 1000
 
-        # Construct the payload for datasource
         if self.data_source in ["metrics", "cloud_cost"]:
             payload = {
                 "data": {
@@ -395,4 +399,5 @@ class SeriesStream(V2ApiDatadogStream, ABC):
         return [response.json()]
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        self._cursor_value = self.end_date
         return None
