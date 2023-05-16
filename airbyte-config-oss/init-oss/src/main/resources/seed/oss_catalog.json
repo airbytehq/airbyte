@@ -13563,7 +13563,7 @@
     "sourceDefinitionId": "ef69ef6e-aa7f-4af1-a01d-ef775033524e",
     "name": "GitHub",
     "dockerRepository": "airbyte/source-github",
-    "dockerImageTag": "0.4.9",
+    "dockerImageTag": "0.4.10",
     "documentationUrl": "https://docs.airbyte.com/integrations/sources/github",
     "icon": "github.svg",
     "sourceType": "api",
