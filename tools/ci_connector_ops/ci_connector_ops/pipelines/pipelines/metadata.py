@@ -61,15 +61,27 @@ class MetadataValidation(PoetryRun):
 
 
 class MetadataUpload(PoetryRun):
-    def __init__(self, context: PublishConnectorContext):
-        title = f"Upload {context.metadata_path}"
+    # HACK: We need to refactor this to get rid of a strictly typed context tied to the publish pipeline if we want to keep upload all
+    # Right now this breaks publish as I just changed PublishContext back to Pipeline context
+    def __init__(self, context: PipelineContext, metadata_path: Path, gcs_bucket_name: str):
+        title = f"Upload {metadata_path}"
+        self.gcs_bucket_name = gcs_bucket_name
+
         super().__init__(context, title, METADATA_DIR, METADATA_LIB_MODULE_PATH)
+        gcs_credentials_secret: dagger.Secret = self.context.dagger_client.host().env_variable("GCS_CREDENTIALS").secret()
+        docker_hub_username_secret: dagger.Secret = self.context.dagger_client.host().env_variable("DOCKER_HUB_USERNAME").secret()
+        docker_hub_password_secret: dagger.Secret = self.context.dagger_client.host().env_variable("DOCKER_HUB_PASSWORD").secret()
+
+        base_container = self.poetry_run_container.with_file(METADATA_FILE_NAME, get_metadata_file_from_path(context, metadata_path))
+        metadata_icon_path = metadata_path.parent / METADATA_ICON_FILE_NAME
+        if metadata_icon_path.exists():
+            base_container = base_container.with_file(METADATA_ICON_FILE_NAME, get_metadata_icon_file_from_path(context, metadata_icon_path))
 
         self.poetry_run_container = (
-            self.poetry_run_container.with_file(METADATA_FILE_NAME, get_metadata_file_from_path(context, context.metadata_path))
-            .with_secret_variable("DOCKER_HUB_USERNAME", self.context.docker_hub_username_secret)
-            .with_secret_variable("DOCKER_HUB_PASSWORD", self.context.docker_hub_password_secret)
-            .with_secret_variable("GCS_CREDENTIALS", self.context.metadata_service_gcs_credentials_secret)
+            base_container
+            .with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
+            .with_secret_variable("DOCKER_HUB_PASSWORD", docker_hub_password_secret)
+            .with_secret_variable("GCS_CREDENTIALS", gcs_credentials_secret)
             # The cache buster ensures we always run the upload command (in case of remote bucket change)
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
         )
@@ -80,7 +92,7 @@ class MetadataUpload(PoetryRun):
                 "metadata_service",
                 "upload",
                 METADATA_FILE_NAME,
-                self.context.metadata_bucket_name,
+                self.gcs_bucket_name,
             ]
         )
 
