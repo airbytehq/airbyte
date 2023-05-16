@@ -16,19 +16,16 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-
-import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.stream.Stream;
-import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +40,8 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
   private final OnCloseFunction2 onClose;
   private final ConfiguredAirbyteCatalog catalog;
   private final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
+
+  private final BufferManager bufferManager;
   private final BufferManagerEnqueue bufferManagerEnqueue;
   private final UploadWorkers uploadWorkers;
   private final Set<StreamDescriptor> streamNames;
@@ -66,6 +65,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     this.onClose = onClose;
     this.catalog = catalog;
     this.isValidRecord = isValidRecord;
+    this.bufferManager = bufferManager;
     bufferManagerEnqueue = bufferManager.getBufferManagerEnqueue();
     streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
     ignoredRecordsTracker = new IgnoredRecordsTracker();
@@ -104,6 +104,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     // assume the closing upload workers will flush all accepted records.
     onClose.call();
     uploadWorkers.close();
+    bufferManager.close();
     ignoredRecordsTracker.report();
     LOGGER.info("{} closed.", AsyncStreamConsumer.class);
   }
@@ -165,7 +166,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
             Jsons.serialize(catalog), Jsons.serialize(message)));
   }
 
-  public static class BufferManager {
+  public static class BufferManager implements AutoCloseable {
 
     Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
 
@@ -184,6 +185,17 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
     public BufferManagerDequeue getBufferManagerDequeue() {
       return bufferManagerDequeue;
+    }
+
+    /**
+     * Closing a queue will flush all items from it. For this reason, this method needs to be called
+     * after {@link UploadWorkers#close()}. This allows the upload workers to make sure all items in the
+     * queue has been flushed.
+     */
+    @Override
+    public void close() throws Exception {
+      buffers.forEach(((streamDescriptor, queue) -> queue.clear()));
+      log.info("Buffers cleared..");
     }
 
   }
@@ -260,7 +272,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     private static final long SUPERVISOR_PERIOD_SECS = 1L;
     private final ScheduledExecutorService supervisorThread = Executors.newScheduledThreadPool(1);
     // note: this queue size is unbounded.
-    private final Executor workerPool = Executors.newFixedThreadPool(5);
+    private final ExecutorService workerPool = Executors.newFixedThreadPool(5);
     private final BufferManagerDequeue bufferManagerDequeue;
     private final StreamDestinationFlusher flusher;
 
@@ -285,8 +297,8 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
         final var stream = entry.getKey();
         final var exceedSize = bufferManagerDequeue.getQueueSizeInMb(stream) >= MAX_QUEUE_SIZE_BYTES;
         final var tooLongSinceLastRecord = bufferManagerDequeue.getTimeOfLastRecord(stream)
-                .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
-                .orElse(false);
+            .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
+            .orElse(false);
         if (exceedSize || tooLongSinceLastRecord) {
           flush(stream);
         }
@@ -300,7 +312,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     }
 
     private void flush(final StreamDescriptor desc) {
-      workerPool.execute(() -> {
+      workerPool.submit(() -> {
         final var queue = bufferManagerDequeue.getBuffer(desc);
         // todo(charles): should not need to know about memory blocking nonsense.
         try {
@@ -313,7 +325,15 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
     @Override
     public void close() throws Exception {
+      flushAll();
 
+      supervisorThread.shutdown();
+      var supervisorShut = supervisorThread.awaitTermination(5L, TimeUnit.MINUTES);
+      log.info("Supervisor shut status: {}", supervisorShut);
+
+      workerPool.shutdown();
+      var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
+      log.info("Workers shut status: {}", workersShut);
     }
 
   }
