@@ -10,30 +10,18 @@ import os
 import uuid
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
+from ci_connector_ops.pipelines.consts import (
+    CI_CONNECTOR_OPS_SOURCE_PATH,
+    CI_CREDENTIALS_SOURCE_PATH,
+    CONNECTOR_TESTING_REQUIREMENTS,
+    DEFAULT_PYTHON_EXCLUDE,
+    PYPROJECT_TOML_FILE_PATH,
+)
 from ci_connector_ops.pipelines.utils import get_file_contents, slugify, with_exit_code
 from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Platform, Secret
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
-
-
-PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
-
-CONNECTOR_TESTING_REQUIREMENTS = [
-    "pip==21.3.1",
-    "mccabe==0.6.1",
-    "flake8==4.0.1",
-    "pyproject-flake8==0.0.1a2",
-    "black==22.3.0",
-    "isort==5.6.4",
-    "pytest==6.2.5",
-    "coverage[toml]==6.3.1",
-    "pytest-custom_exit_code",
-]
-
-DEFAULT_PYTHON_EXCLUDE = ["**/.venv", "**/__pycache__"]
-CI_CREDENTIALS_SOURCE_PATH = "tools/ci_credentials"
-CI_CONNECTOR_OPS_SOURCE_PATH = "tools/ci_connector_ops"
 
 
 def with_python_base(context: PipelineContext, python_image_name: str = "python:3.9-slim") -> Container:
@@ -682,9 +670,8 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
     return (
         base.with_workdir("/airbyte")
         .with_env_variable("APPLICATION", application)
-        .with_directory("builts_artifacts", build_stage.directory("/airbyte"))
+        .with_mounted_directory("builts_artifacts", build_stage.directory("/airbyte"))
         .with_exec(["sh", "-c", "mv builts_artifacts/* ."])
-        .with_exec(["rm", "-rf", "builts_artifacts"])
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
         .with_entrypoint(entrypoint)

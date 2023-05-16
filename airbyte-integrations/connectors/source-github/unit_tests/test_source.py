@@ -199,3 +199,9 @@ def test_check_config_repository():
         config["repository"] = " ".join(repos_ok[:len(repos_ok)//2] + [repos] + repos_ok[len(repos_ok)//2:])
         with pytest.raises(AirbyteTracedException):
             assert command_check(source, config)
+
+
+def test_streams_no_streams_available_error():
+    with pytest.raises(AirbyteTracedException) as e:
+        SourceGithub().streams(config={"access_token": "test_token", "repository": "airbytehq/airbyte-test"})
+    assert str(e.value) == "No streams available. Please check permissions"

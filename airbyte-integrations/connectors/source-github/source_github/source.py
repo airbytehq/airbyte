@@ -203,7 +203,15 @@ class SourceGithub(AbstractSource):
                 raise e
 
         if not any((organizations, repositories)):
-            raise Exception("No streams available. Please check permissions")
+            user_message = (
+                "No streams available. Looks like your config for repositories or organizations is not valid."
+                " Please, check your permissions, names of repositories and organizations."
+            )
+            raise AirbyteTracedException(
+                internal_message="No streams available. Please check permissions",
+                message=user_message,
+                failure_type=FailureType.config_error,
+            )
 
         page_size = config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
 
