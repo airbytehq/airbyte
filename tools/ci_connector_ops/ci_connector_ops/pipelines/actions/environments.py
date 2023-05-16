@@ -237,28 +237,22 @@ async def with_ci_connector_ops(context: PipelineContext) -> Container:
     return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])
 
 
-def with_dockerd_service(
-    context: ConnectorContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None, docker_service_name: Optional[str] = None
-) -> Container:
+def with_dockerd_service(context: ConnectorContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None) -> Container:
     """Create a container running dockerd, exposing its 2375 port, can be used as the docker host for docker-in-docker use cases.
 
     Args:
         context (ConnectorContext): The current connector context.
         shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be mounted to the dockerd container. Defaults to None.
-        docker_service_name (Optional[str], optional): The name of the docker service, appended to volume name, useful context isolation. Defaults to None.
 
     Returns:
         Container: The container running dockerd as a service.
     """
-    docker_lib_volume_name = f"{slugify(context.connector.technical_name)}-docker-lib"
-    if docker_service_name:
-        docker_lib_volume_name = f"{docker_lib_volume_name}-{slugify(docker_service_name)}"
     dind = (
         context.dagger_client.container()
         .from_("docker:23.0.1-dind")
         .with_mounted_cache(
             "/var/lib/docker",
-            context.dagger_client.cache_volume(docker_lib_volume_name),
+            context.dagger_client.cache_volume("docker-lib"),
             sharing=CacheSharingMode.SHARED,
         )
     )
@@ -286,7 +280,7 @@ def with_bound_docker_host(
     Returns:
         Container: The container bound to the docker host.
     """
-    dockerd = with_dockerd_service(context, shared_volume, docker_service_name)
+    dockerd = with_dockerd_service(context, shared_volume)
     docker_hostname = f"dockerhost-{slugify(context.connector.technical_name)}"
     if docker_service_name:
         docker_hostname = f"{docker_hostname}-{slugify(docker_service_name)}"
