@@ -179,7 +179,6 @@ Publishing a connector can be done using the `/publish` command as outlined in t
 * **repo** - Defaults to the main airbyte repo. Set this when building connectors from forked repos. e.g. `repo=userfork/airbyte`
 * **gitref** - Defaults to the branch of the PR where the /publish command is run as a comment. If running manually, set this to your branch where you made changes e.g. `gitref=george/s3-update`
 * **comment-id** - This is automatically filled if you run /publish from a comment and enables the workflow to write back success/fail logs to the git comment.
-* **auto-bump-version** - Defaults to true, automates the post-publish process of bumping the connector's version in the yaml seed definitions and generating spec.
 * **parallel** - Defaults to false. If set to true, a pool of runner agents will be spun up to allow publishing multiple connectors in parallel. Only switch this to true if publishing multiple connectors at once to avoid wasting $$$.
 
 ## Using credentials in CI
