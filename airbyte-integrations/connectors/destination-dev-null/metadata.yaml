@@ -5,6 +5,7 @@ data:
   dockerImageTag: 0.3.0
   dockerRepository: airbyte/destination-dev-null
   githubIssueLabel: destination-dev-null
+  icon: airbyte.svg
   license: MIT
   name: End-to-End Testing (/dev/null)
   registries:
