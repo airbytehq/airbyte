@@ -566,7 +566,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "redshift.Dockerfile",
         "dbt_adapter": "dbt-redshift==1.0.0",
         "integration_name": "redshift",
-        "supports_in_connector_normalization": False,
+        "supports_in_connector_normalization": True,
     },
     "destination-snowflake": {
         "dockerfile": "snowflake.Dockerfile",
