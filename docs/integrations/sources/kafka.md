@@ -1,23 +1,23 @@
 # Kafka
 
-This page guides you through the process of setting up the Kafka source connector.
+This page guides you through the process of setting up the Kafka source connector in Airbyte.
 
 ## Step 1: Set up Kafka
 
 To use the Kafka source connector, you'll need:
 
-* [A Kafka cluster 1.0 or above](https://kafka.apache.org/quickstart)
+* A Kafka cluster 1.0 or above
 * Airbyte user should be allowed to read messages from topics, and these topics should be created before reading from Kafka.
 
 ## Step 2: Setup the Kafka source in Airbyte
 
-In the Airbyte UI, create a new connection and select "Kafka" from the Source dropdown. Enter the name for the Kafka connector.
+You'll need the following information to configure the Kafka source:
 
-### For Airbyte Open Source:
+### General
 
-1. In the Connection Configuration section, under Source, enter the following configuration data:
+* **Name** - Enter a name for the Kafka connector.
+* **Source Type** - Select Kafka from the dropdown.
 
-```json
+### Connection
 
-    {
-      "bootstrap_servers": "<YOUR
+* **Bootstrap Servers** - A list of host/port
