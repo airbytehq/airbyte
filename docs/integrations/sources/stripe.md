@@ -64,6 +64,7 @@ The Stripe source connector supports the following streams:
 - [Payouts](https://stripe.com/docs/api/payouts/list) \(Incremental\)
 - [Promotion Code](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
 - [Plans](https://stripe.com/docs/api/plans/list) \(Incremental\)
+- [Prices](https://stripe.com/docs/api/prices/list) \(Incremental\)
 - [Products](https://stripe.com/docs/api/products/list) \(Incremental\)
 - [Refunds](https://stripe.com/docs/api/refunds/list) \(Incremental\)
 - [SetupIntents](https://stripe.com/docs/api/setup_intents/list) \(Incremental\)
@@ -82,10 +83,9 @@ The [Stripe API](https://stripe.com/docs/api) uses the same [JSONSchema](https:/
 The Stripe connector should not run into Stripe API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
-
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3.4.3   | 2023-05-10 | [25965](https://github.com/airbytehq/airbyte/pull/25965) | Fix Airbyte date-time data-types                                                                                                                     |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.5.0   | 2023-05-18 | [23963](https://github.com/airbytehq/airbyte/pull/*****) | Add `Prices` stream                                                                                                                                  |
 | 3.4.2   | 2023-05-04 | [25795](https://github.com/airbytehq/airbyte/pull/25795) | Added `CDK TypeTransformer` to guarantee declared JSON Schema data-types                                                                             |
 | 3.4.1   | 2023-04-24 | [23389](https://github.com/airbytehq/airbyte/pull/23389) | Add `customer_tax_ids` to `Invoices`                                                                                                                 |
 | 3.4.0   | 2023-03-20 | [23963](https://github.com/airbytehq/airbyte/pull/23963) | Add `SetupIntents` stream                                                                                                                            |
