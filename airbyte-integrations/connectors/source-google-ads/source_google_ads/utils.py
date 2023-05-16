@@ -28,7 +28,7 @@ class GAQL:
         r"""\s*
             SELECT\s+(?P<FieldNames>\S.*)
             \s+
-            FROM\s+(?P<ResourceName>[a-z]([a-zA-Z_])*)
+            FROM\s+(?P<ResourceNames>[a-z][a-zA-Z_]*(\s*,\s*[a-z][a-zA-Z_]*)*)
             \s*
             (\s+WHERE\s+(?P<WhereClause>\S.*?))?
             (\s+ORDER\s+BY\s+(?P<OrderByClause>\S.*?))?
@@ -57,7 +57,12 @@ class GAQL:
             if not cls.REGEX_FIELD_NAME.match(field):
                 raise query_error
 
-        resource_name = m.group("ResourceName")
+        resource_names = re.split(r"\s*,\s*", m.group("ResourceNames"))
+        if len(resource_names) > 1:
+            message = f"Incorrect GAQL query: multiple resources '{', '.join(resource_names)}' is not allowed"
+            raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
+        resource_name = resource_names[0]
+
         where = cls._normalize(m.group("WhereClause") or "")
         order_by = cls._normalize(m.group("OrderByClause") or "")
         limit = m.group("LimitClause")
