@@ -62,7 +62,7 @@ def product_ads_response():
 @fixture
 def targeting_response():
     return """
-[{"targetId":123,"adGroupId":321,"state":"enabled","expressionType":"manual","bid":1.5,"expression":{"type":"asinSameAs","value":"B0123456789"},"resolvedExpression":{"type":"views","values":{"type":"asinCategorySameAs","value":"B0123456789"}}}]
+[{"targetId":123,"adGroupId":321,"state":"enabled","expressionType":"manual","bid":1.5,"expression":[{"type":"asinSameAs","value":"B0123456789"}],"resolvedExpression":[{"type":"views","values":{"type":"asinCategorySameAs","value":"B0123456789"}}]}]
 """
 
 

@@ -23,6 +23,19 @@ def setup_responses():
     )
 
 
+def ensure_additional_property_is_boolean(root):
+    for name, prop in root.get("properties", {}).items():
+        if prop["type"] == "array" and "items" in prop:
+            ensure_additional_property_is_boolean(prop["items"])
+        if prop["type"] == "object" and "properties" in prop:
+            ensure_additional_property_is_boolean(prop)
+    if "additionalProperties" in root:
+        assert type(root["additionalProperties"]) == bool, (
+            f"`additionalProperties` expected to be of 'bool' type. "
+            f"Got: {type(root['additionalProperties']).__name__}"
+        )
+
+
 @responses.activate
 def test_discover(config):
     setup_responses()
@@ -32,6 +45,7 @@ def test_discover(config):
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
     for schema in schemas:
         Draft4Validator.check_schema(schema)
+        ensure_additional_property_is_boolean(schema)
 
 
 def test_spec():

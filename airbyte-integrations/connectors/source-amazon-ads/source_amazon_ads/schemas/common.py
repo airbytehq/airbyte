@@ -36,6 +36,9 @@ class CatalogModel(BaseModel):
                 if "type" in prop:
                     if allow_none:
                         prop["type"] = ["null", prop["type"]]
+                    if prop["type"] == "array" and prop["items"]:
+                        if prop["items"].pop("additionalProperties", None):
+                            prop["items"]["additionalProperties"] = True
 
 
 class MetricsReport(CatalogModel):
