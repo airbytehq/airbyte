@@ -1,0 +1,7 @@
+{
+  "properties": {
+    "cancelled_at": {
+      "type": ["integer", "null"]
+    }
+  }
+}
