@@ -27,22 +27,16 @@ resource "snowflake_role_grants" "no_create_schema_privilege" {
   ]
 }
 
-resource "snowflake_warehouse_grant" "no_create_schema_privilege" {
-  provider = snowflake.sysadmin
-  warehouse_name = snowflake_warehouse.airbyte_warehouse.name
-  privilege = "USAGE"
-  roles = [
-    snowflake_role.no_create_schema_privilege.name
-  ]
-}
-
 resource "snowflake_database_grant" "no_create_schema_privilege" {
   provider = snowflake.sysadmin
   database_name = snowflake_database.airbyte_database.name
   # NB: not ownership
   privilege = "USAGE"
   roles = [
-    snowflake_role.airbyte.name
+    snowflake_role.airbyte.name,
+    "NESH_01",
+    "NESH_ROLE",
+    "TEST_STAGING_ROLE",
   ]
 }
 
@@ -76,7 +70,7 @@ resource "google_secret_manager_secret_version" "destination_snowflake_no_create
   secret = google_secret_manager_secret.destination_snowflake_no_create_schema_privilege.id
   secret_data = jsonencode({
     host = local.snowflake_host
-    role = snowflake_role.airbyte.name
+    role = snowflake_role.no_create_schema_privilege.name
     warehouse = snowflake_warehouse.airbyte_warehouse.name
     database = snowflake_database.airbyte_database.name
     schema = snowflake_schema.no_create_schema_privilege.name

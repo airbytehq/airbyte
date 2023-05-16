@@ -53,6 +53,7 @@ resource "snowflake_warehouse_grant" "ab_warehouse_grant" {
   privilege      = "USAGE"
   roles = [
     snowflake_role.airbyte.name,
+    snowflake_role.no_create_schema_privilege.name,
     # No idea what these are, but terraform plan says they exist
     "NESH_01",
     "NESH_ROLE",
@@ -69,7 +70,6 @@ resource "snowflake_database_grant" "ab_db_grant" {
   database_name = snowflake_database.airbyte_database.name
   privilege     = "OWNERSHIP"
   roles = [
-    snowflake_role.airbyte.name,
     # No idea what this is, but terraform plan says it exists
     "NESH_01"
   ]
