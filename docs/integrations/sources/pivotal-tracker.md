@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Pivotal Tracker source supports Full Refresh syncs. It supports pulling from :
+The Pivotal Tracker source supports Full Refresh syncs. It supports pulling the following streams:
 
 - Activity
 - Epics
@@ -14,7 +14,7 @@ The Pivotal Tracker source supports Full Refresh syncs. It supports pulling from
 
 ### Output schema
 
-Output streams:
+The output schema for the Pivotal Tracker source includes the following streams:
 
 - [Activity](https://www.pivotaltracker.com/help/api/rest/v5#Activity)
 - [Epics](https://www.pivotaltracker.com/help/api/rest/v5#Epics)
@@ -26,44 +26,54 @@ Output streams:
 
 ### Features
 
-| Feature                       | Supported?  |
-| :---------------------------- | :---------- |
-| Full Refresh Sync             | Yes         |
-| Incremental - Append Sync     | Coming soon |
-| Replicate Incremental Deletes | Coming soon |
-| SSL connection                | Yes         |
-| Namespaces                    | No          |
+The Pivotal Tracker connector supports the following features:
+
+| Feature                       | Supported? |
+| :---------------------------- | :--------- |
+| Full Refresh Sync             | Yes        |
+| Incremental - Append Sync     | Coming soon|
+| Replicate Incremental Deletes | Coming soon|
+| SSL connection                | Yes        |
+| Namespaces                    | No         |
 
 ### Performance considerations
 
-The Pivotal Tracker connector should not run into Stripe API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Pivotal Tracker connector should not run into Pivotal Tracker API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
 ## Getting started
 
-### Requirements
+### Prerequisites
 
-- Pivotal Tracker API Token
+Before you can set up the Pivotal Tracker source, you must have a Pivotal Tracker API token.
 
-### Setup guide to create the API Token
+### Set up the API Token
 
-To obtain an API Token from Pivotal Tracker, follow these steps:
+To create a Pivotal Tracker API token:
 
-1. Ensure you have a Pivotal Tracker account. If you do not have one yet, you can sign up [here](https://www.pivotaltracker.com/signup/new).
-2. Log in to your Pivotal Tracker account.
-3. Navigate to your profile page by clicking on your profile picture on the top right and selecting "Profile".
-4. Scroll down to the API Tokens section and click on "Create New Token".
-5. Give your token a name and select the desired scopes for your token. We recommend selecting "All Scopes".
-6. Click on the "Create Token" button.
-7. Copy the generated token as it will only be visible once.
+1. Log in to Pivotal Tracker and access your [profile](https://www.pivotaltracker.com/profile).
+2. Scroll down to the **Create New Token** section.
+3. Click the **Create New Token** button.
+4. In the modal that appears, enter a name for the token and click **Create**.
+5. Copy the generated token to your clipboard.
 
-### Connector Configuration
+### Configure the Connector in Airbyte
 
-To configure the Pivotal Tracker source connector in Airbyte, follow these steps:
+To set up the Pivotal Tracker source connector in Airbyte:
 
-1. In your Airbyte dashboard, click on "Create Connection" on the top right.
-2. Select "Pivotal Tracker" as the connector you want to create.
-3. Enter a name for your connection and paste the API token you obtained earlier in the "api_token" field.
-4. Click on the "Test" button to ensure that Airbyte can successfully connect to Pivotal Tracker.
-5. Once the test succeeds, click on the "Create" button to save your connection.
+1. In Airbyte, navigate to the **Sources** page.
+2. Click the **Create New Connection** button.
+3. Select the **Pivotal Tracker** source from the list of available sources.
+4. Enter a name for the connection and click **Next**.
+5. In the **Configuration** tab, enter your Pivotal Tracker API token in the **api_token** field.
+6. Click **Test** to verify that Airbyte can connect to Pivotal Tracker using the provided API token.
+7. Once the test is successful, click **Next**.
+8. In the **Schema** tab, select the streams that you want to sync and enter any additional configuration options.
+9. Click **Next**.
+10. (Optional) In the **Sync** tab, configure the sync schedule and history preservation settings.
+11. Click **Create** to save the connector configuration.
 
-You can now create a Pivotal Tracker source sync in Airbyte and start replicating data from Pivotal Tracker. If you encounter any issues with the connector, please refer to the [Pivotal Tracker API documentation](https://www.pivotaltracker.com/help/api/rest/v5) or [create an issue](https://github.com/airbytehq/airbyte/issues) on the Airbyte GitHub repository.
+## Changelog
+
+| Version | Date       | Pull Request                                             | Subject         |
+| :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.1.0   | 2022-04-04 | [11060](https://github.com/airbytehq/airbyte/pull/11060) | Initial Release |
