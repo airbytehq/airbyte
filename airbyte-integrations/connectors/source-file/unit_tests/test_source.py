@@ -131,6 +131,12 @@ def test_check_invalid_config(source, invalid_config):
     assert actual.status == expected.status
 
 
+def test_check_invalid_reader_options(source, invalid_reader_options_config):
+    expected = AirbyteConnectionStatus(status=Status.FAILED)
+    actual = source.check(logger=logger, config=invalid_reader_options_config)
+    assert actual.status == expected.status
+
+
 def test_discover_dropbox_link(source, config_dropbox_link):
     source.discover(logger=logger, config=config_dropbox_link)
 
