@@ -30,13 +30,27 @@ def get_metadata_file_path(dockerRepository: str, version: str) -> str:
     return f"{METADATA_FOLDER}/{dockerRepository}/{version}/{METADATA_FILE_NAME}"
 
 
-def compute_gcs_md5(file_name):
+def compute_gcs_md5(file_name: str) -> str:
     hash_md5 = hashlib.md5()
     with open(file_name, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
 
     return base64.b64encode(hash_md5.digest()).decode("utf8")
+
+
+def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: str) -> bool:
+    """Uploads a file to the bucket."""
+    print(f"Uploading {file_path} to {blob_to_save.name}...")
+
+    # Set Cache-Control header to no-cache to avoid caching issues
+    # This is IMPORTANT because if we don't set this header, the metadata file will be cached by GCS
+    # and the next time we try to download it, we will get the stale version
+    blob_to_save.cache_control = "no-cache"
+
+    blob_to_save.upload_from_filename(file_path)
+
+    return True
 
 
 def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path) -> Tuple[bool, str]:
@@ -93,13 +107,9 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path) -> Tuple[
 
     # upload if md5_hash is different
     if trigger_version_upload:
-        print(f"Uploading {metadata_file_path} to {version_path}...")
-        version_blob.upload_from_filename(str(metadata_file_path))
-        uploaded = True
+        uploaded = _save_blob_to_gcs(version_blob, str(metadata_file_path))
 
     if trigger_latest_upload:
-        print(f"Uploading {metadata_file_path} to {latest_path}...")
-        latest_blob.upload_from_filename(str(metadata_file_path))
-        uploaded = True
+        uploaded = _save_blob_to_gcs(latest_blob, str(metadata_file_path))
 
     return uploaded, version_blob.id

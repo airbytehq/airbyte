@@ -161,6 +161,7 @@ class UploadSpecToCache(Step):
                 key,
                 self.context.spec_cache_bucket_name,
                 self.context.spec_cache_gcs_credentials_secret,
+                flags=['--cache-control="no-cache"'],
             )
             if exit_code != 0:
                 return StepResult(self, status=StepStatus.FAILURE, stdout=stdout, stderr=stderr)
