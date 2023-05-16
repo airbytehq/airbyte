@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from source_amazon_ads.schemas import DisplayAdGroup, DisplayCampaign, DisplayProductAds, DisplayTargeting
+from source_amazon_ads.schemas import DisplayAdGroup, DisplayCampaign, DisplayProductAds, DisplayTargeting, DisplayCreatives
 from source_amazon_ads.streams.common import SubProfilesStream
 
 
@@ -67,3 +67,15 @@ class SponsoredDisplayTargetings(SubProfilesStream):
 
     def path(self, **kwargs) -> str:
         return "sd/targets"
+
+class SponsoredDisplayCreatives(SubProfilesStream):
+    """
+    This stream corresponds to Amazon Advertising API - Sponsored Displays Creatives
+    https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Creatives/listCreatives
+    """
+
+    primary_key = "creativeId"
+    model = DisplayCreatives
+
+    def path(self, **kwargs) -> str:
+        return "/sd/creatives"

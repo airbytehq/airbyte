@@ -42,3 +42,8 @@ class DisplayProductAds(CatalogModel):
 
 class DisplayTargeting(Targeting):
     pass
+
+class DisplayCreatives(CatalogModel):
+    name: str
+    creativeId: Decimal
+    adGroupId: Decimal
