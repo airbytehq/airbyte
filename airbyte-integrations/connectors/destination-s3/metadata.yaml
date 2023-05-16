@@ -7,7 +7,7 @@ data:
   githubIssueLabel: destination-s3
   icon: s3.svg
   license: MIT
-  name: S3
+  name: AWS S3
   registries:
     cloud:
       enabled: true

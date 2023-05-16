@@ -8,7 +8,7 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.base.IntegrationRunner;
 
 public class S3Destination extends BaseS3Destination {
-
+  // Comment that should not be merged
   public S3Destination() {}
 
   @VisibleForTesting
