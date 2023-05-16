@@ -25,8 +25,12 @@ This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-ap
 
 * API Access
 
-## Changelog
+### Configuration
 
-| Version | Date       | Pull Request                                              | Subject                                    |
-| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
-| 0.1.0   | 2022-10-27 | [#18378](https://github.com/airbytehq/airbyte/pull/18378) | 🎉 New Source: Secoda API [low-code CDK] |
+1. Obtain an API key from Secoda. See [here](https://docs.secoda.co/secoda-api/authentication) for more information on how to obtain an API key.
+2. In the Airbyte Connector setup form, provide the obtained API key in the "Api Key" field.
+3. Save the configuration.
+
+Please note that this connector only supports full refresh syncs at this time. 
+
+For more information on the Secoda API, refer to their [documentation](https://docs.secoda.co/secoda-api).
