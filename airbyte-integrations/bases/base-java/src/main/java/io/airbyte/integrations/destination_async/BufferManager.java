@@ -137,32 +137,33 @@ public class BufferManager implements AutoCloseable {
       final var queue = buffers.get(streamDescriptor);
 
       final AtomicLong bytesRead = new AtomicLong();
-        final var s = Stream.generate(() -> {
-          try {
-            return queue.poll(5, TimeUnit.MILLISECONDS);
-          } catch (final InterruptedException e) {
-            throw new RuntimeException(e);
-          }
-        }).takeWhile(memoryItem -> {
-              // if no new records after waiting, the stream is done.
-              if(memoryItem == null) {
-                return false;
-              }
+      final var s = Stream.generate(() -> {
+        try {
+          return queue.poll(5, TimeUnit.MILLISECONDS);
+        } catch (final InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      }).takeWhile(memoryItem -> {
+        // if no new records after waiting, the stream is done.
+        if (memoryItem == null) {
+          return false;
+        }
 
-              // otherwise pull records until we hit the memory limit.
-              final long newSize = memoryItem.size() + bytesRead.get();
-              if(newSize <= bytesToRead) {
-                bytesRead.addAndGet(memoryItem.size());
-                return true;
-              } else {
-                return false;
-              }
-            }).map(MemoryItem::item);
+        // otherwise pull records until we hit the memory limit.
+        final long newSize = memoryItem.size() + bytesRead.get();
+        if (newSize <= bytesToRead) {
+          bytesRead.addAndGet(memoryItem.size());
+          return true;
+        } else {
+          return false;
+        }
+      }).map(MemoryItem::item);
 
       return new Batch(s, bytesRead.get(), memoryManager);
     }
 
     public static class Batch implements AutoCloseable {
+
       private Stream<AirbyteMessage> batch;
       private final long sizeInBytes;
       private final GlobalMemoryManager memoryManager;
@@ -215,6 +216,7 @@ public class BufferManager implements AutoCloseable {
     public void free(final long bytes) {
 
     }
+
   }
 
 }
