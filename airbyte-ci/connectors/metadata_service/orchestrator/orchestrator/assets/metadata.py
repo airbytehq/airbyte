@@ -8,7 +8,7 @@ from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import Conn
 
 from orchestrator.utils.object_helpers import are_values_equal, merge_values
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
-from orchestrator.models.metadata import PartialMetadataDefinition, MetadataDefinition
+from orchestrator.models.metadata import PartialMetadataDefinition, MetadataDefinition, LatestMetadataEntry
 
 GROUP_NAME = "metadata"
 
@@ -174,14 +174,18 @@ def validate_metadata(metadata: PartialMetadataDefinition) -> tuple[bool, str]:
 
 
 @asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME)
-def metadata_definitions(context: OpExecutionContext) -> List[MetadataDefinition]:
+def metadata_definitions(context: OpExecutionContext) -> List[LatestMetadataEntry]:
     latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
 
-    metadata_definitions = []
+    metadata_entries = []
     for blob in latest_metadata_file_blobs:
         yaml_string = blob.download_as_string().decode("utf-8")
         metadata_dict = yaml.safe_load(yaml_string)
         metadata_def = MetadataDefinition.parse_obj(metadata_dict)
-        metadata_definitions.append(metadata_def)
+        metadata_entry = LatestMetadataEntry(
+            metadata_definition=metadata_def,
+            gcs_metadata_file_blob=blob,
+        )
+        metadata_entries.append(metadata_entry)
 
-    return metadata_definitions
+    return metadata_entries
