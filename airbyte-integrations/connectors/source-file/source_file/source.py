@@ -85,7 +85,8 @@ class SourceFile(Source):
             try:
                 config["reader_options"] = json.loads(config["reader_options"])
                 if not isinstance(config["reader_options"], dict):
-                    raise ValueError
+                    raise ConfigurationError("Field 'reader_options' is not a valid JSON object. "
+                                             "Please provide key-value pairs, See field description for examples.")
             except ValueError:
                 raise ConfigurationError("Field 'reader_options' is not valid JSON object. https://www.json.org/")
         else:
