@@ -1,48 +1,56 @@
 # TMDb
 
-This page contains the setup guide and reference information for the [Tmdb](https://developers.themoviedb.org/3/getting-started/introduction.) source connector.
+This page contains the setup guide and reference information for the [Tmdb](https://developers.themoviedb.org/3/getting-started/introduction) source connector.
 
 ## Prerequisites
 
-To use the Tmdb source connector, you will need the following:
+Before setting up the TMDb connector, you need to create an account on TMDb and generate an API key. The API key will identify your account and enables you to access the TMDb API endpoints. 
 
-- A Tmdb account with a generated API key.
-- A `movie_id` to target specific movies (if using movie streams).
-- A `query` for search streams.
-- A `language` expressed in ISO 639-1 scheme for required streams.
+Follow these steps to acquire your API key:
 
-Please follow the steps below to obtain the necessary information.
+1. Visit [https://www.themoviedb.org/settings/api](https://www.themoviedb.org/settings/api).
+2. Log in or create an account.
+3. Agree to the Terms of Service by checking the box.
+4. Click "Generate API Key".
+5. Copy the API Key (for example, `123456789`) to use later when setting up the connector.
 
-## Generate an API key
+## Setup guide
 
-1. Log in to your Tmdb account or create one [here](https://www.themoviedb.org/signup).
-2. Navigate to your **Account Settings**.
-3. Select **API** from the left-hand menu.
-4. Under **Create API Key**, provide a brief description of your project in the **Description** field.
-5. Click on **Generate API Key**.
+Follow the steps below to set up the TMDb connector in Airbyte.
 
-Your API key will now be generated and displayed on the page. Copy it for use in the next step.
+### Step 1: Set up TMDb connection
 
-## Set up TMDb connection in Airbyte
+1. In Airbyte, go to the TMDb connector configuration screen.
+2. Enter your TMDb API key in the `api_key` field.
+3. Enter an optional `movie_id`, `query`, and `language`.
+4. Click "Check connection" to confirm the connection to TMDb.
 
-Follow the steps below to set up the Tmdb connector in Airbyte:
+### Step 2: Set up the TMDb connector in Airbyte
 
-1. Log in to your Airbyte account.
-2. Navigate to the **Sources** tab and click on **+ New Source** in the top right corner.
-3. On the **Set up a new source** page, enter a name for the connector and select **TMDb** as the **Source Type**.
-4. In the **Configuration** section, enter the following data:
-   - `api_key`: The API key generated in the first section.
-   - `movie_id`: (Optional) Target movie ID for movie streams.
-   - `query`: (Optional) Query for search streams.
-   - `language`: (Optional) Language for filtering.
-5. Click on **Test** to verify the connection.
-6. Click on **Create** to save the connection.
+#### For Airbyte Cloud:
 
-You have now successfully set up the Tmdb connector in Airbyte.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up a source page, enter a name for the TMDb connector and select **TMDb** from the Source type dropdown.
+4. Enter your TMDb API key in the `api_key` field.
+5. Enter an optional `movie_id`, `query`, and `language`.
+6. Click **Test** to confirm the connection to TMDb.
+7. Click **Create** to save the configuration.
+
+#### For Airbyte OSS:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Go to the **Sources** tab and click **Create a new source**.
+3. On the Create a new source page, enter a name for the TMDb connector.
+4. Select **TMDb** from the dropdown menu.
+5. Fill in the required credentials (e.g. API key)
+6. Enter an optional `movie_id`, `query`, and `language`.
+7. Click **Test** to confirm the connection to TMDb.
+8. Click **Create** to save the configuration.
 
 ## Supported sync modes
 
-The Tmdb source connector supports the following [sync modes](https://docs.airbyte.io/integrations/sources/tmdb):
+The TMDb source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
@@ -54,60 +62,58 @@ The Tmdb source connector supports the following [sync modes](https://docs.airby
 
 ## Supported Streams
 
-The Tmdb source connector supports the following streams:
+The following tables describe the TMDb API streams supported in this connector. Some of these streams require additional parameters (e.g. query, movie_id, language).
 
-- Certification_movie
-- Certification_tv
-- Changes_movie
-- Changes_tv
-- Changes_person
-- Movies_alternative_titles
-- Movies_changes
-- Movies_credits
-- Movies_details
-- Movies_external_ids
-- Movies_images
-- Movies_keywords
-- Movies_latest
-- Movies_lists
-- Movies_now_playing
-- Movies_popular
-- Movies_recommendations
-- Movies_releases_dates
-- Movies_reviews
-- Movies_similar_movies
-- Movies_top_rated
-- Movies_translations
-- Movies_upcoming
-- Movies_videos
-- Movies_watch_providers
-- Trending
-- Search_collections
-- Search_companies
-- Search_keywords
-- Search_movies
-- Search_multi
-- Search_people
-- Search_tv_shows
+| Stream Name                  | Description                                        |
+| :---------------------------| :--------------------------------------------------|
+| Certification_movie          | A list of supported certifications for movies.     |
+| Certification_tv             | A list of supported certifications for TV shows.   |
+| Changes_movie               | A list of movie ids that have been edited.          |
+| Changes_tv                  | A list of TV ids that have been edited.             |
+| Changes_person             | A list of person ids that have been edited.         |
+| Movies_alternative_titles  | A list of alternative titles for a movie.           |
+| Movies_changes              | Latest modifications for a movie.                   |
+| Movies_credits              | Full cast and crew for a movie.                     |
+| Movies_details              | All details for a movie.                            |
+| Movies_external_ids         | External IDs for a movie.                           |
+| Movies_images               | All image URLs for a movie.                         |
+| Movies_keywords             | List of keywords for a movie.                       |
+| Movies_latest               | The most recent movie.                              |
+| Movies_lists                | A list of lists that the movie belongs to.          |
+| Movies_now_playing         | A list of movies playing in theatres.               |
+| Movies_popular              | A list of popular movies.                           |
+| Movies_recommendations      | List of recommended movies for a given movie.       |
+| Movies_releases_dates       | Release dates by country for a movie.               |
+| Movies_reviews              | User reviews for a movie.                           |
+| Movies_similar_movies       | Similar movies for a given movie.                   |
+| Movies_top_rated            | A list of top rated movies.                         |
+| Movies_translations         | Translations for all text related to a movie.       |
+| Movies_upcoming             | A list of upcoming movies.                          |
+| Movies_videos               | Movie trailers and videos.                          |
+| Movies_watch_providers      | Where to watch a movie.                             |
+| Trending                    | The daily trending objects.                         |
+| Search_collections          | Search for collections.                             |
+| Search_companies            | Search for companies.                               |
+| Search_keywords             | Search for keywords.                                |
+| Search_movies               | Search for movies.                                  |
+| Search_multi                | Search across multiple endpoints.                   |
+| Search_people               | Search for people.                                  |
+| Search_tv_shows             | Search for TV shows.                                |
 
 ## API method example
 
-The following API method retrieves the alternative titles for a movie:
+The following sample API method retrieves alternative titles for a given movie id:
 
 ```
 GET https://api.themoviedb.org/3/movie/{movie_id}/alternative_titles?api_key={api_key}
 ```
 
-Please refer to the [Tmdb API reference](https://developers.themoviedb.org/3/getting-started/introduction) for further examples.
-
 ## Performance considerations
 
-Tmdb's API reference has version 3 (v3) at present, and version 4 (v4) is currently under development. The connector currently uses v3 by default.
+TMDb's [API reference](https://developers.themoviedb.org/3/getting-started/introduction) uses API v3 at present and is currently developing API v4. The TMDb connector uses v3 by default.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                           | Subject        |
 | :------ | :--------- | :----------------------------------------------------- | :------------- |
 | 0.1.0   | 2022-10-27 | [Init](https://github.com/airbytehq/airbyte/pull/18561)| Initial commit |
-
-For more information on how to set up Airbyte connectors, please refer to the [Airbyte documentation](https://docs.airbyte.io/).
