@@ -25,6 +25,9 @@
     "protected": {
       "type": ["null", "boolean"]
     },
+    "commit": {
+      "type": ["null", "object"]
+    },
     "commit_id": {
       "type": ["null", "string"]
     },

@@ -38,6 +38,9 @@
         "type": ["null", "string"]
       }
     },
+    "milestone": {
+      "type": ["null", "object"]
+    },
     "milestone_id": {
       "type": ["null", "integer"]
     },
@@ -47,8 +50,14 @@
         "type": ["null", "integer"]
       }
     },
+    "assignee": {
+      "type": ["null", "object"]
+    },
     "assignee_id": {
       "type": ["null", "integer"]
+    },
+    "author": {
+      "type": ["null", "object"]
     },
     "author_id": {
       "type": ["null", "integer"]

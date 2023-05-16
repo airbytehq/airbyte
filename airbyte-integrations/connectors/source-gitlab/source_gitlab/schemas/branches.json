@@ -31,6 +31,9 @@
     },
     "commit_id": {
       "type": ["null", "string"]
+    },
+    "commit": {
+      "type": ["null", "object"]
     }
   }
 }

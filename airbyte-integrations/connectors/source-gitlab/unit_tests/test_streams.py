@@ -43,14 +43,14 @@ test_cases = (
                 ]
             ),
         ),
-        [{"commit_id": "c_23", "id": "j_1", "pipeline_id": "p_17", "project_id": "p_1", "runner_id": None, "user_id": "u_1"}]
+        [{"commit": {"id": "c_23"}, "commit_id": "c_23", "id": "j_1", "pipeline": {"id": "p_17"}, "pipeline_id": "p_17", "project_id": "p_1", "runner": None, "runner_id": None, "user": {"id": "u_1"}, "user_id": "u_1"}]
     ),
     (
         tags,
         (
             ("/api/v4/projects/p_1/repository/tags", [{"commit": {"id": "c_1"}, "name": "t_1", "target": "ddc89"}],),
         ),
-        [{"commit_id": "c_1", "project_id": "p_1", "name": "t_1", "target": "ddc89"}]
+        [{"commit": {"id": "c_1"}, "commit_id": "c_1", "project_id": "p_1", "name": "t_1", "target": "ddc89"}]
     ),
     (
         releases,
@@ -67,7 +67,7 @@ test_cases = (
                 ],
             ),
         ),
-        [{"author_id": "666", "commit_id": "abcd689", "id": "r_1", "milestones": ["m1", "m2"], "project_id": "p_1"}]
+        [{"author": {"id": "666", "name": "John"}, "author_id": "666", "commit": {"id": "abcd689"}, "commit_id": "abcd689", "id": "r_1", "milestones": ["m1", "m2"], "project_id": "p_1"}]
     ),
     (
         merge_request_commits,

@@ -65,8 +65,14 @@
     "_links": {
       "type": ["null", "object"]
     },
+    "author": {
+      "type": ["null", "object"]
+    },
     "author_id": {
       "type": ["null", "integer"]
+    },
+    "commit": {
+      "type": ["null", "object"]
     },
     "commit_id": {
       "type": ["null", "string"]
