@@ -102,7 +102,7 @@ public class IncrementalUtils {
       return 1;
     }
 
-    if (original == null) {
+    if (original == null) { // candidate > original
       return -1;
     }
 
@@ -114,14 +114,14 @@ public class IncrementalUtils {
 
 
     if (originalBlock < candidateBlock) {
-      return 1;
-    } else if (originalBlock > candidateBlock) {
       return -1;
+    } else if (originalBlock > candidateBlock) {
+      return 1;
     } else {
       if (originalIndex < candidateIndex) {
-        return 1;
-      } else if (originalIndex > candidateIndex) {
         return -1;
+      } else if (originalIndex > candidateIndex) {
+        return 1;
       } else {
         return 0;
       }
