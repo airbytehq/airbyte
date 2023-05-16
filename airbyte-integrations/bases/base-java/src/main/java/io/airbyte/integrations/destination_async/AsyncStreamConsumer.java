@@ -279,11 +279,12 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
       }
 
       // otherwise, if each individual stream has crossed a specific threshold, flush
-      for (Map.Entry<StreamDescriptor, LinkedBlockingQueue<AirbyteMessage>> entry : bufferManagerDequeue.getBuffers().entrySet()) {
+      for (Map.Entry<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> entry : bufferManagerDequeue.getBuffers().entrySet()) {
         final var stream = entry.getKey();
         final var exceedSize = bufferManagerDequeue.getQueueSizeInMb(stream) >= MAX_QUEUE_SIZE_BYTES;
         final var tooLongSinceLastRecord = bufferManagerDequeue.getTimeOfLastRecord(stream)
-            .isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES));
+                .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
+                .orElse(false);
         if (exceedSize || tooLongSinceLastRecord) {
           flush(stream);
         }
@@ -299,7 +300,8 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     private void flush(final StreamDescriptor desc) {
       workerPool.execute(() -> {
         final var queue = bufferManagerDequeue.getBuffer(desc);
-        flusher.flush(desc, queue.stream());
+        // todo(charles): should not need to know about memory blocking nonsense.
+        flusher.flush(desc, queue.stream().map(MemoryBoundedLinkedBlockingQueue.MemoryItem::item));
       });
     }
 
@@ -310,7 +312,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
   }
 
-  interface StreamDestinationFlusher {
+  public interface StreamDestinationFlusher {
 
     void flush(StreamDescriptor decs, Stream<AirbyteMessage> stream);
 

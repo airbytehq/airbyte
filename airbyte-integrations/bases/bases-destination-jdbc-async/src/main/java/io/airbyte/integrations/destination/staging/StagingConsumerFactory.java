@@ -100,7 +100,8 @@ public class StagingConsumerFactory {
         onStartFunction(database, stagingOperations, writeConfigs),
         // todo (cgardens) - wrapping the old close function to avoid more code churn.
         () -> onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData).accept(false),
-        catalog,
+        null,
+            catalog,
         stagingOperations::isValidData,
         new BufferManager());
   }
