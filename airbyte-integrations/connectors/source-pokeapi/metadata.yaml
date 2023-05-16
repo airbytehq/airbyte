@@ -7,7 +7,7 @@ data:
   githubIssueLabel: source-pokeapi
   icon: pokeapi.svg
   license: MIT
-  name: PokeAPI
+  name: Poke API
   registries:
     cloud:
       enabled: true
