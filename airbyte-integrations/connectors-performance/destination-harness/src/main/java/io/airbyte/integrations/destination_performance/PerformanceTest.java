@@ -51,9 +51,9 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * This is a crude copy of {@link io.airbyte.workers.general.DefaultReplicationWorker} where if that
- * class changes this class will need to be updated to match as this class mocks the functionality of
- * the platform from the perspectives of the platform communicating with the destination by sending
- * AirbyteRecordMessages the same way platform pipes data into the destination
+ * class changes this class will need to be updated to match as this class mocks the functionality
+ * of the platform from the perspectives of the platform communicating with the destination by
+ * sending AirbyteRecordMessages the same way platform pipes data into the destination
  */
 @Slf4j
 public class PerformanceTest {
@@ -83,10 +83,15 @@ public class PerformanceTest {
 
   /**
    * Runs performance test
-   * <p>1. Spins up a destination connector
-   * <p>2. Loads data from URL
-   * <p>3. Processes each record and sends to destination
-   * <p>4. Tears down destination after completion
+   * <p>
+   * 1. Spins up a destination connector
+   * <p>
+   * 2. Loads data from URL
+   * <p>
+   * 3. Processes each record and sends to destination
+   * <p>
+   * 4. Tears down destination after completion
+   *
    * @throws Exception
    */
   void runTest() throws Exception {
@@ -227,4 +232,5 @@ public class PerformanceTest {
   private static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {
     return Jsons.object(Jsons.jsonNode(v1), klass);
   }
+
 }
