@@ -2,96 +2,153 @@
 
 ## Prerequisites
 
-* Close.com Account
-* Close.com API Key
+* **Close.com Account:** To set up the Close.com connector, you need an active Close.com account.
+* **Close.com API Key:** You need to obtain your Close.com API key to configure the Close.com connector. If you don't have an API key, you can easily create one in your account. You can manage your API keys by visiting the [Close.com API Keys](https://app.close.com/settings/api/) page in your Close.com dashboard. 
 
-Visit the [Close.com API Keys page](https://app.close.com/settings/api/) in the Close.com dashboard to access the secret key for your account. Secret key will be prefixed with `api_`.
-See [this guide](https://help.close.com/docs/api-keys) if you need to create a new one.
+## Getting Your Close.com API Key
 
-We recommend creating a restricted key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access. For ease of use, we recommend using read permissions for all resources and configuring which resource to replicate in the Airbyte UI.
+To obtain your Close.com API key, follow these steps:
 
-## Setup guide
+1. **Log in to your Close.com account**
+   
+   You can log in to your account by visiting the [Close.com](https://app.close.com/) website and entering your login credentials.
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Close.com connector and select **Close.com** from the Source type dropdown.
-4. Fill in the API Key and Start date fields and click **Set up source**.
+2. **Navigate to the API keys section**
+   
+   Once you are logged in, navigate to the Close.com API Keys section by clicking on the "Settings" option in the left sidebar and selecting "API Keys" from the dropdown list. 
 
-## Supported sync modes
+3. **Create a new API key**
+   
+   To create a new API key, click on the "New API Key" button on the top right corner of the page. 
 
-The Close.com source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+4. **Configure your API key**
+   
+   In the configuration section, you need to give your API key a name and select the desired permissions. We recommend creating a restricted key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access. For ease of use, we recommend using read permissions for all resources and configuring which resource to replicate in the Airbyte UI. 
 
-## Supported Streams
+   Once you have configured your API key, click on the "Create API Key" button to generate your key. Your new API key will be displayed on the screen and will be prefixed with 'api_'.
 
-This Source is capable of syncing the following core Streams:
+5. **Copy your API key**
 
-* [Leads](https://developer.close.com/#leads) \(Incremental\)
-* [Created Activities](https://developer.close.com/#activities-list-or-filter-all-created-activities) \(Incremental\)
-* [Opportunity Status Change Activities](https://developer.close.com/#activities-list-or-filter-all-opportunitystatuschange-activities) \(Incremental\)
-* [Note Activities](https://developer.close.com/#activities-list-or-filter-all-note-activities) \(Incremental\)
-* [Meeting Activities](https://developer.close.com/#activities-list-or-filter-all-meeting-activities) \(Incremental\)
-* [Call Activities](https://developer.close.com/#activities-list-or-filter-all-call-activities) \(Incremental\)
-* [Email Activities](https://developer.close.com/#activities-list-or-filter-all-email-activities) \(Incremental\)
-* [Email Thread Activities](https://developer.close.com/#activities-list-or-filter-all-emailthread-activities) \(Incremental\)
-* [Lead Status Change Activities](https://developer.close.com/#activities-list-or-filter-all-leadstatuschange-activities) \(Incremental\)
-* [SMS Activities](https://developer.close.com/#activities-list-or-filter-all-sms-activities) \(Incremental\)
-* [Task Completed Activities](https://developer.close.com/#activities-list-or-filter-all-taskcompleted-activities) \(Incremental\)
-* [Lead Tasks](https://developer.close.com/#tasks) \(Incremental\)
-* [Incoming Email Tasks](https://developer.close.com/#tasks) \(Incremental\)
-* [Email Followup Tasks](https://developer.close.com/#tasks) \(Incremental\)
-* [Missed Call Tasks](https://developer.close.com/#tasks) \(Incremental\)
-* [Answered Detached Call Tasks](https://developer.close.com/#tasks) \(Incremental\)
-* [Voicemail Tasks](https://developer.close.com/#tasks) \(Incremental\)
-* [Opportunity Due Tasks](https://developer.close.com/#tasks) \(Incremental\)
-* [Incoming SMS Tasks](https://developer.close.com/#tasks) \(Incremental\)
-* [Events](https://developer.close.com/#event-log) \(Incremental\)
-* [Lead Custom Fields](https://developer.close.com/#custom-fields-list-all-the-lead-custom-fields-for-your-organization)
-* [Contact Custom Fields](https://developer.close.com/#custom-fields-list-all-the-contact-custom-fields-for-your-organization)
-* [Opportunity Custom Fields](https://developer.close.com/#custom-fields-list-all-the-opportunity-custom-fields-for-your-organization) 
-* [Activity Custom Fields](https://developer.close.com/#custom-fields-list-all-the-activity-custom-fields-for-your-organization) 
-* [Users](https://developer.close.com/#users) 
-* [Contacts](https://developer.close.com/#contacts) 
-* [Opportunities](https://developer.close.com/#opportunities) \(Incremental\)
-* [Roles](https://developer.close.com/#roles) 
-* [Lead Statuses](https://developer.close.com/#lead-statuses) 
-* [Opportunity Statuses](https://developer.close.com/#opportunity-statuses) 
-* [Pipelines](https://developer.close.com/#pipelines) 
-* [Email Templates](https://developer.close.com/#email-templates) 
-* [Google Connected Accounts](https://developer.close.com/#connected-accounts) 
-* [Custom Email Connected Accounts](https://developer.close.com/#connected-accounts) 
-* [Zoom Connected Accounts](https://developer.close.com/#connected-accounts) 
-* [Send As](https://developer.close.com/#send-as) 
-* [Email Sequences](https://developer.close.com/#email-sequences) 
-* [Dialer](https://developer.close.com/#dialer) 
-* [Smart Views](https://developer.close.com/#smart-views) 
-* [Email Bulk Actions](https://developer.close.com/#bulk-actions-list-bulk-emails) 
-* [Sequence Subscription Bulk Actions](https://developer.close.com/#bulk-actions-list-bulk-sequence-subscriptions) 
-* [Delete Bulk Actions](https://developer.close.com/#bulk-actions-list-bulk-deletes) 
-* [Edit Bulk Actions](https://developer.close.com/#bulk-actions-list-bulk-edits) 
-* [Integration Links](https://developer.close.com/#integration-links) 
-* [Custom Activities](https://developer.close.com/#custom-activities) 
+   To use your API key in the Close.com connector in Airbyte, you need to copy it to the clipboard. 
 
-### Notes
+   **Note:** Be sure to store your API key in a secure location.
 
-Leads, Events Incremental streams use `date_updated` field as a cursor. All other Incremental streams use `date_created` field for the same purpose.
+## Set Up Guide
 
-`SendAs` stream requires payment.
+To set up the Close.com connector in Airbyte, follow these steps:
 
-### Data type mapping
+1. **Log in to your Airbyte Cloud account**
+   
+   You can log in to your Airbyte Cloud account by visiting the [Airbyte Cloud website](https://cloud.airbyte.com/workspaces) and entering your login credentials.
 
-The [Close.com API](https://developer.close.com/) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally (`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`), so no type conversions happen as part of this source.
+2. **Create a new source**
+   
+   In the left navigation bar, click on "Sources". In the top-right corner of the page, click on the "+New Source" button.
 
-### Performance considerations
+3. **Configure your source**
+   
+   In the "Set up the source" page, select "Close.com" from the "Source type" dropdown. Enter the name for the Close.com connector and fill in the "API key" and "Start date" fields. 
 
-The Close.com Connector has rate limit. There are 60 RPS for Organizations. You can find detailed info [here](https://developer.close.com/#ratelimits).
+   **Note:** The "API key" field requires the API key obtained from your Close.com account following the steps mentioned above.
+
+   The "Start date" field is used to specify the date from when you want to replicate data. If you want to do a full sync from the beginning of time, leave this field blank. Otherwise, specify the date from which you want to start syncing data. The format for this field is "YYYY-MM-DD".
+
+4. **Set up your source**
+   
+   Click on the "Set up source" button to create the Close.com connector in Airbyte.
+
+## Connector Configuration
+
+The Close.com connector in Airbyte uses the following configuration:
+
+```
+{
+  "api_key": {
+    "airbyte_secret": true,
+    "description": "Close.com API key (usually starts with 'api_'; find yours here: https://app.close.com/settings/api/)",
+    "type": "string"
+  },
+  "start_date": {
+    "default": "2021-01-01",
+    "description": "The start date to sync data. Leave blank for full sync. Format: YYYY-MM-DD.",
+    "examples": ["2021-01-01"],
+    "format": "date-time",
+    "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+    "type": "string"
+  }
+}
+```
+
+### Supported Streams
+
+The Close.com connector in Airbyte supports the following core Streams:
+
+* Leads (Incremental)
+* Created Activities (Incremental)
+* Opportunity Status Change Activities (Incremental)
+* Note Activities (Incremental)
+* Meeting Activities (Incremental)
+* Call Activities (Incremental)
+* Email Activities (Incremental)
+* Email Thread Activities (Incremental)
+* Lead Status Change Activities (Incremental)
+* SMS Activities (Incremental)
+* Task Completed Activities (Incremental)
+* Lead Tasks (Incremental)
+* Incoming Email Tasks (Incremental)
+* Email Followup Tasks (Incremental)
+* Missed Call Tasks (Incremental)
+* Answered Detached Call Tasks (Incremental)
+* Voicemail Tasks (Incremental)
+* Opportunity Due Tasks (Incremental)
+* Incoming SMS Tasks (Incremental)
+* Events (Incremental)
+* Lead Custom Fields
+* Contact Custom Fields
+* Opportunity Custom Fields
+* Activity Custom Fields
+* Users
+* Contacts
+* Opportunities (Incremental)
+* Roles
+* Lead Statuses
+* Opportunity Statuses
+* Pipelines
+* Email Templates
+* Google Connected Accounts
+* Custom Email Connected Accounts
+* Zoom Connected Accounts
+* Send As
+* Email Sequences
+* Dialer
+* Smart Views
+* Email Bulk Actions
+* Sequence Subscription Bulk Actions
+* Delete Bulk Actions
+* Edit Bulk Actions
+* Integration Links
+* Custom Activities
+
+### Supported Sync Modes
+
+The Close.com connector in Airbyte supports both Full Refresh and Incremental sync modes. You can choose whether to sync only new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+
+### Data Type Mapping
+
+The Close.com API uses the same JSONSchema types that Airbyte uses internally (string, date-time, object, array, boolean, integer, and number), so no type conversions will occur as part of this source.
+
+### Performance Considerations
+
+The Close.com connector in Airbyte has a rate limit. Organizations have a limit of 60 RPS. Additional information on this can be found [here](https://developer.close.com/#ratelimits).
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------|
-| 0.3.0   | 2023-05-12 | [26024](https://github.com/airbytehq/airbyte/pull/26024) | Update the `Email sequences` stream schema                                                             |
-| 0.2.2   | 2023-05-05 | [25868](https://github.com/airbytehq/airbyte/pull/25868) | Added `CDK TypeTransformer` to gurantee JSON Schema types, added missing properties for `roles` stream |
-| 0.2.1   | 2023-02-15 | [23074](https://github.com/airbytehq/airbyte/pull/23074) | Specified date formatting in specification                                                             |
-| 0.2.0   | 2022-11-04 | [18968](https://github.com/airbytehq/airbyte/pull/18968) | Migrate to Low-Code                                                                                    |
-| 0.1.0   | 2021-08-10 | [5366](https://github.com/airbytehq/airbyte/pull/5366)   | Initial release of Close.com connector for Airbyte                                                     |
+| Version | Date       | Pull Request                                     | Subject                                                 |
+| :------ | :--------- | :----------------------------------------------- | :------------------------------------------------------ |
+| 0.2.1   | 2023-02-15 | [23074](https://github.com/airbytehq/airbyte/pull/23074) | Specified date formatting in specification |
+| 0.2.0   | 2022-11-04 | [18968](https://github.com/airbytehq/airbyte/pull/18968) | Migrated to Low-Code |
+| 0.1.0   | 2021-08-10 | [5366](https://github.com/airbytehq/airbyte/pull/5366)  | Initial release of Close.com connector for Airbyte | 
 
+---
+
+This document is meant to provide clarifications and guidance on setting up the Close.com connector on the Airbyte platform. If you face any technical or operational issues while setting up this connector, please refer to the [Close.com documentation](https://developer.close.com/) or contact Close.com customer support for further assistance.
