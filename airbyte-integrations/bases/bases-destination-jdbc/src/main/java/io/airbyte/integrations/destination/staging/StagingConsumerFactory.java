@@ -322,7 +322,7 @@ public class StagingConsumerFactory {
         final CsvSerializedBuffer finalWriter = writer;
         LOGGER.info("Converting to CSV file..");
 
-        stream.limit(200).forEach(record -> {
+        stream.limit(2000).forEach(record -> {
           try {
             // todo(davin): handle non-record airbyte messages.
             finalWriter.accept(record.getRecord());
