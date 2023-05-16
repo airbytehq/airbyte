@@ -9,7 +9,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.*;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -17,7 +16,7 @@ public class BufferManager implements AutoCloseable {
 
   public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.8);
   public static final long BLOCK_SIZE_BYTES = 10 * 1024 * 1024;
-  public static final long INITIAL_QUEUE_SIZE_BYTES =  BLOCK_SIZE_BYTES;
+  public static final long INITIAL_QUEUE_SIZE_BYTES = BLOCK_SIZE_BYTES;
   public static final long MAX_CONCURRENT_QUEUES = 10L;
   public static final long MAX_QUEUE_SIZE_BYTES = TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES / MAX_CONCURRENT_QUEUES;
 
@@ -59,7 +58,8 @@ public class BufferManager implements AutoCloseable {
     private final GlobalMemoryManager memoryManager;
     private final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
 
-    public BufferManagerEnqueue(final GlobalMemoryManager memoryManager, final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
+    public BufferManagerEnqueue(final GlobalMemoryManager memoryManager,
+                                final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
       this.memoryManager = memoryManager;
       this.buffers = buffers;
       recordSizeEstimator = new RecordSizeEstimator();
@@ -98,7 +98,8 @@ public class BufferManager implements AutoCloseable {
     private final GlobalMemoryManager memoryManager;
     private final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
 
-    public BufferManagerDequeue(final GlobalMemoryManager memoryManager, final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
+    public BufferManagerDequeue(final GlobalMemoryManager memoryManager,
+                                final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
       this.memoryManager = memoryManager;
       this.buffers = buffers;
     }
@@ -129,6 +130,7 @@ public class BufferManager implements AutoCloseable {
     }
 
     class Batch implements AutoCloseable {
+
       private long memUsageBytes = 1000;
       private GlobalMemoryManager memoryManager;
       List<AirbyteMessage> batch;
@@ -141,11 +143,13 @@ public class BufferManager implements AutoCloseable {
       public void close() throws Exception {
         memoryManager.free(memUsageBytes);
       }
+
     }
 
   }
 
   static class GlobalMemoryManager {
+
     public static final long BLOCK_SIZE_BYTES = 10 * 1024 * 1024;
     private long currentMemoryBytes = 0L;
     private final long maxMemoryBytes;
@@ -175,7 +179,7 @@ public class BufferManager implements AutoCloseable {
 
     public void monitorMemory() {
       while (true) {
-        //loop over all queues and free what is not used
+        // loop over all queues and free what is not used
       }
     }
 
