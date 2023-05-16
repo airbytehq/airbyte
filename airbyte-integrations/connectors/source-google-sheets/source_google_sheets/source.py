@@ -8,6 +8,7 @@ import socket
 from typing import Any, Generator, List, MutableMapping, Union
 
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -18,12 +19,11 @@ from airbyte_cdk.models.airbyte_protocol import (
     Type,
 )
 from airbyte_cdk.sources.source import Source
+from airbyte_cdk.utils import AirbyteTracedException
 from apiclient import errors
 from google.auth import exceptions as google_exceptions
 from requests.status_codes import codes as status_codes
 
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils import AirbyteTracedException
 from .client import GoogleSheetsClient
 from .helpers import Helpers
 from .models.spreadsheet import Spreadsheet
