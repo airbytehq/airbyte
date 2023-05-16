@@ -76,6 +76,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -331,35 +332,47 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
               final String quotedCursorField = enquoteIdentifier(cursorInfo.getCursorField(), getQuoteString());
 
               final String operator;
-              if (cursorInfo.getCursorRecordCount() <= 0L) {
-                operator = ">";
+              final String wrappedColumnNames = getWrappedColumnNames(database, connection, columnNames, schemaName, tableName);
+              if (cursorInfo.getCursor().startsWith("ctid:")) {
+                final var ctidCursor = "'" + StringUtils.replace(cursorInfo.getCursor(), "ctid:", "") + "'::tid";
+                final StringBuilder sql = new StringBuilder(String.format("SELECT %s, ctid FROM %s WHERE ctid > ?",
+                    wrappedColumnNames,
+                    fullTableName));
+                final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
+                LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
+                LOGGER.info("ctid cursor value is {}", ctidCursor);
+                preparedStatement.setString(1, ctidCursor);
+                return preparedStatement;
               } else {
-                final long actualRecordCount = getActualCursorRecordCount(
-                    connection, fullTableName, quotedCursorField, cursorFieldType, cursorInfo.getCursor());
-                LOGGER.info("Table {} cursor count: expected {}, actual {}", tableName, cursorInfo.getCursorRecordCount(), actualRecordCount);
-                if (actualRecordCount == cursorInfo.getCursorRecordCount()) {
+
+                if (cursorInfo.getCursorRecordCount() <= 0L) {
                   operator = ">";
                 } else {
-                  operator = ">=";
+                  final long actualRecordCount = getActualCursorRecordCount(
+                      connection, fullTableName, quotedCursorField, cursorFieldType, cursorInfo.getCursor());
+                  LOGGER.info("Table {} cursor count: expected {}, actual {}", tableName, cursorInfo.getCursorRecordCount(), actualRecordCount);
+                  if (actualRecordCount == cursorInfo.getCursorRecordCount()) {
+                    operator = ">";
+                  } else {
+                    operator = ">=";
+                  }
                 }
-              }
+                final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE %s %s ?",
+                    wrappedColumnNames,
+                    fullTableName,
+                    quotedCursorField,
+                    operator));
+                // if the connector emits intermediate states, the incremental query must be sorted by the cursor
+                // field
+                if (getStateEmissionFrequency() > 0) {
+                  sql.append(String.format(" ORDER BY %s ASC", quotedCursorField));
+                }
 
-              final String wrappedColumnNames = getWrappedColumnNames(database, connection, columnNames, schemaName, tableName);
-              final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE %s %s ?",
-                  wrappedColumnNames,
-                  fullTableName,
-                  quotedCursorField,
-                  operator));
-              // if the connector emits intermediate states, the incremental query must be sorted by the cursor
-              // field
-              if (getStateEmissionFrequency() > 0) {
-                sql.append(String.format(" ORDER BY %s ASC", quotedCursorField));
+                final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
+                LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
+                sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
+                return preparedStatement;
               }
-
-              final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
-              LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
-              sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
-              return preparedStatement;
             },
             sourceOperations::rowToJson);
         return AutoCloseableIterators.fromStream(stream, airbyteStream);
