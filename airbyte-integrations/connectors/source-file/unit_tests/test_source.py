@@ -131,6 +131,12 @@ def test_check_invalid_config(source, invalid_config):
     assert actual.status == expected.status
 
 
+def test_check_invalid_reader_options(source, invalid_reader_options_config):
+    expected = AirbyteConnectionStatus(status=Status.FAILED)
+    actual = source.check(logger=logger, config=invalid_reader_options_config)
+    assert actual.status == expected.status
+
+
 def test_discover_dropbox_link(source, config_dropbox_link):
     source.discover(logger=logger, config=config_dropbox_link)
 
@@ -151,7 +157,7 @@ def test_discover(source, config, client):
 def test_check_wrong_reader_options(source, config):
     config["reader_options"] = '{encoding":"utf_16"}'
     assert source.check(logger=logger, config=config) == AirbyteConnectionStatus(
-        status=Status.FAILED, message="Field 'reader_options' is not valid JSON. https://www.json.org/"
+        status=Status.FAILED, message="Field 'reader_options' is not valid JSON object. https://www.json.org/"
     )
 
 
