@@ -57,7 +57,7 @@ class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
     http_method = "POST"
     raise_on_http_errors = True
 
-    def __init__(self, *, config: Mapping[str, Any], **kwargs):
+    def __init__(self, *, config: MutableMapping[str, Any], **kwargs):
         super().__init__(**kwargs)
         self._config = config
 
@@ -154,13 +154,21 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         r = response.json()
 
-        if all(key in r for key in ["limit", "offset", "rowCount"]):
-            limit, offset, total_rows = r["limit"], r["offset"], r["rowCount"]
+        if "rowCount" in r:
+            limit = int(self.config["limit"])
+            total_rows = r["rowCount"]
+            if "next_page_offset" in self.config and self.config["next_page_offset"] is not None:
+                offset = int(self.config["next_page_offset"])
+            else:
+                offset = int(self.config["offset"])
 
-            if total_rows <= offset:
+            if total_rows <= offset + limit:
+                self.config["next_page_offset"] = None
                 return None
 
-            return {"limit": limit, "offset": offset + limit}
+            self.config["next_page_offset"] = str(offset + limit)
+
+            return {"limit": str(limit), "next_page_offset": str(offset + limit)}
 
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -201,12 +209,22 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
+
+        self.config["offset"] = str(self.config.get("offset", "0"))
+        self.config["limit"] = str(self.config.get("limit", "10000"))
+
         payload = {
             "metrics": [{"name": m} for m in self.config["metrics"]],
             "dimensions": [{"name": d} for d in self.config["dimensions"]],
             "dateRanges": [stream_slice],
             "returnPropertyQuota": True,
+            "offset": self.config['next_page_offset'] if next_page_token else self.config["offset"],
+            "limit": self.config["limit"]
         }
+        if "dimensionFilter" in self.config:
+            payload.update({"dimensionFilter": self.config["dimensionFilter"]})
+        if "metricFilter" in self.config:
+            payload.update({"dimensionFilter": self.config["metricFilter"]})
         return payload
 
     def stream_slices(
@@ -398,8 +416,20 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
     def instantiate_report_class(report: dict, config: Mapping[str, Any]) -> GoogleAnalyticsDataApiBaseStream:
         cohort_spec = report.get("cohortSpec")
         pivots = report.get("pivots")
-        stream_config = {"metrics": report["metrics"], "dimensions": report["dimensions"], **config}
+        dimension_filter = report.get('dimensionFilter')
+        metric_filter = report.get('metricFilter')
+        stream_config = {
+            "metrics": report["metrics"],
+            "dimensions": report["dimensions"],
+            "offset": report.get("offset", "0"),
+            "limit": report.get("limit", "10000"),
+            **config
+        }
         report_class_tuple = (GoogleAnalyticsDataApiBaseStream,)
+        if dimension_filter:
+            stream_config["dimensionFilter"] = dimension_filter
+        if metric_filter:
+            stream_config["metricFilter"] = metric_filter
         if pivots:
             stream_config["pivots"] = pivots
             report_class_tuple = (PivotReport,)

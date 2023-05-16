@@ -88,6 +88,8 @@ def test_request_body_json(patch_base_class):
         ],
         "dateRanges": [request_body_params["stream_slice"]],
         "returnPropertyQuota": True,
+        "offset": "0",
+        "limit": "10000"
     }
 
     request_body_json = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"]).request_body_json(**request_body_params)
@@ -95,23 +97,27 @@ def test_request_body_json(patch_base_class):
 
 
 def test_next_page_token_equal_chunk(patch_base_class):
-    stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
+    additional_config = {
+        "offset": "0",
+        "limit": "10000"
+    }
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"] | additional_config)
     response = MagicMock()
     response.json.side_effect = [
-        {"limit": 100000, "offset": 0, "rowCount": 200000},
-        {"limit": 100000, "offset": 100000, "rowCount": 200000},
-        {"limit": 100000, "offset": 200000, "rowCount": 200000},
+        {"rowCount": 30000},
+        {"rowCount": 30000},
+        {"rowCount": 30000},
     ]
     inputs = {"response": response}
 
     expected_tokens = [
         {
-            "limit": 100000,
-            "offset": 100000,
+            "limit": "10000",
+            "next_page_offset": "10000",
         },
         {
-            "limit": 100000,
-            "offset": 200000,
+            "limit": "10000",
+            "next_page_offset": "20000",
         },
         None,
     ]
@@ -121,28 +127,37 @@ def test_next_page_token_equal_chunk(patch_base_class):
 
 
 def test_next_page_token(patch_base_class):
-    stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
+    additional_config = {
+        "offset": "0",
+        "limit": "100000"
+    }
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"] | additional_config)
     response = MagicMock()
     response.json.side_effect = [
-        {"limit": 100000, "offset": 0, "rowCount": 250000},
-        {"limit": 100000, "offset": 100000, "rowCount": 250000},
-        {"limit": 100000, "offset": 200000, "rowCount": 250000},
-        {"limit": 100000, "offset": 300000, "rowCount": 250000},
+        {"rowCount": 450000},
+        {"rowCount": 450000},
+        {"rowCount": 450000},
+        {"rowCount": 450000},
+        {"rowCount": 450000},
     ]
     inputs = {"response": response}
 
     expected_tokens = [
         {
-            "limit": 100000,
-            "offset": 100000,
+            "limit": "100000",
+            "next_page_offset": "100000",
         },
         {
-            "limit": 100000,
-            "offset": 200000,
+            "limit": "100000",
+            "next_page_offset": "200000",
         },
         {
-            "limit": 100000,
-            "offset": 300000,
+            "limit": "100000",
+            "next_page_offset": "300000",
+        },
+        {
+            "limit": "100000",
+            "next_page_offset": "400000",
         },
         None,
     ]
