@@ -637,7 +637,7 @@
 - name: File (CSV, JSON, Excel, Feather, Parquet)
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.3.4
+  dockerImageTag: 0.3.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/file
   icon: file.svg
   sourceType: file
@@ -805,7 +805,7 @@
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.2.17
+  dockerImageTag: 0.2.18
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   icon: google-adwords.svg
   sourceType: api
@@ -1027,7 +1027,7 @@
 - name: Iterable
   sourceDefinitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
   dockerRepository: airbyte/source-iterable
-  dockerImageTag: 0.1.27
+  dockerImageTag: 0.1.28
   documentationUrl: https://docs.airbyte.com/integrations/sources/iterable
   icon: iterable.svg
   sourceType: api
@@ -1550,7 +1550,7 @@
 - name: Pinterest
   sourceDefinitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-pinterest
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.4.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/pinterest
   icon: pinterest.svg
   sourceType: api
@@ -1825,7 +1825,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 2.2.0
+  dockerImageTag: 3.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   icon: s3.svg
   sourceType: file
