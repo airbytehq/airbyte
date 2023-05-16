@@ -64,7 +64,6 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
         .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
         .build());
 
-
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
         .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
