@@ -5,12 +5,15 @@ data:
   dockerImageTag: 0.3.0
   dockerRepository: airbyte/destination-dev-null
   githubIssueLabel: destination-dev-null
+  icon: airbyte.svg
   license: MIT
   name: End-to-End Testing (/dev/null)
   registries:
     cloud:
+      dockerImageTag: 0.2.7
       enabled: true
     oss:
+      dockerImageTag: 0.2.7
       enabled: false
   releaseStage: alpha
   supportUrl: https://docs.airbyte.io/integrations/destinations/e2e-test
