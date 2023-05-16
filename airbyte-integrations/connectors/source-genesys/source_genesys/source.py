@@ -13,23 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_genesys.authenicator import GenesysOAuthAuthenticator
-from source_genesys.analytics_utils import generate_query, parse_analytics_records
-
-
-DEFAULT_ANALYTICS_METRICS = ['nBlindTransferred', 'nCobrowseSessions', 'nConnected', 'nConsult', 'nConsultTransferred',
-                             'nError',
-                             'nOffered', 'nOutbound', 'nOutboundAbandoned', 'nOutboundAttempted', 'nOutboundConnected',
-                             'nOverSla',
-                             'nStateTransitionError', 'nTransferred', 'oExternalMediaCount', 'oMediaCount',
-                             'oMessageTurn',
-                             'oServiceLevel', 'oServiceTarget', 'tAbandon', 'tAcd', 'tAcw', 'tAgentResponseTime',
-                             'tAlert', 'tAnswered',
-                             'tBarging', 'tCoaching', 'tCoachingComplete', 'tConnected', 'tContacting', 'tDialing',
-                             'tFirstConnect',
-                             'tFirstDial', 'tFlowOut', 'tHandle', 'tHeld', 'tHeldComplete', 'tIvr', 'tMonitoring',
-                             'tMonitoringComplete',
-                             'tNotResponding', 'tShortAbandon', 'tTalk', 'tTalkComplete', 'tUserResponseTime',
-                             'tVoicemail', 'tWait']
+from source_genesys.analytics_utils import generate_query, parse_analytics_records, str_timestamp_to_datetime
 
 
 class GenesysStream(HttpStream, ABC):
@@ -73,8 +57,11 @@ class GenesysAnalyticsStream(GenesysStream, IncrementalMixin, ABC):
     cursor_field = "interval_end"
 
     # Init constructor with Parent class args + incremental params
-    def __init__(self, start_date: datetime, *args, **kwargs):
+    def __init__(self, client_id: str, analytics_metrics_list: str, start_date: datetime, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Metrics selection
+        self.analytics_metrics_list = analytics_metrics_list.split(",")
+        self.client_id = client_id
         # Incremental parameters:
         self.start_date = start_date
         self._cursor_value = None
@@ -89,13 +76,14 @@ class GenesysAnalyticsStream(GenesysStream, IncrementalMixin, ABC):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = datetime.strptime(value[self.cursor_field], '%Y-%m-%d')
+        self._cursor_value = str_timestamp_to_datetime(value[self.cursor_field])
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
             if self._cursor_value:
-                latest_record_date = datetime.strptime(record[self.cursor_field], '%Y-%m-%d')
-                self._cursor_value = max(self._cursor_value, latest_record_date)
+                latest_record_date = str_timestamp_to_datetime(record[self.cursor_field])
+                cursor_date = str_timestamp_to_datetime(self._cursor_value)
+                self._cursor_value = max(cursor_date, latest_record_date)
             yield record
 
     def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, Any]]:
@@ -120,8 +108,7 @@ class GenesysAnalyticsStream(GenesysStream, IncrementalMixin, ABC):
         :param stream_state: The existing stream state map to update.
         :return: list of dicts {'date': date_string}.
         """
-        start_date = datetime.strptime(stream_state[self.cursor_field],
-                                       '%Y-%m-%d') if stream_state and self.cursor_field in stream_state else self.start_date
+        start_date = str_timestamp_to_datetime(stream_state[self.cursor_field]) if stream_state and self.cursor_field in stream_state else self.start_date
         return self._chunk_date_range(start_date)
 
     # Override parent http_method() to POST
@@ -148,7 +135,8 @@ class GenesysAnalyticsStream(GenesysStream, IncrementalMixin, ABC):
         # Set query as stream state
         latest_cursor = stream_slice.get('interval_end', None)
         logger.info(f"latest_cursor: {latest_cursor}")
-        stream_state = generate_query(latest_cursor, DEFAULT_ANALYTICS_METRICS)
+        logger.info(f"Initialized metrics: {self.analytics_metrics_list}")
+        stream_state = generate_query(latest_cursor, self.analytics_metrics_list)
 
         return stream_state
 
@@ -166,7 +154,7 @@ class GenesysAnalyticsStream(GenesysStream, IncrementalMixin, ABC):
         # If response json not empty
         if results_json is not None:
             # Return records via metric_record generator
-            yield from parse_analytics_records(results_json)
+            yield from parse_analytics_records(client_id=self.client_id, results_json=results_json)
 
 
 class RoutingOutboundEvents(GenesysStream):
@@ -389,7 +377,12 @@ class SourceGenesys(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        # Fetch valid start date from config
         start_date = datetime.strptime(config['start_date'], '%Y-%m-%d')
+
+        # Fetch client_id + list of metrics for analytics api streams
+        analytics_metrics_list = config['analytics_metrics']
+        client_id = config['client_id']
 
         GENESYS_TENANT_ENDPOINT_MAP: Dict = {
             "Americas (US East)": "https://login.mypurecloud.com",
@@ -427,7 +420,7 @@ class SourceGenesys(AbstractSource):
             TelephonyProvidersEdgesTrunks(**args),
             TelephonyStations(**args),
             # New Streams here:
-            AnalyticsConversations(start_date, **args),
+            AnalyticsConversations(client_id, analytics_metrics_list, start_date, **args),
             #
             UserGroups(**args),
             UserUsers(**args),

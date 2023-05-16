@@ -32,6 +32,17 @@ def create_surrogate_key(*argv) -> str:
     return surr_key
 
 
+def str_timestamp_to_datetime(timestamp_value):
+    logger = init_logger()
+    if isinstance(timestamp_value, str):
+        return datetime.strptime(timestamp_value, '%Y-%m-%d')
+    elif isinstance(timestamp_value, datetime):
+        return timestamp_value
+    else:
+        logger.exception(f"Cannot convert type: {type(timestamp_value)} to datetime!")
+        return timestamp_value
+
+
 def split_utc_timestamp_interval(timestamp_range):
     """
     Split a string interval value into start and end datetime values.
@@ -45,7 +56,7 @@ def split_utc_timestamp_interval(timestamp_range):
     return start_datetime, end_datetime
 
 
-def parse_analytics_records(results_json: dict[str, any]):
+def parse_analytics_records(client_id: str, results_json: dict[str, any]):
     """
     Traverse through the different metric groups within the response
     and validate the record model against AnalyticsMetric() dataclass.
@@ -63,8 +74,9 @@ def parse_analytics_records(results_json: dict[str, any]):
         # Loop through each nested metric in JSON
         for metric in metric_group["data"][0]["metrics"]:
 
-            # Create unique_id (via surrogate_key)
+            # Create unique_id via surrogate_key (client_id+media_type+interval_end+metric)
             unique_id = create_surrogate_key(
+                client_id,
                 metric_group["group"]["mediaType"],
                 end_timestamp,
                 metric["metric"]
@@ -72,10 +84,11 @@ def parse_analytics_records(results_json: dict[str, any]):
             # Flatten metric results into individual records
             metric_record = AnalyticsMetric(
                 unique_id=unique_id,
+                client_id=client_id,
                 media_type=metric_group["group"]["mediaType"],
                 interval_start=start_timestamp,
                 interval_end=end_timestamp,
-                metric=metric["metric"],
+                metric_name=metric["metric"],
                 max=metric.get("stats").get("max", None),
                 min=metric.get("stats").get("min", None),
                 count=metric.get("stats").get("count", None),
