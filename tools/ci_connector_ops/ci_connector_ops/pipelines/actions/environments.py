@@ -670,9 +670,8 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
     return (
         base.with_workdir("/airbyte")
         .with_env_variable("APPLICATION", application)
-        .with_directory("builts_artifacts", build_stage.directory("/airbyte"))
+        .with_mounted_directory("builts_artifacts", build_stage.directory("/airbyte"))
         .with_exec(["sh", "-c", "mv builts_artifacts/* ."])
-        .with_exec(["rm", "-rf", "builts_artifacts"])
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
         .with_entrypoint(entrypoint)
