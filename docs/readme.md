@@ -14,9 +14,7 @@ Next, check out the [step-by-step tutorial](https://docs.airbyte.com/cloud/getti
 
 Browse the [connector catalog](https://docs.airbyte.com/integrations/) to find the connector you want. If the connector is not yet supported on Airbyte Open Source, [build your own connector](https://docs.airbyte.com/connector-development/).
 
-Next, check out the [Airbyte Open Source QuickStart](https://docs.airbyte.com/quickstart/deploy-airbyte). Then learn how to [deploy](https://docs.airbyte.com/deploying-airbyte/local-deployment) and [manage](https://docs.airbyte.com/operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure.
-
-To get help with Airbyte deployments, check out the [Troubleshooting & FAQ](https://docs.airbyte.com/troubleshooting/), chat with Support on [Discourse](https://discuss.airbyte.io/), or join us on [Community Slack](https://slack.airbyte.io/).
+Next, check out the [Airbyte Open Source QuickStart](https://docs.airbyte.com/quickstart/deploy-airbyte). Then learn how to [deploy](https://docs.airbyte.com/deploying-airbyte/local-deployment) and [manage](https://docs.airbyte.com/operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure. 
 
 ### For Airbyte contributors
 

@@ -8,9 +8,12 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 Airbyte provides some Connector Development Kits (CDKs) to help you build connectors.
 
+If you need help from our team for connector development, we offer premium support to our open-source users, [talk to our team](https://airbyte.com/talk-to-sales-premium-support) to get access to it.
+
 ### Connector builder UI
 
 The [connector builder UI](connector-builder-ui/overview.md) is based on the low-code development framework below and allows to develop and use connectors without leaving the Airbyte UI (no local development environment required).
+
 
 ### Low-code Connector-Development Framework
 
