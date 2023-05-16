@@ -17,14 +17,12 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,7 +102,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     // assume the closing upload workers will flush all accepted records.
     onClose.call();
     uploadWorkers.close();
-    bufferManager.close();
+    // bufferManager.close();
     ignoredRecordsTracker.report();
     LOGGER.info("{} closed.", AsyncStreamConsumer.class);
   }
@@ -217,12 +215,13 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
       // todo (cgardens) - replace this with fancy logic to make sure we don't oom.
       if (!buffers.containsKey(streamDescriptor)) {
-        buffers.put(streamDescriptor, new MemoryBoundedLinkedBlockingQueue<>(10)); // todo
+        buffers.put(streamDescriptor, new MemoryBoundedLinkedBlockingQueue<>(1024 * 1024 * 50)); // todo
       }
 
       // todo (cgardens) - handle estimating state message size.
       final long messageSize = message.getType() == Type.RECORD ? recordSizeEstimator.getEstimatedByteSize(message.getRecord()) : 1024;
-      buffers.get(streamDescriptor).offer(message, messageSize);
+      var queue = buffers.get(streamDescriptor);
+      queue.offer(message, messageSize);
     }
 
   }
@@ -255,92 +254,6 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     public Optional<Instant> getTimeOfLastRecord(final StreamDescriptor streamDescriptor) {
       return getBuffer(streamDescriptor).getTimeOfLastMessage();
     }
-
-  }
-
-  /**
-   * In charge of looking for records in queues and efficiently getting those records uploaded.
-   */
-  static class UploadWorkers implements AutoCloseable {
-
-    private static final double TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = Runtime.getRuntime().maxMemory() * 0.8;
-    private static final double MAX_CONCURRENT_QUEUES = 10.0;
-    private static final double MAX_QUEUE_SIZE_BYTES = TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES / MAX_CONCURRENT_QUEUES;
-    private static final long MAX_TIME_BETWEEN_REC_MINS = 15L;
-
-    private static final long SUPERVISOR_INITIAL_DELAY_SECS = 0L;
-    private static final long SUPERVISOR_PERIOD_SECS = 1L;
-    private final ScheduledExecutorService supervisorThread = Executors.newScheduledThreadPool(1);
-    // note: this queue size is unbounded.
-    private final ExecutorService workerPool = Executors.newFixedThreadPool(5);
-    private final BufferManagerDequeue bufferManagerDequeue;
-    private final StreamDestinationFlusher flusher;
-
-    public UploadWorkers(final BufferManagerDequeue bufferManagerDequeue, final StreamDestinationFlusher flusher1) {
-      this.bufferManagerDequeue = bufferManagerDequeue;
-      this.flusher = flusher1;
-    }
-
-    public void start() {
-      supervisorThread.scheduleAtFixedRate(this::retrieveWork, SUPERVISOR_INITIAL_DELAY_SECS, SUPERVISOR_PERIOD_SECS,
-          TimeUnit.SECONDS);
-    }
-
-    private void retrieveWork() {
-      // if the total size is > n, flush all buffers
-      if (bufferManagerDequeue.getTotalGlobalQueueSizeInMb() > TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES) {
-        flushAll();
-      }
-
-      // otherwise, if each individual stream has crossed a specific threshold, flush
-      for (Map.Entry<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> entry : bufferManagerDequeue.getBuffers().entrySet()) {
-        final var stream = entry.getKey();
-        final var exceedSize = bufferManagerDequeue.getQueueSizeInMb(stream) >= MAX_QUEUE_SIZE_BYTES;
-        final var tooLongSinceLastRecord = bufferManagerDequeue.getTimeOfLastRecord(stream)
-            .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
-            .orElse(false);
-        if (exceedSize || tooLongSinceLastRecord) {
-          flush(stream);
-        }
-      }
-    }
-
-    private void flushAll() {
-      for (final StreamDescriptor desc : bufferManagerDequeue.getBuffers().keySet()) {
-        flush(desc);
-      }
-    }
-
-    private void flush(final StreamDescriptor desc) {
-      workerPool.submit(() -> {
-        final var queue = bufferManagerDequeue.getBuffer(desc);
-        // todo(charles): should not need to know about memory blocking nonsense.
-        try {
-          flusher.flush(desc, queue.stream().map(MemoryBoundedLinkedBlockingQueue.MemoryItem::item));
-        } catch (final Exception e) {
-          throw new RuntimeException(e);
-        }
-      });
-    }
-
-    @Override
-    public void close() throws Exception {
-      flushAll();
-
-      supervisorThread.shutdown();
-      var supervisorShut = supervisorThread.awaitTermination(5L, TimeUnit.MINUTES);
-      log.info("Supervisor shut status: {}", supervisorShut);
-
-      workerPool.shutdown();
-      var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
-      log.info("Workers shut status: {}", workersShut);
-    }
-
-  }
-
-  public interface StreamDestinationFlusher {
-
-    void flush(StreamDescriptor decs, Stream<AirbyteMessage> stream) throws Exception;
 
   }
 

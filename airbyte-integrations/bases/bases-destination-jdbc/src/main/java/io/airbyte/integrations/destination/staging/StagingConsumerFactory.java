@@ -26,6 +26,7 @@ import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStra
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
+import io.airbyte.integrations.destination_async.StreamDestinationFlusher;
 import io.airbyte.protocol.models.v0.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,8 +93,8 @@ public class StagingConsumerFactory {
                                             final ConfiguredAirbyteCatalog catalog,
                                             final boolean purgeStagingData) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
-    var pairToWriteConfig = pairToWriteConfig(writeConfigs);
-    var flusher = new StagingAsyncFlusher(pairToWriteConfig, stagingOperations, database, catalog);
+    var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
+    var flusher = new StagingAsyncFlusher(streamDescToWriteConfig, stagingOperations, database, catalog);
     return new AsyncStreamConsumer(
         outputRecordCollector,
         onStartFunction(database, stagingOperations, writeConfigs),
@@ -194,6 +195,10 @@ public class StagingConsumerFactory {
     return new AirbyteStreamNameNamespacePair(config.getStreamName(), config.getNamespace());
   }
 
+  private static StreamDescriptor toStreamDescriptor(final WriteConfig config) {
+    return new StreamDescriptor().withName(config.getStreamName()).withNamespace(config.getNamespace());
+  }
+
   /**
    * Logic handling how destinations with staging areas (aka bucket storages) will flush their buffer
    *
@@ -261,18 +266,41 @@ public class StagingConsumerFactory {
     return pairToWriteConfig;
   }
 
-  class StagingAsyncFlusher implements AsyncStreamConsumer.StreamDestinationFlusher {
+  private static Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig(List<WriteConfig> writeConfigs) {
+    final Set<WriteConfig> conflictingStreams = new HashSet<>();
+    final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig = new HashMap<>();
+    for (final WriteConfig config : writeConfigs) {
+      final StreamDescriptor streamIdentifier = toStreamDescriptor(config);
+      if (streamDescToWriteConfig.containsKey(streamIdentifier)) {
+        conflictingStreams.add(config);
+        final WriteConfig existingConfig = streamDescToWriteConfig.get(streamIdentifier);
+        // The first conflicting stream won't have any problems, so we need to explicitly add it here.
+        conflictingStreams.add(existingConfig);
+      } else {
+        streamDescToWriteConfig.put(streamIdentifier, config);
+      }
+    }
+    if (!conflictingStreams.isEmpty()) {
+      final String message = String.format(
+          "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using ${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
+          conflictingStreams.stream().map(config -> config.getNamespace() + "." + config.getStreamName()).collect(joining(", ")));
+      throw new ConfigErrorException(message);
+    }
+    return streamDescToWriteConfig;
+  }
 
-    private final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig;
+  class StagingAsyncFlusher implements StreamDestinationFlusher {
+
+    private final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig;
     private final StagingOperations stagingOperations;
     private final JdbcDatabase database;
     private final ConfiguredAirbyteCatalog catalog;
 
-    public StagingAsyncFlusher(final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig,
+    public StagingAsyncFlusher(final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
                                final StagingOperations stagingOperations,
                                final JdbcDatabase database,
                                final ConfiguredAirbyteCatalog catalog) {
-      this.pairToWriteConfig = pairToWriteConfig;
+      this.streamDescToWriteConfig = streamDescToWriteConfig;
       this.stagingOperations = stagingOperations;
       this.database = database;
       this.catalog = catalog;
@@ -280,9 +308,10 @@ public class StagingConsumerFactory {
 
     // todo(davin): exceptions are too broad.
     @Override
-    public void flush(StreamDescriptor decs, Stream<AirbyteMessage> stream) throws Exception {
+    public void flush(final StreamDescriptor decs, final Stream<AirbyteMessage> stream) throws Exception {
       // write this to a file - serilizable buffer?
       // where do we create all the write configs?
+      LOGGER.info("Starting staging flush..");
       CsvSerializedBuffer writer = null;
       try {
         writer = new CsvSerializedBuffer(
@@ -291,7 +320,9 @@ public class StagingConsumerFactory {
             true);
 
         CsvSerializedBuffer finalWriter = writer;
-        stream.forEach(record -> {
+        LOGGER.info("Converting to CSV file..");
+
+        stream.limit(10).forEach(record -> {
           try {
             // todo(davin): handle non-record airbyte messages.
             finalWriter.accept(record.getRecord());
@@ -300,22 +331,25 @@ public class StagingConsumerFactory {
           }
         });
       } catch (Exception e) {
+        LOGGER.info("Are we here?: ", e);
         throw new RuntimeException(e);
       }
+
+      LOGGER.info("Converted to CSV file..");
       writer.flush();
-      writer.close();
       LOGGER.info("Flushing buffer for stream {} ({}) to staging", decs.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
-      if (!pairToWriteConfig.containsKey(decs)) {
+      if (!streamDescToWriteConfig.containsKey(decs)) {
         throw new IllegalArgumentException(
             String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));
       }
 
-      final WriteConfig writeConfig = pairToWriteConfig.get(decs);
+      final WriteConfig writeConfig = streamDescToWriteConfig.get(decs);
       final String schemaName = writeConfig.getOutputSchemaName();
       final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
       final String stagingPath =
           stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(), writeConfig.getWriteDatetime());
       try {
+        LOGGER.info("Starting upload to stage..");
         final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
         copyIntoTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(), schemaName,
             stagingOperations);
@@ -323,6 +357,8 @@ public class StagingConsumerFactory {
         LOGGER.error("Failed to flush and commit buffer data into destination's raw table", e);
         throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
       }
+
+      writer.close();
     }
 
   }

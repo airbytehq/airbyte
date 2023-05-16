@@ -9,7 +9,9 @@ import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class MemoryBoundedLinkedBlockingQueue<E> extends LinkedBlockingQueue<MemoryBoundedLinkedBlockingQueue.MemoryItem<E>> {
 
   private final AtomicLong currentMemoryUsage;
@@ -45,9 +47,11 @@ public class MemoryBoundedLinkedBlockingQueue<E> extends LinkedBlockingQueue<Mem
         // it succeeded!
         timeOfLastMessage.set(Instant.now());
       }
+      log.debug("offer status: {}", success);
       return success;
     } else {
       currentMemoryUsage.addAndGet(-itemSizeInBytes);
+      log.debug("offer failed");
       return false;
     }
   }
