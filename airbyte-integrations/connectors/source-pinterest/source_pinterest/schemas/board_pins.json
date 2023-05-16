@@ -13,6 +13,9 @@
       "type": ["null", "string"],
       "enum": ["REGULAR", "VIDEO", "CAROUSEL", "MAX_VIDEO", "SHOP_THE_PIN", "IDEA"]
     },
+    "is_standard": {
+      "type": ["null", "boolean"]
+    },
     "dominant_color": {
       "type": ["null", "string"]
     },
