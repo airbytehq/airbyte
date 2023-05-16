@@ -4,20 +4,17 @@
 
 package io.airbyte.integrations.destination_async;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AsyncStreamConsumer implements AirbyteMessageConsumer {
@@ -26,9 +23,9 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
   private final BufferManagerEnqueue bufferManagerEnqueue;
   private final UploadWorkers uploadWorkers;
 
-  public AsyncStreamConsumer(final BufferManager bufferManager) {
+  public AsyncStreamConsumer(final BufferManager bufferManager, StreamDestinationFlusher flusher) {
     bufferManagerEnqueue = bufferManager.getBufferManagerEnqueue();
-    uploadWorkers = new UploadWorkers(bufferManager.getBufferManagerDequeue());
+    uploadWorkers = new UploadWorkers(bufferManager.getBufferManagerDequeue(), flusher);
   }
 
   @Override
@@ -162,29 +159,17 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     private final ScheduledExecutorService supervisorThread = Executors.newScheduledThreadPool(1);
     // note: this queue size is unbounded.
     private final Executor workerPool = Executors.newFixedThreadPool(5);
-    // using a random string here as a placeholder for the moment.
-    // This would avoid mixing data in the staging area between different syncs (especially if they
-    // manipulate streams with similar names)
-    // if we replaced the random connection id by the actual connection_id, we'd gain the opportunity to
-    // leverage data that was uploaded to stage
-    // in a previous attempt but failed to load to the warehouse for some reason (interrupted?) instead.
-    // This would also allow other programs/scripts
-    // to load (or reload backups?) in the connection's staging area to be loaded at the next sync.
-    // This could be random for every upload command, we keep it stable to preserve the StagingConsumerFactory behaviour.
-    private final UUID RANDOM_CONNECTION_ID = UUID.randomUUID();
     private final BufferManagerDequeue bufferManagerDequeue;
-    private final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig;
-    private final StagingOperations stagingOperations;
+    private final StreamDestinationFlusher flusher;
 
-    public UploadWorkers(final BufferManagerDequeue bufferManagerDequeue,
-                         final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig) {
+    public UploadWorkers(final BufferManagerDequeue bufferManagerDequeue, final StreamDestinationFlusher flusher1) {
       this.bufferManagerDequeue = bufferManagerDequeue;
-      this.streamDescToWriteConfig = streamDescToWriteConfig;
+      this.flusher = flusher1;
     }
 
     public void start() {
       supervisorThread.scheduleAtFixedRate(this::retrieveWork, SUPERVISOR_INITIAL_DELAY_SECS, SUPERVISOR_PERIOD_SECS,
-              TimeUnit.SECONDS);
+          TimeUnit.SECONDS);
     }
 
     private void retrieveWork() {
@@ -194,12 +179,11 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
       }
 
       // otherwise, if each individual stream has crossed a specific threshold, flush
-      for (Map.Entry<StreamDescriptor, LinkedBlockingQueue<AirbyteMessage>> entry:
-              bufferManagerDequeue.getBuffers().entrySet()) {
+      for (Map.Entry<StreamDescriptor, LinkedBlockingQueue<AirbyteMessage>> entry : bufferManagerDequeue.getBuffers().entrySet()) {
         final var stream = entry.getKey();
         final var exceedSize = bufferManagerDequeue.getQueueSizeInMb(stream) >= MAX_QUEUE_SIZE_BYTES;
         final var tooLongSinceLastRecord = bufferManagerDequeue.getTimeOfLastRecord(stream)
-                .isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES));
+            .isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES));
         if (exceedSize || tooLongSinceLastRecord) {
           flush(stream);
         }
@@ -207,69 +191,28 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     }
 
     private void flushAll() {
-      for (final StreamDescriptor desc: bufferManagerDequeue.getBuffers().keySet()) {
+      for (final StreamDescriptor desc : bufferManagerDequeue.getBuffers().keySet()) {
         flush(desc);
       }
     }
 
     private void flush(final StreamDescriptor desc) {
       workerPool.execute(() -> {
-        // create a file buffer
-        log.info("Flushing buffer for stream {} ({}) to staging", desc.getName(),
-                FileUtils.byteCountToDisplaySize(writer.getByteCount()));
-        if (!streamDescToWriteConfig.containsKey(desc)) {
-          throw new IllegalArgumentException(String.format("Message contained record from a stream that was not in the catalog."));
-        }
-
-        // upload this
-        // copy this
-        final WriteConfig writeConfig = streamDescToWriteConfig.get(desc);
-        final String schemaName = writeConfig.outputSchemaName();
-        final String stageName = stagingOperations.getStageName(schemaName, writeConfig.streamName());
-        final String stagingPath =
-                stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, writeConfig.streamName()), writeConfig.writeDateTime());
-        try (writer) {
-          writer.flush();
-          final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
-          copyIntoTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(), schemaName,
-                  stagingOperations);
-        } catch (final Exception e) {
-          log.error("Failed to flush and commit buffer data into destination's raw table", e);
-          throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
-        }
-      };
+        final var queue = bufferManagerDequeue.getBuffer(desc);
+        flusher.flush(desc, queue.stream());
       });
-
-//      return (pair, writer) -> {
-//        // create the write config here for that specific stream
-//        LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
-//        if (!pairToWriteConfig.containsKey(pair)) {
-//          throw new IllegalArgumentException(
-//                  String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));
-//        }
-//
-//        final WriteConfig writeConfig = pairToWriteConfig.get(pair);
-//        final String schemaName = writeConfig.getOutputSchemaName();
-//        final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
-//        final String stagingPath =
-//                stagingOperations.getStagingPath(RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(), writeConfig.getWriteDatetime());
-//        try (writer) {
-//          writer.flush();
-//          final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
-//          copyIntoTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(), schemaName,
-//                  stagingOperations);
-//        } catch (final Exception e) {
-//          LOGGER.error("Failed to flush and commit buffer data into destination's raw table", e);
-//          throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
-//        }
-//      };
     }
-
 
     @Override
     public void close() throws Exception {
 
     }
+
+  }
+
+  interface StreamDestinationFlusher {
+
+    void flush(StreamDescriptor decs, Stream<AirbyteMessage> stream);
 
   }
 
