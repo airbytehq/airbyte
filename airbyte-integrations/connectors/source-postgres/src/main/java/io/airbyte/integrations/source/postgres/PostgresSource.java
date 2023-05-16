@@ -706,6 +706,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       if(selectedColumns==null || selectedColumns.isEmpty())
         return super.getMD5ColumnHashQueryFragment(selectedColumns);
 
-      return Optional.ofNullable(String.format("md5(ROW(%s)::TEXT)", String.join(",", selectedColumns)));
+      return Optional.ofNullable(String.format("md5(concat(%s)::TEXT)", String.join(",", selectedColumns)));
   }
 }
