@@ -93,8 +93,8 @@ public class StagingConsumerFactory {
                                             final ConfiguredAirbyteCatalog catalog,
                                             final boolean purgeStagingData) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
-    var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
-    var flusher = new StagingAsyncFlusher(streamDescToWriteConfig, stagingOperations, database, catalog);
+    final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
+    final var flusher = new StagingAsyncFlusher(streamDescToWriteConfig, stagingOperations, database, catalog);
     return new AsyncStreamConsumer(
         outputRecordCollector,
         onStartFunction(database, stagingOperations, writeConfigs),
@@ -243,7 +243,7 @@ public class StagingConsumerFactory {
     };
   }
 
-  private static Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig(List<WriteConfig> writeConfigs) {
+  private static Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig(final List<WriteConfig> writeConfigs) {
     final Set<WriteConfig> conflictingStreams = new HashSet<>();
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = new HashMap<>();
     for (final WriteConfig config : writeConfigs) {
@@ -266,7 +266,7 @@ public class StagingConsumerFactory {
     return pairToWriteConfig;
   }
 
-  private static Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig(List<WriteConfig> writeConfigs) {
+  private static Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig(final List<WriteConfig> writeConfigs) {
     final Set<WriteConfig> conflictingStreams = new HashSet<>();
     final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig = new HashMap<>();
     for (final WriteConfig config : writeConfigs) {
@@ -319,18 +319,18 @@ public class StagingConsumerFactory {
             new StagingDatabaseCsvSheetGenerator(),
             true);
 
-        CsvSerializedBuffer finalWriter = writer;
+        final CsvSerializedBuffer finalWriter = writer;
         LOGGER.info("Converting to CSV file..");
 
-        stream.limit(10).forEach(record -> {
+        stream.limit(50).forEach(record -> {
           try {
             // todo(davin): handle non-record airbyte messages.
             finalWriter.accept(record.getRecord());
-          } catch (Exception e) {
+          } catch (final Exception e) {
             throw new RuntimeException(e);
           }
         });
-      } catch (Exception e) {
+      } catch (final Exception e) {
         LOGGER.info("Are we here?: ", e);
         throw new RuntimeException(e);
       }
@@ -357,7 +357,6 @@ public class StagingConsumerFactory {
         LOGGER.error("Failed to flush and commit buffer data into destination's raw table", e);
         throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
       }
-
       writer.close();
     }
 

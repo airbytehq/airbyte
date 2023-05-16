@@ -215,12 +215,12 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
       // todo (cgardens) - replace this with fancy logic to make sure we don't oom.
       if (!buffers.containsKey(streamDescriptor)) {
-        buffers.put(streamDescriptor, new MemoryBoundedLinkedBlockingQueue<>(1024 * 1024 * 50)); // todo
+        buffers.put(streamDescriptor, new MemoryBoundedLinkedBlockingQueue<>(1024 * 1024 * 800)); // todo
       }
 
       // todo (cgardens) - handle estimating state message size.
       final long messageSize = message.getType() == Type.RECORD ? recordSizeEstimator.getEstimatedByteSize(message.getRecord()) : 1024;
-      var queue = buffers.get(streamDescriptor);
+      final var queue = buffers.get(streamDescriptor);
       queue.offer(message, messageSize);
     }
 
