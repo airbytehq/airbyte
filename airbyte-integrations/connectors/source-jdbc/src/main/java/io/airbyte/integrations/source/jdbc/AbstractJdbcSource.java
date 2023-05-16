@@ -116,9 +116,9 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     // as intermediate state messages are emitted.
     if (syncMode.equals(SyncMode.INCREMENTAL)) {
       final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
-      return queryTable(database, String.format("SELECT %s FROM %s ORDER BY %s ASC",
+      return queryTable(database, String.format("SELECT %s, ctid FROM %s WHERE ctid > '(0,0)'::tid",
           enquoteIdentifierList(columnNames, getQuoteString()),
-          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField),
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())),
           tableName, schemaName);
     } else {
       // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering
