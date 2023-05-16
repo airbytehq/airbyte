@@ -37,31 +37,25 @@ This Source is capable of syncing the following core Streams:
 
 Commercetools has some [rate limit restrictions](https://docs.commercetools.com/api/limits).
 
-## Getting Started
+## Getting started
 
-Here are the steps needed to set up Commercetools in Airbyte:
-
-1. Log in to your Commercetools account.
-2. Select **API clients** from the main menu to create a new API client.
-3. Give your API client a name and description, e.g., `Airbyte_read_only`.
-4. Generate a password for the client. Save the password as it will not be displayed again.
-5. Select the **Scopes** tab.
-6. Select **Manage Scopes**.
-7. Locate the `OAuth2 Scopes` section. Ensure that the following scopes are enabled:
-   * `view_customers`
-   * `view_orders`
-   * `view_products`
-   * `view_discounts`
-   * `view_payments`
-8. Select the **Create API client** button at the bottom of the page.
-9. After creating the API client, get the project key, client ID, and client secret.
-10. In Airbyte UI, enter the `project_key`, `client_id`, and `client_secret`.
-11. Select the correct `region` of your Commercetools account.
-12. Enter the `start_date` to replicate data. The format should be `YYYY-MM-DD`.
-13. Select the `host` where your shop is hosted. See: [https://docs.commercetools.com/api/authorization](https://docs.commercetools.com/api/authorization).
-14. Test the connection. If it is successful, select **Save & Continue** followed by **Test**. If the test is successful, select **Submit**.
-
-You are now ready to replicate data from Commercetools to Airbyte!
+1. Log in to your Commercetools account or create a new one [here](https://commercetools.com/signup).
+2. Create an [API client](https://docs.commercetools.com/api/authorization/creating-and-managing-clients) in your Commercetools account by following the instructions provided.
+3. Choose the desired scopes for the API client, keeping in mind that Airbyte only needs read-level access.
+    * Note: The user interface will show all possible data sources, and will show errors when syncing if the API client doesn't have permission to access a resource.
+4. Navigate to the [Dashboard](https://docs.commercetools.com/dashboard/?language=en) section of your Commercetools account.
+5. Under the Project Settings section, locate and copy the `projectKey` for the store you wish to replicate data from.
+6. Navigate back to Airbyte.
+7. In the Commercetools configuration page, under "Connection Configuration," fill out the following fields:
+    * `region`: The region of the platform, which can be found in the Commercetools [documentation](https://docs.commercetools.com/api/authorization#regions).
+    * `host`: The cloud provider your shop is hosted on. Choose either `gcp` or `aws`, as per your setup.
+    * `start_date`: The date from which you would like to replicate data. Use the format YYYY-MM-DD.
+    * `project_key`: The `projectKey` you copied earlier.
+    * `client_id`: The `client_id` of the API client you created in step 2.
+    * `client_secret`: The `client_secret` of the API client you created in step 2.
+8. Click "Test Connection" to check that the connection has been successfully established.
+9. If the connection test is successful, click "Create" to create the Commercetools source connector.
+10. You're now ready to use the Commercetools source in Airbyte!
 
 ## Changelog
 
