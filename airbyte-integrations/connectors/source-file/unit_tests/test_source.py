@@ -157,7 +157,7 @@ def test_discover(source, config, client):
 def test_check_wrong_reader_options(source, config):
     config["reader_options"] = '{encoding":"utf_16"}'
     assert source.check(logger=logger, config=config) == AirbyteConnectionStatus(
-        status=Status.FAILED, message="Field 'reader_options' is not valid JSON. https://www.json.org/"
+        status=Status.FAILED, message="Field 'reader_options' is not valid JSON object. https://www.json.org/"
     )
 
 
