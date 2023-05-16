@@ -102,7 +102,7 @@ Your integration and unit tests must be runnable entirely within a Docker image.
 When you submit a PR to Airbyte with your connector, the reviewer will use the commands you provide to integrate your connector into Airbyte's build system as follows:
 
 1. `:airbyte-integrations:connectors:source-<name>:build` should run unit tests and build the integration's Docker image
-2. `:airbyte-integrations:connectors:source-<name>:integrationTest` should run integration tests including Airbyte's Standard test suite.
+2. `:airbyte-integrations:connectors:source-<name>:integrationTest` should run integration tests including Airbyte's Standard test suite. DO NOT COMMIT
 
 ### 4. Publish the connector
 
