@@ -156,6 +156,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final String columnName = metadata.getColumnName(colIndex);
     final ColumnInfo columnInfo = getColumnInfo(colIndex, metadata, columnName);
     final String value = resultSet.getString(colIndex);
+//    LOGGER.info("*** col {} {} {}", columnName, columnInfo.columnTypeName, columnInfo.columnType);
     if (value == null) {
       json.putNull(columnName);
     } else {
@@ -186,6 +187,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "_timestamp" -> putTimestampArray(json, columnName, resultSet, colIndex);
         case "_timetz" -> putTimeTzArray(json, columnName, resultSet, colIndex);
         case "_time" -> putTimeArray(json, columnName, resultSet, colIndex);
+        case "tid" -> {}
         default -> {
           switch (columnInfo.columnType) {
             case BOOLEAN -> json.put(columnName, value.equalsIgnoreCase("t"));
