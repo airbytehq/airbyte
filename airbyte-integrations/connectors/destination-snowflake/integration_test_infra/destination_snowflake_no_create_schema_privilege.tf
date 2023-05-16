@@ -16,6 +16,7 @@ resource "snowflake_user" "no_create_schema_privilege" {
   password = random_password.password.result
   default_role = snowflake_role.airbyte.name
   default_warehouse = snowflake_warehouse.airbyte_warehouse.name
+  default_namespace = snowflake_database.airbyte_database.name
 }
 
 resource "snowflake_role_grants" "no_create_schema_privilege" {
