@@ -80,6 +80,12 @@ class PullConnectorImageFromRegistry(Step):
     title = "Pull connector image from registry"
 
     async def check_if_image_has_zstd_layers(self) -> bool:
+        """Check if the image has zstd layers.
+        Docker version > 21 can create images that has some layers compressed with zstd.
+        These layers are not supported by previous docker versions.
+        We want to make sure that the image we are about to release is compatible with all docker versions.
+        We use crane to inspect the manifest of the image and check if it has zstd layers.
+        """
         for platform in builds.BUILD_PLATFORMS:
 
             inspect = environments.with_crane(self.context).with_exec(
