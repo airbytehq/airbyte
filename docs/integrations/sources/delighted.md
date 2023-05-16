@@ -4,39 +4,40 @@ This page contains the setup guide and reference information for the Delighted s
 
 ## Prerequisites
 
-To set up the Delighted source connector, you'll need the [Delighted API key](https://app.delighted.com/docs/api#authentication). If you're not sure how to generate an API key in Delighted, please follow these steps:
+To set up the Delighted source connector, you'll need a Delighted API key. 
 
-1. Log into your Delighted account at https://delighted.com/.
-2. Click on your name in the top right corner and select "Account" from the dropdown menu.
-3. Click on the "API" tab.
-4. Click "Generate new API key".
-5. Copy the generated key to your clipboard.
+### Obtain a Delighted API Key
+
+1. Log in to your [Delighted account](https://delighted.com/account/login) or create a new one if you haven't already.
+2. Once logged in, navigate to your account [API settings page](https://delighted.com/account/api).
+3. Generate a new API key or use an existing one.
 
 ## Set up the Delighted connector in Airbyte
 
-1. In the Airbyte UI, navigate to the Delighted configuration form.
-2. For **Since**, enter the date from which you'd like to replicate the data in the format `yyyy-mm-ddThh:mm:ss` (e.g., `2022-01-01T00:00:00`).
-3. For **API Key**, paste in the API key you generated from your Delighted account.
-4. Click **Test** to verify the connection between Airbyte and Delighted.
-5. If the connection test completes successfully, click **Save** to save and activate the Delighted connector.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, enter the name for the Delighted connector and select **Delighted** from the Source type dropdown.
+4. For **Since**, enter the date from which you'd like to replicate the data in the `YYYY-MM-DDThh:mm:ssZ` format. For example, `2022-06-01T00:00:00Z`.
+5. For **API Key**, enter the Delighted API key obtained earlier.
+6. Click **Set up source**.
 
 ## Supported sync modes
 
-The Delighted source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Delighted source connector supports the following [sync modes](https://docs.airbyte.io/integrations/sources/delighted):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+* [Full Refresh - Overwrite](https://docs.airbyte.io/integrations/sources/delighted#full-refresh-overwrite)
+* [Full Refresh - Append](https://docs.airbyte.io/integrations/sources/delighted#full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.io/integrations/sources/delighted#incremental-append)
+* [Incremental - Deduped History](https://docs.airbyte.io/integrations/sources/delighted#incremental-deduped-history)
 
 ## Supported Streams
 
 This Source is capable of syncing the following core Streams:
 
-* [Survey Responses](https://app.delighted.com/docs/api/listing-survey-responses)
-* [People](https://app.delighted.com/docs/api/listing-people)
-* [Bounced People](https://app.delighted.com/docs/api/listing-bounced-people)
-* [Unsubscribed People](https://app.delighted.com/docs/api/listing-unsubscribed-people)
+* [Survey Responses](https://docs.airbyte.io/integrations/sources/delighted#survey-responses)
+* [People](https://docs.airbyte.io/integrations/sources/delighted#people)
+* [Bounced People](https://docs.airbyte.io/integrations/sources/delighted#bounced-people)
+* [Unsubscribed People](https://docs.airbyte.io/integrations/sources/delighted#unsubscribed-people)
 
 ## Changelog
 
