@@ -128,7 +128,6 @@ public class IncrementalUtils {
     }
   }
 
-
   private static int getBlockNumber(String ctid) {
     return Integer.parseInt(ctid.replaceAll("[\\[\\](){}]", "").split(",")[0].trim());
   }
