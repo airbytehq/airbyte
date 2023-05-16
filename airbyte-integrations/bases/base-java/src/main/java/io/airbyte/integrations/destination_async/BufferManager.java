@@ -5,13 +5,18 @@
 package io.airbyte.integrations.destination_async;
 
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
+import io.airbyte.integrations.destination_async.MemoryBoundedLinkedBlockingQueue.MemoryItem;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.*;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
+// todo (cgardens) - why is buffer manager autocloseable?
 @Slf4j
 public class BufferManager implements AutoCloseable {
 
@@ -28,7 +33,7 @@ public class BufferManager implements AutoCloseable {
 
   public BufferManager() {
     buffers = new HashMap<>();
-    var memoryManager = new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES);
+    final var memoryManager = new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES);
     bufferManagerEnqueue = new BufferManagerEnqueue(memoryManager, buffers);
     bufferManagerDequeue = new BufferManagerDequeue(memoryManager, buffers);
   }
@@ -107,15 +112,19 @@ public class BufferManager implements AutoCloseable {
       return new HashMap<>(buffers);
     }
 
-    public MemoryBoundedLinkedBlockingQueue<AirbyteMessage> getBuffer(final StreamDescriptor streamDescriptor) {
+    private MemoryBoundedLinkedBlockingQueue<AirbyteMessage> getBuffer(final StreamDescriptor streamDescriptor) {
       return buffers.get(streamDescriptor);
     }
 
-    public long getTotalGlobalQueueSizeInMb() {
+    public long getTotalGlobalQueueSizeBytes() {
       return buffers.values().stream().map(MemoryBoundedLinkedBlockingQueue::getCurrentMemoryUsage).mapToLong(Long::longValue).sum();
     }
 
-    public long getQueueSizeInMb(final StreamDescriptor streamDescriptor) {
+    public long getQueueSizeInRecords(final StreamDescriptor streamDescriptor) {
+      return getBuffer(streamDescriptor).size();
+    }
+
+    public long getQueueSizeBytes(final StreamDescriptor streamDescriptor) {
       return getBuffer(streamDescriptor).getCurrentMemoryUsage();
     }
 
@@ -123,23 +132,54 @@ public class BufferManager implements AutoCloseable {
       return getBuffer(streamDescriptor).getTimeOfLastMessage();
     }
 
-    public Batch take(final StreamDescriptor streamDescriptor, long bytesToRead) {
-      var queue = buffers.get(streamDescriptor);
-      return new Batch(List.of());
+    public Batch take(final StreamDescriptor streamDescriptor, final long bytesToRead) {
+      final var queue = buffers.get(streamDescriptor);
+
+      final AtomicLong bytesRead = new AtomicLong();
+        final var s = Stream.generate(() -> {
+          try {
+            return queue.poll(5, TimeUnit.MILLISECONDS);
+          } catch (final InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }).takeWhile(memoryItem -> {
+              // if no new records after waiting, the stream is done.
+              if(memoryItem == null) {
+                return false;
+              }
+
+              // otherwise pull records until we hit the memory limit.
+              final long newSize = memoryItem.size() + bytesRead.get();
+              if(newSize <= bytesToRead) {
+                bytesRead.addAndGet(memoryItem.size());
+                return true;
+              } else {
+                return false;
+              }
+            }).map(MemoryItem::item);
+
+      return new Batch(s, bytesRead.get(), memoryManager);
     }
 
-    class Batch implements AutoCloseable {
-      private long memUsageBytes = 1000;
-      private GlobalMemoryManager memoryManager;
-      List<AirbyteMessage> batch;
+    public static class Batch implements AutoCloseable {
+      private Stream<AirbyteMessage> batch;
+      private final long sizeInBytes;
+      private final GlobalMemoryManager memoryManager;
 
-      Batch(final List<AirbyteMessage> batch) {
+      public Batch(final Stream<AirbyteMessage> batch, final long sizeInBytes, final GlobalMemoryManager memoryManager) {
         this.batch = batch;
+        this.sizeInBytes = sizeInBytes;
+        this.memoryManager = memoryManager;
+      }
+
+      public Stream<AirbyteMessage> getData() {
+        return batch;
       }
 
       @Override
       public void close() throws Exception {
-        memoryManager.free(memUsageBytes);
+        batch = null;
+        memoryManager.free(sizeInBytes);
       }
     }
 
@@ -169,16 +209,9 @@ public class BufferManager implements AutoCloseable {
       return toAllocateBytes;
     }
 
-    public void free(long bytes) {
+    public void free(final long bytes) {
 
     }
-
-    public void monitorMemory() {
-      while (true) {
-        //loop over all queues and free what is not used
-      }
-    }
-
   }
 
 }

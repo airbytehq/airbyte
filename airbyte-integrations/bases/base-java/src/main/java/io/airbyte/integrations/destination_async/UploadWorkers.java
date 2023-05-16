@@ -16,7 +16,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -37,7 +36,7 @@ public class UploadWorkers implements AutoCloseable {
 
   public UploadWorkers(final BufferManager.BufferManagerDequeue bufferManagerDequeue, final StreamDestinationFlusher flusher1) {
     this.bufferManagerDequeue = bufferManagerDequeue;
-    this.flusher = flusher1;
+    flusher = flusher1;
   }
 
   public void start() {
@@ -47,14 +46,14 @@ public class UploadWorkers implements AutoCloseable {
 
   private void retrieveWork() {
     // if the total size is > n, flush all buffers
-    if (bufferManagerDequeue.getTotalGlobalQueueSizeInMb() > TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES) {
+    if (bufferManagerDequeue.getTotalGlobalQueueSizeBytes() > TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES) {
       flushAll();
     }
 
     // otherwise, if each individual stream has crossed a specific threshold, flush
-    for (Map.Entry<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> entry : bufferManagerDequeue.getBuffers().entrySet()) {
+    for (final Map.Entry<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> entry : bufferManagerDequeue.getBuffers().entrySet()) {
       final var stream = entry.getKey();
-      final var exceedSize = bufferManagerDequeue.getQueueSizeInMb(stream) >= MAX_QUEUE_SIZE_BYTES;
+      final var exceedSize = bufferManagerDequeue.getQueueSizeBytes(stream) >= MAX_QUEUE_SIZE_BYTES;
       final var tooLongSinceLastRecord = bufferManagerDequeue.getTimeOfLastRecord(stream)
           .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
           .orElse(false);
@@ -74,17 +73,14 @@ public class UploadWorkers implements AutoCloseable {
   private void flush(final StreamDescriptor desc) {
     workerPool.submit(() -> {
       log.info("Worker picked up work..");
-      final var queue = bufferManagerDequeue.getBuffer(desc);
-      // todo(charles): should not need to know about memory blocking nonsense.
-      // how do we tune the size to read from the queue on a per-stream basis?
       try {
-        log.info("Attempting to read from queue {}. Current queue size: {}", desc, queue.size());
+        log.info("Attempting to read from queue {}. Current queue size: {}", desc, bufferManagerDequeue.getQueueSizeInRecords(desc));
 
-        try (var a = bufferManagerDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
-          flusher.flush(desc, a.batch.stream());
+        try (final var batch = bufferManagerDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
+          flusher.flush(desc, batch.getData());
         }
 
-        log.info("Worker finished flushing. Current queue size: {}", queue.size());
+        log.info("Worker finished flushing. Current queue size: {}", bufferManagerDequeue.getQueueSizeInRecords(desc));
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
