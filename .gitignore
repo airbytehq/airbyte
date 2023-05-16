@@ -57,7 +57,6 @@ profiles.yml
 crash.log
 *.tfstate
 *.tfstate.backup
-*.lock.hcl
 
 # Airflow Demo
 resources/examples/airflow/logs/*

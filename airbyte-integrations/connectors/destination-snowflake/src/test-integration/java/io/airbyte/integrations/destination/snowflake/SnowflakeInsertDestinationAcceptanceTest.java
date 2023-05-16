@@ -161,6 +161,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
     final String schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
+    final String destroyNonexistentSchemaQuery = "DROP SCHEMA IF EXISTS NONEXISTENT_SCHEMA";
 
     this.config = Jsons.clone(getStaticConfig());
     ((ObjectNode) config).put("schema", schemaName);
@@ -168,6 +169,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     dataSource = SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
     database = SnowflakeDatabase.getDatabase(dataSource);
     database.execute(createSchemaQuery);
+    database.execute(destroyNonexistentSchemaQuery);
   }
 
   @Override
@@ -206,6 +208,17 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     // Config to user(creds) that has no warehouse assigned
     final JsonNode config = Jsons.deserialize(IOs.readFile(
         Path.of("secrets/insert_ip_not_in_whitelist_config.json")));
+
+    final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
+
+    assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
+    assertThat(standardCheckConnectionOutput.getMessage()).contains(IP_NOT_IN_WHITE_LIST_ERR_MSG);
+  }
+
+  @Test
+  public void testCheckWithNoSchemaCreatePrivilege() throws Exception {
+    final JsonNode config = Jsons.deserialize(IOs.readFile(
+        Path.of("secrets/no_create_schema_privilege.json")));
 
     final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
 
