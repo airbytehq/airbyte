@@ -6,7 +6,8 @@
           "type": [
             "string",
             "null"
-          ]
+          ],
+          "card": null
         }
       }
     } 
