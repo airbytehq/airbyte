@@ -71,7 +71,7 @@ The connector is restricted by the Pinterest [requests limitation](https://devel
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
-| 0.5.0   | 2023-05-17 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add `product_tags` field to the `BoardPins` stream                                                      |
+| 0.5.0   | 2023-05-17 | [26188](https://github.com/airbytehq/airbyte/pull/26188) | Add `product_tags` field to the `BoardPins` stream                                                      |
 | 0.4.0   | 2023-05-16 | [26112](https://github.com/airbytehq/airbyte/pull/26112) | Add `is_standard` field to the `BoardPins` stream                                                       |
 | 0.3.0   | 2023-05-09 | [25915](https://github.com/airbytehq/airbyte/pull/25915) | Add `creative_type` field to the `BoardPins` stream                                                     |
 | 0.2.6   | 2023-04-26 | [25548](https://github.com/airbytehq/airbyte/pull/25548) | Fixed `format` issue for `boards` stream schema for fields with `date-time`                             |
