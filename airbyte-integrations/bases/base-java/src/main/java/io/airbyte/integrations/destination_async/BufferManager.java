@@ -168,6 +168,10 @@ public class BufferManager {
         }
       }).map(MemoryItem::item);
 
+      // todo (cgardens) - possible race where in between pulling records and new records going in that we
+      // reset the limit to be lower than number of bytes already in the queue. probably not a big deal.
+      queue.setMaxMemoryUsage(queue.getMaxMemoryUsage() - bytesRead.get());
+
       return new Batch(s, bytesRead.get(), memoryManager);
     }
 
