@@ -3,10 +3,11 @@
 #
 
 from http import HTTPStatus
+from datetime import datetime
 from unittest.mock import MagicMock
 
 import pytest
-from source_genesys.source import GenesysStream
+from source_genesys.source import GenesysStream, GenesysAnalyticsStream
 
 
 @pytest.fixture
@@ -15,6 +16,9 @@ def patch_base_class(mocker):
     mocker.patch.object(GenesysStream, "path", "v0/example_endpoint")
     mocker.patch.object(GenesysStream, "primary_key", "test_primary_key")
     mocker.patch.object(GenesysStream, "__abstractmethods__", set())
+    mocker.patch.object(GenesysAnalyticsStream, "path", "v0/example_endpoint")
+    mocker.patch.object(GenesysAnalyticsStream, "primary_key", "test_primary_key")
+    mocker.patch.object(GenesysAnalyticsStream, "__abstractmethods__", set())
 
 
 def test_request_params(patch_base_class):
@@ -57,3 +61,18 @@ def test_backoff_time(patch_base_class):
     stream = GenesysStream()
     expected_backoff_time = 1
     assert stream.backoff_time(response_mock) == expected_backoff_time
+
+
+# Analytics API Streams Tests
+def test_analytics_stream_initialises_with_expected_params(patch_base_class):
+    stream = GenesysAnalyticsStream(
+        client_id="client_id",
+        analytics_metrics_list_str="metric1, metric2",
+        start_date=datetime.strptime("2020-01-01", '%Y-%m-%d')
+    )
+    expected_method = "POST"
+
+    assert stream.client_id == "client_id"
+    assert stream.analytics_metrics_list == ["metric1", "metric2"]
+    assert stream.start_date == datetime.strptime("2020-01-01", '%Y-%m-%d')
+    assert stream.http_method == expected_method
