@@ -24,7 +24,7 @@
       "email": {
         "type": "string",
         "title": "Email",
-        "description": "The user email for your Jira account. Email is used for Authorization to your account by BasicAuth.",
+        "description": "The user email for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.",
         "order": 2
       },
       "projects": {

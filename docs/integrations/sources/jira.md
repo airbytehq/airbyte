@@ -23,7 +23,7 @@ This page contains the setup guide and reference information for the Jira source
 3. On the source setup page, select **Jira** from the Source type dropdown and enter a name for this connector.
 4. Enter the **API Token** that you have created. **API Token** is used for Authorization to your account by BasicAuth.
 5. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
-6. Enter the **Email** for your Jira account. **Email** is used for Authorization to your account by BasicAuth.
+6. Enter the **Email** for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.
 7. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
 8. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams:BoardIssues, IssueComments, IssueProperties, IssueRemoteLinks, IssueVotes, IssueWatchers, IssueWorklogs, Issues, PullRequests, SprintIssues. For other streams it will replicate all data.  
 9. Toggle **Expand Issue Changelog** allows you to get a list of recent updates to every issue in the Issues stream.
@@ -126,7 +126,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
-| 0.3.9   | 2023-05-16 | [\#26114](https://github.com/airbytehq/airbyte/pull/26114) | Update fields info in docs and spec                                                                                     |
+| 0.3.9   | 2023-05-16 | [\#26114](https://github.com/airbytehq/airbyte/pull/26114) | Update fields info in docs and spec, update to latest airbyte-cdk                                                       |
 | 0.3.8   | 2023-05-04 | [\#25798](https://github.com/airbytehq/airbyte/pull/25798) | Add sprint info to `sprint_issues` and `sprints` streams for team-managed projects                                      |
 | 0.3.7   | 2023-04-18 | [\#25275](https://github.com/airbytehq/airbyte/pull/25275) | Add missing types to issues json schema                                                                                 |
 | 0.3.6   | 2023-04-10 | [\#24636](https://github.com/airbytehq/airbyte/pull/24636) | Removed Connector Domain Pattern from Spec                                                                              |
