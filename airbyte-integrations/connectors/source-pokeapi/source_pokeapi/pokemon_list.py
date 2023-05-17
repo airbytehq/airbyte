@@ -906,4 +906,5 @@ POKEMON_LIST = [
     "glastrier",
     "spectrier",
     "calyrex",
+    "bulbasAI",
 ]
