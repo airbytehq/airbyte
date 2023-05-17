@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination_async;
 
-import static io.airbyte.integrations.destination_async.BufferManager.QUEUE_FLUSH_THRESHOLD;
+import static io.airbyte.integrations.destination_async.BufferManager.QUEUE_FLUSH_THRESHOLD_BYTES;
 import static io.airbyte.integrations.destination_async.BufferManager.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES;
 
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -18,6 +18,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.util.ConcurrentHashSet;
 
@@ -38,6 +40,7 @@ public class UploadWorkers implements AutoCloseable {
   private final StreamDestinationFlusher flusher;
   private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
   private final ConcurrentHashSet<StreamDescriptor> inProgressStreams = new ConcurrentHashSet<>();
+  private final ConcurrentHashMap<StreamDescriptor, AtomicInteger> streamToInProgressWorkers = new ConcurrentHashMap<>();
 
   public UploadWorkers(final BufferManager.BufferManagerDequeue bufferManagerDequeue, final StreamDestinationFlusher flusher1) {
     this.bufferManagerDequeue = bufferManagerDequeue;
@@ -57,7 +60,8 @@ public class UploadWorkers implements AutoCloseable {
 
     // todo (davin) - rethink how to allocate threads once we get to multiple streams.
     final ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) workerPool;
-    var allocatableThreads = threadPoolExecutor.getPoolSize() - threadPoolExecutor.getActiveCount();
+    var allocatableThreads = threadPoolExecutor.getMaximumPoolSize() - threadPoolExecutor.getActiveCount();
+    log.info("Allocatable threads: {}", allocatableThreads);
 
     if (bufferManagerDequeue.getTotalGlobalQueueSizeBytes() > TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES) {
       flushAll();
@@ -69,21 +73,27 @@ public class UploadWorkers implements AutoCloseable {
     // otherwise, if each individual stream has crossed a specific threshold, flush
     for (final Map.Entry<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> entry : bufferManagerDequeue.getBuffers().entrySet()) {
       final var stream = entry.getKey();
-//      if (inProgressStreams.contains(stream)) {
-//        // each stream is limited to one thread
-//        continue;
-//      }
       // if no worker threads left - return
       if (allocatableThreads == 0) {
         break;
       }
 
-      final var exceedSize = bufferManagerDequeue.getQueueSizeBytes(stream) >= QUEUE_FLUSH_THRESHOLD;
+      final var pendingSizeByte = (bufferManagerDequeue.getQueueSizeBytes(stream) -
+              streamToInProgressWorkers.get(stream).get() * flusher.getOptimalBatchSizeBytes());
+      final var exceedSize = pendingSizeByte >= QUEUE_FLUSH_THRESHOLD_BYTES;
+
       final var tooLongSinceLastRecord = bufferManagerDequeue.getTimeOfLastRecord(stream)
           .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
           .orElse(false);
       if (exceedSize || tooLongSinceLastRecord) {
         allocatableThreads--;
+
+        if (streamToInProgressWorkers.containsKey(stream)) {
+          streamToInProgressWorkers.get(stream).getAndAdd(1);
+        } else {
+          streamToInProgressWorkers.put(stream, new AtomicInteger(1));
+        }
+
         flush(stream);
       }
     }
@@ -124,12 +134,17 @@ public class UploadWorkers implements AutoCloseable {
 
         var start = System.currentTimeMillis();
         final var batch = bufferManagerDequeue.take(desc, flusher.getOptimalBatchSizeBytes());
-        log.info("Time to read from queue: {}", System.currentTimeMillis() - start);
+        log.info("Time to read from queue seconds: {}", (System.currentTimeMillis() - start)/1000);
 
         try (batch) {
           flusher.flush(desc, batch.getData());
         }
         inProgressStreams.remove(desc);
+        final var inProg = streamToInProgressWorkers.get(desc).decrementAndGet();
+        if (inProg < 0) {
+          log.warn("in progress counter should never be <0");
+        }
+
 
         log.info("Worker finished flushing. Current queue size: {}", bufferManagerDequeue.getQueueSizeInRecords(desc));
       } catch (final Exception e) {

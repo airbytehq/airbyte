@@ -30,7 +30,7 @@ public class BufferManager {
   public static final long BLOCK_SIZE_BYTES = 10 * 1024 * 1024;
   public static final long INITIAL_QUEUE_SIZE_BYTES = BLOCK_SIZE_BYTES;
   public static final long MAX_CONCURRENT_QUEUES = 10L;
-  public static final long QUEUE_FLUSH_THRESHOLD = 40 * 1024 * 1024; // 40MB
+  public static final long QUEUE_FLUSH_THRESHOLD_BYTES = 40 * 1024 * 1024; // 40MB
 
   private final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
   private final BufferManagerEnqueue bufferManagerEnqueue;
