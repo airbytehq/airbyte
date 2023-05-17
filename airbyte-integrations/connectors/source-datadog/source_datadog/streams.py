@@ -342,8 +342,13 @@ class SeriesStream(IncrementalSearchableStream, ABC):
     ) -> Optional[Mapping]:
 
         end_date = int(datetime.now().timestamp()) * 1000
-        start_date = int(parse(self._cursor_value).timestamp() * 1000) if self._cursor_value else int(
-            (datetime.now() - timedelta(hours=24)).timestamp()) * 1000
+
+        if self.start_date:
+            start_date = int(parse(self.start_date).timestamp() * 1000)
+        elif self._cursor_value:
+            start_date = int(parse(self._cursor_value).timestamp() * 1000)
+        else:
+            start_date = int((datetime.now() - timedelta(hours=24)).timestamp()) * 1000
 
         if self.data_source in ["metrics", "cloud_cost"]:
             payload = {
