@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class BufferManager{
+public class BufferManager {
 
   public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.8);
   public static final long BLOCK_SIZE_BYTES = 10 * 1024 * 1024;
@@ -59,11 +59,11 @@ public class BufferManager{
   private void printQueueInfo() {
     final var queueInfo = new StringBuilder().append("QUEUE INFO").append(System.lineSeparator());
     for (final var entry : buffers.entrySet()) {
-      final var queue  = entry.getValue();
+      final var queue = entry.getValue();
       queueInfo.append(
-                      String.format("  Queue name: %s, num records: %d, num bytes: %d",
-                              entry.getKey().getName(), queue.size(), queue.getCurrentMemoryUsage()))
-              .append(System.lineSeparator());
+          String.format("  Queue name: %s, num records: %d, num bytes: %d",
+              entry.getKey().getName(), queue.size(), queue.getCurrentMemoryUsage()))
+          .append(System.lineSeparator());
     }
     log.info(queueInfo.toString());
   }
@@ -225,7 +225,7 @@ public class BufferManager{
     public void free(final long bytes) {
       currentMemoryBytes.addAndGet(-bytes);
 
-      if(currentMemoryBytes.get() < 0) {
+      if (currentMemoryBytes.get() < 0) {
         log.warn("Freed more memory than allocated. This should never happen. Please report this bug.");
       }
     }
