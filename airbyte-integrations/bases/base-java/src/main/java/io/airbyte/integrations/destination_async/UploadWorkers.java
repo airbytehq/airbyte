@@ -19,7 +19,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.mina.util.ConcurrentHashSet;
@@ -68,7 +67,6 @@ public class UploadWorkers implements AutoCloseable {
     var allocatableThreads = threadPoolExecutor.getMaximumPoolSize() - threadPoolExecutor.getActiveCount();
     log.info("Allocatable threads: {}", allocatableThreads);
 
-
     // todo (cgardens) - build a score to prioritize which queue to flush next. e.g. if a queue is very
     // large, flush it first. if a queue has not been flushed in a while, flush it next.
     // otherwise, if each individual stream has crossed a specific threshold, flush
@@ -80,7 +78,7 @@ public class UploadWorkers implements AutoCloseable {
       }
 
       final var pendingSizeByte = (bufferManagerDequeue.getQueueSizeBytes(stream) -
-              streamToInProgressWorkers.get(stream).get() * flusher.getOptimalBatchSizeBytes());
+          streamToInProgressWorkers.get(stream).get() * flusher.getOptimalBatchSizeBytes());
       final var exceedSize = pendingSizeByte >= QUEUE_FLUSH_THRESHOLD_BYTES;
       log.info("Stream {} size in queue: {} computed pending size: {} , threshold: {}",
           stream.getName(),
@@ -140,7 +138,7 @@ public class UploadWorkers implements AutoCloseable {
 
         final var start = System.currentTimeMillis();
         final var batch = bufferManagerDequeue.take(desc, flusher.getOptimalBatchSizeBytes());
-        log.info("Time to read from queue seconds: {}", (System.currentTimeMillis() - start)/1000);
+        log.info("Time to read from queue seconds: {}", (System.currentTimeMillis() - start) / 1000);
 
         try (batch) {
           flusher.flush(desc, batch.getData());
@@ -150,7 +148,6 @@ public class UploadWorkers implements AutoCloseable {
         if (inProg < 0) {
           log.warn("in progress counter should never be <0");
         }
-
 
         log.info("Worker finished flushing. Current queue size: {}", bufferManagerDequeue.getQueueSizeInRecords(desc));
       } catch (final Exception e) {
