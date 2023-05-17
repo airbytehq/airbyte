@@ -705,3 +705,22 @@ class Accounts(StripeStream):
 
     def path(self, **kwargs):
         return "accounts"
+
+class Persons(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/persons/list
+    """
+    name = "persons"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"accounts/{stream_slice['id']}/persons"
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream = Accounts(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
+        slices = parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
+        for _slice in slices:
+            for account in parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice):
+                # we use `get` here because some attributes may not be returned by some API versions
+                yield account

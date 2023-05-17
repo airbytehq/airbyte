@@ -63,6 +63,7 @@ The Stripe source connector supports the following streams:
 - [PaymentIntents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
 - [Payouts](https://stripe.com/docs/api/payouts/list) \(Incremental\)
 - [Promotion Code](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
+- [Persons](https://stripe.com/docs/api/persons/list) \(Incremental\)
 - [Plans](https://stripe.com/docs/api/plans/list) \(Incremental\)
 - [Products](https://stripe.com/docs/api/products/list) \(Incremental\)
 - [Refunds](https://stripe.com/docs/api/refunds/list) \(Incremental\)
@@ -85,6 +86,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.5.0   | 2023-05-20 | [25965](https://github.com/airbytehq/airbyte/pull/*****) | Add new stream `Persons`                                                                                                                             |
 | 3.4.3   | 2023-05-10 | [25965](https://github.com/airbytehq/airbyte/pull/25965) | Fix Airbyte date-time data-types                                                                                                                     |
 | 3.4.2   | 2023-05-04 | [25795](https://github.com/airbytehq/airbyte/pull/25795) | Added `CDK TypeTransformer` to guarantee declared JSON Schema data-types                                                                             |
 | 3.4.1   | 2023-04-24 | [23389](https://github.com/airbytehq/airbyte/pull/23389) | Add `customer_tax_ids` to `Invoices`                                                                                                                 |
