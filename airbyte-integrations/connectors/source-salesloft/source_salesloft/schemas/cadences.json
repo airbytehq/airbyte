@@ -126,8 +126,8 @@
       }
     },
     "latest_active_date": {
-      "type": "string",
-      "format": "date-time"
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }
