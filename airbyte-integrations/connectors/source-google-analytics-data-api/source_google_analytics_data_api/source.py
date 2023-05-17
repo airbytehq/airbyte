@@ -162,12 +162,6 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             else:
                 offset = self.config["offset"]
 
-            print('HERE')
-            print(type(total_rows))
-            print(type(offset))
-            print(type(limit))
-            print(offset)
-            print(limit)
             if total_rows <= offset + limit:
                 self.config["next_page_offset"] = None
                 return None
