@@ -22,15 +22,10 @@
         }
       },
       "offset": {
-        "type": ["integer", "string"],
-        "minimum": 0,
-        "pattern": "^[0-9]+$"
+        "type": ["integer", "string"]
       },
       "limit": {
-        "type": ["integer", "string"],
-        "minimum": 0,
-        "maximum": 250000,
-        "pattern": "^([0-9]|[1-9][0-9]{1,4}|1[0-9]{5}|2[0-4][0-9]{4}|250000)$"
+        "type": ["integer", "string"]
       },
       "cohortSpec": {
         "type": ["null", "object"],
