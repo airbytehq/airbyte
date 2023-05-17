@@ -10,10 +10,13 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -28,7 +31,7 @@ public class BufferManager {
   public static final long MAX_CONCURRENT_QUEUES = 10L;
   public static final long QUEUE_FLUSH_THRESHOLD = 40 * 1024 * 1024; // 40MB
 
-  private final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers = new HashMap<>();
+  private final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
   private final BufferManagerEnqueue bufferManagerEnqueue;
   private final BufferManagerDequeue bufferManagerDequeue;
   private final GlobalMemoryManager memoryManager;
@@ -36,6 +39,7 @@ public class BufferManager {
 
   public BufferManager() {
     memoryManager = new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES);
+    buffers = new ConcurrentHashMap<>();
     bufferManagerEnqueue = new BufferManagerEnqueue(memoryManager, buffers);
     bufferManagerDequeue = new BufferManagerDequeue(memoryManager, buffers);
     debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 10, TimeUnit.SECONDS);
@@ -83,10 +87,10 @@ public class BufferManager {
     private final RecordSizeEstimator recordSizeEstimator;
 
     private final GlobalMemoryManager memoryManager;
-    private final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
+    private final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
 
     public BufferManagerEnqueue(final GlobalMemoryManager memoryManager,
-                                final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
+                                final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
       this.memoryManager = memoryManager;
       this.buffers = buffers;
       recordSizeEstimator = new RecordSizeEstimator();
@@ -120,12 +124,14 @@ public class BufferManager {
   static class BufferManagerDequeue {
 
     private final GlobalMemoryManager memoryManager;
-    private final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
+    private final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
+    private final ConcurrentMap<StreamDescriptor, ReentrantLock> bufferLocks;
 
     public BufferManagerDequeue(final GlobalMemoryManager memoryManager,
-                                final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
+                                final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
       this.memoryManager = memoryManager;
       this.buffers = buffers;
+      bufferLocks = new ConcurrentHashMap<>();
     }
 
     public Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> getBuffers() {
@@ -155,34 +161,46 @@ public class BufferManager {
     public Batch take(final StreamDescriptor streamDescriptor, final long bytesToRead) {
       final var queue = buffers.get(streamDescriptor);
 
-      final AtomicLong bytesRead = new AtomicLong();
-      final var s = Stream.generate(() -> {
-        try {
-          return queue.poll(5, TimeUnit.MILLISECONDS);
-        } catch (final InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-      }).takeWhile(memoryItem -> {
-        // if no new records after waiting, the stream is done.
-        if (memoryItem == null) {
-          return false;
-        }
+      if (!bufferLocks.containsKey(streamDescriptor)) {
+        bufferLocks.put(streamDescriptor, new ReentrantLock());
+      }
 
-        // otherwise pull records until we hit the memory limit.
-        final long newSize = memoryItem.size() + bytesRead.get();
-        if (newSize <= bytesToRead) {
-          bytesRead.addAndGet(memoryItem.size());
-          return true;
-        } else {
-          return false;
-        }
-      }).map(MemoryItem::item);
+      bufferLocks.get(streamDescriptor).lock();
+      try {
+        final AtomicLong bytesRead = new AtomicLong();
 
-      // todo (cgardens) - possible race where in between pulling records and new records going in that we
-      // reset the limit to be lower than number of bytes already in the queue. probably not a big deal.
-      queue.setMaxMemoryUsage(queue.getMaxMemoryUsage() - bytesRead.get());
+        final var s = Stream.generate(() -> {
+          try {
+            return queue.poll(5, TimeUnit.MILLISECONDS);
+          } catch (final InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }).takeWhile(memoryItem -> {
+          // if no new records after waiting, the stream is done.
+          if (memoryItem == null) {
+            return false;
+          }
 
-      return new Batch(s, bytesRead.get(), memoryManager);
+          // otherwise pull records until we hit the memory limit.
+          final long newSize = memoryItem.size() + bytesRead.get();
+          if (newSize <= bytesToRead) {
+            bytesRead.addAndGet(memoryItem.size());
+            return true;
+          } else {
+            return false;
+          }
+        }).map(MemoryItem::item)
+            .toList()
+            .stream();
+
+        // todo (cgardens) - possible race where in between pulling records and new records going in that we
+        // reset the limit to be lower than number of bytes already in the queue. probably not a big deal.
+        queue.setMaxMemoryUsage(queue.getMaxMemoryUsage() - bytesRead.get());
+
+        return new Batch(s, bytesRead.get(), memoryManager);
+      } finally {
+        bufferLocks.get(streamDescriptor).unlock();
+      }
     }
 
     public static class Batch implements AutoCloseable {
