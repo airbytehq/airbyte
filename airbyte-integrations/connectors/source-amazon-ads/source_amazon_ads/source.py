@@ -28,6 +28,7 @@ from .streams import (
     SponsoredDisplayProductAds,
     SponsoredDisplayReportStream,
     SponsoredDisplayTargetings,
+    SponsoredDisplayCreatives,
     SponsoredProductAdGroups,
     SponsoredProductAds,
     SponsoredProductCampaigns,
@@ -95,6 +96,7 @@ class SourceAmazonAds(AbstractSource):
         non_profile_stream_classes = [
             SponsoredDisplayCampaigns,
             SponsoredDisplayAdGroups,
+            SponsoredDisplayCreatives,
             SponsoredDisplayProductAds,
             SponsoredDisplayTargetings,
             SponsoredDisplayReportStream,

@@ -25,7 +25,7 @@ from .attribution_report import AttributionReportModel
 from .common import CatalogModel, Keywords, MetricsReport, NegativeKeywords
 from .profile import Profile
 from .sponsored_brands import BrandsAdGroup, BrandsCampaign
-from .sponsored_display import DisplayAdGroup, DisplayCampaign, DisplayProductAds, DisplayTargeting
+from .sponsored_display import DisplayAdGroup, DisplayCampaign, DisplayProductAds, DisplayTargeting, DisplayCreatives
 from .sponsored_products import ProductAd, ProductAdGroups, ProductCampaign, ProductTargeting
 
 __all__ = [
@@ -36,6 +36,7 @@ __all__ = [
     "DisplayCampaign",
     "DisplayProductAds",
     "DisplayTargeting",
+    "DisplayCreatives"
     "Keywords",
     "MetricsReport",
     "NegativeKeywords",
