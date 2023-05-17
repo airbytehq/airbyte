@@ -18,6 +18,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.util.ConcurrentHashSet;
 
 /**
  * In charge of looking for records in queues and efficiently getting those records uploaded.
@@ -35,6 +36,7 @@ public class UploadWorkers implements AutoCloseable {
   private final BufferManager.BufferManagerDequeue bufferManagerDequeue;
   private final StreamDestinationFlusher flusher;
   private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
+  private final ConcurrentHashSet<StreamDescriptor> inProgressStreams = new ConcurrentHashSet<>();
 
   public UploadWorkers(final BufferManager.BufferManagerDequeue bufferManagerDequeue, final StreamDestinationFlusher flusher1) {
     this.bufferManagerDequeue = bufferManagerDequeue;
@@ -53,6 +55,7 @@ public class UploadWorkers implements AutoCloseable {
     // if the total size is > n, flush all buffers
     if (bufferManagerDequeue.getTotalGlobalQueueSizeBytes() > TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES) {
       flushAll();
+      return;
     }
 
     // todo (cgardens) - build a score to prioritize which queue to flush next. e.g. if a queue is very
@@ -60,6 +63,11 @@ public class UploadWorkers implements AutoCloseable {
     // otherwise, if each individual stream has crossed a specific threshold, flush
     for (final Map.Entry<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> entry : bufferManagerDequeue.getBuffers().entrySet()) {
       final var stream = entry.getKey();
+      if (inProgressStreams.contains(stream)) {
+        // each stream is limited to one thread
+        continue;
+      }
+
       final var exceedSize = bufferManagerDequeue.getQueueSizeBytes(stream) >= QUEUE_FLUSH_THRESHOLD;
       final var tooLongSinceLastRecord = bufferManagerDequeue.getTimeOfLastRecord(stream)
           .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
@@ -78,7 +86,13 @@ public class UploadWorkers implements AutoCloseable {
     final int queueSize = threadPoolExecutor.getQueue().size();
     final int activeCount = threadPoolExecutor.getActiveCount();
 
-    workerInfo.append(String.format("  Pool queue size: %d, Active threads: %d", queueSize, activeCount));
+    workerInfo.append(String.format("  Pool queue size: %d, Active threads: %d", queueSize, activeCount))
+            .append(System.lineSeparator());
+
+    for (final var streams : inProgressStreams) {
+      workerInfo.append(String.format("  Stream %s in progress", streams.getName()))
+              .append(System.lineSeparator());
+    }
     log.info(workerInfo.toString());
 
   }
@@ -91,6 +105,7 @@ public class UploadWorkers implements AutoCloseable {
   }
 
   private void flush(final StreamDescriptor desc) {
+    inProgressStreams.add(desc);
     workerPool.submit(() -> {
       log.info("Worker picked up work..");
       try {
@@ -99,6 +114,7 @@ public class UploadWorkers implements AutoCloseable {
         try (final var batch = bufferManagerDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
           flusher.flush(desc, batch.getData());
         }
+        inProgressStreams.remove(desc);
 
         log.info("Worker finished flushing. Current queue size: {}", bufferManagerDequeue.getQueueSizeInRecords(desc));
       } catch (final Exception e) {
