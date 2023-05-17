@@ -89,6 +89,13 @@
         "default": 10,
         "description": "The Github connector contains several streams with a large amount of data. The page size of such streams depends on the size of your repository. We recommended that you specify values between 10 and 30.",
         "order": 4
+      },
+      "requests_per_hour": {
+        "type": "integer",
+        "title": "Max requests per hour",
+        "description": "The GitHub API allows for a maximum of 5000 requests per hour (15000 for Github Enterprise). You can specify a lower value to limit your use of the API quota.",
+        "minimum": 1,
+        "order": 5
       }
     }
   },
