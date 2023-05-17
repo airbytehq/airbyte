@@ -98,7 +98,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                final String schemaName,
                                                                final String tableName,
                                                                final SyncMode syncMode,
-                                                               final Optional<String> cursorField) {
+                                                               final Optional<String> cursorField, final StateManager stateManager) {
     LOGGER.info("Queueing query for table: {}", tableName);
     // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters
     // as intermediate state messages are emitted.

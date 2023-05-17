@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * streams to cursor information stored in this manager.
  */
 public class StreamStateManager extends AbstractStateManager<AirbyteStateMessage, AirbyteStreamState> {
-
+  public String maxCursorValue;
   private static final Logger LOGGER = LoggerFactory.getLogger(StreamStateManager.class);
 
   /**
@@ -69,7 +70,7 @@ public class StreamStateManager extends AbstractStateManager<AirbyteStateMessage
             .withType(AirbyteStateType.STREAM)
             // Temporarily include legacy state for backwards compatibility with the platform
             .withData(Jsons.jsonNode(StateGeneratorUtils.generateDbState(pairToCursorInfoMap)))
-            .withStream(StateGeneratorUtils.generateStreamState(pair.get(), cursorInfo.get()));
+            .withStream(StateGeneratorUtils.generateStreamState(pair.get(), cursorInfo.get(), this.maxCursorValue));
       } else {
         LOGGER.warn("Cursor information could not be located in state for stream {}.  Returning a new, empty state message...", pair);
         return new AirbyteStateMessage().withType(AirbyteStateType.STREAM).withStream(new AirbyteStreamState());
@@ -80,4 +81,8 @@ public class StreamStateManager extends AbstractStateManager<AirbyteStateMessage
     }
   }
 
+  @Override
+  public void setMaxCursorVal(final String maxCursorVal) {
+    this.maxCursorValue = maxCursorVal;
+  }
 }

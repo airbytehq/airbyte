@@ -187,7 +187,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "_timestamp" -> putTimestampArray(json, columnName, resultSet, colIndex);
         case "_timetz" -> putTimeTzArray(json, columnName, resultSet, colIndex);
         case "_time" -> putTimeArray(json, columnName, resultSet, colIndex);
-        case "tid" -> {}
+//        case "tid" -> {}
         default -> {
           switch (columnInfo.columnType) {
             case BOOLEAN -> json.put(columnName, value.equalsIgnoreCase("t"));

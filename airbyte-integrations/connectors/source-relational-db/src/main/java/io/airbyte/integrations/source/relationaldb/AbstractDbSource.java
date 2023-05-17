@@ -396,7 +396,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         // if no cursor is present then this is the first read for is the same as doing a full refresh read.
         estimateFullRefreshSyncSize(database, airbyteStream);
         airbyteMessageIterator = getFullRefreshStream(database, streamName, namespace,
-            selectedDatabaseFields, table, emittedAt, SyncMode.INCREMENTAL, Optional.of(cursorField));
+            selectedDatabaseFields, table, emittedAt, SyncMode.INCREMENTAL, Optional.of(cursorField), stateManager);
       }
 
       final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream,
@@ -416,7 +416,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
       estimateFullRefreshSyncSize(database, airbyteStream);
       iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields,
-          table, emittedAt, SyncMode.FULL_REFRESH, Optional.empty());
+          table, emittedAt, SyncMode.FULL_REFRESH, Optional.empty(), stateManager);
     } else if (airbyteStream.getSyncMode() == null) {
       throw new IllegalArgumentException(
           String.format("%s requires a source sync mode", this.getClass()));
@@ -498,10 +498,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                      final TableInfo<CommonField<DataType>> table,
                                                                      final Instant emittedAt,
                                                                      final SyncMode syncMode,
-                                                                     final Optional<String> cursorField) {
+                                                                     final Optional<String> cursorField,
+                                                                      final StateManager stateManager) {
     final AutoCloseableIterator<JsonNode> queryStream =
         queryTableFullRefresh(database, selectedDatabaseFields, table.getNameSpace(),
-            table.getName(), syncMode, cursorField);
+            table.getName(), syncMode, cursorField, stateManager);
     return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
   }
 
@@ -655,7 +656,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                            final String schemaName,
                                                                            final String tableName,
                                                                            final SyncMode syncMode,
-                                                                           final Optional<String> cursorField);
+                                                                           final Optional<String> cursorField,
+                                                                            final StateManager stateManager);
 
   /**
    * Read incremental data from a table. Incremental read should return only records where cursor

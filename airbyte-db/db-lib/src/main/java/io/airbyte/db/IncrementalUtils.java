@@ -8,6 +8,8 @@ import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class IncrementalUtils {
 
@@ -78,6 +80,11 @@ public class IncrementalUtils {
       return -1;
     }
 
+    if (original.startsWith("ctid:")) {
+      final var originalCtid = toTuple(original);
+      final var candidateCtid = toTuple(candidate);
+      return originalCtid.compareTo(candidateCtid);
+    }
     switch (type) {
       case STRING, STRING_V1, DATE_V1, TIME_WITH_TIMEZONE_V1, TIME_WITHOUT_TIMEZONE_V1, TIMESTAMP_WITH_TIMEZONE_V1, TIMESTAMP_WITHOUT_TIMEZONE_V1 -> {
         return original.compareTo(candidate);
@@ -92,6 +99,13 @@ public class IncrementalUtils {
       // includes OBJECT, ARRAY, NULL
       default -> throw new IllegalStateException(String.format("Cannot use field of type %s as a comparable", type));
     }
+  }
+
+  private static Pair<Long, Long> toTuple(final String ctid) {
+    final var trimmed = StringUtils.replace(StringUtils.replace(ctid, "ctid:(", ""), ")", "");
+    final var comp = trimmed.split(",");
+    return Pair.of(Long.valueOf(comp[0]), Long.valueOf(comp[1]));
+
   }
 
 }

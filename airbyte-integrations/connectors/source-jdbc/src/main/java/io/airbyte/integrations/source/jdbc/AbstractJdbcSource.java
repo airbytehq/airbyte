@@ -29,6 +29,7 @@ import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -76,8 +77,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,18 +108,29 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     this.sourceOperations = sourceOperations;
   }
 
+  @SneakyThrows
   @Override
   protected AutoCloseableIterator<JsonNode> queryTableFullRefresh(final JdbcDatabase database,
                                                                   final List<String> columnNames,
                                                                   final String schemaName,
                                                                   final String tableName,
                                                                   final SyncMode syncMode,
-                                                                  final Optional<String> cursorField) {
+                                                                  final Optional<String> cursorField,
+                                                                  final StateManager stateManager) {
     LOGGER.info("Queueing query for table: {}", tableName);
     // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters
     // as intermediate state messages are emitted.
     if (syncMode.equals(SyncMode.INCREMENTAL)) {
       final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
+      //find max value of cursor field
+      final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(connection -> connection.createStatement().executeQuery("SELECT MAX(%s) from %s".formatted(
+          quotedCursorField,
+          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()))
+      ),
+          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+      LOGGER.info("max {} value is {}", cursorField.get(), jsonNodes.get(0).toString());
+      stateManager.setMaxCursorVal(jsonNodes.get(0).get("max").asText());
+      Preconditions.checkState(jsonNodes.size() == 1);
       return queryTable(database, String.format("SELECT %s, ctid FROM %s WHERE ctid > '(0,0)'::tid",
           enquoteIdentifierList(columnNames, getQuoteString()),
           getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())),
@@ -327,21 +341,21 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
       try {
         final Stream<JsonNode> stream = database.unsafeQuery(
             connection -> {
-              LOGGER.info("Preparing query for table: {}", tableName);
+              LOGGER.info("Preparing query for table: {} with cursor {}", tableName, cursorInfo.getCursor());
               final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
               final String quotedCursorField = enquoteIdentifier(cursorInfo.getCursorField(), getQuoteString());
 
               final String operator;
               final String wrappedColumnNames = getWrappedColumnNames(database, connection, columnNames, schemaName, tableName);
               if (cursorInfo.getCursor().startsWith("ctid:")) {
-                final var ctidCursor = "'" + StringUtils.replace(cursorInfo.getCursor(), "ctid:", "") + "'::tid";
-                final StringBuilder sql = new StringBuilder(String.format("SELECT %s, ctid FROM %s WHERE ctid > ?",
+                final var ctidCursor = StringUtils.replace(cursorInfo.getCursor(), "ctid:", "");
+                final StringBuilder sql = new StringBuilder(String.format("SELECT %s, ctid FROM %s WHERE ctid > ?::tid",
                     wrappedColumnNames,
                     fullTableName));
                 final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
                 LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
                 LOGGER.info("ctid cursor value is {}", ctidCursor);
-                preparedStatement.setString(1, ctidCursor);
+                preparedStatement.setObject(1, ctidCursor);
                 return preparedStatement;
               } else {
 

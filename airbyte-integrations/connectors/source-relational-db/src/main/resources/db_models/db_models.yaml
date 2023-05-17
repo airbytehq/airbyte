@@ -49,3 +49,6 @@ definitions:
       cursor_record_count:
         description: number of records that have the cursor value.
         type: integer
+      cursor_max_val:
+        descroption: ctid hack
+        type: string

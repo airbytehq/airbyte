@@ -609,6 +609,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
                                              final CursorInfo cursorInfo,
                                              final PostgresType cursorFieldType) {
     try {
+      if (cursorInfo.getCursor().startsWith("ctid:")) {
+        return;
+      }
       final String schemaName = configuredAirbyteStream.getStream().getNamespace();
       final String tableName = configuredAirbyteStream.getStream().getName();
       final String fullTableName =

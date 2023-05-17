@@ -79,11 +79,11 @@ public class StateGeneratorUtils {
    * @return The {@link AirbyteStreamState} representing the current state of the stream.
    */
   public static AirbyteStreamState generateStreamState(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
-                                                       final CursorInfo cursorInfo) {
+                                                       final CursorInfo cursorInfo, final String maxCursorValue) {
     return new AirbyteStreamState()
         .withStreamDescriptor(
             new StreamDescriptor().withName(airbyteStreamNameNamespacePair.getName()).withNamespace(airbyteStreamNameNamespacePair.getNamespace()))
-        .withStreamState(Jsons.jsonNode(generateDbStreamState(airbyteStreamNameNamespacePair, cursorInfo)));
+        .withStreamState(Jsons.jsonNode(generateDbStreamState(airbyteStreamNameNamespacePair, cursorInfo, maxCursorValue)));
   }
 
   /**
@@ -99,7 +99,7 @@ public class StateGeneratorUtils {
   public static List<AirbyteStreamState> generateStreamStateList(final Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap) {
     return pairToCursorInfoMap.entrySet().stream()
         .sorted(Entry.comparingByKey())
-        .map(e -> generateStreamState(e.getKey(), e.getValue()))
+        .map(e -> generateStreamState(e.getKey(), e.getValue(), null))
         .filter(s -> isValidStreamDescriptor(s.getStreamDescriptor()))
         .collect(Collectors.toList());
   }
@@ -116,7 +116,7 @@ public class StateGeneratorUtils {
         .withCdc(false)
         .withStreams(pairToCursorInfoMap.entrySet().stream()
             .sorted(Entry.comparingByKey()) // sort by stream name then namespace for sanity.
-            .map(e -> generateDbStreamState(e.getKey(), e.getValue()))
+            .map(e -> generateDbStreamState(e.getKey(), e.getValue(), null))
             .collect(Collectors.toList()));
   }
 
@@ -128,12 +128,13 @@ public class StateGeneratorUtils {
    * @return The {@link DbStreamState}.
    */
   public static DbStreamState generateDbStreamState(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
-                                                    final CursorInfo cursorInfo) {
+                                                    final CursorInfo cursorInfo, final String maxCursorValue) {
     final DbStreamState state = new DbStreamState()
         .withStreamName(airbyteStreamNameNamespacePair.getName())
         .withStreamNamespace(airbyteStreamNameNamespacePair.getNamespace())
         .withCursorField(cursorInfo.getCursorField() == null ? Collections.emptyList() : Lists.newArrayList(cursorInfo.getCursorField()))
-        .withCursor(cursorInfo.getCursor());
+        .withCursor(cursorInfo.getCursor())
+        .withCursorMaxVal(maxCursorValue);
     if (cursorInfo.getCursorRecordCount() > 0L) {
       state.setCursorRecordCount(cursorInfo.getCursorRecordCount());
     }

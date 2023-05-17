@@ -27,6 +27,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -179,7 +180,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
                                                                final String schemaName,
                                                                final String tableName,
                                                                final SyncMode syncMode,
-                                                               final Optional<String> cursorField) {
+                                                               final Optional<String> cursorField, final StateManager stateManager) {
     return queryTable(database, columnNames, tableName, null);
   }
 

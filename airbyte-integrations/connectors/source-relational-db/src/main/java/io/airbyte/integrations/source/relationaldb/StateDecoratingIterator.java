@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.relationaldb;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.db.IncrementalUtils;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.integrations.source.relationaldb.state.StreamStateManager;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -15,12 +16,14 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StateDecoratingIterator.class);
+  private static final String CTID_FIELD = "ctid";
 
   private final Iterator<AirbyteMessage> messageIterator;
   private final StateManager stateManager;
@@ -87,7 +90,13 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   }
 
   private String getCursorCandidate(final AirbyteMessage message) {
-    final String cursorCandidate = message.getRecord().getData().get(cursorField).asText();
+    final String cursorCandidate;
+    if (message.getRecord().getData().hasNonNull(CTID_FIELD) && StringUtils.isNotBlank(message.getRecord().getData().get(CTID_FIELD).asText())) {
+      cursorCandidate = "ctid:%s".formatted(message.getRecord().getData().get(CTID_FIELD).asText());
+    } else {
+      cursorCandidate = message.getRecord().getData().get(cursorField).asText();
+    }
+//    LOGGER.info("cursor candidate: {}", cursorCandidate);
     return (cursorCandidate != null ? replaceNull(cursorCandidate) : null);
   }
 
@@ -164,6 +173,13 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
         return optionalIntermediateMessage.orElse(endOfData());
       }
     } else if (!hasEmittedFinalState) {
+      if (stateManager instanceof StreamStateManager) {
+        final var streamStateManager = (StreamStateManager)stateManager;
+        if (StringUtils.isNotBlank(streamStateManager.maxCursorValue)) {
+          currentMaxCursor = streamStateManager.maxCursorValue;
+          LOGGER.info("Switching over to selected cursor with value {}", currentMaxCursor);
+        }
+      }
       return createStateMessage(true, totalRecordCount);
     } else {
       return endOfData();
@@ -203,7 +219,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
     final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, currentMaxCursor, currentMaxCursorRecordCount);
     final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(pair);
     // logging once every 100 messages to reduce log verbosity
-    if (totalRecordCount % 100 == 0) {
+    if (totalRecordCount % 100_000 == 0) {
       LOGGER.info("State report for stream {} - original: {} = {} (count {}) -> latest: {} = {} (count {})",
           pair,
           cursorInfo.map(CursorInfo::getOriginalCursorField).orElse(null),

@@ -154,4 +154,8 @@ public interface StateManager<T, S> {
     return emit(Optional.ofNullable(pair));
   }
 
+  default void setMaxCursorVal(final String maxCursorVal) {
+    // no-op
+  }
+
 }
