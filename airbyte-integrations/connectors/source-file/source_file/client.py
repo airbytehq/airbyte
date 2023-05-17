@@ -96,7 +96,7 @@ class URLFile:
 
     def backoff_giveup(self, error):
         # https://github.com/airbytehq/oncall/issues/1954
-        if isinstance(error, SSHException) and str(error) == "Error reading SSH protocol banner":
+        if isinstance(error, SSHException) and str(error).startswith("Error reading SSH protocol banner"):
             # We need to clear smart_open internal _SSH cache from the previous attempt, otherwise:
             # SSHException('SSH session not active')
             # will be raised
