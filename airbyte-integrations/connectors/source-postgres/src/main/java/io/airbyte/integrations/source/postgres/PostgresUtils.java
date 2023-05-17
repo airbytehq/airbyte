@@ -23,6 +23,9 @@ import static io.airbyte.integrations.source.postgres.PostgresType.TINYINT;
 import static io.airbyte.integrations.source.postgres.PostgresType.VARCHAR;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
@@ -52,6 +55,18 @@ public class PostgresUtils {
         && config.get("replication_method").hasNonNull("publication");
     LOGGER.info("using CDC: {}", isCdc);
     return isCdc;
+  }
+
+  public static boolean isMagSync(final JsonNode config) {
+    final boolean isMagSync = config.hasNonNull("replication_method")
+        && config.get("replication_method").get("method").asText().equals("MagSync");
+    LOGGER.info("using MagSync: {}", isMagSync);
+    return isMagSync;
+  }
+
+  public static boolean isIncrementalSync(final ConfiguredAirbyteCatalog catalog) {
+    return catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
+        .anyMatch(syncMode -> syncMode == SyncMode.INCREMENTAL);
   }
 
   public static boolean shouldFlushAfterSync(final JsonNode config) {

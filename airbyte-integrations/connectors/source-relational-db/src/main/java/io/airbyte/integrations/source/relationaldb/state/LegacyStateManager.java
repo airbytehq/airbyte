@@ -91,6 +91,11 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
   }
 
   @Override
+  public List<AirbyteStateMessage> getRawStateMessages() {
+    return null;
+  }
+
+  @Override
   public AirbyteStateMessage toState(final Optional<AirbyteStreamNameNamespacePair> pair) {
     final DbState dbState = StateGeneratorUtils.generateDbState(getPairToCursorInfoMap())
         .withCdc(isCdc)

@@ -247,6 +247,15 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           .collect(toList());
 
       catalog.setStreams(streams);
+    } else if (PostgresUtils.isMagSync(config)) {
+      final List<AirbyteStream> streams = catalog.getStreams().stream()
+          .map(PostgresCdcCatalogHelper::overrideSyncModes)
+          // Mag sync assumes that a pk exists and incremental cursor is source defined
+          .map(PostgresCdcCatalogHelper::removeIncrementalWithoutPk)
+          .map(PostgresCdcCatalogHelper::setIncrementalToSourceDefined)
+          .map(PostgresCdcCatalogHelper::addMagicSyncMetadataColumns)
+          .collect(toList());
+      catalog.setStreams(streams);
     }
 
     return catalog;
@@ -425,7 +434,13 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           AutoCloseableIterators.concatWithEagerClose(AirbyteTraceMessageUtility::emitStreamStatusTrace, snapshotIterator,
               AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)));
 
-    } else {
+    } else if(PostgresUtils.isMagSync(sourceConfig) && PostgresUtils.isIncrementalSync(catalog)) {
+      final MagicSyncStateManager magicSyncStateManager = new MagicSyncStateManager(stateManager.getRawStateMessages());
+      final MagicSyncHandler handler = new MagicSyncHandler(database, sourceOperations, getQuoteString(), magicSyncStateManager);
+      return handler.getIncrementalIterators(catalog, tableNameToTable, emittedAt);
+      // return MagSyncHandler.getIncrementalIterators()
+    }
+    else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
   }

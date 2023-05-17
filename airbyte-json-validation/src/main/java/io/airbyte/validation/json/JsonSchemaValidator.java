@@ -83,6 +83,10 @@ public class JsonSchemaValidator {
     Preconditions.checkNotNull(schema, schemaName + " needs to be initialised before calling this method");
 
     final var validate = schema.validate(objectJson);
+    if (validate.size() > 0) {
+      for (final ValidationMessage message : validate)
+      LOGGER.error("Invalid validation error: " + message.getMessage());
+    }
     return validate.isEmpty();
   }
 
@@ -176,7 +180,7 @@ public class JsonSchemaValidator {
   /**
    * Return a schema validator for a json schema, defaulting to the V7 Json schema.
    */
-  private JsonSchema getSchemaValidator(JsonNode schemaJson) {
+  private JsonSchema getSchemaValidator(final JsonNode schemaJson) {
     // Default to draft-07, but have handling for the other metaschemas that networknt supports
     final JsonMetaSchema metaschema;
     final JsonNode metaschemaNode = schemaJson.get("$schema");

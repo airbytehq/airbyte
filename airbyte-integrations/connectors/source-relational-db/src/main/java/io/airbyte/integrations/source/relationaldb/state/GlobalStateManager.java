@@ -68,6 +68,11 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
   }
 
   @Override
+  public List<AirbyteStateMessage> getRawStateMessages() {
+    return null;
+  }
+
+  @Override
   public AirbyteStateMessage toState(final Optional<AirbyteStreamNameNamespacePair> pair) {
     // Populate global state
     final AirbyteGlobalState globalState = new AirbyteGlobalState();

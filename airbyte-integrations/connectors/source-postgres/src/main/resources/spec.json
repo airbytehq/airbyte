@@ -292,6 +292,18 @@
                 "order": 6
               }
             }
+          },
+          {
+            "title": "MagSync",
+            "description": "Magic sync replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "MagSync",
+                "order": 7
+              }
+            }
           }
         ]
       }
