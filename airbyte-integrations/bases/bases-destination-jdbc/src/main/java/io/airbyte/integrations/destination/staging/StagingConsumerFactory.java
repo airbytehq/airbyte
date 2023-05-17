@@ -26,6 +26,7 @@ import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStra
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
+import io.airbyte.integrations.destination_async.BufferManager;
 import io.airbyte.integrations.destination_async.StreamDestinationFlusher;
 import io.airbyte.protocol.models.v0.*;
 import java.util.ArrayList;
@@ -103,7 +104,7 @@ public class StagingConsumerFactory {
         flusher,
         catalog,
         stagingOperations::isValidData,
-        new AsyncStreamConsumer.BufferManager());
+        new BufferManager());
   }
 
   /**
@@ -322,7 +323,7 @@ public class StagingConsumerFactory {
         CsvSerializedBuffer finalWriter = writer;
         LOGGER.info("Converting to CSV file..");
 
-        stream.limit(10).forEach(record -> {
+        stream.forEach(record -> {
           try {
             // todo(davin): handle non-record airbyte messages.
             finalWriter.accept(record.getRecord());
@@ -331,7 +332,6 @@ public class StagingConsumerFactory {
           }
         });
       } catch (Exception e) {
-        LOGGER.info("Are we here?: ", e);
         throw new RuntimeException(e);
       }
 
@@ -359,6 +359,11 @@ public class StagingConsumerFactory {
       }
 
       writer.close();
+    }
+
+    @Override
+    public long getOptimalBatchSizeBytes() {
+      return 200 * 1024 * 1024;
     }
 
   }
