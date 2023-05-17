@@ -312,7 +312,6 @@ public class StagingConsumerFactory {
     public void flush(final StreamDescriptor decs, final Stream<AirbyteMessage> stream) throws Exception {
       // write this to a file - serilizable buffer?
       // where do we create all the write configs?
-      LOGGER.info("Starting staging flush..");
       CsvSerializedBuffer writer = null;
       try {
         writer = new CsvSerializedBuffer(
@@ -321,8 +320,6 @@ public class StagingConsumerFactory {
             true);
 
         CsvSerializedBuffer finalWriter = writer;
-        LOGGER.info("Converting to CSV file..");
-
         stream.forEach(record -> {
           try {
             // todo(davin): handle non-record airbyte messages.
@@ -335,7 +332,6 @@ public class StagingConsumerFactory {
         throw new RuntimeException(e);
       }
 
-      LOGGER.info("Converted to CSV file..");
       writer.flush();
       LOGGER.info("Flushing buffer for stream {} ({}) to staging", decs.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!streamDescToWriteConfig.containsKey(decs)) {
@@ -411,9 +407,9 @@ public class StagingConsumerFactory {
         final String schemaName = writeConfig.getOutputSchemaName();
         if (purgeStagingData) {
           final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
-          LOGGER.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,
-              stageName);
-          stagingOperations.dropStageIfExists(database, stageName);
+//          LOGGER.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,
+//              stageName);
+//          stagingOperations.dropStageIfExists(database, stageName);
         }
       }
       LOGGER.info("Cleaning up destination completed.");
