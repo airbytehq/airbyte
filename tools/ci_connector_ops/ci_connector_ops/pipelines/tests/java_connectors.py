@@ -8,11 +8,12 @@ from typing import List, Optional
 
 import anyio
 from ci_connector_ops.pipelines.actions import environments, run_steps, secrets
-from ci_connector_ops.pipelines.bases import GradleTask, StepResult, StepStatus
+from ci_connector_ops.pipelines.bases import StepResult, StepStatus
 from ci_connector_ops.pipelines.builds import LOCAL_BUILD_PLATFORM
 from ci_connector_ops.pipelines.builds.java_connectors import BuildConnectorImage
 from ci_connector_ops.pipelines.builds.normalization import BuildOrPullNormalization
 from ci_connector_ops.pipelines.contexts import ConnectorContext
+from ci_connector_ops.pipelines.gradle import GradleTask
 from ci_connector_ops.pipelines.tests.common import AcceptanceTests
 from ci_connector_ops.pipelines.utils import export_container_to_tarball
 from dagger import File, QueryError
