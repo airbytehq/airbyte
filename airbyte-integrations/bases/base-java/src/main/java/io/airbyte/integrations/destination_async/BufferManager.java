@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
 @Slf4j
 public class BufferManager {
@@ -24,15 +25,16 @@ public class BufferManager {
   public static final long BLOCK_SIZE_BYTES = 10 * 1024 * 1024;
   public static final long INITIAL_QUEUE_SIZE_BYTES = BLOCK_SIZE_BYTES;
   public static final long MAX_CONCURRENT_QUEUES = 10L;
-  public static final long MAX_QUEUE_SIZE_BYTES = TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES / MAX_CONCURRENT_QUEUES;
+  public static final long QUEUE_FLUSH_THRESHOLD = 10 * 1024 * 1024; // 10MB
 
   private final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers = new HashMap<>();
   private final BufferManagerEnqueue bufferManagerEnqueue;
   private final BufferManagerDequeue bufferManagerDequeue;
+  private final GlobalMemoryManager memoryManager;
   private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
 
   public BufferManager() {
-    final var memoryManager = new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES);
+    memoryManager = new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES);
     bufferManagerEnqueue = new BufferManagerEnqueue(memoryManager, buffers);
     bufferManagerDequeue = new BufferManagerDequeue(memoryManager, buffers);
     debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 10, TimeUnit.SECONDS);
@@ -58,11 +60,18 @@ public class BufferManager {
 
   private void printQueueInfo() {
     final var queueInfo = new StringBuilder().append("QUEUE INFO").append(System.lineSeparator());
+
+    queueInfo
+        .append(String.format("  Global Mem Manager -- max: %s, allocated: %s",
+            FileUtils.byteCountToDisplaySize(memoryManager.getMaxMemoryBytes()),
+            FileUtils.byteCountToDisplaySize(memoryManager.getCurrentMemoryBytes())))
+        .append(System.lineSeparator());
+
     for (final var entry : buffers.entrySet()) {
       final var queue = entry.getValue();
       queueInfo.append(
-          String.format("  Queue name: %s, num records: %d, num bytes: %d",
-              entry.getKey().getName(), queue.size(), queue.getCurrentMemoryUsage()))
+          String.format("  Queue name: %s, num records: %d, num bytes: %s",
+              entry.getKey().getName(), queue.size(), FileUtils.byteCountToDisplaySize(queue.getCurrentMemoryUsage())))
           .append(System.lineSeparator());
     }
     log.info(queueInfo.toString());
@@ -168,6 +177,10 @@ public class BufferManager {
         }
       }).map(MemoryItem::item);
 
+      // todo (cgardens) - possible race where in between pulling records and new records going in that we
+      // reset the limit to be lower than number of bytes already in the queue. probably not a big deal.
+      queue.setMaxMemoryUsage(queue.getMaxMemoryUsage() - bytesRead.get());
+
       return new Batch(s, bytesRead.get(), memoryManager);
     }
 
@@ -207,6 +220,14 @@ public class BufferManager {
 
     public GlobalMemoryManager(final long maxMemoryBytes) {
       this.maxMemoryBytes = maxMemoryBytes;
+    }
+
+    public long getMaxMemoryBytes() {
+      return maxMemoryBytes;
+    }
+
+    public long getCurrentMemoryBytes() {
+      return currentMemoryBytes.get();
     }
 
     public synchronized long requestMemory() {
