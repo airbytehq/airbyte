@@ -363,7 +363,7 @@ public class StagingConsumerFactory {
 
     @Override
     public long getOptimalBatchSizeBytes() {
-      return 150 * 1024 * 1024;
+      return 200 * 1024 * 1024;
     }
 
   }

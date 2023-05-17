@@ -10,6 +10,8 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
@@ -29,12 +31,14 @@ public class BufferManager implements AutoCloseable {
 
   BufferManagerEnqueue bufferManagerEnqueue;
   BufferManagerDequeue bufferManagerDequeue;
+  private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
 
   public BufferManager() {
     buffers = new HashMap<>();
     final var memoryManager = new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES);
     bufferManagerEnqueue = new BufferManagerEnqueue(memoryManager, buffers);
     bufferManagerDequeue = new BufferManagerDequeue(memoryManager, buffers);
+    debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 10, TimeUnit.SECONDS);
   }
 
   public BufferManagerEnqueue getBufferManagerEnqueue() {
@@ -45,6 +49,18 @@ public class BufferManager implements AutoCloseable {
     return bufferManagerDequeue;
   }
 
+  public void printQueueInfo() {
+    final var queueInfo = new StringBuilder();
+    for (final var entry : buffers.entrySet()) {
+      final var queue  = entry.getValue();
+      queueInfo.append(
+                      String.format("Queue name: %s, num records: %d, num bytes: %d",
+                              entry.getKey().getName(), queue.size(), queue.getCurrentMemoryUsage()))
+              .append(System.lineSeparator());
+    }
+    log.info(queueInfo.toString());
+  }
+
   /**
    * Closing a queue will flush all items from it. For this reason, this method needs to be called
    * after {@link UploadWorkers#close()}. This allows the upload workers to make sure all items in the
@@ -53,6 +69,7 @@ public class BufferManager implements AutoCloseable {
   @Override
   public void close() throws Exception {
     buffers.forEach(((streamDescriptor, queue) -> queue.clear()));
+    debugLoop.shutdownNow();
     log.info("Buffers cleared..");
   }
 
@@ -72,8 +89,6 @@ public class BufferManager implements AutoCloseable {
 
     public void addRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message) {
       // todo (cgardens) - share the total memory across multiple queues.
-      final long availableMemory = (long) (Runtime.getRuntime().maxMemory() * 0.8);
-      log.info("available memory: " + availableMemory);
 
       // todo (cgardens) - replace this with fancy logic to make sure we don't oom.
       if (!buffers.containsKey(streamDescriptor)) {
@@ -215,6 +230,7 @@ public class BufferManager implements AutoCloseable {
     public void free(final long bytes) {
 
     }
+
   }
 
 }
