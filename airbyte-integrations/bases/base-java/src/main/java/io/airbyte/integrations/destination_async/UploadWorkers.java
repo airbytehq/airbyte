@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 
@@ -65,10 +66,15 @@ public class UploadWorkers implements AutoCloseable {
   }
 
   private void printWorkerInfo() {
-//    final var workerInfo = new StringBuilder().append("WORKER INFO").append(System.lineSeparator());
-//    workerPool
-//    workerInfo.append("  Pool queue size: %d", workerPool);
-//    log.info(queueInfo.toString());
+    final var workerInfo = new StringBuilder().append("WORKER INFO").append(System.lineSeparator());
+
+    ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) workerPool;
+
+    int queueSize = threadPoolExecutor.getQueue().size();
+    int activeCount = threadPoolExecutor.getActiveCount();
+
+    workerInfo.append(String.format("  Pool queue size: %d, Active threads: %d", queueSize, activeCount));
+    log.info(workerInfo.toString());
 
   }
 
