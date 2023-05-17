@@ -65,10 +65,10 @@ public class UploadWorkers implements AutoCloseable {
   }
 
   private void printWorkerInfo() {
-    final var workerInfo = new StringBuilder().append("WORKER INFO").append(System.lineSeparator());
-    workerPool
-    workerInfo.append("  Pool queue size: %d", workerPool);
-    log.info(queueInfo.toString());
+//    final var workerInfo = new StringBuilder().append("WORKER INFO").append(System.lineSeparator());
+//    workerPool
+//    workerInfo.append("  Pool queue size: %d", workerPool);
+//    log.info(queueInfo.toString());
 
   }
 

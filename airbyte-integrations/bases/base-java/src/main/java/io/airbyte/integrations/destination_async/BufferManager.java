@@ -46,21 +46,6 @@ public class BufferManager{
     return bufferManagerDequeue;
   }
 
-<<<<<<< Updated upstream
-  public void printQueueInfo() {
-    final var queueInfo = new StringBuilder();
-    for (final var entry : buffers.entrySet()) {
-      final var queue = entry.getValue();
-      queueInfo.append(
-          String.format("Queue name: %s, num records: %d, num bytes: %d",
-              entry.getKey().getName(), queue.size(), queue.getCurrentMemoryUsage()))
-          .append(System.lineSeparator());
-    }
-    log.info(queueInfo.toString());
-  }
-
-=======
->>>>>>> Stashed changes
   /**
    * Closing a queue will flush all items from it. For this reason, this method needs to be called
    * after {@link UploadWorkers#close()}. This allows the upload workers to make sure all items in the
