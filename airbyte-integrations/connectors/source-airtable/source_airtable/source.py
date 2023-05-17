@@ -47,7 +47,7 @@ class SourceAirtable(AbstractSource):
                 table_id = configured_stream.stream.name.split("/")[2]
                 similar_streams = [s for s in stream_instances if s.endswith(table_id)]
                 logger.warn(
-                    f"The requested stream {configured_stream.stream.name} was not found in the source. Please check if this stream was renamed or removed previously and reset data, removing from catalog for this sync run. For more information please refer to documentation: https://docs.airbyte.com/integrations/sources/airtable/#note-on-changed-table-names"
+                    f"The requested stream {configured_stream.stream.name} was not found in the source. Please check if this stream was renamed or removed previously and reset data, removing from catalog for this sync run. For more information please refer to documentation: https://docs.airbyte.com/integrations/sources/airtable/#note-on-changed-table-names-and-deleted-tables"
                     f" Similar streams: {similar_streams}"
                     f" Available streams: {stream_instances.keys()}"
                 )
