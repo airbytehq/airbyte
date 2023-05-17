@@ -36,6 +36,19 @@
       "type": ["null", "array"],
       "items": { "type": ["null", "string"] }
     },
+    "feedbackTagsNew": {
+      "type": ["null", "array"]
+    },
+    "feedbackTopics": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": ["null", "string"] },
+          "sentiment": { "type": ["null", "string"] }
+        }
+      }
+    },
     "notes": {
       "type": ["null", "array"],
       "items": { "type": ["null", "object"] }

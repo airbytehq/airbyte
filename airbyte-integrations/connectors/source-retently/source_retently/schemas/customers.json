@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": "string"
@@ -16,6 +17,9 @@
     "companyName": {
       "type": ["string", "null"]
     },
+    "companyId": {
+      "type": ["string", "null"]
+    },
     "tags": {
       "type": "array",
       "items": {
@@ -30,6 +34,7 @@
       "type": "array",
       "items": {
         "type": "object",
+        "additionalProperties": true,
         "properties": {
           "label": {
             "type": "string"
