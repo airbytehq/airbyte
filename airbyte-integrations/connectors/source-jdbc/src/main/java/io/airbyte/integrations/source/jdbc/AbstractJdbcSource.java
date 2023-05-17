@@ -8,6 +8,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_DECIMAL_DIGITS;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_IS_NULLABLE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
@@ -18,6 +19,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_DECIMAL_DIGITS;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
@@ -230,7 +232,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
    * @return Essential information about a column to determine which table it belongs to and its type.
    */
   private JsonNode getColumnMetadata(final ResultSet resultSet) throws SQLException {
-    return Jsons.jsonNode(ImmutableMap.<String, Object>builder()
+    final var fieldMap = ImmutableMap.<String, Object>builder()
         // we always want a namespace, if we cannot get a schema, use db name.
         .put(INTERNAL_SCHEMA_NAME,
             resultSet.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? resultSet.getString(JDBC_COLUMN_SCHEMA_NAME)
@@ -240,8 +242,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         .put(INTERNAL_COLUMN_TYPE, resultSet.getString(JDBC_COLUMN_DATA_TYPE))
         .put(INTERNAL_COLUMN_TYPE_NAME, resultSet.getString(JDBC_COLUMN_TYPE_NAME))
         .put(INTERNAL_COLUMN_SIZE, resultSet.getInt(JDBC_COLUMN_SIZE))
-        .put(INTERNAL_IS_NULLABLE, resultSet.getString(JDBC_IS_NULLABLE))
-        .build());
+        .put(INTERNAL_IS_NULLABLE, resultSet.getString(JDBC_IS_NULLABLE));
+    if (resultSet.getString(JDBC_DECIMAL_DIGITS) != null) {
+      fieldMap.put(INTERNAL_DECIMAL_DIGITS, resultSet.getString(JDBC_DECIMAL_DIGITS));
+    }
+    return Jsons.jsonNode(fieldMap.build());
   }
 
   @Override

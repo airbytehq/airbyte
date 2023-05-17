@@ -175,6 +175,8 @@ const buildAConnector = {
       ],
     },
     "connector-development/connector-specification-reference",
+    "connector-development/schema-reference",
+    "connector-development/connector-metadata-file",
     "connector-development/best-practices",
     "connector-development/ux-handbook",
   ],
@@ -347,17 +349,6 @@ const deployAirbyte = {
   ],
 };
 
-const troubleshoot = {
-  type: "category",
-  label: "Troubleshooting",
-  items: [
-    "troubleshooting/README",
-    "troubleshooting/on-deploying",
-    "troubleshooting/new-connection",
-    "troubleshooting/running-sync",
-  ],
-};
-
 const operatorGuide = {
   type: "category",
   label: "Manage Airbyte",
@@ -455,7 +446,10 @@ module.exports = {
     ossGettingStarted,
     deployAirbyte,
     operatorGuide,
-    troubleshoot,
+    {
+      type: 'doc',
+      id: "troubleshooting",
+    },
     sectionHeader("Developer Guides"),
     {
       type: "doc",

@@ -55,7 +55,7 @@ def is_image_on_docker_hub(image_name: str, version: str) -> bool:
     Returns:
         bool: True if the image and version exists on Docker Hub, False otherwise.
     """
-    repo, image = image_name.split("/")
+    repo, image = image_name.split("/", 1)
     tags = get_image_tags(repo, image)
 
     return version in tags
