@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.mina.util.ConcurrentHashSet;
 
 /**
@@ -57,16 +58,16 @@ public class UploadWorkers implements AutoCloseable {
     // todo (cgardens) - i'm not convinced this makes sense. as we get close to the limit, we should
     // flush more eagerly, but "flush all" is never a particularly useful thing in this world.
     // if the total size is > n, flush all buffers
+    if (bufferManagerDequeue.getTotalGlobalQueueSizeBytes() > TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES) {
+      flushAll();
+      return;
+    }
 
     // todo (davin) - rethink how to allocate threads once we get to multiple streams.
     final ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) workerPool;
     var allocatableThreads = threadPoolExecutor.getMaximumPoolSize() - threadPoolExecutor.getActiveCount();
     log.info("Allocatable threads: {}", allocatableThreads);
 
-    if (bufferManagerDequeue.getTotalGlobalQueueSizeBytes() > TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES) {
-      flushAll();
-      return;
-    }
 
     // todo (cgardens) - build a score to prioritize which queue to flush next. e.g. if a queue is very
     // large, flush it first. if a queue has not been flushed in a while, flush it next.
@@ -81,6 +82,11 @@ public class UploadWorkers implements AutoCloseable {
       final var pendingSizeByte = (bufferManagerDequeue.getQueueSizeBytes(stream) -
               streamToInProgressWorkers.get(stream).get() * flusher.getOptimalBatchSizeBytes());
       final var exceedSize = pendingSizeByte >= QUEUE_FLUSH_THRESHOLD_BYTES;
+      log.info("Stream {} size in queue: {} computed pending size: {} , threshold: {}",
+          stream.getName(),
+          FileUtils.byteCountToDisplaySize(bufferManagerDequeue.getQueueSizeBytes(stream)),
+          FileUtils.byteCountToDisplaySize(pendingSizeByte),
+          FileUtils.byteCountToDisplaySize(QUEUE_FLUSH_THRESHOLD_BYTES));
 
       final var tooLongSinceLastRecord = bufferManagerDequeue.getTimeOfLastRecord(stream)
           .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
@@ -132,7 +138,7 @@ public class UploadWorkers implements AutoCloseable {
       try {
         log.info("Attempting to read from queue {}. Current queue size: {}", desc, bufferManagerDequeue.getQueueSizeInRecords(desc));
 
-        var start = System.currentTimeMillis();
+        final var start = System.currentTimeMillis();
         final var batch = bufferManagerDequeue.take(desc, flusher.getOptimalBatchSizeBytes());
         log.info("Time to read from queue seconds: {}", (System.currentTimeMillis() - start)/1000);
 
