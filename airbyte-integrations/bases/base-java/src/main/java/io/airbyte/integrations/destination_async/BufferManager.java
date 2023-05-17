@@ -44,7 +44,7 @@ public class BufferManager {
     buffers = new ConcurrentHashMap<>();
     bufferManagerEnqueue = new BufferManagerEnqueue(memoryManager, buffers);
     bufferManagerDequeue = new BufferManagerDequeue(memoryManager, buffers);
-    debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 15, TimeUnit.SECONDS);
+    debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 5, TimeUnit.SECONDS);
   }
 
   public BufferManagerEnqueue getBufferManagerEnqueue() {
@@ -173,7 +173,7 @@ public class BufferManager {
 
         final var s = Stream.generate(() -> {
           try {
-            return queue.poll(5, TimeUnit.MILLISECONDS);
+            return queue.poll(20, TimeUnit.MILLISECONDS);
           } catch (final InterruptedException e) {
             throw new RuntimeException(e);
           }
