@@ -32,9 +32,7 @@ public class BufferManager{
   private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
 
   public BufferManager() {
-    final long availableMemory = (long) (Runtime.getRuntime().maxMemory() * 0.8);
-
-    final var memoryManager = new GlobalMemoryManager(availableMemory);
+    final var memoryManager = new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES);
     bufferManagerEnqueue = new BufferManagerEnqueue(memoryManager, buffers);
     bufferManagerDequeue = new BufferManagerDequeue(memoryManager, buffers);
     debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 10, TimeUnit.SECONDS);
