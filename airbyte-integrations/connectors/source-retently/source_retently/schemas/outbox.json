@@ -27,7 +27,7 @@
       "type": ["string", "null"]
     },
     "personTags": {
-      "type": ["string", "null"]
+      "type": ["array", "null"]
     },
     "sentDate": {
       "type": ["string", "null"],
@@ -61,15 +61,13 @@
           "type": ["boolean", "null"]
         },
         "openedDate": {
-          "type": ["string", "null"],
-          "format": "date-time"
+          "type": ["null", "string"]
         },
         "isResponded": {
           "type": ["boolean", "null"]
         },
         "respondedDate": {
-          "type": ["string", "null"],
-          "format": "date-time"
+          "type": ["null", "string"]
         },
         "hasFeedback": {
           "type": ["boolean", "null"]
