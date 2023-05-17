@@ -17,7 +17,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.*;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -98,7 +97,6 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     // assume the closing upload workers will flush all accepted records.
     onClose.call();
     uploadWorkers.close();
-    bufferManager.close();
     ignoredRecordsTracker.report();
     LOGGER.info("{} closed.", AsyncStreamConsumer.class);
   }
