@@ -34,7 +34,7 @@ public class BigQueryDenormalizedGcsDestinationAcceptanceTest extends BigQueryDe
   @Test
   public void testGetFileBufferMaxLimited() {
     final JsonNode defaultConfig = Jsons.clone(config);
-    ((ObjectNode) defaultConfig).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 100);
+    ((ObjectNode) config.get(BigQueryConsts.LOADING_METHOD)).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 100);
     final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
     assertEquals(destination.getNumberOfFileBuffers(defaultConfig), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
   }
@@ -42,7 +42,7 @@ public class BigQueryDenormalizedGcsDestinationAcceptanceTest extends BigQueryDe
   @Test
   public void testGetMinimumFileBufferCount() {
     final JsonNode defaultConfig = Jsons.clone(config);
-    ((ObjectNode) defaultConfig).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 1);
+    ((ObjectNode) config.get(BigQueryConsts.LOADING_METHOD)).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 1);
     final BigQueryDenormalizedDestination destination = new BigQueryDenormalizedDestination();
     // User cannot set number of file counts below the default file buffer count, which is existing
     // behavior
