@@ -38,7 +38,8 @@ public class BufferManagerDequeueTest {
     enqueue.addRecord(STREAM_DESC, RECORD_MSG);
     enqueue.addRecord(STREAM_DESC, RECORD_MSG);
 
-    try (final Batch take = dequeue.take(STREAM_DESC, 40)) {
+    // total size of records is 80, so we expect 50 to get us 2 records (prefer to under-pull records than over-pull).
+    try(final Batch take = dequeue.take(STREAM_DESC, 50)) {
       assertEquals(2, take.getData().toList().size());
     } catch (final Exception e) {
       throw new RuntimeException(e);

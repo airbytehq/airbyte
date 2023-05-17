@@ -17,9 +17,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
-// todo (cgardens) - why is buffer manager autocloseable?
 @Slf4j
-public class BufferManager implements AutoCloseable {
+public class BufferManager{
 
   public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.8);
   public static final long BLOCK_SIZE_BYTES = 10 * 1024 * 1024;
@@ -27,14 +26,12 @@ public class BufferManager implements AutoCloseable {
   public static final long MAX_CONCURRENT_QUEUES = 10L;
   public static final long MAX_QUEUE_SIZE_BYTES = TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES / MAX_CONCURRENT_QUEUES;
 
-  Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
-
-  BufferManagerEnqueue bufferManagerEnqueue;
-  BufferManagerDequeue bufferManagerDequeue;
+  private final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers = new HashMap<>();
+  private final BufferManagerEnqueue bufferManagerEnqueue;
+  private final BufferManagerDequeue bufferManagerDequeue;
   private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
 
   public BufferManager() {
-    buffers = new HashMap<>();
     final var memoryManager = new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES);
     bufferManagerEnqueue = new BufferManagerEnqueue(memoryManager, buffers);
     bufferManagerDequeue = new BufferManagerDequeue(memoryManager, buffers);
@@ -66,9 +63,7 @@ public class BufferManager implements AutoCloseable {
    * after {@link UploadWorkers#close()}. This allows the upload workers to make sure all items in the
    * queue has been flushed.
    */
-  @Override
   public void close() throws Exception {
-    buffers.forEach(((streamDescriptor, queue) -> queue.clear()));
     debugLoop.shutdownNow();
     log.info("Buffers cleared..");
   }
@@ -88,18 +83,17 @@ public class BufferManager implements AutoCloseable {
     }
 
     public void addRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message) {
-      // todo (cgardens) - share the total memory across multiple queues.
-
-      // todo (cgardens) - replace this with fancy logic to make sure we don't oom.
       if (!buffers.containsKey(streamDescriptor)) {
         buffers.put(streamDescriptor, new MemoryBoundedLinkedBlockingQueue<>(INITIAL_QUEUE_SIZE_BYTES));
       }
 
       // todo (cgardens) - handle estimating state message size.
       final long messageSize = message.getType() == AirbyteMessage.Type.RECORD ? recordSizeEstimator.getEstimatedByteSize(message.getRecord()) : 1024;
+
       final var queue = buffers.get(streamDescriptor);
       var addedToQueue = queue.offer(message, messageSize);
 
+      // todo (cgardens) - what if the record being added is bigger than the bock size?
       // if failed, try to increase memory and add to queue.
       while (!addedToQueue) {
         final var freeMem = memoryManager.requestMemory();
@@ -203,33 +197,37 @@ public class BufferManager implements AutoCloseable {
 
   }
 
+  @Slf4j
   static class GlobalMemoryManager {
 
-    public static final long BLOCK_SIZE_BYTES = 10 * 1024 * 1024;
-    private long currentMemoryBytes = 0L;
+    private static final long BLOCK_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
     private final long maxMemoryBytes;
 
-    // buffers
+    private final AtomicLong currentMemoryBytes = new AtomicLong(0);
 
     public GlobalMemoryManager(final long maxMemoryBytes) {
       this.maxMemoryBytes = maxMemoryBytes;
     }
 
     public synchronized long requestMemory() {
-      if (currentMemoryBytes >= maxMemoryBytes) {
+      if (currentMemoryBytes.get() >= maxMemoryBytes) {
         return 0L;
       }
 
-      final var freeMem = maxMemoryBytes - currentMemoryBytes;
+      final var freeMem = maxMemoryBytes - currentMemoryBytes.get();
       // Never allocate more than free memory size.
       final var toAllocateBytes = Math.min(freeMem, BLOCK_SIZE_BYTES);
-      currentMemoryBytes += toAllocateBytes;
+      currentMemoryBytes.addAndGet(toAllocateBytes);
 
       return toAllocateBytes;
     }
 
     public void free(final long bytes) {
+      currentMemoryBytes.addAndGet(-bytes);
 
+      if(currentMemoryBytes.get() < 0) {
+        log.warn("Freed more memory than allocated. This should never happen. Please report this bug.");
+      }
     }
 
   }
