@@ -360,10 +360,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   public int getNumberOfFileBuffers(final JsonNode config) {
     // This null check is probably redundant, but I don't want to gamble on that right now
     if (config.hasNonNull(BigQueryConsts.LOADING_METHOD)) {
-      final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
+      final JsonNode loadingMethodConfig = config.get(BigQueryConsts.LOADING_METHOD);
       final int numOfFileBuffers;
-      if (config.has(FileBuffer.FILE_BUFFER_COUNT_KEY)) {
-        numOfFileBuffers = Math.min(config.get(FileBuffer.FILE_BUFFER_COUNT_KEY).asInt(), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
+      if (loadingMethodConfig.has(FileBuffer.FILE_BUFFER_COUNT_KEY)) {
+        numOfFileBuffers = Math.min(loadingMethodConfig.get(FileBuffer.FILE_BUFFER_COUNT_KEY).asInt(), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
       } else {
         numOfFileBuffers = FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
       }
