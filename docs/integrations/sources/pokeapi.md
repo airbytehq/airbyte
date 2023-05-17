@@ -36,6 +36,7 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.2.0   | 2022-10-19 | -                                                        | Greetings team, I wanted to update you on some recent changes made to the source-pokeapi connectors. Thanks to our hackdays, we were able to implement an AI-powered auto-bumping feature to improve the overall performance. Additionally, we made some improvements to the commit message for better clarity. But that's not all, we also added a new Pokémon called "BulbasAI" to the list of available Pokémon. We hope these changes will enhance the user experience and make the connector even more useful. Thank you, |
 | 0.1.5   | 2022-05-18 | [12942](https://github.com/airbytehq/airbyte/pull/12942) | Fix example inputs                              |
 | 0.1.4   | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582)   | Update connector fields title/description       |
 | 0.1.3   | 2021-12-03 | [8432](https://github.com/airbytehq/airbyte/pull/8432)   | Migrate from base_python to CDK, add SAT tests. |
