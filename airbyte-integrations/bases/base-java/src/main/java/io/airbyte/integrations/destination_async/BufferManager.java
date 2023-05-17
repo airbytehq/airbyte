@@ -24,8 +24,9 @@ import org.apache.commons.io.FileUtils;
 @Slf4j
 public class BufferManager {
 
-//  public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.8);
-  public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = 4L * 1024 * 1024 * 1024; //4 GB for now
+  // public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long)
+  // (Runtime.getRuntime().maxMemory() * 0.8);
+  public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = 4L * 1024 * 1024 * 1024; // 4 GB for now
   public static final long BLOCK_SIZE_BYTES = 10 * 1024 * 1024;
   public static final long INITIAL_QUEUE_SIZE_BYTES = BLOCK_SIZE_BYTES;
   public static final long MAX_CONCURRENT_QUEUES = 10L;

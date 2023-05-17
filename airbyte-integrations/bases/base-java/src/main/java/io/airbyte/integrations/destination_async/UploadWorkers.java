@@ -87,11 +87,11 @@ public class UploadWorkers implements AutoCloseable {
     final int activeCount = threadPoolExecutor.getActiveCount();
 
     workerInfo.append(String.format("  Pool queue size: %d, Active threads: %d", queueSize, activeCount))
-            .append(System.lineSeparator());
+        .append(System.lineSeparator());
 
     for (final var streams : inProgressStreams) {
       workerInfo.append(String.format("  Stream %s in progress", streams.getName()))
-              .append(System.lineSeparator());
+          .append(System.lineSeparator());
     }
     log.info(workerInfo.toString());
 

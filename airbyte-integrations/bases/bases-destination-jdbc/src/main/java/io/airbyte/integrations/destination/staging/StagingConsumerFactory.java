@@ -20,14 +20,10 @@ import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunct
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
-import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.record_buffer.FlushBufferFunction;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
-import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
-import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
 import io.airbyte.integrations.destination_async.BufferManager;
-import io.airbyte.integrations.destination_async.StreamDestinationFlusher;
 import io.airbyte.protocol.models.v0.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +34,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -295,12 +290,12 @@ public class StagingConsumerFactory {
    * upload was unsuccessful
    */
   public static void copyIntoTableFromStage(final JdbcDatabase database,
-                                      final String stageName,
-                                      final String stagingPath,
-                                      final List<String> stagedFiles,
-                                      final String tableName,
-                                      final String schemaName,
-                                      final StagingOperations stagingOperations)
+                                            final String stageName,
+                                            final String stagingPath,
+                                            final List<String> stagedFiles,
+                                            final String tableName,
+                                            final String schemaName,
+                                            final StagingOperations stagingOperations)
       throws Exception {
     try {
       stagingOperations.copyIntoTableFromStage(database, stageName, stagingPath, stagedFiles,
@@ -333,9 +328,10 @@ public class StagingConsumerFactory {
         final String schemaName = writeConfig.getOutputSchemaName();
         if (purgeStagingData) {
           final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
-//          LOGGER.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,
-//              stageName);
-//          stagingOperations.dropStageIfExists(database, stageName);
+          // LOGGER.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}",
+          // writeConfig.getStreamName(), schemaName,
+          // stageName);
+          // stagingOperations.dropStageIfExists(database, stageName);
         }
       }
       LOGGER.info("Cleaning up destination completed.");
