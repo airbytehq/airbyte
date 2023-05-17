@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination_async;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
@@ -73,6 +74,16 @@ public class MemoryBoundedLinkedBlockingQueue<E> extends LinkedBlockingQueue<Mem
   @Override
   public MemoryBoundedLinkedBlockingQueue.MemoryItem<E> poll() {
     final MemoryItem<E> memoryItem = super.poll();
+    if (memoryItem != null) {
+      currentMemoryUsage.addAndGet(-memoryItem.size());
+      return memoryItem;
+    }
+    return null;
+  }
+
+  @Override
+  public MemoryBoundedLinkedBlockingQueue.MemoryItem<E> poll(final long timeout, final TimeUnit unit) throws InterruptedException {
+    final MemoryItem<E> memoryItem = super.poll(timeout, unit);
     if (memoryItem != null) {
       currentMemoryUsage.addAndGet(-memoryItem.size());
       return memoryItem;
