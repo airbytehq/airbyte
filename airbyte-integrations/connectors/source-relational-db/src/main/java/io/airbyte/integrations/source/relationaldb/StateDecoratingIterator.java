@@ -79,8 +79,8 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
     this.messageIterator = messageIterator;
     this.stateManager = stateManager;
     this.pair = pair;
-    this.cursorField = cursorField;
-    this.cursorType = cursorType;
+    this.cursorField = "ctid";
+    this.cursorType = JsonSchemaPrimitive.STRING;
     this.initialCursor = initialCursor;
     this.currentMaxCursor = initialCursor;
     this.stateEmissionFrequency = stateEmissionFrequency;
