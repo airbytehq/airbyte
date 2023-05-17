@@ -9,11 +9,8 @@ from unittest.mock import MagicMock
 import pytest
 import responses
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
-<<<<<<< HEAD
-from freezegun import freeze_time
-=======
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
->>>>>>> master
+from freezegun import freeze_time
 from source_github.source import SourceGithub
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
 
