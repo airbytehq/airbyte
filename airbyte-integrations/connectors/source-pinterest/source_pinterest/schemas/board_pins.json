@@ -16,6 +16,12 @@
     "is_standard": {
       "type": ["null", "boolean"]
     },
+    "product_tags": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
     "dominant_color": {
       "type": ["null", "string"]
     },
