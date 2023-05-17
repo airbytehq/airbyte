@@ -42,7 +42,7 @@ public class BufferManager {
     buffers = new ConcurrentHashMap<>();
     bufferManagerEnqueue = new BufferManagerEnqueue(memoryManager, buffers);
     bufferManagerDequeue = new BufferManagerDequeue(memoryManager, buffers);
-    debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 10, TimeUnit.SECONDS);
+    debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 15, TimeUnit.SECONDS);
   }
 
   public BufferManagerEnqueue getBufferManagerEnqueue() {
@@ -197,6 +197,7 @@ public class BufferManager {
         // reset the limit to be lower than number of bytes already in the queue. probably not a big deal.
         queue.setMaxMemoryUsage(queue.getMaxMemoryUsage() - bytesRead.get());
 
+        log.info("Setting batch memory to {}", bytesRead.get());
         return new Batch(s, bytesRead.get(), memoryManager);
       } finally {
         bufferLocks.get(streamDescriptor).unlock();

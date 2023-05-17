@@ -46,7 +46,7 @@ public class UploadWorkers implements AutoCloseable {
   public void start() {
     supervisorThread.scheduleAtFixedRate(this::retrieveWork, SUPERVISOR_INITIAL_DELAY_SECS, SUPERVISOR_PERIOD_SECS,
         TimeUnit.SECONDS);
-    debugLoop.scheduleAtFixedRate(this::printWorkerInfo, 0L, 5L, TimeUnit.SECONDS);
+    debugLoop.scheduleAtFixedRate(this::printWorkerInfo, 0L, 15L, TimeUnit.SECONDS);
   }
 
   private void retrieveWork() {
