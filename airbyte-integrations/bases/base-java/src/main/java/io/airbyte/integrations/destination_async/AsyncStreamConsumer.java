@@ -97,6 +97,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     // assume the closing upload workers will flush all accepted records.
     onClose.call();
     uploadWorkers.close();
+    bufferManager.close();
     ignoredRecordsTracker.report();
     LOGGER.info("{} closed.", AsyncStreamConsumer.class);
   }
