@@ -91,6 +91,7 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------|
+| 1.1.0   | 2023-05-17 | [26188](https://github.com/airbytehq/airbyte/pull/26188) | Added `latest_active_date` field to the `Cadences` stream schema. |
 | 1.0.0   | 2023-03-08 | [23937](https://github.com/airbytehq/airbyte/pull/23937) | Certify to Beta                                                   |
 | 0.1.6   | 2023-03-07 | [22893](https://github.com/airbytehq/airbyte/pull/22893) | Specified date formatting in specification                        |
 | 0.1.5   | 2023-03-07 | [23828](https://github.com/airbytehq/airbyte/pull/23828) | Use `start_date` to filter data                                   |
