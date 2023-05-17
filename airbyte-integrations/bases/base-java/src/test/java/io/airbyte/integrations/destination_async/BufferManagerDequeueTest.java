@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination_async;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,6 +17,7 @@ import io.airbyte.protocol.models.v0.StreamDescriptor;
 import org.junit.jupiter.api.Test;
 
 public class BufferManagerDequeueTest {
+
   private static final String STREAM_NAME = "stream1";
   private static final StreamDescriptor STREAM_DESC = new StreamDescriptor().withName(STREAM_NAME);
   private static final String RECORD = "abc";
@@ -33,7 +38,7 @@ public class BufferManagerDequeueTest {
     enqueue.addRecord(STREAM_DESC, RECORD_MSG);
     enqueue.addRecord(STREAM_DESC, RECORD_MSG);
 
-    try(final Batch take = dequeue.take(STREAM_DESC, 40)) {
+    try (final Batch take = dequeue.take(STREAM_DESC, 40)) {
       assertEquals(2, take.getData().toList().size());
     } catch (final Exception e) {
       throw new RuntimeException(e);
@@ -49,10 +54,11 @@ public class BufferManagerDequeueTest {
     enqueue.addRecord(STREAM_DESC, RECORD_MSG);
     enqueue.addRecord(STREAM_DESC, RECORD_MSG);
 
-    try(final Batch take = dequeue.take(STREAM_DESC, Long.MAX_VALUE)) {
+    try (final Batch take = dequeue.take(STREAM_DESC, Long.MAX_VALUE)) {
       assertEquals(2, take.getData().toList().size());
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
+
 }
