@@ -189,5 +189,5 @@ def do_it(connector, use_conventional_commits, ai_version_bump_component, git_co
     print(f"Files bumped: {bumped_files}")
     print(f"Changelog file updated: {changelog_file}")
     modified_files = bumped_files + [changelog_file]
-    commit_message = f"Bump version of connector {connector.technical_name} to {new_version}"
+    commit_message = f"[skip ci] 🤖 Bump version of connector {connector.technical_name} to {new_version}"
     commit_modified_files(modified_files, commit_message, push_to_origin=True)
