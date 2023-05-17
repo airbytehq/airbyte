@@ -33,8 +33,8 @@ public class MemoryBoundedLinkedBlockingQueue<E> extends LinkedBlockingQueue<Mem
     return maxMemoryUsage.get();
   }
 
-  public void setMaxMemoryUsage(final long maxMemoryUsage) {
-    this.maxMemoryUsage.set(maxMemoryUsage);
+  public void addMaxMemory(final long maxMemoryUsage) {
+    this.maxMemoryUsage.addAndGet(maxMemoryUsage);
   }
 
   public Optional<Instant> getTimeOfLastMessage() {
