@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination_async;
 
-import static io.airbyte.integrations.destination_async.BufferManager.MAX_QUEUE_SIZE_BYTES;
+import static io.airbyte.integrations.destination_async.BufferManager.QUEUE_FLUSH_THRESHOLD;
 import static io.airbyte.integrations.destination_async.BufferManager.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES;
 
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UploadWorkers implements AutoCloseable {
 
-  private static final long MAX_TIME_BETWEEN_REC_MINS = 15L;
+  private static final long MAX_TIME_BETWEEN_REC_MINS = 5L;
 
   private static final long SUPERVISOR_INITIAL_DELAY_SECS = 0L;
   private static final long SUPERVISOR_PERIOD_SECS = 1L;
@@ -47,15 +47,19 @@ public class UploadWorkers implements AutoCloseable {
   }
 
   private void retrieveWork() {
+    // todo (cgardens) - i'm not convinced this makes sense. as we get close to the limit, we should
+    // flush more eagerly, but "flush all" is never a particularly useful thing in this world.
     // if the total size is > n, flush all buffers
     if (bufferManagerDequeue.getTotalGlobalQueueSizeBytes() > TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES) {
       flushAll();
     }
 
+    // todo (cgardens) - build a score to prioritize which queue to flush next. e.g. if a queue is very
+    // large, flush it first. if a queue has not been flushed in a while, flush it next.
     // otherwise, if each individual stream has crossed a specific threshold, flush
     for (final Map.Entry<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> entry : bufferManagerDequeue.getBuffers().entrySet()) {
       final var stream = entry.getKey();
-      final var exceedSize = bufferManagerDequeue.getQueueSizeBytes(stream) >= MAX_QUEUE_SIZE_BYTES;
+      final var exceedSize = bufferManagerDequeue.getQueueSizeBytes(stream) >= QUEUE_FLUSH_THRESHOLD;
       final var tooLongSinceLastRecord = bufferManagerDequeue.getTimeOfLastRecord(stream)
           .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
           .orElse(false);
@@ -68,10 +72,10 @@ public class UploadWorkers implements AutoCloseable {
   private void printWorkerInfo() {
     final var workerInfo = new StringBuilder().append("WORKER INFO").append(System.lineSeparator());
 
-    ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) workerPool;
+    final ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) workerPool;
 
-    int queueSize = threadPoolExecutor.getQueue().size();
-    int activeCount = threadPoolExecutor.getActiveCount();
+    final int queueSize = threadPoolExecutor.getQueue().size();
+    final int activeCount = threadPoolExecutor.getActiveCount();
 
     workerInfo.append(String.format("  Pool queue size: %d, Active threads: %d", queueSize, activeCount));
     log.info(workerInfo.toString());
