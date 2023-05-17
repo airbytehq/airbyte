@@ -44,7 +44,7 @@ When using OAuth, you may see a `400` or `401` error causing a failed sync. You 
 5. Click **Set up source**.
 <!-- /env:oss -->
 
-### Note on changed table names
+### Note on changed table names & deleted tables
 Please keep in mind that if you start syncing a table via Airbyte, then rename it in your Airtable account, the connector will not continue syncing that table until you reset your connection schema and select it again. At that point, the table will begin syncing to a table with the new name in the destination. This is because there is no way for Airtable to tell Airbyte which tables have been renamed.  Similarly, if you delete a table that was previously syncing, the connector will stop syncing it. 
 
 ## Supported sync modes
