@@ -197,7 +197,7 @@ public class BufferManager {
 
         queue.addMaxMemory(-bytesRead.get());
 
-        log.info("Setting batch memory to {}", bytesRead.get());
+        log.info("Setting batch memory to {}", FileUtils.byteCountToDisplaySize(bytesRead.get()));
         return new Batch(s, bytesRead.get(), memoryManager);
       } finally {
         bufferLocks.get(streamDescriptor).unlock();

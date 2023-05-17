@@ -66,7 +66,7 @@ public class UploadWorkers implements AutoCloseable {
     // todo (davin) - rethink how to allocate threads once we get to multiple streams.
     final ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) workerPool;
     var allocatableThreads = threadPoolExecutor.getMaximumPoolSize() - threadPoolExecutor.getActiveCount();
-//    log.info("Allocatable threads: {}", allocatableThreads);
+    // log.info("Allocatable threads: {}", allocatableThreads);
 
     // todo (cgardens) - build a score to prioritize which queue to flush next. e.g. if a queue is very
     // large, flush it first. if a queue has not been flushed in a while, flush it next.
@@ -79,7 +79,7 @@ public class UploadWorkers implements AutoCloseable {
       }
 
       final var pendingSizeByte = (bufferManagerDequeue.getQueueSizeBytes(stream) -
-              streamToInProgressWorkers.getOrDefault(stream, new AtomicInteger(0)).get() * flusher.getOptimalBatchSizeBytes());
+          streamToInProgressWorkers.getOrDefault(stream, new AtomicInteger(0)).get() * QUEUE_FLUSH_THRESHOLD_BYTES);
       final var exceedSize = pendingSizeByte >= QUEUE_FLUSH_THRESHOLD_BYTES;
 
       final var tooLongSinceLastRecord = bufferManagerDequeue.getTimeOfLastRecord(stream)
@@ -89,10 +89,10 @@ public class UploadWorkers implements AutoCloseable {
         allocatableThreads--;
         log.info("=== Allocating stream {}, exceedSize:{}", stream.getName(), exceedSize);
         log.info("=== Stream {} size in queue: {} computed pending size: {} , threshold: {}",
-                stream.getName(),
-                FileUtils.byteCountToDisplaySize(bufferManagerDequeue.getQueueSizeBytes(stream)),
-                FileUtils.byteCountToDisplaySize(pendingSizeByte),
-                FileUtils.byteCountToDisplaySize(QUEUE_FLUSH_THRESHOLD_BYTES));
+            stream.getName(),
+            FileUtils.byteCountToDisplaySize(bufferManagerDequeue.getQueueSizeBytes(stream)),
+            FileUtils.byteCountToDisplaySize(pendingSizeByte),
+            FileUtils.byteCountToDisplaySize(QUEUE_FLUSH_THRESHOLD_BYTES));
         if (streamToInProgressWorkers.containsKey(stream)) {
           streamToInProgressWorkers.get(stream).getAndAdd(1);
         } else {
