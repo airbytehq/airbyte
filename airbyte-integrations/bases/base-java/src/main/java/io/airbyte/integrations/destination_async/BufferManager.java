@@ -10,6 +10,8 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -28,7 +30,7 @@ public class BufferManager {
   public static final long MAX_CONCURRENT_QUEUES = 10L;
   public static final long QUEUE_FLUSH_THRESHOLD = 10 * 1024 * 1024; // 10MB
 
-  private final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers = new HashMap<>();
+  private final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
   private final BufferManagerEnqueue bufferManagerEnqueue;
   private final BufferManagerDequeue bufferManagerDequeue;
   private final GlobalMemoryManager memoryManager;
@@ -36,6 +38,7 @@ public class BufferManager {
 
   public BufferManager() {
     memoryManager = new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES);
+    buffers = new ConcurrentHashMap<>();
     bufferManagerEnqueue = new BufferManagerEnqueue(memoryManager, buffers);
     bufferManagerDequeue = new BufferManagerDequeue(memoryManager, buffers);
     debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 10, TimeUnit.SECONDS);
@@ -83,10 +86,10 @@ public class BufferManager {
     private final RecordSizeEstimator recordSizeEstimator;
 
     private final GlobalMemoryManager memoryManager;
-    private final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
+    private final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
 
     public BufferManagerEnqueue(final GlobalMemoryManager memoryManager,
-                                final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
+                                final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
       this.memoryManager = memoryManager;
       this.buffers = buffers;
       recordSizeEstimator = new RecordSizeEstimator();
@@ -120,14 +123,14 @@ public class BufferManager {
   static class BufferManagerDequeue {
 
     private final GlobalMemoryManager memoryManager;
-    private final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
-    private final Map<StreamDescriptor, ReentrantLock> bufferLocks;
+    private final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
+    private final ConcurrentMap<StreamDescriptor, ReentrantLock> bufferLocks;
 
     public BufferManagerDequeue(final GlobalMemoryManager memoryManager,
-                                final Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
+                                final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
       this.memoryManager = memoryManager;
       this.buffers = buffers;
-      bufferLocks = new HashMap<>();
+      bufferLocks = new ConcurrentHashMap<>();
     }
 
     public Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> getBuffers() {
@@ -164,7 +167,6 @@ public class BufferManager {
       bufferLocks.get(streamDescriptor).lock();
       try {
         final AtomicLong bytesRead = new AtomicLong();
-        final List<AirbyteMessage> drainedRecords = new ArrayList<>();
 
         final var s = Stream.generate(() -> {
           try {
