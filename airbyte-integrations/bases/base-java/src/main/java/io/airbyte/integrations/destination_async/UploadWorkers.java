@@ -44,6 +44,7 @@ public class UploadWorkers implements AutoCloseable {
   public void start() {
     supervisorThread.scheduleAtFixedRate(this::retrieveWork, SUPERVISOR_INITIAL_DELAY_SECS, SUPERVISOR_PERIOD_SECS,
         TimeUnit.SECONDS);
+    debugLoop.scheduleAtFixedRate(this::printWorkerInfo, 0L, 5L, TimeUnit.SECONDS);
   }
 
   private void retrieveWork() {
@@ -118,6 +119,8 @@ public class UploadWorkers implements AutoCloseable {
     workerPool.shutdown();
     final var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
     log.info("Workers shut status: {}", workersShut);
+
+    debugLoop.shutdownNow();
   }
 
 }
