@@ -33,6 +33,7 @@ public class UploadWorkers implements AutoCloseable {
   private final ExecutorService workerPool = Executors.newFixedThreadPool(5);
   private final BufferManager.BufferManagerDequeue bufferManagerDequeue;
   private final StreamDestinationFlusher flusher;
+  private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
 
   public UploadWorkers(final BufferManager.BufferManagerDequeue bufferManagerDequeue, final StreamDestinationFlusher flusher1) {
     this.bufferManagerDequeue = bufferManagerDequeue;
@@ -61,6 +62,14 @@ public class UploadWorkers implements AutoCloseable {
         flush(stream);
       }
     }
+  }
+
+  private void printWorkerInfo() {
+    final var workerInfo = new StringBuilder().append("WORKER INFO").append(System.lineSeparator());
+    workerPool
+    workerInfo.append("  Pool queue size: %d", workerPool);
+    log.info(queueInfo.toString());
+
   }
 
   private void flushAll() {
