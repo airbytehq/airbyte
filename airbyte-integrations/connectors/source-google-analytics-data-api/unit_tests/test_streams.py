@@ -88,8 +88,8 @@ def test_request_body_json(patch_base_class):
         ],
         "dateRanges": [request_body_params["stream_slice"]],
         "returnPropertyQuota": True,
-        "offset": "0",
-        "limit": "10000"
+        "offset": str(0),
+        "limit": str(10000)
     }
 
     request_body_json = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"]).request_body_json(**request_body_params)
@@ -98,8 +98,8 @@ def test_request_body_json(patch_base_class):
 
 def test_next_page_token_equal_chunk(patch_base_class):
     additional_config = {
-        "offset": "0",
-        "limit": "10000"
+        "offset": 0,
+        "limit": 10000
     }
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"] | additional_config)
     response = MagicMock()
@@ -112,12 +112,12 @@ def test_next_page_token_equal_chunk(patch_base_class):
 
     expected_tokens = [
         {
-            "limit": "10000",
-            "next_page_offset": "10000",
+            "limit": 10000,
+            "next_page_offset": 10000,
         },
         {
-            "limit": "10000",
-            "next_page_offset": "20000",
+            "limit": 10000,
+            "next_page_offset": 20000,
         },
         None,
     ]
@@ -128,8 +128,8 @@ def test_next_page_token_equal_chunk(patch_base_class):
 
 def test_next_page_token(patch_base_class):
     additional_config = {
-        "offset": "0",
-        "limit": "100000"
+        "offset": 0,
+        "limit": 100000
     }
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"] | additional_config)
     response = MagicMock()
@@ -144,20 +144,20 @@ def test_next_page_token(patch_base_class):
 
     expected_tokens = [
         {
-            "limit": "100000",
-            "next_page_offset": "100000",
+            "limit": 100000,
+            "next_page_offset": 100000,
         },
         {
-            "limit": "100000",
-            "next_page_offset": "200000",
+            "limit": 100000,
+            "next_page_offset": 200000,
         },
         {
-            "limit": "100000",
-            "next_page_offset": "300000",
+            "limit": 100000,
+            "next_page_offset": 300000,
         },
         {
-            "limit": "100000",
-            "next_page_offset": "400000",
+            "limit": 100000,
+            "next_page_offset": 400000,
         },
         None,
     ]
