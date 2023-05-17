@@ -97,7 +97,7 @@ public class BufferManager {
 
     public void addRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message) {
       if (!buffers.containsKey(streamDescriptor)) {
-        buffers.put(streamDescriptor, new MemoryBoundedLinkedBlockingQueue<>(INITIAL_QUEUE_SIZE_BYTES));
+        buffers.put(streamDescriptor, new MemoryBoundedLinkedBlockingQueue<>(memoryManager.requestMemory()));
       }
 
       // todo (cgardens) - handle estimating state message size.
@@ -109,9 +109,9 @@ public class BufferManager {
       // todo (cgardens) - what if the record being added is bigger than the bock size?
       // if failed, try to increase memory and add to queue.
       while (!addedToQueue) {
-        final var freeMem = memoryManager.requestMemory();
-        if (freeMem > 0) {
-          queue.setMaxMemoryUsage(queue.getMaxMemoryUsage() + freeMem);
+        final var newlyAllocatedMemory = memoryManager.requestMemory();
+        if (newlyAllocatedMemory > 0) {
+          queue.addMaxMemory(newlyAllocatedMemory);
         }
         addedToQueue = queue.offer(message, messageSize);
       }
@@ -192,9 +192,7 @@ public class BufferManager {
             .toList()
             .stream();
 
-        // todo (cgardens) - possible race where in between pulling records and new records going in that we
-        // reset the limit to be lower than number of bytes already in the queue. probably not a big deal.
-        queue.setMaxMemoryUsage(queue.getMaxMemoryUsage() - bytesRead.get());
+        queue.addMaxMemory(-bytesRead.get());
 
         return new Batch(s, bytesRead.get(), memoryManager);
       } finally {
@@ -204,7 +202,7 @@ public class BufferManager {
 
     public static class Batch implements AutoCloseable {
 
-      private Stream<AirbyteMessage> batch;
+      private final Stream<AirbyteMessage> batch;
       private final long sizeInBytes;
       private final GlobalMemoryManager memoryManager;
 
@@ -218,9 +216,12 @@ public class BufferManager {
         return batch;
       }
 
+      public long getSizeInBytes() {
+        return sizeInBytes;
+      }
+
       @Override
       public void close() throws Exception {
-        batch = null;
         memoryManager.free(sizeInBytes);
       }
 
