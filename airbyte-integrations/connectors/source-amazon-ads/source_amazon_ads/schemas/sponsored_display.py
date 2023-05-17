@@ -45,3 +45,9 @@ class DisplayProductAds(CatalogModel):
 class DisplayTargeting(Targeting):
     expression: List[Dict[str, str]]
     resolvedExpression: List[Dict[str, str]]
+
+
+class DisplayCreatives(CatalogModel):
+    name: str
+    adGroupId: Decimal
+    creativeId: Decimal
