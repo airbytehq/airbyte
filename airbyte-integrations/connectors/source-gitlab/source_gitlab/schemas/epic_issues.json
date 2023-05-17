@@ -39,7 +39,8 @@
       }
     },
     "milestone": {
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "milestone_id": {
       "type": ["null", "integer"]
@@ -51,13 +52,15 @@
       }
     },
     "assignee": {
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "assignee_id": {
       "type": ["null", "integer"]
     },
     "author": {
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "author_id": {
       "type": ["null", "integer"]

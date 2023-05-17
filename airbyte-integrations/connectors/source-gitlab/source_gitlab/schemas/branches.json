@@ -33,7 +33,8 @@
       "type": ["null", "string"]
     },
     "commit": {
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true
     }
   }
 }
