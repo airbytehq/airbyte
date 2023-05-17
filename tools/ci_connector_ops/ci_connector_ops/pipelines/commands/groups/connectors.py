@@ -8,13 +8,13 @@ import logging
 import os
 import sys
 from pathlib import Path
-from typing import Tuple
+from typing import Any, Dict, Tuple
 
 import anyio
 import click
 import dagger
 from ci_connector_ops.pipelines.builds import run_connector_build_pipeline
-from ci_connector_ops.pipelines.contexts import CIContext, ConnectorContext, ContextState
+from ci_connector_ops.pipelines.contexts import CIContext, ConnectorContext, ContextState, PublishConnectorContext
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_pipelines
 from ci_connector_ops.pipelines.publish import run_connector_publish_pipeline
@@ -247,42 +247,78 @@ def build(ctx: click.Context) -> bool:
 @connectors.command(cls=DaggerPipelineCommand, help="Publish all images for the selected connectors.")
 @click.option("--pre-release/--main-release", help="Use this flag if you want to publish pre-release images.", default=True, type=bool)
 @click.option(
-    "--spec-cache-service-account-key",
+    "--spec-cache-gcs-credentials",
     help="The service account key to upload files to the GCS bucket hosting spec cache.",
     type=click.STRING,
-    required=True,
-    envvar="SPEC_CACHE_SERVICE_ACCOUNT_KEY",
+    required=False,  # Not required for pre-release pipelines, downstream validation happens for main release pipelines
+    envvar="SPEC_CACHE_GCS_CREDENTIALS",
 )
 @click.option(
     "--spec-cache-bucket-name",
     help="The name of the GCS bucket where specs will be cached.",
     type=click.STRING,
-    required=True,
+    required=False,  # Not required for pre-release pipelines, downstream validation happens for main release pipelines
     envvar="SPEC_CACHE_BUCKET_NAME",
 )
 @click.option(
-    "--metadata-service-account-key",
+    "--metadata-service-gcs-credentials",
     help="The service account key to upload files to the GCS bucket hosting the metadata files.",
     type=click.STRING,
-    required=True,
-    envvar="METADATA_SERVICE_ACCOUNT_KEY",
+    required=False,  # Not required for pre-release pipelines, downstream validation happens for main release pipelines
+    envvar="METADATA_SERVICE_GCS_CREDENTIALS",
 )
 @click.option(
     "--metadata-service-bucket-name",
     help="The name of the GCS bucket where metadata files will be uploaded.",
     type=click.STRING,
-    required=True,
+    required=False,  # Not required for pre-release pipelines, downstream validation happens for main release pipelines
     envvar="METADATA_SERVICE_BUCKET_NAME",
+)
+@click.option(
+    "--docker-hub-username",
+    help="Your username to connect to DockerHub.",
+    type=click.STRING,
+    required=True,
+    envvar="DOCKER_HUB_USERNAME",
+)
+@click.option(
+    "--docker-hub-password",
+    help="Your password to connect to DockerHub.",
+    type=click.STRING,
+    required=True,
+    envvar="DOCKER_HUB_PASSWORD",
+)
+@click.option(
+    "--slack-webhook",
+    help="The Slack webhook URL to send notifications to.",
+    type=click.STRING,
+    envvar="SLACK_WEBHOOK",
+)
+@click.option(
+    "--slack-channel",
+    help="The Slack webhook URL to send notifications to.",
+    type=click.STRING,
+    envvar="SLACK_CHANNEL",
+    default="#publish-on-merge-updates",
 )
 @click.pass_context
 def publish(
     ctx: click.Context,
     pre_release: bool,
-    spec_cache_service_account_key: str,
+    spec_cache_gcs_credentials: str,
     spec_cache_bucket_name: str,
     metadata_service_bucket_name: str,
-    metadata_service_account_key: str,
+    metadata_service_gcs_credentials: str,
+    docker_hub_username: str,
+    docker_hub_password: str,
+    slack_webhook: str,
+    slack_channel: str,
 ):
+    ctx.obj["spec_cache_gcs_credentials"] = spec_cache_gcs_credentials
+    ctx.obj["spec_cache_bucket_name"] = spec_cache_bucket_name
+    ctx.obj["metadata_service_bucket_name"] = metadata_service_bucket_name
+    ctx.obj["metadata_service_gcs_credentials"] = metadata_service_gcs_credentials
+    validate_publish_options(pre_release, ctx.obj)
     if ctx.obj["is_local"]:
         click.confirm(
             "Publishing from a local environment is not recommend and requires to be logged in Airbyte's DockerHub registry, do you want to continue?",
@@ -297,35 +333,42 @@ def publish(
 
     click.secho(f"Will publish the following connectors: {', '.join(selected_connectors_names)}.", fg="green")
 
-    os.environ["SPEC_CACHE_SERVICE_ACCOUNT_KEY"] = spec_cache_service_account_key
-    os.environ["METADATA_SERVICE_ACCOUNT_KEY"] = metadata_service_account_key
-
-    connectors_contexts = [
-        ConnectorContext(
-            pipeline_name="Publish",
-            connector=connector,
-            is_local=ctx.obj["is_local"],
-            git_branch=ctx.obj["git_branch"],
-            git_revision=ctx.obj["git_revision"],
-            modified_files=modified_files,
-            s3_report_key="python-poc/publish/history/",
-            use_remote_secrets=ctx.obj["use_remote_secrets"],
+    publish_connector_contexts = [
+        PublishConnectorContext(
+            connector,
+            pre_release,
+            modified_files,
+            spec_cache_gcs_credentials,
+            spec_cache_bucket_name,
+            metadata_service_gcs_credentials,
+            metadata_service_bucket_name,
+            docker_hub_username,
+            docker_hub_password,
+            slack_webhook,
+            slack_channel,
+            ctx.obj["is_local"],
+            ctx.obj["git_branch"],
+            ctx.obj["git_revision"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
-            reporting_slack_channel="publish-on-merge-updates",
         )
         for connector, modified_files in selected_connectors_and_files.items()
     ]
-    connectors_contexts = anyio.run(
+
+    publish_connector_contexts = anyio.run(
         run_connectors_pipelines,
-        connectors_contexts,
+        publish_connector_contexts,
         run_connector_publish_pipeline,
         "Publish pipeline",
         ctx.obj["concurrency"],
         ctx.obj["execute_timeout"],
-        pre_release,
-        spec_cache_bucket_name,
-        metadata_service_bucket_name,
     )
-    return all(context.state is ContextState.SUCCESSFUL for context in connectors_contexts)
+    return all(context.state is ContextState.SUCCESSFUL for context in publish_connector_contexts)
+
+
+def validate_publish_options(pre_release: bool, context_object: Dict[str, Any]):
+    """Validate that the publish options are set correctly."""
+    for k in ["spec_cache_bucket_name", "spec_cache_gcs_credentials", "metadata_service_bucket_name", "metadata_service_gcs_credentials"]:
+        if not pre_release and context_object.get(k) is None:
+            click.Abort(f'The --{k.replace("_", "-")} option is required when running a main release publish pipeline.')

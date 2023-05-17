@@ -9,7 +9,7 @@ dependencies {
     implementation 'com.google.auth:google-auth-library-oauth2-http:0.25.5'
 
     implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-integrations:bases:base-java-async')
+    implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:bases:base-java-s3')
     implementation libs.airbyte.protocol
 
@@ -29,6 +29,6 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation libs.connectors.testcontainers.postgresql
 
-    implementation files(project(':airbyte-integrations:bases:base-java-async').airbyteDocker.outputs)
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
 }

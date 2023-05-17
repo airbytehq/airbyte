@@ -8,14 +8,17 @@ import logging
 import pkgutil
 import uuid
 from abc import ABC
+from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple
 
 import jsonschema
 import requests
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.utils import AirbyteTracedException
+from requests import HTTPError
 from source_google_analytics_data_api import utils
 from source_google_analytics_data_api.utils import DATE_FORMAT
 
@@ -347,8 +350,23 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             return False, str(e)
         config["authenticator"] = self.get_authenticator(config)
 
-        stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"])
-        metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+        try:
+            stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"])
+            metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+        except HTTPError as e:
+            error_list = [HTTPStatus.BAD_REQUEST, HTTPStatus.FORBIDDEN]
+            if e.response.status_code in error_list:
+                internal_message = f"Incorrect Property ID: {config['property_id']}"
+                property_id_docs_url = (
+                    "https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id"
+                )
+                message = f"Access was denied to the property ID entered. Check your access to the Property ID or use Google Analytics {property_id_docs_url} to find your Property ID."
+
+                wrong_property_id_error = AirbyteTracedException(
+                    message=message, internal_message=internal_message, failure_type=FailureType.config_error
+                )
+                raise wrong_property_id_error
+
         if not metadata:
             return False, "failed to get metadata, over quota, try later"
 
