@@ -716,3 +716,7 @@ def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_p
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
     )
+
+
+def with_crane(context: PipelineContext) -> Container:
+    return context.dagger_client.container().from_("gcr.io/go-containerregistry/crane:v0.15.1")
