@@ -1,0 +1,20 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: cf98d52c-ba5a-4dfd-8ada-c1baebfa6e73
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/destination-langchain
+  githubIssueLabel: destination-langchain
+  icon: langchain.svg
+  license: MIT
+  name: Langchain
+  releaseDate: TODO
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/destinations/langchain
+metadataSpecVersion: "1.0"
