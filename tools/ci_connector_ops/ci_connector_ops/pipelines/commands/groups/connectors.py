@@ -13,6 +13,7 @@ from typing import Tuple
 import anyio
 import click
 import dagger
+from ci_connector_ops.pipelines import autobump
 from ci_connector_ops.pipelines.builds import run_connector_build_pipeline
 from ci_connector_ops.pipelines.contexts import CIContext, ConnectorContext, ContextState, PublishConnectorContext
 from ci_connector_ops.pipelines.github import update_commit_status_check
@@ -361,3 +362,29 @@ def publish(
         ctx.obj["execute_timeout"],
     )
     return all(context.state is ContextState.SUCCESSFUL for context in publish_connector_contexts)
+
+
+@connectors.command(cls=DaggerPipelineCommand, help="Bump version and update changelog entry with AI.")
+@click.option("--openai-api-key", required=True, envvar="OPENAI_API_KEY", help="The OpenAI API key to use.")
+@click.option("--use-conventional-commits", default=True, type=bool, help="Use conventional commits to generate the changelog entry.")
+@click.pass_context
+def bump(
+    ctx: click.Context,
+    openai_api_key: str,
+    use_conventional_commits: bool,
+):
+    modified_connectors = get_modified_connectors(ctx.obj["modified_files"]).keys()
+    if not modified_connectors:
+        click.secho("No connector modified, nothing to do.", fg="yellow")
+        return True
+
+    changelog = autobump.generate_changelog_entry_with_ai(modified_connectors, ctx.obj["git_commits"], ctx.obj["git_diff"], openai_api_key)
+    ai_version_bump_component, bump_reason = autobump.guess_semver_version_with_ai(ctx.obj["git_diff"], openai_api_key)
+    click.secho(f"AI generated changelog entry: {changelog}", fg="green")
+    click.secho(f"AI generated version bump component: {ai_version_bump_component}", fg="green")
+    click.secho(f"AI explains the bump: {bump_reason}", fg="yellow")
+
+    for connector in modified_connectors:
+        autobump.do_it(connector, use_conventional_commits, ai_version_bump_component, ctx.obj["git_commits"], changelog, openai_api_key)
+
+    return True

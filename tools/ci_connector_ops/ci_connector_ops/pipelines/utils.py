@@ -130,6 +130,13 @@ def get_current_epoch_time() -> int:  # noqa D103
     return round(datetime.datetime.utcnow().timestamp())
 
 
+def get_commits_in_branch() -> List[git.Commit]:
+    """Retrieve the list of commits in the current branch."""
+    branch_name = get_current_git_branch()
+    commit_ids = git.Repo().git.rev_list(f"{branch_name}", "--no-merges", "--not", "master", "--").split("\n")
+    return sorted([git.Repo().commit(commit_id) for commit_id in commit_ids], key=lambda commit: commit.committed_datetime)
+
+
 async def get_modified_files_in_branch_remote(
     current_git_branch: str, current_git_revision: str, diffed_branch: str = "origin/master"
 ) -> Set[str]:
@@ -159,6 +166,12 @@ async def get_modified_files_in_branch_remote(
             .stdout()
         )
     return set(modified_files.split("\n"))
+
+
+def get_git_diff(current_git_revision: str, diffed_branch: str = "master") -> str:
+    """Get the git diff between the current branch and the diffed branch. Defaults to origin/master."""
+    airbyte_repo = git.Repo()
+    return airbyte_repo.git.diff(f"{diffed_branch}...{current_git_revision}")
 
 
 def get_modified_files_in_branch_local(current_git_revision: str, diffed_branch: str = "master") -> Set[str]:

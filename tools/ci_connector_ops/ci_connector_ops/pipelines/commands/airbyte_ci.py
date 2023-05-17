@@ -7,9 +7,11 @@
 import click
 from ci_connector_ops.pipelines.contexts import CIContext
 from ci_connector_ops.pipelines.utils import (
+    get_commits_in_branch,
     get_current_epoch_time,
     get_current_git_branch,
     get_current_git_revision,
+    get_git_diff,
     get_modified_files_in_branch,
     get_modified_files_in_commit,
 )
@@ -46,6 +48,8 @@ def airbyte_ci(
     ctx.obj["is_local"] = is_local
     ctx.obj["git_branch"] = git_branch
     ctx.obj["git_revision"] = git_revision
+    ctx.obj["git_commits"] = get_commits_in_branch()
+    ctx.obj["git_diff"] = get_git_diff(git_revision)
     ctx.obj["gha_workflow_run_id"] = gha_workflow_run_id
     ctx.obj["gha_workflow_run_url"] = (
         f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}" if gha_workflow_run_id else None
