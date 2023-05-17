@@ -358,20 +358,17 @@ public class BigQueryDestination extends BaseConnector implements Destination {
    */
   @VisibleForTesting
   public int getNumberOfFileBuffers(final JsonNode config) {
-    // These null checks are probably redundant, but I don't want to gamble on that right now
+    // This null check is probably redundant, but I don't want to gamble on that right now
     if (config.hasNonNull(BigQueryConsts.LOADING_METHOD)) {
       final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
-      if (loadingMethod.hasNonNull(BigQueryConsts.METHOD)) {
-        final String method = loadingMethod.get(BigQueryConsts.METHOD).asText();
-        if (BigQueryConsts.GCS_STAGING.equals(method)) {
-          int numOfFileBuffers = FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
-          if (config.has(FileBuffer.FILE_BUFFER_COUNT_KEY)) {
-            numOfFileBuffers = Math.min(config.get(FileBuffer.FILE_BUFFER_COUNT_KEY).asInt(), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
-          }
-          // Only allows for values 10 <= numOfFileBuffers <= 50
-          return Math.max(numOfFileBuffers, FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
-        }
+      final int numOfFileBuffers;
+      if (config.has(FileBuffer.FILE_BUFFER_COUNT_KEY)) {
+        numOfFileBuffers = Math.min(config.get(FileBuffer.FILE_BUFFER_COUNT_KEY).asInt(), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
+      } else {
+        numOfFileBuffers = FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
       }
+      // Only allows for values 10 <= numOfFileBuffers <= 50
+      return Math.max(numOfFileBuffers, FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
     }
 
     // Return the default if we fail to parse the config
