@@ -55,16 +55,19 @@ class GenesysAnalyticsStream(GenesysStream, IncrementalMixin, ABC):
     url_base = "https://api.usw2.pure.cloud/api/v2/"
     page_size = 1000
     cursor_field = "interval_end"
+    client_id = None
+    start_date = None
+    _cursor_value = None
+    analytics_metrics_list = None
 
     # Init constructor with Parent class args + incremental params
-    def __init__(self, client_id: str, analytics_metrics_list: str, start_date: datetime, *args, **kwargs):
+    def __init__(self, client_id: str, analytics_metrics_list_str: str, start_date: datetime, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Metrics selection
-        self.analytics_metrics_list = analytics_metrics_list.split(",")
+        self.analytics_metrics_list = analytics_metrics_list_str.replace(" ", "").split(",")
         self.client_id = client_id
         # Incremental parameters:
         self.start_date = start_date
-        self._cursor_value = None
 
     # Getter/setter to maintain incremental state
     @property
@@ -378,10 +381,10 @@ class SourceGenesys(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         # Fetch valid start date from config
-        start_date = datetime.strptime(config['start_date'], '%Y-%m-%d')
+        start_date = str_timestamp_to_datetime(config['start_date'])
 
         # Fetch client_id + list of metrics for analytics api streams
-        analytics_metrics_list = config['analytics_metrics']
+        analytics_metrics_list_str = config['analytics_metrics']
         client_id = config['client_id']
 
         GENESYS_TENANT_ENDPOINT_MAP: Dict = {
@@ -420,7 +423,7 @@ class SourceGenesys(AbstractSource):
             TelephonyProvidersEdgesTrunks(**args),
             TelephonyStations(**args),
             # New Streams here:
-            AnalyticsConversations(client_id, analytics_metrics_list, start_date, **args),
+            AnalyticsConversations(client_id, analytics_metrics_list_str, start_date, **args),
             #
             UserGroups(**args),
             UserUsers(**args),

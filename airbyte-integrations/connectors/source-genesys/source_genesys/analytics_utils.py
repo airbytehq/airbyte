@@ -23,7 +23,11 @@ def generate_query(window_date_str: str, metrics: list[str]):
 
 
 def create_surrogate_key(*argv) -> str:
-    """Get surrogate key value from n cols."""
+    """
+    Get surrogate key value from n cols.
+    :param argv: n columns to build the surrogate key with
+    :return: a hased surrogate key unique identifier str
+    """
     surr_key_str = ""
     for key in argv:
         surr_key_str += str(key)
@@ -33,9 +37,17 @@ def create_surrogate_key(*argv) -> str:
 
 
 def str_timestamp_to_datetime(timestamp_value):
+    """
+    Function that converts a string or datetime value to a datetime object.
+    :param timestamp_value: str/datetime value
+    :return: datetime value or None
+    """
     logger = init_logger()
     if isinstance(timestamp_value, str):
-        return datetime.strptime(timestamp_value, '%Y-%m-%d')
+        try:
+            return datetime.strptime(timestamp_value, '%Y-%m-%d')
+        except ValueError:
+            logger.exception(f"Invalid string format: {timestamp_value}")
     elif isinstance(timestamp_value, datetime):
         return timestamp_value
     else:
@@ -43,14 +55,14 @@ def str_timestamp_to_datetime(timestamp_value):
         return timestamp_value
 
 
-def split_utc_timestamp_interval(timestamp_range):
+def split_utc_timestamp_interval(timestamp_range_str: str):
     """
     Split a string interval value into start and end datetime values.
-    :param timestamp_range: An interval string timestamp value split by '/' in the following format:
+    :param timestamp_range_str: An interval string timestamp value split by '/' in the following format:
         YYYY-MM-DDThh:mm:ss/YYYY-MM-DDThh:mm:ss
     :return: tuple containing the values: start_datetime, end_datetime
     """
-    start, end = timestamp_range.split('/')
+    start, end = timestamp_range_str.split('/')
     start_datetime = datetime.fromisoformat(start.rstrip('Z'))
     end_datetime = datetime.fromisoformat(end.rstrip('Z'))
     return start_datetime, end_datetime
