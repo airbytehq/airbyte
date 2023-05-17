@@ -815,6 +815,8 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                   .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
                       .build())
                   .build())
+              // When a decimal scale is explicitly chosen, 2 in this case,
+              // Postgres stores the rounded off value
               .addInsertValues("'{131070.23,231072.476596593}'")
               .addExpectedValues("[131070.23,231072.48]")
               .build());
