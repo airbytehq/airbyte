@@ -12,6 +12,7 @@ import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -53,6 +54,11 @@ public class UploadWorkers implements AutoCloseable {
     // todo (cgardens) - i'm not convinced this makes sense. as we get close to the limit, we should
     // flush more eagerly, but "flush all" is never a particularly useful thing in this world.
     // if the total size is > n, flush all buffers
+
+    // todo (davin) - rethink how to allocate threads once we get to multiple streams.
+    final ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) workerPool;
+    var allocatableThreads = threadPoolExecutor.getPoolSize() - threadPoolExecutor.getActiveCount();
+
     if (bufferManagerDequeue.getTotalGlobalQueueSizeBytes() > TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES) {
       flushAll();
       return;
@@ -63,9 +69,13 @@ public class UploadWorkers implements AutoCloseable {
     // otherwise, if each individual stream has crossed a specific threshold, flush
     for (final Map.Entry<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> entry : bufferManagerDequeue.getBuffers().entrySet()) {
       final var stream = entry.getKey();
-      if (inProgressStreams.contains(stream)) {
-        // each stream is limited to one thread
-        continue;
+//      if (inProgressStreams.contains(stream)) {
+//        // each stream is limited to one thread
+//        continue;
+//      }
+      // if no worker threads left - return
+      if (allocatableThreads == 0) {
+        break;
       }
 
       final var exceedSize = bufferManagerDequeue.getQueueSizeBytes(stream) >= QUEUE_FLUSH_THRESHOLD;
@@ -73,6 +83,7 @@ public class UploadWorkers implements AutoCloseable {
           .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
           .orElse(false);
       if (exceedSize || tooLongSinceLastRecord) {
+        allocatableThreads--;
         flush(stream);
       }
     }
@@ -111,7 +122,11 @@ public class UploadWorkers implements AutoCloseable {
       try {
         log.info("Attempting to read from queue {}. Current queue size: {}", desc, bufferManagerDequeue.getQueueSizeInRecords(desc));
 
-        try (final var batch = bufferManagerDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
+        var start = System.currentTimeMillis();
+        final var batch = bufferManagerDequeue.take(desc, flusher.getOptimalBatchSizeBytes());
+        log.info("Time to read from queue: {}", System.currentTimeMillis() - start);
+
+        try (batch) {
           flusher.flush(desc, batch.getData());
         }
         inProgressStreams.remove(desc);
