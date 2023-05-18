@@ -16,5 +16,9 @@ data:
   registries:
     cloud:
       enabled: true
+      dockerRepository: airbyte/image-exists-3
+      dockerImageTag: 0.0.1-exists
     oss:
       enabled: true
+      dockerRepository: airbyte/image-exists-4
+      dockerImageTag: 0.0.1-exists
