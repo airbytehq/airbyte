@@ -43,21 +43,21 @@ class DestinationLangchain(Destination):
 
     def get_client(self, config: Mapping[str, Any]):
         return weaviate.Client(
-            url=config.get("weaviate_url"),
-            auth_client_secret=weaviate.AuthApiKey(config.get("weaviate_key")),
-            additional_headers={"X-OpenAI-Api-Key": config.get("openai_key")},
+            url=config.get("storing").get("weaviate_url"),
+            auth_client_secret=weaviate.AuthApiKey(config.get("storing").get("weaviate_key")),
+            additional_headers={"X-OpenAI-Api-Key": config.get("processing").get("openai_key")},
         )
 
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
         self.batch: List[AirbyteRecordMessage] = []
-        self.splitter = RecursiveCharacterTextSplitter(chunk_size=config.get("chunk_size", 1000))
-        self.embeddings = OpenAIEmbeddings(openai_api_key=config.get("openai_key"))
+        self.splitter = RecursiveCharacterTextSplitter(chunk_size=config.get("processing").get("chunk_size", 1000))
+        self.embeddings = OpenAIEmbeddings(openai_api_key=config.get("processing").get("openai_key"))
         self.vectorstore = Weaviate(
             client=self.get_client(config),
             embedding=self.embeddings,
-            index_name=config.get("index_name"),
+            index_name=config.get("storing").get("index_name"),
             text_key="content"
         )
         for message in input_messages:

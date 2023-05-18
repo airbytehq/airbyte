@@ -13,11 +13,19 @@
     "properties": {
       "processing": {
         "type": "object",
+        "title": "Processing",
+        "description": "Configure how to pre-process the data (chunking and embedding)",
         "oneOf": [
           {
             "type": "object",
+            "title": "OpenAI",
+            "required": [
+              "mode",
+              "chunk_size",
+              "openai_key"
+            ],
             "properties": {
-              "type": {
+              "mode": {
                 "const": "openai"
               },
               "chunk_size": {
@@ -31,16 +39,70 @@
                 "title": "OpenAI API key"
               }
             }
+          },
+          {
+            "type":"object",
+            "title": "HuggingFace",
+            "properties": {
+              "mode": {
+                "const": "HuggingFace"
+              }
+            }
+          },
+          {
+            "type":"object",
+            "title": "Cohere",
+            "properties": {
+              "mode": {
+                "const": "Cohere"
+              }
+            }
+          },
+          {
+            "type":"object",
+            "title": "Jina",
+            "properties": {
+              "mode": {
+                "const": "Jina"
+              }
+            }
+          },
+          {
+            "type":"object",
+            "title": "Sagemaker",
+            "properties": {
+              "mode": {
+                "const": "Sagemaker"
+              }
+            }
+          },
+          {
+            "type":"object",
+            "title": "Google PaLM",
+            "properties": {
+              "mode": {
+                "const": "palm"
+              }
+            }
           }
         ]
       },
       "storing": {
         "type": "object",
+        "title": "Storing",
+        "description": "Configure how to store the embeddings",
         "oneOf": [
           {
             "type": "object",
+            "title": "Weaviate",
+            "required": [
+              "mode",
+              "index_name",
+              "weaviate_key",
+              "weaviate_url"
+            ],
             "properties": {
-              "type": {
+              "mode": {
                 "const": "weaviate"
               },
               "index_name": {
@@ -55,6 +117,61 @@
               "weaviate_url": {
                 "type": "string",
                 "title": "Weaviate URL"
+              }
+            }
+          },
+
+          {
+            "type":"object",
+            "title": "PineconeDB",
+            "properties": {
+              "mode": {
+                "const": "pinecone"
+              }
+            }
+          },
+          {
+            "type":"object",
+            "title": "Deep Lake",
+            "properties": {
+              "mode": {
+                "const": "deeplake"
+              }
+            }
+          },
+          {
+            "type":"object",
+            "title": "Milvus",
+            "properties": {
+              "mode": {
+                "const": "milvus"
+              }
+            }
+          },
+          {
+            "type":"object",
+            "title": "Qdrant",
+            "properties": {
+              "mode": {
+                "const": "qdrant"
+              }
+            }
+          },
+          {
+            "type":"object",
+            "title": "Supabase VectorStore",
+            "properties": {
+              "mode": {
+                "const": "supabase"
+              }
+            }
+          },
+          {
+            "type":"object",
+            "title": "Tair",
+            "properties": {
+              "mode": {
+                "const": "tair"
               }
             }
           }
