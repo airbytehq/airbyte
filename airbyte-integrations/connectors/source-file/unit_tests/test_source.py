@@ -21,6 +21,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from source_file.client import ConfigurationError
 from source_file.source import SourceFile
 
 logger = logging.getLogger("airbyte")
@@ -200,3 +201,20 @@ def test_pandas_header_none(absolute_path, test_files):
         {"0": "text11", "1": "text12"},
         {"0": "text21", "1": "text22"},
     ]
+
+
+def test_incorrect_reader_options(absolute_path, test_files):
+    config = {
+        "dataset_name": "test",
+        "format": "csv",
+        "reader_options": json.dumps({"sep": "4", "nrows": 20}),
+        "url": f"{absolute_path}/{test_files}/test_parser_error.csv",
+        "provider": {"storage": "local"},
+    }
+
+    catalog = get_catalog({"0": {"type": ["string", "null"]}, "1": {"type": ["string", "null"]}})
+    source = SourceFile()
+    with pytest.raises(ConfigurationError) as e:
+        records = source.read(logger=logger, config=deepcopy(config), catalog=catalog)
+        records = [r.record.data for r in records]
+    assert "can not be parsed. Please check your reader_options. https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html" in str(e.value)
