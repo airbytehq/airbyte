@@ -16,8 +16,8 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_gainsight",
-    description="Source implementation for Gainsight.",
+    name="source_gainsight_px",
+    description="Source implementation for Gainsight Px.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),

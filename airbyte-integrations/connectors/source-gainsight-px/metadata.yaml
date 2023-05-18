@@ -7,14 +7,14 @@ data:
       enabled: false
   connectorSubtype: api
   connectorType: source
-  definitionId: 449a6c68-8254-43df-a2c7-f6cfcf8f5786
+  definitionId: 0da3b186-8879-4e94-8738-55b48762f1e8
   dockerImageTag: 0.1.0
-  dockerRepository: airbyte/source-gainsight
-  githubIssueLabel: source-gainsight
-  icon: gainsight.svg
+  dockerRepository: airbyte/source-gainsight-px
+  githubIssueLabel: source-gainsight-px
+  icon: gainsight-px.svg
   license: MIT
-  name: Gainsight
+  name: Gainsight Px
   releaseDate: TODO
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/gainsight
+  supportUrl: https://docs.airbyte.com/integrations/sources/gainsight-px
 metadataSpecVersion: "1.0"

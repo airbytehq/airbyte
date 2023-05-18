@@ -1,6 +1,6 @@
 # Gainsight-API
 
-This page contains the setup guide and reference information for the [Gainsight-PX-API](https://gainsightpx.docs.apiary.io/) source connector from [Gainsight](https://support.gainsight.com/PX/API_for_Developers)
+This page contains the setup guide and reference information for the [Gainsight-PX-API](https://gainsightpx.docs.apiary.io/) source connector from [Gainsight-PX](https://support.gainsight.com/PX/API_for_Developers)
 
 ## Prerequisites
 
@@ -65,7 +65,7 @@ GET https://api.aptrinsic.com/v1/accounts
 
 ## Performance considerations
 
-Gainsight-API's [API reference](https://gainsightpx.docs.apiary.io/) has v1 at present. The connector as default uses v1.
+Gainsight-PX-API's [API reference](https://gainsightpx.docs.apiary.io/) has v1 at present. The connector as default uses v1.
 
 ## Changelog
 
