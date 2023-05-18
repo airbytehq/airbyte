@@ -7,8 +7,10 @@ import logging
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
+import mock
 import pendulum
 import pytest
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
@@ -67,8 +69,9 @@ def test_check_connection_invalid_start_date_exception(config_invalid_date):
         assert not ok
         assert error_msg
 
+@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
+def test_streams(requests_mock, config):
 
-def test_streams(config):
     streams = SourceHubspot().streams(config)
 
     assert len(streams) == 28

@@ -133,11 +133,6 @@ class SourceHubspot(AbstractSource):
                 f"The following streams are partially available: {[s.name for s in partially_available_streams]}, "
                 f"add the following scopes to download all available data: {required_scoped}"
             )
-
-            # Remove for test purposes
-            # if "crm.schemas.custom.read" in granted_scopes and "crm.objects.custom.read" in granted_scopes:
-            #    available_streams.extend(self.get_custom_object_streams(api=api, common_params=common_params))
-
         else:
             self.logger.info("No scopes to grant when authenticating with API key.")
             available_streams = streams
