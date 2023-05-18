@@ -65,6 +65,9 @@ acceptance_tests:
           tickets:
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
+          goals:
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
         fail_on_extra_columns: false
   full_refresh:
     tests:
