@@ -11,6 +11,7 @@ data:
   releaseStage: generally_available
   license: MIT
   normalizationConfig:
+    normalizationIntegrationType: postgres
     normalizationRepository: airbyte/image-exists-2
     normalizationTag: 0.0.1-exists
   registries:
