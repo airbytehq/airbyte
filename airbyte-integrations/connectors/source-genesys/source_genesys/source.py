@@ -12,7 +12,7 @@ from airbyte_cdk.logger import init_logger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream, IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
-from source_genesys.authenicator import GenesysOAuthAuthenticator
+from source_genesys.authenticator import GenesysOAuthAuthenticator
 from source_genesys.analytics_utils import generate_query, parse_analytics_records, str_timestamp_to_datetime
 
 
@@ -355,7 +355,7 @@ class AnalyticsConversations(GenesysAnalyticsStream):
     API Docs: https://developer.genesys.cloud/analyticsdatamanagement/analytics/analytics-apis
     """
 
-    primary_key = "unique_id"
+    primary_key = "uid"
     cursor_field = "interval_end"
 
     def path(self, **kwargs) -> str:

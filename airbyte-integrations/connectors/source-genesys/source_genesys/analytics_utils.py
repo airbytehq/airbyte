@@ -87,7 +87,7 @@ def parse_analytics_records(client_id: str, results_json: dict[str, any]):
         for metric in metric_group["data"][0]["metrics"]:
 
             # Create unique_id via surrogate_key (client_id+media_type+interval_end+metric)
-            unique_id = create_surrogate_key(
+            uid = create_surrogate_key(
                 client_id,
                 metric_group["group"]["mediaType"],
                 end_timestamp,
@@ -95,7 +95,7 @@ def parse_analytics_records(client_id: str, results_json: dict[str, any]):
             )
             # Flatten metric results into individual records
             metric_record = AnalyticsMetric(
-                unique_id=unique_id,
+                uid=uid,
                 client_id=client_id,
                 media_type=metric_group["group"]["mediaType"],
                 interval_start=start_timestamp,

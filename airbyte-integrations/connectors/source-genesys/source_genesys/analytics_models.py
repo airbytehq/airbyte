@@ -6,7 +6,7 @@ from datetime import datetime
 class AnalyticsMetric:
     """DataClass for conversation metrics model."""
     client_id: str
-    unique_id: str
+    uid: str
     media_type: str
     metric_name: str
     interval_start: datetime

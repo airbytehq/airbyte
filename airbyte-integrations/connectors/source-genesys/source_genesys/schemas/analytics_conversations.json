@@ -6,7 +6,7 @@
         "client_id": {
             "type": ["null","string"]
         },
-        "unique_id": {
+        "uid": {
             "type": ["null","string"]
         },
         "interval_start": {
