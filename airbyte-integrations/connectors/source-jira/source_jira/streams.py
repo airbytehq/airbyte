@@ -1016,7 +1016,16 @@ class ScreenTabs(JiraStream):
 
     def read_tab_records(self, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping[str, Any]]:
         screen_id = stream_slice["screen_id"]
-        yield from super().read_records(stream_slice={"screen_id": screen_id}, **kwargs)
+        for screen_tab in super().read_records(stream_slice={"screen_id": screen_id}, **kwargs):
+            """
+            For some projects jira creates screens automatically, which does not present in UI, but exist in screens stream.
+            We receive 400 error "Screen with id {screen_id} does not exist" for tabs by these screens.
+            """
+            bad_request_reached = re.match(r"Screen with id \d* does not exist", screen_tab.get("errorMessages", [""])[0])
+            if bad_request_reached:
+                self.logger.info("Could not get screen tab for %s screen id. Reason: %s", screen_id, screen_tab["errorMessages"][0])
+                return
+            yield screen_tab
 
 
 class ScreenTabFields(JiraStream):
@@ -1071,8 +1080,9 @@ class Sprints(JiraStream):
         return f"board/{stream_slice['board_id']}/sprint"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        available_board_types = ["scrum", "simple"]
         for board in read_full_refresh(self.boards_stream):
-            if board["type"] == "scrum":
+            if board["type"] in available_board_types:
                 yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
 
 

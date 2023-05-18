@@ -46,7 +46,7 @@ def test_bulk_stream_fallback_to_rest(mocker, requests_mock, stream_config, stre
     # mock a BULK API
     requests_mock.register_uri(
         "POST",
-        "https://fase-account.salesforce.com/services/data/v53.0/jobs/query",
+        "https://fase-account.salesforce.com/services/data/v57.0/jobs/query",
         status_code=400,
         json=[{"errorCode": "INVALIDENTITY", "message": "CustomEntity is not supported by the Bulk API"}],
     )
@@ -210,7 +210,7 @@ def test_stream_start_datetime_format_should_not_changed(stream_config, stream_a
 
 
 def test_download_data_filter_null_bytes(stream_config, stream_api):
-    job_full_url: str = "https://fase-account.salesforce.com/services/data/v53.0/jobs/query/7504W00000bkgnpQAA"
+    job_full_url: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
 
     with requests_mock.Mocker() as m:
@@ -229,7 +229,7 @@ def test_download_data_filter_null_bytes(stream_config, stream_api):
     ids=[f"charset: {x[1]}, chunk_size: {x[0]}" for x in encoding_symbols_parameters()],
 )
 def test_encoding_symbols(stream_config, stream_api, chunk_size, content_type, content, expected_result):
-    job_full_url: str = "https://fase-account.salesforce.com/services/data/v53.0/jobs/query/7504W00000bkgnpQAA"
+    job_full_url: str = "https://fase-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
 
     with requests_mock.Mocker() as m:
@@ -260,7 +260,7 @@ def test_check_connection_rate_limit(
     with requests_mock.Mocker() as m:
         m.register_uri("POST", "https://login.salesforce.com/services/oauth2/token", json=login_json_resp, status_code=login_status_code)
         m.register_uri(
-            "GET", "https://instance_url/services/data/v53.0/sobjects", json=discovery_resp_json, status_code=discovery_status_code
+            "GET", "https://instance_url/services/data/v57.0/sobjects", json=discovery_resp_json, status_code=discovery_status_code
         )
         result, msg = source.check_connection(logger, stream_config)
         assert result is False
@@ -351,7 +351,7 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
 
     logger = logging.getLogger("airbyte")
 
-    next_page_url = "/services/data/v53.0/query/012345"
+    next_page_url = "/services/data/v57.0/query/012345"
     response_1 = {
         "done": False,
         "totalSize": 10,
@@ -403,7 +403,7 @@ def test_pagination_rest(stream_config, stream_api):
     stream_name = "AcceptedEventRelation"
     stream: RestSalesforceStream = generate_stream(stream_name, stream_config, stream_api)
     stream.DEFAULT_WAIT_TIMEOUT_SECONDS = 6  # maximum wait timeout will be 6 seconds
-    next_page_url = "/services/data/v53.0/query/012345"
+    next_page_url = "/services/data/v57.0/query/012345"
     with requests_mock.Mocker() as m:
         resp_1 = {
             "done": False,
@@ -444,7 +444,7 @@ def test_pagination_rest(stream_config, stream_api):
 
 def test_csv_reader_dialect_unix():
     stream: BulkSalesforceStream = BulkSalesforceStream(stream_name=None, sf_api=None, pk=None)
-    url = "https://fake-account.salesforce.com/services/data/v53.0/jobs/query/7504W00000bkgnpQAA"
+    url = "https://fake-account.salesforce.com/services/data/v57.0/jobs/query/7504W00000bkgnpQAA"
 
     data = [
         {"Id": 1, "Name": '"first_name" "last_name"'},
@@ -581,7 +581,7 @@ def test_too_many_properties(stream_config, stream_api_v2_pk_too_many_properties
     assert stream.too_many_properties
     assert stream.primary_key
     assert type(stream) == RestSalesforceStream
-    url = next_page_url = "https://fase-account.salesforce.com/services/data/v53.0/queryAll"
+    url = next_page_url = "https://fase-account.salesforce.com/services/data/v57.0/queryAll"
     requests_mock.get(
         url,
         [
@@ -622,7 +622,7 @@ def test_stream_with_no_records_in_response(stream_config, stream_api_v2_pk_too_
     assert stream.too_many_properties
     assert stream.primary_key
     assert type(stream) == RestSalesforceStream
-    url = "https://fase-account.salesforce.com/services/data/v53.0/queryAll"
+    url = "https://fase-account.salesforce.com/services/data/v57.0/queryAll"
     requests_mock.get(
         url,
         [

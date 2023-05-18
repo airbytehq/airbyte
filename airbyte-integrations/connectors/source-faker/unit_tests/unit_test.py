@@ -62,6 +62,18 @@ def test_source_streams():
         "height": {"type": "string"},
         "blood_type": {"type": "string"},
         "weight": {"type": "integer"},
+        'address': {
+            'type': 'object',
+            'properties': {
+                'city': {'type': 'string'},
+                'country_code': {'type': 'string'},
+                'postal_code': {'type': 'string'},
+                'province': {'type': 'string'},
+                'state': {'type': 'string'},
+                'street_name': {'type': 'string'},
+                'street_number': {'type': 'string'}
+            }
+        }
     }
 
 

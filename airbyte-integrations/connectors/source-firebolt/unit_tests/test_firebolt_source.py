@@ -121,7 +121,7 @@ def test_connection(mock_connection, config, config_no_engine, logger):
             False,
             {
                 "type": "string",
-                "format": "datetime",
+                "format": "date-time",
                 "airbyte_type": "timestamp_without_timezone",
             },
         ),

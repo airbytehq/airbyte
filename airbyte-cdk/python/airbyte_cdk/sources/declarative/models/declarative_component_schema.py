@@ -277,8 +277,8 @@ class OAuthAuthenticator(BaseModel):
         ],
         title="Client Secret",
     )
-    refresh_token: str = Field(
-        ...,
+    refresh_token: Optional[str] = Field(
+        None,
         description="Credential artifact used to get a new access token.",
         examples=[
             "{{ config['refresh_token'] }}",
