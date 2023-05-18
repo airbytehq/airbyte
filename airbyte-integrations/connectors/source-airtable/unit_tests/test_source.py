@@ -3,6 +3,7 @@
 #
 
 
+import logging
 from unittest.mock import MagicMock
 
 import pytest
@@ -59,4 +60,14 @@ def test_streams(config, fake_bases_response, fake_tables_response, expected_dis
     assert len(streams) == 1
     assert [stream.name for stream in streams] == expected_discovery_stream_name
 
+
+def test_remove_missed_streams_from_catalog(mocker, config, fake_catalog, fake_streams, caplog):
+    logger = logging.getLogger(__name__)
+    source = SourceAirtable()
+    mocker.patch("source_airtable.source.SourceAirtable.streams", return_value=fake_streams)
+    streams_before = len(fake_catalog.streams)
+    catalog = source._remove_missed_streams_from_catalog(logger=logger, config=config, catalog=fake_catalog)
+    assert streams_before - len(catalog.streams) == 1
+    assert len(caplog.messages) == 1
+    assert caplog.text.startswith("WARNING")
 #
