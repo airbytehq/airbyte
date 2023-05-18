@@ -88,7 +88,8 @@ public class Main {
 
   /**
    * Read the datasource file for the given dataset and connector.
-   * <p>Example: catalogs/destination_snowflake/1m_datasource.txt
+   * <p>
+   * Example: catalogs/destination_snowflake/1m_datasource.txt
    *
    * @param dataset the dataset to read
    * @param connector the connector to read
@@ -99,15 +100,16 @@ public class Main {
     final String datasourceFilename = "catalogs/%s/%s_datasource.txt".formatted(connector, dataset);
     log.info("datasourceFilename {}", datasourceFilename);
     try (final var reader =
-                 new BufferedReader(new InputStreamReader(Objects.requireNonNull(
-                         Thread.currentThread().getContextClassLoader().getResourceAsStream(datasourceFilename)), StandardCharsets.UTF_8))) {
+        new BufferedReader(new InputStreamReader(Objects.requireNonNull(
+            Thread.currentThread().getContextClassLoader().getResourceAsStream(datasourceFilename)), StandardCharsets.UTF_8))) {
       return reader.readLine();
     }
   }
 
   /**
    * Read the catalog file for the given dataset and connector.
-   * <p>Example: catalogs/destination_snowflake/1m_catalog.json
+   * <p>
+   * Example: catalogs/destination_snowflake/1m_catalog.json
    *
    * @param dataset the dataset to read
    * @param connector the connector to read
