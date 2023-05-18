@@ -69,6 +69,7 @@ def test_check_connection_invalid_start_date_exception(config_invalid_date):
         assert not ok
         assert error_msg
 
+
 @mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
 def test_streams(requests_mock, config):
 
