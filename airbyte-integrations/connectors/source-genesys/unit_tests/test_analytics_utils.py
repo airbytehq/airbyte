@@ -31,7 +31,7 @@ def test_create_surrogate_key():
 
     # Expected key does not contain empty key
     expected_key = hashlib.md5(f"{key1}{key2}{key3}".encode("utf-8")).hexdigest()
-    # Return result with all values empty key
+    # Return result with all values + empty key
     result = create_surrogate_key(key1, key2, key3, empty_key_val)
 
     assert result == expected_key
