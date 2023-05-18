@@ -89,7 +89,7 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                 |
 |:--------|:-----------|:----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
-| 0.6.0   | 2023-05-03 | [](https://github.com/airbytehq/airbyte/pull/)      | Add new stream `Trunks`                                                              |
+| 0.6.0   | 2023-05-03 | [25781](https://github.com/airbytehq/airbyte/pull/25781)      | Add new stream `Trunks`                                                              |
 | 0.5.0   | 2023-03-21 | [23995](https://github.com/airbytehq/airbyte/pull/23995)  | Add new stream `Conversation Participants`                                                              |
 | 0.4.0   | 2023-03-18 | [23995](https://github.com/airbytehq/airbyte/pull/23995)  | Add new stream `Conversation Messages`                                                                  |
 | 0.3.0   | 2023-03-18 | [22874](https://github.com/airbytehq/airbyte/pull/22874)  | Add new stream `Executions` with parent `Flows`                                                         |
