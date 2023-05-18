@@ -1,0 +1,63 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    extractor:
+      field_path: [ "results" ]
+  requester:
+    url_base: "https://api.polygon.io"
+    http_method: "GET"
+    authenticator:
+      type: "BearerAuthenticator"
+      api_token: "{{ config['api_key'] }}"
+  retriever:
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: "{{ response['next_url'] }}"
+      page_token_option:
+        type: "RequestPath"
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    retriever:
+      $ref: "#/definitions/retriever"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [ "airbyte_cursor" ]
+            value: "{{ record['t'] | int // 1000 }}"
+    incremental_sync:
+      type: "DatetimeBasedCursor"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ config['end_date']}}"
+        datetime_format: "%Y-%m-%d"
+      step: "P1D"
+      datetime_format: "%s"
+      cursor_granularity: "PT1S"
+      cursor_field: "airbyte_cursor"
+
+  stock_prices_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "stock_prices"
+      primary_key:
+        - "airbyte_cursor"
+      cursor_field:
+        - "airbyte_cursor"
+      path: "/v2/aggs/ticker/{{ config['stock_ticker'] }}/range/{{ config['multiplier'] }}/{{ config['timespan'] }}/{{ stream_slice.start_time | int * 1000 }}/{{ stream_slice['end_time'] | int * 1000}}?adjusted={{ config['adjusted'] }}&sort={{ config['sort'] }}&limit={{ config['limit'] }}"
+
+
+streams:
+  - "#/definitions/stock_prices_stream"
+check:
+  stream_names:
+    - "stock_prices"
+

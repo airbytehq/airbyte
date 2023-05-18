@@ -1,0 +1,33 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties": {
+    "v": {
+      "type": ["null", "number"]
+    },
+    "vw": {
+      "type": ["null", "number"]
+    },
+    "o": {
+      "type": ["null", "number"]
+    },
+    "c": {
+      "type": ["null", "number"]
+    },
+    "h": {
+      "type": ["null", "number"]
+    },
+    "l": {
+      "type": ["null", "number"]
+    },
+    "t": {
+      "type": ["null", "integer"]
+    },
+    "n": {
+      "type": ["null", "integer"]
+    },
+    "airbyte_cursor": {
+      "type": "number"
+    }
+  }
+}

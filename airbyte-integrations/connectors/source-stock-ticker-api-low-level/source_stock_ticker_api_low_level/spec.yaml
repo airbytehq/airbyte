@@ -1,0 +1,79 @@
+documentationUrl: https://polygon.io/docs/stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to
+connectionSpecification:
+  title: Stock Ticker Api Low Level Spec
+  $schema: http://json-schema.org/draft-07/schema#
+  type: object
+  required:
+    - stock_ticker
+    - api_key
+    - multiplier
+    - timespan
+    - start_date
+    - end_date
+  additionalProperties: true
+  properties:
+    api_key:
+      airbyte_secret: true
+      description: The Polygon.io Stocks API key to use to hit the API.
+      title: API Key
+      type: string
+    stock_ticker:
+      description: The stock ticker to track
+      examples:
+        - AAPL
+        - TSLA
+        - AMZN
+      title: Stock Ticker
+      type: string
+    start_date:
+      type: string
+      description: Start getting data from that date.
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      examples:
+        - "%Y-%m-%d"
+      format: date
+    end_date:
+      type: string
+      description: End getting data to that date.
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      examples:
+        - "%Y-%m-%d"
+      format: date
+    multiplier:
+      title: Multiplier
+      type: integer
+      description: The size of the timespan multiplier.
+      examples:
+        - 1
+        - 5
+    timespan:
+      title: Timespan
+      type: string
+      description: The size of the time window.
+      examples:
+        - minute
+        - hour
+        - day
+        - week
+        - month
+    adjusted:
+      title: Adjusted
+      type: string
+      description: Whether or not the results are adjusted for splits. By default, results are adjusted. Set this to false to get results that are NOT adjusted for splits.
+      examples:
+        - "true"
+        - "false"
+    sort:
+      title: Sort
+      type: string
+      description: Sort the results by timestamp. asc will return results in ascending order (oldest at the top), desc will return results in descending order (newest at the top).
+      examples:
+        - "asc"
+        - "desc"
+    limit:
+      title: Limit
+      type: integer
+      description: Limits the number of base aggregates queried to create the aggregate results. Max 50000
+      examples:
+        - 100
+        - 120

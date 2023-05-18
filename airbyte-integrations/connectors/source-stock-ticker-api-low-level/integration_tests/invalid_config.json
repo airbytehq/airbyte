@@ -1,0 +1,11 @@
+{
+  "start_date" : "2023-04-01",
+  "end_date" : "2023-04-15",
+  "api_key" : "not_api_key",
+  "stock_ticker" : "TSLA",
+  "adjusted": "true",
+  "sort": "asc",
+  "limit": 5,
+  "multiplier": 1,
+  "timespan": "minute"
+}
