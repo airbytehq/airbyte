@@ -216,5 +216,5 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 <!-- /env:oss -->
 
 <!-- env:cloud -->
-For detailed information on supported sync modes, supported streams, performance considerations, refer to the full documentation for [Google Adwords](https://docs.airbyte.com/integrations/sources/google-ads/).
+For detailed information on supported sync modes, supported streams, performance considerations, refer to the full documentation for [Google Ads](https://docs.airbyte.com/integrations/sources/google-ads/).
 <!-- /env:cloud -->
