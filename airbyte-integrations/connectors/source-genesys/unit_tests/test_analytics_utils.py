@@ -27,9 +27,12 @@ def test_create_surrogate_key():
     key1 = "abc"
     key2 = 123
     key3 = "xyz"
+    empty_key_val = ""
 
+    # Expected key does not contain empty key
     expected_key = hashlib.md5(f"{key1}{key2}{key3}".encode("utf-8")).hexdigest()
-    result = create_surrogate_key(key1, key2, key3)
+    # Return result with all values empty key
+    result = create_surrogate_key(key1, key2, key3, empty_key_val)
 
     assert result == expected_key
 
@@ -98,7 +101,7 @@ def test_parse_analytics_records():
     expected_end_timestamp = datetime(2023, 5, 17, 23, 59, 59)
 
     expected_metric_record = {
-        "unique_id": expected_unique_id,
+        "uid": expected_unique_id,
         "client_id": client_id,
         "media_type": "email",
         "interval_start": expected_start_timestamp,

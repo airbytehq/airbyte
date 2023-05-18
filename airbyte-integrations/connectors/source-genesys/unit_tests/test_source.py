@@ -19,5 +19,5 @@ def test_streams(mocker):
     config_mock = MagicMock()
     SourceGenesys.get_connection_response = MagicMock()
     streams = source.streams(config_mock)
-    expected_streams_number = 16
+    expected_streams_number = 17
     assert len(streams) == expected_streams_number
