@@ -28,7 +28,7 @@ public class Main {
   public static void main(final String[] args) {
     log.info("args: {}", Arrays.toString(args));
     String image = null;
-    String dataset = "1m";
+    String dataset = "1m_parallel";
 
     switch (args.length) {
       case 1 -> image = args[0];
@@ -46,10 +46,8 @@ public class Main {
     log.info("Connector name: {}", connector);
     // TODO: (ryankfu) this should be thoughtout more since it reuses the same credentials to mock
     // parallel streams
-    if (dataset.contains("_parallal")) {
-      dataset = dataset.replace("_parallal", "");
-    }
-    final Path credsPath = Path.of(CREDENTIALS_PATH.formatted(connector, dataset));
+    final String datasetCreds = dataset.replace("_parallel", "");
+    final Path credsPath = Path.of(CREDENTIALS_PATH.formatted(connector, datasetCreds));
 
     if (!Files.exists(credsPath)) {
       throw new IllegalStateException("{module-root}/" + credsPath + " not found. Must provide path to a destination-harness credentials file.");
