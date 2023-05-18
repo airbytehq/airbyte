@@ -11,7 +11,9 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
 
+from . import constants
 from .streams import (
     Assignees,
     Branches,
@@ -52,9 +54,6 @@ from .streams import (
     Workflows,
 )
 from .utils import read_full_refresh
-
-TOKEN_SEPARATOR = ","
-DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM = 10
 
 
 class SourceGithub(AbstractSource):
@@ -133,7 +132,7 @@ class SourceGithub(AbstractSource):
             stream = RepositoryStats(
                 authenticator=authenticator,
                 repositories=unchecked_repos,
-                page_size_for_large_streams=config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
+                page_size_for_large_streams=config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
             )
             for record in read_full_refresh(stream):
                 repositories.add(record["full_name"])
@@ -144,14 +143,29 @@ class SourceGithub(AbstractSource):
         return list(organizations), list(repositories)
 
     @staticmethod
-    def _get_authenticator(config: Dict[str, Any]):
+    def get_access_token(config: Mapping[str, Any]):
         # Before we supported oauth, personal_access_token was called `access_token` and it lived at the
         # config root. So we first check to make sure any backwards compatbility is handled.
-        token = config.get("access_token")
-        if not token:
-            creds = config.get("credentials")
-            token = creds.get("access_token") or creds.get("personal_access_token")
-        tokens = [t.strip() for t in token.split(TOKEN_SEPARATOR)]
+        if "access_token" in config:
+            return constants.PERSONAL_ACCESS_TOKEN_TITLE, config["access_token"]
+
+        credentials = config.get("credentials", {})
+        if "access_token" in credentials:
+            return constants.ACCESS_TOKEN_TITLE, credentials["access_token"]
+        if "personal_access_token" in credentials:
+            return constants.PERSONAL_ACCESS_TOKEN_TITLE, credentials["personal_access_token"]
+        raise Exception("Invalid config format")
+
+    def _get_authenticator(self, config: Mapping[str, Any]):
+        _, token = self.get_access_token(config)
+        tokens = [t.strip() for t in token.split(constants.TOKEN_SEPARATOR)]
+        requests_per_hour = config.get("requests_per_hour")
+        if requests_per_hour:
+            return MultipleTokenAuthenticatorWithRateLimiter(
+                tokens=tokens,
+                auth_method="token",
+                requests_per_hour=requests_per_hour,
+            )
         return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
 
     @staticmethod
@@ -234,13 +248,28 @@ class SourceGithub(AbstractSource):
                 raise e
 
         if not any((organizations, repositories)):
-            raise Exception("No streams available. Please check permissions")
+            user_message = (
+                "No streams available. Looks like your config for repositories or organizations is not valid."
+                " Please, check your permissions, names of repositories and organizations."
+            )
+            raise AirbyteTracedException(
+                internal_message="No streams available. Please check permissions",
+                message=user_message,
+                failure_type=FailureType.config_error,
+            )
 
-        page_size = config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
+        page_size = config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
+        access_token_type, _ = self.get_access_token(config)
 
-        organization_args = {"authenticator": authenticator, "organizations": organizations}
+        organization_args = {"authenticator": authenticator, "organizations": organizations, "access_token_type": access_token_type}
         organization_args_with_start_date = {**organization_args, "start_date": config["start_date"]}
-        repository_args = {"authenticator": authenticator, "repositories": repositories, "page_size_for_large_streams": page_size}
+
+        repository_args = {
+            "authenticator": authenticator,
+            "repositories": repositories,
+            "page_size_for_large_streams": page_size,
+            "access_token_type": access_token_type,
+        }
         repository_args_with_start_date = {**repository_args, "start_date": config["start_date"]}
 
         default_branches, branches_to_pull = self._get_branches_data(config.get("branch", ""), repository_args)
