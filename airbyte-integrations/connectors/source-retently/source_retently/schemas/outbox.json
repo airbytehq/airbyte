@@ -61,13 +61,15 @@
           "type": ["boolean", "null"]
         },
         "openedDate": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "isResponded": {
           "type": ["boolean", "null"]
         },
         "respondedDate": {
-          "type": ["null", "string"]
+          "type": ["null", "string"],
+          "format": "date-time"
         },
         "hasFeedback": {
           "type": ["boolean", "null"]
