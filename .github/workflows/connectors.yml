@@ -37,6 +37,16 @@ jobs:
           default: true
           override: true
 
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
       - name: Install protobuf compiler (it's not already included in CI runner)
         run: sudo apt install -y libprotobuf-dev protobuf-compiler
 
@@ -48,7 +58,7 @@ jobs:
           make
 
       - name: Tests
-        run: cd airbyte-to-flow && cargo test --target x86_64-unknown-linux-musl
+        run: cd airbyte-to-flow && cargo test --release --target x86_64-unknown-linux-musl
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
