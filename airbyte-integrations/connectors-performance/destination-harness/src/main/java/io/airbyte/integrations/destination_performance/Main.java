@@ -44,6 +44,11 @@ public class Main {
 
     final String connector = image.substring(image.indexOf("/") + 1, image.indexOf(":"));
     log.info("Connector name: {}", connector);
+    // TODO: (ryankfu) this should be thoughtout more since it reuses the same credentials to mock
+    // parallel streams
+    if (dataset.contains("_parallal")) {
+      dataset = dataset.replace("_parallal", "");
+    }
     final Path credsPath = Path.of(CREDENTIALS_PATH.formatted(connector, dataset));
 
     if (!Files.exists(credsPath)) {
