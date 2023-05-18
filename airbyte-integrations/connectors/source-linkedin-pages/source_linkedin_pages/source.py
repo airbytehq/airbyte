@@ -3,93 +3,14 @@
 #
 
 
-from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, List, Mapping, Tuple, Union
 
-import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
-
-
-class LinkedinPagesStream(HttpStream, ABC):
-
-    url_base = "https://api.linkedin.com/v2/"
-    primary_key = None
-
-    def __init__(self, config):
-        super().__init__(authenticator=config.get("authenticator"))
-        self.config = config
-
-    @property
-    def org(self):
-        """Property to return the user Organization Id from input"""
-        return self.config.get("org_id")
-
-    def path(self, **kwargs) -> str:
-        """Returns the API endpoint path for stream, from `endpoint` class attribute."""
-        return self.endpoint
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
-
-    def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None
-    ) -> Iterable[Mapping]:
-        return [response.json()]
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == 429:
-            error_message = (
-                f"Stream {self.name}: LinkedIn API requests are rate limited. "
-                f"Rate limits specify the maximum number of API calls that can be made in a 24 hour period. "
-                f"These limits reset at midnight UTC every day. "
-                f"You can find more information here https://docs.airbyte.com/integrations/sources/linkedin-pages. "
-                f"Also quotas and usage are here: https://www.linkedin.com/developers/apps."
-            )
-            self.logger.error(error_message)
-        return super().should_retry(response)
-
-
-class OrganizationLookup(LinkedinPagesStream):
-    def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-
-        path = f"organizations/{self.org}"
-        return path
-
-
-class FollowerStatistics(LinkedinPagesStream):
-    def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-
-        path = f"organizationalEntityFollowerStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:{self.org}"
-        return path
-
-    def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None
-    ) -> Iterable[Mapping]:
-        yield from response.json().get("elements")
-
-
-class ShareStatistics(LinkedinPagesStream):
-    def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-
-        path = f"organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn%3Ali%3Aorganization%3A{self.org}"
-        return path
-
-    def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None
-    ) -> Iterable[Mapping]:
-        yield from response.json().get("elements")
-
-
-class TotalFollowerCount(LinkedinPagesStream):
-    def path(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-
-        path = f"networkSizes/urn:li:organization:{self.org}?edgeType=CompanyFollowedByMember"
-        return path
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
+from source_linkedin_pages.streams import FollowerStatistics, OrganizationLookup, ShareStatistics, TotalFollowerCount
 
 
 class SourceLinkedinPages(AbstractSource):
@@ -100,7 +21,7 @@ class SourceLinkedinPages(AbstractSource):
     """
 
     @classmethod
-    def get_authenticator(cls, config: Mapping[str, Any]) -> TokenAuthenticator:
+    def get_authenticator(cls, config: Mapping[str, Any]) -> Union[Oauth2Authenticator, TokenAuthenticator]:
         """
         Validate input parameters and generate a necessary Authentication object
         This connectors support 2 auth methods:
@@ -130,9 +51,7 @@ class SourceLinkedinPages(AbstractSource):
         :: for this check method the Customer must have the "r_liteprofile" scope enabled.
         :: more info: https://docs.microsoft.com/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin
         """
-
-        config["authenticator"] = self.get_authenticator(config)
-        stream = OrganizationLookup(config)
+        stream = OrganizationLookup(authenticator=self.get_authenticator(config), org_id=config.get("org_id"))
         stream.records_limit = 1
         try:
             next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
@@ -140,15 +59,12 @@ class SourceLinkedinPages(AbstractSource):
         except Exception as e:
             return False, e
 
-        # RUN: $ python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        config["authenticator"] = self.get_authenticator(config)
+        authenticator = self.get_authenticator(config)
+        kwargs = dict(authenticator=authenticator, org_id=config.get("org_id"))
         return [
-            OrganizationLookup(config),
-            FollowerStatistics(config),
-            ShareStatistics(config),
-            TotalFollowerCount(config),
-            ShareStatistics(config),
-            TotalFollowerCount(config),
+            OrganizationLookup(**kwargs),
+            FollowerStatistics(**kwargs),
+            ShareStatistics(**kwargs),
+            TotalFollowerCount(**kwargs),
         ]
