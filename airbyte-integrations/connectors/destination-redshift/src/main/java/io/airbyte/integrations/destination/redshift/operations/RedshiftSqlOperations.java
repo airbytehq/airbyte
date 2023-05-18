@@ -4,26 +4,17 @@
 
 package io.airbyte.integrations.destination.redshift.operations;
 
-import static io.airbyte.db.jdbc.JdbcUtils.getDefaultSourceOperations;
-import static java.lang.String.join;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
-import io.airbyte.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
