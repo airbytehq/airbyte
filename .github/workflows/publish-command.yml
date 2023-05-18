@@ -205,7 +205,7 @@ jobs:
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            | --- | --- | --- | --- |
+            | --- | --- | --- |
   publish-image:
     timeout-minutes: 240
     needs:
