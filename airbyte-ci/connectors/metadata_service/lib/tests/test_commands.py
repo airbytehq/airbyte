@@ -35,23 +35,26 @@ def test_file_not_found_fails():
 
 
 # TEST UPLOAD COMMAND
+
+
 @pytest.mark.parametrize("uploaded", [True, False])
-def test_upload(mocker, valid_metadata_yaml_files, uploaded):
+def test_upload(mocker, valid_metadata_upload_files, uploaded):
     runner = CliRunner()
     mocker.patch.object(commands.click, "secho")
     mocker.patch.object(commands, "upload_metadata_to_gcs")
     commands.upload_metadata_to_gcs.return_value = uploaded, "blob_id"
-    metadata_file_path = valid_metadata_yaml_files[0]
-    result = runner.invoke(
-        commands.upload, [metadata_file_path, "my-bucket"]
-    )  # Using valid_metadata_yaml_files[0] as SA because it exists...
-    if uploaded:
-        commands.click.secho.assert_called_with(f"The metadata file {metadata_file_path} was uploaded to blob_id.", color="green")
-        assert result.exit_code == 0
-    else:
-        commands.click.secho.assert_called_with(f"The metadata file {metadata_file_path} was not uploaded.", color="yellow")
-        # We exit with 5 status code to share with the CI pipeline that the upload was skipped.
-        assert result.exit_code == 5
+
+    for metadata_file_path in valid_metadata_upload_files:
+        result = runner.invoke(
+            commands.upload, [metadata_file_path, "my-bucket"]
+        )
+        if uploaded:
+            commands.click.secho.assert_called_with(f"The metadata file {metadata_file_path} was uploaded to blob_id.", color="green")
+            assert result.exit_code == 0
+        else:
+            commands.click.secho.assert_called_with(f"The metadata file {metadata_file_path} was not uploaded.", color="yellow")
+            # We exit with 5 status code to share with the CI pipeline that the upload was skipped.
+            assert result.exit_code == 5
 
 
 @pytest.mark.parametrize(
@@ -69,7 +72,7 @@ def test_upload_with_errors(mocker, valid_metadata_yaml_files, error, handled):
     commands.upload_metadata_to_gcs.side_effect = error
     result = runner.invoke(
         commands.upload, [valid_metadata_yaml_files[0], "my-bucket"]
-    )  # Using valid_metadata_yaml_files[0] as SA because it exists...
+    )
     assert result.exit_code == 1
     if handled:
         commands.click.secho.assert_called_with(f"The metadata file could not be uploaded: {str(error)}", color="red")
