@@ -11,12 +11,14 @@ from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import Conn
 from pydantic import ValidationError
 from metadata_service.constants import METADATA_FILE_NAME
 
+
 def stub_is_image_on_docker_hub(image_name: str, version: str) -> bool:
     return "exists" in image_name and "exists" in version
 
+
 def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash):
     # Mock dockerhub
-    mocker.patch('metadata_service.validators.metadata_validator.is_image_on_docker_hub', side_effect=stub_is_image_on_docker_hub)
+    mocker.patch("metadata_service.validators.metadata_validator.is_image_on_docker_hub", side_effect=stub_is_image_on_docker_hub)
 
     # Mock GCS
     service_account_json = '{"type": "service_account"}'
@@ -46,6 +48,7 @@ def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, loca
         "mock_latest_blob": mock_latest_blob,
         "service_account_json": service_account_json,
     }
+
 
 @pytest.mark.parametrize(
     "version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash",
@@ -134,6 +137,7 @@ def test_upload_metadata_to_gcs_non_existent_metadata_file():
             metadata_file_path,
         )
 
+
 def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_upload_files):
     setup_upload_mocks(mocker, None, None, "new_md5_hash")
 
@@ -148,4 +152,3 @@ def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_u
             assert False, f"Expected ValueError for: {invalid_metadata_file}"
         except (ValueError, StopIteration):
             continue
-
