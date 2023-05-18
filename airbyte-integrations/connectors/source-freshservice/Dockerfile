@@ -3,7 +3,8 @@ FROM python:3.9-slim
 # Bash is installed for more convenient debugging.
 RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /airbyte/integration_code COPY source_freshservice ./source_freshservice
+WORKDIR /airbyte/integration_code 
+COPY source_freshservice ./source_freshservice
 COPY main.py ./
 COPY setup.py ./
 RUN pip install .
