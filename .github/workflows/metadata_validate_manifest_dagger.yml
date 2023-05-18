@@ -3,9 +3,7 @@ name: Connectors' metadata.yaml files validation
 on:
   workflow_dispatch:
   pull_request:
-    # TODO (ben): Change to any connector change once the metadata service is in use
-    paths:
-      - "airbyte-integrations/connectors/**/metadata.yaml"
+
 jobs:
   connectors_metadata_validation:
     name: Connectors' metadata.yaml files validation

@@ -41,7 +41,7 @@ class PostgresCdcGetPublicizedTablesTest {
   private static final String SCHEMA_NAME = "public";
   private static final String PUBLICATION = "publication_test_12";
   private static final String REPLICATION_SLOT = "replication_slot_test_12";
-  protected static final int INITIAL_WAITING_SECONDS = 5;
+  protected static final int INITIAL_WAITING_SECONDS = 30;
   private static PostgreSQLContainer<?> container;
   private JsonNode config;
 

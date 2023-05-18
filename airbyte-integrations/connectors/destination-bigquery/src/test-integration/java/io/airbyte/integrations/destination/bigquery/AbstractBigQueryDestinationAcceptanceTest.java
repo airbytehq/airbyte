@@ -95,7 +95,14 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
   }
 
   @Override
-  protected boolean supportIncrementalSchemaChanges() { return true; }
+  protected boolean supportIncrementalSchemaChanges() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportsInDestinationNormalization() {
+    return true;
+  }
 
   @Override
   protected Optional<NamingConventionTransformer> getNameTransformer() {

@@ -11,6 +11,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.internal.AirbyteDestination;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -28,7 +29,8 @@ public class LocalAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot) throws Exception {
+  public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot, final Map<String, String> additionalEnvironmentVariables)
+      throws Exception {
     consumer =
         dest.getConsumer(destinationConfig.getDestinationConnectionConfiguration(),
             Jsons.object(Jsons.jsonNode(destinationConfig.getCatalog()), io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog.class),

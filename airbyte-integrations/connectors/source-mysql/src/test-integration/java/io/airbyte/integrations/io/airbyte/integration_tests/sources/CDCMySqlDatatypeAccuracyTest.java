@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static io.airbyte.integrations.io.airbyte.integration_tests.sources.utils.TestConstants.INITIAL_CDC_WAITING_SECONDS;
@@ -15,6 +19,7 @@ import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
 public class CDCMySqlDatatypeAccuracyTest extends MySqlDatatypeAccuracyTest {
+
   private DSLContext dslContext;
 
   @Override
@@ -91,4 +96,5 @@ public class CDCMySqlDatatypeAccuracyTest extends MySqlDatatypeAccuracyTest {
       throw new RuntimeException(e);
     }
   }
+
 }
