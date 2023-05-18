@@ -5,7 +5,10 @@
 from datetime import date
 
 import pendulum
+import pytest
+from airbyte_cdk.utils import AirbyteTracedException
 from freezegun import freeze_time
+from google.auth import exceptions
 from pendulum.tz.timezone import Timezone
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.models import Customer
@@ -55,6 +58,13 @@ def test_google_ads_init(mocker):
     google_client_mocker = mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
     _ = GoogleAds(**SAMPLE_CONFIG)
     assert google_client_mocker.load_from_dict.call_args[0][0] == EXPECTED_CRED
+
+
+def test_google_ads_wrong_permissions(mocker):
+    mocker.patch("source_google_ads.google_ads.GoogleAdsClient.load_from_dict", side_effect=exceptions.RefreshError("invalid_grant"))
+    with pytest.raises(AirbyteTracedException) as e:
+        GoogleAds(**SAMPLE_CONFIG)
+    assert e.value.message == "Config Error, Please Check permissions: invalid_grant"
 
 
 def test_send_request(mocker, customers):
