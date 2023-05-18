@@ -59,7 +59,7 @@ class StockPrices(HttpStream):
         response_dict = response.json()
         data = []
         if response_dict.get("resultsCount"):
-            for day_result in response_dict["results"]:
+            for day_result in response_dict.get("results", []):
                 data.append(
                     {
                         "date": datetime.fromtimestamp(day_result["t"] / 1000, tz=timezone.utc).strftime("%Y-%m-%d"),
