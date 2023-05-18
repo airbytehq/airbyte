@@ -13,9 +13,8 @@ FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
 
 ENV APPLICATION destination-e2e-test
-ENV ENABLE_SENTRY true
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.2.4
+LABEL io.airbyte.version=0.3.0
 LABEL io.airbyte.name=airbyte/destination-e2e-test

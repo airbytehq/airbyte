@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Mapping
 from unittest.mock import MagicMock, patch
 
@@ -59,65 +59,6 @@ class TestIncrementalFileStream:
         else:
             with pytest.raises(Exception) as e_info:
                 IncrementalFileStream._parse_user_input_schema(schema_string)
-                LOGGER.debug(str(e_info))
-
-    @pytest.mark.parametrize(  # set expected_return_record to None for an expected fail
-        "target_columns, record, expected_return_record",
-        [
-            (  # simple case
-                ["id", "first_name", "last_name"],
-                {"id": "1", "first_name": "Frodo", "last_name": "Baggins"},
-                {"id": "1", "first_name": "Frodo", "last_name": "Baggins", "_ab_additional_properties": {}},
-            ),
-            (  # additional columns
-                ["id", "first_name", "last_name"],
-                {"id": "1", "first_name": "Frodo", "last_name": "Baggins", "location": "The Shire", "items": ["The One Ring", "Sting"]},
-                {
-                    "id": "1",
-                    "first_name": "Frodo",
-                    "last_name": "Baggins",
-                    "_ab_additional_properties": {"location": "The Shire", "items": ["The One Ring", "Sting"]},
-                },
-            ),
-            (  # missing columns
-                ["id", "first_name", "last_name", "location", "items"],
-                {"id": "1", "first_name": "Frodo", "last_name": "Baggins"},
-                {
-                    "id": "1",
-                    "first_name": "Frodo",
-                    "last_name": "Baggins",
-                    "location": None,
-                    "items": None,
-                    "_ab_additional_properties": {},
-                },
-            ),
-            (  # additional and missing columns
-                ["id", "first_name", "last_name", "friends", "enemies"],
-                {"id": "1", "first_name": "Frodo", "last_name": "Baggins", "location": "The Shire", "items": ["The One Ring", "Sting"]},
-                {
-                    "id": "1",
-                    "first_name": "Frodo",
-                    "last_name": "Baggins",
-                    "friends": None,
-                    "enemies": None,
-                    "_ab_additional_properties": {"location": "The Shire", "items": ["The One Ring", "Sting"]},
-                },
-            ),
-        ],
-        ids=["simple_case", "additional_columns", "missing_columns", "additional_and_missing_columns"],
-    )
-    @patch(
-        "source_s3.source_files_abstract.stream.IncrementalFileStream.__abstractmethods__", set()
-    )  # patching abstractmethods to empty set so we can instantiate ABC to test
-    def test_match_target_schema(
-        self, target_columns: List[str], record: Dict[str, Any], expected_return_record: Mapping[str, Any]
-    ) -> None:
-        fs = IncrementalFileStream(dataset="dummy", provider={}, format={}, path_pattern="")
-        if expected_return_record is not None:
-            assert fs._match_target_schema(record, target_columns) == expected_return_record
-        else:
-            with pytest.raises(Exception) as e_info:
-                fs._match_target_schema(record, target_columns)
                 LOGGER.debug(str(e_info))
 
     @pytest.mark.parametrize(  # set expected_return_record to None for an expected fail
@@ -340,23 +281,23 @@ class TestIncrementalFileStream:
         "latest_record, current_stream_state, expected",
         [
             (  # overwrite history file
-                {"id": 1, "_ab_source_file_last_modified": "2022-05-11T11:54:11+0000", "_ab_source_file_url": "new_test_file.csv"},
-                {"_ab_source_file_last_modified": "2021-07-25T15:33:04+0000", "history": {"2021-07-25": {"old_test_file.csv"}}},
+                {"id": 1, "_ab_source_file_last_modified": "2022-05-11T11:54:11Z", "_ab_source_file_url": "new_test_file.csv"},
+                {"_ab_source_file_last_modified": "2021-07-25T15:33:04Z", "history": {"2021-07-25": {"old_test_file.csv"}}},
                 {"2022-05-11": {"new_test_file.csv"}},
             ),
             (  # add file to same day
-                {"id": 1, "_ab_source_file_last_modified": "2022-07-25T11:54:11+0000", "_ab_source_file_url": "new_test_file.csv"},
-                {"_ab_source_file_last_modified": "2022-07-25T00:00:00+0000", "history": {"2022-07-25": {"old_test_file.csv"}}},
+                {"id": 1, "_ab_source_file_last_modified": "2022-07-25T11:54:11Z", "_ab_source_file_url": "new_test_file.csv"},
+                {"_ab_source_file_last_modified": "2022-07-25T00:00:00Z", "history": {"2022-07-25": {"old_test_file.csv"}}},
                 {"2022-07-25": {"new_test_file.csv", "old_test_file.csv"}},
             ),
             (  # add new day to history
-                {"id": 1, "_ab_source_file_last_modified": "2022-07-03T11:54:11+0000", "_ab_source_file_url": "new_test_file.csv"},
-                {"_ab_source_file_last_modified": "2022-07-01T00:00:00+0000", "history": {"2022-07-01": {"old_test_file.csv"}}},
+                {"id": 1, "_ab_source_file_last_modified": "2022-07-03T11:54:11Z", "_ab_source_file_url": "new_test_file.csv"},
+                {"_ab_source_file_last_modified": "2022-07-01T00:00:00Z", "history": {"2022-07-01": {"old_test_file.csv"}}},
                 {"2022-07-01": {"old_test_file.csv"}, "2022-07-03": {"new_test_file.csv"}},
             ),
             (  # history size limit reached
                 {"_ab_source_file_url": "test.csv"},
-                {"_ab_source_file_last_modified": "2022-07-01T00:00:00+0000", "history": mock_big_size_object()},
+                {"_ab_source_file_last_modified": "2022-07-01T00:00:00Z", "history": mock_big_size_object()},
                 None,
             ),
         ],
@@ -377,7 +318,7 @@ class TestIncrementalFileStream:
         "stream_state, expected_error",
         [
             (None, False),
-            ({"_ab_source_file_last_modified": "2021-07-25T15:33:04+0000"}, False),
+            ({"_ab_source_file_last_modified": "2021-07-25T15:33:04Z"}, False),
             ({"_ab_source_file_last_modified": "2021-07-25T15:33:04Z"}, False),
             ({"_ab_source_file_last_modified": "2021-07-25"}, True),
         ],
@@ -406,7 +347,7 @@ class TestIncrementalFileStream:
         stream_instance = IncrementalFileStreamS3(
             dataset="dummy", provider={"bucket": "test-test"}, format={}, path_pattern="**/prefix*.csv"
         )
-        stream_instance._list_bucket = MagicMock()
+        stream_instance.filepath_iterator = MagicMock()
 
         records = []
         slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh)
@@ -416,7 +357,7 @@ class TestIncrementalFileStream:
                     stream_instance.read_records(
                         stream_slice=slice,
                         sync_mode=SyncMode.full_refresh,
-                        stream_state={"_ab_source_file_last_modified": "1999-01-01T00:00:00+0000"},
+                        stream_state={"_ab_source_file_last_modified": "1999-01-01T00:00:00Z"},
                     )
                 )
             )
@@ -442,10 +383,10 @@ class TestIncrementalFileStream:
         stream_instance = IncrementalFileStreamS3(
             dataset="dummy", provider={"bucket": "test-test"}, format={}, path_pattern="**/prefix*.csv"
         )
-        stream_instance._list_bucket = MagicMock()
+        stream_instance.filepath_iterator = MagicMock()
 
         records = []
-        slices = stream_instance.stream_slices(sync_mode=SyncMode.incremental)
+        slices = stream_instance.stream_slices(sync_mode=SyncMode.incremental, stream_state={})
 
         for slice in slices:
             records.extend(list(stream_instance.read_records(stream_slice=slice, sync_mode=SyncMode.incremental)))
@@ -456,7 +397,7 @@ class TestIncrementalFileStream:
         stream_instance = IncrementalFileStreamS3(
             dataset="dummy", provider={"bucket": "test-test"}, format={}, path_pattern="**/prefix*.csv"
         )
-        assert stream_instance.fileformatparser_map
+        assert stream_instance.file_formatparser_map
 
     @pytest.mark.parametrize(
         ("bucket", "path_prefix", "list_v2_objects", "expected_file_info"),
@@ -467,17 +408,17 @@ class TestIncrementalFileStream:
                 [
                     {
                         "Contents": [
-                            {"Key": "Key_A", "Size": 2048, "LastModified": datetime(2020, 2, 20, 20, 0, 2)},
-                            {"Key": "Key_B", "Size": 1024, "LastModified": datetime(2020, 2, 20, 20, 22, 2)},
+                            {"Key": "Key_A", "Size": 2048, "LastModified": datetime(2020, 2, 20, 20, 0, 2, tzinfo=timezone.utc)},
+                            {"Key": "Key_B", "Size": 1024, "LastModified": datetime(2020, 2, 20, 20, 22, 2, tzinfo=timezone.utc)},
                         ],
                         "NextContinuationToken": "token",
                     },
-                    {"Contents": [{"Key": "Key_C", "Size": 512, "LastModified": datetime(2022, 2, 2, 2, 2, 2)}]},
+                    {"Contents": [{"Key": "Key_C", "Size": 512, "LastModified": datetime(2022, 2, 2, 2, 2, 2, tzinfo=timezone.utc)}]},
                 ],
                 [
-                    FileInfo(key="Key_A", size=2048, last_modified=datetime(2020, 2, 20, 20, 0, 2)),
-                    FileInfo(key="Key_B", size=1024, last_modified=datetime(2020, 2, 20, 20, 22, 2)),
-                    FileInfo(key="Key_C", size=512, last_modified=datetime(2022, 2, 2, 2, 2, 2)),
+                    FileInfo(key="Key_A", size=2048, last_modified=datetime(2020, 2, 20, 20, 0, 2, tzinfo=timezone.utc)),
+                    FileInfo(key="Key_B", size=1024, last_modified=datetime(2020, 2, 20, 20, 22, 2, tzinfo=timezone.utc)),
+                    FileInfo(key="Key_C", size=512, last_modified=datetime(2022, 2, 2, 2, 2, 2, tzinfo=timezone.utc)),
                 ],
             ),
             ("another_test_bucket", "/fullscreen", [{}], []),  # empty response
@@ -487,15 +428,15 @@ class TestIncrementalFileStream:
                 [
                     {
                         "Contents": [
-                            {"Key": "file/path", "Size": 2048, "LastModified": datetime(2020, 2, 20, 20, 0, 2)},
-                            {"Key": "file/path/A/", "Size": 1024, "LastModified": datetime(2020, 2, 20, 20, 22, 2)},
+                            {"Key": "file/path", "Size": 2048, "LastModified": datetime(2020, 2, 20, 20, 0, 2, tzinfo=timezone.utc)},
+                            {"Key": "file/path/A/", "Size": 1024, "LastModified": datetime(2020, 2, 20, 20, 22, 2, tzinfo=timezone.utc)},
                         ],
                         "NextContinuationToken": "token",
                     },
-                    {"Contents": [{"Key": "file/path/B/", "Size": 512, "LastModified": datetime(2022, 2, 2, 2, 2, 2)}]},
+                    {"Contents": [{"Key": "file/path/B/", "Size": 512, "LastModified": datetime(2022, 2, 2, 2, 2, 2, tzinfo=timezone.utc)}]},
                 ],
                 [
-                    FileInfo(key="file/path", size=2048, last_modified=datetime(2020, 2, 20, 20, 0, 2)),
+                    FileInfo(key="file/path", size=2048, last_modified=datetime(2020, 2, 20, 20, 0, 2, tzinfo=timezone.utc)),
                 ],
             ),
         ),
@@ -515,6 +456,60 @@ class TestIncrementalFileStream:
             for file_info in stream_instance.filepath_iterator():
                 assert file_info == next(expected_info)
 
+    @pytest.mark.parametrize(
+        ("start_date", "bucket", "path_prefix", "list_v2_objects", "expected_files_count"),
+        (
+                ("2021-01-01T00:00:00Z",
+                 "test_bucket",
+                 "/widescreen",
+                 [
+                     {
+                         "Contents": [
+                             {"Key": "Key_A", "Size": 2048,
+                              "LastModified": datetime(2020, 2, 20, 20, 0, 2, tzinfo=timezone.utc)},
+                             {"Key": "Key_B", "Size": 1024,
+                              "LastModified": datetime(2020, 2, 20, 20, 22, 2, tzinfo=timezone.utc)},
+                         ],
+                         "NextContinuationToken": "token",
+                     },
+                     {"Contents": [{"Key": "Key_C", "Size": 512,
+                                    "LastModified": datetime(2022, 2, 2, 2, 2, 2, tzinfo=timezone.utc)}]},
+                 ],
+                 1,
+                 ),
+                ("2023-01-01T00:00:00Z",
+                 "almost_real_test_bucket",
+                 "/HD",
+                 [
+                     {
+                         "Contents": [
+                             {"Key": "file/path", "Size": 2048,
+                              "LastModified": datetime(2020, 2, 20, 20, 0, 2, tzinfo=timezone.utc)},
+                             {"Key": "file/path/A/", "Size": 1024,
+                              "LastModified": datetime(2020, 2, 20, 20, 22, 2, tzinfo=timezone.utc)},
+                         ],
+                         "NextContinuationToken": "token",
+                     },
+                     {"Contents": [{"Key": "file/path/B/", "Size": 512,
+                                    "LastModified": datetime(2022, 2, 2, 2, 2, 2, tzinfo=timezone.utc)}]},
+                 ],
+                 0,
+                 ),
+        ),
+    )
+    def test_filepath_iterator_date_filter(self, start_date, bucket, path_prefix, list_v2_objects, expected_files_count):
+        provider = {"aws_access_key_id": "key_id", "aws_secret_access_key": "access_key"}
+        s3_client_mock = MagicMock(return_value=MagicMock(list_objects_v2=MagicMock(side_effect=list_v2_objects)))
+        with patch("source_s3.stream.make_s3_client", s3_client_mock):
+            stream_instance = IncrementalFileStreamS3(
+                dataset="dummy",
+                provider={"bucket": bucket, "path_prefix": path_prefix, **provider},
+                format={},
+                path_pattern="**/prefix*.png",
+                start_date=start_date
+            )
+            assert len(list(stream_instance.filepath_iterator())) == expected_files_count
+
     def test_get_schema(self):
         stream_instance = IncrementalFileStreamS3(
             dataset="dummy",
@@ -524,9 +519,8 @@ class TestIncrementalFileStream:
             path_pattern="**/prefix*.csv"
         )
         assert stream_instance._schema == {
-            "_ab_additional_properties": "object",
-            "_ab_source_file_last_modified": "string",
-            "_ab_source_file_url": "string",
+            "_ab_source_file_last_modified": {"type": "string"},
+            "_ab_source_file_url": {"type": "string"},
             "column_A": "string",
             "column_B": "integer",
             "column_C": "boolean",
@@ -564,7 +558,6 @@ class TestIncrementalFileStream:
         )
         assert stream_instance.get_json_schema() == {
             "properties": {
-                "_ab_additional_properties": {"type": "object"},
                 "_ab_source_file_last_modified": {"format": "date-time", "type": "string"},
                 "_ab_source_file_url": {"type": "string"},
                 "column_A": {"type": ["null", "string"]},
@@ -573,3 +566,30 @@ class TestIncrementalFileStream:
             },
             "type": "object",
         }
+
+    def test_schema_no_files(self, mocker):
+        stream_instance = IncrementalFileStreamS3(
+            dataset="dummy",
+            provider={"bucket": "empty"},
+            format={"filetype": "csv"},
+            path_pattern="**/prefix*.csv"
+        )
+        mocker.patch.object(stream_instance, "filepath_iterator", MagicMock(return_value=[]))
+        assert stream_instance.get_json_schema() == {
+            "properties": {
+                "_ab_source_file_last_modified": {"format": "date-time", "type": "string"},
+                "_ab_source_file_url": {"type": "string"}
+            },
+            "type": "object",
+        }
+
+    def test_migrate_datetime_format(self):
+        current_state = {"_ab_source_file_last_modified": "2022-11-09T11:12:00+0000"}
+        latest_record = {"_ab_source_file_last_modified": "2020-11-09T11:12:00Z"}
+        stream_instance = IncrementalFileStreamS3(
+            dataset="dummy",
+            provider={"bucket": "empty"},
+            format={"filetype": "csv"},
+            path_pattern="**/prefix*.csv"
+        )
+        assert stream_instance.get_updated_state(current_state, latest_record)["_ab_source_file_last_modified"] == "2022-11-09T11:12:00Z"

@@ -90,10 +90,12 @@ class PipedriveStream(HttpStream, ABC):
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
-        latest_benchmark = latest_record[self.cursor_field]
-        if current_stream_state.get(self.cursor_field):
-            return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
-        return {self.cursor_field: latest_benchmark}
+        replication_start_date = self._replication_start_date.strftime("%Y-%m-%d %H:%M:%S")
+        current_stream_state[self.cursor_field] = max(
+            latest_record.get(self.cursor_field, replication_start_date),
+            current_stream_state.get(self.cursor_field, replication_start_date),
+        )
+        return current_stream_state
 
 
 class Deals(PipedriveStream):
@@ -224,6 +226,7 @@ class Users(PipedriveStream):
     """
 
     cursor_field = "modified"
+    page_size = 500
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         record_gen = super().parse_response(response=response, **kwargs)

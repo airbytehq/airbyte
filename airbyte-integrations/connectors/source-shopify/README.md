@@ -58,6 +58,7 @@ python main.py spec
 python main.py check --config secrets/config.json
 python main.py discover --config secrets/config.json
 python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json --state integration_tests/state.json
 ```
 
 ### Locally running the connector docker image
@@ -89,7 +90,7 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 First install test dependencies into your virtual environment:
 ```
-pip install .[tests]
+pip install '.[tests]'
 ```
 
 ### Unit Tests

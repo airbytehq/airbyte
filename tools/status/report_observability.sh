@@ -28,7 +28,7 @@ BUCKET_WRITE_ROOT=/tmp/bucket_write_root
 CONNECTOR_VERSION=$(get_connector_version "$CONNECTOR")
 PREFIX="connectors/"
 CONNECTOR_TECHNICAL_NAME=${CONNECTOR#"$PREFIX"}
-GITHUB_ACTION_LINK=https://github.com/$REPOSITORY/actions/runs/$RUN_ID
+GITHUB_ACTION_LINK=https://github.com/airbytehq/airbyte/actions/runs/$RUN_ID
 
 export AWS_PAGER=""
 
@@ -39,7 +39,7 @@ function generate_job_log_json() {
     success=true
   fi
   pipeline_duration=$(( (pipeline_end_timestamp - PIPELINE_START_TIMESTAMP) ))
-  echo "{ \"connector_technical_name\": \"$CONNECTOR_TECHNICAL_NAME\", \"connector_version\": \"$CONNECTOR_VERSION\", , \"success\": $success,  \"gha_workflow_run_url\": \"$GITHUB_ACTION_LINK\", \"pipeline_start_timestamp\": $PIPELINE_START_TIMESTAMP, \"pipeline_end_timestamp\": $pipeline_end_timestamp, \"pipeline_duration\": $pipeline_duration, \"git_branch\": \"$GIT_BRANCH\", \"git_revision\": \"$GIT_REVISION\", \"ci_context\": \"legacy\"}"
+  echo "{\"connector_technical_name\": \"$CONNECTOR_TECHNICAL_NAME\", \"connector_version\": \"$CONNECTOR_VERSION\", \"success\": $success,  \"gha_workflow_run_url\": \"$GITHUB_ACTION_LINK\", \"pipeline_start_timestamp\": $PIPELINE_START_TIMESTAMP, \"pipeline_end_timestamp\": $pipeline_end_timestamp, \"pipeline_duration\": $pipeline_duration, \"git_branch\": \"$GIT_BRANCH\", \"git_revision\": \"$GIT_REVISION\", \"ci_context\": \"legacy\"}"
 }
 
 function write_report() {

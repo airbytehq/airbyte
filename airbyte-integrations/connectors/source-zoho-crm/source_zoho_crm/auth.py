@@ -27,7 +27,7 @@ class ZohoOauth2Authenticator(Oauth2Authenticator):
         Returns a tuple of (access_token, token_lifespan_in_seconds)
         """
         try:
-            response = requests.request(method="POST", url=self._token_refresh_endpoint, params=self._prepare_refresh_token_params())
+            response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), params=self._prepare_refresh_token_params())
             response.raise_for_status()
             response_json = response.json()
             return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]

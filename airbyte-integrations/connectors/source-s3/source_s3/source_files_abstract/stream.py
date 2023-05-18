@@ -5,12 +5,13 @@
 
 import json
 from abc import ABC, abstractmethod
-from copy import deepcopy
 from datetime import datetime, timedelta
 from functools import cached_property, lru_cache
 from traceback import format_exc
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
+import pendulum
+import pytz
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -34,24 +35,22 @@ class ConfigurationError(Exception):
 
 
 class FileStream(Stream, ABC):
-    @property
-    def fileformatparser_map(self) -> Mapping[str, type]:
-        """Mapping where every key is equal  'filetype' and values are  corresponding  parser classes."""
-        return {
-            "csv": CsvParser,
-            "parquet": ParquetParser,
-            "avro": AvroParser,
-            "jsonl": JsonlParser,
-        }
-
+    file_formatparser_map = {
+        "csv": CsvParser,
+        "parquet": ParquetParser,
+        "avro": AvroParser,
+        "jsonl": JsonlParser,
+    }
     # TODO: make these user configurable in spec.json
-    ab_additional_col = "_ab_additional_properties"
     ab_last_mod_col = "_ab_source_file_last_modified"
     ab_file_name_col = "_ab_source_file_url"
-    airbyte_columns = [ab_additional_col, ab_last_mod_col, ab_file_name_col]
-    datetime_format_string = "%Y-%m-%dT%H:%M:%S%z"
+    airbyte_columns = [ab_last_mod_col, ab_file_name_col]
+    datetime_format_string = "%Y-%m-%dT%H:%M:%SZ"
+    # In version 2.0.1 the datetime format has been changed. Since the state may still store values in the old datetime format,
+    # we need to support both of them for a while
+    deprecated_datetime_format_string = "%Y-%m-%dT%H:%M:%S%z"
 
-    def __init__(self, dataset: str, provider: dict, format: dict, path_pattern: str, schema: str = None):
+    def __init__(self, dataset: str, provider: dict, format: dict, path_pattern: str, schema: str = None, start_date: str = None):
         """
         :param dataset: table name for this stream
         :param provider: provider specific mapping as described in spec.json
@@ -64,6 +63,7 @@ class FileStream(Stream, ABC):
         self._provider = provider
         self._format = format
         self._user_input_schema: Dict[str, Any] = {}
+        self.start_date = pendulum.parse(start_date) if start_date else pendulum.from_timestamp(0)
         if schema:
             self._user_input_schema = self._parse_user_input_schema(schema)
         LOGGER.info(f"initialised stream with format: {format}")
@@ -96,6 +96,13 @@ class FileStream(Stream, ABC):
 
         return py_schema
 
+    @classmethod
+    def with_minimal_block_size(cls, config: MutableMapping[str, Any]):
+        file_type = config["format"]["filetype"]
+        file_reader = cls.file_formatparser_map[file_type]
+        file_reader.set_minimal_block_size(config["format"])
+        return cls(**config)
+
     @property
     def name(self) -> str:
         return self.dataset
@@ -110,10 +117,10 @@ class FileStream(Stream, ABC):
         :return: reference to the relevant fileformatparser class e.g. CsvParser
         """
         filetype = self._format.get("filetype")
-        file_reader = self.fileformatparser_map.get(filetype)
+        file_reader = self.file_formatparser_map.get(filetype)
         if not file_reader:
             raise RuntimeError(
-                f"Detected mismatched file format '{filetype}'. Available values: '{list(self.fileformatparser_map.keys())}''."
+                f"Detected mismatched file format '{filetype}'. Available values: '{list(self.file_formatparser_map.keys())}''."
             )
         return file_reader
 
@@ -127,7 +134,7 @@ class FileStream(Stream, ABC):
         """
 
     @abstractmethod
-    def filepath_iterator(self) -> Iterator[FileInfo]:
+    def filepath_iterator(self, stream_state: Mapping[str, Any] = None) -> Iterator[FileInfo]:
         """
         Provider-specific method to iterate through bucket/container/etc. and yield each full filepath.
         This should supply the 'FileInfo' to use in StorageFile(). This is aggrigate all file properties (last_modified, key, size).
@@ -148,7 +155,7 @@ class FileStream(Stream, ABC):
                 yield file_info
 
     @lru_cache(maxsize=None)
-    def get_time_ordered_file_infos(self) -> List[FileInfo]:
+    def get_time_ordered_file_infos(self, stream_state: str = None) -> List[FileInfo]:
         """
         Iterates through pattern_matched_filepath_iterator(), acquiring FileInfo objects
         with last_modified property of each file to return in time ascending order.
@@ -156,7 +163,11 @@ class FileStream(Stream, ABC):
 
         :return: list in time-ascending order
         """
-        return sorted(self.pattern_matched_filepath_iterator(self.filepath_iterator()), key=lambda file_info: file_info.last_modified)
+        stream_state = eval(stream_state) if stream_state else None
+        return sorted(
+            self.pattern_matched_filepath_iterator(self.filepath_iterator(stream_state=stream_state)),
+            key=lambda file_info: file_info.last_modified,
+        )
 
     @property
     def _raw_schema(self) -> Mapping[str, Any]:
@@ -166,15 +177,20 @@ class FileStream(Stream, ABC):
 
     @property
     def _schema(self) -> Mapping[str, Any]:
-        extra_fields = {self.ab_additional_col: "object", self.ab_last_mod_col: "string", self.ab_file_name_col: "string"}
+        extra_fields = {
+            self.ab_last_mod_col: {"type": "string"},
+            self.ab_file_name_col: {"type": "string"},
+        }
         schema = self._raw_schema
         return {**schema, **extra_fields}
 
     def get_json_schema(self) -> Mapping[str, Any]:
         # note: making every non-airbyte column nullable for compatibility
-        properties: Mapping[str, Any] = {
-            column: {"type": ["null", typ]} if column not in self.airbyte_columns else {"type": typ} for column, typ in self._schema.items()
-        }
+        properties: Mapping[str, Any] = (
+            {column: {"type": ["null", typ]} if column not in self.airbyte_columns else typ for column, typ in self._schema.items()}
+            if self._format["filetype"] != "avro"
+            else self._schema
+        )
         properties[self.ab_last_mod_col]["format"] = "date-time"
         return {"type": "object", "properties": properties}
 
@@ -182,7 +198,9 @@ class FileStream(Stream, ABC):
     def _auto_inferred_schema(self) -> Dict[str, Any]:
         file_reader = self.fileformatparser_class(self._format)
         file_info_iterator = iter(list(self.get_time_ordered_file_infos()))
-        file_info = next(file_info_iterator)
+        file_info = next(file_info_iterator, None)
+        if not file_info:
+            return {}
         storage_file = self.storagefile_class(file_info, self._provider)
         with storage_file.open(file_reader.is_binary) as f:
             return file_reader.get_inferred_schema(f, file_info)
@@ -215,20 +233,13 @@ class FileStream(Stream, ABC):
         :param target_columns: list of column names to mutate this record into (obtained via self._schema.keys() as of now)
         :return: mutated record with columns lining up to target_columns
         """
-        compare_columns = [c for c in target_columns if c not in [self.ab_last_mod_col, self.ab_file_name_col]]
-        # check if we're already matching to avoid unnecessary iteration
-        if set(list(record.keys()) + [self.ab_additional_col]) == set(compare_columns):
-            record[self.ab_additional_col] = {}
-            return record
-        # missing columns
-        for c in [col for col in compare_columns if col != self.ab_additional_col]:
+        compare_columns = [c for c in target_columns if c not in [self.ab_last_mod_col, self.ab_file_name_col]]  # missing columns
+        for c in compare_columns:
             if c not in record.keys():
                 record[c] = None
-        # additional columns
-        record[self.ab_additional_col] = {c: deepcopy(record[c]) for c in record.keys() if c not in compare_columns}
-        for c in record[self.ab_additional_col]:
-            del record[c]
-
+        for c in record.copy():
+            if c not in compare_columns:
+                del record[c]
         return record
 
     def _add_extra_fields_from_map(self, record: Dict[str, Any], extra_map: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -303,18 +314,24 @@ class IncrementalFileStream(FileStream, ABC):
         return self.ab_last_mod_col
 
     @staticmethod
-    def file_in_history(file_info: FileInfo, history: dict) -> bool:
-        for slot in history.values():
-            if file_info.key in slot:
-                return file_info.key in slot
-        return False
+    def file_in_history(file_key: str, history: dict) -> bool:
+        return any(file_key in slot for slot in history.values())
 
     def _get_datetime_from_stream_state(self, stream_state: Mapping[str, Any] = None) -> datetime:
-        """if no state, we default to 1970-01-01 in order to pick up all files present."""
+        """
+        Returns the datetime from the stream state.
+
+        If there is no state, defaults to 1970-01-01 in order to pick up all files present.
+        The datetime object is localized to UTC to match the timezone of the last_modified attribute of objects in S3.
+        """
         if stream_state is not None and self.cursor_field in stream_state.keys():
-            return datetime.strptime(stream_state[self.cursor_field], self.datetime_format_string)
+            try:
+                state_datetime = datetime.strptime(stream_state[self.cursor_field], self.datetime_format_string)
+            except ValueError:
+                state_datetime = datetime.strptime(stream_state[self.cursor_field], self.deprecated_datetime_format_string)
         else:
-            return datetime.strptime("1970-01-01T00:00:00+0000", self.datetime_format_string)
+            state_datetime = datetime.strptime("1970-01-01T00:00:00Z", self.datetime_format_string)
+        return state_datetime.astimezone(pytz.utc)
 
     def get_updated_history(self, current_stream_state, latest_record_datetime, latest_record, current_parsed_datetime, state_date):
         """
@@ -368,8 +385,9 @@ class IncrementalFileStream(FileStream, ABC):
         state_dict: Dict[str, Any] = {}
         current_parsed_datetime = self._get_datetime_from_stream_state(current_stream_state)
         latest_record_datetime = datetime.strptime(
-            latest_record.get(self.cursor_field, "1970-01-01T00:00:00+0000"), self.datetime_format_string
+            latest_record.get(self.cursor_field, "1970-01-01T00:00:00Z"), self.datetime_format_string
         )
+        latest_record_datetime = latest_record_datetime.astimezone(pytz.utc)
         state_dict[self.cursor_field] = datetime.strftime(max(current_parsed_datetime, latest_record_datetime), self.datetime_format_string)
 
         state_date = self._get_datetime_from_stream_state(state_dict).date()
@@ -380,27 +398,6 @@ class IncrementalFileStream(FileStream, ABC):
             )
 
         return self.size_history_balancer(state_dict)
-
-    def need_to_skip_file(self, stream_state, file_info):
-        """
-        Skip this file if last_mod is earlier than our cursor value from state and already in history
-        or skip this file if last_mod plus delta is earlier than our cursor value
-        """
-        file_in_history_and_last_modified_is_earlier_than_cursor_value = (
-            stream_state is not None
-            and self.cursor_field in stream_state.keys()
-            and file_info.last_modified <= self._get_datetime_from_stream_state(stream_state)
-            and self.file_in_history(file_info, stream_state.get("history", {}))
-        )
-
-        file_is_not_in_history_and_last_modified_plus_buffer_days_is_earlier_than_cursor_value = file_info.last_modified + timedelta(
-            days=self.buffer_days
-        ) < self._get_datetime_from_stream_state(stream_state) and not self.file_in_history(file_info, stream_state.get("history", {}))
-
-        return (
-            file_in_history_and_last_modified_is_earlier_than_cursor_value
-            or file_is_not_in_history_and_last_modified_plus_buffer_days_is_earlier_than_cursor_value
-        )
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -422,10 +419,7 @@ class IncrementalFileStream(FileStream, ABC):
             # logic here is to bundle all files with exact same last modified timestamp together in each slice
             prev_file_last_mod: datetime = None  # init variable to hold previous iterations last modified
             grouped_files_by_time: List[Dict[str, Any]] = []
-            for file_info in self.get_time_ordered_file_infos():
-                if self.need_to_skip_file(stream_state, file_info):
-                    continue
-
+            for file_info in self.get_time_ordered_file_infos(stream_state=str(stream_state)):
                 # check if this file belongs in the next slice, if so yield the current slice before this file
                 if (prev_file_last_mod is not None) and (file_info.last_modified != prev_file_last_mod):
                     yield {"files": grouped_files_by_time}

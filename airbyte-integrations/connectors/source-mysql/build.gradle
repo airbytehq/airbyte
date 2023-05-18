@@ -19,7 +19,6 @@ dependencies {
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
-    implementation 'io.debezium:debezium-api:2.1.2.Final'
     implementation 'mysql:mysql-connector-java:8.0.30'
     implementation 'org.apache.commons:commons-lang3:3.11'
 

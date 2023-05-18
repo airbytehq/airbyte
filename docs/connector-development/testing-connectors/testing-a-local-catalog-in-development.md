@@ -22,7 +22,7 @@ SUB_BUILD=ALL_CONNECTORS ./gradlew :airbyte-config:specs:generateOssConnectorCat
 ### 2. Move the OSS catalog to platform
 In the `airbyte` repo run
 ```sh
-cp airbyte-config/init/src/main/resources/seed/oss_catalog.json <PATH_TO_PLATFORM_REPO>/airbyte-config/init/src/main/resources/seed/local_dev_catalog.json
+cp airbyte-config-oss/init-oss/src/main/resources/seed/oss_catalog.json <PATH_TO_PLATFORM_REPO>/airbyte-config-oss/init-oss/src/main/resources/seed/local_dev_catalog.json
 ```
 
 ### 3. Point the platform to the new catalog

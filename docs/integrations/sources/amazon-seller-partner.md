@@ -2,12 +2,6 @@
 
 This page guides you through the process of setting up the Amazon Seller Partner source connector.
 
-:::caution
-
-Authenticating this Alpha connector is currently blocked. This is a known issue being tracked here: https://github.com/airbytehq/airbyte/issues/14734
-
-:::
-
 ## Prerequisites
 
 - app_id
@@ -60,8 +54,8 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 ## Supported streams
 
 This source is capable of syncing the following tables and their data:
-- [FBA Inventory Reports](https://sellercentral.amazon.com/gp/help/200740930)
-- [FBA Orders Reports](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989110)
+- [Manage FBA Inventory Reports](https://sellercentral.amazon.com/gp/help/200740930)
+- [Removal FBA Order Details Reports](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989110)
 - [FBA Shipments Reports](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100)
 - [FBA Replacements Reports](https://sellercentral.amazon.com/help/hub/reference/200453300)
 - [FBA Storage Fees Report](https://sellercentral.amazon.com/help/hub/reference/G202086720)
@@ -105,6 +99,7 @@ This source is capable of syncing the following tables and their data:
 - [Inventory Ledger Report - Detailed View](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [FBA Manage Inventory Health Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [Inventory Ledger Report - Summary View](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [FBA Reimbursements Report](https://sellercentral.amazon.com/help/hub/reference/G200732720)
 
 ## Report options
 
@@ -129,6 +124,8 @@ So, for any value that exceeds the limit, the `period_in_days` will be automatic
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                                                                             |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `1.1.0`  | 2023-04-21 | [\#23605](https://github.com/airbytehq/airbyte/pull/23605) | Add FBA Reimbursement Report stream                                    |
+| `1.0.1`  | 2023-03-15 | [\#24098](https://github.com/airbytehq/airbyte/pull/24098) | Add Belgium Marketplace                                                                                                                                                             |
 | `1.0.0`  | 2023-03-13 | [\#23980](https://github.com/airbytehq/airbyte/pull/23980) | Make `app_id` required. Increase `end_date` gap up to 5 minutes from now for Finance streams. Fix connection check failure when trying to connect to Amazon Vendor Central accounts |
 | `0.2.33` | 2023-03-01 | [\#23606](https://github.com/airbytehq/airbyte/pull/23606) | Implement reportOptions for all missing reports and refactor                                                                                                                        |
 | `0.2.32` | 2022-02-21 | [\#23300](https://github.com/airbytehq/airbyte/pull/23300) | Make AWS Access Key, AWS Secret Access and Role ARN optional                                                                                                                        |

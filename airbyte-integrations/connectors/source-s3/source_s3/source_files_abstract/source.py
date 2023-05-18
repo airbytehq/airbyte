@@ -58,7 +58,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
         The error object will be cast to string to display the problem to the user.
         """
         try:
-            stream = self.stream_class(**config)
+            stream = self.stream_class.with_minimal_block_size(config)
             stream.fileformatparser_class(stream._format)._validate_config(config)
             for file_info in stream.filepath_iterator():
                 # TODO: will need to split config.get("path_pattern") up by stream once supporting multiple streams
@@ -66,9 +66,9 @@ class SourceFilesAbstract(AbstractSource, ABC):
                 globmatch(file_info.key, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)
                 # just need first file here to test connection and valid patterns
                 break
-            for slice_ in stream.stream_slices(sync_mode=SyncMode.full_refresh):
-                list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_))
-                break
+            slice_ = next(stream.stream_slices(sync_mode=SyncMode.full_refresh), None)
+            if slice_:
+                next(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_), None)
         except Exception as e:
             logger.error(format_exc())
             return False, e

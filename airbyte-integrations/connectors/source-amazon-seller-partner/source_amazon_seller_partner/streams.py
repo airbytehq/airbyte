@@ -695,6 +695,7 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
         A2NODRKZP88ZB9="YYYY-MM-DD",  # SE
         A33AVAJ2PDY3EV="D/M/YY",  # TR
         A1F83G8C2ARO7P="D/M/YY",  # UK
+        AMEN7PMS3EDWL="D/M/YY",  # BE
         # fe
         A39IBJ37TRP1C6="D/M/YY",  # AU
         A1VC38T7YXB528="YY/M/D",  # JP
@@ -1125,3 +1126,11 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
             params = {"nextToken": next_value}
             if not next_value:
                 complete = True
+
+
+class FbaReimbursementsReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/help/hub/reference/G200732720
+    """
+
+    name = "GET_FBA_REIMBURSEMENTS_DATA"

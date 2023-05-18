@@ -46,7 +46,7 @@
       },
       "start_datetime": {
         "title": "Start Date",
-        "type": "string",
+        "type": ["string", "null"],
         "examples": [
           "2000-01-01",
           "2000-01-01 13:00",
