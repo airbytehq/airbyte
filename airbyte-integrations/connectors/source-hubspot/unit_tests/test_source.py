@@ -71,7 +71,7 @@ def test_check_connection_invalid_start_date_exception(config_invalid_date):
 def test_streams(config):
     streams = SourceHubspot().streams(config)
 
-    assert len(streams) == 27
+    assert len(streams) == 28
 
 
 def test_check_credential_title_exception(config):
