@@ -358,4 +358,5 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   private boolean numericArrayColumnPrecisionIsNotVariable(final RelationalColumn column) {
     return column.length().orElse(VARIABLE_SCALE_DECIMAL_LENGTH) != VARIABLE_SCALE_DECIMAL_LENGTH;
   }
+
 }
