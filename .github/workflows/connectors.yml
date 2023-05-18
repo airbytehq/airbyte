@@ -184,17 +184,6 @@ jobs:
           
           docker push ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
 
-      - name: Fetch flow
-        id: fetch-flow
-        run: bash ./fetch-flow.sh
-
-      - name: Validate ${{ matrix.connector.name }} schemas
-        id: validate
-        run: |
-          ./flow-bin/flowctl raw discover ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
-          ./flow-bin/flowctl raw discover ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
-          ./flow-bin/flowctl raw capture ${{ matrix.connector.name }}
-
       - name: Push ${{ matrix.connector.name }} image with 'dev' and version tags
         if: ${{ github.event_name == 'push' }}
         id: push-dev

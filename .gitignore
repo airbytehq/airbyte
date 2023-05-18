@@ -2,6 +2,7 @@ flow_generated
 estuary
 acmeCo
 flow-bin
+*.flow.yaml
 ensurepip
 dist
 .gradle
