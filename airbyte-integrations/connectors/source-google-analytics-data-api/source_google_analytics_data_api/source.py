@@ -6,7 +6,6 @@ import datetime
 import json
 import logging
 import pkgutil
-import uuid
 from abc import ABC
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple
@@ -89,21 +88,16 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     """
 
     _record_date_format = "%Y%m%d"
-    primary_key = "uuid"
 
     metadata = MetadataDescriptor()
 
     @property
     def cursor_field(self) -> Optional[str]:
-        return "date" if "date" in self.config.get("dimensions", {}) else []
+        return "date" if "date" in self.config.get("dimensions", []) else []
 
-    @staticmethod
-    def add_primary_key() -> dict:
-        return {"uuid": str(uuid.uuid4())}
-
-    @staticmethod
-    def add_property_id(property_id):
-        return {"property_id": property_id}
+    @property
+    def primary_key(self):
+        return ["property_id"] + self.config.get("dimensions", [])
 
     @staticmethod
     def add_dimensions(dimensions, row) -> dict:
@@ -128,7 +122,6 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "additionalProperties": True,
             "properties": {
                 "property_id": {"type": ["string"]},
-                "uuid": {"type": ["string"], "description": "Custom unique identifier for each record, to support primary key"},
             },
         }
 
@@ -182,9 +175,11 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         metrics_type_map = {h.get("name"): h.get("type") for h in r.get("metricHeaders", [{}])}
 
         for row in r.get("rows", []):
-            yield self.add_primary_key() | self.add_property_id(self.config["property_id"]) | self.add_dimensions(
-                dimensions, row
-            ) | self.add_metrics(metrics, metrics_type_map, row)
+            yield {
+                "property_id": self.config["property_id"],
+                **self.add_dimensions(dimensions, row),
+                **self.add_metrics(metrics, metrics_type_map, row),
+            }
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         updated_state = utils.string_to_date(latest_record[self.cursor_field], self._record_date_format)
