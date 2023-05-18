@@ -39,12 +39,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
@@ -95,6 +90,9 @@ public class PerformanceTest {
    * @throws Exception
    */
   void runTest() throws Exception {
+    final List<String> streamNames = catalog.getStreams().stream().map(stream -> stream.getStream().getName()).toList();
+    // TODO: (ryankfu) get less hacky way to generate multiple streams
+    final Random random = new Random();
     final AirbyteIntegrationLauncher dstIntegtationLauncher = getAirbyteIntegrationLauncher();
     final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig()
         .withDestinationConnectionConfiguration(this.config)
@@ -149,7 +147,7 @@ public class PerformanceTest {
         final AirbyteMessage airbyteMessage = new AirbyteMessage()
             .withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage()
-                .withStream(catalog.getStreams().get(0).getStream().getName())
+                .withStream(streamNames.get(random.nextInt(streamNames.size())))
                 .withNamespace(catalog.getStreams().get(0).getStream().getNamespace())
                 .withData(Jsons.deserialize(recordString)));
         airbyteMessage.getRecord().setEmittedAt(start);
@@ -172,6 +170,7 @@ public class PerformanceTest {
     logListener.cancel(true);
     log.info("Test ended successfully");
     computeThroughput(totalBytes, counter, start);
+    // TODO: (ryankfu) when incremental syncs are supported, add a tearDown method to clear table
   }
 
   private void computeThroughput(final double totalBytes, final long counter, final long start) {

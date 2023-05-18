@@ -86,21 +86,39 @@ public class Main {
     System.exit(0);
   }
 
+  /**
+   * Read the datasource file for the given dataset and connector.
+   * <p>Example: catalogs/destination_snowflake/1m_datasource.txt
+   *
+   * @param dataset the dataset to read
+   * @param connector the connector to read
+   * @return the datasource
+   * @throws IOException if the datasource file cannot be read
+   */
+  static String getDatasource(final String dataset, final String connector) throws IOException {
+    final String datasourceFilename = "catalogs/%s/%s_datasource.txt".formatted(connector, dataset);
+    log.info("datasourceFilename {}", datasourceFilename);
+    try (final var reader =
+                 new BufferedReader(new InputStreamReader(Objects.requireNonNull(
+                         Thread.currentThread().getContextClassLoader().getResourceAsStream(datasourceFilename)), StandardCharsets.UTF_8))) {
+      return reader.readLine();
+    }
+  }
+
+  /**
+   * Read the catalog file for the given dataset and connector.
+   * <p>Example: catalogs/destination_snowflake/1m_catalog.json
+   *
+   * @param dataset the dataset to read
+   * @param connector the connector to read
+   * @return the catalog
+   * @throws IOException if the catalog file cannot be read
+   */
   static JsonNode getCatalog(final String dataset, final String connector) throws IOException {
     final ObjectMapper objectMapper = new ObjectMapper();
     final String catalogFilename = "catalogs/%s/%s_catalog.json".formatted(connector, dataset);
     final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(catalogFilename);
     return objectMapper.readTree(is);
-  }
-
-  static String getDatasource(final String dataset, final String connector) throws IOException {
-    final String datasourceFilename = "catalogs/%s/%s_datasource.txt".formatted(connector, dataset);
-    log.info("datasourceFilename {}", datasourceFilename);
-    try (final var reader =
-        new BufferedReader(new InputStreamReader(Objects.requireNonNull(
-            Thread.currentThread().getContextClassLoader().getResourceAsStream(datasourceFilename)), StandardCharsets.UTF_8))) {
-      return reader.readLine();
-    }
   }
 
 }
