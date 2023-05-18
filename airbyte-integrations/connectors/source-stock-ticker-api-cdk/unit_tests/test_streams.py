@@ -13,11 +13,7 @@ from source_stock_ticker_api_cdk.source import StockPrices
 @pytest.fixture
 def stream():
     return StockPrices(
-        connector=None,
-        config={
-            "api_key": "api_key",
-            "stock_ticker": "TSLA"}
-        ,
+        stock_ticker="TSLA",
         start_date=datetime.strptime("2022-07-07", "%Y-%m-%d"),
     )
 
@@ -30,15 +26,15 @@ def test_request_params(stream):
         "stream_state": None,
         "next_page_token": None,
     }
-    expected_params = {"sort": "asc", "limit": 120}
+    expected_params = {"sort": "asc", "limit": 10}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(stream):
-    expected_token = None
+    expected_token = {"next_url": "url_to_next_page"}
     assert (
             stream.next_page_token(
-                response=None,
+                response=MagicMock(json=lambda: expected_token),
             )
             == expected_token
     )
@@ -52,12 +48,6 @@ def test_parse_response(stream):
     }
     result = [{'date': '1970-01-01', 'price': 200, 'stock_ticker': 'TSLA'}]
     assert stream.parse_response(**inputs) == result
-
-
-def test_request_headers(stream):
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_headers = {"Authorization": "Bearer api_key"}
-    assert stream.request_headers(**inputs) == expected_headers
 
 
 def test_http_method(stream):

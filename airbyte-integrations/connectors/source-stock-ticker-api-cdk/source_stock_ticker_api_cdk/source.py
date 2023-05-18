@@ -7,10 +7,11 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import NoAuth
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 
 class StockPrices(HttpStream):
@@ -18,27 +19,24 @@ class StockPrices(HttpStream):
     cursor_field = "date"
     primary_key = "date"
 
-    def __init__(self, config: Mapping[str, Any], start_date: datetime, **kwargs):
-        super().__init__()
-        self.api_key = config["api_key"]
-        self.stock_ticker = config["stock_ticker"]
+    def __init__(self, stock_ticker: str, start_date: datetime, **kwargs):
+        super().__init__(**kwargs)
+        self.stock_ticker = stock_ticker
         self.start_date = start_date
         self._cursor_value = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # The API does not offer pagination, so we return None to indicate there are no more pages in the response
-        return None
+        response_dict = response.json()
+        return {"next_url": response_dict["next_url"]} if "next_url" in response_dict else None
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"{self.stock_ticker}/range/1/day/{stream_slice['start_date']}/{stream_slice['end_date']}"
-
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        # The api requires that we include apikey as a header so we do that in this method
-        return {"Authorization": f"Bearer {self.api_key}"}
+        return (
+            next_page_token["next_url"]
+            if next_page_token
+            else f"{self.stock_ticker}/range/1/day/{stream_slice['start_date']}/{stream_slice['end_date']}"
+        )
 
     def request_params(
         self,
@@ -47,7 +45,7 @@ class StockPrices(HttpStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # The api requires that we include the base currency as a query param so we do that in this method
-        return {"sort": "asc", "limit": 120}
+        return {"sort": "asc", "limit": 10}
 
     def parse_response(
         self,
@@ -60,7 +58,7 @@ class StockPrices(HttpStream):
         # so we just return a list containing the response
         response_dict = response.json()
         data = []
-        if response_dict["resultsCount"]:
+        if response_dict.get("resultsCount"):
             for day_result in response_dict["results"]:
                 data.append(
                     {
@@ -89,10 +87,10 @@ class StockPrices(HttpStream):
         dates = []
         while start_date < datetime.now():
             start_date_str = start_date.strftime("%Y-%m-%d")
-            end_date_str = (start_date + timedelta(days=7)).strftime("%Y-%m-%d")
+            end_date_str = (start_date + timedelta(days=30)).strftime("%Y-%m-%d")
             self.logger.info(f"Date range: {start_date_str} - {end_date_str}")
             dates.append({"start_date": start_date_str, "end_date": end_date_str})
-            start_date += timedelta(days=8)
+            start_date += timedelta(days=31)
 
         return dates
 
@@ -103,32 +101,25 @@ class StockPrices(HttpStream):
         return self._chunk_date_range(start_date)
 
 
-def _call_api(ticker, token, from_day, to_day):
-    return requests.get(f"https://api.polygon.io/v2/aggs/ticker/{ticker}/range/1/day/{from_day}/{to_day}?sort=asc&limit=120&apiKey={token}")
-
-
 class SourceStockTickerApiCdk(AbstractSource):
+    @staticmethod
+    def _get_stream_kwargs(config: Mapping[str, Any]) -> dict:
+        stream_kwargs = {"authenticator": TokenAuthenticator(token=config["api_key"]), "stock_ticker": config["stock_ticker"]}
+        stream_kwargs["start_date"] = (
+            datetime.strptime(config["start_date"], "%Y-%m-%d") if "start_date" in config else datetime.now() - timedelta(days=30)
+        )
+        return stream_kwargs
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         # Validate input configuration by attempting to get the daily closing prices of the input stock ticker
-        response = _call_api(
-            ticker=config["stock_ticker"],
-            token=config["api_key"],
-            from_day=datetime.now().date() - timedelta(days=1),
-            to_day=datetime.now().date(),
-        )
-        if response.status_code == 200:
+        try:
+            stock_prices_stream = StockPrices(**self._get_stream_kwargs(config))
+            # use the first slice from stream_slices list
+            stream_slice = stock_prices_stream.stream_slices(sync_mode=SyncMode.full_refresh)[0]
+            next(stock_prices_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
             return True, None
-        elif response.status_code == 403:
-            # HTTP code 403 means authorization failed so the API key is incorrect
-            return False, "API Key is incorrect."
-        else:
-            return False, "Input configuration is incorrect. Please verify the input stock ticker and API key."
+        except Exception as e:
+            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        # NoAuth just means there is no authentication required for this API. It's only included for completeness
-        # of the example, but if you don't need authentication, you don't need to pass an authenticator at all.
-        # Other authenticators are available for API token-based auth and Oauth2.
-        auth = NoAuth()
-        # Parse the date from a string into a datetime object
-        start_date = datetime.strptime(config["start_date"], "%Y-%m-%d") if "start_date" in config else datetime.now()
-        return [StockPrices(authenticator=auth, config=config, start_date=start_date)]
+        return [StockPrices(**self._get_stream_kwargs(config))]
