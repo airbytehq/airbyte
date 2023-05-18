@@ -9,6 +9,8 @@ from time import sleep
 
 import backoff
 import pendulum
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
@@ -175,8 +177,12 @@ class API:
         try:
             return AdAccount(f"act_{account_id}").api_get()
         except FacebookRequestError as exc:
-            raise FacebookAPIException(
+            message = (
                 f"Error: {exc.api_error_code()}, {exc.api_error_message()}. "
                 f"Please also verify your Account ID: "
                 f"See the https://www.facebook.com/business/help/1492627900875762 for more information."
+            )
+            raise AirbyteTracedException(
+                message=message,
+                failure_type=FailureType.config_error,
             ) from exc

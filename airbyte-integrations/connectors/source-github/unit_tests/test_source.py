@@ -2,12 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
+import time
 from unittest.mock import MagicMock
 
 import pytest
 import responses
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from freezegun import freeze_time
 from source_github.source import SourceGithub
+from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
 
 
 def check_source(repo_line: str) -> AirbyteConnectionStatus:
@@ -165,3 +170,49 @@ def test_config_validation(repos_config, expected):
 def tests_get_and_prepare_repositories_config(config, expected):
     actual = SourceGithub._get_and_prepare_repositories_config(config)
     assert actual == expected
+
+
+def test_streams_no_streams_available_error():
+    with pytest.raises(AirbyteTracedException) as e:
+        SourceGithub().streams(config={"access_token": "test_token", "repository": "airbytehq/airbyte-test"})
+    assert str(e.value) == "No streams available. Please check permissions"
+
+
+def test_multiple_token_authenticator_with_rate_limiter(monkeypatch):
+
+    called_args = []
+
+    def sleep_mock(seconds):
+        frozen_time.tick(delta=datetime.timedelta(seconds=seconds))
+        called_args.append(seconds)
+
+    monkeypatch.setattr(time, 'sleep', sleep_mock)
+
+    with freeze_time("2021-01-01 12:00:00") as frozen_time:
+
+        authenticator = MultipleTokenAuthenticatorWithRateLimiter(tokens=["token1", "token2"], requests_per_hour=4)
+        authenticator._tokens["token1"].count = 2
+
+        assert authenticator.token == "Bearer token1"
+        frozen_time.tick(delta=datetime.timedelta(seconds=1))
+        assert authenticator.token == "Bearer token2"
+        frozen_time.tick(delta=datetime.timedelta(seconds=1))
+        assert authenticator.token == "Bearer token1"
+        frozen_time.tick(delta=datetime.timedelta(seconds=1))
+        assert authenticator.token == "Bearer token2"
+        frozen_time.tick(delta=datetime.timedelta(seconds=1))
+
+        # token1 is fully exhausted, token2 is still used
+        assert authenticator._tokens["token1"].count == 0
+        assert authenticator.token == "Bearer token2"
+        frozen_time.tick(delta=datetime.timedelta(seconds=1))
+        assert authenticator.token == "Bearer token2"
+        frozen_time.tick(delta=datetime.timedelta(seconds=1))
+        assert called_args == []
+
+        # now we have to sleep because all tokens are exhausted
+        assert authenticator.token == "Bearer token1"
+        assert called_args == [3594.0]
+
+        assert authenticator._tokens["token1"].count == 3
+        assert authenticator._tokens["token2"].count == 4
