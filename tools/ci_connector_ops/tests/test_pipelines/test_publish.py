@@ -110,6 +110,7 @@ class TestUploadSpecToCache:
                 f"specs/{image_name.replace(':', '/')}/spec.json",
                 context.spec_cache_bucket_name,
                 context.spec_cache_gcs_credentials_secret,
+                flags=['--cache-control="no-cache"'],
             )
 
             spec_file = publish.upload_to_gcs.call_args.args[1]
