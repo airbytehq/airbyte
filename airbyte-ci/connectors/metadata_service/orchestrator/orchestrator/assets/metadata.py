@@ -173,45 +173,6 @@ def validate_metadata(metadata: PartialMetadataDefinition) -> tuple[bool, str]:
 # ASSETS
 
 
-@asset(group_name=GROUP_NAME)
-def valid_metadata_report_dataframe(overrode_metadata_definitions: List[PartialMetadataDefinition]) -> OutputDataFrame:
-    """
-    Validates the metadata definitions and returns a dataframe with the results
-    """
-
-    result = []
-
-    for metadata in overrode_metadata_definitions:
-        valid, error_msg = metadata.is_valid
-        result.append(
-            {
-                "definitionId": metadata["data"]["definitionId"],
-                "name": metadata["data"]["name"],
-                "dockerRepository": metadata["data"]["dockerRepository"],
-                "is_metadata_valid": valid,
-                "error_msg": error_msg,
-            }
-        )
-
-    result_df = pd.DataFrame(result)
-
-    return output_dataframe(result_df)
-
-
-@asset(group_name=GROUP_NAME)
-def legacy_registry_derived_metadata_definitions(
-    legacy_cloud_sources_dataframe, legacy_cloud_destinations_dataframe, legacy_oss_sources_dataframe, legacy_oss_destinations_dataframe
-) -> Output[List[PartialMetadataDefinition]]:
-    sources_metadata_list = merge_into_metadata_definitions(
-        "sourceDefinitionId", "source", legacy_oss_sources_dataframe, legacy_cloud_sources_dataframe
-    )
-    destinations_metadata_list = merge_into_metadata_definitions(
-        "destinationDefinitionId", "destination", legacy_oss_destinations_dataframe, legacy_cloud_destinations_dataframe
-    )
-    all_definitions = sources_metadata_list + destinations_metadata_list
-    return Output(all_definitions, metadata={"count": len(all_definitions)})
-
-
 @asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME)
 def metadata_definitions(context: OpExecutionContext) -> List[MetadataDefinition]:
     latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
