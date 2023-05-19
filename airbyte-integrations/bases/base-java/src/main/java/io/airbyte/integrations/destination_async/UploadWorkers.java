@@ -26,11 +26,11 @@ import lombok.extern.slf4j.Slf4j;
 public class UploadWorkers implements AutoCloseable {
 
   private static final long MAX_TIME_BETWEEN_REC_MINS = 5L;
-
   private static final long SUPERVISOR_INITIAL_DELAY_SECS = 0L;
   private static final long SUPERVISOR_PERIOD_SECS = 1L;
+  private static final long DEBUG_INITIAL_DELAY_SECS = 0L;
+  private static final long DEBUG_PERIOD_SECS = 10L;
   private final ScheduledExecutorService supervisorThread = Executors.newScheduledThreadPool(1);
-  // note: this queue size is unbounded.
   private final ExecutorService workerPool = Executors.newFixedThreadPool(5);
   private final BufferManager.BufferManagerDequeue bufferManagerDequeue;
   private final StreamDestinationFlusher flusher;
@@ -44,7 +44,23 @@ public class UploadWorkers implements AutoCloseable {
   public void start() {
     supervisorThread.scheduleAtFixedRate(this::retrieveWork, SUPERVISOR_INITIAL_DELAY_SECS, SUPERVISOR_PERIOD_SECS,
         TimeUnit.SECONDS);
+    debugLoop.scheduleAtFixedRate(this::printWorkerInfo, DEBUG_INITIAL_DELAY_SECS, DEBUG_PERIOD_SECS, TimeUnit.SECONDS);
   }
+
+  @Override
+  public void close() throws Exception {
+    flushAll();
+
+    supervisorThread.shutdown();
+    final var supervisorShut = supervisorThread.awaitTermination(5L, TimeUnit.MINUTES);
+    log.info("Supervisor shut status: {}", supervisorShut);
+
+    log.info("Starting worker pool shutdown..");
+    workerPool.shutdown();
+    final var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
+    log.info("Workers shut status: {}", workersShut);
+  }
+
 
   private void retrieveWork() {
     // todo (cgardens) - i'm not convinced this makes sense. as we get close to the limit, we should
@@ -106,26 +122,4 @@ public class UploadWorkers implements AutoCloseable {
     });
   }
 
-  @Override
-  public void close() throws Exception {
-    flushAll();
-
-    supervisorThread.shutdown();
-    final var supervisorShut = supervisorThread.awaitTermination(5L, TimeUnit.MINUTES);
-    log.info("Supervisor shut status: {}", supervisorShut);
-
-    log.info("Starting worker pool shutdown..");
-    workerPool.shutdown();
-    final var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
-    log.info("Workers shut status: {}", workersShut);
-  }
-
 }
-
-// var s = Stream.generate(() -> {
-// try {
-// return queue.take();
-// } catch (InterruptedException e) {
-// throw new RuntimeException(e);
-// }
-// }).map(MemoryBoundedLinkedBlockingQueue.MemoryItem::item);
