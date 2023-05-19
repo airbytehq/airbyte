@@ -22,3 +22,8 @@ connectionSpecification:
       type: string
       description: "Start date"
       default: "2023-01-01"
+    is_monthly:
+      title: Is monthly
+      type: boolean
+      description: "If true, the connector will fetch data in monthly interwals. If false, the connector will fetch data in weekly intervals. (Only applicable to incremental streams)"
+      default: true
