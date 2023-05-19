@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres;
+package io.airbyte.integrations.source.postgres.xmin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.json.Jsons;
@@ -32,7 +32,7 @@ public class XminStateManager {
       .withType(AirbyteStateType.STREAM)
       .withStream(new AirbyteStreamState());
 
-  XminStateManager(final List<AirbyteStateMessage> stateMessages) {
+  public XminStateManager(final List<AirbyteStateMessage> stateMessages) {
     pairToXminStatus = createPairToXminStatusMap(stateMessages);
   }
 

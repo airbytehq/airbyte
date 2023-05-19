@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres;
+package io.airbyte.integrations.source.postgres.xmin;
 
 import autovalue.shaded.com.google.common.collect.AbstractIterator;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
@@ -65,7 +65,8 @@ public class XminStateIterator extends AbstractIterator<AirbyteMessage> implemen
       } catch (final Exception e) {
         hasCaughtException = true;
         LOGGER.error("Message iterator failed to read next record.", e);
-        return endOfData();
+        // When intermediate state is supported, this should be modified to return endofData() and not fail the sync.
+        throw e;
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;

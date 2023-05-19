@@ -122,7 +122,7 @@ public class PostgresUtils {
     return isXmin;
   }
 
-  public static boolean isIncrementalSync(final ConfiguredAirbyteCatalog catalog) {
+  public static boolean isIncrementalSyncMode(final ConfiguredAirbyteCatalog catalog) {
     return catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
         .anyMatch(syncMode -> syncMode == SyncMode.INCREMENTAL);
   }

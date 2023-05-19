@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.postgres;
+package io.airbyte.integrations.source.postgres.xmin;
 
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 
@@ -12,6 +12,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.source.postgres.PostgresType;
 import io.airbyte.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -133,8 +134,8 @@ public class PostgresXminHandler {
           quoteString);
 
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
-      final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE xmin::text::bigint > ?",
-          wrappedColumnNames, fullTableName));
+      final String sql = String.format("SELECT %s FROM %s WHERE xmin::text::bigint > ?",
+          wrappedColumnNames, fullTableName);
 
       final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
 
