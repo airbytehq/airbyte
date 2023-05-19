@@ -28,6 +28,7 @@ def get_metadata_file_from_path(context: PipelineContext, metadata_path: Path) -
         raise FileNotFoundError(f"{str(metadata_path)} does not exist.")
     return context.get_repo_dir(str(metadata_path.parent), include=[METADATA_FILE_NAME]).file(METADATA_FILE_NAME)
 
+
 def get_metadata_icon_file_from_path(context: PipelineContext, metadata_icon_path: Path) -> dagger.File:
     return context.get_repo_dir(str(metadata_icon_path.parent), include=[METADATA_ICON_FILE_NAME]).file(METADATA_ICON_FILE_NAME)
 
@@ -75,11 +76,12 @@ class MetadataUpload(PoetryRun):
         base_container = self.poetry_run_container.with_file(METADATA_FILE_NAME, get_metadata_file_from_path(context, metadata_path))
         metadata_icon_path = metadata_path.parent / METADATA_ICON_FILE_NAME
         if metadata_icon_path.exists():
-            base_container = base_container.with_file(METADATA_ICON_FILE_NAME, get_metadata_icon_file_from_path(context, metadata_icon_path))
+            base_container = base_container.with_file(
+                METADATA_ICON_FILE_NAME, get_metadata_icon_file_from_path(context, metadata_icon_path)
+            )
 
         self.poetry_run_container = (
-            base_container
-            .with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
+            base_container.with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
             .with_secret_variable("DOCKER_HUB_PASSWORD", docker_hub_password_secret)
             .with_secret_variable("GCS_CREDENTIALS", gcs_credentials_secret)
             # The cache buster ensures we always run the upload command (in case of remote bucket change)

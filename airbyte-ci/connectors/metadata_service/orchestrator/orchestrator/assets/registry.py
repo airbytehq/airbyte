@@ -118,9 +118,7 @@ def is_metadata_connector_type(metadata_entry: LatestMetadataEntry, connector_ty
     return metadata_definition["data"]["connectorType"] == connector_type
 
 
-def construct_registry_from_metadata(
-    metadata_entries: List[LatestMetadataEntry], registry_name: str
-) -> ConnectorRegistryV0:
+def construct_registry_from_metadata(metadata_entries: List[LatestMetadataEntry], registry_name: str) -> ConnectorRegistryV0:
     """Construct the registry from the metadata definitions.
 
     Args:

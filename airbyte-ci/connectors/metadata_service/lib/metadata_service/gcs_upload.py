@@ -29,6 +29,7 @@ def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
     """
     return f"{METADATA_FOLDER}/{dockerRepository}/{version}/{METADATA_FILE_NAME}"
 
+
 def get_icon_remote_file_path(dockerRepository: str, version: str) -> str:
     """Get the path to the icon file for a specific version of a connector.
 
@@ -64,7 +65,10 @@ def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: str, disable_c
 
     return True
 
-def upload_file_if_changed(local_file_path: Path, bucket: storage.bucket.Bucket, blob_path: str, disable_cache: bool = False) -> Tuple[bool, str]:
+
+def upload_file_if_changed(
+    local_file_path: Path, bucket: storage.bucket.Bucket, blob_path: str, disable_cache: bool = False
+) -> Tuple[bool, str]:
     local_file_md5_hash = compute_gcs_md5(local_file_path)
     remote_blob = bucket.blob(blob_path)
 
@@ -78,11 +82,10 @@ def upload_file_if_changed(local_file_path: Path, bucket: storage.bucket.Bucket,
     print(f"Remote {blob_path} md5_hash: {remote_blob_md5_hash}")
 
     if local_file_md5_hash != remote_blob_md5_hash:
-        uploaded =  _save_blob_to_gcs(remote_blob, local_file_path, disable_cache=disable_cache)
+        uploaded = _save_blob_to_gcs(remote_blob, local_file_path, disable_cache=disable_cache)
         return uploaded, remote_blob.id
 
     return False, remote_blob.id
-
 
 
 def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path) -> Tuple[bool, str]:
@@ -102,10 +105,10 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path) -> Tuple[
     raw_metadata = yaml.safe_load(metadata_file_path.read_text())
     metadata = ConnectorMetadataDefinitionV0.parse_obj(raw_metadata)
 
-    # print("Validating that the images are on DockerHub...")
-    # is_valid, error = validate_metadata_images_in_dockerhub(metadata)
-    # if not is_valid:
-    #     raise ValueError(error)
+    print("Validating that the images are on DockerHub...")
+    is_valid, error = validate_metadata_images_in_dockerhub(metadata)
+    if not is_valid:
+        raise ValueError(error)
 
     service_account_info = json.loads(os.environ.get("GCS_CREDENTIALS"))
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
@@ -116,7 +119,10 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path) -> Tuple[
     latest_path = get_metadata_remote_file_path(metadata.data.dockerRepository, "latest")
     latest_icon_path = get_icon_remote_file_path(metadata.data.dockerRepository, "latest")
 
-    version_uploaded, version_blob_id, = upload_file_if_changed(metadata_file_path, bucket, version_path)
+    (
+        version_uploaded,
+        version_blob_id,
+    ) = upload_file_if_changed(metadata_file_path, bucket, version_path)
     latest_uploaded, _latest_blob_id = upload_file_if_changed(metadata_file_path, bucket, latest_path)
 
     # Replace metadata file name with icon file name
