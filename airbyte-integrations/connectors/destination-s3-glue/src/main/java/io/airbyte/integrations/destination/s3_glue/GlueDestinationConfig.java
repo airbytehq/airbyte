@@ -7,8 +7,8 @@ package io.airbyte.integrations.destination.s3_glue;
 import static io.airbyte.integrations.destination.s3.constant.S3Constants.ACCESS_KEY_ID;
 import static io.airbyte.integrations.destination.s3.constant.S3Constants.SECRET_ACCESS_KEY;
 import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_REGION;
-import static io.airbyte.integrations.destination.s3_glue.GlueConstants.GLUE_DATABASE;
-import static io.airbyte.integrations.destination.s3_glue.GlueConstants.SERIALIZATION_LIBRARY;
+import static io.airbyte.integrations.destination.s3_glue.MetastoreConstants.GLUE_DATABASE;
+import static io.airbyte.integrations.destination.s3_glue.MetastoreConstants.SERIALIZATION_LIBRARY;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
@@ -19,6 +19,8 @@ import com.amazonaws.services.glue.AWSGlue;
 import com.amazonaws.services.glue.AWSGlueClient;
 import com.amazonaws.services.glue.AWSGlueClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.destination.s3.S3FormatConfig;
+import io.airbyte.integrations.destination.s3.S3FormatConfigs;
 import org.apache.commons.lang3.StringUtils;
 
 public class GlueDestinationConfig {
@@ -33,6 +35,8 @@ public class GlueDestinationConfig {
 
   private String serializationLibrary;
 
+  private S3FormatConfig formatConfig;
+
   private GlueDestinationConfig() {
 
   }
@@ -41,12 +45,14 @@ public class GlueDestinationConfig {
                                 String region,
                                 String accessKeyId,
                                 String secretAccessKey,
-                                String serializationLibrary) {
+                                String serializationLibrary,
+                                S3FormatConfig formatConfig) {
     this.database = database;
     this.region = region;
     this.accessKeyId = accessKeyId;
     this.secretAccessKey = secretAccessKey;
     this.serializationLibrary = serializationLibrary;
+    this.formatConfig = formatConfig;
   }
 
   public static GlueDestinationConfig getInstance(JsonNode jsonNode) {
@@ -55,7 +61,8 @@ public class GlueDestinationConfig {
         jsonNode.get(S_3_BUCKET_REGION) != null ? jsonNode.get(S_3_BUCKET_REGION).asText() : null,
         jsonNode.get(ACCESS_KEY_ID) != null ? jsonNode.get(ACCESS_KEY_ID).asText() : null,
         jsonNode.get(SECRET_ACCESS_KEY) != null ? jsonNode.get(SECRET_ACCESS_KEY).asText() : null,
-        jsonNode.get(SERIALIZATION_LIBRARY) != null ? jsonNode.get(SERIALIZATION_LIBRARY).asText() : "org.openx.data.jsonserde.JsonSerDe");
+        jsonNode.get(SERIALIZATION_LIBRARY) != null ? jsonNode.get(SERIALIZATION_LIBRARY).asText() : "org.openx.data.jsonserde.JsonSerDe",
+        S3FormatConfigs.getS3FormatConfig(jsonNode));
   }
 
   public AWSGlue getAWSGlueInstance() {

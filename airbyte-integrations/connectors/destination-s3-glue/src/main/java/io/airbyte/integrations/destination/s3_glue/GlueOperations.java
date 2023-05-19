@@ -18,7 +18,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
-import io.airbyte.integrations.destination.s3.
+import io.airbyte.integrations.destination.s3.util.Stringify;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -47,7 +48,7 @@ public class GlueOperations implements MetastoreOperations {
                           String tableName,
                           String location,
                           JsonNode jsonSchema,
-                          String serializationLibrary) {
+                          MetastoreFormatConfig metastoreFormatConfig) {
     try {
       GetTableRequest getTableRequest = new GetTableRequest()
           .withDatabaseName(databaseName)
@@ -65,12 +66,12 @@ public class GlueOperations implements MetastoreOperations {
                   .withStorageDescriptor(
                       new StorageDescriptor()
                           .withLocation(location)
-                          .withColumns(transformSchema(jsonSchema))
-                          .withInputFormat("org.apache.hadoop.mapred.TextInputFormat")
-                          .withOutputFormat("org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat")
+                          .withColumns(transformSchema(jsonSchema, metastoreFormatConfig))
+                          .withInputFormat(metastoreFormatConfig.getInputFormat())
+                          .withOutputFormat(metastoreFormatConfig.getOutputFormat())
                           .withSerdeInfo(
                               new SerDeInfo()
-                                  .withSerializationLibrary(serializationLibrary)
+                                  .withSerializationLibrary(metastoreFormatConfig.getSerializationLibrary())
                                   .withParameters(Map.of("paths", ",")))
 
                   )
@@ -88,12 +89,12 @@ public class GlueOperations implements MetastoreOperations {
                   .withStorageDescriptor(
                       new StorageDescriptor()
                           .withLocation(location)
-                          .withColumns(transformSchema(jsonSchema))
-                          .withInputFormat("org.apache.hadoop.mapred.TextInputFormat")
-                          .withOutputFormat("org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat")
+                          .withColumns(transformSchema(jsonSchema, metastoreFormatConfig))
+                          .withInputFormat(metastoreFormatConfig.getInputFormat())
+                          .withOutputFormat(metastoreFormatConfig.getOutputFormat())
                           .withSerdeInfo(
                               new SerDeInfo()
-                                  .withSerializationLibrary(serializationLibrary)
+                                  .withSerializationLibrary(metastoreFormatConfig.getSerializationLibrary())
                                   .withParameters(Map.of("paths", ","))))
                   .withPartitionKeys(List.of())
                   .withParameters(Map.of("classification", "json")));
@@ -113,18 +114,18 @@ public class GlueOperations implements MetastoreOperations {
 
   }
 
-  private Collection<Column> transformSchema(JsonNode jsonSchema) {
+  private Collection<Column> transformSchema(JsonNode jsonSchema, MetastoreFormatConfig metastoreFormatConfig) {
     if (jsonSchema.has("properties")) {
       Map<String, JsonNode> properties = objectMapper.convertValue(jsonSchema.get("properties"), new TypeReference<>() {});
       return properties.entrySet().stream()
-          .map(es -> new Column().withName(es.getKey()).withType(transformSchemaRecursive(es.getValue())))
+          .map(es -> new Column().withName(es.getKey()).withType(transformSchemaRecursive(es.getValue(), metastoreFormatConfig)))
           .collect(Collectors.toSet());
     } else {
       return Collections.emptySet();
     }
   }
 
-  private String transformSchemaRecursive(JsonNode jsonNode) {
+  private String transformSchemaRecursive(JsonNode jsonNode, MetastoreFormatConfig metastoreFormatConfig) {
     String type = filterTypes(jsonNode.get("type")).iterator().next();
     return switch (type) {
       // TODO(itaseski) support date-time and timestamp airbyte types
@@ -144,23 +145,22 @@ public class GlueOperations implements MetastoreOperations {
         Set<String> itemTypes;
         if (jsonNode.has("items")) {
           itemTypes = filterTypes(jsonNode.get("items").get("type"));
-          if (itemTypes.size() > 1) {
-            // TODO(itaseski) use union instead of array when having multiple types (rare occurrence)?
-            arrayType += "string>";
-          } else {
-            String subtype = transformSchemaRecursive(jsonNode.get("items"));
-            arrayType += (subtype + ">");
-          }
-        } else
+        if (itemTypes.size() > 1) {
+          // TODO(itaseski) use union instead of array when having multiple types (rare occurrence)?
           arrayType += "string>";
+        } else {
+          String subtype = transformSchemaRecursive(jsonNode.get("items"), metastoreFormatConfig);
+          arrayType += (subtype + ">");
+        }
+        } else arrayType += "string>";
         yield arrayType;
       }
       case "object" -> {
-        if (jsonNode.has("properties") && !stringifyData) {
+        if (jsonNode.has("properties") && metastoreFormatConfig.getStringifyType() != Stringify.NO) {
           String objectType = "struct<";
           Map<String, JsonNode> properties = objectMapper.convertValue(jsonNode.get("properties"), new TypeReference<>() {});
           String columnTypes = properties.entrySet().stream()
-              .map(p -> p.getKey() + ":" + transformSchemaRecursive(p.getValue()))
+              .map(p -> p.getKey() + ":" + transformSchemaRecursive(p.getValue(), metastoreFormatConfig))
               .collect(Collectors.joining(","));
           objectType += (columnTypes + ">");
           yield objectType;

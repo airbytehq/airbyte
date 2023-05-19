@@ -43,6 +43,7 @@ public class S3GlueDestination extends BaseS3Destination {
       return status;
     }
     final GlueDestinationConfig glueConfig = GlueDestinationConfig.getInstance(config);
+    final MetastoreJsonlFormatConfig jsonlFormatConfig = new MetastoreJsonlFormatConfig(config);
     MetastoreOperations metastoreOperations = null;
     // If there are multiple syncs started at the same time a stataic test table name causes a resource
     // collision and a failure to sync.
@@ -50,7 +51,7 @@ public class S3GlueDestination extends BaseS3Destination {
     String tableName = "test_table_" + tableSuffix;
     try {
       metastoreOperations = new GlueOperations(glueConfig.getAWSGlueInstance());
-      metastoreOperations.upsertTable(glueConfig.getDatabase(), tableName, "s3://", Jsons.emptyObject(), glueConfig.getSerializationLibrary());
+      metastoreOperations.upsertTable(glueConfig.getDatabase(), tableName, "s3://", Jsons.emptyObject(), jsonlFormatConfig);
 
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (Exception e) {
