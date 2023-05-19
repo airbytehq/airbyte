@@ -1,24 +1,25 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "description": {
-      "type": "string"
+      "type": ["null", "string"]
     },
-    "last_email_sent_at" : {
-      "type": "integer"
+    "last_email_sent_at": {
+      "type": ["null", "integer"]
     },
     "is_default": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "unsubscribes": {
-      "type": "integer"
+      "type": ["null", "integer"]
     }
   }
 }
