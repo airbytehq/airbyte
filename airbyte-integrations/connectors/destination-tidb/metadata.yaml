@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 06ec60c7-7468-45c0-91ac-174f6e1a788b
@@ -16,7 +11,12 @@ data:
   normalizationConfig:
     normalizationIntegrationType: tidb
     normalizationRepository: airbyte/normalization-tidb
-    normalizationTag: 0.4.0
+    normalizationTag: 0.4.3
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/tidb
   supportsDbt: true

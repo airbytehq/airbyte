@@ -61,7 +61,6 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
         jdbcStr), new ClickhouseTestSourceOperations());
   }
 
-
   @Override
   protected String getImageName() {
     return "airbyte/destination-clickhouse-strict-encrypt:dev";
