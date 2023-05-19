@@ -296,8 +296,7 @@ public class MongoUtils {
         new Document("$limit", DISCOVER_LIMIT),
         new Document("$project", new Document("arrayofkeyvalue", new Document("$objectToArray", "$" + fieldName))),
         new Document("$unwind", "$arrayofkeyvalue"),
-        new Document("$group", new Document(ID, null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))
-    )).allowDiskUse(true);
+        new Document("$group", new Document(ID, null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k"))))).allowDiskUse(true);
     if (output.cursor().hasNext()) {
       return (List) output.cursor().next().get("allkeys");
     } else {
@@ -311,8 +310,8 @@ public class MongoUtils {
         new Document("$limit", DISCOVER_LIMIT),
         new Document("$project", new Document(ID, 0).append("fieldType", new Document("$type", fieldName))),
         new Document("$group", new Document(ID, new Document("fieldType", "$fieldType"))
-            .append("count", new Document("$sum", 1)))
-    )).allowDiskUse(true);
+            .append("count", new Document("$sum", 1)))))
+        .allowDiskUse(true);
     final var listOfTypes = new ArrayList<String>();
     final var cursor = output.cursor();
     while (cursor.hasNext()) {
