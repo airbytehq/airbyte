@@ -24,15 +24,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
-from source_hubspot.helpers import (
-    APIv1Property,
-    APIv3Property,
-    APIv3PropertyWithHistory,
-    GroupByKey,
-    IRecordPostProcessor,
-    IURLPropertyRepresentation,
-    StoreAsIs,
-)
+from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -1094,8 +1086,8 @@ class CRMSearchStreamWithHistory(CRMSearchStream):
     def list_url(self):
         return f"/crm/v3/objects/{self.entity}"
 
-    def history_url(self, id: str):
-        return f"/crm/v3/objects/{self.entity}/{id}"
+    def batch_url(self):
+        return f"/crm/v3/objects/{self.entity}/batch/read"
 
     def read_records(
         self,
@@ -1125,11 +1117,24 @@ class CRMSearchStreamWithHistory(CRMSearchStream):
                 records = self._flat_associations(records)
             records = self._filter_old_records(records)
 
+            input_for_batch_request = []
+            properties = set()
             for record in records:
-                properties = record["properties"].keys()
-                response = self.handle_request(None, None, None, APIv3PropertyWithHistory(properties), url=self.history_url(record["id"]))
+                if record.get("id") is None:
+                    continue
+                id = record["id"]
+                input_for_batch_request.append({"id": id})
+                for property in record["properties"].keys():
+                    properties.add(property)
 
-                record_with_history = self._transform_single_record(response.json())
+            _, raw_response = self.search(
+                self.batch_url(), data={"propertiesWithHistory": list(properties), "inputs": input_for_batch_request}, params=None
+            )
+
+            records = self._flat_associations(records)
+            records = self._filter_old_records(records)
+
+            for record_with_history in self._transform(self.parse_response(raw_response)):
                 del record_with_history["properties"]
 
                 if record_with_history.get("associations") is not None:
