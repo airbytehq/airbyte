@@ -219,7 +219,7 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
     metadata_upload_step = metadata.MetadataUpload(
         context=context,
-        metadata_service_gcs_credentials_secret=context.gcs_credentials_secret,
+        metadata_service_gcs_credentials_secret=context.metadata_service_gcs_credentials_secret,
         docker_hub_username_secret=context.docker_hub_username_secret,
         docker_hub_password_secret=context.docker_hub_password_secret,
         metadata_bucket_name=context.metadata_bucket_name,
