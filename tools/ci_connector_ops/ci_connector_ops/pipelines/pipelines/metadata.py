@@ -60,16 +60,17 @@ class MetadataValidation(PoetryRun):
     async def _run(self) -> StepResult:
         return await super()._run(["metadata_service", "validate", METADATA_FILE_NAME])
 
+
 class MetadataUpload(PoetryRun):
     def __init__(
-            self,
-            context: PipelineContext,
-            metadata_path: Path,
-            metadata_bucket_name: str,
-            metadata_service_gcs_credentials_secret: dagger.Secret,
-            docker_hub_username_secret: dagger.Secret,
-            docker_hub_password_secret: dagger.Secret,
-        ):
+        self,
+        context: PipelineContext,
+        metadata_path: Path,
+        metadata_bucket_name: str,
+        metadata_service_gcs_credentials_secret: dagger.Secret,
+        docker_hub_username_secret: dagger.Secret,
+        docker_hub_password_secret: dagger.Secret,
+    ):
         title = f"Upload {metadata_path}"
         self.gcs_bucket_name = metadata_bucket_name
         super().__init__(context, title, METADATA_DIR, METADATA_LIB_MODULE_PATH)
@@ -83,8 +84,7 @@ class MetadataUpload(PoetryRun):
             )
 
         self.poetry_run_container = (
-            base_container
-            .with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
+            base_container.with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
             .with_secret_variable("DOCKER_HUB_PASSWORD", docker_hub_password_secret)
             .with_secret_variable("GCS_CREDENTIALS", metadata_service_gcs_credentials_secret)
             # The cache buster ensures we always run the upload command (in case of remote bucket change)
@@ -287,7 +287,9 @@ async def run_metadata_upload_pipeline(
                         docker_hub_password_secret=docker_hub_password_secret,
                         metadata_bucket_name=gcs_bucket_name,
                         metadata_path=metadata_path,
-                    ).run for metadata_path in metadata_to_upload]
+                    ).run
+                    for metadata_path in metadata_to_upload
+                ]
             )
             pipeline_context.report = Report(pipeline_context, results, name="METADATA UPLOAD RESULTS")
 
