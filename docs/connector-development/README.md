@@ -160,6 +160,13 @@ When a new (or updated version) of a connector is ready, our automations will ch
 * Does the connector have a changelog entry for this version?
 * The [metadata.yaml](connector-metadata-file.md) file is valid.
 
+If any of the above are failing, you won't be able to merge your PR or publish your connector.
+
+Connector icons should be square SVGs and be located in [this directory](https://github.com/airbytehq/airbyte/tree/master/airbyte-config-oss/init-oss/src/main/resources/icons).
+
+Connector documentation and changelogs are markdown files living either [here for sources](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/sources), or [here for destinations](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/destinations).
+
+
 ## Using credentials in CI
 
 In order to run integration tests in CI, you'll often need to inject credentials into CI. There are a few steps for doing this:

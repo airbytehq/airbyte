@@ -78,11 +78,22 @@ At a high level, this is the recommended workflow for updating base-normalizatio
 
 ### Setting up your environment
 
-If you have a fully-featured Python dev environment, you can just set a breakpoint at [this line]([integration_tests/test_normalization.py#L105](https://github.com/airbytehq/airbyte/blob/17ee3ad44ff71164765b97ff439c7ffd51bf9bfe/airbyte-integrations/bases/base-normalization/integration_tests/test_normalization.py#L108))
+If you have a fully-featured Python dev environment, you can just set a breakpoint
+at [this line]([integration_tests/test_normalization.py#L105](https://github.com/airbytehq/airbyte/blob/17ee3ad44ff71164765b97ff439c7ffd51bf9bfe/airbyte-integrations/bases/base-normalization/integration_tests/test_normalization.py#L108))
 and run the `test_normalization[DestinationType.POSTGRES-test_simple_streams]` test case. You can terminate the run after it hits the
 breakpoint. This will start Postgres in a Docker container with some prepopulated data and configure profiles.yml to match the container.
 
+To achieve this, follow the steps to [set up your python environment](#build--activate-virtual-environment-and-install-dependencies). Next, you can
+add a line with just `breakpoint()` after the contents of the `run_test_normalization` method
+in [test_normalization.py]([integration_tests/test_normalization.py#L105](https://github.com/airbytehq/airbyte/blob/17ee3ad44ff71164765b97ff439c7ffd51bf9bfe/airbyte-integrations/bases/base-normalization/integration_tests/test_normalization.py#L108))
+then, from the `integration_tests` directory run the following:
+
+```shell
+ pytest -k 'test_normalization[DestinationType.POSTGRES-test_simple_streams]' --pdb
+```
+
 Otherwise, you can run this command:
+
 ```shell
 docker run \
   --rm \

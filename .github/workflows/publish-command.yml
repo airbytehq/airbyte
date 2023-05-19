@@ -16,10 +16,6 @@ on:
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
-      auto-bump-version:
-        description: "after publishing, the workflow will automatically bump the connector version in definitions and generate seed spec"
-        required: true
-        default: "true"
       parallel:
         description: "Switching this to true will spin up 5 build agents instead of 1 and allow multi connector publishes to run in parallel"
         required: true
@@ -31,7 +27,7 @@ on:
       pre-release:
         description: "Should publish a pre-release version"
         required: true
-        default: false
+        default: "false"
 
 jobs:
   write-deprecation-message:
