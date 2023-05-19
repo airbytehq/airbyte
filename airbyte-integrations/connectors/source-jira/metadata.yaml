@@ -17,6 +17,6 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: beta
+  releaseStage: generally_available
   supportUrl: https://docs.airbyte.com/integrations/sources/jira
 metadataSpecVersion: "1.0"
