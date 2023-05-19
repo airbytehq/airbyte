@@ -2,17 +2,16 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "channel": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "metric": {
-      "type": "string"
+      "type": ["string", "null"]
     }
-  },
-  "required": ["id", "name", "channel", "metric"]
+  }
 }
