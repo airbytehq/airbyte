@@ -14,7 +14,7 @@ from ci_connector_ops.pipelines.bases import ConnectorReport, Step, StepResult, 
 from ci_connector_ops.pipelines.contexts import PublishConnectorContext
 from ci_connector_ops.pipelines.pipelines import metadata
 from ci_connector_ops.pipelines.utils import with_exit_code, with_stderr, with_stdout
-from dagger import Container, File, QueryError
+from dagger import Container, File, ImageLayerCompression, QueryError
 from pydantic import ValidationError
 
 
@@ -65,11 +65,15 @@ class PushConnectorImageToRegistry(Step):
     async def _run(self, built_containers_per_platform: List[Container]) -> StepResult:
         try:
             image_ref = await built_containers_per_platform[0].publish(
-                f"docker.io/{self.context.docker_image_name}", platform_variants=built_containers_per_platform[1:]
+                f"docker.io/{self.context.docker_image_name}",
+                platform_variants=built_containers_per_platform[1:],
+                forced_compression=ImageLayerCompression.Gzip,
             )
             if not self.context.pre_release:
                 image_ref = await built_containers_per_platform[0].publish(
-                    f"docker.io/{self.latest_docker_image_name}", platform_variants=built_containers_per_platform[1:]
+                    f"docker.io/{self.latest_docker_image_name}",
+                    platform_variants=built_containers_per_platform[1:],
+                    forced_compression=ImageLayerCompression.Gzip,
                 )
             return StepResult(self, status=StepStatus.SUCCESS, stdout=f"Published {image_ref}")
         except QueryError as e:
