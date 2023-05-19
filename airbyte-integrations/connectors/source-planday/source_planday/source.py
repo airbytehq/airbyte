@@ -69,10 +69,11 @@ class PlandayStream(HttpStream, ABC):
         delta_from_start = config.get("delta_from_start")
         self.delta_from_start = delta_from_start if delta_from_start is not None and delta_from_start >= 0 else None
         self.use_lookback = self.lookback_window is not None
+        self.limit = 50
 
         self.uri_params = {
             "offset": 0,
-            "limit": 50,
+            "limit": self.limit,
             "from": self.sync_from if not self.use_lookback else self.get_today_string(delta=self.lookback_window),
         }
 
@@ -107,7 +108,7 @@ class PlandayStream(HttpStream, ABC):
         """
         paging = response.json().get("paging", {})
         offset = paging.get("offset", 0)
-        limit = paging.get("limit", 0)
+        limit = self.limit
         total = paging.get("total", 0)
         next_offset = offset + limit
         if next_offset < total:
