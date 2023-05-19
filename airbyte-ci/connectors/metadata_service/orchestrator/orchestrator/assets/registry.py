@@ -113,26 +113,26 @@ def is_metadata_connector_type(metadata_definition: dict, connector_type: str) -
 
 
 def construct_registry_from_metadata(
-    legacy_registry_derived_metadata_definitions: List[MetadataDefinition], registry_name: str
+    metadata_definitions: List[MetadataDefinition], registry_name: str
 ) -> ConnectorRegistryV0:
     """Construct the registry from the metadata definitions.
 
     Args:
-        legacy_registry_derived_metadata_definitions (List[dict]): Metadata definitions that have been derived from the existing registry.
+        metadata_definitions (List[dict]): Metadata definitions that have been derived from the existing registry.
         registry_name (str): The name of the registry to construct. One of "cloud" or "oss".
 
     Returns:
         dict: The registry.
     """
-    registry_derived_metadata_dicts = [metadata_definition.dict() for metadata_definition in legacy_registry_derived_metadata_definitions]
+    metadata_dicts = [metadata_definition.dict() for metadata_definition in metadata_definitions]
     registry_sources = [
         metadata_to_registry_entry(metadata, "source", registry_name)
-        for metadata in registry_derived_metadata_dicts
+        for metadata in metadata_dicts
         if is_metadata_registry_enabled(metadata, registry_name) and is_metadata_connector_type(metadata, "source")
     ]
     registry_destinations = [
         metadata_to_registry_entry(metadata, "destination", registry_name)
-        for metadata in registry_derived_metadata_dicts
+        for metadata in metadata_dicts
         if is_metadata_registry_enabled(metadata, registry_name) and is_metadata_connector_type(metadata, "destination")
     ]
 
@@ -211,7 +211,7 @@ def generate_and_persist_registry(
     return Output(metadata=metadata, value=registry_model)
 
 
-# New Registry Generation
+# Registry Generation
 
 
 @asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)

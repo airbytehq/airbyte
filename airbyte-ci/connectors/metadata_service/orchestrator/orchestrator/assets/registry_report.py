@@ -123,18 +123,15 @@ def augment_and_normalize_connector_dataframes(
 
 # ASSETS
 
-# TODO (ben): Update these assets to reference the new registry once deployed
-
-
 @asset(group_name=GROUP_NAME)
-def all_sources_dataframe(legacy_cloud_sources_dataframe, legacy_oss_sources_dataframe, github_connector_folders) -> pd.DataFrame:
+def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, github_connector_folders) -> pd.DataFrame:
     """
     Merge the cloud and oss sources registries into a single dataframe.
     """
 
     return augment_and_normalize_connector_dataframes(
-        cloud_df=legacy_cloud_sources_dataframe,
-        oss_df=legacy_oss_sources_dataframe,
+        cloud_df=cloud_sources_dataframe,
+        oss_df=oss_sources_dataframe,
         primary_key="sourceDefinitionId",
         connector_type="source",
         github_connector_folders=github_connector_folders,
@@ -143,15 +140,15 @@ def all_sources_dataframe(legacy_cloud_sources_dataframe, legacy_oss_sources_dat
 
 @asset(group_name=GROUP_NAME)
 def all_destinations_dataframe(
-    legacy_cloud_destinations_dataframe, legacy_oss_destinations_dataframe, github_connector_folders
+    cloud_destinations_dataframe, oss_destinations_dataframe, github_connector_folders
 ) -> pd.DataFrame:
     """
     Merge the cloud and oss destinations registries into a single dataframe.
     """
 
     return augment_and_normalize_connector_dataframes(
-        cloud_df=legacy_cloud_destinations_dataframe,
-        oss_df=legacy_oss_destinations_dataframe,
+        cloud_df=cloud_destinations_dataframe,
+        oss_df=oss_destinations_dataframe,
         primary_key="destinationDefinitionId",
         connector_type="destination",
         github_connector_folders=github_connector_folders,
