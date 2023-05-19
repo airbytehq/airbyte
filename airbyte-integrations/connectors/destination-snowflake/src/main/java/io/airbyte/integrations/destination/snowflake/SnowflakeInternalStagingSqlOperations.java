@@ -92,9 +92,8 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
                                      final String stagingPath,
                                      final SerializableBuffer recordsData)
       throws Exception {
-    LOGGER.info("Starting records upload.. ");
     final String query = getPutQuery(stageName, stagingPath, recordsData.getFile().getAbsolutePath());
-    LOGGER.info("Executing query: {}", query);
+    LOGGER.debug("Executing query: {}", query);
     database.execute(query);
     if (!checkStageObjectExists(database, stageName, stagingPath, recordsData.getFilename())) {
       LOGGER.error(String.format("Failed to upload data into stage, object @%s not found",
