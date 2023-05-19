@@ -10,6 +10,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
 
 from . import constants
 from .streams import (
@@ -127,6 +128,13 @@ class SourceGithub(AbstractSource):
     def _get_authenticator(self, config: Mapping[str, Any]):
         _, token = self.get_access_token(config)
         tokens = [t.strip() for t in token.split(constants.TOKEN_SEPARATOR)]
+        requests_per_hour = config.get("requests_per_hour")
+        if requests_per_hour:
+            return MultipleTokenAuthenticatorWithRateLimiter(
+                tokens=tokens,
+                auth_method="token",
+                requests_per_hour=requests_per_hour,
+            )
         return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
 
     @staticmethod
