@@ -75,6 +75,7 @@ public class S3GlueDestination extends BaseS3Destination {
                                             Consumer<AirbyteMessage> outputRecordCollector) {
     final S3DestinationConfig s3Config = configFactory.getS3DestinationConfig(config, storageProvider());
     final GlueDestinationConfig glueConfig = GlueDestinationConfig.getInstance(config);
+    final MetastoreFormatConfig metastoreFormatConfig = new MetastoreJsonlFormatConfig(config);
     final NamingConventionTransformer nameTransformer = new S3NameTransformer();
     return new S3GlueConsumerFactory().create(
         outputRecordCollector,
@@ -85,6 +86,7 @@ public class S3GlueDestination extends BaseS3Destination {
         SerializedBufferFactory.getCreateFunction(s3Config, FileBuffer::new),
         s3Config,
         glueConfig,
+        metastoreFormatConfig,
         configuredCatalog);
   }
 

@@ -1,7 +1,5 @@
 package io.airbyte.integrations.destination.s3_glue;
 
-import static io.airbyte.integrations.destination.s3_glue.MetastoreConstants;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.jsonl.S3JsonlFormatConfig;
 
