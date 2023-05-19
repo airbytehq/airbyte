@@ -49,12 +49,21 @@ def validate_at_least_one_langauge_tag(metadata_definition: ConnectorMetadataDef
 
     return True, None
 
+def validate_all_tags_are_keyvalue_pairs(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
+    """Ensure that all tags are of the form <KEY>:<VALUE>."""
+    for tag in metadata_definition.data.tags:
+        if ":" not in tag:
+            return False, f"Tag {tag} is not of the form <KEY>:<VALUE>"
+
+    return True, None
+
 
 def pre_upload_validations(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
     """
     Runs all validations that should be run before uploading a connector to the registry.
     """
     validations = [
+        validate_all_tags_are_keyvalue_pairs,
         validate_at_least_one_langauge_tag,
     ]
 
