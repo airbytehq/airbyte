@@ -21,7 +21,6 @@ import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.ROW_COU
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TABLE_ESTIMATE_QUERY;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TOTAL_BYTES_RESULT_COL;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -56,7 +55,6 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
-import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.util.HostPortResolver;
@@ -603,47 +601,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
   }
 
-  @Override
-  protected void estimateIncrementalSyncSize(final JdbcDatabase database,
-                                             final ConfiguredAirbyteStream configuredAirbyteStream,
-                                             final CursorInfo cursorInfo,
-                                             final PostgresType cursorFieldType) {
-    try {
-      final String schemaName = configuredAirbyteStream.getStream().getNamespace();
-      final String tableName = configuredAirbyteStream.getStream().getName();
-      final String fullTableName =
-          getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
-
-      final List<JsonNode> tableEstimateResult = getFullTableEstimate(database, fullTableName, schemaName, tableName);
-
-      final long tableRowCount = tableEstimateResult.get(0).get(ROW_COUNT_RESULT_COL).asLong();
-      final long tableByteCount = tableEstimateResult.get(0).get(TOTAL_BYTES_RESULT_COL).asLong();
-
-      // The fast count query can return negative or otherwise invalid results for small tables. In this
-      // case, we can skip emitting an
-      // estimate trace altogether since the sync will likely complete quickly.
-      if (tableRowCount <= 0) {
-        return;
-      }
-
-      final long syncRowCount;
-      final long syncByteCount;
-
-      syncRowCount = getIncrementalTableRowCount(database, fullTableName, cursorInfo, cursorFieldType);
-      syncByteCount = (tableByteCount / tableRowCount) * syncRowCount;
-
-      // Here, we double the bytes estimate to account for serialization. Perhaps a better way to do this
-      // is to
-      // read a row and Stringify it to better understand the accurate volume of data sent over the wire.
-      // However, this approach doesn't account for different row sizes
-      AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
-      LOGGER.info(String.format("Estimate for table: %s : {sync_row_count: %s, sync_bytes: %s, total_table_row_count: %s, total_table_bytes: %s}",
-          fullTableName, syncRowCount, syncByteCount, tableRowCount, tableRowCount));
-    } catch (final SQLException e) {
-      LOGGER.warn("Error occurred while attempting to estimate sync size", e);
-    }
-  }
-
   private List<JsonNode> getFullTableEstimate(final JdbcDatabase database,
                                               final String fullTableName,
                                               final String schemaName,
@@ -658,46 +615,4 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     Preconditions.checkState(jsonNodes.size() == 1);
     return jsonNodes;
   }
-
-  private long getIncrementalTableRowCount(final JdbcDatabase database,
-                                           final String fullTableName,
-                                           final CursorInfo cursorInfo,
-                                           final PostgresType cursorFieldType)
-      throws SQLException {
-    final String quotedCursorField = getIdentifierWithQuoting(cursorInfo.getCursorField(), getQuoteString());
-
-    // Calculate actual number of rows to sync here.
-    final List<JsonNode> result = database.queryJsons(
-        connection -> {
-          LOGGER.info("Preparing query for table: {}", fullTableName);
-          final String operator;
-          if (cursorInfo.getCursorRecordCount() <= 0L) {
-            operator = ">";
-          } else {
-            final long actualRecordCount = getActualCursorRecordCount(
-                connection, fullTableName, quotedCursorField, cursorFieldType, cursorInfo.getCursor());
-            LOGGER.info("Table {} cursor count: expected {}, actual {}", fullTableName, cursorInfo.getCursorRecordCount(), actualRecordCount);
-            if (actualRecordCount == cursorInfo.getCursorRecordCount()) {
-              operator = ">";
-            } else {
-              operator = ">=";
-            }
-          }
-
-          final StringBuilder sql = new StringBuilder(String.format("SELECT COUNT(*) FROM %s WHERE %s %s ?",
-              fullTableName,
-              quotedCursorField,
-              operator));
-
-          final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
-          LOGGER.info("Executing query for table {}: {}", fullTableName, preparedStatement);
-          sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
-          return preparedStatement;
-        },
-        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
-
-    Preconditions.checkState(result.size() == 1);
-    return result.get(0).get("count").asLong();
-  }
-
 }

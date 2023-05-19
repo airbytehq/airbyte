@@ -328,26 +328,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
               final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
               final String quotedCursorField = enquoteIdentifier(cursorInfo.getCursorField(), getQuoteString());
 
-              final String operator;
-              if (cursorInfo.getCursorRecordCount() <= 0L) {
-                operator = ">";
-              } else {
-                final long actualRecordCount = getActualCursorRecordCount(
-                    connection, fullTableName, quotedCursorField, cursorFieldType, cursorInfo.getCursor());
-                LOGGER.info("Table {} cursor count: expected {}, actual {}", tableName, cursorInfo.getCursorRecordCount(), actualRecordCount);
-                if (actualRecordCount == cursorInfo.getCursorRecordCount()) {
-                  operator = ">";
-                } else {
-                  operator = ">=";
-                }
-              }
-
               final String wrappedColumnNames = getWrappedColumnNames(database, connection, columnNames, schemaName, tableName);
-              final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE %s %s ?",
+              final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE %s >= ?",
                   wrappedColumnNames,
                   fullTableName,
-                  quotedCursorField,
-                  operator));
+                  quotedCursorField));
               // if the connector emits intermediate states, the incremental query must be sorted by the cursor
               // field
               if (getStateEmissionFrequency() > 0) {
@@ -381,36 +366,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
   protected String getCountColumnName() {
     return "record_count";
-  }
-
-  protected long getActualCursorRecordCount(final Connection connection,
-                                            final String fullTableName,
-                                            final String quotedCursorField,
-                                            final Datatype cursorFieldType,
-                                            final String cursor)
-      throws SQLException {
-    final String columnName = getCountColumnName();
-    final PreparedStatement cursorRecordStatement;
-    if (cursor == null) {
-      final String cursorRecordQuery = String.format("SELECT COUNT(*) AS %s FROM %s WHERE %s IS NULL",
-          columnName,
-          fullTableName,
-          quotedCursorField);
-      cursorRecordStatement = connection.prepareStatement(cursorRecordQuery);
-    } else {
-      final String cursorRecordQuery = String.format("SELECT COUNT(*) AS %s FROM %s WHERE %s = ?",
-          columnName,
-          fullTableName,
-          quotedCursorField);
-      cursorRecordStatement = connection.prepareStatement(cursorRecordQuery);;
-      sourceOperations.setCursorField(cursorRecordStatement, 1, cursorFieldType, cursor);
-    }
-    final ResultSet resultSet = cursorRecordStatement.executeQuery();
-    if (resultSet.next()) {
-      return resultSet.getLong(columnName);
-    } else {
-      return 0L;
-    }
   }
 
   @Override
