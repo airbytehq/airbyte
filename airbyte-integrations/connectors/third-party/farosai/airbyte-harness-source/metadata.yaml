@@ -14,6 +14,6 @@ data:
   license: MIT
   name: Harness
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/harness
+  documentationUrl: https://docs.airbyte.com/integrations/sources/harness
   tags: []
 metadataSpecVersion: "1.0"

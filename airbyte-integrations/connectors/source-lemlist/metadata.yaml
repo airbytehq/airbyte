@@ -14,7 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/lemlist
+  documentationUrl: https://docs.airbyte.com/integrations/sources/lemlist
   tags:
     - language:python
 metadataSpecVersion: "1.0"

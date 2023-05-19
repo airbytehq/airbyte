@@ -17,7 +17,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
+  documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   tags:
     - language:python
 metadataSpecVersion: "1.0"

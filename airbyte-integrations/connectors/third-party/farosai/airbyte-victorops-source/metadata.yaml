@@ -14,6 +14,6 @@ data:
   license: MIT
   name: VictorOps
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/victorops
+  documentationUrl: https://docs.airbyte.com/integrations/sources/victorops
   tags: []
 metadataSpecVersion: "1.0"

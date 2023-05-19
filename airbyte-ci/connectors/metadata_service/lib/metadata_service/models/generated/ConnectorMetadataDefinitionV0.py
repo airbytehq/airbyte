@@ -105,7 +105,7 @@ class RegistryOverrides(BaseModel):
     supportsDbt: Optional[bool] = None
     supportsNormalization: Optional[bool] = None
     license: Optional[str] = None
-    supportUrl: Optional[AnyUrl] = None
+    documentationUrl: Optional[AnyUrl] = None
     connectorSubtype: Optional[str] = None
     allowedHosts: Optional[AllowedHosts] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
@@ -131,7 +131,7 @@ class Data(BaseModel):
     supportsDbt: Optional[bool] = None
     supportsNormalization: Optional[bool] = None
     license: str
-    supportUrl: AnyUrl
+    documentationUrl: Optional[AnyUrl] = None
     githubIssueLabel: str
     maxSecondsBetweenMessages: Optional[int] = Field(
         None,

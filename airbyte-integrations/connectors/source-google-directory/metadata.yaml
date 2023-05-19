@@ -15,7 +15,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/google-directory
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-directory
   tags:
     - language:python
 metadataSpecVersion: "1.0"

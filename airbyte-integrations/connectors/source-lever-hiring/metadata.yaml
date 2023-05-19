@@ -14,7 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/lever-hiring
+  documentationUrl: https://docs.airbyte.com/integrations/sources/lever-hiring
   tags:
     - language:python
 metadataSpecVersion: "1.0"

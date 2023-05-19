@@ -14,7 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/firebolt
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/firebolt
   supportsDbt: true
   tags:
     - language:python

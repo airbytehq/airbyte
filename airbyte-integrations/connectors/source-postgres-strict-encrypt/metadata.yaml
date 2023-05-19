@@ -19,7 +19,7 @@ data:
   license: MIT
   name: Postgres
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/postgres
+  documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   tags:
     - language:java
 metadataSpecVersion: "1.0"
