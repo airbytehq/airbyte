@@ -14,7 +14,7 @@ from ci_connector_ops.pipelines.bases import ConnectorReport, Step, StepResult, 
 from ci_connector_ops.pipelines.contexts import PublishConnectorContext
 from ci_connector_ops.pipelines.pipelines import metadata
 from ci_connector_ops.pipelines.utils import with_exit_code, with_stderr, with_stdout
-from dagger import Container, File, QueryError
+from dagger import Container, File, ImageLayerCompression, QueryError
 from pydantic import ValidationError
 
 
@@ -62,22 +62,56 @@ class PushConnectorImageToRegistry(Step):
     def latest_docker_image_name(self):
         return f"{self.context.metadata['dockerRepository']}:latest"
 
-    async def _run(self, built_containers_per_platform: List[Container]) -> StepResult:
+    async def _run(self, built_containers_per_platform: List[Container], attempts: int = 3) -> StepResult:
         try:
             image_ref = await built_containers_per_platform[0].publish(
-                f"docker.io/{self.context.docker_image_name}", platform_variants=built_containers_per_platform[1:]
+                f"docker.io/{self.context.docker_image_name}",
+                platform_variants=built_containers_per_platform[1:],
+                forced_compression=ImageLayerCompression.Gzip,
             )
             if not self.context.pre_release:
                 image_ref = await built_containers_per_platform[0].publish(
-                    f"docker.io/{self.latest_docker_image_name}", platform_variants=built_containers_per_platform[1:]
+                    f"docker.io/{self.latest_docker_image_name}",
+                    platform_variants=built_containers_per_platform[1:],
+                    forced_compression=ImageLayerCompression.Gzip,
                 )
             return StepResult(self, status=StepStatus.SUCCESS, stdout=f"Published {image_ref}")
         except QueryError as e:
+            if attempts > 0:
+                self.context.logger.error(str(e))
+                self.context.logger.warn(f"Failed to publish {self.context.docker_image_name}. Retrying. {attempts} attempts left.")
+                await anyio.sleep(5)
+                return await self._run(built_containers_per_platform, attempts - 1)
             return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
 
 
 class PullConnectorImageFromRegistry(Step):
     title = "Pull connector image from registry"
+
+    async def check_if_image_only_has_gzip_layers(self) -> bool:
+        """Check if the image only has gzip layers.
+        Docker version > 21 can create images that has some layers compressed with zstd.
+        These layers are not supported by previous docker versions.
+        We want to make sure that the image we are about to release is compatible with all docker versions.
+        We use crane to inspect the manifest of the image and check if it only has gzip layers.
+        """
+        for platform in builds.BUILD_PLATFORMS:
+
+            inspect = environments.with_crane(self.context).with_exec(
+                ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image_name}"]
+            )
+            inspect_exit_code = await with_exit_code(inspect)
+            inspect_stderr = await with_stderr(inspect)
+            inspect_stdout = await with_stdout(inspect)
+            if inspect_exit_code != 0:
+                raise Exception(f"Failed to inspect {self.context.docker_image_name}: {inspect_stderr}")
+            try:
+                for layer in json.loads(inspect_stdout)["layers"]:
+                    if not layer["mediaType"].endswith(".gzip"):
+                        return False
+                return True
+            except (KeyError, json.JSONDecodeError) as e:
+                raise Exception(f"Failed to parse manifest for {self.context.docker_image_name}: {inspect_stdout}") from e
 
     async def _run(self, attempt: int = 3) -> StepResult:
         try:
@@ -90,7 +124,18 @@ class PullConnectorImageFromRegistry(Step):
                     return await self._run(attempt - 1)
                 else:
                     return StepResult(self, status=StepStatus.FAILURE, stderr=f"Failed to pull {self.context.docker_image_name}")
-            return StepResult(self, status=StepStatus.SUCCESS, stdout=f"Pulled {self.context.docker_image_name} and ran spec command")
+            if not await self.check_if_image_only_has_gzip_layers():
+                return StepResult(
+                    self,
+                    status=StepStatus.FAILURE,
+                    stderr=f"Image {self.context.docker_image_name} does not only have gzip compressed layers. Please rebuild the connector with Docker < 21.",
+                )
+            else:
+                return StepResult(
+                    self,
+                    status=StepStatus.SUCCESS,
+                    stdout=f"Pulled {self.context.docker_image_name} and validated it has gzip only compressed layers and we can run spec on it.",
+                )
         except QueryError as e:
             if attempt > 0:
                 await anyio.sleep(10)
