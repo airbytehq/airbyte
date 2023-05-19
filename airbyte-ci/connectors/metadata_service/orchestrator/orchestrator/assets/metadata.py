@@ -191,7 +191,7 @@ def metadata_definitions(context: OpExecutionContext) -> List[LatestMetadataEntr
         icon_blob = blob.bucket.blob(icon_file_path)
 
         icon_url = (
-            get_public_url_for_gcs_file(icon_blob.bucket, icon_blob.name, os.getenv("METADATA_CDN_BASE_URL"))
+            get_public_url_for_gcs_file(icon_blob.bucket.name, icon_blob.name, os.getenv("METADATA_CDN_BASE_URL"))
             if icon_blob.exists()
             else None
         )
@@ -203,14 +203,3 @@ def metadata_definitions(context: OpExecutionContext) -> List[LatestMetadataEntr
         metadata_entries.append(metadata_entry)
 
     return metadata_entries
-
-
-@asset(group_name=GROUP_NAME)
-def metadata_icons(metadata_definitions: List[LatestMetadataEntry]) -> OutputDataFrame:
-    icons = {}
-    for metadata_entry in metadata_definitions:
-        icons[metadata_entry.metadata_definition.data.name] = metadata_entry.icon_url
-
-    icons_df = pd.DataFrame.from_dict(icons, orient="index", columns=["icon_url"])
-
-    return output_dataframe(icons_df)
