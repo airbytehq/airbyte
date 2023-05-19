@@ -62,7 +62,7 @@ class PushConnectorImageToRegistry(Step):
     def latest_docker_image_name(self):
         return f"{self.context.metadata['dockerRepository']}:latest"
 
-    async def _run(self, built_containers_per_platform: List[Container]) -> StepResult:
+    async def _run(self, built_containers_per_platform: List[Container], attempts: int = 3) -> StepResult:
         try:
             image_ref = await built_containers_per_platform[0].publish(
                 f"docker.io/{self.context.docker_image_name}",
@@ -77,6 +77,11 @@ class PushConnectorImageToRegistry(Step):
                 )
             return StepResult(self, status=StepStatus.SUCCESS, stdout=f"Published {image_ref}")
         except QueryError as e:
+            if attempts > 0:
+                self.context.logger.error(str(e))
+                self.context.logger.warn(f"Failed to publish {self.context.docker_image_name}. Retrying. {attempts} attempts left.")
+                await anyio.sleep(5)
+                return await self._run(built_containers_per_platform, attempts - 1)
             return StepResult(self, status=StepStatus.FAILURE, stderr=str(e))
 
 
