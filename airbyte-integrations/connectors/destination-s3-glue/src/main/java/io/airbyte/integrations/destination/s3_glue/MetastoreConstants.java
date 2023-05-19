@@ -14,8 +14,8 @@ public class MetastoreConstants {
 
   public static final String SERIALIZATION_LIBRARY = "glue_serialization_library";
 
-  public static final String TEXT_INPUT_FORMAT = "TextInputFormat";
+  public static final String TEXT_INPUT_FORMAT = "org.apache.hadoop.mapred.TextInputFormat";
 
-  public static final String TEXT_OUTPUT_FORMAT = "IgnoreKeyTextOutputFormat";
+  public static final String TEXT_OUTPUT_FORMAT = "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat";
 
 }
