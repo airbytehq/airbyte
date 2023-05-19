@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination_async;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.airbyte.integrations.destination_async.BufferManager.GlobalMemoryManager;
 import org.junit.jupiter.api.Test;
 
 public class GlobalMemoryManagerTest {
