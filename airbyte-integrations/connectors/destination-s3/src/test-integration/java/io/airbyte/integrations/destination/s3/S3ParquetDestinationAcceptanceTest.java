@@ -15,7 +15,6 @@ import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
