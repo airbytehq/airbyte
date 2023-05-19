@@ -236,8 +236,6 @@ def test_parse_response(patch_base_class):
     response.json.return_value = response_data
     inputs = {"response": response, "stream_state": {}}
     actual_records: Mapping[str, Any] = list(stream.parse_response(**inputs))
-    for record in actual_records:
-        del record["uuid"]
     assert actual_records == expected_data
 
 
@@ -368,9 +366,6 @@ def test_read_incremental(requests_mock):
     with freeze_time("2023-01-01 12:00:00"):
         records = list(read_incremental(stream, stream_state))
 
-    for record in records:
-        del record["uuid"]
-
     assert records == [
         {"date": "20221229", "totalUsers": 100, "property_id": 123},
         {"date": "20221230", "totalUsers": 110, "property_id": 123},
@@ -382,9 +377,6 @@ def test_read_incremental(requests_mock):
 
     with freeze_time("2023-01-02 12:00:00"):
         records = list(read_incremental(stream, stream_state))
-
-    for record in records:
-        del record["uuid"]
 
     assert records == [
         {"date": "20230101", "totalUsers": 140, "property_id": 123},
