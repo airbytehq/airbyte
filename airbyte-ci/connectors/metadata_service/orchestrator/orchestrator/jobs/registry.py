@@ -1,7 +1,7 @@
 from dagster import define_asset_job, AssetSelection
 
 registries_inclusive = AssetSelection.keys(
-    "cloud_registry_from_metadata", "oss_registry_from_metadata", "specs_secrets_mask_yaml"
+    "persist_cloud_registry_from_metadata", "persist_oss_registry_from_metadata", "specs_secrets_mask_yaml"
 ).upstream()
 generate_registry = define_asset_job(name="generate_registry", selection=registries_inclusive)
 

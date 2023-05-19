@@ -10,6 +10,9 @@ from orchestrator.templates.render import (
     ColumnInfo,
 )
 from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTORS_TEST_RESULT_BUCKET_URL
+from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
+from orchestrator.utils.object_helpers import to_json_sanitized_dict
+from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 
 GROUP_NAME = "registry_reports"
 
@@ -122,6 +125,33 @@ def augment_and_normalize_connector_dataframes(
 
 
 # ASSETS
+
+@asset(group_name=GROUP_NAME)
+def cloud_sources_dataframe(latest_cloud_registry: ConnectorRegistryV0) -> OutputDataFrame:
+    latest_cloud_registry_dict = to_json_sanitized_dict(latest_cloud_registry)
+    sources = latest_cloud_registry_dict["sources"]
+    return output_dataframe(pd.DataFrame(sources))
+
+
+@asset(group_name=GROUP_NAME)
+def oss_sources_dataframe(latest_oss_registry: ConnectorRegistryV0) -> OutputDataFrame:
+    latest_oss_registry_dict = to_json_sanitized_dict(latest_oss_registry)
+    sources = latest_oss_registry_dict["sources"]
+    return output_dataframe(pd.DataFrame(sources))
+
+
+@asset(group_name=GROUP_NAME)
+def cloud_destinations_dataframe(latest_cloud_registry: ConnectorRegistryV0) -> OutputDataFrame:
+    latest_cloud_registry_dict = to_json_sanitized_dict(latest_cloud_registry)
+    destinations = latest_cloud_registry_dict["destinations"]
+    return output_dataframe(pd.DataFrame(destinations))
+
+
+@asset(group_name=GROUP_NAME)
+def oss_destinations_dataframe(latest_oss_registry: ConnectorRegistryV0) -> OutputDataFrame:
+    latest_oss_registry_dict = to_json_sanitized_dict(latest_oss_registry)
+    destinations = latest_oss_registry_dict["destinations"]
+    return output_dataframe(pd.DataFrame(destinations))
 
 @asset(group_name=GROUP_NAME)
 def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, github_connector_folders) -> pd.DataFrame:

@@ -3,7 +3,7 @@ from dagster import build_op_context
 from orchestrator.resources.gcp import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_directory_blobs
 
 from orchestrator.assets.registry import (
-    oss_registry_from_metadata,
+    persist_oss_registry_from_metadata,
 )
 
 from orchestrator.assets.metadata import (
@@ -28,4 +28,4 @@ def debug_registry_generation():
 
     context = build_op_context(resources=resources)
     metadata_definitions_asset = metadata_definitions(context)
-    oss_registry_from_metadata(context, metadata_definitions_asset).value
+    persist_oss_registry_from_metadata(context, metadata_definitions_asset).value
