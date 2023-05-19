@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import copy
 import json
 import sys
 import time
@@ -213,6 +214,7 @@ class Stream(HttpStream, ABC):
     limit = 100
     offset = 0
     primary_key = None
+    identity_key = None
     filter_old_records: bool = True
     denormalize_records: bool = False  # one record from API response can result in multiple records emitted
     granted_scopes: Set = None
@@ -976,8 +978,9 @@ class CRMSearchStream(IncrementalStream, ABC):
         return list(stream_records.values()), raw_response
 
     def _read_associations(self, records: Iterable) -> Iterable[Mapping[str, Any]]:
-        records_by_pk = {record[self.primary_key]: record for record in records}
-        identifiers = list(map(lambda x: x[self.primary_key], records))
+        primary_key = self.identity_key if self.identity_key is not None else self.primary_key
+        records_by_pk = {record[primary_key]: record for record in records}
+        identifiers = list(map(lambda x: x[primary_key], records))
         associations_stream = AssociationsStream(
             api=self._api, start_date=self._start_date, credentials=self._credentials, parent_stream=self, identifiers=identifiers
         )
@@ -1127,11 +1130,37 @@ class CRMSearchStreamWithHistory(CRMSearchStream):
                 response = self.handle_request(None, None, None, APIv3PropertyWithHistory(properties), url=self.history_url(record["id"]))
 
                 record_with_history = self._transform_single_record(response.json())
-                record_with_history["propertiesWithHistory"] = json.dumps(record_with_history["propertiesWithHistory"])
+                del record_with_history["properties"]
 
-                cursor = self._field_to_datetime(record_with_history[self.updated_at_field])
-                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-                yield record_with_history
+                if record_with_history.get("associations") is not None:
+                    del record_with_history["associations"]
+
+                if record_with_history.get("archived") is not None:
+                    del record_with_history["archived"]
+
+                updated_at = copy.copy(record_with_history["updatedAt"])
+                del record_with_history["updatedAt"]
+                if record_with_history.get("createdAt") is not None:
+                    del record_with_history["createdAt"]
+
+                if record_with_history.get("propertiesWithHistory") is not None:
+                    properties_with_history: Mapping = copy.copy(record_with_history["propertiesWithHistory"])
+                    del record_with_history["propertiesWithHistory"]
+
+                    for property, values in properties_with_history.items():
+                        new_record = copy.copy(record_with_history)
+                        for entry in values:
+                            new_record["name"] = property
+                            new_record["value"] = entry["value"]
+                            new_record["timestamp"] = entry["timestamp"]
+                            new_record["sourceType"] = entry["sourceType"]
+                            if entry.get("sourceId") is not None:
+                                new_record["sourceId"] = entry["sourceId"]
+
+                            # cursor will be set from record_with_history only
+                            cursor = self._field_to_datetime(updated_at)
+                            latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                            yield new_record
 
             next_page_token = self.next_page_token(raw_response)
             if not next_page_token:
@@ -1323,7 +1352,7 @@ class DealsWithHistory(CRMSearchStreamWithHistory):
     entity = "deal"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts", "companies", "line_items"]
-    primary_key = "id"
+    identity_key = "id"
     scopes = {"contacts", "crm.objects.deals.read"}
 
 
@@ -1609,7 +1638,7 @@ class ContactsWithHistory(CRMSearchStreamWithHistory):
     entity = "contacts"
     associations = ["contacts"]
     last_modified_field = "lastmodifieddate"
-    primary_key = "id"
+    identity_key = "id"
     scopes = {"crm.objects.contacts.read"}
 
 
@@ -1651,7 +1680,8 @@ class CompaniesWithHistory(CRMSearchStreamWithHistory):
     entity = "company"
     last_modified_field = "hs_lastmodifieddate"
     associations = ["contacts"]
-    primary_key = "id"
+    identity_key = "id"
+    # primary_key = "id"
     scopes = {"crm.objects.contacts.read", "crm.objects.companies.read"}
 
 
@@ -1719,7 +1749,10 @@ class LineItems(CRMObjectIncrementalStream):
 
 class LineItemsWithHistory(CRMSearchStreamWithHistory):
     entity = "line_item"
-    primary_key = "id"
+    # primary_key = "id"
+    identity_key = "id"
+
+    associations = []
     last_modified_field = "hs_lastmodifieddate"
     scopes = {"crm.objects.line_items.read"}
 
@@ -1732,7 +1765,10 @@ class Products(CRMObjectIncrementalStream):
 
 class ProductsWithHistory(CRMSearchStreamWithHistory):
     entity = "product"
-    primary_key = "id"
+    associations = []
+    # primary_key = "id"
+    identity_key = "id"
+
     last_modified_field = "hs_lastmodifieddate"
     scopes = {"e-commerce"}
 
@@ -1748,7 +1784,9 @@ class Tickets(CRMSearchStream):
 class TicketsWithHistory(CRMSearchStreamWithHistory):
     entity = "ticket"
     associations = ["contacts", "deals", "companies"]
-    primary_key = "id"
+    # primary_key = "id"
+    identity_key = "id"
+
     scopes = {"tickets"}
     last_modified_field = "hs_lastmodifieddate"
 

@@ -5,16 +5,29 @@
     "id": {
       "type": ["null", "string"]
     },
-    "createdAt": {
+    "createdat": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "updatedAt": {
+    "updatedat": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "archived": {
-      "type": ["null", "boolean"]
+    "name": {
+      "type": ["string"]
+    },
+    "sourceid": {
+      "type": ["null", "string"]
+    },
+    "sourceType": {
+      "type": ["null", "string"]
+    },
+    "timestamp": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "value": {
+      "type": ["null", "string"]
     }
   }
 }

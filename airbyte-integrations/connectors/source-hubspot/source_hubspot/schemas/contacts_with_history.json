@@ -1,45 +1,33 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
   "properties": {
     "id": {
+      "type": ["null", "string"]
+    },
+    "createdat": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedat": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "name": {
       "type": ["string"]
     },
-    "properties": {
-      "createdate": {
-        "type": ["null", "string"],
-        "format": "date-time"
-      },
-      "email": {
-        "type": ["string"]
-      },
-      "firstname": {
-        "type": ["string"]
-      },
-      "hs_object_id": {
-        "type": ["string"]
-      },
-      "lastmodifieddate": {
-        "type": ["null", "string"],
-        "format": "date-time"
-      },
-      "lastname": {
-        "type": ["string"]
-      }
+    "sourceid": {
+      "type": ["null", "string"]
     },
-    "propertiesWithHistory": {
-      "type": ["object"]
+    "sourceType": {
+      "type": ["null", "string"]
     },
-    "createdAt": {
+    "timestamp": {
       "type": ["null", "string"],
       "format": "date-time"
     },
-    "updatedAt": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "archived": {
-      "type": ["null", "boolean"]
+    "value": {
+      "type": ["null", "string"]
     }
   }
 }
