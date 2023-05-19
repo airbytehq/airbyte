@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres.xmin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
@@ -46,7 +47,12 @@ public class XminStateManager {
           LOGGER.info("State message: " + stateMessage);
           final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
           final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace());
-          final XminStatus xminStatus = Jsons.object(stateMessage.getStream().getStreamState(), XminStatus.class);
+          final XminStatus xminStatus;
+          try {
+            xminStatus = Jsons.object(stateMessage.getStream().getStreamState(), XminStatus.class);
+          } catch (final IllegalArgumentException e) {
+            throw new ConfigErrorException("Could not parse ")
+          }
           localMap.put(pair, xminStatus);
         }
       }
