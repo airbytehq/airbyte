@@ -124,6 +124,39 @@
                 "type": "string",
                 "const": "require",
                 "order": 0
+              },
+              "ca_certificate": {
+                "type": "string",
+                "title": "CA Certificate",
+                "description": "CA certificate",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 1
+              },
+              "client_certificate": {
+                "type": "string",
+                "title": "Client Certificate",
+                "description": "Client certificate",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 2,
+                "always_show": true
+              },
+              "client_key": {
+                "type": "string",
+                "title": "Client Key",
+                "description": "Client key",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 3,
+                "always_show": true
+              },
+              "client_key_password": {
+                "type": "string",
+                "title": "Client key password",
+                "description": "Password for keystorage. If you do not add it - the password will be generated automatically.",
+                "airbyte_secret": true,
+                "order": 4
               }
             }
           },
