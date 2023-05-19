@@ -22,7 +22,7 @@ cd airbyte
 ```
 
 - In your browser, just visit [http://localhost:8000](http://localhost:8000)
-- You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy airbyte to your servers, be sure to [change these](/operator-guides/security):
+- You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy Airbyte to your servers, be sure to change these:
 
 ```yaml
 # Proxy Configuration
@@ -62,9 +62,9 @@ bash run-ab-platform.sh
 ```
 
 - In your browser, just visit [http://localhost:8000](http://localhost:8000)
-- You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy airbyte to your servers, be sure to [change these](/operator-guides/security).
+- You will be asked for a username and password. By default, that's username `airbyte` and password `password`. Once you deploy airbyte to your servers, be sure to change these.
 - Start moving some data!
 
 ## Troubleshooting
 
-If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [troubleshooting](../troubleshooting/on-deploying.md) section in our docs for common problems.
+If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [troubleshooting](../troubleshooting.md) section in our docs for common problems.

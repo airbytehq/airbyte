@@ -143,7 +143,9 @@ class IncrementalMicrosoftDataverseStream(MicrosoftDataverseStream, IncrementalM
                 result.pop("@odata.context", None)
                 result.pop("id", None)
                 result.pop("reason", None)
-                result.update({"_ab_cdc_deleted_at": datetime.now().isoformat()})
+                now = datetime.now().isoformat()
+                result.update({self.cursor_field[0]: now})
+                result.update({"_ab_cdc_deleted_at": now})
             else:
                 result.update({"_ab_cdc_updated_at": result[self.cursor_field[0]]})
 

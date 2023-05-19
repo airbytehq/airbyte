@@ -5,10 +5,10 @@
 package io.airbyte.workers.general;
 
 import io.airbyte.commons.io.LineGobbler;
-import io.airbyte.config.ConnectorJobOutput;
-import io.airbyte.config.ConnectorJobOutput.OutputType;
-import io.airbyte.config.FailureReason;
-import io.airbyte.config.JobGetSpecConfig;
+import io.airbyte.configoss.ConnectorJobOutput;
+import io.airbyte.configoss.ConnectorJobOutput.OutputType;
+import io.airbyte.configoss.FailureReason;
+import io.airbyte.configoss.JobGetSpecConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConnectorSpecification;

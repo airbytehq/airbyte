@@ -389,10 +389,72 @@ def test_read(schema, ignored_fields, expect_records_config, record, expected_re
             expect_records_config=expect_records_config,
             should_validate_schema=True,
             should_validate_data_points=False,
+            should_fail_on_extra_columns=False,
             empty_streams=set(),
             expected_records_by_stream=expected_records_by_stream,
             docker_runner=docker_runner_mock,
             ignored_fields=ignored_fields,
+            detailed_logger=MagicMock(),
+        )
+
+
+@pytest.mark.parametrize("config_fail_on_extra_columns, record_has_unexpected_column, expectation_should_fail", [
+        (True, True, True),
+        (True, False, False),
+        (False, False, False),
+        (False, True, False),
+])
+@pytest.mark.parametrize("additional_properties", [True, False, None])
+def test_fail_on_extra_columns(config_fail_on_extra_columns, record_has_unexpected_column, expectation_should_fail, additional_properties):
+    schema = {"type": "object", "properties": {"field_1": {"type": ["string"]}, "field_2": {"type": ["string"]}}}
+    if additional_properties:
+        schema["additionalProperties"] = additional_properties
+
+    record = {"field_1": "value", "field_2": "value"}
+    if record_has_unexpected_column:
+        record["surprise_field"] = "value"
+
+    configured_catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema, "supported_sync_modes": ["full_refresh"]}),
+                sync_mode="full_refresh",
+                destination_sync_mode="overwrite",
+            )
+        ]
+    )
+    docker_runner_mock = MagicMock()
+    docker_runner_mock.call_read.return_value = [
+        AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111))
+    ]
+    t = test_core.TestBasicRead()
+    if expectation_should_fail:
+        with pytest.raises(Failed, match="test_stream"):
+            t.test_read(
+                connector_config=None,
+                configured_catalog=configured_catalog,
+                expect_records_config=ExpectedRecordsConfig(path="foobar"),
+                should_validate_schema=True,
+                should_validate_data_points=False,
+                should_fail_on_extra_columns=config_fail_on_extra_columns,
+                empty_streams=set(),
+                expected_records_by_stream={},
+                docker_runner=docker_runner_mock,
+                ignored_fields=None,
+                detailed_logger=MagicMock(),
+            )
+    else:
+        t.test_read(
+            connector_config=None,
+            configured_catalog=configured_catalog,
+            expect_records_config=ExpectedRecordsConfig(path="foobar"),
+            should_validate_schema=True,
+            should_validate_data_points=False,
+            should_fail_on_extra_columns=config_fail_on_extra_columns,
+            empty_streams=set(),
+            expected_records_by_stream={},
+            docker_runner=docker_runner_mock,
+            ignored_fields=None,
             detailed_logger=MagicMock(),
         )
 

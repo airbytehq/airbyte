@@ -57,7 +57,7 @@ Airbyte only supports replicating [Grid](https://developers.google.com/sheets/ap
 
 The Google Sheets source connector supports the following sync modes:
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 
 ## Data type mapping
@@ -75,7 +75,8 @@ The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                       |
-|---------| ---------- | -------------------------------------------------------- |-------------------------------------------------------------------------------|
+|---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------|
+| 0.2.38  | 2023-05-16 | [26097](https://github.com/airbytehq/airbyte/pull/26097) | Refactor config error                                                         |
 | 0.2.37  | 2023-02-21 | [23292](https://github.com/airbytehq/airbyte/pull/23292) | Skip non grid sheets.                                                         |
 | 0.2.36  | 2023-02-21 | [23272](https://github.com/airbytehq/airbyte/pull/23272) | Handle empty sheets gracefully.                                               |
 | 0.2.35  | 2023-02-23 | [23057](https://github.com/airbytehq/airbyte/pull/23057) | Slugify column names                                                          |

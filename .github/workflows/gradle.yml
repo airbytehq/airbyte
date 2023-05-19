@@ -28,17 +28,6 @@ on:
 permissions: write-all
 
 jobs:
-  # COMMON TASKS
-  ensure-images-exist:
-    name: "Ensure all required Docker images exist on Dockerhub"
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-
-      - name: Check images exist
-        run: ./tools/bin/check_images_exist.sh all
   # The output of this job is used to trigger the following builds.
   changes:
     name: "Detect Modified Files"
@@ -69,7 +58,7 @@ jobs:
               - 'tools/**'
               - '*.gradle'
               - 'deps.toml'
-              - 'airbyte-config/**'
+              - 'airbyte-config-oss/**'
             cdk:
               - 'airbyte-cdk/**'
             cli:
@@ -327,7 +316,7 @@ jobs:
       - name: Process Resources
         uses: Wandalen/wretry.action@master
         with:
-          command: SUB_BUILD=CONNECTORS_BASE ./gradlew :airbyte-config:init:processResources --scan
+          command: SUB_BUILD=CONNECTORS_BASE ./gradlew :airbyte-config-oss:init-oss:processResources --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 

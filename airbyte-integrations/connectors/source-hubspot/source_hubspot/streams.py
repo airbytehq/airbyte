@@ -15,12 +15,14 @@ import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams import IncrementalMixin
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
-from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
+from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
 
 # we got this when provided API Token has incorrect format
@@ -108,6 +110,7 @@ class API:
 
     BASE_URL = "https://api.hubapi.com"
     USER_AGENT = "Airbyte"
+    logger = logger
 
     def is_oauth2(self) -> bool:
         credentials_title = self.credentials.get("credentials_title")
@@ -186,6 +189,55 @@ class API:
         response = self._session.post(self.BASE_URL + url, params=params, json=data)
         return self._parse_and_handle_errors(response), response
 
+    def get_custom_object_schemas(self) -> Mapping[str, Any]:
+        data, response = self.get("/crm/v3/schemas", {})
+        schemas = {}
+        if response.ok and "results" in data:
+            for raw_schema in data["results"]:
+                schema = self.generate_schema(raw_schema=raw_schema)
+                schemas[raw_schema["name"]] = schema
+        else:
+            self.logger.warn(self._parse_and_handle_errors(response))
+
+        return schemas
+
+    def generate_schema(self, raw_schema: Mapping[str, Any]) -> Mapping[str, Any]:
+        properties = {}
+        for field in raw_schema["properties"]:
+            properties[field["name"]] = self._field_to_property_schema(field)
+
+        schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "object"],
+            "additionalProperties": True,
+            "properties": {
+                "id": {"type": ["null", "string"]},
+                "createdAt": {"type": ["null", "string"], "format": "date-time"},
+                "updatedAt": {"type": ["null", "string"], "format": "date-time"},
+                "archived": {"type": ["null", "boolean"]},
+                "properties": {"type": ["null", "object"], "properties": properties},
+            },
+        }
+
+        return schema
+
+    def _field_to_property_schema(self, field: Dict[str, Any]) -> Mapping[str, Any]:
+        field_type = field["type"]
+        property_schema = {}
+        if field_type == "enumeration" or field_type == "string":
+            property_schema = {"type": ["null", "string"]}
+        elif field_type == "datetime" or field_type == "date":
+            property_schema = {"type": ["null", "string"], "format": "date-time"}
+        elif field_type == "number":
+            property_schema = {"type": ["null", "number"]}
+        elif field_type == "boolean" or field_type == "bool":
+            property_schema = {"type": ["null", "boolean"]}
+        else:
+            self.logger.warn(f"Field {field['name']} has unrecognized type: {field['type']} casting to string.")
+            property_schema = {"type": ["null", "string"]}
+
+        return property_schema
+
 
 class Stream(HttpStream, ABC):
     """Base class for all streams. Responsible for data fetching and pagination"""
@@ -252,7 +304,10 @@ class Stream(HttpStream, ABC):
 
         self._start_date = start_date
         if isinstance(self._start_date, str):
-            self._start_date = pendulum.parse(self._start_date)
+            try:
+                self._start_date = pendulum.parse(self._start_date)
+            except pendulum.parsing.exceptions.ParserError as e:
+                raise InvalidStartDateConfigError(self._start_date, e)
         creds_title = self._credentials["credentials_title"]
         if creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
             self._authenticator = api.get_authenticator()
@@ -315,7 +370,6 @@ class Stream(HttpStream, ABC):
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Tuple[List, Any]:
-
         #  TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams
         #  (issues #3977 and #5835). We will need to fix this code when the HubSpot developers add the ability to use a special parameter
         #  to get all properties for an entity. According to HubSpot Community
@@ -349,7 +403,6 @@ class Stream(HttpStream, ABC):
         next_page_token = None
         try:
             while not pagination_complete:
-
                 properties = self._property_wrapper
                 if properties and properties.too_many_properties:
                     records, response = self._read_stream_records(
@@ -456,7 +509,7 @@ class Stream(HttpStream, ABC):
 
         if target_type_name == "number":
             # do not cast numeric IDs into float, use integer instead
-            target_type = int if field_name.endswith("_id") else target_type
+            target_type = int if field_value.isnumeric() else target_type
             field_value = field_value.replace(",", "")
 
         if target_type_name != "string" and field_value == "":
@@ -467,13 +520,12 @@ class Stream(HttpStream, ABC):
         try:
             casted_value = target_type(field_value)
         except ValueError:
-            logger.exception(f"Could not cast `{field_value}` to `{target_type}`")
+            logger.exception(f"Could not cast in stream `{cls.__name__}` `{field_name}` {field_value=} to `{target_type}`")
             return field_value
 
         return casted_value
 
     def _cast_record_fields_if_needed(self, record: Mapping, properties: Mapping[str, Any] = None) -> Mapping:
-
         if not self.entity or not record.get("properties"):
             return record
 
@@ -586,10 +638,13 @@ class Stream(HttpStream, ABC):
                 if "next" in response["paging"]:
                     return {"after": response["paging"]["next"]["after"]}
             else:
-                if not response.get(self.more_key, False):
-                    return
-                if self.page_field in response:
-                    return {self.page_filter: response[self.page_field]}
+                if self.more_key:
+                    if not response.get(self.more_key, False):
+                        return
+                    if self.page_field in response:
+                        return {self.page_filter: response[self.page_field]}
+                if self.page_field in response and response[self.page_filter] + self.limit < response.get("total"):
+                    return {self.page_filter: response[self.page_filter] + self.limit}
         else:
             if len(response) >= self.limit:
                 self.offset += self.limit
@@ -597,7 +652,6 @@ class Stream(HttpStream, ABC):
 
     @staticmethod
     def _get_field_props(field_type: str) -> Mapping[str, List[str]]:
-
         if field_type in VALID_JSON_SCHEMA_TYPES:
             return {
                 "type": ["null", field_type],
@@ -657,8 +711,71 @@ class Stream(HttpStream, ABC):
             if "associations" in record:
                 associations = record.pop("associations")
                 for name, association in associations.items():
-                    record[name] = [row["id"] for row in association.get("results", [])]
+                    record[name.replace(" ", "_")] = [row["id"] for row in association.get("results", [])]
             yield record
+
+
+class ClientSideIncrementalStream(Stream, IncrementalMixin):
+    _cursor_value = ""
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return self.updated_at_field
+
+    @property
+    @abstractmethod
+    def updated_at_field(self):
+        """Name of the field associated with the state"""
+
+    @property
+    @abstractmethod
+    def cursor_field_datetime_format(self):
+        """Date-time expressed in pendulum formats, see: https://pendulum.eustace.io/docs/#formatter"""
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        return {self.cursor_field: self._cursor_value}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._cursor_value = value[self.cursor_field]
+
+    def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> bool:
+        """
+        Filter out old records that come from source in unsorted order.
+        Hubspot API uses 2 date-time formats for different endpoints:
+        1. "YYYY-MM-DDTHH:mm:ss.SSSSSSZ" - date-time in ISO format
+        2. "x" - date-time in timestamp in milliseconds
+        """
+        int_field_type = "integer" in self.get_json_schema().get("properties").get(self.cursor_field).get("type")
+        record_value = (
+            pendulum.parse(record.get(self.cursor_field))
+            if isinstance(record.get(self.cursor_field), str)
+            else pendulum.from_format(str(record.get(self.cursor_field)), self.cursor_field_datetime_format)
+        )
+        start_date = (
+            pendulum.from_format(str(stream_state.get(self.cursor_field)), self.cursor_field_datetime_format)
+            if stream_state
+            else self._start_date
+        )
+        cursor_value = max(start_date, record_value)
+        max_state = max(str(self.state.get(self.cursor_field)), cursor_value.format(self.cursor_field_datetime_format))
+        self.state = {self.cursor_field: int(max_state) if int_field_type else max_state}
+        return (
+            not stream_state
+            or pendulum.from_format(str(stream_state.get(self.cursor_field)), self.cursor_field_datetime_format) < record_value
+        )
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[StreamData]:
+        for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            if self.filter_by_state(stream_state=stream_state, record=record):
+                yield record
 
 
 class AssociationsStream(Stream):
@@ -1065,7 +1182,7 @@ class CRMObjectIncrementalStream(CRMObjectStream, IncrementalStream):
         yield from self._flat_associations(records)
 
 
-class Campaigns(Stream):
+class Campaigns(ClientSideIncrementalStream):
     """Email campaigns, API v1
     There is some confusion between emails and campaigns in docs, this endpoint returns actual emails
     Docs: https://legacydocs.hubspot.com/docs/methods/email/get_campaign_data
@@ -1076,6 +1193,7 @@ class Campaigns(Stream):
     data_field = "campaigns"
     limit = 500
     updated_at_field = "lastUpdatedTime"
+    cursor_field_datetime_format = "x"
     primary_key = "id"
     scopes = {"crm.lists.read"}
 
@@ -1088,7 +1206,8 @@ class Campaigns(Stream):
     ) -> Iterable[Mapping[str, Any]]:
         for row in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
             record, response = self._api.get(f"/email/public/v1/campaigns/{row['id']}")
-            yield {**row, **record}
+            if self.filter_by_state(stream_state=stream_state, record=row):
+                yield {**row, **record}
 
 
 class ContactLists(IncrementalStream):
@@ -1160,7 +1279,30 @@ class Deals(CRMSearchStream):
     scopes = {"contacts", "crm.objects.deals.read"}
 
 
-class DealPipelines(Stream):
+class DealsArchived(ClientSideIncrementalStream):
+    """Archived Deals, API v3"""
+
+    url = "/crm/v3/objects/deals"
+    entity = "deal"
+    updated_at_field = "archivedAt"
+    created_at_field = "createdAt"
+    associations = ["contacts", "companies", "line_items"]
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
+    primary_key = "id"
+    scopes = {"contacts", "crm.objects.deals.read"}
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params.update({"archived": "true", "associations": self.associations})
+        return params
+
+
+class DealPipelines(ClientSideIncrementalStream):
     """Deal pipelines, API v1,
     This endpoint requires the contacts scope the tickets scope.
     Docs: https://legacydocs.hubspot.com/docs/methods/pipelines/get_pipelines_for_object_type
@@ -1169,11 +1311,12 @@ class DealPipelines(Stream):
     url = "/crm-pipelines/v1/pipelines/deals"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    cursor_field_datetime_format = "x"
     primary_key = "pipelineId"
-    scopes = {"contacts", "tickets"}
+    scopes = {"crm.objects.contacts.read"}
 
 
-class TicketPipelines(Stream):
+class TicketPipelines(ClientSideIncrementalStream):
     """Ticket pipelines, API v1
     This endpoint requires the tickets scope.
     Docs: https://developers.hubspot.com/docs/api/crm/pipelines
@@ -1182,6 +1325,7 @@ class TicketPipelines(Stream):
     url = "/crm/v3/pipelines/tickets"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
     primary_key = "id"
     scopes = {
         "media_bridge.read",
@@ -1302,7 +1446,7 @@ class Engagements(IncrementalStream):
         self._update_state(latest_cursor=latest_cursor, is_last_record=True)
 
 
-class Forms(Stream):
+class Forms(ClientSideIncrementalStream):
     """Marketing Forms, API v3
     by default non-marketing forms are filtered out of this endpoint
     Docs: https://developers.hubspot.com/docs/api/marketing/forms
@@ -1312,11 +1456,12 @@ class Forms(Stream):
     url = "/marketing/v3/forms"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
     primary_key = "id"
     scopes = {"forms"}
 
 
-class FormSubmissions(Stream):
+class FormSubmissions(ClientSideIncrementalStream):
     """Marketing Forms, API v1
     This endpoint requires the forms scope.
     Docs: https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form
@@ -1325,6 +1470,7 @@ class FormSubmissions(Stream):
     url = "/form-integrations/v1/submissions/forms"
     limit = 50
     updated_at_field = "updatedAt"
+    cursor_field_datetime_format = "x"
     scopes = {"forms"}
 
     def path(
@@ -1372,8 +1518,9 @@ class FormSubmissions(Stream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
-            record["formId"] = stream_slice["form_id"]
-            yield record
+            if self.filter_by_state(stream_state=stream_state, record=record):
+                record["formId"] = stream_slice["form_id"]
+                yield record
 
 
 class MarketingEmails(Stream):
@@ -1384,13 +1531,14 @@ class MarketingEmails(Stream):
     url = "/marketing-emails/v1/emails/with-statistics"
     data_field = "objects"
     limit = 250
+    page_field = "limit"
     updated_at_field = "updated"
     created_at_field = "created"
     primary_key = "id"
     scopes = {"content"}
 
 
-class Owners(Stream):
+class Owners(ClientSideIncrementalStream):
     """Owners, API v3
     Docs: https://legacydocs.hubspot.com/docs/methods/owners/get_owners
     """
@@ -1398,6 +1546,7 @@ class Owners(Stream):
     url = "/crm/v3/owners"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
+    cursor_field_datetime_format = "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"
     primary_key = "id"
     scopes = {"crm.objects.owners.read"}
 
@@ -1467,7 +1616,7 @@ class SubscriptionChanges(IncrementalStream):
     scopes = {"content"}
 
 
-class Workflows(Stream):
+class Workflows(ClientSideIncrementalStream):
     """Workflows, API v3
     Docs: https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows
     """
@@ -1476,6 +1625,7 @@ class Workflows(Stream):
     data_field = "workflows"
     updated_at_field = "updatedAt"
     created_at_field = "insertedAt"
+    cursor_field_datetime_format = "x"
     primary_key = "id"
     scopes = {"automation"}
 
@@ -1544,6 +1694,13 @@ class FeedbackSubmissions(CRMObjectIncrementalStream):
     scopes = {"crm.objects.feedback_submissions.read"}
 
 
+class Goals(CRMObjectIncrementalStream):
+    entity = "goal_targets"
+    last_modified_field = "hs_lastmodifieddate"
+    primary_key = "id"
+    scopes = {"crm.objects.goals.read"}
+
+
 class LineItems(CRMObjectIncrementalStream):
     entity = "line_item"
     primary_key = "id"
@@ -1562,3 +1719,36 @@ class Tickets(CRMSearchStream):
     primary_key = "id"
     scopes = {"tickets"}
     last_modified_field = "hs_lastmodifieddate"
+
+
+class CustomObject(CRMSearchStream, ABC):
+    last_modified_field = "hs_lastmodifieddate"
+    associations = []
+    primary_key = "id"
+    scopes = {"crm.schemas.custom.read", "crm.objects.custom.read"}
+
+    def __init__(self, entity: str, schema: Mapping[str, Any], **kwargs):
+        super().__init__(**kwargs)
+        self.entity = entity
+        self.schema = schema
+
+    @property
+    def name(self) -> str:
+        return self.entity
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        if not self.schema:
+            self.schema = self._api.get_custom_object_schemas()[self.entity]
+        return self.schema
+
+
+class EmailSubscriptions(Stream):
+    """EMAIL SUBSCRIPTION, API v1
+    Docs: https://legacydocs.hubspot.com/docs/methods/email/get_subscriptions
+    """
+
+    url = "/email/public/v1/subscriptions"
+    data_field = "subscriptionDefinitions"
+    primary_key = "id"
+    scopes = {"content"}
+    filter_old_records = False

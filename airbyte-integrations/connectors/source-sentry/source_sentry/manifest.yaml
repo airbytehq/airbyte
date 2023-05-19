@@ -1,4 +1,4 @@
-version: "0.1.0"
+version: "0.29.0"
 definitions:
   page_size: 50
   schema_loader:

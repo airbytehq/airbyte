@@ -8,6 +8,8 @@ acceptance_tests:
     tests:
       - config_path: secrets/config_oauth.json
         status: succeed
+      - config_path: secrets/config.json
+        status: succeed
       - config_path: integration_tests/invalid_config.json
         status: failed
       - config_path: integration_tests/invalid_config_oauth.json
@@ -38,40 +40,57 @@ acceptance_tests:
             bypass_reason: Unable to populate
         ignored_fields:
           contact_lists:
-          - name: ilsFilterBranch
-            bypass_reason: Floating fields order
+            - name: ilsFilterBranch
+              bypass_reason: Floating fields order
           companies:
-          - name: properties/hs_time_*
-            bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
           contacts:
-          - name: properties/hs_time_*
-            bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_latest_source_timestamp
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_predictivescoringtier
+              bypass_reason: Hubspot prediction changes
+            - name: properties/lastmodifieddate
+              bypass_reason: Hubspot time depend on current time
+            - name: updatedAt
+              bypass_reason: Hubspot time depend on current time
           deals:
-          - name: properties/hs_time_*
-            bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
+          deals_archived:
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
           tickets:
-          - name: properties/hs_time_*
-            bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
+          goals:
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
+        fail_on_extra_columns: false
   full_refresh:
     tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: sample_files/full_refresh_custom_objects.json
       - config_path: secrets/config_oauth.json
         configured_catalog_path: sample_files/full_refresh_oauth_catalog.json
         ignored_fields:
           contact_lists:
-          - name: ilsFilterBranch
-            bypass_reason: Floating fields order
+            - name: ilsFilterBranch
+              bypass_reason: Floating fields order
           companies:
-          - name: properties/hs_time_*
-            bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
           contacts:
-          - name: properties/hs_time_*
-            bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
           deals:
-          - name: properties/hs_time_*
-            bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
           tickets:
-          - name: properties/hs_time_*
-            bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
   incremental:
     tests:
       - config_path: secrets/config_oauth.json
