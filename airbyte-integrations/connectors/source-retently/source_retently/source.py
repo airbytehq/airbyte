@@ -85,7 +85,7 @@ class RetentlyStream(HttpStream):
         """
         Converts empty strings to null in the specified field of the record.
         """
-        if parent_key in record and field_key in record[parent_key] and record[parent_key][field_key] == "":
+        if record.get(parent_key, {}).get(field_key, "") == "":
             record[parent_key][field_key] = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
