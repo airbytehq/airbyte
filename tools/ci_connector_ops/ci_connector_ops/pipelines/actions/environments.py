@@ -719,4 +719,8 @@ def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_p
 
 
 def with_crane(context: PipelineContext) -> Container:
+    """Crane is a tool to analyze and manipulate container images.
+    We can use it to extract the image manifest and the list of layers or list the existing tags on an image repository.
+    https://github.com/google/go-containerregistry/tree/main/cmd/crane
+    """
     return context.dagger_client.container().from_("gcr.io/go-containerregistry/crane:v0.15.1")
