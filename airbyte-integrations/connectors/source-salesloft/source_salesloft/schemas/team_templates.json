@@ -38,10 +38,10 @@
       "format": "date-time"
     },
     "open_tracking_enabled": {
-      "type": ["null", "string"]
+      "type": ["null", "boolean"]
     },
     "click_tracking_enabled": {
-      "type": ["null", "string"]
+      "type": ["null", "boolean"]
     },
     "counts": {
       "type": ["null", "object"],

@@ -279,7 +279,7 @@ def test_backoff_time(patch_base_class):
 
 @freeze_time("2023-01-01 00:00:00")
 def test_stream_slices():
-    config = {"date_ranges_start_date": datetime.date(2022, 12, 29), "window_in_days": 1}
+    config = {"date_ranges_start_date": datetime.date(2022, 12, 29), "window_in_days": 1, "dimensions": ["date"]}
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
     slices = list(stream.stream_slices(sync_mode=None))
     assert slices == [
@@ -289,7 +289,7 @@ def test_stream_slices():
         {"startDate": "2023-01-01", "endDate": "2023-01-01"},
     ]
 
-    config = {"date_ranges_start_date": datetime.date(2022, 12, 28), "window_in_days": 2}
+    config = {"date_ranges_start_date": datetime.date(2022, 12, 28), "window_in_days": 2, "dimensions": ["date"]}
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
     slices = list(stream.stream_slices(sync_mode=None))
     assert slices == [
@@ -298,7 +298,7 @@ def test_stream_slices():
         {"startDate": "2023-01-01", "endDate": "2023-01-01"},
     ]
 
-    config = {"date_ranges_start_date": datetime.date(2022, 12, 20), "window_in_days": 5}
+    config = {"date_ranges_start_date": datetime.date(2022, 12, 20), "window_in_days": 5, "dimensions": ["date"]}
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
     slices = list(stream.stream_slices(sync_mode=None))
     assert slices == [

@@ -162,7 +162,7 @@ class Pokemon(HttpStream):
         return None  # TODO
 ```
 
-Now download [this file](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/pokemon.json). Name it `pokemon.json` and place it in `/source_python_http_example/schemas`.
+Now download [this file](./cdk-speedrun-assets/pokemon.json). Name it `pokemon.json` and place it in `/source_python_http_example/schemas`.
 
 This file defines your output schema for every endpoint that you want to implement. Normally, this will likely be the most time-consuming section of the connector development process, as it requires defining the output of the endpoint exactly. This is really important, as Airbyte needs to have clear expectations for what the stream will output. Note that the name of this stream will be consistent in the naming of the JSON schema and the `HttpStream` class, as `pokemon.json` and `Pokemon` respectively in this case. Learn more about schema creation [here](https://docs.airbyte.com/connector-development/cdk-python/full-refresh-stream#defining-the-streams-schema).
 
@@ -221,7 +221,7 @@ class Pokemon(HttpStream):
         return None
 ```
 
-We now need a catalog that defines all of our streams. We only have one stream: `Pokemon`. Download that file [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/configured_catalog_pokeapi.json). Place it in `/sample_files` named as `configured_catalog.json`. More clearly, this is where we tell Airbyte all the streams/endpoints we support for the connector and in which sync modes Airbyte can run the connector on. Learn more about the AirbyteCatalog [here](https://docs.airbyte.com/understanding-airbyte/beginners-guide-to-catalog) and learn more about sync modes [here](https://docs.airbyte.com/understanding-airbyte/connections#sync-modes).
+We now need a catalog that defines all of our streams. We only have one stream: `Pokemon`. Download that file [here](./cdk-speedrun-assets/configured_catalog_pokeapi.json). Place it in `/sample_files` named as `configured_catalog.json`. More clearly, this is where we tell Airbyte all the streams/endpoints we support for the connector and in which sync modes Airbyte can run the connector on. Learn more about the AirbyteCatalog [here](https://docs.airbyte.com/understanding-airbyte/beginners-guide-to-catalog) and learn more about sync modes [here](https://docs.airbyte.com/understanding-airbyte/connections#sync-modes).
 
 Let's read some data.
 
