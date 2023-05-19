@@ -15,4 +15,5 @@ data:
   name: Harness
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/harness
+  tags: []
 metadataSpecVersion: "1.0"

@@ -17,4 +17,6 @@ data:
   releaseDate: TODO
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/scaffold-destination-python
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

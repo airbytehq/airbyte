@@ -15,4 +15,6 @@ data:
     oss:
       enabled: true
   supportUrl: https://docs.airbyte.com/integrations/sources/gcs
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

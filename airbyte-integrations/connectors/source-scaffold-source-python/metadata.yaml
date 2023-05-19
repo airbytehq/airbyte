@@ -17,4 +17,6 @@ data:
   releaseDate: TODO
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/scaffold-source-python
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

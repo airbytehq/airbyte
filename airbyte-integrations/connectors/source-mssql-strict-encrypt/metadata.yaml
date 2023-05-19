@@ -19,4 +19,6 @@ data:
   name: Microsoft SQL Server (MSSQL)
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/mssql
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

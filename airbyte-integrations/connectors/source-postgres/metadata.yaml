@@ -21,4 +21,7 @@ data:
       enabled: true
   releaseStage: generally_available
   supportUrl: https://docs.airbyte.com/integrations/sources/postgres
+  tags:
+    - language:java
+    - language:python
 metadataSpecVersion: "1.0"

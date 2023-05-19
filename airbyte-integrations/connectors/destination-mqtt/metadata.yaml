@@ -15,4 +15,6 @@ data:
       enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/mqtt
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

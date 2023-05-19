@@ -19,4 +19,6 @@ data:
   name: Oracle DB
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/oracle
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

@@ -31,4 +31,6 @@ data:
       - teams
       - users
   supportUrl: https://docs.airbyte.com/integrations/sources/github
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

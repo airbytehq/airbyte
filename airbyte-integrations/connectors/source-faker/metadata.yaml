@@ -28,4 +28,6 @@ data:
       - products
       - purchases
   supportUrl: https://docs.airbyte.com/integrations/sources/faker
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

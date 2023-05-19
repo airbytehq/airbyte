@@ -15,4 +15,5 @@ data:
   name: Streamr
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/streamr
+  tags: []
 metadataSpecVersion: "1.0"

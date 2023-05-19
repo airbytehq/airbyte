@@ -18,4 +18,6 @@ data:
   name: Cockroachdb
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/cockroachdb
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

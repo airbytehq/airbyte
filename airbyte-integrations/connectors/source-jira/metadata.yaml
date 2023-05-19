@@ -19,4 +19,6 @@ data:
       enabled: true
   releaseStage: generally_available
   supportUrl: https://docs.airbyte.com/integrations/sources/jira
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

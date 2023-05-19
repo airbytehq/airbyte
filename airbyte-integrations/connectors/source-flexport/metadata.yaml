@@ -14,4 +14,6 @@ data:
       enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/flexport
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

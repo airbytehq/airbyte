@@ -24,4 +24,6 @@ data:
       enabled: true
   releaseStage: generally_available
   supportUrl: https://docs.airbyte.com/integrations/sources/bing-ads
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

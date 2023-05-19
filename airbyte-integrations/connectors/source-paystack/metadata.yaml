@@ -18,4 +18,6 @@ data:
       enabled: true
   releaseStage: beta
   supportUrl: https://docs.airbyte.com/integrations/sources/paystack
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

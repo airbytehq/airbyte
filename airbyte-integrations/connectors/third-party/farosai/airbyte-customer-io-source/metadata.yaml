@@ -15,4 +15,5 @@ data:
   name: Customer.io
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/customer-io
+  tags: []
 metadataSpecVersion: "1.0"

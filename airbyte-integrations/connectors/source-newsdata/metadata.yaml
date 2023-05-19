@@ -14,4 +14,7 @@ data:
       enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/newsdata
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

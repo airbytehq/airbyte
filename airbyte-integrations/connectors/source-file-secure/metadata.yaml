@@ -18,4 +18,6 @@ data:
       enabled: false # strict encrypt connectors are not used on OSS.
   releaseStage: generally_available
   supportUrl: https://docs.airbyte.com/integrations/sources/file
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

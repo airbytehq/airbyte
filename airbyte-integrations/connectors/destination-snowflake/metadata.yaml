@@ -26,4 +26,6 @@ data:
           memory_request: 1Gi
   supportUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   supportsDbt: true
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

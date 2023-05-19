@@ -18,4 +18,7 @@ data:
       enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/polygon-stock-api
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

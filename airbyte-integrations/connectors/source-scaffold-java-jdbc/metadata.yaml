@@ -17,4 +17,7 @@ data:
   releaseDate: TODO
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/scaffold-java-jdbc
+  tags:
+    - language:java
+    - language:python
 metadataSpecVersion: "1.0"

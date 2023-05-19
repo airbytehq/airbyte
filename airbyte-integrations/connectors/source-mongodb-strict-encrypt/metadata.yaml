@@ -15,4 +15,6 @@ data:
   name: MongoDb
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/mongodb-v2
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

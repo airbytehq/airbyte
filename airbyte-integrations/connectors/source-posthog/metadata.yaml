@@ -19,4 +19,7 @@ data:
       enabled: true
   releaseStage: beta
   supportUrl: https://docs.airbyte.com/integrations/sources/posthog
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

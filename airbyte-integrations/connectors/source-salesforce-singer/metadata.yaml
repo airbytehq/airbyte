@@ -14,4 +14,5 @@ data:
       enabled: false
   releaseStage: alpha
   supportUrl: https://docs.airbyte.io/integrations/sources/salesforce
+  tags: []
 metadataSpecVersion: "1.0"

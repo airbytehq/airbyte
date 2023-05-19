@@ -20,4 +20,6 @@ data:
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/clickhouse
   supportsDbt: false
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

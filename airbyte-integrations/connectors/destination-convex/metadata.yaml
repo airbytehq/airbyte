@@ -15,4 +15,6 @@ data:
       enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.io/integrations/destinations/convex
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"
