@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import java.io.BufferedReader;
@@ -82,7 +83,7 @@ public class Main {
 
     log.info("Starting performance harness for {} ({})", image, dataset);
     try {
-      final PerformanceTest test = new PerformanceTest(
+      final PerformanceHarness test = new PerformanceHarness(
           image,
           config.toString(),
           catalog.toString(),
@@ -102,7 +103,8 @@ public class Main {
    * @param root the catalog
    * @param duplicateFactor the number of times to duplicate each stream
    */
-  private static void duplicateStreams(final JsonNode root, final int duplicateFactor) {
+  @VisibleForTesting
+  static void duplicateStreams(final JsonNode root, final int duplicateFactor) {
     try {
       final ObjectNode streamObject = (ObjectNode) root.path("streams").get(0);
       // Since we already have one stream, we only need to duplicate the remaining streams
