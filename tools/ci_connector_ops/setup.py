@@ -43,7 +43,7 @@ QA_ENGINE_REQUIREMENTS = [
 ]
 
 PIPELINES_REQUIREMENTS = [
-    "dagger-io==0.5.0",
+    "dagger-io==0.5.4",
     "asyncer",
     "anyio",
     "more-itertools",

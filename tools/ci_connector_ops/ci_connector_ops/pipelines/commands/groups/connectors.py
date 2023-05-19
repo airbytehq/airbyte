@@ -356,6 +356,8 @@ def publish(
         for connector, modified_files in selected_connectors_and_files.items()
     ]
 
+    click.secho("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.", fg="yellow")
+    ctx.obj["concurrency"] = 1
     publish_connector_contexts = anyio.run(
         run_connectors_pipelines,
         publish_connector_contexts,
