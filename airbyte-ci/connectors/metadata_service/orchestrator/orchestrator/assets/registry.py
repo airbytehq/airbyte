@@ -112,9 +112,7 @@ def is_metadata_connector_type(metadata_definition: dict, connector_type: str) -
     return metadata_definition["data"]["connectorType"] == connector_type
 
 
-def construct_registry_from_metadata(
-    metadata_definitions: List[MetadataDefinition], registry_name: str
-) -> ConnectorRegistryV0:
+def construct_registry_from_metadata(metadata_definitions: List[MetadataDefinition], registry_name: str) -> ConnectorRegistryV0:
     """Construct the registry from the metadata definitions.
 
     Args:
@@ -248,6 +246,7 @@ def persist_oss_registry_from_metadata(
         registry_directory_manager=registry_directory_manager,
         registry_name=registry_name,
     )
+
 
 # Registry from JSON
 

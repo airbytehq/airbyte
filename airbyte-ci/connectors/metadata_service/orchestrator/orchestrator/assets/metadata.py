@@ -172,6 +172,7 @@ def validate_metadata(metadata: PartialMetadataDefinition) -> tuple[bool, str]:
 
 # ASSETS
 
+
 @asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME)
 def metadata_definitions(context: OpExecutionContext) -> List[MetadataDefinition]:
     latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs

@@ -126,6 +126,7 @@ def augment_and_normalize_connector_dataframes(
 
 # ASSETS
 
+
 @asset(group_name=GROUP_NAME)
 def cloud_sources_dataframe(latest_cloud_registry: ConnectorRegistryV0) -> OutputDataFrame:
     latest_cloud_registry_dict = to_json_sanitized_dict(latest_cloud_registry)
@@ -153,6 +154,7 @@ def oss_destinations_dataframe(latest_oss_registry: ConnectorRegistryV0) -> Outp
     destinations = latest_oss_registry_dict["destinations"]
     return output_dataframe(pd.DataFrame(destinations))
 
+
 @asset(group_name=GROUP_NAME)
 def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, github_connector_folders) -> pd.DataFrame:
     """
@@ -169,9 +171,7 @@ def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, github
 
 
 @asset(group_name=GROUP_NAME)
-def all_destinations_dataframe(
-    cloud_destinations_dataframe, oss_destinations_dataframe, github_connector_folders
-) -> pd.DataFrame:
+def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_dataframe, github_connector_folders) -> pd.DataFrame:
     """
     Merge the cloud and oss destinations registries into a single dataframe.
     """
