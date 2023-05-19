@@ -6,6 +6,8 @@ package io.airbyte.integrations.destination_performance;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import java.io.BufferedReader;
@@ -28,13 +30,19 @@ public class Main {
   public static void main(final String[] args) {
     log.info("args: {}", Arrays.toString(args));
     String image = null;
-    String dataset = "1m_parallel";
+    String dataset = "1m";
+    int numOfParallelStreams = 4;
 
     switch (args.length) {
       case 1 -> image = args[0];
       case 2 -> {
         image = args[0];
         dataset = args[1];
+      }
+      case 3 -> {
+        image = args[0];
+        dataset = args[1];
+        numOfParallelStreams = Integer.parseInt(args[2]);
       }
       default -> {
         log.info("unexpected arguments");
@@ -44,10 +52,7 @@ public class Main {
 
     final String connector = image.substring(image.indexOf("/") + 1, image.indexOf(":"));
     log.info("Connector name: {}", connector);
-    // TODO: (ryankfu) this should be thoughtout more since it reuses the same credentials to mock
-    // parallel streams
-    final String datasetCreds = dataset.replace("_parallel", "");
-    final Path credsPath = Path.of(CREDENTIALS_PATH.formatted(connector, datasetCreds));
+    final Path credsPath = Path.of(CREDENTIALS_PATH.formatted(connector, dataset));
 
     if (!Files.exists(credsPath)) {
       throw new IllegalStateException("{module-root}/" + credsPath + " not found. Must provide path to a destination-harness credentials file.");
@@ -58,6 +63,7 @@ public class Main {
     final JsonNode catalog;
     try {
       catalog = getCatalog(dataset, connector);
+      duplicateStreams(catalog, numOfParallelStreams);
     } catch (final IOException ex) {
       throw new IllegalStateException("Failed to read catalog", ex);
     }
@@ -87,6 +93,27 @@ public class Main {
 
     }
     System.exit(0);
+  }
+
+  /**
+   * Duplicate the streams in the catalog to emulate parallel streams
+   *
+   * @param root the catalog
+   * @param duplicateFactor the number of times to duplicate each stream
+   */
+  private static void duplicateStreams(final JsonNode root, final int duplicateFactor) {
+    try {
+      final ObjectNode streamObject = (ObjectNode) root.path("streams").get(0);
+
+      for (int i = 1; i <= duplicateFactor; i++) {
+        final ObjectNode newStream = streamObject.deepCopy();
+        final String streamName = newStream.path("stream").path("name").asText();
+        ((ObjectNode) newStream.get("stream")).put("name", streamName + i);
+        ((ArrayNode) root.path("streams")).add(newStream);
+      }
+    } catch (final Exception e) {
+      log.error("Failed to duplicate streams", e);
+    }
   }
 
   /**

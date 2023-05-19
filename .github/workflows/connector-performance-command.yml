@@ -23,6 +23,10 @@ on:
         description: "Name of dataset to use for performance measurement. Currently supports 1m, 10m, 20m."
         required: false
         default: "1m"
+      stream-number:
+        description: "Number of streams to use for performance measurement."
+        required: false
+        default: "1"
 jobs:
   uuid:
     name: "Custom UUID of workflow run"
@@ -140,6 +144,7 @@ jobs:
         env:
           CONN: ${{ github.event.inputs.connector }}
           DS: ${{ github.event.inputs.dataset }}
+          STREAM_NUMBER: ${{ github.event.inputs.stream-number }}
           PREFIX: '{"type":"LOG","log":{"level":"INFO","message":"INFO i.a.i.p.PerformanceTest(runTest):165'
           SUFFIX: '"}}'
           HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
@@ -151,6 +156,7 @@ jobs:
           # envsubst requires variables to be exported
           export CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
           export DATASET=$DS
+          export STREAM_NUMBER=$STREAM_NUMBER
           export HARNESS=$HARNESS_TYPE
           envsubst < ./tools/bin/run-harness-process.yaml | kubectl create -f -
           echo "harness is ${{ steps.which-harness.outputs.harness_type }}"
