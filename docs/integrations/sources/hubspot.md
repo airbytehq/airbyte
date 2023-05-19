@@ -136,9 +136,9 @@ Now that you have set up the Hubspot source connector, check out the following H
 [Build a single customer view with open-source tools](https://airbyte.com/tutorials/single-customer-view)
 
 ## Changelog
-
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.8.0   | 2023-04-10 | [16032](https://github.com/airbytehq/airbyte/pull/16032) | Add new stream `Custom Object`                                                                                                                             |
 | 0.7.0   | 2023-04-10 | [24450](https://github.com/airbytehq/airbyte/pull/24450) | Add new stream `Goals`                                                                                                                                     |
 | 0.6.2   | 2023-04-28 | [25667](https://github.com/airbytehq/airbyte/pull/25667) | Fixed bug with `Invalid Date` like `2000-00-00T00:00:00Z` while settip up the connector  |
 | 0.6.1   | 2023-04-10 | [21423](https://github.com/airbytehq/airbyte/pull/21423) | Update scope for `DealPipelines` stream to only `crm.objects.contacts.read`                                                                                |
