@@ -18,6 +18,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
+import io.airbyte.integrations.destination.s3.
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -32,10 +33,13 @@ public class GlueOperations implements MetastoreOperations {
 
   private final AWSGlue awsGlueClient;
 
-  public GlueOperations(AWSGlue awsGlueClient) {
+  private final boolean stringifyData;
+
+  public GlueOperations(AWSGlue awsGlueClient, final boolean stringifyData) {
     Preconditions.checkArgument(awsGlueClient != null);
     this.awsGlueClient = awsGlueClient;
     this.objectMapper = new ObjectMapper();
+    this.stringifyData = stringifyData;
   }
 
   @Override
@@ -152,7 +156,7 @@ public class GlueOperations implements MetastoreOperations {
         yield arrayType;
       }
       case "object" -> {
-        if (jsonNode.has("properties")) {
+        if (jsonNode.has("properties") && !stringifyData) {
           String objectType = "struct<";
           Map<String, JsonNode> properties = objectMapper.convertValue(jsonNode.get("properties"), new TypeReference<>() {});
           String columnTypes = properties.entrySet().stream()
