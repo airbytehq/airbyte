@@ -399,6 +399,7 @@ Some larger tables may encounter an error related to the temporary file size lim
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.30  | 2023-05-19 | [25898](https://github.com/airbytehq/airbyte/pull/26319) | Enable user to include SSL cert when SSL mode=`require`
 | 2.0.29  | 2023-05-18 | [25898](https://github.com/airbytehq/airbyte/pull/25898) | Translate Numeric values without decimal, e.g: NUMERIC(38,0), as BigInt instead of Double                                                                                  |
 | 2.0.28  | 2023-04-27 | [25401](https://github.com/airbytehq/airbyte/pull/25401) | CDC : Upgrade Debezium to version 2.2.0                                                                                                                                    |
 | 2.0.27  | 2023-04-26 | [24971](https://github.com/airbytehq/airbyte/pull/24971) | Emit stream status updates                                                                                                                                                 |
