@@ -57,6 +57,9 @@
     "scoreboard_level_id": {
       "type": ["null", "integer"]
     },
+    "scoreboard_points": {
+      "type": ["null", "integer"]
+    },
     "ticket_scope": {
       "type": ["null", "string"]
     },

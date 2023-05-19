@@ -26,6 +26,7 @@ tests:
           "changes",
           "vendors",
           "purchase_orders",
+          "satisfaction_survey_responses",
         ]
   incremental:
     - config_path: "secrets/config.json"
