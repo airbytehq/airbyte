@@ -126,8 +126,8 @@ def createSpotlessTarget = { pattern ->
             'tools',
             'secrets',
             'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
-            'resources/seed/*_specs.yaml', // Do not remove - this is necessary to prevent diffs in our github workflows, as the file diff check runs between the Format step and the Build step, the latter of which generates the file.
             'resources/seed/*_catalog.json', // Do not remove - this is also necessary to prevent diffs in our github workflows
+            'resources/seed/*_registry.json', // Do not remove - this is also necessary to prevent diffs in our github workflows
             'airbyte-integrations/connectors/source-amplitude/unit_tests/api_data/zipped.json', // Zipped file presents as non-UTF-8 making spotless sad
             'airbyte-webapp', // The webapp module uses its own auto-formatter, so spotless is not necessary here
             'airbyte-webapp-e2e-tests', // This module also uses its own auto-formatter

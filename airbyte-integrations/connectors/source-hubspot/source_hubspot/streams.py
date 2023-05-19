@@ -110,6 +110,7 @@ class API:
 
     BASE_URL = "https://api.hubapi.com"
     USER_AGENT = "Airbyte"
+    logger = logger
 
     def is_oauth2(self) -> bool:
         credentials_title = self.credentials.get("credentials_title")
@@ -187,6 +188,55 @@ class API:
     ) -> Tuple[Union[Mapping[str, Any], List[Mapping[str, Any]]], requests.Response]:
         response = self._session.post(self.BASE_URL + url, params=params, json=data)
         return self._parse_and_handle_errors(response), response
+
+    def get_custom_object_schemas(self) -> Mapping[str, Any]:
+        data, response = self.get("/crm/v3/schemas", {})
+        schemas = {}
+        if response.ok and "results" in data:
+            for raw_schema in data["results"]:
+                schema = self.generate_schema(raw_schema=raw_schema)
+                schemas[raw_schema["name"]] = schema
+        else:
+            self.logger.warn(self._parse_and_handle_errors(response))
+
+        return schemas
+
+    def generate_schema(self, raw_schema: Mapping[str, Any]) -> Mapping[str, Any]:
+        properties = {}
+        for field in raw_schema["properties"]:
+            properties[field["name"]] = self._field_to_property_schema(field)
+
+        schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "object"],
+            "additionalProperties": True,
+            "properties": {
+                "id": {"type": ["null", "string"]},
+                "createdAt": {"type": ["null", "string"], "format": "date-time"},
+                "updatedAt": {"type": ["null", "string"], "format": "date-time"},
+                "archived": {"type": ["null", "boolean"]},
+                "properties": {"type": ["null", "object"], "properties": properties},
+            },
+        }
+
+        return schema
+
+    def _field_to_property_schema(self, field: Dict[str, Any]) -> Mapping[str, Any]:
+        field_type = field["type"]
+        property_schema = {}
+        if field_type == "enumeration" or field_type == "string":
+            property_schema = {"type": ["null", "string"]}
+        elif field_type == "datetime" or field_type == "date":
+            property_schema = {"type": ["null", "string"], "format": "date-time"}
+        elif field_type == "number":
+            property_schema = {"type": ["null", "number"]}
+        elif field_type == "boolean" or field_type == "bool":
+            property_schema = {"type": ["null", "boolean"]}
+        else:
+            self.logger.warn(f"Field {field['name']} has unrecognized type: {field['type']} casting to string.")
+            property_schema = {"type": ["null", "string"]}
+
+        return property_schema
 
 
 class Stream(HttpStream, ABC):
@@ -320,7 +370,6 @@ class Stream(HttpStream, ABC):
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Tuple[List, Any]:
-
         #  TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams
         #  (issues #3977 and #5835). We will need to fix this code when the HubSpot developers add the ability to use a special parameter
         #  to get all properties for an entity. According to HubSpot Community
@@ -354,7 +403,6 @@ class Stream(HttpStream, ABC):
         next_page_token = None
         try:
             while not pagination_complete:
-
                 properties = self._property_wrapper
                 if properties and properties.too_many_properties:
                     records, response = self._read_stream_records(
@@ -478,7 +526,6 @@ class Stream(HttpStream, ABC):
         return casted_value
 
     def _cast_record_fields_if_needed(self, record: Mapping, properties: Mapping[str, Any] = None) -> Mapping:
-
         if not self.entity or not record.get("properties"):
             return record
 
@@ -605,7 +652,6 @@ class Stream(HttpStream, ABC):
 
     @staticmethod
     def _get_field_props(field_type: str) -> Mapping[str, List[str]]:
-
         if field_type in VALID_JSON_SCHEMA_TYPES:
             return {
                 "type": ["null", field_type],
@@ -1648,6 +1694,13 @@ class FeedbackSubmissions(CRMObjectIncrementalStream):
     scopes = {"crm.objects.feedback_submissions.read"}
 
 
+class Goals(CRMObjectIncrementalStream):
+    entity = "goal_targets"
+    last_modified_field = "hs_lastmodifieddate"
+    primary_key = "id"
+    scopes = {"crm.objects.goals.read"}
+
+
 class LineItems(CRMObjectIncrementalStream):
     entity = "line_item"
     primary_key = "id"
@@ -1666,6 +1719,27 @@ class Tickets(CRMSearchStream):
     primary_key = "id"
     scopes = {"tickets"}
     last_modified_field = "hs_lastmodifieddate"
+
+
+class CustomObject(CRMSearchStream, ABC):
+    last_modified_field = "hs_lastmodifieddate"
+    associations = []
+    primary_key = "id"
+    scopes = {"crm.schemas.custom.read", "crm.objects.custom.read"}
+
+    def __init__(self, entity: str, schema: Mapping[str, Any], **kwargs):
+        super().__init__(**kwargs)
+        self.entity = entity
+        self.schema = schema
+
+    @property
+    def name(self) -> str:
+        return self.entity
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        if not self.schema:
+            self.schema = self._api.get_custom_object_schemas()[self.entity]
+        return self.schema
 
 
 class EmailSubscriptions(Stream):
