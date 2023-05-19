@@ -6,7 +6,6 @@ data:
   icon: lemlist.svg
   dockerRepository: airbyte/source-lemlist
   githubIssueLabel: source-lemlist
-  icon: lemlist.svg
   license: MIT
   name: Lemlist
   registries:
