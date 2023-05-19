@@ -28,10 +28,11 @@ public class Main {
   private static final String CREDENTIALS_PATH = "secrets/%s_%s_credentials.json";
 
   public static void main(final String[] args) {
+    // If updating args for Github Actions, also update the run-performance-test.yml file
     log.info("args: {}", Arrays.toString(args));
     String image = null;
     String dataset = "1m";
-    int numOfParallelStreams = 4;
+    int numOfParallelStreams = 1;
 
     switch (args.length) {
       case 1 -> image = args[0];
@@ -104,8 +105,8 @@ public class Main {
   private static void duplicateStreams(final JsonNode root, final int duplicateFactor) {
     try {
       final ObjectNode streamObject = (ObjectNode) root.path("streams").get(0);
-
-      for (int i = 1; i <= duplicateFactor; i++) {
+      // Since we already have one stream, we only need to duplicate the remaining streams
+      for (int i = 1; i < duplicateFactor; i++) {
         final ObjectNode newStream = streamObject.deepCopy();
         final String streamName = newStream.path("stream").path("name").asText();
         ((ObjectNode) newStream.get("stream")).put("name", streamName + i);
