@@ -1,4 +1,4 @@
-FROM python:3.9.11-alpine3.15 as base
+FROM python:3.9.16-alpine3.18 as base
 
 # build and load all requirements
 FROM base as builder
@@ -30,6 +30,13 @@ RUN apk --no-cache add bash
 # copy payload code only
 COPY main.py ./
 COPY source_google_sheets ./source_google_sheets
+
+RUN pip uninstall setuptools -y && \
+    pip uninstall pip -y
+
+RUN addgroup -S appgroup && \
+    adduser -S appuser -G appgroup -u 1000
+USER appuser
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
