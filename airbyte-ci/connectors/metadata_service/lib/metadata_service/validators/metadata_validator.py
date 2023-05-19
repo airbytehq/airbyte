@@ -20,10 +20,14 @@ def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadata
     cloud_docker_image = get(metadata_definition_dict, "data.registries.cloud.dockerRepository", base_docker_image)
     cloud_docker_version = get(metadata_definition_dict, "data.registries.cloud.dockerImageTag", base_docker_version)
 
+    normalization_docker_image = get(metadata_definition_dict, "data.normalizationConfig.normalizationRepository", None)
+    normalization_docker_version = get(metadata_definition_dict, "data.normalizationConfig.normalizationTag", None)
+
     possible_docker_images = [
         (base_docker_image, base_docker_version),
         (oss_docker_image, oss_docker_version),
         (cloud_docker_image, cloud_docker_version),
+        (normalization_docker_image, normalization_docker_version),
     ]
 
     # Filter out tuples with None and remove duplicates
