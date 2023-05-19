@@ -1,0 +1,19 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  # definitionId: decd338e-5647-4c0b-adf4-da0e75f5a750 #TODO 
+  dockerImageTag: 0.1.00
+  maxSecondsBetweenMessages: 7200
+  dockerRepository: airbyte/source-kyve
+  githubIssueLabel: source-kyve
+  icon: kyve.svg
+  license: MIT
+  name: KYVE
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/kyve
+metadataSpecVersion: "1.0"
