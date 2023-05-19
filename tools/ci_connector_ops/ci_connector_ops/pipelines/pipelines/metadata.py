@@ -9,7 +9,7 @@ import dagger
 from ci_connector_ops.pipelines.actions import run_steps
 from ci_connector_ops.pipelines.actions.environments import with_pip_packages, with_poetry_module, with_python_base
 from ci_connector_ops.pipelines.bases import Report, Step, StepResult
-from ci_connector_ops.pipelines.contexts import PipelineContext, PublishConnectorContext
+from ci_connector_ops.pipelines.contexts import PipelineContext
 from ci_connector_ops.pipelines.utils import DAGGER_CONFIG, METADATA_FILE_NAME, execute_concurrently, METADATA_ICON_FILE_NAME
 
 METADATA_DIR = "airbyte-ci/connectors/metadata_service"
@@ -60,19 +60,21 @@ class MetadataValidation(PoetryRun):
     async def _run(self) -> StepResult:
         return await super()._run(["metadata_service", "validate", METADATA_FILE_NAME])
 
-
 class MetadataUpload(PoetryRun):
-    # HACK: We need to refactor this to get rid of a strictly typed context tied to the publish pipeline if we want to keep upload all
-    # Right now this breaks publish as I just changed PublishContext back to Pipeline context
-    def __init__(self, context: PipelineContext, metadata_path: Path, gcs_bucket_name: str):
+    def __init__(
+            self,
+            context: PipelineContext,
+            metadata_path: Path,
+            metadata_bucket_name: str,
+            metadata_service_gcs_credentials_secret: dagger.Secret,
+            docker_hub_username_secret: dagger.Secret,
+            docker_hub_password_secret: dagger.Secret,
+        ):
         title = f"Upload {metadata_path}"
-        self.gcs_bucket_name = gcs_bucket_name
-
+        self.gcs_bucket_name = metadata_bucket_name
         super().__init__(context, title, METADATA_DIR, METADATA_LIB_MODULE_PATH)
-        gcs_credentials_secret: dagger.Secret = self.context.dagger_client.host().env_variable("GCS_CREDENTIALS").secret()
-        docker_hub_username_secret: dagger.Secret = self.context.dagger_client.host().env_variable("DOCKER_HUB_USERNAME").secret()
-        docker_hub_password_secret: dagger.Secret = self.context.dagger_client.host().env_variable("DOCKER_HUB_PASSWORD").secret()
 
+        # Ensure the icon file is included in the upload
         base_container = self.poetry_run_container.with_file(METADATA_FILE_NAME, get_metadata_file_from_path(context, metadata_path))
         metadata_icon_path = metadata_path.parent / METADATA_ICON_FILE_NAME
         if metadata_icon_path.exists():
@@ -81,9 +83,10 @@ class MetadataUpload(PoetryRun):
             )
 
         self.poetry_run_container = (
-            base_container.with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
+            base_container
+            .with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
             .with_secret_variable("DOCKER_HUB_PASSWORD", docker_hub_password_secret)
-            .with_secret_variable("GCS_CREDENTIALS", gcs_credentials_secret)
+            .with_secret_variable("GCS_CREDENTIALS", metadata_service_gcs_credentials_secret)
             # The cache buster ensures we always run the upload command (in case of remote bucket change)
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
         )
@@ -271,8 +274,20 @@ async def run_metadata_upload_pipeline(
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         pipeline_context.dagger_client = dagger_client.pipeline(pipeline_context.pipeline_name)
         async with pipeline_context:
+            gcs_credentials_secret: dagger.Secret = pipeline_context.dagger_client.host().env_variable("GCS_CREDENTIALS").secret()
+            docker_hub_username_secret: dagger.Secret = pipeline_context.dagger_client.host().env_variable("DOCKER_HUB_USERNAME").secret()
+            docker_hub_password_secret: dagger.Secret = pipeline_context.dagger_client.host().env_variable("DOCKER_HUB_PASSWORD").secret()
+
             results = await execute_concurrently(
-                [MetadataUpload(pipeline_context, metadata_path, gcs_bucket_name).run for metadata_path in metadata_to_upload]
+                [
+                    MetadataUpload(
+                        context=pipeline_context,
+                        metadata_service_gcs_credentials_secret=gcs_credentials_secret,
+                        docker_hub_username_secret=docker_hub_username_secret,
+                        docker_hub_password_secret=docker_hub_password_secret,
+                        metadata_bucket_name=gcs_bucket_name,
+                        metadata_path=metadata_path,
+                    ).run for metadata_path in metadata_to_upload]
             )
             pipeline_context.report = Report(pipeline_context, results, name="METADATA UPLOAD RESULTS")
 
