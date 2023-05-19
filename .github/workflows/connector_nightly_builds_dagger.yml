@@ -1,9 +1,9 @@
 name: POC Connectors CI - nightly builds
 
 on:
-  schedule:
-    # 11AM UTC is 12AM CET, 4AM PST.
-    - cron: "0 8 * * *"
+  # schedule:
+  #   # 11AM UTC is 12AM CET, 4AM PST.
+  #   - cron: "0 8 * * *"
   workflow_dispatch:
     inputs:
       runs-on:

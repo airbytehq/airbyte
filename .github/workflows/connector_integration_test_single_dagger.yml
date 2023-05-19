@@ -6,10 +6,10 @@ on:
       test-connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors test' command"
         default: "--modified"
-  pull_request:
-    paths:
-      - "airbyte-integrations/connectors/**"
-      - ".github/workflows/connector_integration_test_single_dagger.yml"
+  # pull_request:
+  #   paths:
+  #     - "airbyte-integrations/connectors/**"
+  #     - ".github/workflows/connector_integration_test_single_dagger.yml"
 jobs:
   connectors_ci:
     name: Connectors CI
