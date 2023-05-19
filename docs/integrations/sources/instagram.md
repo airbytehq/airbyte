@@ -7,20 +7,11 @@ This page contains the setup guide and reference information for the Instagram s
 * [Meta for Developers account](https://developers.facebook.com)
 * [Instagram business account](https://www.facebook.com/business/help/898752960195806) to your Facebook page
 * [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
-* Facebook API [access token](https://developers.facebook.com/docs/facebook-login/access-tokens/#usertokens)
+* [Facebook OAuth Reference](https://developers.facebook.com/docs/instagram-basic-display-api/reference)
 * [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll use this to configure Instagram as a source in Airbyte)
 
 ## Setup Guide
-
-### Step 1: Set up Instagram​
-Generate access tokens with the following permissions:
-* [instagram_basic](https://developers.facebook.com/docs/permissions/reference/instagram_basic)
-* [instagram_manage_insights](https://developers.facebook.com/docs/permissions/reference/instagram_manage_insights)
-* [pages_show_list](https://developers.facebook.com/docs/permissions/reference/pages_show_list)
-* [pages_read_engagement](https://developers.facebook.com/docs/permissions/reference/pages_read_engagement)
-* [Instagram Public Content Access](https://developers.facebook.com/docs/apps/features-reference/instagram-public-content-access)
-
-### Step 2: Set up the Instagram connector in Airbyte
+### Set up the Instagram connector in Airbyte
 
 <!-- env:cloud -->
 **For Airbyte Cloud:**
@@ -45,7 +36,6 @@ Generate access tokens with the following permissions:
 5. Click **Authenticate your Instagram account**.
 6. Log in and authorize the Instagram account.
 7. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-8. Paste the access tokens from [Step 1](#step-1-set-up-instagram​).
 9. Click **Set up source**.
 <!-- /env:oss -->
 
