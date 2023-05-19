@@ -345,6 +345,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             return False, str(e)
         config["authenticator"] = self.get_authenticator(config)
 
+        metadata = None
         try:
             stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"])
             metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
