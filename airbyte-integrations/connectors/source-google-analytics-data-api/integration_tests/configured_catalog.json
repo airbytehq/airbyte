@@ -9,7 +9,7 @@
         "default_cursor_field": ["date"],
         "source_defined_primary_key": [["property_id"], ["date"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "primary_key": [["property_id"], ["date"]]
     },
@@ -22,7 +22,7 @@
         "default_cursor_field": ["date"],
         "source_defined_primary_key": [["property_id"], ["date"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "primary_key": [["property_id"], ["date"]]
     },
@@ -35,7 +35,7 @@
         "default_cursor_field": ["date"],
         "source_defined_primary_key": [["property_id"], ["date"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "primary_key": [["property_id"], ["date"]]
     },
@@ -48,7 +48,7 @@
         "default_cursor_field": ["date"],
         "source_defined_primary_key": [["property_id"], ["date"], ["deviceCategory"], ["operatingSystem"], ["browser"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "primary_key": [["property_id"], ["date"], ["deviceCategory"], ["operatingSystem"], ["browser"]]
     },
@@ -61,7 +61,7 @@
         "default_cursor_field": ["date"],
         "source_defined_primary_key": [["property_id"], ["region"], ["country"], ["city"], ["date"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "primary_key": [["property_id"], ["region"], ["country"], ["city"], ["date"]]
     },
@@ -74,7 +74,7 @@
         "default_cursor_field": ["date"],
         "source_defined_primary_key": [["property_id"], ["date"], ["hostName"], ["pagePathPlusQueryString"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "primary_key": [["property_id"], ["date"], ["hostName"], ["pagePathPlusQueryString"]]
     },
@@ -87,7 +87,7 @@
         "default_cursor_field": ["date"],
         "source_defined_primary_key": [["property_id"], ["date"], ["sessionSource"], ["sessionMedium"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "primary_key": [["property_id"], ["date"], ["sessionSource"], ["sessionMedium"]]
     },
@@ -100,7 +100,7 @@
         "default_cursor_field": ["date"],
         "source_defined_primary_key": [["property_id"], ["date"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "primary_key": [["property_id"], ["date"]]
     },

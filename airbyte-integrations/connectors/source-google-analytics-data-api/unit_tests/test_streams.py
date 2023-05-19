@@ -343,6 +343,19 @@ def test_read_incremental(requests_mock):
             "rows": [{"dimensionValues": [{"value": "20230101"}], "metricValues": [{"value": "130"}]}],
             "rowCount": 1
         },
+        # 2-nd incremental read
+        {
+            "dimensionHeaders": [{"name": "date"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
+            "rows": [{"dimensionValues": [{"value": "20221230"}], "metricValues": [{"value": "112"}]}],
+            "rowCount": 1
+        },
+        {
+            "dimensionHeaders": [{"name": "date"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
+            "rows": [{"dimensionValues": [{"value": "20221231"}], "metricValues": [{"value": "125"}]}],
+            "rowCount": 1
+        },
         {
             "dimensionHeaders": [{"name": "date"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
@@ -379,6 +392,8 @@ def test_read_incremental(requests_mock):
         records = list(read_incremental(stream, stream_state))
 
     assert records == [
+        {"date": "20221230", "totalUsers": 112, "property_id": 123},
+        {"date": "20221231", "totalUsers": 125, "property_id": 123},
         {"date": "20230101", "totalUsers": 140, "property_id": 123},
         {"date": "20230102", "totalUsers": 150, "property_id": 123},
     ]
