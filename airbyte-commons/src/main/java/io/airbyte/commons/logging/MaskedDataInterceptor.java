@@ -94,14 +94,6 @@ public class MaskedDataInterceptor implements RewritePolicy {
    * @return The set of maskable properties.
    */
   private Set<String> getMaskableProperties(final String specMaskFile) {
-    // URL url = MaskedDataInterceptor.class.getResource("/");
-
-    // final URL url2 = Resources.getResource("");
-    // try {
-    // logger.info("Loading mask data from {} in class {}", url2, Paths.get(url.toURI()).toFile());
-    // } catch (final Exception e) {
-    // logger.error("Unable to load mask data from '{}': {}.", specMaskFile, e.getMessage());
-    // }
 
     try {
       final String maskFileContents = IOUtils.toString(getClass().getResourceAsStream(specMaskFile), Charset.defaultCharset());
