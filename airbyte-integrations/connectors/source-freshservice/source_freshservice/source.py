@@ -22,6 +22,7 @@ from .streams import (
     PurchaseOrders,
     Releases,
     Requesters,
+    SatisfactionSurveyResponses,
     Software,
     Tickets,
     Vendors,
@@ -68,5 +69,6 @@ class SourceFreshservice(AbstractSource):
             Vendors(**kwargs),
             Assets(**kwargs),
             PurchaseOrders(**kwargs),
+            SatisfactionSurveyResponses(**kwargs),
             Software(**kwargs),
         ]
