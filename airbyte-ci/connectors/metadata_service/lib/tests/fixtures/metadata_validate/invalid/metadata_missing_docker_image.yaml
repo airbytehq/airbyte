@@ -3,9 +3,8 @@ data:
   name: AlloyDB for PostgreSQL
   definitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   connectorType: source
-  dockerRepository: airbyte/source-alloydb-strict-encrypt
   githubIssueLabel: source-alloydb-strict-encrypt
-  dockerImageTag: 2.0.1
+  dockerRepository: airbyte/image-exists-1
   supportUrl: https://docs.airbyte.com/integrations/sources/alloydb
   connectorSubtype: database
   releaseStage: generally_available
@@ -14,7 +13,3 @@ data:
     hosts:
       - "${host}"
       - "${tunnel_method.tunnel_host}"
-  registries:
-    oss:
-      enabled: true
-      what: is this?
