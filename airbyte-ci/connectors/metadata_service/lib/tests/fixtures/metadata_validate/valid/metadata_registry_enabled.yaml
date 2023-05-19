@@ -17,3 +17,5 @@ data:
   registries:
     oss:
       enabled: true
+  tags:
+    - language:java

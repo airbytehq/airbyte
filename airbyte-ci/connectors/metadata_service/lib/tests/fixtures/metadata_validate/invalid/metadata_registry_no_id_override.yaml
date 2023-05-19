@@ -18,3 +18,5 @@ data:
     oss:
       enabled: true
       definitionId: woohoo
+  tags:
+    - language:java

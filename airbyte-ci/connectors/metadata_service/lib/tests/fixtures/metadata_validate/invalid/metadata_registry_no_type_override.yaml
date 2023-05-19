@@ -18,3 +18,5 @@ data:
     oss:
       enabled: true
       connectorType: destination
+  tags:
+    - language:java

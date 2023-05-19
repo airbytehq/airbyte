@@ -10,3 +10,5 @@ data:
   connectorSubtype: database
   releaseStage: generally_available
   license: MIT
+  tags:
+    - language:java

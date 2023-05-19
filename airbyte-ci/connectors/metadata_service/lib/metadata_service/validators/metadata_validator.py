@@ -42,13 +42,37 @@ def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadata
     return True, None
 
 
+def validate_at_least_one_langauge_tag(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
+    """Ensure that there is at least one tag in the data.tags field that matches language:<LANG>."""
+    if not any([tag.startswith("language:") for tag in metadata_definition.data.tags]):
+        return False, "At least one tag must be of the form language:<LANG>"
+
+    return True, None
+
+
+def pre_upload_validations(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
+    """
+    Runs all validations that should be run before uploading a connector to the registry.
+    """
+    validations = [
+        validate_at_least_one_langauge_tag,
+    ]
+
+    for validation in validations:
+        valid, error = validation(metadata_definition)
+        if not valid:
+            return False, error
+
+    return True, None
+
+
 def validate_metadata_file(file_path: pathlib.Path) -> ValidationResult:
     """
     Validates a metadata YAML file against a metadata Pydantic model.
     """
     try:
         metadata = yaml.safe_load(file_path.read_text())
-        ConnectorMetadataDefinitionV0.parse_obj(metadata)
-        return True, None
+        metadata_model = ConnectorMetadataDefinitionV0.parse_obj(metadata)
+        return pre_upload_validations(metadata_model)
     except ValidationError as e:
         return False, e
