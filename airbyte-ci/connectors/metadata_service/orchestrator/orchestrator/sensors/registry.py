@@ -23,9 +23,8 @@ def registry_updated_sensor(job, resources_def) -> SensorDefinition:
 
             context.log.info(f"Old etag cursor: {context.cursor}")
 
-            # TODO (ben) stop using legacy resources when we remove the legacy registry
             new_etags_cursor = string_array_to_hash(
-                [resources.legacy_oss_registry_gcs_blob.etag, resources.legacy_cloud_registry_gcs_blob.etag]
+                [resources.latest_oss_registry_gcs_blob.etag, resources.latest_cloud_registry_gcs_blob.etag]
             )
 
             context.log.info(f"New etag cursor: {new_etags_cursor}")
