@@ -27,7 +27,7 @@ import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
 import io.airbyte.integrations.destination_async.BufferManager;
-import io.airbyte.integrations.destination_async.StreamDestinationFlusher;
+import io.airbyte.integrations.destination_async.DestinationFlushFunction;
 import io.airbyte.protocol.models.v0.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -290,7 +290,7 @@ public class StagingConsumerFactory {
     return streamDescToWriteConfig;
   }
 
-  class StagingAsyncFlusher implements StreamDestinationFlusher {
+  class StagingAsyncFlusher implements DestinationFlushFunction {
 
     private final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig;
     private final StagingOperations stagingOperations;

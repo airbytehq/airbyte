@@ -36,7 +36,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
   private final BufferManager bufferManager;
   private final BufferManager.BufferManagerEnqueue bufferManagerEnqueue;
-  private final UploadWorkers uploadWorkers;
+  private final FlushWorkers uploadWorkers;
   private final Set<StreamDescriptor> streamNames;
   private final IgnoredRecordsTracker ignoredRecordsTracker;
 
@@ -46,7 +46,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
   public AsyncStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                              final OnStartFunction onStart,
                              final OnCloseFunction2 onClose,
-                             final StreamDestinationFlusher flusher,
+                             final DestinationFlushFunction flusher,
                              final ConfiguredAirbyteCatalog catalog,
                              final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
                              final BufferManager bufferManager) {
@@ -62,7 +62,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     bufferManagerEnqueue = bufferManager.getBufferManagerEnqueue();
     streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
     ignoredRecordsTracker = new IgnoredRecordsTracker();
-    uploadWorkers = new UploadWorkers(bufferManager.getBufferManagerDequeue(), flusher);
+    uploadWorkers = new FlushWorkers(bufferManager.getBufferManagerDequeue(), flusher);
   }
 
   @Override

@@ -17,13 +17,29 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * In charge of looking for records in queues and efficiently getting those records uploaded.
+ * Parallel flushing of Destination data.
+ * <p>
+ * In combination with a {@link DestinationFlushFunction} and the {@link #workerPool}, this class
+ * allows for parallel data flushing.
+ * <p>
+ * Parallelising is important as it 1) minimises Destination backpressure 2) minimises the effect of
+ * IO pauses on Destination performance. The second point is particularly important since majority
+ * of Destination work is IO bound.
+ * <p>
+ * The {@link #supervisorThread} assigns work to worker threads by looping over
+ * {@link #bufferManagerDequeue} - a dequeue interface over in-memory queues of
+ * {@link AirbyteMessage}. See {@link #retrieveWork()} for assignment logic.
+ * <p>
+ * Within a worker thread, a worker best-effort reads a
+ * {@link DestinationFlushFunction#getOptimalBatchSizeBytes()} batch from the in-memory stream and
+ * calls {@link DestinationFlushFunction#flush(StreamDescriptor, Stream)} on the returned data.
  */
 @Slf4j
-public class UploadWorkers implements AutoCloseable {
+public class FlushWorkers implements AutoCloseable {
 
   private static final long MAX_TIME_BETWEEN_REC_MINS = 5L;
   private static final long SUPERVISOR_INITIAL_DELAY_SECS = 0L;
@@ -33,12 +49,12 @@ public class UploadWorkers implements AutoCloseable {
   private final ScheduledExecutorService supervisorThread = Executors.newScheduledThreadPool(1);
   private final ExecutorService workerPool = Executors.newFixedThreadPool(5);
   private final BufferManager.BufferManagerDequeue bufferManagerDequeue;
-  private final StreamDestinationFlusher flusher;
+  private final DestinationFlushFunction flusher;
   private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
 
-  public UploadWorkers(final BufferManager.BufferManagerDequeue bufferManagerDequeue, final StreamDestinationFlusher flusher1) {
+  public FlushWorkers(final BufferManager.BufferManagerDequeue bufferManagerDequeue, final DestinationFlushFunction flushFunction) {
     this.bufferManagerDequeue = bufferManagerDequeue;
-    flusher = flusher1;
+    flusher = flushFunction;
   }
 
   public void start() {
@@ -60,7 +76,6 @@ public class UploadWorkers implements AutoCloseable {
     final var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
     log.info("Workers shut status: {}", workersShut);
   }
-
 
   private void retrieveWork() {
     // todo (cgardens) - i'm not convinced this makes sense. as we get close to the limit, we should

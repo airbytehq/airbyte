@@ -54,7 +54,7 @@ public class BufferManager {
 
   /**
    * Closing a queue will flush all items from it. For this reason, this method needs to be called
-   * after {@link UploadWorkers#close()}. This allows the upload workers to make sure all items in the
+   * after {@link FlushWorkers#close()}. This allows the upload workers to make sure all items in the
    * queue has been flushed.
    */
   public void close() throws Exception {
