@@ -83,6 +83,31 @@ class PushConnectorImageToRegistry(Step):
 class PullConnectorImageFromRegistry(Step):
     title = "Pull connector image from registry"
 
+    async def check_if_image_has_zstd_layers(self) -> bool:
+        """Check if the image has zstd layers.
+        Docker version > 21 can create images that has some layers compressed with zstd.
+        These layers are not supported by previous docker versions.
+        We want to make sure that the image we are about to release is compatible with all docker versions.
+        We use crane to inspect the manifest of the image and check if it has zstd layers.
+        """
+        for platform in builds.BUILD_PLATFORMS:
+
+            inspect = environments.with_crane(self.context).with_exec(
+                ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image_name}"]
+            )
+            inspect_exit_code = await with_exit_code(inspect)
+            inspect_stderr = await with_stderr(inspect)
+            inspect_stdout = await with_stdout(inspect)
+            if inspect_exit_code != 0:
+                raise Exception(f"Failed to inspect {self.context.docker_image_name}: {inspect_stderr}")
+            try:
+                for layer in json.loads(inspect_stdout)["layers"]:
+                    if layer["mediaType"].endswith(".zstd"):
+                        return True
+                return False
+            except (KeyError, json.JSONDecodeError) as e:
+                raise Exception(f"Failed to parse manifest for {self.context.docker_image_name}: {inspect_stdout}") from e
+
     async def _run(self, attempt: int = 3) -> StepResult:
         try:
             exit_code = await with_exit_code(
@@ -94,7 +119,18 @@ class PullConnectorImageFromRegistry(Step):
                     return await self._run(attempt - 1)
                 else:
                     return StepResult(self, status=StepStatus.FAILURE, stderr=f"Failed to pull {self.context.docker_image_name}")
-            return StepResult(self, status=StepStatus.SUCCESS, stdout=f"Pulled {self.context.docker_image_name} and ran spec command")
+            if await self.check_if_image_has_zstd_layers():
+                return StepResult(
+                    self,
+                    status=StepStatus.FAILURE,
+                    stderr=f"Image {self.context.docker_image_name} has zstd layers. Please rebuild the connector with Docker < 21.",
+                )
+            else:
+                return StepResult(
+                    self,
+                    status=StepStatus.SUCCESS,
+                    stdout=f"Pulled {self.context.docker_image_name} and validated it has no zstd layers and we can run spec on it.",
+                )
         except QueryError as e:
             if attempt > 0:
                 await anyio.sleep(10)
