@@ -7,6 +7,7 @@ import json
 from abc import ABC
 from datetime import datetime
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from functools import lru_cache
 
 import pendulum
 import requests
@@ -194,6 +195,7 @@ class ZuoraObjectsBase(ZuoraBase):
         else:
             return None
 
+    @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         Override get_json_schema CDK method to retrieve the schema information for Zuora Object dynamicaly.
