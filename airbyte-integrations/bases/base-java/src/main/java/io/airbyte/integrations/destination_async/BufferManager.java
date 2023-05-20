@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination_async;
 
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
 import io.airbyte.integrations.destination_async.MemoryBoundedLinkedBlockingQueue.MemoryItem;
+import io.airbyte.integrations.destination_async.buffers.Batch;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
@@ -200,30 +201,6 @@ public class BufferManager {
       } finally {
         bufferLocks.get(streamDescriptor).unlock();
       }
-    }
-
-    public static class Batch implements AutoCloseable {
-
-      private Stream<AirbyteMessage> batch;
-      private final long sizeInBytes;
-      private final GlobalMemoryManager memoryManager;
-
-      public Batch(final Stream<AirbyteMessage> batch, final long sizeInBytes, final GlobalMemoryManager memoryManager) {
-        this.batch = batch;
-        this.sizeInBytes = sizeInBytes;
-        this.memoryManager = memoryManager;
-      }
-
-      public Stream<AirbyteMessage> getData() {
-        return batch;
-      }
-
-      @Override
-      public void close() throws Exception {
-        batch = null;
-        memoryManager.free(sizeInBytes);
-      }
-
     }
 
   }

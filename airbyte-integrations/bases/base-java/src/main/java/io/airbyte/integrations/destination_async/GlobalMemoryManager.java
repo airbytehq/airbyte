@@ -8,10 +8,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Responsible for managing global memory across multiple queues in a thread-safe way. The memory
- * allocation and deallocation for each queue can be dynamically adjusted according to the overall
- * available memory. The memory blocks are managed in chunks of {@link #BLOCK_SIZE_BYTES}, and the
- * total amount of memory managed is configured at creation time.
+ * Responsible for managing global memory across multiple queues in a thread-safe way.
+ * <p>
+ * This means memory allocation and deallocation for each queue can be dynamically adjusted
+ * according to the overall available memory. Memory blocks are managed in chunks of
+ * {@link #BLOCK_SIZE_BYTES}, and the total amount of memory managed is configured at creation time.
  * <p>
  * As a destination has no information about incoming per-stream records, having static non-global
  * queue sizes can cause unnecessary backpressure on a per-stream basis. By providing a dynamic,
@@ -21,14 +22,12 @@ import lombok.extern.slf4j.Slf4j;
  * <p>
  * This becomes particularly useful in the following scenarios:
  * <ul>
- * <li>1. When the incoming records belong to a single stream. Dynamic allocation ensure this one
+ * <li>1. When the incoming records belong to a single stream. Dynamic allocation ensures this one
  * stream can utilise all memory.</li>
  * <li>2. When the incoming records are from multiple streams, such as with Change Data Capture
  * (CDC). Here, dynamic allocation let us create as many queues as possible, allowing all streams to
  * be processed in parallel without accidental backpressure from unnecessary eager flushing.</li>
  * </ul>
- * <p>
- * Note: freeing more memory than allocated is considered a bug and will be logged as a warning.
  */
 @Slf4j
 public class GlobalMemoryManager {

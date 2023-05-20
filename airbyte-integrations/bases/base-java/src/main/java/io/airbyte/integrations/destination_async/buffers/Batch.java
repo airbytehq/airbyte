@@ -1,0 +1,33 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
+package io.airbyte.integrations.destination_async.buffers;
+
+import io.airbyte.integrations.destination_async.GlobalMemoryManager;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import java.util.stream.Stream;
+
+public class Batch implements AutoCloseable {
+
+  private Stream<AirbyteMessage> batch;
+  private final long sizeInBytes;
+  private final GlobalMemoryManager memoryManager;
+
+  public Batch(final Stream<AirbyteMessage> batch, final long sizeInBytes, final GlobalMemoryManager memoryManager) {
+    this.batch = batch;
+    this.sizeInBytes = sizeInBytes;
+    this.memoryManager = memoryManager;
+  }
+
+  public Stream<AirbyteMessage> getData() {
+    return batch;
+  }
+
+  @Override
+  public void close() throws Exception {
+    batch = null;
+    memoryManager.free(sizeInBytes);
+  }
+
+}
