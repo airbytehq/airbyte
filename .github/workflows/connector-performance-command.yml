@@ -72,9 +72,9 @@ jobs:
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            #### Note: The following `dataset=` values are supported: `1m`<sub>(default)</sub>, `10m`, `20m`, `bottleneck_stream1`
+            #### Note: The following `dataset=` values are supported: `1m`<sub>(default)</sub>, `10m`, `20m`, `bottleneck_stream1`.
+            For destination performance only: you can also use `stream-numbers=N` to simulate N number of parallel streams.
             > :runner: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}.
-            When testing for destination performance, you can also use `stream-numbers` to simulate N number of parallel streams
       - name: Search for valid connector name format
         id: regex
         uses: AsasInnab/regex-action@v1
