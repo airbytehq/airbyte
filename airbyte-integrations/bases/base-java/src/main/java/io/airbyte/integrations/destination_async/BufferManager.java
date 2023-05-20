@@ -106,7 +106,7 @@ public class BufferManager {
       final var queue = buffers.get(streamDescriptor);
       var addedToQueue = queue.offer(message, messageSize);
 
-      // todo (cgardens) - what if the record being added is bigger than the bock size?
+      // todo (cgardens) - what if the record being added is bigger than the block size?
       // if failed, try to increase memory and add to queue.
       while (!addedToQueue) {
         final var freeMem = memoryManager.requestMemory();
