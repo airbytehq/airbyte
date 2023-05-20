@@ -253,6 +253,7 @@ class TestAllStreams:
             (Groups),
             (Macros),
             (Organizations),
+            (OrganizationFields),
             (SatisfactionRatings),
             (SlaPolicies),
             (Tags),
@@ -273,6 +274,7 @@ class TestAllStreams:
             "Groups",
             "Macros",
             "Organizations",
+            "OrganizationFields",
             "SatisfactionRatings",
             "SlaPolicies",
             "Tags",
@@ -325,6 +327,7 @@ class TestAllStreams:
             "Groups",
             "Macros",
             "Organizations",
+            "OrganizationFields",
             "SatisfactionRatings",
             "SlaPolicies",
             "Tags",
@@ -353,6 +356,7 @@ class TestSourceZendeskSupportStream:
         [
             (Macros),
             (Organizations),
+            (OrganizationFields),
             (Groups),
             (SatisfactionRatings),
             (TicketFields),
@@ -361,6 +365,7 @@ class TestSourceZendeskSupportStream:
         ids=[
             "Macros",
             "Organizations",
+            "OrganizationFields",
             "Groups",
             "SatisfactionRatings",
             "TicketFields",
@@ -381,6 +386,7 @@ class TestSourceZendeskSupportStream:
         [
             (Macros),
             (Organizations),
+            (OrganizationFields),
             (Groups),
             (SatisfactionRatings),
             (TicketFields),
@@ -389,6 +395,7 @@ class TestSourceZendeskSupportStream:
         ids=[
             "Macros",
             "Organizations",
+            "OrganizationFields",
             "Groups",
             "SatisfactionRatings",
             "TicketFields",
@@ -410,6 +417,7 @@ class TestSourceZendeskSupportStream:
                 {"updated_at": "2023-03-17T16:03:07Z"},
                 {"updated_at": "2023-03-17T16:03:07Z"},
             ),
+            (OrganizationFields, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"})
             (Groups, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (SatisfactionRatings, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketFields, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
@@ -418,6 +426,7 @@ class TestSourceZendeskSupportStream:
         ids=[
             "Macros",
             "Organizations",
+            "OrganizationFields",
             "Groups",
             "SatisfactionRatings",
             "TicketFields",
@@ -434,12 +443,14 @@ class TestSourceZendeskSupportStream:
         [
             (Macros, None),
             (Organizations, None),
+            (OrganizationFields, None),
             (Groups, None),
             (TicketFields, None),
         ],
         ids=[
             "Macros",
             "Organizations",
+            "OrganizationFields",
             "Groups",
             "TicketFields",
         ],
@@ -454,12 +465,14 @@ class TestSourceZendeskSupportStream:
         [
             (Macros, {"start_time": 1622505600}),
             (Organizations, {"start_time": 1622505600}),
+            (OrganizationFields, {"start_time": 1622505600}),
             (Groups, {"start_time": 1622505600}),
             (TicketFields, {"start_time": 1622505600}),
         ],
         ids=[
             "Macros",
             "Organizations",
+            "OrganizationFields",
             "Groups",
             "TicketFields",
         ],
