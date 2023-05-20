@@ -7,20 +7,15 @@ import os
 from dataclasses import dataclass
 from enum import Enum
 from functools import cached_property
+from glob import glob
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import List, Optional, Set, Tuple
 
 import git
 import requests
 import yaml
 from ci_credentials import SecretsManager
 from rich.console import Console
-
-try:
-    from yaml import CLoader as Loader
-# Some environments do not have a system C Yaml loader
-except ImportError:
-    from yaml import Loader
 
 console = Console()
 
@@ -31,9 +26,6 @@ SOURCE_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/source-"
 DESTINATION_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/destination-"
 ACCEPTANCE_TEST_CONFIG_FILE_NAME = "acceptance-test-config.yml"
 AIRBYTE_DOCKER_REPO = "airbyte"
-SOURCE_DEFINITIONS_FILE_PATH = "airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml"
-DESTINATION_DEFINITIONS_FILE_PATH = "airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml"
-DEFINITIONS_FILE_PATH = {"source": SOURCE_DEFINITIONS_FILE_PATH, "destination": DESTINATION_DEFINITIONS_FILE_PATH}
 
 
 def download_catalog(catalog_url):
@@ -51,11 +43,6 @@ class ConnectorInvalidNameError(Exception):
 
 class ConnectorVersionNotFound(Exception):
     pass
-
-
-def read_definitions(definitions_file_path: str) -> Dict:
-    with open(definitions_file_path) as definitions_file:
-        return yaml.load(definitions_file, Loader=Loader)
 
 
 def get_connector_name_from_path(path):
@@ -123,8 +110,8 @@ class Connector:
 
     @property
     def icon_path(self) -> Path:
-        if self.definition and self.definition.get("icon"):
-            return Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{self.definition['icon']}")
+        if self.metadata and self.metadata.get("icon"):
+            return Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{self.metadata['icon']}")
         return Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{self.name}.svg")
 
     @property
@@ -132,7 +119,10 @@ class Connector:
         return Path(f"./airbyte-integrations/connectors/{self.technical_name}")
 
     @property
-    def metadata(self) -> dict:
+    def metadata(self) -> Optional[dict]:
+        file_path = self.code_directory / METADATA_FILE_NAME
+        if not file_path.is_file():
+            return None
         return yaml.safe_load((self.code_directory / METADATA_FILE_NAME).read_text())["data"]
 
     @property
@@ -152,6 +142,8 @@ class Connector:
 
     @property
     def version(self) -> str:
+        if self.metadata is None:
+            return self.version_in_dockerfile_label
         return self.metadata["dockerImageTag"]
 
     @property
@@ -167,33 +159,17 @@ class Connector:
             """
         )
 
-    @cached_property
-    def definition(self) -> Optional[dict]:
-        """Find a connector definition from the catalog.
-        Returns:
-            Optional[Dict]: The definition if the connector was found in the catalog. Returns None otherwise.
-        """
-        try:
-            definition_type = self.technical_name.split("-")[0]
-            assert definition_type in ["source", "destination"]
-        except AssertionError:
-            return None
-        definitions = read_definitions(DEFINITIONS_FILE_PATH[definition_type])
-        for definition in definitions:
-            if definition["dockerRepository"].replace(f"{AIRBYTE_DOCKER_REPO}/", "") == self.technical_name:
-                return definition
-
     @property
     def release_stage(self) -> Optional[str]:
-        return self.definition.get("releaseStage") if self.definition else None
+        return self.metadata.get("releaseStage") if self.metadata else None
 
     @property
     def allowed_hosts(self) -> Optional[List[str]]:
-        return self.definition.get("allowedHosts") if self.definition else None
+        return self.metadata.get("allowedHosts") if self.metadata else None
 
     @property
     def suggested_streams(self) -> Optional[List[str]]:
-        return self.definition.get("suggestedStreams") if self.definition else None
+        return self.metadata.get("suggestedStreams") if self.metadata else None
 
     @property
     def acceptance_test_config_path(self) -> Path:
@@ -210,17 +186,17 @@ class Connector:
 
     @property
     def supports_normalization(self) -> bool:
-        return self.definition and self.definition.get("normalizationConfig") is not None
+        return self.metadata and self.metadata.get("normalizationConfig") is not None
 
     @property
     def normalization_repository(self) -> Optional[str]:
         if self.supports_normalization:
-            return f"{self.definition['normalizationConfig']['normalizationRepository']}"
+            return f"{self.metadata['normalizationConfig']['normalizationRepository']}"
 
     @property
     def normalization_tag(self) -> Optional[str]:
         if self.supports_normalization:
-            return f"{self.definition['normalizationConfig']['normalizationTag']}"
+            return f"{self.metadata['normalizationConfig']['normalizationTag']}"
 
     def get_secret_manager(self, gsm_credentials: str):
         return SecretsManager(connector_name=self.technical_name, gsm_credentials=gsm_credentials)
@@ -241,5 +217,8 @@ def get_changed_connectors() -> Set[Connector]:
 
 
 def get_all_released_connectors() -> Set:
-    all_definitions = OSS_CATALOG["sources"] + OSS_CATALOG["destinations"]
-    return {Connector(definition["dockerRepository"].replace("airbyte/", "")) for definition in all_definitions}
+    return {
+        Connector(Path(metadata_file).parent.name)
+        for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
+        if "-scaffold-" not in metadata_file
+    }

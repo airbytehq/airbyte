@@ -18,6 +18,12 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
+        ignored_fields:
+          transcriptions:
+            - name: "date_created"
+              bypass_reason: "Floating data"
+            - name: "date_updated"
+              bypass_reason: "Floating data"
         empty_streams:
           # TODO: SAT should be able to exclude expected records validation on the stream > field level
           # to avoid exposures such as `auth_token`
@@ -62,4 +68,10 @@ acceptance_tests:
           # `constant_records_catalog.json` does not contain the available phone numbers streams,
           # as they may change on each request
         configured_catalog_path: "integration_tests/constant_records_catalog.json"
+        ignored_fields:
+          transcriptions:
+            - name: "date_created"
+              bypass_reason: "Floating data"
+            - name: "date_updated"
+              bypass_reason: "Floating data"
         timeout_seconds: 3600

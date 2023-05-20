@@ -16,10 +16,6 @@ on:
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
-      auto-bump-version:
-        description: "after publishing, the workflow will automatically bump the connector version in definitions and generate seed spec"
-        required: true
-        default: "true"
       parallel:
         description: "Switching this to true will spin up 5 build agents instead of 1 and allow multi connector publishes to run in parallel"
         required: true
@@ -31,7 +27,7 @@ on:
       pre-release:
         description: "Should publish a pre-release version"
         required: true
-        default: false
+        default: "false"
 
 jobs:
   ## Gradle Build
@@ -203,13 +199,13 @@ jobs:
           body: |
             <br>
 
-            | Connector | Version | Did it publish? | Were definitions generated? |
+            | Connector | Version | Did it publish? |
       - name: Create table separator
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            | --- | --- | --- | --- |
+            | --- | --- | --- |
   publish-image:
     timeout-minutes: 240
     needs:
@@ -259,13 +255,6 @@ jobs:
           rm -r venv || echo "no pre-existing venv"
           python3 -m virtualenv venv
           source venv/bin/activate
-      - name: Install yq
-        if: github.event.inputs.auto-bump-version == 'true' && github.event.inputs.pre-release != 'true' && success()
-        run: |
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64
-          sudo add-apt-repository ppa:rmescandon/yq
-          sudo apt update
-          sudo apt install yq -y
       - name: Install CI scripts
         # all CI python packages have the prefix "ci_"
         run: |
@@ -297,6 +286,12 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
           command: curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
+      - name: Run QA checks for ${{ matrix.connector }}
+        id: qa_checks
+        if: always()
+        run: |
+          source venv/bin/activate
+          run-qa-checks ${{ matrix.connector }}
       - name: Publish ${{ matrix.connector }}
         id: publish
         env:
@@ -334,47 +329,6 @@ jobs:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
           SENTRY_ORG: airbytehq
           SENTRY_PROJECT: connector-incident-management
-      - name: Check if connector in definitions yaml
-        if: github.event.inputs.auto-bump-version == 'true' && github.event.inputs.pre-release != 'true' && success()
-        run: |
-          connector="airbyte/${{ env.IMAGE_NAME }}"
-          definitionpath=./airbyte-config-oss/init-oss/src/main/resources/seed/
-          sourcecheck=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitionpath"source_definitions.yaml)
-          destcheck=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitionpath"destination_definitions.yaml)
-          if [[ (-z "$sourcecheck" && -z "$destcheck") ]]
-          then exit 1
-          fi
-      - name: Bump version in definitions yaml
-        if: github.event.inputs.auto-bump-version == 'true' && github.event.inputs.pre-release != 'true' && success()
-        run: |
-          connector="airbyte/${{ env.IMAGE_NAME }}"
-          definitionpath=./airbyte-config-oss/init-oss/src/main/resources/seed/
-          sourcename=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"source_definitions.yaml)
-          destname=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"destination_definitions.yaml)
-          if [ -z "$sourcename" ]
-          then yq e "(.[] | select(.name == \"$destname\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"destination_definitions.yaml
-          else yq e "(.[] | select(.name == \"$sourcename\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"source_definitions.yaml
-          fi
-      - name: Run gradle process changes
-        if: github.event.inputs.auto-bump-version == 'true' && github.event.inputs.pre-release != 'true' && success()
-        uses: Wandalen/wretry.action@master
-        with:
-          command: ./gradlew :airbyte-config-oss:init-oss:processResources
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
-      - name: git config
-        if: github.event.inputs.auto-bump-version == 'true' && success()
-        run: |
-          git config user.name 'Octavia Squidington III'
-          git config user.email 'octavia-squidington-iii@users.noreply.github.com'
-      - name: git commit and push
-        if: github.event.inputs.auto-bump-version == 'true' && github.event.inputs.pre-release != 'true' && success()
-        run: |
-          git add -u
-          git commit -m "auto-bump connector version"
-          git pull origin ${{ github.event.inputs.gitref }}
-          git push origin ${{ github.event.inputs.gitref }}
-        id: auto-bump
       - name: Process outcomes into emojis
         if: ${{ always() && github.event.inputs.comment-id }}
         run: |
@@ -383,18 +337,13 @@ jobs:
           else
             echo "PUBLISH_OUTCOME=:x:" >> $GITHUB_ENV
           fi
-          if [[ ${{ steps.auto-bump.outcome }} = "success" ]]; then
-            echo "AUTO_BUMP_OUTCOME=:white_check_mark:" >> $GITHUB_ENV
-          else
-            echo "AUTO_BUMP_OUTCOME=:x:" >> $GITHUB_ENV
-          fi
       - name: Add connector outcome line to table
         if: ${{ always() && github.event.inputs.comment-id }}
         uses: peter-evans/create-or-update-comment@v1
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            | ${{ matrix.connector }} | ${{ env.IMAGE_VERSION }} | ${{ env.PUBLISH_OUTCOME }} | ${{ env.AUTO_BUMP_OUTCOME }} |
+            | ${{ matrix.connector }} | ${{ env.IMAGE_VERSION }} | ${{ env.PUBLISH_OUTCOME }} |
   add-helpful-info-to-git-comment:
     if: ${{ always() && github.event.inputs.comment-id }}
     name: Add extra info to git comment
