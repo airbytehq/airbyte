@@ -8,6 +8,14 @@ import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.util.stream.Stream;
 
+/**
+ * POJO abstraction representing one discrete buffer read. This allows ergonomics dequeues by
+ * {@link io.airbyte.integrations.destination_async.FlushWorkers}.
+ * <p>
+ * The contained stream **IS EXPECTED to be a BOUNDED** stream.
+ * <p>
+ * Once done, consumers **MUST** invoke {@link #close()} to avoid memory leaks.
+ */
 public class Batch implements AutoCloseable {
 
   private Stream<AirbyteMessage> batch;
