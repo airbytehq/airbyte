@@ -23,11 +23,13 @@ import java.util.stream.Stream;
  * <li>2. Destinations that upload data streams. This mostly includes various Cloud storages. This
  * will include reverse-ETL in the future</li>
  * </ul>
- * In both cases, the incoming data can be modeled as a stream.
+ * In both cases, the simplest way to model the incoming data is as a stream.
  */
 public interface DestinationFlushFunction {
 
   /**
+   * Flush a batch of data to the destination.
+   *
    * @param decs the Airbyte stream the data stream belongs to
    * @param stream a bounded {@link AirbyteMessage} stream ideally of
    *        {@link #getOptimalBatchSizeBytes()} size
