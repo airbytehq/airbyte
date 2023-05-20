@@ -355,6 +355,11 @@ class TestSourceZendeskSupportStream:
             (SatisfactionRatings),
             (TicketFields),
             (TicketMetrics),
+            (SlaPolicies),
+            (CustomRoles),
+            (Schedules),
+            (Tickets),
+            (Users)
         ],
         ids=[
             "Macros",
@@ -363,6 +368,11 @@ class TestSourceZendeskSupportStream:
             "SatisfactionRatings",
             "TicketFields",
             "TicketMetrics",
+            "SlaPolicies",
+            "CustomRoles",
+            "Schedules",
+            "Tickets",
+            "Users"
         ],
     )
     def test_parse_response(self, requests_mock, stream_cls):
@@ -383,6 +393,11 @@ class TestSourceZendeskSupportStream:
             (SatisfactionRatings),
             (TicketFields),
             (TicketMetrics),
+            (SlaPolicies),
+            (CustomRoles),
+            (Schedules),
+            (Tickets),
+            (Users)
         ],
         ids=[
             "Macros",
@@ -391,6 +406,11 @@ class TestSourceZendeskSupportStream:
             "SatisfactionRatings",
             "TicketFields",
             "TicketMetrics",
+            "SlaPolicies",
+            "CustomRoles",
+            "Schedules",
+            "Tickets",
+            "Users"
         ],
     )
     def test_url_base(self, stream_cls):
@@ -412,6 +432,11 @@ class TestSourceZendeskSupportStream:
             (SatisfactionRatings, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketFields, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketMetrics, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
+            (SlaPolicies, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
+            (CustomRoles, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
+            (Schedules, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
+            (Tickets, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
+            (Users, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"})
         ],
         ids=[
             "Macros",
@@ -420,6 +445,11 @@ class TestSourceZendeskSupportStream:
             "SatisfactionRatings",
             "TicketFields",
             "TicketMetrics",
+            "SlaPolicies",
+            "CustomRoles",
+            "Schedules",
+            "Tickets",
+            "Users"
         ],
     )
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):
@@ -434,12 +464,22 @@ class TestSourceZendeskSupportStream:
             (Organizations, None),
             (Groups, None),
             (TicketFields, None),
+            (SlaPolicies, None),
+            (CustomRoles, None),
+            (Schedules, None),
+            (Tickets, None),
+            (Users, None)
         ],
         ids=[
             "Macros",
             "Organizations",
             "Groups",
             "TicketFields",
+            "SlaPolicies",
+            "CustomRoles",
+            "Schedules",
+            "Tickets",
+            "Users"
         ],
     )
     def test_next_page_token(self, stream_cls, expected):
@@ -454,12 +494,22 @@ class TestSourceZendeskSupportStream:
             (Organizations, {"start_time": 1622505600}),
             (Groups, {"start_time": 1622505600}),
             (TicketFields, {"start_time": 1622505600}),
+            (SlaPolicies, {"start_time": 1622505600}),
+            (CustomRoles, {"start_time": 1622505600}),
+            (Schedules, {"start_time": 1622505600}),
+            (Tickets, {"start_time": 1622505600}),
+            (Users, {"start_time": 1622505600})
         ],
         ids=[
             "Macros",
             "Organizations",
             "Groups",
             "TicketFields",
+            "SlaPolicies",
+            "CustomRoles",
+            "Schedules",
+            "Tickets",
+            "Users"
         ],
     )
     def test_request_params(self, stream_cls, expected):
