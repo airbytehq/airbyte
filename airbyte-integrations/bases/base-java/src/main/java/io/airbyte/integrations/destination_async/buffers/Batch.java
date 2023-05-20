@@ -12,7 +12,8 @@ import java.util.stream.Stream;
  * POJO abstraction representing one discrete buffer read. This allows ergonomics dequeues by
  * {@link io.airbyte.integrations.destination_async.FlushWorkers}.
  * <p>
- * The contained stream **IS EXPECTED to be a BOUNDED** stream.
+ * The contained stream **IS EXPECTED to be a BOUNDED** stream. Returning a boundless stream has
+ * undefined behaviour.
  * <p>
  * Once done, consumers **MUST** invoke {@link #close()} to avoid memory leaks.
  */
