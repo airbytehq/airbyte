@@ -7,6 +7,9 @@
     "notifiedOnCreativeRejection": {
       "type": ["null", "boolean"]
     },
+    "notifiedOnNewFeaturesEnabled": {
+      "type": ["null", "boolean"]
+    },
     "notifiedOnEndOfCampaign": {
       "type": ["null", "boolean"]
     },
