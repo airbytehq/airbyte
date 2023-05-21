@@ -16,6 +16,24 @@
         "oneOf": [
           {
             "type": "object",
+            "title": "Installation Token",
+            "required": ["installation_id"],
+            "properties": {
+              "option_title": {
+                "type": "string",
+                "const": "Installation ID",
+                "order": 0
+              },
+              "installation_id": {
+                "type": "string",
+                "title": "Installation ID",
+                "description": "Github Installation ID",
+                "airbyte_secret": false
+              }
+            }
+          },
+          {
+            "type": "object",
             "title": "OAuth",
             "required": ["access_token"],
             "properties": {

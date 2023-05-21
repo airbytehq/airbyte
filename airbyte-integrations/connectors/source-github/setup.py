@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.2", "pendulum~=2.1.2", "sgqlc"]
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.2", "pendulum~=2.1.2", "sgqlc", "evervault"]
 
 TEST_REQUIREMENTS = ["pytest~=6.1", "connector-acceptance-test", "responses~=0.23.1", "freezegun~=1.2.0"]
 

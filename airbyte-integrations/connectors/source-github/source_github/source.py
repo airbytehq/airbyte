@@ -10,6 +10,7 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
 
@@ -54,6 +55,7 @@ from .streams import (
     Workflows,
 )
 from .utils import read_full_refresh
+from .authenticator import GithubInstallationAuthenticator
 
 
 class SourceGithub(AbstractSource):
@@ -92,12 +94,12 @@ class SourceGithub(AbstractSource):
         return config_repositories
 
     @staticmethod
-    def _get_org_repositories(config: Mapping[str, Any], authenticator: MultipleTokenAuthenticator) -> Tuple[List[str], List[str]]:
+    def _get_org_repositories(config: Mapping[str, Any], authenticator: HttpAuthenticator) -> Tuple[List[str], List[str]]:
         """
         Parse config.repository and produce two lists: organizations, repositories.
         Args:
             config (dict): Dict representing connector's config
-            authenticator(MultipleTokenAuthenticator): authenticator object
+            authenticator(HttpAuthenticator): authenticator object
         """
         config_repositories = SourceGithub._get_and_prepare_repositories_config(config)
         if not SourceGithub._is_repositories_config_valid(config_repositories):
@@ -154,10 +156,14 @@ class SourceGithub(AbstractSource):
             return constants.ACCESS_TOKEN_TITLE, credentials["access_token"]
         if "personal_access_token" in credentials:
             return constants.PERSONAL_ACCESS_TOKEN_TITLE, credentials["personal_access_token"]
+        if "installation_id" in credentials:
+            return constants.INSTALLATION_TOKEN_TITLE, credentials["installation_id"]
         raise Exception("Invalid config format")
 
     def _get_authenticator(self, config: Mapping[str, Any]):
-        _, token = self.get_access_token(config)
+        access_token_type, token = self.get_access_token(config)
+        if access_token_type == constants.INSTALLATION_TOKEN_TITLE:
+            return GithubInstallationAuthenticator(token)
         tokens = [t.strip() for t in token.split(constants.TOKEN_SEPARATOR)]
         requests_per_hour = config.get("requests_per_hour")
         if requests_per_hour:
