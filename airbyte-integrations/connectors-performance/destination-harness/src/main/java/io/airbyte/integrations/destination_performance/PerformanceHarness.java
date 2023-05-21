@@ -98,6 +98,7 @@ public class PerformanceHarness {
    */
   void runTest() throws Exception {
     final List<String> streamNames = catalog.getStreams().stream().map(stream -> stream.getStream().getName()).toList();
+    final Random random = new Random();
     final AirbyteIntegrationLauncher dstIntegtationLauncher = getAirbyteIntegrationLauncher();
     final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig()
         .withDestinationConnectionConfiguration(this.config)
@@ -152,7 +153,7 @@ public class PerformanceHarness {
         final AirbyteMessage airbyteMessage = new AirbyteMessage()
             .withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage()
-                .withStream(getStreamName(streamNames))
+                .withStream(getStreamName(streamNames, random))
                 .withNamespace(catalog.getStreams().get(0).getStream().getNamespace())
                 .withData(Jsons.deserialize(recordString)));
         airbyteMessage.getRecord().setEmittedAt(start);
@@ -180,8 +181,7 @@ public class PerformanceHarness {
 
   // TODO: (ryankfu) get less hacky way to generate multiple streams
   @VisibleForTesting
-  static String getStreamName(final List<String> listOfStreamNames) {
-    final Random random = new Random();
+  static String getStreamName(final List<String> listOfStreamNames, final Random random) {
     return listOfStreamNames.get(random.nextInt(listOfStreamNames.size()));
   }
 
