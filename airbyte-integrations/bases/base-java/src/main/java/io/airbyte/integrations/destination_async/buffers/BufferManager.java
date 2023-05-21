@@ -7,8 +7,6 @@ package io.airbyte.integrations.destination_async.buffers;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
 import io.airbyte.integrations.destination_async.FlushWorkers;
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
-import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
-import io.airbyte.integrations.destination_async.buffers.MemoryBoundedLinkedBlockingQueue;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.concurrent.ConcurrentHashMap;

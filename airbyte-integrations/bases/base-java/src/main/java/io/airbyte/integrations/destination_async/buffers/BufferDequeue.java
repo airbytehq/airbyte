@@ -18,6 +18,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
+/**
+ * Represents the minimal interface over the underlying buffer queues required for dequeue
+ * operations with the aim of minimizing lower-level queue access.
+ * <p>
+ * Aside from {@link #take(StreamDescriptor, long)}, all public methods in this class represents
+ * metadata required to determine buffer flushing.
+ */
 // todo (cgardens) - make all the metadata methods more efficient.
 public class BufferDequeue {
 
@@ -34,10 +41,6 @@ public class BufferDequeue {
 
   public Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> getBuffers() {
     return new HashMap<>(buffers);
-  }
-
-  private MemoryBoundedLinkedBlockingQueue<AirbyteMessage> getBuffer(final StreamDescriptor streamDescriptor) {
-    return buffers.get(streamDescriptor);
   }
 
   public long getTotalGlobalQueueSizeBytes() {
@@ -99,6 +102,10 @@ public class BufferDequeue {
     } finally {
       bufferLocks.get(streamDescriptor).unlock();
     }
+  }
+
+  private MemoryBoundedLinkedBlockingQueue<AirbyteMessage> getBuffer(final StreamDescriptor streamDescriptor) {
+    return buffers.get(streamDescriptor);
   }
 
 }
