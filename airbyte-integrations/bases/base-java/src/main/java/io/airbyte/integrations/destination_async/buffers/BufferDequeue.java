@@ -23,7 +23,7 @@ import java.util.stream.Stream;
  * operations with the aim of minimizing lower-level queue access.
  * <p>
  * Aside from {@link #take(StreamDescriptor, long)}, all public methods in this class represents
- * metadata required to determine buffer flushing.
+ * queue metadata required to determine buffer flushing.
  */
 // todo (cgardens) - make all the metadata methods more efficient.
 public class BufferDequeue {
@@ -39,27 +39,15 @@ public class BufferDequeue {
     bufferLocks = new ConcurrentHashMap<>();
   }
 
-  public Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> getBuffers() {
-    return new HashMap<>(buffers);
-  }
-
-  public long getTotalGlobalQueueSizeBytes() {
-    return buffers.values().stream().map(MemoryBoundedLinkedBlockingQueue::getCurrentMemoryUsage).mapToLong(Long::longValue).sum();
-  }
-
-  public long getQueueSizeInRecords(final StreamDescriptor streamDescriptor) {
-    return getBuffer(streamDescriptor).size();
-  }
-
-  public long getQueueSizeBytes(final StreamDescriptor streamDescriptor) {
-    return getBuffer(streamDescriptor).getCurrentMemoryUsage();
-  }
-
-  public Optional<Instant> getTimeOfLastRecord(final StreamDescriptor streamDescriptor) {
-    return getBuffer(streamDescriptor).getTimeOfLastMessage();
-  }
-
-  public Batch take(final StreamDescriptor streamDescriptor, final long bytesToRead) {
+  /**
+   * Primary dequeue method. Best-effort read a specified optimal memory size from the
+   * queue.
+   *
+   * @param streamDescriptor specific buffer to take from
+   * @param optimalBytesToRead bytes to read, if possible
+   * @return
+   */
+  public Batch take(final StreamDescriptor streamDescriptor, final long optimalBytesToRead) {
     final var queue = buffers.get(streamDescriptor);
 
     if (!bufferLocks.containsKey(streamDescriptor)) {
@@ -84,7 +72,7 @@ public class BufferDequeue {
 
         // otherwise pull records until we hit the memory limit.
         final long newSize = memoryItem.size() + bytesRead.get();
-        if (newSize <= bytesToRead) {
+        if (newSize <= optimalBytesToRead) {
           bytesRead.addAndGet(memoryItem.size());
           return true;
         } else {
@@ -102,6 +90,30 @@ public class BufferDequeue {
     } finally {
       bufferLocks.get(streamDescriptor).unlock();
     }
+  }
+
+  /**
+   * The following methods are metadata operations for buffer flushing calculations.
+   */
+
+  public Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> getBuffers() {
+    return new HashMap<>(buffers);
+  }
+
+  public long getTotalGlobalQueueSizeBytes() {
+    return buffers.values().stream().map(MemoryBoundedLinkedBlockingQueue::getCurrentMemoryUsage).mapToLong(Long::longValue).sum();
+  }
+
+  public long getQueueSizeInRecords(final StreamDescriptor streamDescriptor) {
+    return getBuffer(streamDescriptor).size();
+  }
+
+  public long getQueueSizeBytes(final StreamDescriptor streamDescriptor) {
+    return getBuffer(streamDescriptor).getCurrentMemoryUsage();
+  }
+
+  public Optional<Instant> getTimeOfLastRecord(final StreamDescriptor streamDescriptor) {
+    return getBuffer(streamDescriptor).getTimeOfLastMessage();
   }
 
   private MemoryBoundedLinkedBlockingQueue<AirbyteMessage> getBuffer(final StreamDescriptor streamDescriptor) {
