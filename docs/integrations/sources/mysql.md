@@ -261,6 +261,8 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.21  | 2023-05-10 | [25460](https://github.com/airbytehq/airbyte/pull/25460)   | Handle a decimal number with 0 decimal points as an integer                                                                                     |
+| 2.0.20  | 2023-05-01 | [25740](https://github.com/airbytehq/airbyte/pull/25740)   | Disable index logging                                                                                                                           |
 | 2.0.19  | 2023-04-26 | [25401](https://github.com/airbytehq/airbyte/pull/25401)   | CDC : Upgrade Debezium to version 2.2.0                                                                                                         |
 | 2.0.18  | 2023-04-19 | [25345](https://github.com/airbytehq/airbyte/pull/25345)   | Logging : Log database indexes per stream                                                                                                       |
 | 2.0.17  | 2023-04-19 | [24582](https://github.com/airbytehq/airbyte/pull/24582)   | CDC : refactor for performance improvement                                                                                                      |
