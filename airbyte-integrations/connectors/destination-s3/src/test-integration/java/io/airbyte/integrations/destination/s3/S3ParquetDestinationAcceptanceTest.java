@@ -37,20 +37,24 @@ public class S3ParquetDestinationAcceptanceTest extends S3BaseParquetDestination
   }
 
   /**
-   * Quick and dirty test to verify that lzo compression works. Probably has some blind spots related to cpu architecture.
+   * Quick and dirty test to verify that lzo compression works. Probably has some blind spots related
+   * to cpu architecture.
    * <p>
-   * Only verifies that it runs successfully, which is sufficient to catch any issues with installing the lzo libraries.
+   * Only verifies that it runs successfully, which is sufficient to catch any issues with installing
+   * the lzo libraries.
    */
   @Test
   public void testLzoCompression() throws Exception {
-    JsonNode config = getConfig().deepCopy();
+    final JsonNode config = getConfig().deepCopy();
     ((ObjectNode) config.get("format")).put("compression_codec", "LZO");
 
-    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(ProtocolVersion.V0)), AirbyteCatalog.class);
+    final AirbyteCatalog catalog = Jsons.deserialize(
+        MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(ProtocolVersion.V0)), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    final List<AirbyteMessage> messages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(ProtocolVersion.V0)).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
-        .collect(Collectors.toList());
+    final List<AirbyteMessage> messages =
+        MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(ProtocolVersion.V0)).lines()
+            .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
+            .collect(Collectors.toList());
 
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
   }
