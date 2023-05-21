@@ -101,11 +101,11 @@ public class BufferDequeueTest {
 
     assertEquals(60, dequeue.getTotalGlobalQueueSizeBytes());
 
-    assertEquals(2, dequeue.getQueueSizeInRecords(STREAM_DESC));
-    assertEquals(1, dequeue.getQueueSizeInRecords(secondStream));
+    assertEquals(2, dequeue.getQueueSizeInRecords(STREAM_DESC).get());
+    assertEquals(1, dequeue.getQueueSizeInRecords(secondStream).get());
 
-    assertEquals(40, dequeue.getQueueSizeBytes(STREAM_DESC));
-    assertEquals(20, dequeue.getQueueSizeBytes(secondStream));
+    assertEquals(40, dequeue.getQueueSizeBytes(STREAM_DESC).get());
+    assertEquals(20, dequeue.getQueueSizeBytes(secondStream).get());
 
     // Buffer of 3 sec to deal with test execution variance.
     final var lastThreeSec = Instant.now().minus(3, ChronoUnit.SECONDS);
