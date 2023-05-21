@@ -40,8 +40,7 @@ public class BufferDequeue {
   }
 
   /**
-   * Primary dequeue method. Best-effort read a specified optimal memory size from the
-   * queue.
+   * Primary dequeue method. Best-effort read a specified optimal memory size from the queue.
    *
    * @param streamDescriptor specific buffer to take from
    * @param optimalBytesToRead bytes to read, if possible
@@ -93,7 +92,7 @@ public class BufferDequeue {
   }
 
   /**
-   * The following methods are metadata operations for buffer flushing calculations.
+   * The following methods are provide metadata for buffer flushing calculations.
    */
 
   public Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> getBuffers() {
@@ -104,20 +103,23 @@ public class BufferDequeue {
     return buffers.values().stream().map(MemoryBoundedLinkedBlockingQueue::getCurrentMemoryUsage).mapToLong(Long::longValue).sum();
   }
 
-  public long getQueueSizeInRecords(final StreamDescriptor streamDescriptor) {
-    return getBuffer(streamDescriptor).size();
+  public Optional<Long> getQueueSizeInRecords(final StreamDescriptor streamDescriptor) {
+    return getBuffer(streamDescriptor).map(buf -> Long.valueOf(buf.size()));
   }
 
-  public long getQueueSizeBytes(final StreamDescriptor streamDescriptor) {
-    return getBuffer(streamDescriptor).getCurrentMemoryUsage();
+  public Optional<Long> getQueueSizeBytes(final StreamDescriptor streamDescriptor) {
+    return getBuffer(streamDescriptor).map(MemoryBoundedLinkedBlockingQueue::getCurrentMemoryUsage);
   }
 
   public Optional<Instant> getTimeOfLastRecord(final StreamDescriptor streamDescriptor) {
-    return getBuffer(streamDescriptor).getTimeOfLastMessage();
+    return getBuffer(streamDescriptor).flatMap(MemoryBoundedLinkedBlockingQueue::getTimeOfLastMessage);
   }
 
-  private MemoryBoundedLinkedBlockingQueue<AirbyteMessage> getBuffer(final StreamDescriptor streamDescriptor) {
-    return buffers.get(streamDescriptor);
+  private Optional<MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> getBuffer(final StreamDescriptor streamDescriptor) {
+    if (buffers.containsKey(streamDescriptor)) {
+      return Optional.of(buffers.get(streamDescriptor));
+    }
+    return Optional.empty();
   }
 
 }

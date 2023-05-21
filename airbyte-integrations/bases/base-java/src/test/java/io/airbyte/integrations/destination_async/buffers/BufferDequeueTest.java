@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination_async.buffers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination_async.buffers.BufferManager.BufferManagerEnqueue;
@@ -12,53 +13,120 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 public class BufferDequeueTest {
 
   private static final String STREAM_NAME = "stream1";
   private static final StreamDescriptor STREAM_DESC = new StreamDescriptor().withName(STREAM_NAME);
-  private static final String RECORD = "abc";
-  private static final AirbyteMessage RECORD_MSG = new AirbyteMessage()
+  private static final String RECORD_20_BYTES = "abc";
+  private static final AirbyteMessage RECORD_MSG_20_BYTES = new AirbyteMessage()
       .withType(Type.RECORD)
       .withRecord(new AirbyteRecordMessage()
           .withStream(STREAM_NAME)
-          .withData(Jsons.jsonNode(RECORD)));
+          .withData(Jsons.jsonNode(RECORD_20_BYTES)));
 
-  @Test
-  void testReadFromBatch() {
-    final BufferManager bufferManager = new BufferManager();
-    final BufferManagerEnqueue enqueue = bufferManager.getBufferManagerEnqueue();
-    final BufferDequeue dequeue = bufferManager.getBufferManagerDequeue();
+  @Nested
+  class Take {
 
-    enqueue.addRecord(STREAM_DESC, RECORD_MSG);
-    enqueue.addRecord(STREAM_DESC, RECORD_MSG);
-    enqueue.addRecord(STREAM_DESC, RECORD_MSG);
-    enqueue.addRecord(STREAM_DESC, RECORD_MSG);
+    @Test
+    void testTakeShouldBestEffortRead() {
+      final BufferManager bufferManager = new BufferManager();
+      final BufferManagerEnqueue enqueue = bufferManager.getBufferManagerEnqueue();
+      final BufferDequeue dequeue = bufferManager.getBufferManagerDequeue();
 
-    // total size of records is 80, so we expect 50 to get us 2 records (prefer to under-pull records
-    // than over-pull).
-    try (final Batch take = dequeue.take(STREAM_DESC, 50)) {
-      assertEquals(2, take.getData().toList().size());
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+
+      // total size of records is 80, so we expect 50 to get us 2 records (prefer to under-pull records
+      // than over-pull).
+      try (final Batch take = dequeue.take(STREAM_DESC, 50)) {
+        assertEquals(2, take.getData().toList().size());
+      } catch (final Exception e) {
+        throw new RuntimeException(e);
+      }
     }
+
+    @Test
+    void testTakeShouldReturnAllIfPossible() {
+      final BufferManager bufferManager = new BufferManager();
+      final BufferManagerEnqueue enqueue = bufferManager.getBufferManagerEnqueue();
+      final BufferDequeue dequeue = bufferManager.getBufferManagerDequeue();
+
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+
+      try (final Batch take = dequeue.take(STREAM_DESC, 60)) {
+        assertEquals(3, take.getData().toList().size());
+      } catch (final Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Test
+    void testTakeFewerRecordsThanSizeLimitShouldNotError() {
+      final BufferManager bufferManager = new BufferManager();
+      final BufferManagerEnqueue enqueue = bufferManager.getBufferManagerEnqueue();
+      final BufferDequeue dequeue = bufferManager.getBufferManagerDequeue();
+
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+
+      try (final Batch take = dequeue.take(STREAM_DESC, Long.MAX_VALUE)) {
+        assertEquals(2, take.getData().toList().size());
+      } catch (final Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+
   }
 
   @Test
-  void testReadFromBatchFewerRecordsThanSizeLimit() {
+  void testMetadataOperationsCorrect() {
     final BufferManager bufferManager = new BufferManager();
     final BufferManagerEnqueue enqueue = bufferManager.getBufferManagerEnqueue();
     final BufferDequeue dequeue = bufferManager.getBufferManagerDequeue();
 
-    enqueue.addRecord(STREAM_DESC, RECORD_MSG);
-    enqueue.addRecord(STREAM_DESC, RECORD_MSG);
+    enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+    enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
 
-    try (final Batch take = dequeue.take(STREAM_DESC, Long.MAX_VALUE)) {
-      assertEquals(2, take.getData().toList().size());
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
-    }
+    final var secondStream = new StreamDescriptor().withName("stream_2");
+    enqueue.addRecord(secondStream, RECORD_MSG_20_BYTES);
+
+    assertEquals(60, dequeue.getTotalGlobalQueueSizeBytes());
+
+    assertEquals(2, dequeue.getQueueSizeInRecords(STREAM_DESC));
+    assertEquals(1, dequeue.getQueueSizeInRecords(secondStream));
+
+    assertEquals(40, dequeue.getQueueSizeBytes(STREAM_DESC));
+    assertEquals(20, dequeue.getQueueSizeBytes(secondStream));
+
+    // Buffer of 3 sec to deal with test execution variance.
+    final var lastThreeSec = Instant.now().minus(3, ChronoUnit.SECONDS);
+    assertTrue(lastThreeSec.isBefore(dequeue.getTimeOfLastRecord(STREAM_DESC).get()));
+    assertTrue(lastThreeSec.isBefore(dequeue.getTimeOfLastRecord(secondStream).get()));
+  }
+
+  @Test
+  void testMetadataOperationsError() {
+    final BufferManager bufferManager = new BufferManager();
+    final BufferDequeue dequeue = bufferManager.getBufferManagerDequeue();
+
+    final var ghostStream = new StreamDescriptor().withName("ghost stream");
+
+    assertEquals(0, dequeue.getTotalGlobalQueueSizeBytes());
+
+    assertTrue(dequeue.getQueueSizeInRecords(ghostStream).isEmpty());
+
+    assertTrue(dequeue.getQueueSizeBytes(ghostStream).isEmpty());
+
+    assertTrue(dequeue.getTimeOfLastRecord(ghostStream).isEmpty());
   }
 
 }

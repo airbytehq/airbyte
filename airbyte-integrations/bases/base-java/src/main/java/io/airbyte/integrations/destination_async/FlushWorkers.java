@@ -92,7 +92,7 @@ public class FlushWorkers implements AutoCloseable {
     // otherwise, if each individual stream has crossed a specific threshold, flush
     for (final Map.Entry<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> entry : bufferManagerDequeue.getBuffers().entrySet()) {
       final var stream = entry.getKey();
-      final var exceedSize = bufferManagerDequeue.getQueueSizeBytes(stream) >= QUEUE_FLUSH_THRESHOLD;
+      final var exceedSize = bufferManagerDequeue.getQueueSizeBytes(stream).get() >= QUEUE_FLUSH_THRESHOLD;
       final var tooLongSinceLastRecord = bufferManagerDequeue.getTimeOfLastRecord(stream)
           .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
           .orElse(false);
@@ -126,7 +126,7 @@ public class FlushWorkers implements AutoCloseable {
     workerPool.submit(() -> {
       log.info("Worker picked up work..");
       try {
-        log.info("Attempting to read from queue {}. Current queue size: {}", desc, bufferManagerDequeue.getQueueSizeInRecords(desc));
+        log.info("Attempting to read from queue {}. Current queue size: {}", desc, bufferManagerDequeue.getQueueSizeInRecords(desc).get());
 
         try (final var batch = bufferManagerDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
           flusher.flush(desc, batch.getData());
