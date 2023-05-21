@@ -103,7 +103,7 @@ class DatetimeBasedCursor(StreamSlicer):
         stream_slice_value_end = stream_slice.get(self.partition_field_end.eval(self.config))
         last_record_value = last_record.get(self.cursor_field.eval(self.config)) if last_record else None
         if last_record_value and self.cursor_datetime_format:
-            last_record_value = self._format_datetime(self._parser.parse(last_record_value, self.cursor_datetime_format, self._timezone))
+            last_record_value = self._format_datetime(self._parser.parse(last_record_value, self.cursor_datetime_format))
         cursor = None
         if stream_slice_value and last_record_value:
             cursor = max(stream_slice_value, last_record_value)
