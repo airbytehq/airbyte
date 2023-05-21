@@ -7,8 +7,7 @@ package io.airbyte.integrations.destination_async.buffers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination_async.BufferManager;
-import io.airbyte.integrations.destination_async.BufferManager.BufferManagerEnqueue;
+import io.airbyte.integrations.destination_async.buffers.BufferManager.BufferManagerEnqueue;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;

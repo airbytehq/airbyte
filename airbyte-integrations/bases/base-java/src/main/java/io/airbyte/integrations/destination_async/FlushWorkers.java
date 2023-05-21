@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination_async;
 
-import static io.airbyte.integrations.destination_async.BufferManager.QUEUE_FLUSH_THRESHOLD;
-import static io.airbyte.integrations.destination_async.BufferManager.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES;
+import static io.airbyte.integrations.destination_async.buffers.BufferManager.QUEUE_FLUSH_THRESHOLD;
+import static io.airbyte.integrations.destination_async.buffers.BufferManager.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES;
 
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.integrations.destination_async.buffers.MemoryBoundedLinkedBlockingQueue;
