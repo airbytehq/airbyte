@@ -24,7 +24,7 @@ on:
         required: false
         default: "1m"
       stream-number:
-        description: "Number of streams to use for performance measurement."
+        description: "Number of streams to use for destination performance measurement."
         required: false
         default: "1"
 jobs:
