@@ -4,9 +4,6 @@
 
 package io.airbyte.integrations.destination_async;
 
-import static io.airbyte.integrations.destination_async.buffers.BufferManager.QUEUE_FLUSH_THRESHOLD;
-import static io.airbyte.integrations.destination_async.buffers.BufferManager.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES;
-
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
@@ -40,7 +37,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class FlushWorkers implements AutoCloseable {
-
+  public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.8);
+  public static final long QUEUE_FLUSH_THRESHOLD = 10 * 1024 * 1024; // 10MB
   private static final long MAX_TIME_BETWEEN_REC_MINS = 5L;
   private static final long SUPERVISOR_INITIAL_DELAY_SECS = 0L;
   private static final long SUPERVISOR_PERIOD_SECS = 1L;

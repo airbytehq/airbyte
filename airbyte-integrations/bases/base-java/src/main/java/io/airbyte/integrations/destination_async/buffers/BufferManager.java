@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination_async.buffers;
 
-import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
 import io.airbyte.integrations.destination_async.FlushWorkers;
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -17,35 +16,31 @@ import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
+import static io.airbyte.integrations.destination_async.FlushWorkers.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES;
+
 @Slf4j
 public class BufferManager {
 
-  public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.8);
-  public static final long BLOCK_SIZE_BYTES = 10 * 1024 * 1024;
-  public static final long INITIAL_QUEUE_SIZE_BYTES = BLOCK_SIZE_BYTES;
-  public static final long MAX_CONCURRENT_QUEUES = 10L;
-  public static final long QUEUE_FLUSH_THRESHOLD = 10 * 1024 * 1024; // 10MB
-
   private final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
-  private final BufferManagerEnqueue bufferManagerEnqueue;
-  private final BufferDequeue bufferManagerDequeue;
+  private final BufferEnqueue bufferEnqueue;
+  private final BufferDequeue bufferDequeue;
   private final GlobalMemoryManager memoryManager;
   private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
 
   public BufferManager() {
     memoryManager = new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES);
     buffers = new ConcurrentHashMap<>();
-    bufferManagerEnqueue = new BufferManagerEnqueue(memoryManager, buffers);
-    bufferManagerDequeue = new BufferDequeue(memoryManager, buffers);
+    bufferEnqueue = new BufferEnqueue(memoryManager, buffers);
+    bufferDequeue = new BufferDequeue(memoryManager, buffers);
     debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 10, TimeUnit.SECONDS);
   }
 
-  public BufferManagerEnqueue getBufferManagerEnqueue() {
-    return bufferManagerEnqueue;
+  public BufferEnqueue getBufferEnqueue() {
+    return bufferEnqueue;
   }
 
-  public BufferDequeue getBufferManagerDequeue() {
-    return bufferManagerDequeue;
+  public BufferDequeue getBufferDequeue() {
+    return bufferDequeue;
   }
 
   /**
@@ -75,44 +70,6 @@ public class BufferManager {
           .append(System.lineSeparator());
     }
     log.info(queueInfo.toString());
-  }
-
-  public static class BufferManagerEnqueue {
-
-    private final RecordSizeEstimator recordSizeEstimator;
-
-    private final GlobalMemoryManager memoryManager;
-    private final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
-
-    public BufferManagerEnqueue(final GlobalMemoryManager memoryManager,
-                                final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
-      this.memoryManager = memoryManager;
-      this.buffers = buffers;
-      recordSizeEstimator = new RecordSizeEstimator();
-    }
-
-    public void addRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message) {
-      if (!buffers.containsKey(streamDescriptor)) {
-        buffers.put(streamDescriptor, new MemoryBoundedLinkedBlockingQueue<>(INITIAL_QUEUE_SIZE_BYTES));
-      }
-
-      // todo (cgardens) - handle estimating state message size.
-      final long messageSize = message.getType() == AirbyteMessage.Type.RECORD ? recordSizeEstimator.getEstimatedByteSize(message.getRecord()) : 1024;
-
-      final var queue = buffers.get(streamDescriptor);
-      var addedToQueue = queue.offer(message, messageSize);
-
-      // todo (cgardens) - what if the record being added is bigger than the block size?
-      // if failed, try to increase memory and add to queue.
-      while (!addedToQueue) {
-        final var freeMem = memoryManager.requestMemory();
-        if (freeMem > 0) {
-          queue.setMaxMemoryUsage(queue.getMaxMemoryUsage() + freeMem);
-        }
-        addedToQueue = queue.offer(message, messageSize);
-      }
-    }
-
   }
 
 }

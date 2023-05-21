@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination_async.buffers.BufferManager.BufferManagerEnqueue;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -35,8 +34,8 @@ public class BufferDequeueTest {
     @Test
     void testTakeShouldBestEffortRead() {
       final BufferManager bufferManager = new BufferManager();
-      final BufferManagerEnqueue enqueue = bufferManager.getBufferManagerEnqueue();
-      final BufferDequeue dequeue = bufferManager.getBufferManagerDequeue();
+      final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
+      final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
       enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
       enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
@@ -55,8 +54,8 @@ public class BufferDequeueTest {
     @Test
     void testTakeShouldReturnAllIfPossible() {
       final BufferManager bufferManager = new BufferManager();
-      final BufferManagerEnqueue enqueue = bufferManager.getBufferManagerEnqueue();
-      final BufferDequeue dequeue = bufferManager.getBufferManagerDequeue();
+      final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
+      final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
       enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
       enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
@@ -72,8 +71,8 @@ public class BufferDequeueTest {
     @Test
     void testTakeFewerRecordsThanSizeLimitShouldNotError() {
       final BufferManager bufferManager = new BufferManager();
-      final BufferManagerEnqueue enqueue = bufferManager.getBufferManagerEnqueue();
-      final BufferDequeue dequeue = bufferManager.getBufferManagerDequeue();
+      final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
+      final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
       enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
       enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
@@ -90,8 +89,8 @@ public class BufferDequeueTest {
   @Test
   void testMetadataOperationsCorrect() {
     final BufferManager bufferManager = new BufferManager();
-    final BufferManagerEnqueue enqueue = bufferManager.getBufferManagerEnqueue();
-    final BufferDequeue dequeue = bufferManager.getBufferManagerDequeue();
+    final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
+    final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
     enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
     enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
@@ -116,7 +115,7 @@ public class BufferDequeueTest {
   @Test
   void testMetadataOperationsError() {
     final BufferManager bufferManager = new BufferManager();
-    final BufferDequeue dequeue = bufferManager.getBufferManagerDequeue();
+    final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
     final var ghostStream = new StreamDescriptor().withName("ghost stream");
 

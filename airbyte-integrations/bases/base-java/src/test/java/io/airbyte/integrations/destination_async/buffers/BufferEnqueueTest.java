@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination_async.buffers;
 
 import org.junit.Test;
 
-public class BufferManagerEnqueueTest {
+public class BufferEnqueueTest {
 
   @Test
   void OfferAndRetrieve() {
