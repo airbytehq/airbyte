@@ -8,12 +8,10 @@ import static io.airbyte.integrations.destination_async.buffers.BufferManager.QU
 import static io.airbyte.integrations.destination_async.buffers.BufferManager.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES;
 
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
-import io.airbyte.integrations.destination_async.buffers.MemoryBoundedLinkedBlockingQueue;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -90,8 +88,7 @@ public class FlushWorkers implements AutoCloseable {
     // todo (cgardens) - build a score to prioritize which queue to flush next. e.g. if a queue is very
     // large, flush it first. if a queue has not been flushed in a while, flush it next.
     // otherwise, if each individual stream has crossed a specific threshold, flush
-    for (final Map.Entry<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> entry : bufferManagerDequeue.getBuffers().entrySet()) {
-      final var stream = entry.getKey();
+    for (final StreamDescriptor stream : bufferManagerDequeue.getBufferedStreams()) {
       final var exceedSize = bufferManagerDequeue.getQueueSizeBytes(stream).get() >= QUEUE_FLUSH_THRESHOLD;
       final var tooLongSinceLastRecord = bufferManagerDequeue.getTimeOfLastRecord(stream)
           .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
@@ -117,7 +114,7 @@ public class FlushWorkers implements AutoCloseable {
 
   private void flushAll() {
     log.info("Flushing all buffers..");
-    for (final StreamDescriptor desc : bufferManagerDequeue.getBuffers().keySet()) {
+    for (final StreamDescriptor desc : bufferManagerDequeue.getBufferedStreams()) {
       flush(desc);
     }
   }

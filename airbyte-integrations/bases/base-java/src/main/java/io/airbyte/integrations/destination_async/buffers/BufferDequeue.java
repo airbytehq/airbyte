@@ -8,9 +8,9 @@ import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -92,11 +92,13 @@ public class BufferDequeue {
   }
 
   /**
-   * The following methods are provide metadata for buffer flushing calculations.
+   * The following methods are provide metadata for buffer flushing calculations. Consumers are
+   * expected to call {@link #getBufferedStreams()} to retrieve the currently buffered streams as a
+   * handle to the remaining methods.
    */
 
-  public Map<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> getBuffers() {
-    return new HashMap<>(buffers);
+  public Set<StreamDescriptor> getBufferedStreams() {
+    return new HashSet<>(buffers.keySet());
   }
 
   public long getTotalGlobalQueueSizeBytes() {
