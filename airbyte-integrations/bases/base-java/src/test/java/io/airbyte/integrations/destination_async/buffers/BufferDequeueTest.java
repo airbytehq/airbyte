@@ -2,21 +2,20 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination_async;
+package io.airbyte.integrations.destination_async.buffers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination_async.BufferManager.BufferManagerDequeue;
+import io.airbyte.integrations.destination_async.BufferManager;
 import io.airbyte.integrations.destination_async.BufferManager.BufferManagerEnqueue;
-import io.airbyte.integrations.destination_async.buffers.Batch;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import org.junit.jupiter.api.Test;
 
-public class BufferManagerDequeueTest {
+public class BufferDequeueTest {
 
   private static final String STREAM_NAME = "stream1";
   private static final StreamDescriptor STREAM_DESC = new StreamDescriptor().withName(STREAM_NAME);
@@ -31,7 +30,7 @@ public class BufferManagerDequeueTest {
   void testReadFromBatch() {
     final BufferManager bufferManager = new BufferManager();
     final BufferManagerEnqueue enqueue = bufferManager.getBufferManagerEnqueue();
-    final BufferManagerDequeue dequeue = bufferManager.getBufferManagerDequeue();
+    final BufferDequeue dequeue = bufferManager.getBufferManagerDequeue();
 
     enqueue.addRecord(STREAM_DESC, RECORD_MSG);
     enqueue.addRecord(STREAM_DESC, RECORD_MSG);
@@ -51,7 +50,7 @@ public class BufferManagerDequeueTest {
   void testReadFromBatchFewerRecordsThanSizeLimit() {
     final BufferManager bufferManager = new BufferManager();
     final BufferManagerEnqueue enqueue = bufferManager.getBufferManagerEnqueue();
-    final BufferManagerDequeue dequeue = bufferManager.getBufferManagerDequeue();
+    final BufferDequeue dequeue = bufferManager.getBufferManagerDequeue();
 
     enqueue.addRecord(STREAM_DESC, RECORD_MSG);
     enqueue.addRecord(STREAM_DESC, RECORD_MSG);

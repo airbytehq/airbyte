@@ -7,6 +7,8 @@ package io.airbyte.integrations.destination_async;
 import static io.airbyte.integrations.destination_async.BufferManager.QUEUE_FLUSH_THRESHOLD;
 import static io.airbyte.integrations.destination_async.BufferManager.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES;
 
+import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
+import io.airbyte.integrations.destination_async.buffers.MemoryBoundedLinkedBlockingQueue;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
@@ -48,11 +50,11 @@ public class FlushWorkers implements AutoCloseable {
   private static final long DEBUG_PERIOD_SECS = 10L;
   private final ScheduledExecutorService supervisorThread = Executors.newScheduledThreadPool(1);
   private final ExecutorService workerPool = Executors.newFixedThreadPool(5);
-  private final BufferManager.BufferManagerDequeue bufferManagerDequeue;
+  private final BufferDequeue bufferManagerDequeue;
   private final DestinationFlushFunction flusher;
   private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
 
-  public FlushWorkers(final BufferManager.BufferManagerDequeue bufferManagerDequeue, final DestinationFlushFunction flushFunction) {
+  public FlushWorkers(final BufferDequeue bufferManagerDequeue, final DestinationFlushFunction flushFunction) {
     this.bufferManagerDequeue = bufferManagerDequeue;
     flusher = flushFunction;
   }
