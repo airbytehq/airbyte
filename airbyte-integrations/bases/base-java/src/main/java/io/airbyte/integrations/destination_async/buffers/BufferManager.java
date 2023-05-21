@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination_async.buffers;
 
+import static io.airbyte.integrations.destination_async.FlushWorkers.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES;
+
 import io.airbyte.integrations.destination_async.FlushWorkers;
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -15,8 +17,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-
-import static io.airbyte.integrations.destination_async.FlushWorkers.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES;
 
 @Slf4j
 public class BufferManager {

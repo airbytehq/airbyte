@@ -19,9 +19,9 @@ import org.junit.jupiter.api.Test;
 
 public class BufferDequeueTest {
 
+  public static final String RECORD_20_BYTES = "abc";
   private static final String STREAM_NAME = "stream1";
   private static final StreamDescriptor STREAM_DESC = new StreamDescriptor().withName(STREAM_NAME);
-  private static final String RECORD_20_BYTES = "abc";
   private static final AirbyteMessage RECORD_MSG_20_BYTES = new AirbyteMessage()
       .withType(Type.RECORD)
       .withRecord(new AirbyteRecordMessage()

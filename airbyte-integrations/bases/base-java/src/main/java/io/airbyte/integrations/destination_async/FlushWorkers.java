@@ -37,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class FlushWorkers implements AutoCloseable {
+
   public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.8);
   public static final long QUEUE_FLUSH_THRESHOLD = 10 * 1024 * 1024; // 10MB
   private static final long MAX_TIME_BETWEEN_REC_MINS = 5L;
