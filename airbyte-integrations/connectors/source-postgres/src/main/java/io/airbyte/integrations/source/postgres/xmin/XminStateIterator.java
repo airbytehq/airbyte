@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres.xmin;
 
 import autovalue.shaded.com.google.common.collect.AbstractIterator;
+import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -60,8 +61,7 @@ public class XminStateIterator extends AbstractIterator<AirbyteMessage> implemen
     if (messageIterator.hasNext()) {
       // Use try-catch to catch Exception that could occur when connection to the database fails
       try {
-        final AirbyteMessage message = messageIterator.next();
-        return message;
+        return messageIterator.next();
       } catch (final Exception e) {
         hasCaughtException = true;
         LOGGER.error("Message iterator failed to read next record.", e);

@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.postgres.xmin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;

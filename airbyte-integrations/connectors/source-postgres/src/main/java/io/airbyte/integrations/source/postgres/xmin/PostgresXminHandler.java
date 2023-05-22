@@ -13,6 +13,7 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.postgres.PostgresType;
+import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
