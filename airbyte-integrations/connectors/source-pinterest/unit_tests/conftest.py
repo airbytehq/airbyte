@@ -18,6 +18,16 @@ def test_config():
 
 
 @fixture
+def wrong_date_config():
+    return {
+        "client_id": "test_client_id",
+        "client_secret": "test_client_secret",
+        "refresh_token": "test_refresh_token",
+        "start_date": "wrong_date_format",
+    }
+
+
+@fixture
 def test_incremental_config():
     return {
         "authenticator": MagicMock(),
