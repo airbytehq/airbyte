@@ -3066,40 +3066,11 @@
     {
       "stream": {
         "name": "early_fraud_warnings",
-        "json_schema": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": ["null", "string"]
-            },
-            "object": {
-              "type": ["null", "string"]
-            },
-            "actionable": {
-              "type": ["null", "boolean"]
-            },
-            "charge": {
-              "type": ["null", "string"]
-            },
-            "created": {
-              "type": ["null", "number"]
-            },
-            "fraud_type": {
-              "type": ["null", "string"]
-            },
-            "livemode": {
-              "type": ["null", "boolean"]
-            }
-          }
-        },
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["created"],
-        "source_defined_primary_key": [["id"]]
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite",
-      "cursor_field": ["created"]
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
       "stream": {
