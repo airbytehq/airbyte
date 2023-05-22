@@ -186,18 +186,6 @@ def test_get_authenticated_repo_url(mocker):
     assert repo_url == "https://username:token@foobar.com"
 
 
-@pytest.mark.slow
-def test_clone_airbyte_cloud_repo(mocker, tmp_path):
-    mocker.patch.object(
-        cloud_availability_updater, "get_authenticated_repo_url", mocker.Mock(return_value="https://github.com/airbytehq/airbyte.git")
-    )
-    mocker.patch.object(cloud_availability_updater, "AIRBYTE_PLATFORM_INTERNAL_MAIN_BRANCH_NAME", "master")
-    repo = cloud_availability_updater.clone_airbyte_cloud_repo(tmp_path)
-    assert repo
-    assert len(repo.heads) == 1
-    assert repo.heads[0].name == "master"
-
-
 def test_run_generate_cloud_connector_catalog(mocker, tmp_path):
     mocker.patch.object(cloud_availability_updater, "subprocess")
 

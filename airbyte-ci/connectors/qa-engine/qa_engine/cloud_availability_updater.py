@@ -43,12 +43,6 @@ def get_authenticated_repo_url(git_username: str, github_api_token: str) -> str:
     return AIRBYTE_PLATFORM_INTERNAL_GITHUB_REPO_URL.replace("https://", f"https://{git_username}:{github_api_token}@")
 
 
-def clone_airbyte_cloud_repo(local_repo_path: Path) -> git.Repo:
-    logger.info(f"Cloning {AIRBYTE_PLATFORM_INTERNAL_GITHUB_REPO_URL} to {local_repo_path}")
-    authenticated_repo_url = get_authenticated_repo_url(GIT_USERNAME_FOR_AUTH, GITHUB_API_TOKEN)
-    return git.Repo.clone_from(authenticated_repo_url, local_repo_path, branch=AIRBYTE_PLATFORM_INTERNAL_MAIN_BRANCH_NAME)
-
-
 def get_definitions_mask_path(local_repo_path, definition_type: str) -> Path:
     # TODO QA CHANGE 2
     definitions_mask_path = (
@@ -202,7 +196,8 @@ def add_new_connector_to_cloud_catalog(airbyte_cloud_repo_path: Path, airbyte_cl
 
 def batch_deploy_eligible_connectors_to_cloud_repo(eligible_connectors: Iterable):
     cloud_repo_path = Path(tempfile.mkdtemp())
-    airbyte_cloud_repo = clone_airbyte_cloud_repo(cloud_repo_path)
+    # TODO QA REMOVE 5
+    # airbyte_cloud_repo = clone_airbyte_cloud_repo(cloud_repo_path)
     airbyte_cloud_repo = set_git_identity(airbyte_cloud_repo)
     current_date = datetime.utcnow().strftime("%Y%m%d")
     airbyte_cloud_repo.git.checkout(AIRBYTE_PLATFORM_INTERNAL_MAIN_BRANCH_NAME)
