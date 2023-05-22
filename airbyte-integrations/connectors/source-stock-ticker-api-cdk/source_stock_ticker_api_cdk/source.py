@@ -6,6 +6,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
+import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -19,10 +20,12 @@ class StockPrices(HttpStream):
     cursor_field = "date"
     primary_key = "date"
 
-    def __init__(self, stock_ticker: str, start_date: datetime, **kwargs):
+    def __init__(self, stock_ticker: str, start_date: datetime, end_date: datetime, time_step: int, **kwargs):
         super().__init__(**kwargs)
         self.stock_ticker = stock_ticker
         self.start_date = start_date
+        self.end_date = end_date
+        self.time_step = time_step
         self._cursor_value = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -85,12 +88,12 @@ class StockPrices(HttpStream):
         The return value is a list of dicts {'start_date': date_string, 'end_date': date_string}.
         """
         dates = []
-        while start_date < datetime.now():
+        while start_date < self.end_date:
             start_date_str = start_date.strftime("%Y-%m-%d")
-            end_date_str = (start_date + timedelta(days=30)).strftime("%Y-%m-%d")
+            end_date_str = (start_date + timedelta(days=self.time_step)).strftime("%Y-%m-%d")
             self.logger.info(f"Date range: {start_date_str} - {end_date_str}")
             dates.append({"start_date": start_date_str, "end_date": end_date_str})
-            start_date += timedelta(days=31)
+            start_date += timedelta(days=self.time_step + 1)
 
         return dates
 
@@ -104,10 +107,15 @@ class StockPrices(HttpStream):
 class SourceStockTickerApiCdk(AbstractSource):
     @staticmethod
     def _get_stream_kwargs(config: Mapping[str, Any]) -> dict:
-        stream_kwargs = {"authenticator": TokenAuthenticator(token=config["api_key"]), "stock_ticker": config["stock_ticker"]}
-        stream_kwargs["start_date"] = (
-            datetime.strptime(config["start_date"], "%Y-%m-%d") if "start_date" in config else datetime.now() - timedelta(days=30)
-        )
+        start_date = pendulum.parse(config["start_date"]).date()
+        end_date = pendulum.parse(config["end_date"]).date() if "end_date" in config else datetime.now()
+        stream_kwargs = {
+            "authenticator": TokenAuthenticator(token=config["api_key"]),
+            "stock_ticker": config["stock_ticker"],
+            "time_step": config["time_step"],
+            "start_date": start_date,
+            "end_date": end_date,
+        }
         return stream_kwargs
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:

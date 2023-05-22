@@ -3,13 +3,13 @@
   "type" : "object",
   "properties" : {
     "date" : {
-      "type" : "string"
+      "type" : ["null" ,"string"]
     },
     "price" : {
-      "type" : "number"
+      "type" : ["null" ,"number"]
     },
     "stock_ticker" : {
-      "type" : "string"
+      "type" : ["null" ,"string"]
     }
   }
 }

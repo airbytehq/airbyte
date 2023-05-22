@@ -2,20 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import datetime
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_stock_ticker_api_cdk.source import StockPrices
-
-
-@pytest.fixture
-def stream():
-    return StockPrices(
-        stock_ticker="TSLA",
-        start_date=datetime.strptime("2022-07-07", "%Y-%m-%d"),
-    )
 
 
 def test_request_params(stream):

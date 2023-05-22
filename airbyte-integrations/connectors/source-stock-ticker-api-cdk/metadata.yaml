@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - TODO # Please change to the hostname of the source.
+      - api.polygon.io
   registries:
     oss:
       enabled: false
@@ -14,7 +14,7 @@ data:
   icon: stock-ticker-api-cdk.svg
   license: MIT
   name: Stock Ticker Api Cdk
-  releaseDate: TODO
+  releaseDate: "2022-05-22"
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/stock-ticker-api-cdk
 metadataSpecVersion: "1.0"

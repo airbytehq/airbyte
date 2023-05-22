@@ -5,5 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_stock_ticker_api_cdk_singer'
+    moduleDirectory 'source_stock_ticker_api_cdk'
 }
