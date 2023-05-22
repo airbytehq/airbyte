@@ -11,7 +11,7 @@ data:
   normalizationConfig:
     normalizationIntegrationType: mysql
     normalizationRepository: airbyte/normalization-mysql
-    normalizationTag: 0.4.0
+    normalizationTag: 0.4.3
   registries:
     cloud:
       dockerRepository: airbyte/destination-mysql-strict-encrypt

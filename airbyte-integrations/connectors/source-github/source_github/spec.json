@@ -80,6 +80,13 @@
         "description": "Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.",
         "order": 3,
         "pattern_descriptor": "org/repo/branch1 org/repo/branch2"
+      },
+      "requests_per_hour": {
+        "type": "integer",
+        "title": "Max requests per hour",
+        "description": "The GitHub API allows for a maximum of 5000 requests per hour (15000 for Github Enterprise). You can specify a lower value to limit your use of the API quota.",
+        "minimum": 1,
+        "order": 4
       }
     }
   },
