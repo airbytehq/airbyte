@@ -74,7 +74,7 @@ class SourceStripe(AbstractSource):
             Customers(**incremental_args),
             Disputes(**incremental_args),
             Events(**incremental_args),
-            EarlyFraudWarnings(**incremental_args),
+            EarlyFraudWarnings(**args),
             InvoiceItems(**incremental_args),
             InvoiceLineItems(**args),
             Invoices(**incremental_args),

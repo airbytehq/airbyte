@@ -237,12 +237,21 @@ class Disputes(IncrementalStripeStream):
     def path(self, **kwargs):
         return "disputes"
 
-class EarlyFraudWarnings(IncrementalStripeStream):
+class EarlyFraudWarnings(StripeStream):
     """
-    API docs: https://stripe.com/docs/api/radar/early_fraud_warnings/
+    API docs: https://stripe.com/docs/api/radar/early_fraud_warnings/list
     """
 
-    cursor_field = "created"
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {}
+
+        if next_page_token:
+            params.update(next_page_token)
 
     def path(self, **kwargs):
         return "radar/early_fraud_warnings"
