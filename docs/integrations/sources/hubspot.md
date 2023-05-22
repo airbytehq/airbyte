@@ -22,6 +22,7 @@ You can use OAuth, API key, or Private App to authenticate your HubSpot account.
 | `engagements_emails`        | `sales-email-read`                                                                                           |
 | `forms`                     | `forms`                                                                                                      |
 | `form_submissions`          | `forms`                                                                                                      |
+| `goals`                     | `crm.objects.goals.read`                                                                              |
 | `line_items`                | `e-commerce`                                                                                                 |
 | `owners`                    | `crm.objects.owners.read`                                                                                    |
 | `products`                  | `e-commerce`                                                                                                 |
@@ -82,6 +83,7 @@ The HubSpot source connector supports the following streams:
 * [Engagements Tasks](https://developers.hubspot.com/docs/api/crm/tasks) \(Incremental\)
 * [Forms](https://developers.hubspot.com/docs/api/marketing/forms) \(Client-Side Incremental\)
 * [Form Submissions](https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form) \(Client-Side Incremental\)
+* [Goals](https://developers.hubspot.com/docs/api/crm/goals) \(Incremental\)
 * [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
 * [Marketing Emails](https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-email-statistics)
 * [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental\)
@@ -134,9 +136,10 @@ Now that you have set up the Hubspot source connector, check out the following H
 [Build a single customer view with open-source tools](https://airbyte.com/tutorials/single-customer-view)
 
 ## Changelog
-
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.8.0   | 2023-04-10 | [16032](https://github.com/airbytehq/airbyte/pull/16032) | Add new stream `Custom Object`                                                                                                                             |
+| 0.7.0   | 2023-04-10 | [24450](https://github.com/airbytehq/airbyte/pull/24450) | Add new stream `Goals`                                                                                                                                     |
 | 0.6.2   | 2023-04-28 | [25667](https://github.com/airbytehq/airbyte/pull/25667) | Fixed bug with `Invalid Date` like `2000-00-00T00:00:00Z` while settip up the connector  |
 | 0.6.1   | 2023-04-10 | [21423](https://github.com/airbytehq/airbyte/pull/21423) | Update scope for `DealPipelines` stream to only `crm.objects.contacts.read`                                                                                |
 | 0.6.0   | 2023-04-07 | [24980](https://github.com/airbytehq/airbyte/pull/24980) | Add new stream `DealsArchived`                                                                                                                             |
