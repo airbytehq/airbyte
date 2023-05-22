@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination_async;
+package io.airbyte.integrations.destination_async.buffers;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class MemoryBoundedLinkedBlockingQueue<E> extends LinkedBlockingQueue<MemoryBoundedLinkedBlockingQueue.MemoryItem<E>> {
+class MemoryBoundedLinkedBlockingQueue<E> extends LinkedBlockingQueue<MemoryBoundedLinkedBlockingQueue.MemoryItem<E>> {
 
   private final AtomicLong currentMemoryUsage;
   private final AtomicLong maxMemoryUsage;
