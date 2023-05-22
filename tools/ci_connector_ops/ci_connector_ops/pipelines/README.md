@@ -196,17 +196,20 @@ It's mainly purposed for CI use to release a connector update.
 Publish all connectors modified in the head commit: `airbyte-ci connectors --modified publish`
 
 ### Options
-| Option                               | Required | Mapped environment variable        | Description                                                                           |
-| ------------------------------------ | -------- | ---------------------------------- | ------------------------------------------------------------------------------------- |
-| `--spec-cache-gcs-credentials`       | True     | `SPEC_CACHE_GCS_CREDENTIALS`       | The service account key to upload files to the GCS bucket hosting spec cache.         |
-| `--spec-cache-bucket-name`           | True     | `SPEC_CACHE_BUCKET_NAME`           | The name of the GCS bucket where specs will be cached.                                |
-| `--metadata-service-gcs-credentials` | True     | `METADATA_SERVICE_GCS_CREDENTIALS` | The service account key to upload files to the GCS bucket hosting the metadata files. |
-| `--metadata-service-bucket-name`     | True     | `METADATA_SERVICE_BUCKET_NAME`     | The name of the GCS bucket where metadata files will be uploaded.                     |
-| `--docker-hub-username`              | True     | `DOCKER_HUB_USERNAME`              | Your username to connect to DockerHub.                                                |
-| `--docker-hub-password`              | True     | `DOCKER_HUB_PASSWORD`              | Your password to connect to DockerHub.                                                |
-| `--slack-webhook`                    | False    | `SLACK_WEBHOOK`                    | The Slack webhook URL to send notifications to.                                       |
-| `--slack-channel`                    | False    | `SLACK_CHANNEL`                    | The Slack channel name to send notifications to.                                      |
 
+| Option                               | Required | Default         | Mapped environment variable        | Description                                                                                                                                                                      |
+| ------------------------------------ | -------- | --------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--pre-release/--main-release`       | False    | `--pre-release` |                                    | Whether to publish the pre-release or the main release version of a connector. Defaults to pre-release. For main release you have to set the credentials to interact with the GCS bucket. |
+| `--docker-hub-username`              | True     |                 | `DOCKER_HUB_USERNAME`              | Your username to connect to DockerHub.                                                                                                                                           |
+| `--docker-hub-password`              | True     |                 | `DOCKER_HUB_PASSWORD`              | Your password to connect to DockerHub.                                                                                                                                           |
+| `--spec-cache-gcs-credentials`       | False    |                 | `SPEC_CACHE_GCS_CREDENTIALS`       | The service account key to upload files to the GCS bucket hosting spec cache.                                                                                                    |
+| `--spec-cache-bucket-name`           | False    |                 | `SPEC_CACHE_BUCKET_NAME`           | The name of the GCS bucket where specs will be cached.                                                                                                                           |
+| `--metadata-service-gcs-credentials` | False    |                 | `METADATA_SERVICE_GCS_CREDENTIALS` | The service account key to upload files to the GCS bucket hosting the metadata files.                                                                                            |
+| `--metadata-service-bucket-name`     | False    |                 | `METADATA_SERVICE_BUCKET_NAME`     | The name of the GCS bucket where metadata files will be uploaded.                                                                                                                |
+| `--slack-webhook`                    | False    |                 | `SLACK_WEBHOOK`                    | The Slack webhook URL to send notifications to.                                                                                                                                  |
+| `--slack-channel`                    | False    |                 | `SLACK_CHANNEL`                    | The Slack channel name to send notifications to.                                                                                                                                 |
+
+I've added an empty "Default" column, and you can fill in the default values as needed.
 #### What it runs
 ```mermaid
 flowchart TD
@@ -214,10 +217,11 @@ flowchart TD
     check[Check if the connector image already exists]
     build[Build the connector image for all platform variants]
     upload_spec[Upload connector spec to the spec cache bucket]
-    push[Push the connector to DockerHub, with platform variants]
+    push[Push the connector image from DockerHub, with platform variants]
+    pull[Pull the connector image from DockerHub to check SPEC can be run and the image layers are healthy]
     upload_metadata[Upload its metadata file to the metadata service bucket]
 
-    validate-->check-->build-->upload_spec-->push-->upload_metadata
+    validate-->check-->build-->upload_spec-->push-->pull-->upload_metadata
 ```
 
 ### <a id="metadata-validate-command-subgroup"></a>`metadata` command subgroup
