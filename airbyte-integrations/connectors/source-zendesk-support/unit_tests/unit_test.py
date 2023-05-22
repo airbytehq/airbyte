@@ -21,6 +21,7 @@ from source_zendesk_support.streams import (
     END_OF_STREAM_KEY,
     LAST_END_TIME_KEY,
     BaseSourceZendeskSupportStream,
+    AuditLogs,
     Brands,
     CustomRoles,
     GroupMemberships,
@@ -248,6 +249,7 @@ class TestAllStreams:
     @pytest.mark.parametrize(
         "expected_stream_cls",
         [
+            (AuditLogs),
             (GroupMemberships),
             (Groups),
             (Macros),
@@ -268,6 +270,7 @@ class TestAllStreams:
             (Schedules),
         ],
         ids=[
+            "AuditLogs",
             "GroupMemberships",
             "Groups",
             "Macros",
@@ -299,6 +302,7 @@ class TestAllStreams:
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
+            (AuditLogs, "audit_logs"),
             (GroupMemberships, "group_memberships"),
             (Groups, "groups"),
             (Macros, "macros"),
@@ -319,6 +323,7 @@ class TestAllStreams:
             (Schedules, "business_hours/schedules.json"),
         ],
         ids=[
+            "AuditLogs",
             "GroupMemberships",
             "Groups",
             "Macros",
