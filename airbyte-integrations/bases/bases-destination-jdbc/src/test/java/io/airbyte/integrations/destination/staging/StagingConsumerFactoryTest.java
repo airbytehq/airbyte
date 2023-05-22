@@ -15,8 +15,6 @@ class StagingConsumerFactoryTest {
 
   @Test()
   void detectConflictingStreams() {
-    final StagingConsumerFactory f = new StagingConsumerFactory();
-
     final ConfigErrorException configErrorException = assertThrows(
         ConfigErrorException.class,
         () -> SerialFlush.function(
