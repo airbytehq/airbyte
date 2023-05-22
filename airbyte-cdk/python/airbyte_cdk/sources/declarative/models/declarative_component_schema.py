@@ -306,8 +306,8 @@ class OAuthAuthenticator(BaseModel):
     )
     grant_type: Optional[str] = Field(
         "refresh_token",
-        description="How the access token is granted.",
-        examples=["refresh_token"],
+        description="Specifies the OAuth2 grant type. If set to refresh_token, the refresh_token needs to be provided as well. For client_credentials, only client id and secret are required. Other grant types are not officially supported.",
+        examples=["refresh_token", "client_credentials"],
         title="Grant Type",
     )
     refresh_request_body: Optional[Dict[str, Any]] = Field(
@@ -400,8 +400,8 @@ class SingleUseRefreshTokenOAuthAuthenticator(BaseModel):
     )
     grant_type: Optional[str] = Field(
         "refresh_token",
-        description="How the access token is granted.",
-        examples=["refresh_token"],
+        description="Specifies the OAuth2 grant type. If set to refresh_token, the refresh_token needs to be provided as well. For client_credentials, only client id and secret are required. Other grant types are not officially supported.",
+        examples=["refresh_token", "client_credentials"],
         title="Grant Type",
     )
     refresh_request_body: Optional[Dict[str, Any]] = Field(
