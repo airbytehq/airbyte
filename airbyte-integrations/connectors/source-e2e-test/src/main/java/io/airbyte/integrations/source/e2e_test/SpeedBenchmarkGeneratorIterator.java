@@ -12,6 +12,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.time.Instant;
+import java.util.Random;
 import javax.annotation.CheckForNull;
 
 /**
@@ -27,13 +28,19 @@ class SpeedBenchmarkGeneratorIterator extends AbstractIterator<AirbyteMessage> {
       .withType(Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withEmittedAt(Instant.EPOCH.toEpochMilli()).withStream("stream1"));
   private static final JsonNode jsonNode = Jsons.emptyObject();
+  private static final long seed = 54321L; // arbitrary seed to make the data deterministic
+  private static final String charSet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
   private final long maxRecords;
   private long numRecordsEmitted;
+  private final Random random;
+  private final StringBuilder sb;
 
   public SpeedBenchmarkGeneratorIterator(final long maxRecords) {
     this.maxRecords = maxRecords;
     numRecordsEmitted = 0;
+    random = new Random(seed);
+    sb = new StringBuilder();
   }
 
   @CheckForNull
@@ -45,10 +52,16 @@ class SpeedBenchmarkGeneratorIterator extends AbstractIterator<AirbyteMessage> {
 
     numRecordsEmitted++;
 
+    for (int i = 1; i <= valueBase.length(); ++i) {
+      sb.append(charSet.charAt(random.nextInt(charSet.length())));
+    }
+
     for (int j = 1; j <= 5; ++j) {
       // do % 10 so that all records are same length.
-      ((ObjectNode) jsonNode).put(fieldBase + j, valueBase + numRecordsEmitted % 10);
+      ((ObjectNode) jsonNode).put(fieldBase + j, sb.toString() + numRecordsEmitted % 10);
     }
+    // Clears the StringBuilder after each iteration
+    sb.setLength(0);
 
     message.getRecord().withData(jsonNode);
     return Jsons.clone(message);
