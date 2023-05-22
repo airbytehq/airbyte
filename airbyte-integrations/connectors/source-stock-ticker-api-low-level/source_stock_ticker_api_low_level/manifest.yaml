@@ -4,12 +4,6 @@ definitions:
   selector:
     extractor:
       field_path: [ "results" ]
-  requester:
-    url_base: "https://api.polygon.io"
-    http_method: "GET"
-    authenticator:
-      type: "BearerAuthenticator"
-      api_token: "{{ config['api_key'] }}"
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
@@ -21,16 +15,16 @@ definitions:
       page_token_option:
         type: "RequestPath"
     requester:
-      $ref: "#/definitions/requester"
+      type: HttpRequester
+      url_base: "https://api.polygon.io"
+      http_method: "GET"
+      authenticator:
+        type: "BearerAuthenticator"
+        api_token: "{{ config['api_key'] }}"
 
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
-    transformations:
-      - type: AddFields
-        fields:
-          - path: [ "airbyte_cursor" ]
-            value: "{{ record['t'] | int // 1000 }}"
     incremental_sync:
       type: "DatetimeBasedCursor"
       start_datetime:
@@ -39,20 +33,18 @@ definitions:
       end_datetime:
         datetime: "{{ config['end_date']}}"
         datetime_format: "%Y-%m-%d"
-      step: "P1D"
-      datetime_format: "%s"
+      step: "P1W"
+      datetime_format: "%ms"
       cursor_granularity: "PT1S"
-      cursor_field: "airbyte_cursor"
+      cursor_field: "t"
 
   stock_prices_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "stock_prices"
-      primary_key:
-        - "airbyte_cursor"
-      cursor_field:
-        - "airbyte_cursor"
-      path: "/v2/aggs/ticker/{{ config['stock_ticker'] }}/range/{{ config['multiplier'] }}/{{ config['timespan'] }}/{{ stream_slice.start_time | int * 1000 }}/{{ stream_slice['end_time'] | int * 1000}}?adjusted={{ config['adjusted'] }}&sort={{ config['sort'] }}&limit={{ config['limit'] }}"
+      primary_key: "t"
+      cursor_field: "t"
+      path: "/v2/aggs/ticker/{{ config['stock_ticker'] }}/range/{{ config['multiplier'] }}/{{ config['timespan'] }}/{{ stream_slice['start_time']}}/{{ stream_slice['end_time']}}?adjusted={{ config['adjusted'] }}&sort={{ config['sort'] }}&limit={{ config['limit'] }}"
 
 
 streams:

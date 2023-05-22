@@ -6,8 +6,6 @@ connectionSpecification:
   required:
     - stock_ticker
     - api_key
-    - multiplier
-    - timespan
     - start_date
     - end_date
   additionalProperties: true
@@ -41,6 +39,7 @@ connectionSpecification:
       format: date
     multiplier:
       title: Multiplier
+      default: 1
       type: integer
       description: The size of the timespan multiplier.
       examples:
@@ -49,6 +48,7 @@ connectionSpecification:
     timespan:
       title: Timespan
       type: string
+      default: day
       description: The size of the time window.
       examples:
         - minute
@@ -58,14 +58,13 @@ connectionSpecification:
         - month
     adjusted:
       title: Adjusted
-      type: string
+      type: boolean
+      default: true
       description: Whether or not the results are adjusted for splits. By default, results are adjusted. Set this to false to get results that are NOT adjusted for splits.
-      examples:
-        - "true"
-        - "false"
     sort:
       title: Sort
       type: string
+      default: asc
       description: Sort the results by timestamp. asc will return results in ascending order (oldest at the top), desc will return results in descending order (newest at the top).
       examples:
         - "asc"
@@ -73,6 +72,9 @@ connectionSpecification:
     limit:
       title: Limit
       type: integer
+      default: 100
+      minimum: 1
+      maximum: 50000
       description: Limits the number of base aggregates queried to create the aggregate results. Max 50000
       examples:
         - 100

@@ -25,9 +25,6 @@
     },
     "n": {
       "type": ["null", "integer"]
-    },
-    "airbyte_cursor": {
-      "type": "number"
     }
   }
 }

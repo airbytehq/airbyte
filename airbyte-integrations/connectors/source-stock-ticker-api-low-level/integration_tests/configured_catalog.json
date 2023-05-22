@@ -10,7 +10,7 @@
                 "supported_defined_cursor": true,
                 "json_schema": {}
             },
-            "cursor_field": ["airbyte_cursor"],
+            "cursor_field": ["t"],
             "sync_mode": "incremental",
             "destination_sync_mode": "overwrite"
         }
