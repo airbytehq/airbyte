@@ -15,7 +15,9 @@ import java.util.stream.Stream;
  * The contained stream **IS EXPECTED to be a BOUNDED** stream. Returning a boundless stream has
  * undefined behaviour.
  * <p>
- * Once done, consumers **MUST** invoke {@link #close()} to avoid memory leaks.
+ * Once done, consumers **MUST** invoke {@link #close()}. As the {@link #batch} has already been
+ * retrieved from in-memory buffers, we need to update {@link GlobalMemoryManager} to reflect the
+ * freed up memory and avoid memory leaks.
  */
 public class MemoryAwareMessageBatch implements AutoCloseable {
 
