@@ -17,13 +17,13 @@ import java.util.stream.Stream;
  * <p>
  * Once done, consumers **MUST** invoke {@link #close()} to avoid memory leaks.
  */
-public class Batch implements AutoCloseable {
+public class MemoryAwareMessageBatch implements AutoCloseable {
 
   private Stream<AirbyteMessage> batch;
   private final long sizeInBytes;
   private final GlobalMemoryManager memoryManager;
 
-  public Batch(final Stream<AirbyteMessage> batch, final long sizeInBytes, final GlobalMemoryManager memoryManager) {
+  public MemoryAwareMessageBatch(final Stream<AirbyteMessage> batch, final long sizeInBytes, final GlobalMemoryManager memoryManager) {
     this.batch = batch;
     this.sizeInBytes = sizeInBytes;
     this.memoryManager = memoryManager;

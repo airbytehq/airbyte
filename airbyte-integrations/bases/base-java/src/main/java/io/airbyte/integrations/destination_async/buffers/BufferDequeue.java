@@ -46,7 +46,7 @@ public class BufferDequeue {
    * @param optimalBytesToRead bytes to read, if possible
    * @return
    */
-  public Batch take(final StreamDescriptor streamDescriptor, final long optimalBytesToRead) {
+  public MemoryAwareMessageBatch take(final StreamDescriptor streamDescriptor, final long optimalBytesToRead) {
     final var queue = buffers.get(streamDescriptor);
 
     if (!bufferLocks.containsKey(streamDescriptor)) {
@@ -85,7 +85,7 @@ public class BufferDequeue {
       // reset the limit to be lower than number of bytes already in the queue. probably not a big deal.
       queue.setMaxMemoryUsage(queue.getMaxMemoryUsage() - bytesRead.get());
 
-      return new Batch(s, bytesRead.get(), memoryManager);
+      return new MemoryAwareMessageBatch(s, bytesRead.get(), memoryManager);
     } finally {
       bufferLocks.get(streamDescriptor).unlock();
     }

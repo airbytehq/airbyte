@@ -44,7 +44,7 @@ public class BufferDequeueTest {
 
       // total size of records is 80, so we expect 50 to get us 2 records (prefer to under-pull records
       // than over-pull).
-      try (final Batch take = dequeue.take(STREAM_DESC, 50)) {
+      try (final MemoryAwareMessageBatch take = dequeue.take(STREAM_DESC, 50)) {
         assertEquals(2, take.getData().toList().size());
       } catch (final Exception e) {
         throw new RuntimeException(e);
@@ -61,7 +61,7 @@ public class BufferDequeueTest {
       enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
       enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
 
-      try (final Batch take = dequeue.take(STREAM_DESC, 60)) {
+      try (final MemoryAwareMessageBatch take = dequeue.take(STREAM_DESC, 60)) {
         assertEquals(3, take.getData().toList().size());
       } catch (final Exception e) {
         throw new RuntimeException(e);
@@ -77,7 +77,7 @@ public class BufferDequeueTest {
       enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
       enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
 
-      try (final Batch take = dequeue.take(STREAM_DESC, Long.MAX_VALUE)) {
+      try (final MemoryAwareMessageBatch take = dequeue.take(STREAM_DESC, Long.MAX_VALUE)) {
         assertEquals(2, take.getData().toList().size());
       } catch (final Exception e) {
         throw new RuntimeException(e);
