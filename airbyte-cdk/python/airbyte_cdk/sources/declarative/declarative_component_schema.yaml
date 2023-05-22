@@ -695,11 +695,12 @@ definitions:
           - expires_in
       grant_type:
         title: Grant Type
-        description: How the access token is granted.
+        description: Specifies the OAuth2 grant type. If set to refresh_token, the refresh_token needs to be provided as well. For client_credentials, only client id and secret are required. Other grant types are not officially supported.
         type: string
         default: "refresh_token"
         examples:
           - refresh_token
+          - client_credentials
       refresh_request_body:
         title: Refresh Request Body
         description: Body of the request sent to get a new access token.
@@ -825,11 +826,12 @@ definitions:
           - "expires_in"
       grant_type:
         title: Grant Type
-        description: How the access token is granted.
+        description: Specifies the OAuth2 grant type. If set to refresh_token, the refresh_token needs to be provided as well. For client_credentials, only client id and secret are required. Other grant types are not officially supported.
         type: string
         default: "refresh_token"
         examples:
           - refresh_token
+          - client_credentials
       refresh_request_body:
         title: Refresh Request Body
         description: Body of the request sent to get a new access token.

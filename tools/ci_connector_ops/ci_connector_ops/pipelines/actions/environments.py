@@ -670,9 +670,8 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
     return (
         base.with_workdir("/airbyte")
         .with_env_variable("APPLICATION", application)
-        .with_directory("builts_artifacts", build_stage.directory("/airbyte"))
+        .with_mounted_directory("builts_artifacts", build_stage.directory("/airbyte"))
         .with_exec(["sh", "-c", "mv builts_artifacts/* ."])
-        .with_exec(["rm", "-rf", "builts_artifacts"])
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
         .with_entrypoint(entrypoint)
@@ -717,3 +716,11 @@ def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_p
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
     )
+
+
+def with_crane(context: PipelineContext) -> Container:
+    """Crane is a tool to analyze and manipulate container images.
+    We can use it to extract the image manifest and the list of layers or list the existing tags on an image repository.
+    https://github.com/google/go-containerregistry/tree/main/cmd/crane
+    """
+    return context.dagger_client.container().from_("gcr.io/go-containerregistry/crane:v0.15.1")
