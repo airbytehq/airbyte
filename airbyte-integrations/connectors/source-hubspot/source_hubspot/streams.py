@@ -1216,6 +1216,7 @@ class CRMSearchStreamWithHistory(CRMSearchStream):
 
                                 yield new_record
 
+            self._update_state(latest_cursor=latest_cursor)
             next_page_token = self.next_page_token(raw_response)
             if not next_page_token:
                 pagination_complete = True
