@@ -50,6 +50,7 @@ def clone_airbyte_cloud_repo(local_repo_path: Path) -> git.Repo:
 
 
 def get_definitions_mask_path(local_repo_path, definition_type: str) -> Path:
+    # TODO QA CHANGE 2
     definitions_mask_path = (
         local_repo_path / f"cloud-config/cloud-config-seed/src/main/resources/seed/{definition_type}_definitions_mask.yaml"
     )
@@ -66,6 +67,7 @@ def checkout_new_branch(airbyte_cloud_repo: git.Repo, new_branch_name: str) -> g
 
 
 def update_definitions_mask(connector: ConnectorQAReport, definitions_mask_path: Path) -> Optional[Path]:
+    # TODO QA CHANGE 3
     with open(definitions_mask_path, "r") as definition_mask:
         connector_already_in_mask = connector.connector_definition_id in definition_mask.read()
     if connector_already_in_mask:
@@ -166,6 +168,14 @@ def get_pr_body(eligible_connectors: List[ConnectorQAReport], excluded_connector
     body += "\n ☝️ These eligible connectors are already in the definitions masks. They might have been explicitly pinned or excluded. We're not adding these for safety."
     return body
 
+def enable_connector_on_cloud(connector: ConnectorQAReport) -> bool:
+    # TODO fill out
+    return False
+    # metadata_path = get_metadata_path(connector)
+    # if not metadata_path:
+    #     raise Exception(f"Could not find metadata file for {connector.connector_name}")
+
+    # connector_metadata = ConnectorMetadata.parse_file(metadata_path)
 
 def add_new_connector_to_cloud_catalog(airbyte_cloud_repo_path: Path, airbyte_cloud_repo: git.Repo, connector: ConnectorQAReport) -> bool:
     """Updates the local definitions mask on Airbyte cloud repo.
@@ -180,6 +190,8 @@ def add_new_connector_to_cloud_catalog(airbyte_cloud_repo_path: Path, airbyte_cl
         bool: Whether the connector was added or not.
     """
     definitions_mask_path = get_definitions_mask_path(airbyte_cloud_repo_path, connector.connector_type)
+
+    # TODO QA CHANGE 1
     updated_files = update_definitions_mask(connector, definitions_mask_path)
     if updated_files:
         run_generate_cloud_connector_catalog(airbyte_cloud_repo_path)
