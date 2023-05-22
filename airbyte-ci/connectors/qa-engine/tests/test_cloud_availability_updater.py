@@ -181,7 +181,7 @@ def test_set_git_identity(mocker):
 
 
 def test_get_authenticated_repo_url(mocker):
-    mocker.patch.object(cloud_availability_updater, "AIRBYTE_PLATFORM_INTERNAL_GITHUB_REPO_URL", "https://foobar.com")
+    mocker.patch.object(cloud_availability_updater, "AIRBYTE_GITHUB_REPO_URL", "https://foobar.com")
     repo_url = cloud_availability_updater.get_authenticated_repo_url("username", "token")
     assert repo_url == "https://username:token@foobar.com"
 
@@ -205,9 +205,9 @@ def test_pr_already_created_for_branch(mocker, response, expected_output):
     assert output == expected_output
     cloud_availability_updater.requests.get.return_value.raise_for_status.assert_called_once()
     cloud_availability_updater.requests.get.assert_called_with(
-        cloud_availability_updater.AIRBYTE_PLATFORM_INTERNAL_PR_ENDPOINT,
+        cloud_availability_updater.AIRBYTE_PR_ENDPOINT,
         headers=cloud_availability_updater.GITHUB_API_COMMON_HEADERS,
-        params={"head": f"{cloud_availability_updater.AIRBYTE_PLATFORM_INTERNAL_REPO_OWNER}:foo", "state": "open"},
+        params={"head": f"{cloud_availability_updater.AIRBYTE_REPO_OWNER}:foo", "state": "open"},
     )
 
 
@@ -216,7 +216,7 @@ def test_add_labels_to_pr(mocker):
     labels_to_add = ["foo", "bar"]
     response = cloud_availability_updater.add_labels_to_pr("1", labels_to_add)
     cloud_availability_updater.requests.post.assert_called_with(
-        f"{cloud_availability_updater.AIRBYTE_PLATFORM_INTERNAL_ISSUES_ENDPOINT}/1/labels",
+        f"{cloud_availability_updater.AIRBYTE_ISSUES_ENDPOINT}/1/labels",
         headers=cloud_availability_updater.GITHUB_API_COMMON_HEADERS,
         json={"labels": labels_to_add},
     )
@@ -319,7 +319,7 @@ def test_batch_deploy_eligible_connectors_to_cloud_repo(mocker, tmp_path, added_
     cloud_availability_updater.batch_deploy_eligible_connectors_to_cloud_repo(eligible_connectors)
     cloud_availability_updater.clone_airbyte_cloud_repo.assert_called_once_with(tmp_path)
     cloud_availability_updater.set_git_identity.assert_called_once_with(cloud_availability_updater.clone_airbyte_cloud_repo.return_value)
-    mock_repo.git.checkout.assert_called_with(cloud_availability_updater.AIRBYTE_PLATFORM_INTERNAL_MAIN_BRANCH_NAME)
+    mock_repo.git.checkout.assert_called_with(cloud_availability_updater.AIRBYTE_MAIN_BRANCH_NAME)
 
     cloud_availability_updater.checkout_new_branch.assert_called_once_with(mock_repo, expected_new_branch_name)
     cloud_availability_updater.add_new_connector_to_cloud_catalog.assert_has_calls(
