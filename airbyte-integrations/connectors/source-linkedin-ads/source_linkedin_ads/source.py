@@ -14,8 +14,15 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
-
-from source_linkedin_ads.streams import Accounts,AccountUsers, AdCampaignAnalytics, AdCreativeAnalytics, AdDirectSponsoredContents, CampaignGroups, Campaigns, Creatives
+from source_linkedin_ads.streams import (
+    Accounts,
+    AccountUsers,
+    AdCampaignAnalytics,
+    AdCreativeAnalytics,
+    CampaignGroups,
+    Campaigns,
+    Creatives,
+)
 
 logger = logging.getLogger("airbyte")
 
@@ -106,7 +113,6 @@ class SourceLinkedinAds(AbstractSource):
             AccountUsers(config),
             AdCampaignAnalytics(config),
             AdCreativeAnalytics(config),
-            AdDirectSponsoredContents(config),
             CampaignGroups(config),
             Campaigns(config),
             Creatives(config),

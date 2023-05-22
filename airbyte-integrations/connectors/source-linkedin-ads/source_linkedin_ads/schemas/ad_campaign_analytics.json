@@ -78,9 +78,6 @@
     "_pivot": {
       "type": ["null", "string"]
     },
-    "pivotValue": {
-      "type": ["null", "string"]
-    },
     "pivotValues": {
       "type": ["null", "array"],
       "items": {
