@@ -170,15 +170,6 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
     search_param = "search.account.values[0]"
     search_param_value = "urn:li:sponsoredAccount:"
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        # "search.name.values"
-        # params[self.search_param] = f"{self.search_param_value}{stream_slice.get(self.primary_slice_key)}"
-        # params["search.name.values"] = "*"
-        # TODO: change search params
-
-        return params
-
     def filter_records_newer_than_state(
         self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping[str, Any]] = None
     ) -> Iterable:
