@@ -36,7 +36,7 @@ public class DatabricksAzureBlobStorageStreamCopierFactory implements Databricks
           .endpoint(azureConfig.getEndpointUrl())
           .sasToken(azureConfig.getSasToken())
           .containerName(azureConfig.getContainerName());
-      return new DatabricksAzureBlobStorageStreamCopier(stagingFolder,catalog, schema, configuredStream, database,
+      return new DatabricksAzureBlobStorageStreamCopier(stagingFolder, catalog, schema, configuredStream, database,
           databricksConfig, nameTransformer, sqlOperations, specializedBlobClientBuilder, azureConfig);
     } catch (final Exception e) {
       throw new RuntimeException(e);

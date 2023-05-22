@@ -1,10 +1,4 @@
 data:
-  registries:
-    cloud:
-      dockerRepository: airbyte/destination-mysql-strict-encrypt
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
@@ -17,7 +11,13 @@ data:
   normalizationConfig:
     normalizationIntegrationType: mysql
     normalizationRepository: airbyte/normalization-mysql
-    normalizationTag: 0.4.0
+    normalizationTag: 0.4.3
+  registries:
+    cloud:
+      dockerRepository: airbyte/destination-mysql-strict-encrypt
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/mysql
   supportsDbt: true

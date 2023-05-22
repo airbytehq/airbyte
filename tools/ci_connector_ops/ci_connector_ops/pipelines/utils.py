@@ -235,12 +235,18 @@ def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict[Conne
 
 def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
     return {
-        Path(str(f)) for f in modified_files if str(f).endswith(METADATA_FILE_NAME) and str(f).startswith("airbyte-integrations/connectors")
+        Path(str(f))
+        for f in modified_files
+        if str(f).endswith(METADATA_FILE_NAME) and str(f).startswith("airbyte-integrations/connectors") and "-scaffold-" not in str(f)
     }
 
 
 def get_all_metadata_files() -> Set[Path]:
-    return {Path(metadata_file) for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)}
+    return {
+        Path(metadata_file)
+        for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
+        if "-scaffold-" not in metadata_file
+    }
 
 
 def slugify(value: Any, allow_unicode: bool = False):
@@ -310,7 +316,7 @@ class DaggerPipelineCommand(click.Command):
                 raise DaggerError(f"Dagger Command {command_name} failed.")
         except DaggerError as e:
             click.secho(str(e), err=True, fg="red")
-            return sys.exit(1)
+            sys.exit(1)
 
 
 async def execute_concurrently(steps: List[Callable], concurrency=5):
@@ -350,8 +356,16 @@ async def export_container_to_tarball(
         return None, None
 
 
-def sanitize_gcs_service_account_key(raw_value: str) -> str:
-    try:
-        return json.dumps(json.loads(raw_value))
-    except json.JSONDecodeError:
-        return raw_value
+def sanitize_gcs_credentials(raw_value: Optional[str]) -> Optional[str]:
+    """Try to parse the raw string input that should contain a json object with the GCS credentials.
+    It will raise an exception if the parsing fails and help us to fail fast on invalid credentials input.
+
+    Args:
+        raw_value (str): A string representing a json object with the GCS credentials.
+
+    Returns:
+        str: The raw value string if it was successfully parsed.
+    """
+    if raw_value is None:
+        return None
+    return json.dumps(json.loads(raw_value))

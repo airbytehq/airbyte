@@ -3,8 +3,11 @@
 #
 
 
+import ssl
+import time
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from urllib.error import URLError
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -80,7 +83,21 @@ class BingAdsStream(Stream, ABC):
 
     @property
     def _user_id(self) -> int:
-        return self._service.GetUser().User.Id
+        return self._get_user_id()
+
+    # TODO remove once Microsoft support confirm their SSL certificates are always valid...
+    def _get_user_id(self, number_of_retries=10):
+        """"""
+        try:
+            return self._service.GetUser().User.Id
+        except URLError as error:
+            if isinstance(error.reason, ssl.SSLError):
+                self.logger.warn("SSL certificate error, retrying...")
+                if number_of_retries > 0:
+                    time.sleep(1)
+                    return self._get_user_id(number_of_retries - 1)
+                else:
+                    raise error
 
     def next_page_token(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         """
@@ -372,6 +389,7 @@ class CampaignPerformanceReport(PerformanceReportsMixin, BingAdsStream):
         "CampaignName",
         "CampaignType",
         "CampaignStatus",
+        "CampaignLabels",
         "Impressions",
         "Clicks",
         "Ctr",

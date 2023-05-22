@@ -31,7 +31,7 @@ public enum JsonSchemaType {
   @Deprecated
   STRING_V0("string", null, Schema.Type.STRING),
   @Deprecated
-  NUMBER_INT_V0("number", "integer", Schema.Type.INT),
+  NUMBER_INT_V0("number", "integer", Schema.Type.LONG),
   @Deprecated
   NUMBER_BIGINT_V0("string", "big_integer", Schema.Type.STRING),
   @Deprecated
