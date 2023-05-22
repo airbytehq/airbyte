@@ -102,7 +102,7 @@ class LinkedinAdsStream(HttpStream, ABC):
 class Accounts(LinkedinAdsStream):
     """
     Get Accounts data. More info about LinkedIn Ads / Accounts:
-    https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http
+    https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http&view=li-lms-2023-05#search-for-accounts
     """
 
     endpoint = "adAccounts"
@@ -131,7 +131,7 @@ class Accounts(LinkedinAdsStream):
         params = super().request_params(stream_state, stream_slice, next_page_token)
         if self.accounts:
             params["search"] = f"(id:(values:List({self.accounts})))"
-            return urlencode(params, safe=":(),")
+            return params
         return params
 
 
@@ -170,14 +170,12 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
         by default it's referenced to the Accounts stream class, as far as majority of streams are using it.
     :: `parent_values_map` - key_value map for stream slices in a format: {<slice_key_name>: <key inside record>}
     :: `search_param` - the query param to pass with request_params
-    :: `search_param_value` - the value for `search_param` to pass with request_params
     """
 
     parent_stream = Accounts
     parent_values_map = {"account_id": "id"}
     # define default additional request params
     search_param = "search.account.values[0]"
-    search_param_value = "urn:li:sponsoredAccount:"
 
     def filter_records_newer_than_state(
         self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping[str, Any]] = None
@@ -203,7 +201,7 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
 class AccountUsers(LinkedInAdsStreamSlicing):
     """
     Get AccountUsers data using `account_id` slicing. More info about LinkedIn Ads / AccountUsers:
-    https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http
+    https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http&view=li-lms-2023-05#find-ad-account-users-by-accounts
     """
 
     endpoint = "adAccountUsers"
@@ -211,11 +209,6 @@ class AccountUsers(LinkedInAdsStreamSlicing):
     primary_key = "account"
     search_param = "accounts"
 
-    # def request_headers(
-    #     self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    # ) -> Mapping[str, Any]:
-    #     headers = super().request_headers(stream_state, stream_slice, next_page_token)
-    #     return
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
@@ -228,7 +221,7 @@ class CampaignGroups(LinkedInAdsStreamSlicing):
     """
     Get CampaignGroups data using `account_id` slicing.
     More info about LinkedIn Ads / CampaignGroups:
-    https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaign-groups?tabs=http
+    https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaign-groups?tabs=http&view=li-lms-2023-05#search-for-campaign-groups
     """
 
     endpoint = "adCampaignGroups"
@@ -263,7 +256,7 @@ class Campaigns(LinkedInAdsStreamSlicing):
     """
     Get Campaigns data using `account_id` slicing.
     More info about LinkedIn Ads / Campaigns:
-    https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaigns?tabs=http
+    https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaigns?tabs=http&view=li-lms-2023-05#search-for-campaigns
     """
 
     endpoint = "adCampaigns"
@@ -299,16 +292,12 @@ class Creatives(LinkedInAdsStreamSlicing):
     """
     Get Creatives data using `campaign_id` slicing.
     More info about LinkedIn Ads / Creatives:
-    https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives?tabs=http
+    https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-creatives?tabs=http%2Chttp-update-a-creative&view=li-lms-2023-05#search-for-creatives
     """
 
     endpoint = "creatives"
     parent_stream = Accounts
     cursor_field = "lastModifiedAt"
-
-    # parent_values_map = {"campaign_id": "id"}
-    # search_param = "search.campaign.values[0]"
-    # search_param_value = "urn:li:sponsoredCampaign:"
 
     def path(
         self,
@@ -344,10 +333,10 @@ class Creatives(LinkedInAdsStreamSlicing):
         return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
 
 
-class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream):
+class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
     """
     AdAnalytics Streams more info:
-    https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl#ad-analytics
+    https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#analytics-finder
     """
 
     endpoint = "adAnalytics"
@@ -393,8 +382,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream):
 
 class AdCampaignAnalytics(LinkedInAdsAnalyticsStream):
     """
-    Campaing Analytics stream.
-    See the AnalyticsStreamMixin class for more information.
+    Campaign Analytics stream.
     """
 
     endpoint = "adAnalytics"
@@ -402,13 +390,7 @@ class AdCampaignAnalytics(LinkedInAdsAnalyticsStream):
     parent_stream = Campaigns
     parent_values_map = {"campaign_id": "id"}
     search_param = "campaigns"
-    # search_param_value = "List(urn%3Ali%3AsponsoredCampaign%3A168387646)"
     pivot_by = "(value:CAMPAIGN)"
-
-    # @property
-    # def base_analytics_params(self) -> MutableMapping[str, Any]:
-    #     """Define the base parameters for analytics streams"""
-    #     return {"q": "analytics", "pivot": self.pivot_by, "timeGranularity": "(value:DAILY)"}
 
     def request_params(
             self,
@@ -431,13 +413,11 @@ class AdCampaignAnalytics(LinkedInAdsAnalyticsStream):
 class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
     """
     Creative Analytics stream.
-    See the AnalyticsStreamMixin class for more information.
     """
 
     parent_stream = Creatives
     parent_values_map = {"creative_id": "id"}
     search_param = "creatives"
-    # search_param_value = "urn:li:sponsoredCreative:"
     pivot_by = "(value:CREATIVE)"
 
     def request_params(
