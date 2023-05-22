@@ -46,8 +46,8 @@ class DestinationXata(Destination):
             if message.type == Type.STATE:
                 yield message
         bp.flush_queue()
-        print(f"total: {count}")
-        print(bp.get_stats())
+        self.logger.info(f"total: {count}")
+        self.logger.info(bp.get_stats())
         if count != bp.get_stats()["total"] or bp.get_stats()["failed_batches"] != 0:
             raise Exception("inconsistency found, expected %d records pushed, actual: %d with %d failures." % (count, bp.get_stats()["total"], bp.get_stats()["failed_batches"]))
         
