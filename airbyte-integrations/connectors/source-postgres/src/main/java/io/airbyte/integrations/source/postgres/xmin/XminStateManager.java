@@ -51,7 +51,8 @@ public class XminStateManager {
           try {
             xminStatus = Jsons.object(stateMessage.getStream().getStreamState(), XminStatus.class);
           } catch (final IllegalArgumentException e) {
-            throw new ConfigErrorException("Could not parse ")
+            throw new ConfigErrorException("Invalid per-stream state. If this connection was migrated to a Xmin incremental mode from a cursor-based or CDC incremental mode, "
+                + "please reset your connection and re-sync.");
           }
           localMap.put(pair, xminStatus);
         }

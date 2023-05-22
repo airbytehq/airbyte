@@ -65,8 +65,9 @@ public class XminStateIterator extends AbstractIterator<AirbyteMessage> implemen
       } catch (final Exception e) {
         hasCaughtException = true;
         LOGGER.error("Message iterator failed to read next record.", e);
-        // When intermediate state is supported, this should be modified to return endofData() and not fail the sync.
-        throw e;
+        // We want to still continue attempting to sync future streams, so the exception is caught. When frequent state emission is introduced, this
+        // will result in a partial success.
+        return endOfData();
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
