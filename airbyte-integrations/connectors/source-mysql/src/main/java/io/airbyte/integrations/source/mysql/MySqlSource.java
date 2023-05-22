@@ -27,9 +27,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -68,6 +70,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -390,7 +393,27 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
-    return super.createDatabase(sourceConfig, this::getConnectionProperties);
+//    return super.createDatabase(sourceConfig, this::getConnectionProperties);
+    final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
+    // Create the data source
+    final DataSource dataSource = DataSourceFactory.create(
+        jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        driverClass,
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        this.getConnectionProperties(sourceConfig));
+    // Record the data source so that it can be closed.
+    dataSources.add(dataSource);
+
+    final JdbcDatabase database = new StreamingJdbcDatabase(
+        dataSource,
+        sourceOperations,
+        streamingQueryConfigProvider);
+
+    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
+    database.setSourceConfig(sourceConfig);
+    database.setDatabaseConfig(jdbcConfig);
+    return database;
   }
 
   public Map<String, String> getConnectionProperties(final JsonNode config) {
