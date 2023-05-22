@@ -162,7 +162,7 @@ def config_fixture():
         (CustomerBalanceTransactions, {"stream_slice": {"id": "C1"}}, "customers/C1/balance_transactions"),
         (Coupons, {}, "coupons"),
         (Disputes, {}, "disputes"),
-        (EarlyFraudWarnings, {}, "early_fraud_warnings"),
+        (EarlyFraudWarnings, {}, "radar/early_fraud_warnings"),
         (Events, {}, "events"),
         (Invoices, {}, "invoices"),
         (InvoiceLineItems, {"stream_slice": {"invoice_id": "I1"}}, "invoices/I1/lines"),
