@@ -26,28 +26,27 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
+import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcPosition;
+import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
-import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
-import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
@@ -193,7 +192,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     jdbcUrl.append("&tinyInt1isBit=true");
     // ensure the return year value is a Date; see the rationale
     // in the setJsonField method in MySqlSourceOperations.java
-    jdbcUrl.append("&yearIsDateType=true");
+    jdbcUrl.append("&yearIsDateType=false");
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
       jdbcUrl.append(JdbcUtils.AMPERSAND).append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
@@ -256,26 +255,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   }
 
   @Override
-  protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
-    if (!featureFlags.useStreamCapableState()) {
-      return List.of(new AirbyteStateMessage()
-          .withType(AirbyteStateType.LEGACY)
-          .withData(Jsons.jsonNode(new DbState())));
-    }
-
-    if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
-      final AirbyteGlobalState globalState = new AirbyteGlobalState()
-          .withSharedState(Jsons.jsonNode(new CdcState()))
-          .withStreamStates(List.of());
-      return List.of(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
-    } else {
-      return List.of(new AirbyteStateMessage()
-          .withType(AirbyteStateType.STREAM)
-          .withStream(new AirbyteStreamState()));
-    }
-  }
-
-  @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
                                                                              final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<MysqlType>>> tableNameToTable,
@@ -314,7 +293,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           emittedAt);
 
       return Collections.singletonList(
-          AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
+          AutoCloseableIterators.concatWithEagerClose(AirbyteTraceMessageUtility::emitStreamStatusTrace, snapshotIterator,
+              AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)));
     } else {
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager,
@@ -334,7 +314,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   @Override
   protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName)
       throws SQLException {
-    boolean nullValExist;
+    final boolean nullValExist;
     final String resultColName = "nullValue";
     final String descQuery = schema == null || schema.isBlank()
         ? String.format(DESCRIBE_TABLE_WITHOUT_SCHEMA_QUERY, tableName)
@@ -345,7 +325,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
     Optional<JsonNode> field = Optional.empty();
     String nullableColumnName = "";
-    for (JsonNode tableRow : tableRows) {
+    for (final JsonNode tableRow : tableRows) {
       LOGGER.info("MySQL Table Structure {}, {}, {}", tableRow.toString(), schema, tableName);
       if (tableRow.get("Field") != null && tableRow.get("Field").asText().equalsIgnoreCase(columnName)) {
         field = Optional.of(tableRow);
@@ -381,7 +361,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     return true;
   }
 
-  private boolean convertToBoolean(String value) {
+  private boolean convertToBoolean(final String value) {
     return "1".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value);
   }
 

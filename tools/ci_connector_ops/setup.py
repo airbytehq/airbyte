@@ -11,7 +11,7 @@ MAIN_REQUIREMENTS = [
     "requests",
     "PyYAML~=6.0",
     "GitPython~=3.1.29",
-    "pydantic~=1.10.4",
+    "pydantic~=1.9",
     "PyGithub~=1.58.0",
     "rich",
 ]
@@ -43,9 +43,14 @@ QA_ENGINE_REQUIREMENTS = [
 ]
 
 PIPELINES_REQUIREMENTS = [
-    "dagger-io==0.4.2",
+    "dagger-io==0.5.4",
     "asyncer",
     "anyio",
+    "more-itertools",
+    "docker",
+    "requests",
+    "semver",
+    "airbyte-protocol-models",
 ]
 
 setup(

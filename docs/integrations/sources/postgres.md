@@ -2,10 +2,6 @@
 
 This page contains the setup guide and reference information for the Postgres source connector for CDC and non-CDC workflows.
 
-:::note
-The Postgres source performs best on small databases (under 100GB).
-:::
-
 ## When to use Postgres with CDC
 
 Configure Postgres with CDC if:
@@ -211,7 +207,7 @@ az postgres server configuration set --resource-group group --server-name server
 az postgres server restart --resource-group group --name server
 ```
 
-#### Step 3: Create replication slot​
+#### Step 2: Create replication slot​
 
 Airbyte currently supports pgoutput plugin only. To create a replication slot called `airbyte_slot` using pgoutput, run:
 
@@ -219,7 +215,7 @@ Airbyte currently supports pgoutput plugin only. To create a replication slot ca
 SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
 ```
 
-#### Step 4: Create publications and replication identities for tables​
+#### Step 3: Create publications and replication identities for tables​
 
 For each table you want to replicate with CDC, add the replication identity (the method of distinguishing between rows) first:
 
@@ -252,7 +248,7 @@ Also, the publication should include all the tables and only the tables that nee
 The Airbyte UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not be replicated even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
 :::
 
-#### Step 5: [Optional] Set up initial waiting time
+#### Step 4: [Optional] Set up initial waiting time
 
 :::warning
 This is an advanced feature. Use it if absolutely necessary.
@@ -267,7 +263,7 @@ The connector waits for the default initial wait time of 5 minutes (300 seconds)
 
 If you know there are database changes to be synced, but the connector cannot read those changes, the root cause may be insufficient waiting time. In that case, you can increase the waiting time (example: set to 600 seconds) to test if it is indeed the root cause. On the other hand, if you know there are no database changes, you can decrease the wait time to speed up the zero record syncs.
 
-#### Step 6: Set up the Postgres source connector
+#### Step 5: Set up the Postgres source connector
 
 In [Step 2](#step-2-set-up-the-postgres-connector-in-airbyte) of the connector setup guide, enter the replication slot and publication you just created.
 
@@ -388,30 +384,46 @@ Normally under the CDC mode, the Postgres source will first run a full refresh s
 > Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch
 
 The root causes is that the WALs needed for the incremental sync has been removed by Postgres. This can occur under the following scenarios:
-
+        
 - When there are lots of database updates resulting in more WAL files than allowed in the `pg_wal` directory, Postgres will purge or archive the WAL files. This scenario is preventable. Possible solutions include:
   - Sync the data source more frequently. The downside is that more computation resources will be consumed, leading to a higher Airbyte bill.
   - Set a higher `wal_keep_size`. If no unit is provided, it is in megabytes, and the default is `0`. See detailed documentation [here](https://www.postgresql.org/docs/current/runtime-config-replication.html#GUC-WAL-KEEP-SIZE). The downside of this approach is that more disk space will be needed.
 - When the Postgres connector successfully reads the WAL and acknowledges it to Postgres, but the destination connector fails to consume the data, the Postgres connector will try to read the same WAL again, which may have been removed by Postgres, since the WAL record is already acknowledged. This scenario is rare, because it can happen, and currently there is no way to prevent it. The correct behavior is to perform a full refresh.
 
+### Temporary File Size Limit
+
+Some larger tables may encounter an error related to the temporary file size limit such as `temporary file size exceeds temp_file_limit`. To correct this error increase the [temp_file_limit](https://postgresqlco.nf/doc/en/param/temp_file_limit/).
+
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.0.18  | 2022-04-06 | [24820](https://github.com/airbytehq/airbyte/pull/24820) | Fix data loss bug during an initial failed non-CDC incremental sync                                                                                                                          |
-| 2.0.17  | 2022-04-05 | [24622](https://github.com/airbytehq/airbyte/pull/24622) | Allow streams not in CDC publication to be synced in Full-refresh mode                                                                                                     |
-| 2.0.16  | 2022-04-05 | [24895](https://github.com/airbytehq/airbyte/pull/24895) | Fix spec for cloud                                                                                                                                                         |
-| 2.0.15  | 2022-04-04 | [24833](https://github.com/airbytehq/airbyte/pull/24833) | Fix Debezium retry policy configuration                                                                                                                                    |
-| 2.0.14  | 2022-04-03 | [24609](https://github.com/airbytehq/airbyte/pull/24609) | Disallow the "disable" SSL Modes                                                                                                                                           |
-| 2.0.13  | 2022-03-28 | [24166](https://github.com/airbytehq/airbyte/pull/24166) | Fix InterruptedException bug during Debezium shutdown                                                                                                                      |
-| 2.0.12  | 2022-03-27 | [24529](https://github.com/airbytehq/airbyte/pull/24373) | Add CDC checkpoint state messages                                                                                                                                          |
+| 2.0.29  | 2023-05-18 | [25898](https://github.com/airbytehq/airbyte/pull/25898) | Translate Numeric values without decimal, e.g: NUMERIC(38,0), as BigInt instead of Double                                                                                  |
+| 2.0.28  | 2023-04-27 | [25401](https://github.com/airbytehq/airbyte/pull/25401) | CDC : Upgrade Debezium to version 2.2.0                                                                                                                                    |
+| 2.0.27  | 2023-04-26 | [24971](https://github.com/airbytehq/airbyte/pull/24971) | Emit stream status updates                                                                                                                                                 |
+| 2.0.26  | 2023-04-26 | [25560](https://github.com/airbytehq/airbyte/pull/25560) | Revert some logging changes                                                                                                                                                |
+| 2.0.25  | 2023-04-24 | [25459](https://github.com/airbytehq/airbyte/pull/25459) | Better logging formatting                                                                                                                                                  |
+| 2.0.24  | 2023-04-19 | [25345](https://github.com/airbytehq/airbyte/pull/25345) | Logging : Log database indexes per stream                                                                                                                                  |
+| 2.0.23  | 2023-04-19 | [24582](https://github.com/airbytehq/airbyte/pull/24582) | CDC : Enable frequent state emission during incremental syncs + refactor for performance improvement                                                                       |
+| 2.0.22  | 2023-04-17 | [25220](https://github.com/airbytehq/airbyte/pull/25220) | Logging changes : Log additional metadata & clean up noisy logs                                                                                                            |
+| 2.0.21  | 2023-04-12 | [25131](https://github.com/airbytehq/airbyte/pull/25131) | Make Client Certificate and Client Key always show                                                                                                                         |
+| 2.0.20  | 2023-04-11 | [24859](https://github.com/airbytehq/airbyte/pull/24859) | Removed SSL toggle and rely on SSL mode dropdown to enable/disable SSL                                                                                                     |
+| 2.0.19  | 2023-04-11 | [24656](https://github.com/airbytehq/airbyte/pull/24656) | CDC minor refactor                                                                                                                                                         |
+| 2.0.18  | 2023-04-06 | [24820](https://github.com/airbytehq/airbyte/pull/24820) | Fix data loss bug during an initial failed non-CDC incremental sync                                                                                                        |
+| 2.0.17  | 2023-04-05 | [24622](https://github.com/airbytehq/airbyte/pull/24622) | Allow streams not in CDC publication to be synced in Full-refresh mode                                                                                                     |
+| 2.0.16  | 2023-04-05 | [24895](https://github.com/airbytehq/airbyte/pull/24895) | Fix spec for cloud                                                                                                                                                         |
+| 2.0.15  | 2023-04-04 | [24833](https://github.com/airbytehq/airbyte/pull/24833) | Fix Debezium retry policy configuration                                                                                                                                    |
+| 2.0.14  | 2023-04-03 | [24609](https://github.com/airbytehq/airbyte/pull/24609) | Disallow the "disable" SSL Modes                                                                                                                                           |
+| 2.0.13  | 2023-03-28 | [24166](https://github.com/airbytehq/airbyte/pull/24166) | Fix InterruptedException bug during Debezium shutdown                                                                                                                      |
+| 2.0.12  | 2023-03-27 | [24529](https://github.com/airbytehq/airbyte/pull/24373) | Add CDC checkpoint state messages                                                                                                                                          |
 | 2.0.11  | 2023-03-23 | [24446](https://github.com/airbytehq/airbyte/pull/24446) | Set default SSL Mode to require in strict-encrypt                                                                                                                          |
 | 2.0.10  | 2023-03-23 | [24417](https://github.com/airbytehq/airbyte/pull/24417) | Add field groups and titles to improve display of connector setup form                                                                                                     |
 | 2.0.9   | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760) | Removed redundant date-time datatypes formatting                                                                                                                           |
 | 2.0.8   | 2023-03-22 | [24255](https://github.com/airbytehq/airbyte/pull/24255) | Add field groups and titles to improve display of connector setup form                                                                                                     |
-| 2.0.7   | 2022-03-21 | [24207](https://github.com/airbytehq/airbyte/pull/24207) | Fix incorrect schema change warning in CDC mode                                                                                                                            |
-| 2.0.6   | 2022-03-21 | [24271](https://github.com/airbytehq/airbyte/pull/24271) | Fix NPE in CDC mode                                                                                                                                                        |
-| 2.0.5   | 2022-03-21 | [21533](https://github.com/airbytehq/airbyte/pull/21533) | Add integration with datadog                                                                                                                                               |
+| 2.0.7   | 2023-03-21 | [24207](https://github.com/airbytehq/airbyte/pull/24207) | Fix incorrect schema change warning in CDC mode                                                                                                                            |
+| 2.0.6   | 2023-03-21 | [24271](https://github.com/airbytehq/airbyte/pull/24271) | Fix NPE in CDC mode                                                                                                                                                        |
+| 2.0.5   | 2023-03-21 | [21533](https://github.com/airbytehq/airbyte/pull/21533) | Add integration with datadog                                                                                                                                               |
 | 2.0.4   | 2023-03-21 | [24147](https://github.com/airbytehq/airbyte/pull/24275) | Fix error with CDC checkpointing                                                                                                                                           |
 | 2.0.3   | 2023-03-14 | [24000](https://github.com/airbytehq/airbyte/pull/24000) | Removed check method call on read.                                                                                                                                         |
 | 2.0.2   | 2023-03-13 | [23112](https://github.com/airbytehq/airbyte/pull/21727) | Add state checkpointing for CDC sync.                                                                                                                                      |

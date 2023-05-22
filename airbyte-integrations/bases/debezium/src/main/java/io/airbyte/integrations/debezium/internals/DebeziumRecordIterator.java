@@ -4,10 +4,8 @@
 
 package io.airbyte.integrations.debezium.internals;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.AbstractIterator;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
@@ -36,8 +34,8 @@ import org.slf4j.LoggerFactory;
  * publisher is not closed. Even after the publisher is closed, the consumer will finish processing
  * any produced records before closing.
  */
-public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<String, String>>
-    implements AutoCloseableIterator<ChangeEvent<String, String>> {
+public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithMetadata>
+    implements AutoCloseableIterator<ChangeEventWithMetadata> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumRecordIterator.class);
 
@@ -85,7 +83,7 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
   // 4. If change event lsn reached target finish sync
   // 5. Otherwise check message queuen again
   @Override
-  protected ChangeEvent<String, String> computeNext() {
+  protected ChangeEventWithMetadata computeNext() {
     // keep trying until the publisher is closed or until the queue is empty. the latter case is
     // possible when the publisher has shutdown but the consumer has not yet processed all messages it
     // emitted.
@@ -129,18 +127,18 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
         continue;
       }
 
-      final JsonNode eventAsJson = Jsons.deserialize(next.value());
-      hasSnapshotFinished = hasSnapshotFinished(eventAsJson);
+      final ChangeEventWithMetadata changeEventWithMetadata = new ChangeEventWithMetadata(next);
+      hasSnapshotFinished = !changeEventWithMetadata.isSnapshotEvent();
 
       // if the last record matches the target file position, it is time to tell the producer to shutdown.
-      if (targetPosition.reachedTargetPosition(eventAsJson)) {
+      if (targetPosition.reachedTargetPosition(changeEventWithMetadata)) {
         requestClose("Closing: Change event reached target position");
       }
       this.tsLastHeartbeat = null;
       this.lastHeartbeatPosition = null;
       this.receivedFirstRecord = true;
       this.maxInstanceOfNoRecordsFound = 0;
-      return next;
+      return changeEventWithMetadata;
     }
 
     if (!signalledDebeziumEngineShutdown) {
@@ -158,8 +156,9 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
       if (event == null || isHeartbeatEvent(event)) {
         continue;
       }
-      hasSnapshotFinished = hasSnapshotFinished(Jsons.deserialize(event.value()));
-      return event;
+      final ChangeEventWithMetadata changeEventWithMetadata = new ChangeEventWithMetadata(event);
+      hasSnapshotFinished = !changeEventWithMetadata.isSnapshotEvent();
+      return changeEventWithMetadata;
     }
     throwExceptionIfSnapshotNotFinished();
     return endOfData();
@@ -200,11 +199,6 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEvent<Stri
     LOGGER.debug("Time since last hb_pos change {}s", timeElapsedSinceLastHeartbeatTs.toSeconds());
     // wait time for no change in heartbeat position is half of initial waitTime
     return timeElapsedSinceLastHeartbeatTs.compareTo(this.firstRecordWaitTime.dividedBy(2)) > 0;
-  }
-
-  private boolean hasSnapshotFinished(final JsonNode eventAsJson) {
-    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.fromString(eventAsJson.get("source").get("snapshot").asText());
-    return !SnapshotMetadata.isSnapshotEventMetadata(snapshotMetadata);
   }
 
   private void requestClose(final String closeLogMessage) {

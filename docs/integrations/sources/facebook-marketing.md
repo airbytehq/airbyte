@@ -43,11 +43,6 @@ This page guides you through the process of setting up the Facebook Marketing so
 8. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
 9. (Optional) In the Custom Insights section. A list which contains ad statistics entries, each entry must have a name and can contain fields, breakdowns or action_breakdowns. Click on "add" to fill this field.
     To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync.
-
-    :::warning
-    Additional streams for Facebook Marketing are dynamically created based on the specified Custom Insights. For an existing Facebook Marketing source, when you are updating or removing Custom Insights, you should also ensure that any connections syncing to these streams are either disabled or have had their source schema refreshed.
-    :::
-
     We recommend following the Facebook Marketing [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns) to understand the breakdown limitations. Some fields can not be requested and many others only work when combined with specific fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field.
 
     To configure Custom Insights:
@@ -65,6 +60,11 @@ This page guides you through the process of setting up the Facebook Marketing so
     12. For **Page Size of Requests**, fill in the size of the page in case pagintion kicks in. Feel free to ignore it, the default value should work in most cases.
     13. For **Insights Lookback Window**, fill in the appropriate value. Facebook freezes insight data 28 days after it was generated, which means that all data from the past 28 days may have changed since we last emitted it, so you can retrieve refreshed insights from the past by setting this parameter. If you set a custom lookback window value in Facebook account, please provide the same value here. See [more](#facebook-marketing-attribution-reporting) on this parameter.
     14. Click **Set up source**.
+
+    :::warning
+    Additional streams for Facebook Marketing are dynamically created based on the specified Custom Insights. For an existing Facebook Marketing source, when you are updating or removing Custom Insights, you should also ensure that any connections syncing to these streams are either disabled or have had their source schema refreshed.
+    :::
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -137,7 +137,12 @@ Please be informed that the connector uses the `lookback_window` parameter to pe
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.3  | 2023-04-10 | [20490](https://github.com/airbytehq/airbyte/pull/20490) | add new `action_report_time` attribute to `AdInsights` class                                                                                                                                                                                                                                                                       |
+| 0.3.8  | 2023-05-22 | [20490](https://github.com/airbytehq/airbyte/pull/20490) | add new `action_report_time` attribute to `AdInsights` class                                                                                                                                                                                                                                                                       |
+| 0.3.7   | 2023-05-12 | [26000](https://github.com/airbytehq/airbyte/pull/26000) | Handle config errors                                                                                                                                                                                                                                                                              |
+| 0.3.6   | 2023-04-27 | [22999](https://github.com/airbytehq/airbyte/pull/22999) | Specified date formatting in specification                                                                                                                                                                                                                                                        |
+| 0.3.5   | 2023-04-26 | [24994](https://github.com/airbytehq/airbyte/pull/24994) | Emit stream status messages                                                                                                                                                                                                                                                                       |
+| 0.3.4   | 2023-04-18 | [22990](https://github.com/airbytehq/airbyte/pull/22990) | Increase pause interval                                                                                                                                                                                                                                                                           |
+| 0.3.3   | 2023-04-14 | [25204](https://github.com/airbytehq/airbyte/pull/25204) | Fix data retention period validation                                                                                                                                                                                                                                                              |
 | 0.3.2   | 2023-04-08 | [25003](https://github.com/airbytehq/airbyte/pull/25003) | Don't fetch `thumbnail_data_url` if it's None                                                                                                                                                                                                                                                     |
 | 0.3.1   | 2023-03-27 | [24600](https://github.com/airbytehq/airbyte/pull/24600) | Reduce request record limit when retrying second page or further                                                                                                                                                                                                                                  |
 | 0.3.0   | 2023-03-16 | [19141](https://github.com/airbytehq/airbyte/pull/19141) | Added Level parameter to custom Ads Insights                                                                                                                                                                                                                                                      |

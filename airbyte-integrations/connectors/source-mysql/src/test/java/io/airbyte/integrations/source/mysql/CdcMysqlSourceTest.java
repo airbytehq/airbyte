@@ -31,7 +31,7 @@ import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
-import io.airbyte.integrations.debezium.CdcTargetPosition;
+import io.airbyte.integrations.debezium.internals.mysql.MySqlCdcTargetPosition;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -130,7 +130,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected CdcTargetPosition cdcLatestTargetPosition() {
+  protected MySqlCdcTargetPosition cdcLatestTargetPosition() {
     final DataSource dataSource = DataSourceFactory.create(
         "root",
         "test",
@@ -145,7 +145,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected CdcTargetPosition extractPosition(final JsonNode record) {
+  protected MySqlCdcTargetPosition extractPosition(final JsonNode record) {
     return new MySqlCdcTargetPosition(record.get(CDC_LOG_FILE).asText(), record.get(CDC_LOG_POS).asLong());
   }
 

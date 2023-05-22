@@ -32,6 +32,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
+import io.airbyte.integrations.debezium.internals.mssql.MssqlCdcTargetPosition;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.mssql.MssqlCdcHelper.SnapshotIsolation;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -99,7 +100,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                final SyncMode syncMode,
                                                                final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters as intermediate state messages are emitted.
+    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters
+    // as intermediate state messages are emitted.
     if (syncMode.equals(SyncMode.INCREMENTAL)) {
       final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
       final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
@@ -107,15 +109,16 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           String.format("SELECT %s FROM %s ORDER BY %s ASC", newIdentifiers,
               getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()), quotedCursorField);
       LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
-      return queryTable(database, preparedSqlQuery);
+      return queryTable(database, preparedSqlQuery, tableName, schemaName);
     } else {
-      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering of the records.
+      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering
+      // of the records.
       final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
       final String preparedSqlQuery =
           String.format("SELECT %s FROM %s", newIdentifiers, getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()));
 
       LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
-      return queryTable(database, preparedSqlQuery);
+      return queryTable(database, preparedSqlQuery, tableName, schemaName);
     }
   }
 

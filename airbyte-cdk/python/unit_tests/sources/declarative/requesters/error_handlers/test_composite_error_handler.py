@@ -6,8 +6,10 @@ from unittest.mock import MagicMock
 
 import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
+from airbyte_cdk.sources.declarative.requesters.error_handlers import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
-from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import ResponseStatus
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler, ResponseStatus
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 
 SOME_BACKOFF_TIME = 60
 
@@ -108,3 +110,59 @@ def test_composite_error_handler_no_handlers():
         assert False
     except ValueError:
         pass
+
+
+def test_error_handler_compatibility_simple():
+    status_code = 403
+    expected_action = ResponseAction.IGNORE
+    response_mock = create_response(status_code)
+    default_error_handler = DefaultErrorHandler(config={}, parameters={}, response_filters=[
+        HttpResponseFilter(action=ResponseAction.IGNORE, http_codes={403}, config={}, parameters={})])
+    composite_error_handler = CompositeErrorHandler(error_handlers=[
+        DefaultErrorHandler(
+            response_filters=[HttpResponseFilter(action=ResponseAction.IGNORE, http_codes={403}, parameters={}, config={})],
+            parameters={}, config={})
+    ], parameters={})
+    assert default_error_handler.interpret_response(response_mock).action == expected_action
+    assert composite_error_handler.interpret_response(response_mock).action == expected_action
+
+
+@pytest.mark.parametrize("test_name, status_code, expected_action", [
+    ("test_first_filter", 403, ResponseAction.IGNORE),
+    ("test_second_filter", 404, ResponseAction.FAIL)
+])
+def test_error_handler_compatibility_multiple_filters(test_name, status_code, expected_action):
+    response_mock = create_response(status_code)
+    error_handler_with_multiple_filters = CompositeErrorHandler(error_handlers=[
+        DefaultErrorHandler(
+            response_filters=[HttpResponseFilter(action=ResponseAction.IGNORE, http_codes={403}, parameters={}, config={}),
+                              HttpResponseFilter(action=ResponseAction.FAIL, http_codes={404}, parameters={}, config={})
+                              ], parameters={}, config={}),
+    ], parameters={})
+    composite_error_handler_with_single_filters = CompositeErrorHandler(error_handlers=[
+        DefaultErrorHandler(
+            response_filters=[HttpResponseFilter(action=ResponseAction.IGNORE, http_codes={403}, parameters={}, config={})],
+            parameters={}, config={}),
+        DefaultErrorHandler(
+            response_filters=[
+                HttpResponseFilter(action=ResponseAction.FAIL, http_codes={404}, parameters={}, config={})
+            ],
+            parameters={}, config={}),
+    ], parameters={})
+    actual_action_multiple_filters = error_handler_with_multiple_filters.interpret_response(response_mock).action
+    assert actual_action_multiple_filters == expected_action
+
+    actual_action_single_filters = composite_error_handler_with_single_filters.interpret_response(response_mock).action
+    assert actual_action_single_filters == expected_action
+
+
+def create_response(status_code: int, headers=None, json_body=None):
+    url = "https://airbyte.io"
+
+    response_mock = MagicMock()
+    response_mock.status_code = status_code
+    response_mock.ok = status_code < 400 or status_code >= 600
+    response_mock.url = url
+    response_mock.headers = headers or {}
+    response_mock.json.return_value = json_body or {}
+    return response_mock
