@@ -206,4 +206,15 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
     super.testDataTypeTestWithNormalization(messagesFilename, catalogFilename, testCompatibility);
   }
 
+  /**
+   * Configuration that altered method getConfig() : Added mode prefer, No tunnel
+   */
+  protected JsonNode getNoTunnelConfig() {
+    final JsonNode clone = Jsons.clone(getConfig());
+    ((ObjectNode) clone)
+            .put(JdbcUtils.SSL_MODE_KEY, String.valueOf(ImmutableMap.builder().put("mode", "prefer").build()))
+            .put("tunnel_method", String.valueOf(ImmutableMap.builder().put("tunnel_method", "NO_TUNNEL").build()));
+    return clone;
+  }
+
 }
