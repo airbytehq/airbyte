@@ -170,7 +170,7 @@ def test_urlfile_open_backoff_sftp(monkeypatch, mocker):
         nonlocal call_count
         call_count += 1
         if call_count < 7:
-            raise SSHException("Error reading SSH protocol banner")
+            raise SSHException("Error reading SSH protocol banner[Errno 104] Connection reset by peer")
         return result
 
     sleep_mock = mocker.patch("time.sleep")
