@@ -1,4 +1,8 @@
-from typing import Any, Mapping, Optional, List, Tuple
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
 
