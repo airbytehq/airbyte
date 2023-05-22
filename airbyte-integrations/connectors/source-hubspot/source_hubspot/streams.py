@@ -1179,14 +1179,14 @@ class CRMSearchStreamWithHistory(CRMSearchStream):
                     properties.add(property)
 
             for batch in self.split_into_batches(input_for_batch_request, 50):
-                _, raw_response = self.search(
+                _, batch_raw_response = self.search(
                     self.batch_url(), data={"propertiesWithHistory": list(properties), "inputs": batch}, params=None
                 )
 
                 records = self._flat_associations(records)
                 records = self._filter_old_records(records)
 
-                for record_with_history in self._transform(self.parse_response(raw_response)):
+                for record_with_history in self._transform(self.parse_response(batch_raw_response)):
                     del record_with_history["properties"]
 
                     if record_with_history.get("associations") is not None:
@@ -1220,6 +1220,7 @@ class CRMSearchStreamWithHistory(CRMSearchStream):
                                 yield new_record
                 # update after a batch
                 self._update_state(latest_cursor=latest_cursor)
+
             next_page_token = self.next_page_token(raw_response)
             if not next_page_token:
                 pagination_complete = True
