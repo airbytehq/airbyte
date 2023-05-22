@@ -1174,6 +1174,10 @@ class CRMSearchStreamWithHistory(CRMSearchStream):
                 if record.get("id") is None:
                     continue
                 id = record["id"]
+                # cursor will be set from records only
+                cursor = self._field_to_datetime(record[self.updated_at_field])
+                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+
                 input_for_batch_request.append({"id": id})
                 for property in record["properties"].keys():
                     properties.add(property)
@@ -1182,9 +1186,6 @@ class CRMSearchStreamWithHistory(CRMSearchStream):
                 _, batch_raw_response = self.search(
                     self.batch_url(), data={"propertiesWithHistory": list(properties), "inputs": batch}, params=None
                 )
-
-                records = self._flat_associations(records)
-                records = self._filter_old_records(records)
 
                 for record_with_history in self._transform(self.parse_response(batch_raw_response)):
                     del record_with_history["properties"]
@@ -1195,7 +1196,6 @@ class CRMSearchStreamWithHistory(CRMSearchStream):
                     if record_with_history.get("archived") is not None:
                         del record_with_history["archived"]
 
-                    updated_at = copy.copy(record_with_history["updatedAt"])
                     del record_with_history["updatedAt"]
                     if record_with_history.get("createdAt") is not None:
                         del record_with_history["createdAt"]
@@ -1214,12 +1214,7 @@ class CRMSearchStreamWithHistory(CRMSearchStream):
                                 if entry.get("sourceId") is not None:
                                     new_record["sourceId"] = entry["sourceId"]
 
-                                # cursor will be set from record_with_history only
-                                cursor = self._field_to_datetime(updated_at)
-                                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
                                 yield new_record
-                # update after a batch
-                self._update_state(latest_cursor=latest_cursor)
 
             next_page_token = self.next_page_token(raw_response)
             if not next_page_token:
