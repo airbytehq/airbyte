@@ -21,12 +21,6 @@
           "type": "string"
         }
       },
-      "offset": {
-        "type": ["null", "integer"]
-      },
-      "limit": {
-        "type": ["null", "integer"]
-      },
       "cohortSpec": {
         "type": ["null", "object"],
         "properties": {

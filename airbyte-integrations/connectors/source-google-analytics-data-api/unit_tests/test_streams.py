@@ -89,7 +89,7 @@ def test_request_body_json(patch_base_class):
         "dateRanges": [request_body_params["stream_slice"]],
         "returnPropertyQuota": True,
         "offset": str(0),
-        "limit": str(10000)
+        "limit": str(100000)
     }
 
     request_body_json = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"]).request_body_json(**request_body_params)
@@ -97,28 +97,18 @@ def test_request_body_json(patch_base_class):
 
 
 def test_next_page_token_equal_chunk(patch_base_class):
-    additional_config = {
-        "offset": 0,
-        "limit": 10000
-    }
-    stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"] | additional_config)
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
     response = MagicMock()
     response.json.side_effect = [
-        {"rowCount": 30000},
-        {"rowCount": 30000},
-        {"rowCount": 30000},
+        {"rowCount": 300000},
+        {"rowCount": 300000},
+        {"rowCount": 300000},
     ]
     inputs = {"response": response}
 
     expected_tokens = [
-        {
-            "limit": 10000,
-            "next_page_offset": 10000,
-        },
-        {
-            "limit": 10000,
-            "next_page_offset": 20000,
-        },
+        100000,
+        200000,
         None,
     ]
 
@@ -127,11 +117,7 @@ def test_next_page_token_equal_chunk(patch_base_class):
 
 
 def test_next_page_token(patch_base_class):
-    additional_config = {
-        "offset": 0,
-        "limit": 100000
-    }
-    stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"] | additional_config)
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
     response = MagicMock()
     response.json.side_effect = [
         {"rowCount": 450000},
@@ -143,22 +129,10 @@ def test_next_page_token(patch_base_class):
     inputs = {"response": response}
 
     expected_tokens = [
-        {
-            "limit": 100000,
-            "next_page_offset": 100000,
-        },
-        {
-            "limit": 100000,
-            "next_page_offset": 200000,
-        },
-        {
-            "limit": 100000,
-            "next_page_offset": 300000,
-        },
-        {
-            "limit": 100000,
-            "next_page_offset": 400000,
-        },
+        100000,
+        200000,
+        300000,
+        400000,
         None,
     ]
 
