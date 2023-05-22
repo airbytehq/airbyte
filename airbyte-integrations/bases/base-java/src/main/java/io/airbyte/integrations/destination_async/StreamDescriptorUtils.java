@@ -13,7 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Boring utility functions that I don't want in my face.
+ * Helper functions to extract {@link StreamDescriptor} from other POJOs.
  */
 public class StreamDescriptorUtils {
 
