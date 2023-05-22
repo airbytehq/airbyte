@@ -164,8 +164,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
             if total_rows <= self.page_size:
                 self.page_size = None
+                return
 
-            return self.page_size
+            return {"offset": self.page_size}
 
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -212,9 +213,11 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "dimensions": [{"name": d} for d in self.config["dimensions"]],
             "dateRanges": [stream_slice],
             "returnPropertyQuota": True,
-            "offset": str(self.page_size or 0),
+            "offset": str(0),
             "limit": str(100000)
         }
+        if next_page_token and next_page_token.get("offset") is not None:
+            payload.update({"offset": next_page_token["offset"]})
         return payload
 
     def stream_slices(

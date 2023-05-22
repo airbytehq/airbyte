@@ -107,8 +107,8 @@ def test_next_page_token_equal_chunk(patch_base_class):
     inputs = {"response": response}
 
     expected_tokens = [
-        100000,
-        200000,
+        {"offset": 100000},
+        {"offset": 200000},
         None,
     ]
 
@@ -129,10 +129,10 @@ def test_next_page_token(patch_base_class):
     inputs = {"response": response}
 
     expected_tokens = [
-        100000,
-        200000,
-        300000,
-        400000,
+        {"offset": 100000},
+        {"offset": 200000},
+        {"offset": 300000},
+        {"offset": 400000},
         None,
     ]
 
