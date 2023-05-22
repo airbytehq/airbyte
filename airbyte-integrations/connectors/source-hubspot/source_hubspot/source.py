@@ -19,6 +19,7 @@ from source_hubspot.streams import (
     ContactLists,
     Contacts,
     ContactsListMemberships,
+    ContactsWithHistory,
     CustomObject,
     DealPipelines,
     Deals,

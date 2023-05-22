@@ -9,7 +9,7 @@ import time
 from abc import ABC, abstractmethod
 from functools import cached_property, lru_cache
 from http import HTTPStatus
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import backoff
 import pendulum as pendulum
@@ -1847,6 +1847,7 @@ class TicketsWithHistory(CRMSearchStreamWithHistory):
 
     scopes = {"tickets"}
     last_modified_field = "hs_lastmodifieddate"
+
 
 class CustomObject(CRMSearchStream, ABC):
     last_modified_field = "hs_lastmodifieddate"
