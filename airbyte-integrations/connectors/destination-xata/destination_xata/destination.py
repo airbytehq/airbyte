@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 
 from typing import Any, Iterable, Mapping
 
@@ -13,6 +14,8 @@ from xata.client import XataClient
 from xata.helpers import BulkProcessor
 
 __version__ = "0.0.1"
+
+logger = logging.getLogger("airbyte")
 
 class DestinationXata(Destination):
     def write(
@@ -46,8 +49,8 @@ class DestinationXata(Destination):
             if message.type == Type.STATE:
                 yield message
         bp.flush_queue()
-        self.logger.info(f"total: {count}")
-        self.logger.info(bp.get_stats())
+        logger.info(f"total: {count}")
+        logger.info(bp.get_stats())
         if count != bp.get_stats()["total"] or bp.get_stats()["failed_batches"] != 0:
             raise Exception("inconsistency found, expected %d records pushed, actual: %d with %d failures." % (count, bp.get_stats()["total"], bp.get_stats()["failed_batches"]))
         
