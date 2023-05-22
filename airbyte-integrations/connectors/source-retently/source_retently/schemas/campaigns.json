@@ -5,22 +5,22 @@
       "type": "string"
     },
     "name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "isActive": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "templateId": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "metric": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "type": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "channel": {
-      "type": "string"
+      "type": ["string", "null"]
     }
   }
 }
