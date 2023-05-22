@@ -452,3 +452,10 @@ For more details and options, you can also refer to the [testing connectors docs
 ### Acceptance Tests
 
 Please refer to the [developing docs](../../../docs/contributing-to-airbyte/developing-locally.md) on how to run Acceptance Tests.
+
+## Publishing normalization
+The normalization publish pipeline still relies on the `manage.sh` [script](https://github.com/airbytehq/airbyte/blob/master/tools/integrations/manage.sh). It is not published on merge to master, but rather on demand, from the PR. To publish normalization, run the following slash command on the PR:
+
+```text
+/legacy-publish connector=bases/base-normalization
+```
