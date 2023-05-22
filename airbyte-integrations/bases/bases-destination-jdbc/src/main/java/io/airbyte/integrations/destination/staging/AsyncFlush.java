@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
 /**
- * Async specific flushing logic.
+ * Async flushing logic. Flushing async prevents backpressure and is the superior flushing strategy.
  */
 @Slf4j
 class AsyncFlush implements DestinationFlushFunction {

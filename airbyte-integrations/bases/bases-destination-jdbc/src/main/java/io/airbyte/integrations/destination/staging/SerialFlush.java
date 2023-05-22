@@ -22,6 +22,14 @@ import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
+/**
+ * Serial flushing logic. Though simpler, this causes unnecessary backpressure and slows down the
+ * entire pipeline.
+ * <p>
+ * Note: This class should be re-written so that is implements the {@link FlushBufferFunction}
+ * interface, instead of return an anonymous function implementing this interface for clarity. As of
+ * this writing, we avoid doing so to simplify the migration to async flushing.
+ */
 @Slf4j
 public class SerialFlush {
 
