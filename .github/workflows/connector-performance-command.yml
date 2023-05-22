@@ -22,7 +22,7 @@ on:
       dataset:
         description: "Name of dataset to use for performance measurement. Currently supports 1m, 10m, 20m."
         required: false
-        default: "1m"
+        default: "bottleneck_stream1"
 jobs:
   uuid:
     name: "Custom UUID of workflow run"
