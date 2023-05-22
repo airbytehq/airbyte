@@ -8,6 +8,9 @@
     "description": {
       "type": ["null", "string"]
     },
+    "description_html": {
+      "type": ["null", "string"]
+    },
     "name": {
       "type": ["null", "string"]
     },
@@ -21,6 +24,10 @@
       "type": ["null", "string"]
     },
     "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
       "type": ["null", "string"],
       "format": "date-time"
     },

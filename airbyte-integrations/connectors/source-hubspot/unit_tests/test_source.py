@@ -7,8 +7,10 @@ import logging
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
+import mock
 import pendulum
 import pytest
+
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
@@ -68,10 +70,12 @@ def test_check_connection_invalid_start_date_exception(config_invalid_date):
         assert error_msg
 
 
-def test_streams(config):
+@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
+def test_streams(requests_mock, config):
+
     streams = SourceHubspot().streams(config)
 
-    assert len(streams) == 27
+    assert len(streams) == 28
 
 
 def test_check_credential_title_exception(config):
@@ -147,20 +151,23 @@ def test_stream_forbidden(requests_mock, config, caplog):
         "message": "This access_token does not have proper permissions!",
     }
     requests_mock.get("https://api.hubapi.com/automation/v3/workflows", json=json, status_code=403)
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403)
 
-    catalog = ConfiguredAirbyteCatalog.parse_obj({
-        "streams": [
-            {
-                "stream": {
-                    "name": "workflows",
-                    "json_schema": {},
-                    "supported_sync_modes": ["full_refresh"],
-                },
-                "sync_mode": "full_refresh",
-                "destination_sync_mode": "overwrite"
-            }
-        ]
-    })
+    catalog = ConfiguredAirbyteCatalog.parse_obj(
+        {
+            "streams": [
+                {
+                    "stream": {
+                        "name": "workflows",
+                        "json_schema": {},
+                        "supported_sync_modes": ["full_refresh"],
+                    },
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "overwrite",
+                }
+            ]
+        }
+    )
 
     records = list(SourceHubspot().read(logger, config, catalog, {}))
     assert json["message"] in caplog.text
@@ -526,7 +533,7 @@ def test_pagination_marketing_emails_stream(requests_mock, common_params):
                     "objects": [{"id": f"{y}", "updated": 1641234593251} for y in range(250)],
                     "limit": 250,
                     "offset": 0,
-                    "total": 600
+                    "total": 600,
                 },
                 "status_code": 200,
             },
@@ -535,7 +542,7 @@ def test_pagination_marketing_emails_stream(requests_mock, common_params):
                     "objects": [{"id": f"{y}", "updated": 1641234593251} for y in range(250, 500)],
                     "limit": 250,
                     "offset": 250,
-                    "total": 600
+                    "total": 600,
                 },
                 "status_code": 200,
             },
@@ -544,7 +551,7 @@ def test_pagination_marketing_emails_stream(requests_mock, common_params):
                     "objects": [{"id": f"{y}", "updated": 1641234595251} for y in range(500, 600)],
                     "limit": 250,
                     "offset": 500,
-                    "total": 600
+                    "total": 600,
                 },
                 "status_code": 200,
             },
