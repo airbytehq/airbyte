@@ -109,14 +109,13 @@ class TestAllStreams:
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
-            (Accounts, "adAccountsV2"),
-            (AccountUsers, "adAccountUsersV2"),
-            (CampaignGroups, "adCampaignGroupsV2"),
-            (Campaigns, "adCampaignsV2"),
-            (Creatives, "adCreativesV2"),
-            (AdDirectSponsoredContents, "adDirectSponsoredContents"),
-            (AdCampaignAnalytics, "adAnalyticsV2"),
-            (AdCreativeAnalytics, "adAnalyticsV2"),
+            (Accounts, "adAccounts"),
+            (AccountUsers, "adAccountUsers"),
+            (CampaignGroups, "adCampaignGroups"),
+            (Campaigns, "adCampaigns"),
+            (Creatives, "adCreatives"),
+            (AdCampaignAnalytics, "adAnalytics"),
+            (AdCreativeAnalytics, "adAnalytics"),
         ],
         ids=[
             "Accounts",
