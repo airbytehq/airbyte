@@ -1,22 +1,32 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
 connector_image: airbyte/source-retently:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "source_retently/spec.json"
+    tests:
+      - spec_path: "source_retently/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "secrets/old_config.json"
-      status: "succeed"
-    - config_path: "secrets/config_oauth.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "secrets/old_config.json"
+        status: "succeed"
+      - config_path: "secrets/config_oauth.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.5"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: ["reports"]
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: reports
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
