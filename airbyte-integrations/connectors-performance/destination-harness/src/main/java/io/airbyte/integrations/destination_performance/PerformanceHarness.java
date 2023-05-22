@@ -9,6 +9,7 @@ import static java.lang.Thread.sleep;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AllowedHosts;
@@ -44,6 +45,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
@@ -56,7 +58,7 @@ import lombok.extern.slf4j.Slf4j;
  * sending AirbyteRecordMessages the same way platform pipes data into the destination
  */
 @Slf4j
-public class PerformanceTest {
+public class PerformanceHarness {
 
   public static final int PORT1 = 9877;
   public static final int PORT2 = 9878;
@@ -73,7 +75,7 @@ public class PerformanceTest {
 
   private DefaultAirbyteDestination destination;
 
-  PerformanceTest(final String imageName, final String config, final String catalog, final String datasource) throws JsonProcessingException {
+  PerformanceHarness(final String imageName, final String config, final String catalog, final String datasource) throws JsonProcessingException {
     final ObjectMapper mapper = new ObjectMapper();
     this.imageName = imageName;
     this.config = mapper.readTree(config);
@@ -95,6 +97,8 @@ public class PerformanceTest {
    * @throws Exception
    */
   void runTest() throws Exception {
+    final List<String> streamNames = catalog.getStreams().stream().map(stream -> stream.getStream().getName()).toList();
+    final Random random = new Random();
     final AirbyteIntegrationLauncher dstIntegtationLauncher = getAirbyteIntegrationLauncher();
     final WorkerDestinationConfig dstConfig = new WorkerDestinationConfig()
         .withDestinationConnectionConfiguration(this.config)
@@ -149,7 +153,7 @@ public class PerformanceTest {
         final AirbyteMessage airbyteMessage = new AirbyteMessage()
             .withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage()
-                .withStream(catalog.getStreams().get(0).getStream().getName())
+                .withStream(getStreamName(streamNames, random))
                 .withNamespace(catalog.getStreams().get(0).getStream().getNamespace())
                 .withData(Jsons.deserialize(recordString)));
         airbyteMessage.getRecord().setEmittedAt(start);
@@ -172,6 +176,13 @@ public class PerformanceTest {
     logListener.cancel(true);
     log.info("Test ended successfully");
     computeThroughput(totalBytes, counter, start);
+    // TODO: (ryankfu) when incremental syncs are supported, add a tearDown method to clear table
+  }
+
+  // TODO: (ryankfu) get less hacky way to generate multiple streams
+  @VisibleForTesting
+  static String getStreamName(final List<String> listOfStreamNames, final Random random) {
+    return listOfStreamNames.get(random.nextInt(listOfStreamNames.size()));
   }
 
   private void computeThroughput(final double totalBytes, final long counter, final long start) {
