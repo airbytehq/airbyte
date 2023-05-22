@@ -10,13 +10,14 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils import AirbyteTracedException
 
 from .utils import get_analytics_columns, to_datetime_str
 
@@ -346,7 +347,15 @@ class SourcePinterest(AbstractSource):
         if not start_date:
             config["start_date"] = latest_date_allowed_by_api
         else:
-            config["start_date"] = pendulum.from_format(config["start_date"], "YYYY-MM-DD")
+            try:
+                config["start_date"] = pendulum.from_format(config["start_date"], "YYYY-MM-DD")
+            except ValueError:
+                message = "Entered `Start Date` does not match format YYYY-MM-DD"
+                raise AirbyteTracedException(
+                    message=message,
+                    internal_message=message,
+                    failure_type=FailureType.config_error,
+                )
             if (today - config["start_date"]).days > AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP:
                 config["start_date"] = latest_date_allowed_by_api
         return config
