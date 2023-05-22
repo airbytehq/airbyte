@@ -79,6 +79,10 @@ class GradleTask(Step, ABC):
             return [Connector(self.context.connector.technical_name.replace("-strict-encrypt", ""))]
         if self.context.connector.technical_name == "source-file-secure":
             return [Connector("source-file")]
+        if self.context.connector.technical_name == "destination-bigquery-denormalized":
+            return [Connector("destination-bigquery")]
+        if self.context.connector.technical_name == "destination-dev-null":
+            return [Connector("destination-e2e-test")]
         return []
 
     @property
