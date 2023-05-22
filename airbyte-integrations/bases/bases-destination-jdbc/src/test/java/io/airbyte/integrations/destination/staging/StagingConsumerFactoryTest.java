@@ -19,7 +19,7 @@ class StagingConsumerFactoryTest {
 
     final ConfigErrorException configErrorException = assertThrows(
         ConfigErrorException.class,
-        () -> f.flushBufferFunction(
+        () -> SerialFlush.function(
             null,
             null,
             List.of(
