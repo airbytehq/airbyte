@@ -25,6 +25,8 @@ class DatetimeParser:
         # See https://stackoverflow.com/a/4974930
         if format == "%s":
             return datetime.datetime.fromtimestamp(int(date), tz=datetime.timezone.utc)
+        if format == "%ms":
+            return datetime.datetime.fromtimestamp(int(date) / 1000, tz=datetime.timezone.utc)
 
         parsed_datetime = datetime.datetime.strptime(str(date), format)
         if self._is_naive(parsed_datetime):
@@ -37,6 +39,8 @@ class DatetimeParser:
         # See https://stackoverflow.com/a/4974930
         if format == "%s":
             return str(int(dt.timestamp()))
+        if format == "%ms":
+            return str(int(dt.timestamp()) * 1000)
         else:
             return dt.strftime(format)
 
