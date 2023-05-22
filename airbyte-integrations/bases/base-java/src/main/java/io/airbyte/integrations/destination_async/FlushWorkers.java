@@ -4,14 +4,11 @@
 
 package io.airbyte.integrations.destination_async;
 
-import static io.airbyte.integrations.destination_async.BufferManager.QUEUE_FLUSH_THRESHOLD;
-import static io.airbyte.integrations.destination_async.BufferManager.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES;
-
+import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,6 +38,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FlushWorkers implements AutoCloseable {
 
+  public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.8);
+  public static final long QUEUE_FLUSH_THRESHOLD = 10 * 1024 * 1024; // 10MB
   private static final long MAX_TIME_BETWEEN_REC_MINS = 5L;
   private static final long SUPERVISOR_INITIAL_DELAY_SECS = 0L;
   private static final long SUPERVISOR_PERIOD_SECS = 1L;
@@ -48,11 +47,11 @@ public class FlushWorkers implements AutoCloseable {
   private static final long DEBUG_PERIOD_SECS = 10L;
   private final ScheduledExecutorService supervisorThread = Executors.newScheduledThreadPool(1);
   private final ExecutorService workerPool = Executors.newFixedThreadPool(5);
-  private final BufferManager.BufferManagerDequeue bufferManagerDequeue;
+  private final BufferDequeue bufferManagerDequeue;
   private final DestinationFlushFunction flusher;
   private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
 
-  public FlushWorkers(final BufferManager.BufferManagerDequeue bufferManagerDequeue, final DestinationFlushFunction flushFunction) {
+  public FlushWorkers(final BufferDequeue bufferManagerDequeue, final DestinationFlushFunction flushFunction) {
     this.bufferManagerDequeue = bufferManagerDequeue;
     flusher = flushFunction;
   }
@@ -88,9 +87,8 @@ public class FlushWorkers implements AutoCloseable {
     // todo (cgardens) - build a score to prioritize which queue to flush next. e.g. if a queue is very
     // large, flush it first. if a queue has not been flushed in a while, flush it next.
     // otherwise, if each individual stream has crossed a specific threshold, flush
-    for (final Map.Entry<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> entry : bufferManagerDequeue.getBuffers().entrySet()) {
-      final var stream = entry.getKey();
-      final var exceedSize = bufferManagerDequeue.getQueueSizeBytes(stream) >= QUEUE_FLUSH_THRESHOLD;
+    for (final StreamDescriptor stream : bufferManagerDequeue.getBufferedStreams()) {
+      final var exceedSize = bufferManagerDequeue.getQueueSizeBytes(stream).get() >= QUEUE_FLUSH_THRESHOLD;
       final var tooLongSinceLastRecord = bufferManagerDequeue.getTimeOfLastRecord(stream)
           .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
           .orElse(false);
@@ -115,7 +113,7 @@ public class FlushWorkers implements AutoCloseable {
 
   private void flushAll() {
     log.info("Flushing all buffers..");
-    for (final StreamDescriptor desc : bufferManagerDequeue.getBuffers().keySet()) {
+    for (final StreamDescriptor desc : bufferManagerDequeue.getBufferedStreams()) {
       flush(desc);
     }
   }
@@ -124,7 +122,7 @@ public class FlushWorkers implements AutoCloseable {
     workerPool.submit(() -> {
       log.info("Worker picked up work..");
       try {
-        log.info("Attempting to read from queue {}. Current queue size: {}", desc, bufferManagerDequeue.getQueueSizeInRecords(desc));
+        log.info("Attempting to read from queue {}. Current queue size: {}", desc, bufferManagerDequeue.getQueueSizeInRecords(desc).get());
 
         try (final var batch = bufferManagerDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
           flusher.flush(desc, batch.getData());
