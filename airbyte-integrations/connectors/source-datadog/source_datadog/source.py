@@ -84,7 +84,9 @@ class SourceDatadog(AbstractSource):
             "max_records_per_request": config.get("max_records_per_request", 5000),
             "start_date": config.get("start_date", datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")),
             "end_date": config.get("end_date", (datetime.now() + timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%SZ")),
-            "queries": config.get("queries", []),
+            "query_start_date": config.get("start_date", ""),
+            "query_end_date": config.get("end_date", ""),
+            "queries": config.get("queries", [])
         }
 
 

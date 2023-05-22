@@ -29,6 +29,8 @@ class DatadogStream(HttpStream, ABC):
         max_records_per_request: int,
         start_date: str,
         end_date: str,
+        query_start_date: str,
+        query_end_date: str,
         queries: List[Dict[str, str]] = None,
         **kwargs,
     ):
@@ -38,6 +40,8 @@ class DatadogStream(HttpStream, ABC):
         self.max_records_per_request = max_records_per_request
         self.start_date = start_date
         self.end_date = end_date
+        self.query_start_date = query_start_date
+        self.query_end_date = query_end_date
         self.queries = queries or []
         self._cursor_value = None
 
@@ -341,10 +345,13 @@ class SeriesStream(IncrementalSearchableStream, ABC):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
 
-        end_date = int(datetime.now().timestamp()) * 1000
+        if self.query_end_date:
+            end_date = int(parse(self.query_end_date).timestamp() * 1000)
+        else:
+            end_date = int(datetime.now().timestamp()) * 1000
 
-        if self.start_date:
-            start_date = int(parse(self.start_date).timestamp() * 1000)
+        if self.query_start_date:
+            start_date = int(parse(self.query_start_date).timestamp() * 1000)
         elif self._cursor_value:
             start_date = int(parse(self._cursor_value).timestamp() * 1000)
         else:
