@@ -217,7 +217,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "limit": str(100000)
         }
         if next_page_token and next_page_token.get("offset") is not None:
-            payload.update({"offset": next_page_token["offset"]})
+            payload.update({"offset": str(next_page_token["offset"])})
         return payload
 
     def stream_slices(
