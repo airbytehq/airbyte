@@ -31,6 +31,7 @@ class LinkedinAdsStream(HttpStream, ABC):
     url_base = "https://api.linkedin.com/rest/"
     primary_key = "id"
     records_limit = 500
+    endpoint = None
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config.get("authenticator"))
@@ -69,7 +70,10 @@ class LinkedinAdsStream(HttpStream, ABC):
         return {"Linkedin-Version": LINKEDIN_VERSION_API}
 
     def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"count": self.records_limit, "q": "search"}
         if next_page_token:
@@ -112,14 +116,19 @@ class Accounts(LinkedinAdsStream):
         headers.update({"X-RestLi-Protocol-Version": "2.0.0"} if self.accounts else {})
         return headers
 
-    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
         """
         Override request_params() to have the ability to accept the specific account_ids from user's configuration.
         If we have list of account_ids, we need to make sure that the request_params are encoded correctly,
         We will get HTTP Error 500, if we use standard requests.urlencode methods to parse parameters,
         so the urlencode(..., safe=":(),") is used instead, to keep the values as they are.
         """
-        params = super().request_params(stream_state=stream_state, **kwargs)
+        params = super().request_params(stream_state, stream_slice, next_page_token)
         if self.accounts:
             params["search"] = f"(id:(values:List({self.accounts})))"
             return urlencode(params, safe=":(),")
@@ -239,8 +248,13 @@ class CampaignGroups(LinkedInAdsStreamSlicing):
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
         return headers | {"X-Restli-Protocol-Version": "2.0.0"}
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice)
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
         params["search"] = "(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))"
         return params
 
@@ -269,8 +283,13 @@ class Campaigns(LinkedInAdsStreamSlicing):
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
         return headers | {"X-Restli-Protocol-Version": "2.0.0"}
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice)
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
         params["search"] = "(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))"
         #
         return params
@@ -300,7 +319,12 @@ class Creatives(LinkedInAdsStreamSlicing):
     ) -> str:
         return f"{self.parent_stream.endpoint}/{stream_slice.get('account_id')}/{self.endpoint}"
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
         params = {"sortOrder": "ASCENDING", "q": "criteria"}
         return params
 
@@ -342,9 +366,13 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream):
         headers = super().request_headers(stream_state, stream_slice, next_page_token)
         return headers | {"X-Restli-Protocol-Version": "2.0.0"}
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
         params = self.base_analytics_params
-        # params[self.search_param] = f"List(urn%3Ali%3AsponsoredCampaign%3A{stream_slice.get(self.primary_slice_key)})"
         params.update(**update_analytics_params(stream_slice))
         return params
 
@@ -382,8 +410,13 @@ class AdCampaignAnalytics(LinkedInAdsAnalyticsStream):
     #     """Define the base parameters for analytics streams"""
     #     return {"q": "analytics", "pivot": self.pivot_by, "timeGranularity": "(value:DAILY)"}
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice)
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
         params[self.search_param] = f"List(urn%3Ali%3AsponsoredCampaign%3A{stream_slice.get(self.primary_slice_key)})"
         return params
 
@@ -407,8 +440,13 @@ class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
     # search_param_value = "urn:li:sponsoredCreative:"
     pivot_by = "(value:CREATIVE)"
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice)
+    def request_params(
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
         creative_id = stream_slice.get(self.primary_slice_key).split(":")[-1]
         params[self.search_param] = f"List(urn%3Ali%3AsponsoredCreative%3A{creative_id})"
         return params

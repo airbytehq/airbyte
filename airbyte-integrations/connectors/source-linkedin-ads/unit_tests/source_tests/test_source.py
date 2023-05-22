@@ -45,7 +45,6 @@ TEST_CONFIG: dict = {
 
 
 class TestAllStreams:
-
     _instance: SourceLinkedinAds = SourceLinkedinAds()
 
     @pytest.mark.parametrize(
@@ -125,14 +124,13 @@ class TestAllStreams:
             "AdCreativeAnalytics",
         ],
     )
-    def test_path(self, stream_cls,stream_slice, expected):
+    def test_path(self, stream_cls, stream_slice, expected):
         stream = stream_cls(TEST_CONFIG)
         result = stream.path(stream_slice=stream_slice)
         assert result == expected
 
 
 class TestLinkedinAdsStream:
-
     stream: Accounts = Accounts(TEST_CONFIG)
     url = f"{stream.url_base}/{stream.path()}"
 
@@ -191,29 +189,29 @@ class TestLinkedInAdsStreamSlicing:
         "stream_cls, slice, expected",
         [
             (
-                AccountUsers,
-                {"account_id": 123},
-                {"count": 500, "q": "accounts", "accounts": "urn:li:sponsoredAccount:123"},
+                    AccountUsers,
+                    {"account_id": 123},
+                    {"count": 500, "q": "accounts", "accounts": "urn:li:sponsoredAccount:123"},
             ),
             (
-                CampaignGroups,
-                {"account_id": 123},
-                {'count': 500,
-                 'q': 'search',
-                 'search': '(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))'},
+                    CampaignGroups,
+                    {"account_id": 123},
+                    {"count": 500,
+                     "q": "search",
+                     "search": "(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))"},
             ),
             (
-                Campaigns,
-                {"account_id": 123},
-                {'count': 500,
-                 'q': 'search',
-                 'search': '(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))'}
-                ,
+                    Campaigns,
+                    {"account_id": 123},
+                    {"count": 500,
+                     "q": "search",
+                     "search": "(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))"},
             ),
             (
-                Creatives,
-                {"campaign_id": 123},
-                {'q': 'criteria', 'sortOrder': 'ASCENDING'},
+                    Creatives,
+                    {"campaign_id": 123},
+                    {'q': 'criteria',
+                     'sortOrder': 'ASCENDING'},
             )
         ],
         ids=["AccountUsers", "CampaignGroups", "Campaigns", "Creatives"],
@@ -248,8 +246,8 @@ class TestLinkedInAdsAnalyticsStream:
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
-            (AdCampaignAnalytics, {"q": "analytics", "pivot": "CAMPAIGN", "timeGranularity": "DAILY"}),
-            (AdCreativeAnalytics, {"q": "analytics", "pivot": "CREATIVE", "timeGranularity": "DAILY"}),
+            (AdCampaignAnalytics, {"pivot": "(value:CAMPAIGN)", "q": "analytics", "timeGranularity": "(value:DAILY)"}),
+            (AdCreativeAnalytics, {"pivot": "(value:CREATIVE)", "q": "analytics", "timeGranularity": "(value:DAILY)"}),
         ],
         ids=[
             "AdCampaignAnalytics",
@@ -265,45 +263,45 @@ class TestLinkedInAdsAnalyticsStream:
         "stream_cls, slice, expected",
         [
             (
-                AdCampaignAnalytics,
-                {
-                    "dateRange": {"start.day": 1, "start.month": 1, "start.year": 1, "end.day": 2, "end.month": 2, "end.year": 2},
-                    "fields": ["field1", "field2"],
-                },
-                {
-                    "campaigns": "List(urn%3Ali%3AsponsoredCampaign%3ANone)",
-                    "dateRange": "(start:(year:1,month:1,day:1),end:(year:2,month:2,day:2))",
-                    "fields": ["field1", "field2"],
-                    "pivot": "(value:CAMPAIGN)",
-                    "q": "analytics",
-                    "timeGranularity": "(value:DAILY)"
-                },
+                    AdCampaignAnalytics,
+                    {
+                        "dateRange": {"start.day": 1, "start.month": 1, "start.year": 1, "end.day": 2, "end.month": 2, "end.year": 2},
+                        "fields": ["field1", "field2"],
+                    },
+                    {
+                        "campaigns": "List(urn%3Ali%3AsponsoredCampaign%3ANone)",
+                        "dateRange": "(start:(year:1,month:1,day:1),end:(year:2,month:2,day:2))",
+                        "fields": ["field1", "field2"],
+                        "pivot": "(value:CAMPAIGN)",
+                        "q": "analytics",
+                        "timeGranularity": "(value:DAILY)"
+                    },
             ),
             (
-                AdCreativeAnalytics,
-                {
-                    "dateRange": {
-                        "start.day": 1,
-                        "start.month": 1,
-                        "start.year": 1,
-                        "end.day": 2,
-                        "end.month": 2,
-                        "end.year": 2,
+                    AdCreativeAnalytics,
+                    {
+                        "dateRange": {
+                            "start.day": 1,
+                            "start.month": 1,
+                            "start.year": 1,
+                            "end.day": 2,
+                            "end.month": 2,
+                            "end.year": 2,
+                        },
+                        "fields": [
+                            "field1",
+                            "field2",
+                        ],
+                        "creative_id": "urn:li:sponsoredCreative:1234"
                     },
-                    "fields": [
-                        "field1",
-                        "field2",
-                    ],
-                    "creative_id": "urn:li:sponsoredCreative:1234"
-                },
-                {
-                    "creatives": "List(urn%3Ali%3AsponsoredCreative%3A1234)",
-                    "dateRange": "(start:(year:1,month:1,day:1),end:(year:2,month:2,day:2))",
-                    "fields": ["field1", "field2"],
-                    "pivot": "(value:CREATIVE)",
-                    "q": "analytics",
-                    "timeGranularity": "(value:DAILY)"
-                },
+                    {
+                        "creatives": "List(urn%3Ali%3AsponsoredCreative%3A1234)",
+                        "dateRange": "(start:(year:1,month:1,day:1),end:(year:2,month:2,day:2))",
+                        "fields": ["field1", "field2"],
+                        "pivot": "(value:CREATIVE)",
+                        "q": "analytics",
+                        "timeGranularity": "(value:DAILY)"
+                    },
             ),
         ],
         ids=[
