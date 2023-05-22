@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "xata==0.9.1"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "xata==0.10.1"]
 
 TEST_REQUIREMENTS = ["pytest~=6.2"]
 
