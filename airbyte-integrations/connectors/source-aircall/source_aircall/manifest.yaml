@@ -3,13 +3,14 @@ version: "0.29.0"
 definitions:
   requester:
     type: HttpRequester
-    url_base: "https://api.aircall.io/v1"
+    url_base: "https://api.aircall.io/"
     http_method: "GET"
     authenticator:
       type: BasicHttpAuthenticator
       username: "{{ config['api_id'] }}"
       password: "{{ config['api_token'] }}"
 
+    
   record_retriever:
     type: SimpleRetriever
     record_selector:
@@ -25,27 +26,106 @@ definitions:
           field_name: "{{ response['meta']['per_page'] }}"
         pagination_strategy:
           type: "PageIncrement"
-          page_size: 5
+          page_size: "{{ response['meta']['total'] }}"
         page_token_option:
           type: "RequestOption"
           inject_into: "request_parameter"
-          field_name: "{{ response['meta']['page'] }}"
+          field_name: "{{ response['meta']['page'] }} "
 
+  calls_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "started_at"
+    datetime_format: "%s"
+    cursor_granularity: "PT0.000001S"
+    start_datetime:
+      datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d %H:%M:%S') }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+    step: "P1D"
+
+  incremental_sync: 
+    type: DatetimeBasedCursor
+    cursor_field: "created_at"
+    datetime_format: "%s"
+    cursor_granularity: "PT0.000001S"
+    start_datetime:
+      datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d %H:%M:%S') }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+    step: "P1M"
+    
+  cursor_based_record_retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: ["{{ parameters.name }}"]
+    paginator:
+      type: "DefaultPaginator"
+      page_token_option:
+        type: "RequestPath"
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.meta.next_page_link }}"
+        stop_condition: "{{ response.meta.next_page_link is none }}"
+    
+  users_record_retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: ["users"]
+    paginator:
+      type: "DefaultPaginator"
+      page_token_option:
+        type: "RequestPath"
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.meta.next_page_link }}"
+        stop_condition: "{{ response.meta.next_page_link is none }}"
+
+  calls_record_retriever:
+    type: SimpleRetriever
+    record_selector:
+      type: RecordSelector
+      extractor:
+        type: DpathExtractor
+        field_path: ["calls"]
+    paginator:
+      type: "DefaultPaginator"
+      page_token_option:
+        type: "RequestPath"
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.meta.next_page_link }}"
+        stop_condition: "{{ response.meta.next_page_link is none }}"
+    
+    
   calls_stream:
     type: DeclarativeStream
     $parameters:
       name: "calls"
-      path: "/calls"
+      cursor_field: "from"
+      primary_key: "id"
+      path: "/v1/calls?from={{ stream_slice['start_time'] }}&to={{ stream_slice['end_time']}}"
     retriever:
-      $ref: "#/definitions/record_retriever"
+      $ref: "#/definitions/calls_record_retriever"
       requester:
         $ref: "#/definitions/requester"
+    incremental_sync:
+      $ref: "#/definitions/calls_incremental_sync"
 
   company_stream:
     type: DeclarativeStream
     $parameters:
       name: "company"
-      path: "/company"
+      path: "/v1/company"
     retriever:
       $ref: "#/definitions/record_retriever"
       requester:
@@ -55,106 +135,85 @@ definitions:
     type: DeclarativeStream
     $parameters:
       name: "contacts"
-      path: "/contacts"
+      path: "/v1/contacts?from={{ stream_slice['start_time'] }}&to={{ stream_slice['end_time']}}"
+      primary_key: "id"
     retriever:
-      $ref: "#/definitions/record_retriever"
+      $ref: "#/definitions/cursor_based_record_retriever"
       requester:
         $ref: "#/definitions/requester"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+    primary_key: "id"
 
   numbers_stream:
     type: DeclarativeStream
     $parameters:
       name: "numbers"
-      path: "/numbers"
+      path: "/v1/numbers?from={{ stream_slice['start_time'] }}&to={{ stream_slice['end_time']}}"
+      primary_key: "id"
     retriever:
-      $ref: "#/definitions/record_retriever"
+      $ref: "#/definitions/cursor_based_record_retriever"
       requester:
         $ref: "#/definitions/requester"
     incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: "created_at"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-      cursor_granularity: "PT0.000001S"
-      lookback_window: "P31D"
-      start_datetime:
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-      end_datetime:
-        datetime: "{{ today_utc() }}"
-        datetime_format: "%Y-%m-%d"
-      step: "P1M"
+      $ref: "#/definitions/incremental_sync"
     primary_key: "id"
 
   tags_stream:
     type: DeclarativeStream
     $parameters:
       name: "tags"
-      path: "/tags"
+      path: "/v1/tags"
     retriever:
-      $ref: "#/definitions/record_retriever"
+      $ref: "#/definitions/cursor_based_record_retriever"
       requester:
         $ref: "#/definitions/requester"
     primary_key: "id"
 
-  user_retriever:
-    type: SimpleRetriever
-    record_selector:
-      type: RecordSelector
-      extractor:
-        type: DpathExtractor
-        field_path: ["users"]
-    requester:
-      $ref: "#/definitions/requester"
-
   users_stream:
     type: DeclarativeStream
-    retriever:
-      $ref: "#/definitions/user_retriever"
-    name: "users"
-    primary_key: "id"
     $parameters:
-      path: "/users"
+      name: "users"
+      cursor_field: "from"
+      primary_key: "id"
+      path: "/v1/users?from={{ stream_slice['start_time'] }}&to={{ stream_slice['end_time']}}"
+    retriever:
+      $ref: "#/definitions/cursor_based_record_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
 
   user_availablity_stream:
     type: DeclarativeStream
-    retriever:
-      $ref: "#/definitions/user_retriever"
-    name: "user_availablity"
-    primary_key: "id"
     $parameters:
-      path: "/users/availabilities"
+      path: "/v1/users/availabilities"
+      name: "user_availablity"
+      primary_key: "id"
+    retriever:
+      $ref: "#/definitions/users_record_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+    primary_key: "id"
 
   teams_stream:
     type: DeclarativeStream
     $parameters:
       name: "teams"
-      path: "/teams"
+      path: "/v1/teams"
     retriever:
-      $ref: "#/definitions/record_retriever"
+      $ref: "#/definitions/cursor_based_record_retriever"
       requester:
         $ref: "#/definitions/requester"
-    incremental_sync:
-      type: DatetimeBasedCursor
-      cursor_field: "created_at"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-      cursor_granularity: "PT0.000001S"
-      lookback_window: "P31D"
-      start_datetime:
-        datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-      end_datetime:
-        datetime: "{{ today_utc() }}"
-        datetime_format: "%Y-%m-%d"
-      step: "P1M"
     primary_key: "id"
 
   webhooks_stream:
     type: DeclarativeStream
     $parameters:
       name: "webhooks"
-      path: "/webhooks"
+      path: "/v1/webhooks"
     retriever:
-      $ref: "#/definitions/record_retriever"
+      $ref: "#/definitions/cursor_based_record_retriever"
       requester:
         $ref: "#/definitions/requester"
     primary_key: "id"

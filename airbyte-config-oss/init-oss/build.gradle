@@ -1,5 +1,7 @@
 plugins {
     id 'java-library'
+    id "de.undercouch.download" version "5.4.0"
+
 }
 
 dependencies {
@@ -7,6 +9,7 @@ dependencies {
     api libs.bundles.micronaut.annotation
 
     implementation 'commons-cli:commons-cli:1.4'
+    implementation project(':airbyte-commons-cli')
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-json-validation')
@@ -17,11 +20,19 @@ dependencies {
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.1'
 }
 
-Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
-
-task validateIcons(type: JavaExec, dependsOn: [compileJava]) {
-    classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'io.airbyte.configoss.init.IconValidationTask'
+task downloadConnectorRegistry(type: Download) {
+    src 'https://connectors.airbyte.com/files/registries/v0/oss_registry.json'
+    dest new File(projectDir, 'src/main/resources/seed/oss_registry.json')
+    overwrite true
 }
 
-validateIcons.shouldRunAfter processResources
+task downloadSpecSecretMask(type: Download) {
+    src 'https://connectors.airbyte.com/files/registries/v0/specs_secrets_mask.yaml'
+    dest new File(project(":airbyte-commons").projectDir, 'src/main/resources/seed/specs_secrets_mask.yaml')
+    overwrite true
+}
+
+processResources.dependsOn(downloadConnectorRegistry)
+processResources.dependsOn(downloadSpecSecretMask)
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

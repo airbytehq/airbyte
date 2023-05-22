@@ -65,6 +65,42 @@ class TestOauth2Authenticator:
         }
         assert body == expected
 
+    def test_refresh_without_refresh_token(self):
+        """
+        Should work fine for grant_type client_credentials.
+        """
+        oauth = DeclarativeOauth2Authenticator(
+            token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
+            client_id="{{ config['client_id'] }}",
+            client_secret="{{ config['client_secret'] }}",
+            config=config,
+            parameters={},
+            grant_type="client_credentials",
+        )
+        body = oauth.build_refresh_request_body()
+        expected = {
+            "grant_type": "client_credentials",
+            "client_id": "some_client_id",
+            "client_secret": "some_client_secret",
+            "refresh_token": None,
+            "scopes": None,
+        }
+        assert body == expected
+
+    def test_error_on_refresh_token_grant_without_refresh_token(self):
+        """
+        Should throw an error if grant_type refresh_token is configured without refresh_token.
+        """
+        with pytest.raises(ValueError):
+            DeclarativeOauth2Authenticator(
+                token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
+                client_id="{{ config['client_id'] }}",
+                client_secret="{{ config['client_secret'] }}",
+                config=config,
+                parameters={},
+                grant_type="refresh_token",
+            )
+
     def test_refresh_access_token(self, mocker):
         oauth = DeclarativeOauth2Authenticator(
             token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
