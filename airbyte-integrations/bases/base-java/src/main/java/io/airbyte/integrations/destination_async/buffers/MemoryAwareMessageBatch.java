@@ -35,10 +35,6 @@ public class MemoryAwareMessageBatch implements AutoCloseable {
     return batch;
   }
 
-  public long getSizeInBytes() {
-    return sizeInBytes;
-  }
-
   @Override
   public void close() throws Exception {
     batch = null;
