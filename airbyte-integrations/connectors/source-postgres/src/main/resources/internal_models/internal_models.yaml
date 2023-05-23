@@ -12,10 +12,10 @@ definitions:
     properties:
       num_wraparound:
         description: Number of times the Xmin value has wrapped around.
-        type: long
+        type: integer
       xmin_xid_value:
         description: The 32-bit xmin value associated with the xmin snapshot. This is the value that is ultimately written and recorded on every row.
-        type: long
+        type: integer
       xmin_raw_value:
         description: The raw value of the xmin snapshot. If no wraparound has occurred, this should be the same as 2.
-        type: long
+        type: integer

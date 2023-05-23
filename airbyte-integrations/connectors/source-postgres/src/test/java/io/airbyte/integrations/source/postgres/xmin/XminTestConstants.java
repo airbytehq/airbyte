@@ -2,6 +2,7 @@ package io.airbyte.integrations.source.postgres.xmin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -21,7 +22,7 @@ public class XminTestConstants {
   public static final AirbyteStreamNameNamespacePair PAIR2 = new AirbyteStreamNameNamespacePair(STREAM_NAME2, NAMESPACE);
 
   public static final long XID1 = 123123;
-  public static final XminStatus XMIN_STATUS1 = new XminStatus().withNumWraparound(0).withXminRawValue(XID1).withXminXidValue(XID1);
+  public static final XminStatus XMIN_STATUS1 = new XminStatus().withNumWraparound(0L).withXminRawValue(XID1).withXminXidValue(XID1);
   public static final AirbyteMessage XMIN_STATE_MESSAGE_1 =
       new AirbyteMessage()
           .withType(Type.STATE)
@@ -35,7 +36,7 @@ public class XminTestConstants {
                   .withStreamState(new ObjectMapper().valueToTree(XMIN_STATUS1))));
 
   public static final long XID2 = 3145555;
-  public static final XminStatus XMIN_STATUS2 = new XminStatus().withNumWraparound(0).withXminRawValue(XID2).withXminXidValue(XID2);
+  public static final XminStatus XMIN_STATUS2 = new XminStatus().withNumWraparound(0L).withXminRawValue(XID2).withXminXidValue(XID2);
   public static final AirbyteMessage XMIN_STATE_MESSAGE_2 =
       new AirbyteMessage()
           .withType(Type.STATE)

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.source.postgres.xmin.XminStatus;
+import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import java.sql.SQLException;
 import java.util.List;
 import org.slf4j.Logger;
