@@ -1351,7 +1351,7 @@ definitions:
           - "{{ config['start_time'] }}"
       datetime_format:
         title: Datetime Format
-        description: Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty.
+        description: Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use %s if the datetime value is in epoch time (Unix timestamp).
         type: string
         default: ""
         examples:

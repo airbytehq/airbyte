@@ -520,7 +520,7 @@ class MinMaxDatetime(BaseModel):
     )
     datetime_format: Optional[str] = Field(
         "",
-        description='Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty.',
+        description='Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use %s if the datetime value is in epoch time (Unix timestamp).',
         examples=["%Y-%m-%dT%H:%M:%S.%f%", "%Y-%m-%d", "%s"],
         title="Datetime Format",
     )
