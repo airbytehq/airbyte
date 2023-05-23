@@ -39,7 +39,8 @@ public class Main {
     int numOfParallelStreams = 1;
     String syncMode = "full_refresh";
 
-    // TODO (ryankfu): Add a better way to parse arguments
+    // TODO (ryankfu): Add a better way to parse arguments. Take a look at {@link Clis.java} for
+    // references
     switch (args.length) {
       case 1 -> image = args[0];
       case 2 -> {
