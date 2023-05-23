@@ -31,62 +31,25 @@ This Source is capable of syncing the following core Streams:
 * CallRail Account
 * CallRail API Token
 
-### How to obtain an API key and Account ID
+### How to set up the CallRail Source Connector in Airbyte
 
-1. Log in to CallRail account.
-2. Go to **Account Settings** > **API**.
-3. Copy the **API Key** and **Account Identifier**.
+1. Log in to your CallRail account and go to the [API Tokens](https://app.callrail.com/settings/api) page.
+2. Click on the "New Token" button. Enter a name for your token, and select the permissions you want to grant for this token.
+3. Copy the newly generated API Token.
+4. Log in to Airbyte and select "CallRail" from the list of available sources.
+5. Paste the API token into the "API Key" field.
+6. Find your Account ID in CallRail. To do this, go to the "Settings" tab and select "General" from the dropdown.
+7. Copy the "Account ID" field value.
+8. Return to the Airbyte connector configuration page and enter the copied Account ID into the "Account ID" field. 
+9. Determine the date from which you want to start obtaining data. Copy the date (in the format: YYYY-MM-DD).
+10. Return to the Airbyte connector configuration page and enter the copied date into the "Start Date" field.
+11. Click "Test Connection" to ensure the configuration is valid.
+12. If the connection tests successfully, click "Create Connection" to save the configuration.
 
-Refer to [CallRail API Documentation](https://apidocs.callrail.com/) for more information.
-
-### Configuration
-
-The configuration screen is driven by the spec of the Airbyte Connector:
-
-```
-documentationUrl: https://docs.airbyte.com/integrations/sources/callrail
-connectionSpecification:
-  $schema: http://json-schema.org/draft-07/schema#
-  title: Call Rail Spec
-  type: object
-  required:
-    - api_key
-    - account_id
-    - start_date
-  additionalProperties: true
-  properties:
-    api_key:
-      type: string
-      description: API access key
-      airbyte_secret: true
-    account_id:
-      type: string
-      description: Account ID
-      airbyte_secret: true
-    start_date:
-      type: string
-      description: Start getting data from that date.
-      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
-      examples:
-        - "%Y-%m-%d"
-```
-
-In the Airbyte UI, enter the following information for your CallRail source connection:
-
-* **API Key**: The API Key obtained from CallRail.
-* **Account ID**: The Account Identifier obtained from CallRail.
-* **Start Date**: The date to start syncing your data from. Use format `%Y-%m-%d`. 
-
-Save your settings and test your connection. 
-
-Note: SSL connection and Namespaces are not supported.
-
-Refer to [CallRail API Documentation](https://apidocs.callrail.com/) for more information. 
+Refer to the [CallRail API Documentation](https://apidocs.callrail.com/) for more information on how to use the API. 
 
 ## Changelog
 
 | Version | Date       | Pull Request                                            | Subject                           |
 | :--- |:-----------|:--------------------------------------------------------|:----------------------------------|
 | 0.1.0 | 2022-10-31 | [18739](https://github.com/airbytehq/airbyte/pull/18739) | 🎉 New Source: CallRail                  |
-
-Please make sure to verify all steps with the current CallRail interface to ensure accuracy.
