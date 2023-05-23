@@ -187,7 +187,7 @@ public class DetectStreamToFlush {
     final long workersWithBatchesSize = runningWorkerBatchesSizes.stream().filter(Optional::isPresent).mapToLong(Optional::get).sum();
     final long workersWithoutBatchesCount = runningWorkerBatchesSizes.stream().filter(Optional::isEmpty).count();
     final long workersWithoutBatchesSizeEstimate = Math.min(flusher.getOptimalBatchSizeBytes(), currentQueueSize) * workersWithoutBatchesCount;
-    return (workersWithBatchesSize + workersWithoutBatchesSizeEstimate);
+    return (workersWithBatchesSize + workersWithoutBatchesSizeEstimate) / 2;
   }
 
   // todo (cgardens) - perf test whether it would make sense to flip 1 & 2.
