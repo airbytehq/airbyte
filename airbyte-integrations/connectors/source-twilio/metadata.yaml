@@ -4,10 +4,11 @@ data:
       - api.twilio.com
       - monitor.twilio.com
       - chat.twilio.com
+      - trunking.twilio.com
   connectorSubtype: api
   connectorType: source
   definitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
-  dockerImageTag: 0.6.0
+  dockerImageTag: 0.7.0
   dockerRepository: airbyte/source-twilio
   githubIssueLabel: source-twilio
   icon: twilio.svg

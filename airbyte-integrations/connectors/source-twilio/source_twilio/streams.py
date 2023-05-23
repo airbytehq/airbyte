@@ -26,6 +26,7 @@ TWILIO_API_URL_BASE_VERSIONED = f"{TWILIO_API_URL_BASE}/2010-04-01/"
 TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
 TWILIO_STUDIO_API_BASE = "https://studio.twilio.com/v1/"
 TWILIO_CONVERSATIONS_URL_BASE = "https://conversations.twilio.com/v1/"
+TWILIO_TRUNKING_URL_BASE = "https://trunking.twilio.com/v1/"
 
 
 class TwilioStream(HttpStream, ABC):
@@ -475,6 +476,17 @@ class Transcriptions(TwilioNestedStream):
     """https://www.twilio.com/docs/voice/api/recording-transcription?code-sample=code-read-list-all-transcriptions&code-language=curl&code-sdk-version=json#read-multiple-transcription-resources"""
 
     parent_stream = Accounts
+
+
+class Trunks(TwilioStream):
+    """
+    https://www.twilio.com/docs/sip-trunking/api/trunk-resource#trunk-properties
+    """
+
+    url_base = TWILIO_TRUNKING_URL_BASE
+
+    def path(self, **kwargs):
+        return "Trunks"
 
 
 class Queues(TwilioNestedStream):
