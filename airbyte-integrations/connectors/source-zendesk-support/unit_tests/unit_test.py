@@ -194,6 +194,13 @@ def test_parse_next_page_number(requests_mock):
     assert output == expected
 
 
+def test_parse_next_page_number_from_empty_json(requests_mock):
+    requests_mock.get(STREAM_URL, text='', status_code=403)
+    test_response = requests.get(STREAM_URL)
+    output = BaseSourceZendeskSupportStream._parse_next_page_number(test_response)
+    assert output is None
+
+
 def test_next_page_token(requests_mock):
     # mocking the logic of next_page_token
     if TICKET_EVENTS_STREAM_RESPONSE.get(END_OF_STREAM_KEY) is False:
@@ -232,6 +239,13 @@ def test_request_params(requests_mock):
     output = TicketComments(**STREAM_ARGS).request_params(stream_state, None)
     assert next_page_token is not None
     assert expected == output
+
+
+def test_parse_response_from_empty_json(requests_mock):
+    requests_mock.get(STREAM_URL, text='', status_code=403)
+    test_response = requests.get(STREAM_URL)
+    output = Schedules(**STREAM_ARGS).parse_response(test_response, {})
+    assert list(output) == []
 
 
 def test_parse_response(requests_mock):
