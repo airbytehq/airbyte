@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+// todo (cgardens) - hook it up to the memory manager.
 public class AsyncDestinationStateManager {
 
   private final Map<StreamDescriptor, StateLifecycle> streamToLifecycle;
@@ -47,17 +48,6 @@ public class AsyncDestinationStateManager {
   public void trackState(final AirbyteMessage message, final long messageNum) {
     setManagerStateTypeIfNotSet(message);
     getOrCreateLifecycle(extractStream(message).orElse(null)).trackState(message, messageNum);
-  }
-
-  /**
-   * Remove a state from tracking. This is helpful if a worker has picked up multiple state messages
-   * in a single batch. For the batch, we only need to emit the highest state message, so we can prune
-   * out the rest.
-   *
-   * @param message message to remove
-   */
-  public void pruneStates(final StreamDescriptor streamDescriptor, final long minMessageNum, final long maxMessageNum) {
-    getLifecycle(streamDescriptor).ifPresent(lifecycle -> lifecycle.pruneStates(minMessageNum, maxMessageNum));
   }
 
   /**

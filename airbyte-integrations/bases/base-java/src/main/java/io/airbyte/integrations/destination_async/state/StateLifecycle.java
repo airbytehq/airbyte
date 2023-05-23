@@ -11,6 +11,21 @@ import java.util.NavigableMap;
 import java.util.Optional;
 import java.util.TreeMap;
 
+/**
+ * A state lifecycle is either state tracking for a single stream (in the per-stream state case) or
+ * for the global state (in the global or legacy cases).
+ * <p>
+ * The lifecycle tracks state messages and their respective message numbers. It is resilient to the
+ * fact that batches of records may get flushed out of order (by different workers running in
+ * different threads). It does this by allowing each batch to report its min and max message number.
+ * It will then mark any states in that range as having all its records flushed. Then it looks at
+ * the state with the lowest message number and iterates upwards as long as it has not encountered a
+ * non-flushed state. It returns the highest flushed state that it can find for which all the states
+ * with lowered message numbers are also flushed. This is the best state message that we can emit.
+ * <p>
+ * The two public methods on this class are `synchronized` as the internals of this class are NOT
+ * thread safe.
+ */
 public class StateLifecycle {
 
   private final Map<Long, AirbyteMessage> idToState;
@@ -28,34 +43,14 @@ public class StateLifecycle {
    * subsequent submissions are ignored.
    *
    * @param message message to track
-   * @param messageNum
+   * @param messageNum message number
    */
-  public void trackState(final AirbyteMessage message, final long messageNum) {
+  public synchronized void trackState(final AirbyteMessage message, final long messageNum) {
     if (!stateToId.containsKey(message)) {
       idToState.put(messageNum, message);
       stateToId.put(message, messageNum);
       stateToIsFlushed.put(messageNum, false);
     }
-  }
-
-  /**
-   * Remove a state from tracking. This is helpful if a worker has picked up multiple state messages
-   * in a single batch. For the batch, we only need to emit the highest state message, so we can prune
-   * out the rest.
-   *
-   * @param message message to remove
-   */
-  public void pruneStates(final long minMessageNum, final long maxMessageNum) {
-    for (final Long nextId : stateToIsFlushed.subMap(minMessageNum, true, maxMessageNum, true).navigableKeySet()) {
-      removeState(nextId);
-    }
-  }
-
-  private void removeState(final long id) {
-    final AirbyteMessage message = idToState.get(id);
-    stateToId.remove(message);
-    idToState.remove(id);
-    stateToIsFlushed.remove(id);
   }
 
   /**
@@ -74,15 +69,17 @@ public class StateLifecycle {
    * @param maxMessageNum max number that was emitted by batch
    * @return highest state for which itself and all previous states have been flushed.
    */
-  public Optional<AirbyteMessage> completeState(final long minMessageNum, final long maxMessageNum) {
+  public synchronized Optional<AirbyteMessage> completeState(final long minMessageNum, final long maxMessageNum) {
     boolean allEncountedStatesFlushed = true;
     long bestMessageId = 0;
     for (final Long stateId : stateToIsFlushed.navigableKeySet()) {
 
       /*
        * first, we make sure set all the state message in range to flushed.
+       *
+       * +1 because if the next message was the state, then all good.
        */
-      if (stateId > minMessageNum && stateId < maxMessageNum) {
+      if (stateId >= minMessageNum && stateId <= maxMessageNum) {
         stateToIsFlushed.computeIfPresent(stateId, (a, b) -> true);
       }
 
@@ -120,13 +117,13 @@ public class StateLifecycle {
   }
 
   private void removeUpTo(final long id) {
-    for (final Long nextId : stateToIsFlushed.navigableKeySet()) {
-      if (nextId <= id) {
-        removeState(id);
-      } else {
-        break;
-      }
+    final NavigableMap<Long, Boolean> toRemove = stateToIsFlushed.subMap(0L, true, id, true);
+    for (final Long nextId : toRemove.navigableKeySet()) {
+      final AirbyteMessage message = idToState.get(nextId);
+      stateToId.remove(message);
+      idToState.remove(id);
     }
+    toRemove.clear();
   }
 
 }
