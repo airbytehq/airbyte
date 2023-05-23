@@ -1,4 +1,5 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": ["object", "null"],
   "additionalProperties": true,
   "properties": {
@@ -7,6 +8,21 @@
     },
     "tenant": {
       "type": ["string", "null"]
+    },
+    "owners": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "is_token_endpoint_ip_header_trusted": {
+      "type": ["boolean", "null"]
+    },
+    "cross_origin_auth": {
+      "type": ["boolean", "null"]
+    },
+    "callback_url_template": {
+      "type": ["boolean", "null"]
     },
     "name": {
       "type": ["string", "null"]
@@ -33,37 +49,37 @@
       "type": ["boolean", "null"]
     },
     "callbacks": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
         "type": ["string", "null"]
       }
     },
     "allowed_origins": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
         "type": ["string", "null"]
       }
     },
     "web_origins": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
         "type": ["string", "null"]
       }
     },
     "client_aliases": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
         "type": ["string", "null"]
       }
     },
     "allowed_clients": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
         "type": ["string", "null"]
       }
     },
     "allowed_logout_urls": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
         "type": ["string", "null"]
       }
@@ -73,22 +89,22 @@
       "additionalProperties": true,
       "properties": {
         "backchannel_logout_urls": {
-          "type": "array",
+          "type": ["null", "array"],
           "items": {
             "type": ["string", "null"]
-              }
-            }
+          }
         }
+      }
     },
     "grant_types": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
         "type": ["string", "null"]
       }
     },
-    "jwt_configuration":{
+    "jwt_configuration": {
       "type": ["object", "null"],
-      "additionalProperties" : true,
+      "additionalProperties": true,
       "properties": {
         "lifetime_in_seconds": {
           "type": ["integer", "null"]
@@ -96,7 +112,7 @@
         "secret_encoded": {
           "type": ["boolean", "null"]
         },
-        "scopes":{
+        "scopes": {
           "type": ["object", "null"]
         },
         "alg": {
@@ -104,12 +120,16 @@
         }
       }
     },
-    "signing_keys":{
-      "type": ["object", "null"]
+    "signing_keys": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "additionalProperties": true
+      }
     },
-    "encryption_key":{
+    "encryption_key": {
       "type": ["object", "null"],
-      "additionalProperties" : true,
+      "additionalProperties": true,
       "properties": {
         "pub": {
           "type": ["string", "null"]
@@ -117,7 +137,7 @@
         "cert": {
           "type": ["string", "null"]
         },
-        "subject":{
+        "subject": {
           "type": ["string", "null"]
         }
       }
@@ -146,29 +166,29 @@
     "form_template": {
       "type": ["string", "null"]
     },
-    "addons":{
+    "addons": {
       "type": ["object", "null"],
-      "additionalProperties" : true
+      "additionalProperties": true
     },
     "token_endpoint_auth_method": {
       "type": ["string", "null"]
     },
-    "client_metadata":{
+    "client_metadata": {
       "type": ["object", "null"],
-      "additionalProperties" : true
+      "additionalProperties": true
     },
-    "mobile":{
+    "mobile": {
       "type": ["object", "null"],
-      "additionalProperties" : true
+      "additionalProperties": true
     },
     "initiate_login_uri": {
       "type": ["string", "null"]
     },
-    "native_social_login":{
+    "native_social_login": {
       "type": ["object", "null"],
-      "additionalProperties" : true
+      "additionalProperties": true
     },
-    "refresh_token":{
+    "refresh_token": {
       "type": ["object", "null"],
       "properties": {
         "rotation_type": {
@@ -188,9 +208,9 @@
     "organization_require_behavior": {
       "type": ["string", "null"]
     },
-    "client_authentication_methods":{
+    "client_authentication_methods": {
       "type": ["object", "null"],
-      "additionalProperties" : true
+      "additionalProperties": true
     }
   }
 }
