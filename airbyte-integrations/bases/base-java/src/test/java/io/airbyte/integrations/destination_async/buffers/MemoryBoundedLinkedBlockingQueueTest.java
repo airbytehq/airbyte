@@ -27,28 +27,6 @@ public class MemoryBoundedLinkedBlockingQueueTest {
   }
 
   @Test
-  void test() throws InterruptedException {
-    final MemoryBoundedLinkedBlockingQueue<String> queue = new MemoryBoundedLinkedBlockingQueue<>(1024);
-
-    assertEquals(0, queue.getCurrentMemoryUsage());
-    assertNull(queue.getTimeOfLastMessage().orElse(null));
-
-    queue.offer("abc", 6);
-    queue.offer("abc", 6);
-    queue.offer("abc", 6);
-
-    assertEquals(18, queue.getCurrentMemoryUsage());
-    assertNotNull(queue.getTimeOfLastMessage().orElse(null));
-
-    queue.take();
-    queue.take();
-    queue.take();
-
-    assertEquals(0, queue.getCurrentMemoryUsage());
-    assertNotNull(queue.getTimeOfLastMessage().orElse(null));
-  }
-
-  @Test
   void testBlocksOnFullMemory() throws InterruptedException {
     final MemoryBoundedLinkedBlockingQueue<String> queue = new MemoryBoundedLinkedBlockingQueue<>(10);
     assertTrue(queue.offer("abc", 6));

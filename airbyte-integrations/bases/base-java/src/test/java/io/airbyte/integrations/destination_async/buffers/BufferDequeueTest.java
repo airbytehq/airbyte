@@ -37,10 +37,10 @@ public class BufferDequeueTest {
       final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
       final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES, 1);
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES, 2);
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES, 3);
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES, 4);
 
       // total size of records is 80, so we expect 50 to get us 2 records (prefer to under-pull records
       // than over-pull).
@@ -57,9 +57,9 @@ public class BufferDequeueTest {
       final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
       final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES, 1);
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES, 2);
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES, 3);
 
       try (final MemoryAwareMessageBatch take = dequeue.take(STREAM_DESC, 60)) {
         assertEquals(3, take.getData().toList().size());
@@ -74,8 +74,8 @@ public class BufferDequeueTest {
       final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
       final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
-      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES, 1);
+      enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES, 2);
 
       try (final MemoryAwareMessageBatch take = dequeue.take(STREAM_DESC, Long.MAX_VALUE)) {
         assertEquals(2, take.getData().toList().size());
@@ -92,11 +92,11 @@ public class BufferDequeueTest {
     final BufferEnqueue enqueue = bufferManager.getBufferEnqueue();
     final BufferDequeue dequeue = bufferManager.getBufferDequeue();
 
-    enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
-    enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES);
+    enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES, 1);
+    enqueue.addRecord(STREAM_DESC, RECORD_MSG_20_BYTES, 2);
 
     final var secondStream = new StreamDescriptor().withName("stream_2");
-    enqueue.addRecord(secondStream, RECORD_MSG_20_BYTES);
+    enqueue.addRecord(secondStream, RECORD_MSG_20_BYTES, 3);
 
     assertEquals(60, dequeue.getTotalGlobalQueueSizeBytes());
 
