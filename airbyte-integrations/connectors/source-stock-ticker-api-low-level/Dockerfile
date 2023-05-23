@@ -28,6 +28,7 @@ RUN echo "Etc/UTC" > /etc/timezone
 RUN apk --no-cache add bash
 
 # copy payload code only
+COPY datetime_parser.py /usr/local/lib/python3.9/site-packages/airbyte_cdk/sources/declarative/datetime/
 COPY main.py ./
 COPY source_stock_ticker_api_low_level ./source_stock_ticker_api_low_level
 
