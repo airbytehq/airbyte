@@ -121,7 +121,7 @@ public class StateLifecycle {
     for (final Long nextId : toRemove.navigableKeySet()) {
       final AirbyteMessage message = idToState.get(nextId);
       stateToId.remove(message);
-      idToState.remove(id);
+      idToState.remove(nextId);
     }
     toRemove.clear();
   }
