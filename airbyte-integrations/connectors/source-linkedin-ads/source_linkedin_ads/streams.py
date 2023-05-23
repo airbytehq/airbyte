@@ -12,6 +12,7 @@ import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests.models import RequestEncodingMixin
 
+from airbyte_cdk.sources.utils.transform import TypeTransformer, TransformConfig
 from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
 from .utils import _encode_params, get_parent_stream_values, transform_data
 
@@ -31,6 +32,7 @@ class LinkedinAdsStream(HttpStream, ABC):
     primary_key = "id"
     records_limit = 500
     endpoint = None
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, config: Dict):
         super().__init__(authenticator=config.get("authenticator"))

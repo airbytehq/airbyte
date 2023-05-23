@@ -24,7 +24,7 @@
       "type": ["null", "boolean"]
     },
     "createdBy": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "review": {
       "type": ["null", "object"]
