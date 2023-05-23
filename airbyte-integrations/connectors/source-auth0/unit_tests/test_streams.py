@@ -258,4 +258,3 @@ class TestStreamClients:
             json={"total": 1, "start": 0, "limit": 50, "clients": [clients_instance]},
         )
         assert list(stream.parse_response(response=requests.get(f"{api_url}/clients"))) == [clients_instance]
-
