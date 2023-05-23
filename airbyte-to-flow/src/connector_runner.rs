@@ -206,6 +206,9 @@ pub async fn run_airbyte_source_connector(
         // In case of a ping timeout, we do not report an error,
         // just exit and let the connector restart, since an idle connector
         // is not always an error.
+        //
+        // once a select branch resolves, other branches are cancelled, that's why we assume here
+        // that the lock by `exit_status_task` is released and so we can obtain the lock here
         Err(_) = ping_timeout_task => {
             tracing::debug!("atf: killing child process");
             Arc::clone(child_arc).lock().await.kill().await?;
