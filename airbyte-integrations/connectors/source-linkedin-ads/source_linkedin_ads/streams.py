@@ -6,7 +6,6 @@
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
-from urllib.parse import urlencode
 
 import pendulum
 import requests
@@ -16,7 +15,7 @@ from requests.models import RequestEncodingMixin
 from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
 from .utils import _encode_params, get_parent_stream_values, transform_data
 
-RequestEncodingMixin._encode_params = staticmethod(_encode_params)
+RequestEncodingMixin._encode_params = staticmethod(_encode_params)  # monkey patch request params encoding
 
 logger = logging.getLogger("airbyte")
 
@@ -117,10 +116,10 @@ class Accounts(LinkedinAdsStream):
         return headers
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         """
         Override request_params() to have the ability to accept the specific account_ids from user's configuration.
@@ -209,7 +208,6 @@ class AccountUsers(LinkedInAdsStreamSlicing):
     primary_key = "account"
     search_param = "accounts"
 
-
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["q"] = self.search_param
@@ -277,10 +275,10 @@ class Campaigns(LinkedInAdsStreamSlicing):
         return headers | {"X-Restli-Protocol-Version": "2.0.0"}
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["search"] = "(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))"
@@ -309,10 +307,10 @@ class Creatives(LinkedInAdsStreamSlicing):
         return f"{self.parent_stream.endpoint}/{stream_slice.get('account_id')}/{self.endpoint}"
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"sortOrder": "ASCENDING", "q": "criteria"}
         return params
@@ -356,14 +354,18 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         return headers | {"X-Restli-Protocol-Version": "2.0.0"}
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = self.base_analytics_params
         params.update(**update_analytics_params(stream_slice))
+        params[self.search_param] = f"List(urn%3Ali%3A{self.search_param_value}%3A{self.get_primary_key_from_slice(stream_slice)})"
         return params
+
+    def get_primary_key_from_slice(self, stream_slice) -> str:
+        return stream_slice.get(self.primary_slice_key)
 
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
@@ -379,6 +381,13 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
                 result_chunks.append(child_stream_slice)
             yield from merge_chunks(result_chunks, self.cursor_field)
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        We need to get out the nested complex data structures for further normalisation, so the transform_data method is applied.
+        """
+        for rec in transform_data(response.json().get("elements")):
+            yield rec | {"pivotValue": f"urn:li:{self.search_param_value}:{self.get_primary_key_from_slice(kwargs.get('stream_slice'))}"}
+
 
 class AdCampaignAnalytics(LinkedInAdsAnalyticsStream):
     """
@@ -390,24 +399,8 @@ class AdCampaignAnalytics(LinkedInAdsAnalyticsStream):
     parent_stream = Campaigns
     parent_values_map = {"campaign_id": "id"}
     search_param = "campaigns"
+    search_param_value = "sponsoredCampaign"
     pivot_by = "(value:CAMPAIGN)"
-
-    def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice, next_page_token)
-        params[self.search_param] = f"List(urn%3Ali%3AsponsoredCampaign%3A{stream_slice.get(self.primary_slice_key)})"
-        return params
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        We need to get out the nested complex data structures for further normalisation, so the transform_data method is applied.
-        """
-        for rec in transform_data(response.json().get("elements")):
-            yield rec | {"pivotValue": f"urn:li:sponsoredCampaign:{kwargs.get('stream_slice').get('campaign_id')}"}
 
 
 class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
@@ -418,22 +411,9 @@ class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
     parent_stream = Creatives
     parent_values_map = {"creative_id": "id"}
     search_param = "creatives"
+    search_param_value = "sponsoredCreative"
     pivot_by = "(value:CREATIVE)"
 
-    def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice, next_page_token)
+    def get_primary_key_from_slice(self, stream_slice) -> str:
         creative_id = stream_slice.get(self.primary_slice_key).split(":")[-1]
-        params[self.search_param] = f"List(urn%3Ali%3AsponsoredCreative%3A{creative_id})"
-        return params
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        We need to get out the nested complex data structures for further normalisation, so the transform_data method is applied.
-        """
-        for rec in transform_data(response.json().get("elements")):
-            yield rec | {"pivotValue": f"urn:li:sponsoredCreative:{kwargs.get('stream_slice').get('creative_id')}"}
+        return creative_id

@@ -147,7 +147,7 @@ class TestLinkedinAdsStream:
         assert expected == result
 
     def test_request_params(self):
-        expected = "count=500&q=search&search=(id:(values:List(1,2)))"
+        expected = {"count": 500, "q": "search", "search": "(id:(values:List(1,2)))"}
         result = self.stream.request_params(stream_state={}, stream_slice={"account_id": 123})
         assert expected == result
 
@@ -166,7 +166,7 @@ class TestLinkedinAdsStream:
         assert result is True
 
     def test_request_headers(self):
-        expected = {"X-RestLi-Protocol-Version": "2.0.0", 'Linkedin-Version': LINKEDIN_VERSION_API}
+        expected = {"X-RestLi-Protocol-Version": "2.0.0", "Linkedin-Version": LINKEDIN_VERSION_API}
         result = self.stream.request_headers(stream_state={})
         assert result == expected
 
@@ -210,8 +210,8 @@ class TestLinkedInAdsStreamSlicing:
             (
                     Creatives,
                     {"campaign_id": 123},
-                    {'q': 'criteria',
-                     'sortOrder': 'ASCENDING'},
+                    {"q": "criteria",
+                     "sortOrder": "ASCENDING"},
             )
         ],
         ids=["AccountUsers", "CampaignGroups", "Campaigns", "Creatives"],

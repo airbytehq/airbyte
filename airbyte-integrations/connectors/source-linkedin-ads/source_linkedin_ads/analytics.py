@@ -10,12 +10,12 @@ import pendulum as pdm
 
 from .utils import get_parent_stream_values
 
-# LinkedIn has a max of 20 fields per request. We make chunks by size of 17 fields
-# to have the `dateRange`, `pivot`, and `pivotValue` be included as well.
+# LinkedIn has a max of 20 fields per request. We make chunks by size of 19 fields
+# to have the `dateRange` be included as well.
 FIELDS_CHUNK_SIZE = 19
 # Number of days ahead for date slices, from start date.
 WINDOW_IN_DAYS = 30
-# List of adAnalyticsV2 fields available for fetch
+# List of Reporting Metrics fields available for fetch
 ANALYTICS_FIELDS_V2: List = [
     "actionClicks",
     "adUnitClicks",
