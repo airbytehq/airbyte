@@ -2,55 +2,56 @@
 
 ## Overview
 
-The Guardian API source can sync data from [The Guardian](https://open-platform.theguardian.com/) website.
+The Guardian API source can sync data from the [The Guardian](https://open-platform.theguardian.com/)
 
-## Prerequisites
+## Requirements
 
-To set up the Guardian API connector, you will need to generate an API key. This API key is necessary to gain access to the website's data. You can obtain the API key by following the steps listed below:
+To access the API, you will need to sign up for an API key, which should be sent with every request. Visit [this](https://open-platform.theguardian.com/access) link to register for an API key.
 
-1. Go to [The Guardian Open Platform](https://open-platform.theguardian.com/access/) page. 
-2. Fill out the required fields and submit the form.
-3. Once you submit the form, you will receive an email from The Guardian team with the API key. 
+The following (optional) parameters can be provided to the connector :-
 
-## Configuration 
+---
 
-### For Airbyte Cloud:
+##### `q` (query)
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, select **The Guardian API** from the Source type dropdown list.
-4. Enter your API key as the mandatory parameter.
-5. You may enter the following (optional) parameters for more granular data retrieval:
-- `q` (query) - to filter the data to only those that include specific search terms.
-- `tag` - to filter results by showing only the ones matching the entered tag. 
-- `section` - to filter the results by a particular section.
-- `end_date` - to set the maximum date of the results. Results newer than the end_date will not be shown. 
+The `q` (query) parameter filters the results to only those that include that search term. The `q` parameter supports `AND`, `OR` and `NOT` operators. For example, let's see if the Guardian has any content on political debates: `https://content.guardianapis.com/search?q=debates`
 
-6. Click **Set up source**.
+Here the q parameter filters the results to only those that include that search term. In this case, there are many results, so we might want to filter down the response to something more meaningful, specifically looking for political content published in 2014, for example: `https://content.guardianapis.com/search?q=debate&tag=politics/politics&from-date=2014-01-01&api-key=test`
 
-### For Airbyte OSS:
+---
 
-1. Navigate to the Airbyte Open Source dashboard.
-2. Click on **Create a new connection** from the top of the page.
-3. In the sidebar, select **Add Source**.
-4. Select **The Guardian API** from the list of sources.
-5. Enter your API Key as the mandatory parameter.
-6. You may enter the following (optional) parameters for more granular data retrieval:
-- `q` (query) - to filter the data to only those that include specific search terms.
-- `tag` - to filter results by showing only the ones matching the entered tag.
-- `section` - to filter the results by a particular section.
-- `end_date` - to set the maximum date of the results. Results newer than the end_date will not be shown. 
+##### `tag`
 
-7. Click **Test Connection** to verify your details are correct.
-8. Once verified, click **Create**.
+A tag is a piece of data that is used to categorise content. All Guardian content is manually categorised using these tags, of which there are more than 50,000. Use this parameter to filter results by showing only the ones matching the entered tag. See <a href="https://content.guardianapis.com/tags?api-key=test">here</a> for a list of all tags, and <a href="https://open-platform.theguardian.com/documentation/tag">here</a> for the tags endpoint documentation.
 
-## Supported sync modes
+---
 
-The Guardian API source connector supports Full Refresh Sync only.
+##### `section`
+
+Use this to filter the results by a particular section. See <a href="https://content.guardianapis.com/sections?api-key=test">here</a> for a list of all sections, and <a href="https://open-platform.theguardian.com/documentation/section">here</a> for the sections endpoint documentation.
+
+---
+
+##### `order-by`
+
+Use this to sort the results. The three available sorting options are - newest, oldest, relevance. For enabling incremental syncs set order-by to oldest.
+
+---
+
+##### `start_date`
+
+Use this to set the minimum date (YYYY-MM-DD) of the results. Results older than the start_date will not be shown.
+
+---
+
+##### `end_date`
+
+Use this to set the maximum date (YYYY-MM-DD) of the results. Results newer than the end_date will not be shown.
+Default is set to the current date (today) for incremental syncs.
 
 ## Output schema
 
-The Guardian API source connector syncs data items with the following fields:
+#### Each content item (news article) has the following structure:-
 
 ```yaml
 {
@@ -67,71 +68,69 @@ The Guardian API source connector syncs data items with the following fields:
     "pillarName": "string"
 }
 ```
-Each data item is a news article, and the fields are self-explanatory.
+
+The source is capable of syncing the content stream.
+
+## Setup guide
+
+### Step 1: Set up the The Guardian API connector in Airbyte
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+
+2. In the left navigation bar, click **Sources**. 
+
+3. In the top-right corner, click **+ New source**.
+
+4. On the **Set up a new Source** page, select **The Guardian API** from the Source Type dropdown.
+
+5. Enter your `api_key` in the **API Key** field (mandatory field).
+
+6. In `start_date` field, use this to set the minimum date (YYYY-MM-DD) of the results. Results older than the `start_date` will not be shown.
+
+7. Optionally, in `query` field, enter any search terms you would like to filter your results by. The `q` parameter supports `AND`, `OR` and `NOT` operators.
+
+8. Optionally, in `tag` field, enter a tag that will filter your results by only showing matching content. See [here](https://content.guardianapis.com/tags?api-key=test) for a list of all available tags.
+
+9. Optionally, in `section` field, filter your results by a particular section. See [here](https://content.guardianapis.com/sections?api-key=test) for a list of all sections.
+
+10. Optionally, select the sorting option in `order-by` field. You can select either **newest**, **oldest**, or **relevance**. For enabling incremental syncs, set the `order-by` in oldest.
+
+11. Optionally, you can set the maximum date of the results `(end_date)` in YYYY-MM-DD format for incremental syncs.
+
+12. Click **Test connection**. If the credentials are correct, Airbyte will show this as a success.
+
+13. Click **Create**.
+
+### For Airbyte OSS:
+
+1. Navigate to the Airbyte Open Source dashboard.
+
+2. In **Connections**, click **+** to create a new connection.
+
+3. Select **The Guardian API** from the source drop down menu.
+
+4. Follow the setup guide steps 5-12 from above.
+
+5. Click **Test** and if the credentials are correct, the status should be successful.
+
+6. Click **Save**.
+
+## Supported sync modes
+
+The Guardian API source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+| Feature           | Supported? |
+| :---------------- | :--------- |
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | No         |
+| Namespaces        | No         |
 
 ## Performance considerations
 
-The Guardian API implements a daily quota for making requests to the website. Please ensure that your application does not exceed the allocated request limit. 
+The key assigned is rate-limited and any applications that depend on making large numbers of requests on a polling basis are likely to exceed their daily quota and thus be prevented from making further requests until the next period begins.
 
-## Additional Resources
+## Changelog
 
-Here is the source configuration JSON schema:
-
-```
-documentationUrl: https://docs.airbyte.io/integrations/sources/the-guardian-api
-connectionSpecification:
-  $schema: http://json-schema.org/draft-07/schema#
-  title: The Guardian Api Spec
-  type: object
-  required:
-    - api_key
-    - start_date
-  additionalProperties: true
-  properties:
-    api_key:
-      title: API Key
-      type: string
-      description: Your API Key. See here: https://open-platform.theguardian.com/access/. The key is case sensitive.
-      airbyte_secret: true
-    start_date:
-      title: Start Date
-      type: string
-      description: Use this to set the minimum date (YYYY-MM-DD) of the results. Results older than the start_date will not be shown.
-      pattern: ^([1-9][0-9]{3})\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$
-      examples:
-        - YYYY-MM-DD
-    query:
-      title: Query
-      type: string
-      description: (Optional) The query (q) parameter filters the results to only those that include that search term. The q parameter supports AND, OR and NOT operators.
-      examples:
-        - environment AND NOT water
-        - environment AND political
-        - amusement park
-        - political
-    tag:
-      title: Tag
-      type: string
-      description: (Optional) A tag is a piece of data that is used by The Guardian to categorise content. Use this parameter to filter results by showing only the ones matching the entered tag. See here: https://content.guardianapis.com/tags?api-key=test for a list of all tags, and here: https://open-platform.theguardian.com/documentation/tag for the tags endpoint documentation.
-      examples:
-        - environment/recycling
-        - environment/plasticbags
-        - environment/energyefficiency
-    section:
-      title: Section
-      type: string
-      description: (Optional) Use this to filter the results by a particular section. See here: https://content.guardianapis.com/sections?api-key=test for a list of all sections, and here: https://open-platform.theguardian.com/documentation/section for the sections endpoint documentation.
-      examples:
-        - media
-        - technology
-        - housing-network
-    end_date:
-      title: End Date
-      type: string
-      description: (Optional) Use this to set the maximum date (YYYY-MM-DD) of the results. Results newer than the end_date will not be shown. Default is set to the current date (today) for incremental syncs.
-      pattern: ^([1-9][0-9]{3})\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$
-      examples:
-        - YYYY-MM-DD
-```
-
-For more information, please see The Guardian's API documentation [here](https://open-platform.theguardian.com/documentation/search).
+| Version | Date       | Pull Request                                              | Subject                                        |
+| :------ | :--------- | :-------------------------------------------------------- | :--------------------------------------------- |
+| 0.1.0   | 2022-10-30 | [#18654](https://github.com/airbytehq/airbyte/pull/18654) | 🎉 New Source: The Guardian API [low-code CDK] |
