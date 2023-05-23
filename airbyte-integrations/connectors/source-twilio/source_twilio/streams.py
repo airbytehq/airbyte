@@ -19,6 +19,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from pendulum.datetime import DateTime
 from requests.auth import AuthBase
 
+TWILIO_CHAT_BASE = "https://chat.twilio.com/v2/"
 TWILIO_CONVERSATION_BASE = "https://conversations.twilio.com/v1/"
 TWILIO_API_URL_BASE = "https://api.twilio.com"
 TWILIO_API_URL_BASE_VERSIONED = f"{TWILIO_API_URL_BASE}/2010-04-01/"
@@ -443,6 +444,32 @@ class Recordings(IncrementalTwilioStream, TwilioNestedStream):
     lower_boundary_filter_field = "DateCreated>"
     upper_boundary_filter_field = "DateCreated<"
     cursor_field = "date_created"
+
+class Services(TwilioStream):
+    """
+    https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources
+    """
+
+    url_base = TWILIO_CHAT_BASE
+
+    def path(self, **kwargs):
+        return "Services"
+
+
+class Roles(TwilioNestedStream):
+    """
+    https://www.twilio.com/docs/chat/rest/role-resource#read-multiple-role-resources
+    """
+
+    parent_stream = Services
+    url_base = TWILIO_CHAT_BASE
+    uri_from_subresource = False
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"Services/{ stream_slice['service_sid'] }/Roles"
+
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"service_sid": record["sid"]}
 
 
 class Transcriptions(TwilioNestedStream):
