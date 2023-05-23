@@ -111,6 +111,7 @@ streams:
         path: "list/{{ config['list_id'] }}/task"
         request_parameters:
           include_closed: "{{ config['include_closed_tasks']|lower }}"
+          subtasks: "{{ config['include_subtasks']|lower }}"
       record_selector:
         $ref: "#/definitions/arraySelector"
       paginator:

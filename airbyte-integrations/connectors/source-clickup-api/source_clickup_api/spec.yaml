@@ -41,3 +41,10 @@ connectionSpecification:
       description: >-
         Include or exclude closed tasks. By default, they are excluded. See <a
         https://clickup.com/api/clickupreference/operation/GetTasks/#!in=query&path=include_closed&t=request">here</a>.
+    include_subtasks:
+      title: Include Subtasks
+      type: boolean
+      default: false
+      description: >-
+        Include or exclude subtasks. By default, they are excluded. See <a
+        href="https://clickup.com/api/clickupreference/operation/GetTasks/#!in=query&path=subtasks&t=request">here</a>.
