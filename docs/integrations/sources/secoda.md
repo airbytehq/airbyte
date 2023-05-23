@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-api). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
+This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-api). At present, this connector only supports full refresh syncs, meaning that each time you use the connector, it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
 
 ## This Source Supports the Following Streams
 
@@ -12,10 +12,10 @@ This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-ap
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Feature           | Supported?(Yes/No) | Notes |
+| :---------------  | :----------------- | :--- |
+| Full Refresh Sync | Yes                |      |
+| Incremental Sync  | No                 |      |
 
 ### Performance considerations
 
@@ -23,24 +23,7 @@ This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-ap
 
 ### Requirements
 
-To set up the Secoda source, you will need: 
-
-* An API access key
-
-If you do not already have an API key, follow these steps to obtain one:
-
-1. Log in to Secoda and navigate to the API settings page [here](https://app.secoda.co/api).
-2. Click on the "New API Key" button to generate a new API key. This will be displayed on the screen.
-3. Make a note of the API key for use in Airbyte.
-
-### Set up in Airbyte
-
-1. In Airbyte, navigate to the page for creating a new connection.
-2. In the Source field, select Secoda from the dropdown menu.
-3. In the "API Key" field, enter your Secoda API key.
-4. Ensure that you have read and agree to the terms and conditions of the Secoda API by checking the box provided.
-5. Click "Test" to ensure that you have entered your API key correctly and to check that Airbyte is able to establish a connection to the Secoda API.
-6. If the test is successful, click "Create" to create your new connection.
+* API Access
 
 ## Changelog
 
@@ -48,38 +31,28 @@ If you do not already have an API key, follow these steps to obtain one:
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
 | 0.1.0   | 2022-10-27 | [#18378](https://github.com/airbytehq/airbyte/pull/18378) | 🎉 New Source: Secoda API [low-code CDK] |
 
-#### Airbyte Connector Spec
+### Configuration
 
-documentationUrl: https://docs.airbyte.com/integrations/sources/secoda
+For setting up the Secoda source connector in Airbyte, you need to obtain your Secoda API Key.
 
-connectionSpecification:
+1. Go to the [Secoda login page](https://app.secoda.co/signin) and sign in with your credentials.
 
-  $schema: http://json-schema.org/draft-07/schema#
+2. Click on your profile icon in the top right corner of the screen.
 
-  title: Secoda Spec
+3. From the dropdown menu, select "Settings."
 
-  type: object
+4. In the left sidebar of the settings page, click on the "API" tab.
 
-  required:
+5. Find the "API Keys" section. If you don't have an API key yet, click on the "Create API Key" button.
 
-    - api_key
+6. Copy your API Key.
 
-  additionalProperties: true
+7. Now, you need to input your API Key in the Airbyte Secoda connector configuration form:
 
-  properties:
+   * **Api Key**: Your Secoda API Access Key that you copied in step 6. The key is case sensitive.
 
-    api_key:
+The following links may be helpful when setting up the connection:
 
-      title: Api Key
+* Secoda API Key: [Secoda API - Authentication](https://docs.secoda.co/secoda-api/authentication)
 
-      type: string
-
-      description: >-
-
-        Your API Access Key. See <a
-
-        href="https://docs.secoda.co/secoda-api/authentication">here</a>. The key is
-
-        case sensitive.
-
-      airbyte_secret: true
+After you have provided the required information in the configuration form, click "Test Connection" to ensure that Airbyte can connect successfully to your Secoda API. Once the test is successful, click "Save Changes" to proceed with syncing the data using the Secoda source connector.
