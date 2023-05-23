@@ -1,0 +1,13 @@
+{
+  "properties": {
+    "merchant_id": {
+      "description": "The unique identifier for your entire gateway account. See the docs for more information on how to obtain this ID: https://go.estuary.dev/pUfUnV"
+    },
+    "private_key": {
+      "description": "Braintree Private Key. See the docs for more information on how to obtain this key: https://go.estuary.dev/pUfUnV"
+    },
+    "public_key": {
+      "description": "Braintree Public Key. See the docs for more information on how to obtain this key: https://go.estuary.dev/pUfUnV"
+    }
+  }
+}

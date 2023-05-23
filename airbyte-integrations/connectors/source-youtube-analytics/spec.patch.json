@@ -1,0 +1,7 @@
+{
+  "properties": {
+    "credentials": {
+      "x-oauth2-provider": "google"
+      }
+    }
+ }

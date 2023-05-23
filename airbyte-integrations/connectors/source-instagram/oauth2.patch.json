@@ -1,0 +1,7 @@
+{
+  "provider": "instagram",
+  "authUrlTemplate": "https://www.facebook.com/v12.0/dialog/oauth?client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&state={{#urlencode}}{{{  state }}}{{/urlencode}}&scope=ads_management,instagram_basic,instagram_manage_insights,pages_show_list,pages_read_engagement",
+  "accessTokenUrlTemplate": "https://graph.facebook.com/v15.0/oauth/access_token?client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&client_secret={{#urlencode}}{{{ client_secret }}}{{/urlencode}}&code={{#urlencode}}{{{ code }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}",
+  "accessTokenBody": "",
+  "accessTokenResponseMap": {"access_token": "/access_token"}
+}
