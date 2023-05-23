@@ -4,20 +4,29 @@ This page contains the setup guide and reference information for the [SpaceX-API
 
 ## Prerequisites
 
-No prerequisites, but a dummy `api_key` is required as it enhances security in future builds. Please check the available routes at [SpaceX Routes](https://github.com/r-spacex/SpaceX-API/tree/master/routes).
+No prerequisites, but a dummy api_key is required as it enhances security in future build. Please check the available routes at [SpaceX Routes](https://github.com/r-spacex/SpaceX-API/tree/master/routes).
 
 ## Setup guide
 
-### Step 1: Register for SpaceX API key
+### Step 1: Obtain a dummy API key
 
-1. Go to the [SpaceX-API](https://github.com/r-spacex/SpaceX-API) website.
-2. Follow the instructions provided in the website's README to register for an API token.
+As a security measure, a dummy API key is required for the source connector setup. This key can be any random string value (e.g.: `12345`) to maintain compatibility with other API connectors.
 
-### Step 2: Set up SpaceX connection
+### Step 2: Identifying a specific ID (optional)
 
-1. Once you have your API key, navigate to the Airbyte SpaceX API connector configuration screen.
-2. In the **Configuration** section, enter your `api_key`.
-3. If you need specific information, enter your `id` in the relevant field.
+If you want to retrieve data for a specific entity in the SpaceX-API, you need to use a valid identifier for that entity. For example, if you want data on a specific launch, you can obtain the launch ID from the API using a tool like [Postman](https://www.postman.com/) or directly in your browser by visiting `https://api.spacexdata.com/v5/launches`.
+
+Make a note of the target ID for the desired entity, as it will be required in a later step.
+
+### Step 3: Configure the SpaceX-API connector in Airbyte
+
+1. Enter the following details in the connector configuration form:
+    - Unique ID (optional): Provide the target ID for the specific entity, as noted in Step 2.
+    - ListItem Configuration options for endpoints (optional): Provide possible values for an endpoint, such as `latest`, `upcoming`, or `past` for the `launches` endpoint. 
+
+2. Enter your dummy `api_key` obtained in Step 1.
+
+3. Click **Set up source** to complete the setup process.
 
 ## Supported sync modes
 
@@ -60,5 +69,3 @@ The SpaceX API has both v4 and v5 for [launches](https://github.com/r-spacex/Spa
 | Version | Date       | Pull Request                                           | Subject        |
 | :------ | :--------- | :----------------------------------------------------- | :------------- |
 | 0.1.0   | 2022-10-22 | [Init](https://github.com/airbytehq/airbyte/pull/18311) | Initial commit |
-
-For more information about the SpaceX-API connector configuration, see [Spacex Api Spec](https://docs.airbyte.com/integrations/sources/spacex-api).
