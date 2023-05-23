@@ -3,6 +3,7 @@ data:
     hosts:
       - api.twilio.com
       - monitor.twilio.com
+      - chat.twilio.com
   connectorSubtype: api
   connectorType: source
   definitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
