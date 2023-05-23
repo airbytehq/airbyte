@@ -3,38 +3,42 @@
 ## Overview
 The Kyriba source retrieves data from [Kyriba](https://kyriba.com/) using their [JSON REST APIs](https://developer.kyriba.com/apiCatalog/).
 
-## Set Up Guide
+## Setup Guide
 
-### Prerequisites
-To configure the Kyriba source connector, you need the following information from Kyriba:
+### Requirements
 - Kyriba domain
-- Username
+- Username 
 - Password
 
-If you don't have a Kyriba account or the above information, contact [Kyriba Support](https://www.kyriba.com/support/) to get your account set up.
+### Obtain the required information from Kyriba
 
-### Create a New Connection
-Follow these steps to configure the Kyriba source connector in Airbyte:
+To obtain the Kyriba domain, username, and password, follow these steps:
 
-1. In Airbyte, navigate to the Connections page and click the "Create new connection" button.
-2. Select "Kyriba" from the list of sources.
-3. In the Configuration screen, provide the following details:
-   - **Domain:** Your Kyriba domain name, for example `demo.kyriba.com`.
-   - **Username:** Your Kyriba username.
-   - **Password:** Your Kyriba password.
-   - **Start Date:** The date that the sync should start from, in the format `YYYY-MM-DD`. This field is required.
-   - **End Date:** The date that the sync should end. If left empty, the sync will run to the current date. This field is optional.
+1. Log in to your Kyriba account at [https://signin.kyriba.com/login](https://signin.kyriba.com/login).
 
-   ![Kyriba Configuration](https://airbyte-public-assets.s3.amazonaws.com/documentation/sources/kyriba/01-kyriba-configuration.png)
+2. Click on your username in the top-right corner and select **Profile** from the drop-down menu.
 
-4. Click the "Check connection" button to verify the provided details are correct. If the verification fails, double-check the provided details and make sure they are correct.
-5. If the verification passes, click the "Create" button to create the connection.
+3. Under the **API Access** section, take note of the following:
+   - Kyriba Domain: This is the URL used to access your Kyriba account. For example, `demo.kyriba.com`.
+   - Username: Your Kyriba account's username, used for API authentication.
+   - Password: Your Kyriba account's password, used for API authentication.
 
-### Supported Streams
-The Kyriba source supports the following streams:
+If you still have difficulty obtaining the required information, you can reach out to Kyriba support by creating a ticket in the [Kyriba Client support portal](https://login.kyriba.com/kyribaservice/login.asp).
+
+### Configure the Kyriba Source in Airbyte
+
+Once you have obtained the required information from Kyriba, enter it into the Airbyte Connector configuration form:
+
+- **Domain**: Enter the Kyriba domain you obtained in the API Access section of your Kyriba profile.
+- **Username**: Enter the Kyriba username you obtained in the API Access section of your Kyriba profile.
+- **Password**: Enter the Kyriba password you obtained in the API Access section of your Kyriba profile.
+- **Start Date**: Enter the date the sync should start from, in the format `YYYY-MM-DD`. For example, `2021-01-10`.
+- **End Date**: (Optional) Enter the date the sync should end. If left empty, the sync will run up to the current date. The format is `YYYY-MM-DD`. For example, `2022-03-01`.
+
+## Supported Streams
 - [Accounts](https://developer.kyriba.com/site/global/apis/accounts/index.gsp)
 - [Bank Balances](https://developer.kyriba.com/site/global/apis/bank-statement-balances/index.gsp) - End of Day and Intraday
-- [Cash Balances](https://developer.kyriba.com/site/global/apis/cash-balances/index.gsp) - End of Day and Intraday
+- [Cash Balances](https://developer.kyriba.com/site/global/apis/cash-balances/index.gsp) - End of Day and Intraday 
 - [Cash Flows](https://developer.kyriba.com/site/global/apis/cash-flows/index.gsp) (incremental)
 
 ## Changelog
