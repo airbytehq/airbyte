@@ -29,6 +29,8 @@ from .utils import authenticator_class_map, get_dimensions_type, get_metrics_typ
 # the initial values should be saved once and tracked for each stream, inclusivelly.
 GoogleAnalyticsQuotaHandler: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
+PAGE_SIZE = 100000
+
 
 class ConfigurationError(Exception):
     pass
@@ -90,6 +92,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
     _record_date_format = "%Y%m%d"
     primary_key = "uuid"
+    offset = 0
 
     metadata = MetadataDescriptor()
 
@@ -157,16 +160,16 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         if "rowCount" in r:
             total_rows = r["rowCount"]
 
-            if self.page_size is None:
-                self.page_size = 100000
+            if self.offset == 0:
+                self.offset = PAGE_SIZE
             else:
-                self.page_size += 100000
+                self.offset += PAGE_SIZE
 
-            if total_rows <= self.page_size:
-                self.page_size = None
+            if total_rows <= self.offset:
+                self.offset = 0
                 return
 
-            return {"offset": self.page_size}
+            return {"offset": self.offset}
 
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
