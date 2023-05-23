@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "bottleneck_stream1",
+        "name": "bottleneck_stream_randomseed",
         "namespace": "PERF_TEST_HARNESS",
         "json_schema": {
           "type": "object",
