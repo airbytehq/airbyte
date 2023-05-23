@@ -46,8 +46,6 @@ public class PerformanceTest {
   private final JsonNode config;
   private final ConfiguredAirbyteCatalog catalog;
 
-  // private DefaultAirbyteDestination destination;
-
   PerformanceTest(final String imageName, final String config, final String catalog) throws JsonProcessingException {
     final ObjectMapper mapper = new ObjectMapper();
     this.imageName = imageName;
