@@ -4,7 +4,7 @@
 
 
 import logging
-from typing import Any, List, Mapping, Tuple, Union, Optional
+from typing import Any, List, Mapping, Optional, Tuple, Union
 
 import backoff
 import requests

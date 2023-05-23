@@ -10,9 +10,9 @@ from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.models import RequestEncodingMixin
 
-from airbyte_cdk.sources.utils.transform import TypeTransformer, TransformConfig
 from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
 from .utils import _encode_params, get_parent_stream_values, transform_data
 
