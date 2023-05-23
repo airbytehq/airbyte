@@ -2,6 +2,44 @@
   "properties": {
     "cancelled_at": {
       "type": ["integer", "null"]
+    },
+    "completed_at": {
+      "type": ["integer", "null"]
+    },
+    "released_at": {
+      "type": ["integer", "null"]
+    },
+    "current_phase": {
+      "type": ["object", "null"]
+    },
+    "default_settings": {
+      "properties": {
+        "invoice_settings": ["object", "null"]
+      }
+    },
+    "phases": {
+      "items": {
+        "properties": {
+          "invoice_settings": {
+            "type": ["null", "object"]
+          },
+          "add_invoice_items": {
+            "items": {
+              "properties": {
+                "quantity": ["integer", "null"]
+              }
+            }
+          },
+          "items": {
+            "items": {
+              "properties": {
+                "quantity": ["integer", "null"]
+              }
+            }
+          },
+          "trial_end": ["integer", "null"]
+        }
+      }
     }
   }
 }
