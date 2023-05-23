@@ -1,0 +1,213 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "externalId": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "externalUrl": {
+      "type": "string"
+    },
+    "lastUpdated": {
+      "type": "string"
+    },
+    "reviews": {
+      "type": "array",
+      "items": [{
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reviewer": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "avatar": {
+                "type": "string"
+              }
+            }
+          },
+          "reviewee": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "avatar": {
+                "type": "string"
+              }
+            }
+          },
+          "score": {
+            "type": "integer"
+          },
+          "ratings": {
+            "type": "array",
+            "items": [{
+              "type": "object",
+              "properties": {
+                "categoryId": {
+                  "type": "string"
+                },
+                "categoryName": {
+                  "type": "string"
+                },
+                "score": {
+                  "type": "integer"
+                },
+                "weight": {
+                  "type": "integer"
+                },
+                "critical": {
+                  "type": "boolean"
+                },
+                "cause": {
+                  "type": "null"
+                }
+              }
+            }, {
+              "type": "object",
+              "properties": {
+                "categoryId": {
+                  "type": "string"
+                },
+                "categoryName": {
+                  "type": "string"
+                },
+                "score": {
+                  "type": "integer"
+                },
+                "weight": {
+                  "type": "integer"
+                },
+                "critical": {
+                  "type": "boolean"
+                },
+                "cause": {
+                  "type": "null"
+                }
+              }
+            }, {
+              "type": "object",
+              "properties": {
+                "categoryId": {
+                  "type": "string"
+                },
+                "categoryName": {
+                  "type": "string"
+                },
+                "score": {
+                  "type": "integer"
+                },
+                "weight": {
+                  "type": "number"
+                },
+                "critical": {
+                  "type": "boolean"
+                },
+                "cause": {
+                  "type": "null"
+                }
+              }
+            }, {
+              "type": "object",
+              "properties": {
+                "categoryId": {
+                  "type": "string"
+                },
+                "categoryName": {
+                  "type": "string"
+                },
+                "score": {
+                  "type": "integer"
+                },
+                "weight": {
+                  "type": "number"
+                },
+                "critical": {
+                  "type": "boolean"
+                },
+                "cause": {
+                  "type": "null"
+                }
+              }
+            }, {
+              "type": "object",
+              "properties": {
+                "categoryId": {
+                  "type": "string"
+                },
+                "categoryName": {
+                  "type": "string"
+                },
+                "score": {
+                  "type": "integer"
+                },
+                "weight": {
+                  "type": "integer"
+                },
+                "critical": {
+                  "type": "boolean"
+                },
+                "cause": {
+                  "type": "null"
+                }
+              }
+            }]
+          },
+          "comment": {
+            "type": "null"
+          },
+          "thread": {
+            "type": "array",
+            "items": {}
+          },
+          "tags": {
+            "type": "array",
+            "items": {}
+          },
+          "created": {
+            "type": "string"
+          },
+          "updated": {
+            "type": "string"
+          },
+          "received": {
+            "type": "boolean"
+          },
+          "reviewTime": {
+            "type": "string"
+          },
+          "scorecard": {
+            "type": "null"
+          }
+        }
+      }]
+    },
+    "comments": {
+      "type": "array",
+      "items": {}
+    },
+    "workspaceId": {
+      "type": "string"
+    },
+    "sourceType": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "string"
+    }
+  }
+}
