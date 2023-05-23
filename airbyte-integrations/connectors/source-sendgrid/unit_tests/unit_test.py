@@ -65,7 +65,7 @@ def test_source_wrong_credentials():
 def test_streams():
     streams = SourceSendgrid().streams(config={"apikey": "wrong.api.key123", "start_time": FAKE_NOW_ISO_STRING})
 
-    assert len(streams) == 14
+    assert len(streams) == 15
 
 
 @patch.multiple(SendgridStreamOffsetPagination, __abstractmethods__=set())
