@@ -61,18 +61,18 @@ public class BufferEnqueue {
       handleRecord(streamDescriptor, message, messageNum);
     } else if (message.getType() == Type.STATE) {
       stateManager.trackState(message, messageNum);
+      // todo (cgardens) - yeah but what do we do for global?
+      handleRecord(streamDescriptor, message, messageNum);
     }
   }
 
   private void handleRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message, final long messageNum) {
     // todo (cgardens) - handle estimating state message size.
-    final long messageSize = recordSizeEstimator.getEstimatedByteSize(message.getRecord());
+    final long messageSize = message.getType() == AirbyteMessage.Type.RECORD ? recordSizeEstimator.getEstimatedByteSize(message.getRecord()) : 1024;
 
     final var queue = buffers.get(streamDescriptor);
     var addedToQueue = queue.offer(message, messageNum, messageSize);
 
-    // todo (cgardens) - what if the record being added is bigger than the block size?
-    // if failed, try to increase memory and add to queue.
     while (!addedToQueue) {
       final var newlyAllocatedMemory = memoryManager.requestMemory();
       if (newlyAllocatedMemory > 0) {

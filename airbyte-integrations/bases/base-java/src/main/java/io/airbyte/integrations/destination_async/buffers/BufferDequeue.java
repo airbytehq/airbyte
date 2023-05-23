@@ -6,11 +6,13 @@ package io.airbyte.integrations.destination_async.buffers;
 
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.integrations.destination_async.buffers.MemoryBoundedLinkedBlockingQueue.MemoryItem;
-import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.Meta;
 import io.airbyte.integrations.destination_async.state.AsyncDestinationStateManager;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,7 +64,10 @@ public class BufferDequeue {
     try {
       final AtomicLong bytesRead = new AtomicLong();
 
-      final Stream<Meta> s = Stream.generate(() -> {
+      final AtomicLong minMessageNum = new AtomicLong();
+      final AtomicLong maxMessageNum = new AtomicLong();
+
+      final List<AirbyteMessage> s = Stream.generate(() -> {
         try {
           return queue.poll(20, TimeUnit.MILLISECONDS);
         } catch (final InterruptedException e) {
@@ -83,12 +88,25 @@ public class BufferDequeue {
           return false;
         }
       }).map(MemoryItem::item)
-          .toList()
-          .stream();
+          .map(meta -> {
+            if (minMessageNum.get() == 0) {
+              minMessageNum.set(meta.messageNum()); // assumes ascending.
+            }
+            maxMessageNum.set(meta.messageNum()); // assumes ascending.
+            return meta.message();
+          })
+          .filter(m -> m.getType() == Type.RECORD)
+          .toList();
 
       queue.addMaxMemory(-bytesRead.get());
 
-      return new MemoryAwareMessageBatch(streamDescriptor, s, bytesRead.get(), memoryManager, stateManager, queue);
+      return new MemoryAwareMessageBatch(streamDescriptor,
+          s,
+          bytesRead.get(),
+          minMessageNum.get(),
+          maxMessageNum.get(),
+          memoryManager,
+          stateManager);
     } finally {
       bufferLocks.get(streamDescriptor).unlock();
     }

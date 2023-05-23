@@ -150,6 +150,7 @@ public class FlushWorkers implements AutoCloseable {
   private void flushAll() {
     log.info("Flushing all buffers..");
     for (final StreamDescriptor desc : bufferDequeue.getBufferedStreams()) {
+      // bug - if there is more data in the queue than a batch size, we won't send all enqueued data.
       flush(desc);
     }
   }
@@ -161,8 +162,8 @@ public class FlushWorkers implements AutoCloseable {
         log.info("Attempting to read from queue {}. Current queue size: {}", desc, bufferDequeue.getQueueSizeInRecords(desc).get());
 
         try (final var batch = bufferDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
-          flusher.flush(desc, batch.getData());
-          batch.getState().ifPresent(outputRecordCollector);
+          flusher.flush(desc, batch.getData().stream()); // todo - remove stream
+          batch.commitState().ifPresent(outputRecordCollector);
         }
 
         log.info("Worker finished flushing. Current queue size: {}", bufferDequeue.getQueueSizeInRecords(desc));
