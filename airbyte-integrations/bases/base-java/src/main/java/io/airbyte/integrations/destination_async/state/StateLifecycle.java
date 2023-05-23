@@ -5,8 +5,6 @@
 package io.airbyte.integrations.destination_async.state;
 
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -28,14 +26,10 @@ import java.util.TreeMap;
  */
 public class StateLifecycle {
 
-  private final Map<Long, AirbyteMessage> idToState;
-  private final Map<AirbyteMessage, Long> stateToId;
-  private final NavigableMap<Long, Boolean> stateToIsFlushed;
+  private final NavigableMap<Long, AirbyteMessage> idToState;
 
   public StateLifecycle() {
-    idToState = new HashMap<>();
-    stateToId = new HashMap<>();
-    stateToIsFlushed = new TreeMap<>();
+    idToState = new TreeMap<>();
   }
 
   /**
@@ -46,10 +40,8 @@ public class StateLifecycle {
    * @param messageNum message number
    */
   public synchronized void trackState(final AirbyteMessage message, final long messageNum) {
-    if (!stateToId.containsKey(message)) {
+    if (!idToState.containsKey(messageNum)) {
       idToState.put(messageNum, message);
-      stateToId.put(message, messageNum);
-      stateToIsFlushed.put(messageNum, false);
     }
   }
 
@@ -65,65 +57,20 @@ public class StateLifecycle {
    * S3: flushed. Now, we call this method with S1 and then this method is called with S1. This method
    * would return S3, because all the states through S3 have now been flushed.
    *
-   * @param minMessageNum min number that was emitted by batch
-   * @param maxMessageNum max number that was emitted by batch
+   * @param maxMessageNum max number can be emitted
    * @return highest state for which itself and all previous states have been flushed.
    */
-  public synchronized Optional<AirbyteMessage> completeState(final long minMessageNum, final long maxMessageNum) {
-    boolean allEncountedStatesFlushed = true;
-    long bestMessageId = 0;
-    for (final Long stateId : stateToIsFlushed.navigableKeySet()) {
+  public synchronized Optional<AirbyteMessage> getBestStateAndPurge(final long maxMessageNum) {
+    final NavigableMap<Long, AirbyteMessage> toRemove = idToState.subMap(0L, true, maxMessageNum, true);
 
-      /*
-       * first, we make sure set all the state message in range to flushed.
-       *
-       * +1 because if the next message was the state, then all good.
-       */
-      if (stateId >= minMessageNum && stateId <= maxMessageNum) {
-        stateToIsFlushed.computeIfPresent(stateId, (a, b) -> true);
-      }
-
-      /*
-       * keep track of any the states we encountered along the way have NOT been flushed.
-       */
-      if (allEncountedStatesFlushed && !stateToIsFlushed.get(stateId)) {
-        allEncountedStatesFlushed = false;
-      }
-
-      /*
-       * as long as we have not encountered an unflushed state, greedily track the best state we could
-       * emit.
-       */
-      if (allEncountedStatesFlushed) {
-        bestMessageId = stateId;
-      }
-
-      /*
-       * we must keep going to the max value, after that go until we find an unflushed state. that gets us
-       * the best state in the case where batches finished out of ord.
-       */
-      if (stateId > maxMessageNum && !allEncountedStatesFlushed) {
-        break;
-      }
-    }
-
-    if (bestMessageId > 0) {
-      final AirbyteMessage airbyteMessage = idToState.get(bestMessageId);
-      removeUpTo(bestMessageId);
-      return Optional.of(airbyteMessage);
-    } else {
+    if (toRemove.isEmpty()) {
       return Optional.empty();
     }
-  }
 
-  private void removeUpTo(final long id) {
-    final NavigableMap<Long, Boolean> toRemove = stateToIsFlushed.subMap(0L, true, id, true);
-    for (final Long nextId : toRemove.navigableKeySet()) {
-      final AirbyteMessage message = idToState.get(nextId);
-      stateToId.remove(message);
-      idToState.remove(nextId);
-    }
+    final AirbyteMessage toReturn = idToState.get(toRemove.lastKey());
     toRemove.clear();
+
+    return Optional.ofNullable(toReturn);
   }
 
 }

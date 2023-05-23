@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination_async;
 
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
+import io.airbyte.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
@@ -42,7 +43,6 @@ import org.apache.commons.io.FileUtils;
 @Slf4j
 public class FlushWorkers implements AutoCloseable {
 
-  public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.8);
   private static final long QUEUE_FLUSH_THRESHOLD_BYTES = 10 * 1024 * 1024; // 10MB
   private static final long MAX_TIME_BETWEEN_REC_MINS = 5L;
   private static final long SUPERVISOR_INITIAL_DELAY_SECS = 0L;
@@ -91,7 +91,7 @@ public class FlushWorkers implements AutoCloseable {
     // todo (cgardens) - i'm not convinced this makes sense. as we get close to the limit, we should
     // flush more eagerly, but "flush all" is never a particularly useful thing in this world.
     // if the total size is > n, flush all buffers
-    if (bufferDequeue.getTotalGlobalQueueSizeBytes() > TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES) {
+    if (bufferDequeue.getTotalGlobalQueueSizeBytes() > BufferManager.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES) {
       flushAll();
       return;
     }

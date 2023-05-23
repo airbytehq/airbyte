@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination_async.buffers;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
-import io.airbyte.integrations.destination_async.state.AsyncDestinationStateManager;
+import io.airbyte.integrations.destination_async.state.AsyncStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
@@ -24,11 +24,11 @@ public class BufferEnqueue {
 
   private final GlobalMemoryManager memoryManager;
   private final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers;
-  private final AsyncDestinationStateManager stateManager;
+  private final AsyncStateManager stateManager;
 
   public BufferEnqueue(final GlobalMemoryManager memoryManager,
                        final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers,
-                       final AsyncDestinationStateManager stateManager) {
+                       final AsyncStateManager stateManager) {
     this(GlobalMemoryManager.BLOCK_SIZE_BYTES, memoryManager, buffers, stateManager);
   }
 
@@ -36,7 +36,7 @@ public class BufferEnqueue {
   public BufferEnqueue(final long initialQueueSizeBytes,
                        final GlobalMemoryManager memoryManager,
                        final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers,
-                       final AsyncDestinationStateManager stateManager) {
+                       final AsyncStateManager stateManager) {
     this.initialQueueSizeBytes = initialQueueSizeBytes;
     this.memoryManager = memoryManager;
     this.buffers = buffers;
@@ -61,14 +61,11 @@ public class BufferEnqueue {
       handleRecord(streamDescriptor, message, messageNum);
     } else if (message.getType() == Type.STATE) {
       stateManager.trackState(message, messageNum);
-      // todo (cgardens) - yeah but what do we do for global?
-      handleRecord(streamDescriptor, message, messageNum);
     }
   }
 
   private void handleRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message, final long messageNum) {
-    // todo (cgardens) - handle estimating state message size.
-    final long messageSize = message.getType() == AirbyteMessage.Type.RECORD ? recordSizeEstimator.getEstimatedByteSize(message.getRecord()) : 1024;
+    final long messageSize = recordSizeEstimator.getEstimatedByteSize(message.getRecord());
 
     final var queue = buffers.get(streamDescriptor);
     var addedToQueue = queue.offer(message, messageNum, messageSize);

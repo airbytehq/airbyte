@@ -4,11 +4,9 @@
 
 package io.airbyte.integrations.destination_async.buffers;
 
-import static io.airbyte.integrations.destination_async.FlushWorkers.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES;
-
 import io.airbyte.integrations.destination_async.FlushWorkers;
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
-import io.airbyte.integrations.destination_async.state.AsyncDestinationStateManager;
+import io.airbyte.integrations.destination_async.state.AsyncStateManager;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -21,17 +19,18 @@ import org.apache.commons.io.FileUtils;
 @Slf4j
 public class BufferManager {
 
+  public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.8);
   private final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers;
   private final BufferEnqueue bufferEnqueue;
   private final BufferDequeue bufferDequeue;
   private final GlobalMemoryManager memoryManager;
   private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
-  private final AsyncDestinationStateManager stateManager;
+  private final AsyncStateManager stateManager;
 
   public BufferManager() {
     memoryManager = new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES);
-    stateManager = new AsyncDestinationStateManager();
     buffers = new ConcurrentHashMap<>();
+    stateManager = new AsyncStateManager(buffers);
     bufferEnqueue = new BufferEnqueue(memoryManager, buffers, stateManager);
     bufferDequeue = new BufferDequeue(memoryManager, buffers, stateManager);
     debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 10, TimeUnit.SECONDS);
