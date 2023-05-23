@@ -2,7 +2,7 @@
 
 ## Overview
 
-The CallRail source supports Full Refresh and Incremental syncs of calls, companies, text messages, and users.
+The CallRail source supports Full Refresh and Incremental syncs. 
 
 ### Output schema
 
@@ -28,26 +28,25 @@ This Source is capable of syncing the following core Streams:
 
 ### Requirements
 
-* CallRail Account
+* CallRail Account with API acces
 * CallRail API Token
+* Airbyte Account
 
 ### Configuration
 
-1. Log in to your CallRail account.
-2. Navigate to your Account Dashboard
-3. Copy the **API Secret Key** from the bottom of the screen.
-4. In Airbyte, fill out the connection screen for CallRail with the following information:
+To set up the CallRail connector in Airbyte, you will need to follow these steps:
 
-    * `account_id` (string, required): ID of the CallRail account you want to connect to.
-    * `api_key` (string, required): API secret key for the CallRail account.
-    * `start_date` (string, required): Start getting data from that date. Must be in the format of `YYYY-MM-DD`.
-
-5. Test the connection to make sure it is successful.
-
-For more information on connecting CallRail with Airbyte, refer to the [CallRail API documentation](https://apidocs.callrail.com/) and the [Airbyte Connector documentation](https://docs.airbyte.io/integrations/sources/callrail).
+1. Select CallRail as the source you want to set up and click "Continue".
+2. Enter a nickname for your connector, which can be any name of your choosing.
+3. Enter your **CallRail API Token** and **Account ID** in the respective fields. If you don't have an API Token, follow the instructions in this [CallRail Documentation](https://apidocs.callrail.com/v3/#getting-started).
+4. Enter the date from when you want to start getting data in `YYYY-MM-DD` format in the `start_date` field.
+5. Click "Test Connection" to verify that the credentials and settings are correct.
+6. If the test is successful, click "Create Connection" to save the configuration.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                            | Subject                           |
 | :--- |:-----------|:--------------------------------------------------------|:----------------------------------|
 | 0.1.0 | 2022-10-31 | [18739](https://github.com/airbytehq/airbyte/pull/18739) | 🎉 New Source: CallRail                  |
+
+For more information on the CallRail API, check out their [API Documentation](https://apidocs.callrail.com/).
