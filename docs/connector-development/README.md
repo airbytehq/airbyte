@@ -140,46 +140,32 @@ The presence of these fields will enable normalization for the connector, and de
 
 Once you've finished iterating on the changes to a connector as specified in its `README.md`, follow these instructions to ship the new version of the connector with Airbyte out of the box.
 
-1. Bump the version in the `Dockerfile` of the connector \(`LABEL io.airbyte.version=X.X.X`\).
-1. Update the docker image version in the  [metadata.yaml](connector-metadata-file.md) of the connector.
-1. Submit a PR containing the changes you made.
-1. One of Airbyte maintainers will review the change and publish the new version of the connector to Docker hub. Triggering tests and publishing connectors can be done by leaving a comment on the PR with the following format \(the PR must be from the Airbyte repo, not a fork\):
-
+1. Bump the version in the `Dockerfile` of the connector \(`LABEL io.airbyte.version=X.X.X`\). 
+2. Bump the docker image version in the [metadata.yaml](connector-metadata-file.md) of the connector.
+3. Submit a PR containing the changes you made.
+4. One of Airbyte maintainers will review the change in the new version.  Triggering tests can be done by leaving a comment on the PR with the following format \(the PR must be from the Airbyte repo, not a fork\):
    ```text
    # to run integration tests for the connector
    # Example: /test connector=connectors/source-hubspot
-   /test connector=(connectors|bases)/<connector_name>
-
-   # to run integration tests, publish the connector, and use the updated connector version in our config/metadata files
-   # Example: /publish connector=connectors/source-hubspot
-   /publish connector=(connectors|bases)/<connector_name>
+   /test connector=(connectors|bases)/<connector_name> 
    ```
-1. The new version of the connector is now available for everyone who uses it. Thank you!
-
+5. You our an Airbyte maintainer can merge the PR once it is approved and all the required CI checks are passing you.
+6. Once the PR is merged the new connector version will be published to DockerHub and the connector should now be available for everyone who uses it. Thank you!
 
 ### Updating Connector Metadata
 
-When a new (or updated version) of a connector is ready to be published, our automations will check your branch for a few things:
+When a new (or updated version) of a connector is ready, our automations will check your branch for a few things:
 * Does the connector have an icon?
 * Does the connector have documentation and is it in the proper format?
 * Does the connector have a changelog entry for this version?
+* The [metadata.yaml](connector-metadata-file.md) file is valid.
 
 If any of the above are failing, you won't be able to merge your PR or publish your connector.
 
 Connector icons should be square SVGs and be located in [this directory](https://github.com/airbytehq/airbyte/tree/master/airbyte-config-oss/init-oss/src/main/resources/icons).
 
-Connector documentation and changelogs are markdown files which live either [here for sources](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/sources), or [here for destinations](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/destinations).
+Connector documentation and changelogs are markdown files living either [here for sources](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/sources), or [here for destinations](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/destinations).
 
-The [metadata.yaml](connector-metadata-file.md) file is valid.
-
-### The /publish command
-
-Publishing a connector can be done using the `/publish` command as outlined in the above section. The command runs a [github workflow](https://github.com/airbytehq/airbyte/actions/workflows/publish-command.yml), and has the following configurable parameters:
-* **connector** - Required. This tells the workflow which connector to publish. e.g. `connector=connectors/source-amazon-ads`. This can also be a comma-separated list of many connectors, e.g. `connector=connectors/source-s3,connectors/destination-postgres,connectors/source-facebook-marketing`. See the parallel flag below if publishing multiple connectors.
-* **repo** - Defaults to the main airbyte repo. Set this when building connectors from forked repos. e.g. `repo=userfork/airbyte`
-* **gitref** - Defaults to the branch of the PR where the /publish command is run as a comment. If running manually, set this to your branch where you made changes e.g. `gitref=george/s3-update`
-* **comment-id** - This is automatically filled if you run /publish from a comment and enables the workflow to write back success/fail logs to the git comment.
-* **parallel** - Defaults to false. If set to true, a pool of runner agents will be spun up to allow publishing multiple connectors in parallel. Only switch this to true if publishing multiple connectors at once to avoid wasting $$$.
 
 ## Using credentials in CI
 
