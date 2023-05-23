@@ -136,6 +136,12 @@ jobs:
           - name: source-iterable
           - name: source-sendgrid
           - name: source-sentry
+          - name: source-youtube-analytics
+          - name: source-instagram
+          - name: source-braintree
+          - name: source-braze
+          - name: source-netsuite
+          - name: source-jira
 
     steps:
       - uses: actions/checkout@v2
