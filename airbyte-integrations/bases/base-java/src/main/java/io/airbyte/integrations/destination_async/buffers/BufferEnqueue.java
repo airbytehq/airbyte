@@ -47,8 +47,7 @@ public class BufferEnqueue {
    */
   public void addRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message) {
     if (!buffers.containsKey(streamDescriptor)) {
-      System.out.println("putting things in");
-      buffers.put(streamDescriptor, new MemoryBoundedLinkedBlockingQueue<>(initialQueueSizeBytes));
+      buffers.put(streamDescriptor, new MemoryBoundedLinkedBlockingQueue<>(memoryManager.requestMemory()));
     }
 
     // todo (cgardens) - handle estimating state message size.
@@ -60,9 +59,9 @@ public class BufferEnqueue {
     // todo (cgardens) - what if the record being added is bigger than the block size?
     // if failed, try to increase memory and add to queue.
     while (!addedToQueue) {
-      final var freeMem = memoryManager.requestMemory();
-      if (freeMem > 0) {
-        queue.setMaxMemoryUsage(queue.getMaxMemoryUsage() + freeMem);
+      final var newlyAllocatedMemory = memoryManager.requestMemory();
+      if (newlyAllocatedMemory > 0) {
+        queue.addMaxMemory(newlyAllocatedMemory);
       }
       addedToQueue = queue.offer(message, messageSize);
     }

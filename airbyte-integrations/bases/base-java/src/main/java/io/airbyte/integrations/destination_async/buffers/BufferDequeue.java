@@ -59,7 +59,7 @@ public class BufferDequeue {
 
       final var s = Stream.generate(() -> {
         try {
-          return queue.poll(5, TimeUnit.MILLISECONDS);
+          return queue.poll(20, TimeUnit.MILLISECONDS);
         } catch (final InterruptedException e) {
           throw new RuntimeException(e);
         }
@@ -81,9 +81,7 @@ public class BufferDequeue {
           .toList()
           .stream();
 
-      // todo (cgardens) - possible race where in between pulling records and new records going in that we
-      // reset the limit to be lower than number of bytes already in the queue. probably not a big deal.
-      queue.setMaxMemoryUsage(queue.getMaxMemoryUsage() - bytesRead.get());
+      queue.addMaxMemory(-bytesRead.get());
 
       return new MemoryAwareMessageBatch(s, bytesRead.get(), memoryManager);
     } finally {

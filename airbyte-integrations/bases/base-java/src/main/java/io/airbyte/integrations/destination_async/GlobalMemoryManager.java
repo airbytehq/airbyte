@@ -78,6 +78,7 @@ public class GlobalMemoryManager {
    * @param bytes the size of the block to free, in bytes
    */
   public void free(final long bytes) {
+    log.info("Freeing {} bytes..", bytes);
     currentMemoryBytes.addAndGet(-bytes);
 
     if (currentMemoryBytes.get() < 0) {
