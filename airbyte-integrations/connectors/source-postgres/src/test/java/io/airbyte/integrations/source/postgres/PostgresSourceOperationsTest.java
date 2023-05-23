@@ -102,9 +102,9 @@ class PostgresSourceOperationsTest {
       final long cursorValue = i * 10;
       jsonNode.put(cursorColumn, cursorValue);
       final String insertQuery = String.format("INSERT INTO %s VALUES (%s, %s);",
-                                               tableName,
-                                               i,
-                                               cursorValue);
+          tableName,
+          i,
+          cursorValue);
       executeQuery(insertQuery);
       expectedRecords.add(jsonNode);
     }
@@ -191,4 +191,5 @@ class PostgresSourceOperationsTest {
       throw new RuntimeException(e);
     }
   }
+
 }
