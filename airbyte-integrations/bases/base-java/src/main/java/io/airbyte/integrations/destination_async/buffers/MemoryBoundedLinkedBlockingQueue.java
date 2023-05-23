@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination_async.buffers;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,10 @@ class MemoryBoundedLinkedBlockingQueue<E> extends LinkedBlockingQueue<MemoryBoun
 
   public void setMaxMemoryUsage(final long maxMemoryUsage) {
     this.maxMemoryUsage.set(maxMemoryUsage);
+  }
+
+  public void addMaxMemory(final long maxMemoryUsage) {
+    this.maxMemoryUsage.addAndGet(maxMemoryUsage);
   }
 
   public Optional<Instant> getTimeOfLastMessage() {
@@ -73,6 +78,16 @@ class MemoryBoundedLinkedBlockingQueue<E> extends LinkedBlockingQueue<MemoryBoun
   @Override
   public MemoryBoundedLinkedBlockingQueue.MemoryItem<E> poll() {
     final MemoryItem<E> memoryItem = super.poll();
+    if (memoryItem != null) {
+      currentMemoryUsage.addAndGet(-memoryItem.size());
+      return memoryItem;
+    }
+    return null;
+  }
+
+  @Override
+  public MemoryBoundedLinkedBlockingQueue.MemoryItem<E> poll(final long timeout, final TimeUnit unit) throws InterruptedException {
+    final MemoryItem<E> memoryItem = super.poll(timeout, unit);
     if (memoryItem != null) {
       currentMemoryUsage.addAndGet(-memoryItem.size());
       return memoryItem;
