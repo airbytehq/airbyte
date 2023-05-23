@@ -71,6 +71,7 @@ At the end of this process, you should have JSON credentials to this Google Serv
 5. Fill in the `site_urls` field.
 6. Fill in the `start date` field.
 7. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}`
+8. Fill in the `data_state` (optionally) in case you want to sync fresher data use `all' value, otherwise use 'final'.
 8. You should be ready to sync data.
 <!-- /env:cloud -->
 
@@ -81,13 +82,15 @@ At the end of this process, you should have JSON credentials to this Google Serv
 2. Fill in the `site_urls` field.
 3. Fill in the `start date` field.
 4. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}`
-5. You should be ready to sync data.
+5. Fill in the `data_state` (optionally) in case you want to sync fresher data use `all' value, otherwise use 'final'. 
+6. You should be ready to sync data.
 <!-- /env:oss -->
 
 
 ## Supported sync modes
 
 The Google Search Console Source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
 
 * [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -96,6 +99,10 @@ The Google Search Console Source connector supports the following [ sync modes](
 
 :::note
    The granularity for the cursor is 1 day, so Incremental Sync in Append mode may result in duplicating the data.
+:::
+
+:::note
+    Parameter `data_state='all'` should not be used with Incremental Sync mode as it may cause data loss.
 :::
 
 ## Supported Streams
