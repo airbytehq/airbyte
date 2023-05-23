@@ -5,7 +5,9 @@
 package io.airbyte.integrations.destination_async.buffers;
 
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.integrations.destination_async.buffers.MemoryBoundedLinkedBlockingQueue.MemoryItem;
+import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.Meta;
+import io.airbyte.integrations.destination_async.state.AsyncDestinationStateManager;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.HashSet;
@@ -29,13 +31,16 @@ import java.util.stream.Stream;
 public class BufferDequeue {
 
   private final GlobalMemoryManager memoryManager;
-  private final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers;
+  private final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers;
+  private final AsyncDestinationStateManager stateManager;
   private final ConcurrentMap<StreamDescriptor, ReentrantLock> bufferLocks;
 
   public BufferDequeue(final GlobalMemoryManager memoryManager,
-                       final ConcurrentMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> buffers) {
+                       final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers,
+                       final AsyncDestinationStateManager stateManager) {
     this.memoryManager = memoryManager;
     this.buffers = buffers;
+    this.stateManager = stateManager;
     bufferLocks = new ConcurrentHashMap<>();
   }
 
@@ -57,7 +62,7 @@ public class BufferDequeue {
     try {
       final AtomicLong bytesRead = new AtomicLong();
 
-      final var s = Stream.generate(() -> {
+      final Stream<Meta> s = Stream.generate(() -> {
         try {
           return queue.poll(20, TimeUnit.MILLISECONDS);
         } catch (final InterruptedException e) {
@@ -77,13 +82,13 @@ public class BufferDequeue {
         } else {
           return false;
         }
-      }).map(MemoryBoundedLinkedBlockingQueue.MemoryItem::item)
+      }).map(MemoryItem::item)
           .toList()
           .stream();
 
       queue.addMaxMemory(-bytesRead.get());
 
-      return new MemoryAwareMessageBatch(s, bytesRead.get(), memoryManager);
+      return new MemoryAwareMessageBatch(streamDescriptor, s, bytesRead.get(), memoryManager, stateManager, queue);
     } finally {
       bufferLocks.get(streamDescriptor).unlock();
     }
@@ -100,7 +105,7 @@ public class BufferDequeue {
   }
 
   public long getTotalGlobalQueueSizeBytes() {
-    return buffers.values().stream().map(MemoryBoundedLinkedBlockingQueue::getCurrentMemoryUsage).mapToLong(Long::longValue).sum();
+    return buffers.values().stream().map(StreamAwareQueue::getCurrentMemoryUsage).mapToLong(Long::longValue).sum();
   }
 
   public Optional<Long> getQueueSizeInRecords(final StreamDescriptor streamDescriptor) {
@@ -108,14 +113,14 @@ public class BufferDequeue {
   }
 
   public Optional<Long> getQueueSizeBytes(final StreamDescriptor streamDescriptor) {
-    return getBuffer(streamDescriptor).map(MemoryBoundedLinkedBlockingQueue::getCurrentMemoryUsage);
+    return getBuffer(streamDescriptor).map(StreamAwareQueue::getCurrentMemoryUsage);
   }
 
   public Optional<Instant> getTimeOfLastRecord(final StreamDescriptor streamDescriptor) {
-    return getBuffer(streamDescriptor).flatMap(MemoryBoundedLinkedBlockingQueue::getTimeOfLastMessage);
+    return getBuffer(streamDescriptor).flatMap(StreamAwareQueue::getTimeOfLastMessage);
   }
 
-  private Optional<MemoryBoundedLinkedBlockingQueue<AirbyteMessage>> getBuffer(final StreamDescriptor streamDescriptor) {
+  private Optional<StreamAwareQueue> getBuffer(final StreamDescriptor streamDescriptor) {
     if (buffers.containsKey(streamDescriptor)) {
       return Optional.of(buffers.get(streamDescriptor));
     }

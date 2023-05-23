@@ -16,6 +16,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -52,12 +53,16 @@ public class FlushWorkers implements AutoCloseable {
   private final ExecutorService workerPool = Executors.newFixedThreadPool(5);
   private final BufferDequeue bufferDequeue;
   private final DestinationFlushFunction flusher;
+  private final Consumer<AirbyteMessage> outputRecordCollector;
   private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
   private final ConcurrentHashMap<StreamDescriptor, AtomicInteger> streamToInProgressWorkers = new ConcurrentHashMap<>();
 
-  public FlushWorkers(final BufferDequeue bufferDequeue, final DestinationFlushFunction flushFunction) {
+  public FlushWorkers(final BufferDequeue bufferDequeue,
+                      final DestinationFlushFunction flushFunction,
+                      final Consumer<AirbyteMessage> outputRecordCollector) {
     this.bufferDequeue = bufferDequeue;
     flusher = flushFunction;
+    this.outputRecordCollector = outputRecordCollector;
   }
 
   public void start() {
@@ -157,6 +162,7 @@ public class FlushWorkers implements AutoCloseable {
 
         try (final var batch = bufferDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
           flusher.flush(desc, batch.getData());
+          batch.getState().ifPresent(outputRecordCollector);
         }
 
         log.info("Worker finished flushing. Current queue size: {}", bufferDequeue.getQueueSizeInRecords(desc));

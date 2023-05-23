@@ -52,6 +52,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
   private boolean hasStarted;
   private boolean hasClosed;
+  private long messageNum;
 
   public AsyncStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                              final OnStartFunction onStart,
@@ -62,6 +63,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
                              final BufferManager bufferManager) {
     hasStarted = false;
     hasClosed = false;
+    messageNum = 0;
 
     this.outputRecordCollector = outputRecordCollector;
     this.onStart = onStart;
@@ -69,10 +71,10 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     this.catalog = catalog;
     this.isValidRecord = isValidRecord;
     this.bufferManager = bufferManager;
-    this.bufferEnqueue = bufferManager.getBufferEnqueue();
-    this.flushWorkers = new FlushWorkers(this.bufferManager.getBufferDequeue(), flusher);
-    this.streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
-    this.ignoredRecordsTracker = new IgnoredRecordsTracker();
+    bufferEnqueue = bufferManager.getBufferEnqueue();
+    flushWorkers = new FlushWorkers(this.bufferManager.getBufferDequeue(), flusher, outputRecordCollector);
+    streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
+    ignoredRecordsTracker = new IgnoredRecordsTracker();
   }
 
   @Override
@@ -90,12 +92,17 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
   public void accept(final AirbyteMessage message) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
     /*
+     * note: the message counter intentionally starts at 1. anywhere there is a message number of 0,
+     * that's the same as no message.
+     */
+    messageNum++;
+    /*
      * intentionally putting extractStream outside the buffer manager so that if in the future we want
      * to try to use a threadpool to partial deserialize to get record type and stream name, we can do
      * it without touching buffer manager.
      */
     extractStream(message)
-        .ifPresent(streamDescriptor -> bufferEnqueue.addRecord(streamDescriptor, message));
+        .ifPresent(streamDescriptor -> bufferEnqueue.addRecord(streamDescriptor, message, messageNum));
   }
 
   @Override

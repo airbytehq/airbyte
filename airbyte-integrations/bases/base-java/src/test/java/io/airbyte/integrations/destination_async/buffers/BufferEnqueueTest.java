@@ -19,8 +19,8 @@ public class BufferEnqueueTest {
   @Test
   void testAddRecordShouldAdd() {
     final var twoMB = 2 * 1024 * 1024;
-    final var streamToBuffer = new ConcurrentHashMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>>();
-    final var enqueue = new BufferEnqueue(new GlobalMemoryManager(twoMB), streamToBuffer);
+    final var streamToBuffer = new ConcurrentHashMap<StreamDescriptor, StreamAwareQueue>();
+    final var enqueue = new BufferEnqueue(new GlobalMemoryManager(twoMB), streamToBuffer, stateManager);
 
     final var streamName = "stream";
     final var stream = new StreamDescriptor().withName(streamName);
@@ -30,7 +30,7 @@ public class BufferEnqueueTest {
             .withStream(streamName)
             .withData(Jsons.jsonNode(BufferDequeueTest.RECORD_20_BYTES)));
 
-    enqueue.addRecord(stream, record);
+    enqueue.addRecord(stream, record, 1);
     assertEquals(1, streamToBuffer.get(stream).size());
     assertEquals(20L, streamToBuffer.get(stream).getCurrentMemoryUsage());
 
@@ -40,7 +40,7 @@ public class BufferEnqueueTest {
   public void testAddRecordShouldExpand() {
     final var oneKb = 1024;
     final var initialQueueSizeBytes = 20;
-    final var streamToBuffer = new ConcurrentHashMap<StreamDescriptor, MemoryBoundedLinkedBlockingQueue<AirbyteMessage>>();
+    final var streamToBuffer = new ConcurrentHashMap<StreamDescriptor, StreamAwareQueue>();
     final var enqueue = new BufferEnqueue(initialQueueSizeBytes, new GlobalMemoryManager(oneKb), streamToBuffer);
 
     final var streamName = "stream";
@@ -51,8 +51,8 @@ public class BufferEnqueueTest {
             .withStream(streamName)
             .withData(Jsons.jsonNode(BufferDequeueTest.RECORD_20_BYTES)));
 
-    enqueue.addRecord(stream, record);
-    enqueue.addRecord(stream, record);
+    enqueue.addRecord(stream, record, 1);
+    enqueue.addRecord(stream, record, 2);
     assertEquals(2, streamToBuffer.get(stream).size());
     assertEquals(40, streamToBuffer.get(stream).getCurrentMemoryUsage());
 
