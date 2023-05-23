@@ -24,14 +24,27 @@ application {
 
 }
 
+configurations.all {
+    resolutionStrategy {
+        force libs.fasterxml, 'org.apache.sshd:sshd-core:2.10.0', 'org.apache.sshd:sshd-mina:2.10.0', 'org.apache.sshd:sshd-common:2.10.0',
+                'com.fasterxml.jackson:jackson-bom:2.15.1', 'com.fasterxml.jackson.core:jackson-databind:2.15.1',
+                'com.fasterxml.jackson.core:jackson-core:2.15.1', 'io.netty:netty-all:4.1.92.Final'
+        force 'org.elasticsearch.client:elasticsearch-rest-high-level-client:7.17.10'
+    }
+
+}
+
 dependencies {
-    implementation 'com.google.cloud:google-cloud-storage:1.113.16'
-    implementation 'com.google.auth:google-auth-library-oauth2-http:0.25.5'
+    compileOnly(' com.therealvan:appender-log4j2:4.1.0') {
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
+    }
+    implementation 'com.google.cloud:google-cloud-storage:2.22.2'
+    implementation 'com.google.auth:google-auth-library-oauth2-http:1.17.0'
   // Updating to any newer version (e.g. 3.13.22) is causing a regression with normalization. 
   // See: https://github.com/airbytehq/airbyte/actions/runs/3078146312
-    implementation 'net.snowflake:snowflake-jdbc:3.13.19'
-    implementation 'org.apache.commons:commons-csv:1.4'
-    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
+    implementation 'net.snowflake:snowflake-jdbc:3.13.30'
+    implementation 'org.apache.commons:commons-csv:1.10.0'
+    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.4'
     implementation "io.aesy:datasize:1.0.0"
     implementation 'com.zaxxer:HikariCP:5.0.1'
 

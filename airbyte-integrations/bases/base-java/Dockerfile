@@ -1,8 +1,13 @@
 ARG JDK_VERSION=17.0.4
 FROM amazoncorretto:${JDK_VERSION}
+#FROM amazoncorretto:19.0.2-alpine3.17
+#amazoncorretto:19.0.2-alpine3.17
 COPY --from=airbyte/integration-base:dev /airbyte /airbyte
 
-RUN yum install -y tar openssl && yum clean all
+#RUN yum install -y tar openssl && yum clean all
+RUN apk add tar && \
+    apk update && apk upgrade && apk upgrade -U openssl && \
+    apk del openldap
 
 WORKDIR /airbyte
 

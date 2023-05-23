@@ -1,4 +1,5 @@
-FROM amazonlinux:2022.0.20220831.1
+#FROM amazonlinux:2022.0.20220831.1
+FROM alpine:3.18
 
 WORKDIR /airbyte
 
