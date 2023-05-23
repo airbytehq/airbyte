@@ -29,6 +29,8 @@ from .utils import authenticator_class_map, get_dimensions_type, get_metrics_typ
 # the initial values should be saved once and tracked for each stream, inclusivelly.
 GoogleAnalyticsQuotaHandler: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
+# set page_size to 100000 due to determination of maximum limit value in official documentation
+# https://developers.google.com/analytics/devguides/reporting/data/v1/basics#pagination
 PAGE_SIZE = 100000
 
 
@@ -217,7 +219,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "dateRanges": [stream_slice],
             "returnPropertyQuota": True,
             "offset": str(0),
-            "limit": str(100000)
+            "limit": str(PAGE_SIZE)
         }
         if next_page_token and next_page_token.get("offset") is not None:
             payload.update({"offset": str(next_page_token["offset"])})

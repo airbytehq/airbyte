@@ -14,6 +14,8 @@ from source_google_analytics_data_api.source import GoogleAnalyticsDataApiBaseSt
 
 from .utils import read_incremental
 
+PAGE_SIZE = 100000
+
 json_credentials = """
 {
     "type": "service_account",
@@ -89,7 +91,7 @@ def test_request_body_json(patch_base_class):
         "dateRanges": [request_body_params["stream_slice"]],
         "returnPropertyQuota": True,
         "offset": str(0),
-        "limit": str(100000)
+        "limit": str(PAGE_SIZE)
     }
 
     request_body_json = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"]).request_body_json(**request_body_params)
