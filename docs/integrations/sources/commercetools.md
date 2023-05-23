@@ -11,7 +11,7 @@ This source can sync data for the [Commercetools API](https://docs.commercetools
 This Source is capable of syncing the following core Streams:
 
 * [Customers](https://docs.commercetools.com/api/projects/customers)
-* [Orders](https://docs.commercetools.com/api/projects/orders)
+* [Orders](https:///docs.commercetools.com/api/projects/orders)
 * [Products](https://docs.commercetools.com/api/projects/products)
 * [DiscountCodes](https://docs.commercetools.com/api/projects/discountCodes)
 * [Payments](https://docs.commercetools.com/api/projects/payments)
@@ -39,26 +39,24 @@ Commercetools has some [rate limit restrictions](https://docs.commercetools.com/
 
 ## Getting started
 
-1. Log in to your Commercetools account or create a new one [here](https://commercetools.com/signup).
-2. Create an [API client](https://docs.commercetools.com/api/authorization/creating-and-managing-clients) in your Commercetools account by following the instructions provided.
-3. Choose the desired scopes for the API client, keeping in mind that Airbyte only needs read-level access.
-    * Note: The user interface will show all possible data sources, and will show errors when syncing if the API client doesn't have permission to access a resource.
-4. Navigate to the [Dashboard](https://docs.commercetools.com/dashboard/?language=en) section of your Commercetools account.
-5. Under the Project Settings section, locate and copy the `projectKey` for the store you wish to replicate data from.
-6. Navigate back to Airbyte.
-7. In the Commercetools configuration page, under "Connection Configuration," fill out the following fields:
-    * `region`: The region of the platform, which can be found in the Commercetools [documentation](https://docs.commercetools.com/api/authorization#regions).
-    * `host`: The cloud provider your shop is hosted on. Choose either `gcp` or `aws`, as per your setup.
-    * `start_date`: The date from which you would like to replicate data. Use the format YYYY-MM-DD.
-    * `project_key`: The `projectKey` you copied earlier.
-    * `client_id`: The `client_id` of the API client you created in step 2.
-    * `client_secret`: The `client_secret` of the API client you created in step 2.
-8. Click "Test Connection" to check that the connection has been successfully established.
-9. If the connection test is successful, click "Create" to create the Commercetools source connector.
-10. You're now ready to use the Commercetools source in Airbyte!
+To set up the Commercetools source connector, follow these steps:
+
+1. In the Commercetools admin interface, go to the [Developer Settings](https://docs.commercetools.com/docs/developer-settings) section.
+2. Click on "API Clients" and then click on the "New API Client" button to create an API Client.
+3. Provide a name for your API Client and choose the desired scopes. Airbyte requires read-level access.
+   * Note: The UI will show all possible data sources and will show errors when syncing if it doesn't have permissions to access a resource.
+4. Once the API Client is created, you will receive the `client_id`, `client_secret`, and `projectKey` which are required for the integration.
+5. In the Airbyte configuration form for the Commercetools source connector, enter the following information:
+   * `region`: The region of the platform (e.g. "us-central1" or "australia-southeast1").
+   * `host`: The cloud provider your shop is hosted on. See the [Commercetools API documentation](https://docs.commercetools.com/api/authorization) for more details.
+   * `start_date`: The date you would like to replicate data starting from. The format should be "YYYY-MM-DD" (e.g. "2021-01-01").
+   * `project_key`: Enter the `projectKey` you obtained in Step 4.
+   * `client_id`: Enter the `client_id` you obtained in Step 4.
+   * `client_secret`: Enter the `client_secret` you obtained in Step 4.
+6. You're now ready to set up the Commercetools source connector in Airbyte!
 
 ## Changelog
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
-| 0.1.0  | 2021-08-19 | [5957](https://github.com/airbytehq/airbyte/pull/5957) | Initial Release. Source Commercetools |
+| 0.1.0   | 2021-08-19 | [5957](https://github.com/airbytehq/airbyte/pull/5957) | Initial Release. Source Commercetools |
