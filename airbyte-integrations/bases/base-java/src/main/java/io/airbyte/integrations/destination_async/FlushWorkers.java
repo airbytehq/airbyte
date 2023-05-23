@@ -102,9 +102,8 @@ public class FlushWorkers implements AutoCloseable {
         break;
       }
 
-      // although we allow multiple workers to read from the same stream queue, which means records
-      // can be processed out of order, try to avoid scheduling more workers than what is already in
-      // progress
+      // while we allow out-of-order processing for speed improvements via multiple workers reading from
+      // the same queue, also avoid scheduling more workers than what is already in progress.
       final var inProgressSizeByte = (bufferDequeue.getQueueSizeBytes(stream).get() -
           streamToInProgressWorkers.getOrDefault(stream, new AtomicInteger(0)).get() * QUEUE_FLUSH_THRESHOLD_BYTES);
       final var exceedSize = inProgressSizeByte >= QUEUE_FLUSH_THRESHOLD_BYTES;
