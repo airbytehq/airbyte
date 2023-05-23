@@ -25,6 +25,7 @@ def test_request_params(patch_base_class):
     inputs = {"stream_slice": None, "stream_state": {}, "next_page_token": None}
     # TODO: replace this with your expected request parameters
     expected_params = {'pagination.limit': 100, 'pagination.offset': 0}
+    test = 'tset'
     assert stream.request_params(**inputs) == expected_params
 
 
