@@ -52,15 +52,15 @@ public class BufferEnqueue {
    * @param message to buffer
    * @param messageNum
    */
-  public void addRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message, final long messageNum) {
+  public void addRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message) {
     if (!buffers.containsKey(streamDescriptor)) {
       buffers.put(streamDescriptor, new StreamAwareQueue(memoryManager.requestMemory()));
     }
 
     if (message.getType() == Type.RECORD) {
-      handleRecord(streamDescriptor, message, messageNum);
+      handleRecord(streamDescriptor, message);
     } else if (message.getType() == Type.STATE) {
-      stateManager.trackState(message, messageNum);
+      stateManager.trackState(message);
     }
   }
 
