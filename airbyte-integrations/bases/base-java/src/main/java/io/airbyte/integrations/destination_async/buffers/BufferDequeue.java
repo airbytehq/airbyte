@@ -6,7 +6,8 @@ package io.airbyte.integrations.destination_async.buffers;
 
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.integrations.destination_async.buffers.MemoryBoundedLinkedBlockingQueue.MemoryItem;
-import io.airbyte.integrations.destination_async.state.AsyncDestinationStateManager;
+import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.Meta;
+import io.airbyte.integrations.destination_async.state.AsyncStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
@@ -34,12 +35,12 @@ public class BufferDequeue {
 
   private final GlobalMemoryManager memoryManager;
   private final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers;
-  private final AsyncDestinationStateManager stateManager;
+  private final AsyncStateManager stateManager;
   private final ConcurrentMap<StreamDescriptor, ReentrantLock> bufferLocks;
 
   public BufferDequeue(final GlobalMemoryManager memoryManager,
                        final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers,
-                       final AsyncDestinationStateManager stateManager) {
+                       final AsyncStateManager stateManager) {
     this.memoryManager = memoryManager;
     this.buffers = buffers;
     this.stateManager = stateManager;
@@ -124,6 +125,10 @@ public class BufferDequeue {
 
   public long getTotalGlobalQueueSizeBytes() {
     return buffers.values().stream().map(StreamAwareQueue::getCurrentMemoryUsage).mapToLong(Long::longValue).sum();
+  }
+
+  public Optional<Meta> peek(final StreamDescriptor streamDescriptor) {
+    return getBuffer(streamDescriptor).flatMap(StreamAwareQueue::peek);
   }
 
   public Optional<Long> getQueueSizeInRecords(final StreamDescriptor streamDescriptor) {

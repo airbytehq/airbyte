@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination_async.buffers;
 
+import io.airbyte.integrations.destination_async.buffers.MemoryBoundedLinkedBlockingQueue.MemoryItem;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.time.Instant;
 import java.util.Optional;
@@ -13,7 +14,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-class StreamAwareQueue {
+public class StreamAwareQueue {
 
   private final AtomicReference<Instant> timeOfLastMessage;
   private final AtomicLong minMessageNum;
@@ -47,6 +48,10 @@ class StreamAwareQueue {
     if (memoryAwareQueue.peek() != null) {
       minMessageNum.set(memoryAwareQueue.peek().item().messageNum());
     }
+  }
+
+  public Optional<Meta> peek() {
+    return Optional.ofNullable(memoryAwareQueue.peek()).map(MemoryItem::item);
   }
 
   public int size() {

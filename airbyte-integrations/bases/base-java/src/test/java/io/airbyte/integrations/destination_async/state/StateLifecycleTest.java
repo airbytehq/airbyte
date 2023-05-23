@@ -24,16 +24,16 @@ class StateLifecycleTest {
     lifecycle.trackState(createState(300), 300);
     lifecycle.trackState(createState(400), 400);
 
-    assertEquals(Optional.empty(), lifecycle.completeState(199, 301));
+    assertEquals(Optional.empty(), lifecycle.getBestStateAndPurge(50));
 
-    assertEquals(300, getStateMessageIdentifier(lifecycle.completeState(1, 150).get()));
+    assertEquals(100, getStateMessageIdentifier(lifecycle.getBestStateAndPurge(150).get()));
 
     lifecycle.trackState(createState(500), 500);
 
-    assertEquals(400, getStateMessageIdentifier(lifecycle.completeState(350, 425).get()));
-    assertEquals(500, getStateMessageIdentifier(lifecycle.completeState(450, 500).get()));
+    assertEquals(400, getStateMessageIdentifier(lifecycle.getBestStateAndPurge(425).get()));
+    assertEquals(500, getStateMessageIdentifier(lifecycle.getBestStateAndPurge(500).get()));
 
-    assertEquals(Optional.empty(), lifecycle.completeState(525, 550));
+    assertEquals(Optional.empty(), lifecycle.getBestStateAndPurge(550));
   }
 
   /*
