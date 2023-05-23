@@ -82,7 +82,6 @@ public class StagingConsumerFactory {
                                             final JdbcDatabase database,
                                             final StagingOperations stagingOperations,
                                             final NamingConventionTransformer namingResolver,
-                                            final BufferCreateFunction onCreateBuffer,
                                             final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final boolean purgeStagingData) {

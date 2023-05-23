@@ -113,15 +113,23 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    return new StagingConsumerFactory().create(
-        outputRecordCollector,
-        getDatabase(getDataSource(config)),
-        new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
-        getNamingResolver(),
-        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
-        config,
-        catalog,
-        true);
+//    return new StagingConsumerFactory().create(
+//        outputRecordCollector,
+//        getDatabase(getDataSource(config)),
+//        new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
+//        getNamingResolver(),
+//        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
+//        config,
+//        catalog,
+//        true);
+    return new StagingConsumerFactory().createAsync(
+            outputRecordCollector,
+            getDatabase(getDataSource(config)),
+            new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
+            getNamingResolver(),
+            config,
+            catalog,
+            true);
   }
 
 }
