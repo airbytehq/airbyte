@@ -1,10 +1,8 @@
 # Secoda API
 
-This document outlines how to set up the Secoda API source connector in Airbyte.
-
 ## Sync overview
 
-This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-api). At present, this connector only supports full refresh syncs meaning that each time you use the connector, it will sync all available records from scratch. Please use it cautiously if you expect your API to have a lot of records.
+This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-api). At present this connector only supports full refresh syncs meaning that each time you use the connector it will sync all available records from scratch. Please use cautiously if you expect your API to have a lot of records.
 
 ## This Source Supports the Following Streams
 
@@ -17,33 +15,71 @@ This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-ap
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync | No | |
+| Incremental Sync | No |  |
+
+### Performance considerations
 
 ## Getting started
 
 ### Requirements
 
-* API Access
+To set up the Secoda source, you will need: 
 
-To get started with the Secoda API source connector in Airbyte, you will need access to your Secoda API key. Please follow these steps to obtain your API key:
+* An API access key
 
-1. Log in to your Secoda account.
-2. Navigate to the **API Access** page in the left-hand menu.
-3. Click on the **Generate New Key** button to create a new API key.
-4. Copy the API key and securely save it for use in configuring the Airbyte Secoda API connection.
+If you do not already have an API key, follow these steps to obtain one:
 
-### Configuration
+1. Log in to Secoda and navigate to the API settings page [here](https://app.secoda.co/api).
+2. Click on the "New API Key" button to generate a new API key. This will be displayed on the screen.
+3. Make a note of the API key for use in Airbyte.
 
-With your Secoda API key in hand, you can configure the Airbyte Secoda API connection as follows:
+### Set up in Airbyte
 
-1. In the Airbyte connector configuration screen, enter your Secoda API key in the **Api Key** field. 
-2. Click **Test Connection** to ensure the connection is successful.
-3. Click **Save** to save your configuration.
-
-Please note that the configuration screen is driven by the spec of the Airbyte Connector, which can be found in the following location: [Secoda Connector Spec](https://docs.airbyte.io/integrations/sources/secoda). Ensure that all required fields are filled out correctly, and consult any relevant documentation as necessary.
+1. In Airbyte, navigate to the page for creating a new connection.
+2. In the Source field, select Secoda from the dropdown menu.
+3. In the "API Key" field, enter your Secoda API key.
+4. Ensure that you have read and agree to the terms and conditions of the Secoda API by checking the box provided.
+5. Click "Test" to ensure that you have entered your API key correctly and to check that Airbyte is able to establish a connection to the Secoda API.
+6. If the test is successful, click "Create" to create your new connection.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                              | Subject                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
 | 0.1.0   | 2022-10-27 | [#18378](https://github.com/airbytehq/airbyte/pull/18378) | 🎉 New Source: Secoda API [low-code CDK] |
+
+#### Airbyte Connector Spec
+
+documentationUrl: https://docs.airbyte.com/integrations/sources/secoda
+
+connectionSpecification:
+
+  $schema: http://json-schema.org/draft-07/schema#
+
+  title: Secoda Spec
+
+  type: object
+
+  required:
+
+    - api_key
+
+  additionalProperties: true
+
+  properties:
+
+    api_key:
+
+      title: Api Key
+
+      type: string
+
+      description: >-
+
+        Your API Access Key. See <a
+
+        href="https://docs.secoda.co/secoda-api/authentication">here</a>. The key is
+
+        case sensitive.
+
+      airbyte_secret: true
