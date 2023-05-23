@@ -21,21 +21,9 @@ public class MemoryBoundedLinkedBlockingQueueTest {
 
     queue.offer("abc", 6);
 
-    var item = queue.take();
+    final var item = queue.take();
 
     assertEquals("abc", item.item());
-  }
-
-  @Test
-  void offerAndToStreamShouldReturn() throws InterruptedException {
-    final MemoryBoundedLinkedBlockingQueue<String> queue = new MemoryBoundedLinkedBlockingQueue<>(1024);
-
-    queue.offer("abc", 6);
-    queue.offer("DEF", 6);
-
-    System.out.println(queue.size());
-    queue.stream().forEach(stringMemoryItem -> System.out.println(stringMemoryItem.item()));
-    System.out.println(queue.size());
   }
 
   @Test
