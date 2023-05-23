@@ -8,7 +8,16 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "ClickHouse Destination Spec",
     "type": "object",
-    "required": ["host", "port", "database", "username"],
+    "required": [
+      "host",
+      "port",
+      "database",
+      "username",
+      "engine",
+      "ssl_mode",
+      "ssl",
+      "deploy_type"
+    ],
     "additionalProperties": true,
     "properties": {
       "host": {
@@ -28,13 +37,13 @@
         "order": 1
       },
       "database": {
-        "title": "DB Name",
+        "title": "Database name",
         "description": "Name of the database.",
         "type": "string",
         "order": 2
       },
       "username": {
-        "title": "User",
+        "title": "Username",
         "description": "Username to use to access the database.",
         "type": "string",
         "order": 3
@@ -58,6 +67,145 @@
         "type": "boolean",
         "default": false,
         "order": 6
+      },
+      "ssl_mode": {
+        "title": "SSL verification mode",
+        "description": "Select the method of server SSL certificate verification.",
+        "type": "object",
+        "order": 7,
+        "oneOf": [
+          {
+            "title": "none",
+            "description": "Disable SSL verification.",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "none",
+                "enum": ["none"],
+                "default": "none",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "strict",
+            "description": "Strict verification of server certificate (recommended).",
+            "required": ["mode"],
+            "properties": {
+              "mode": {
+                "type": "string",
+                "const": "strict",
+                "enum": ["strict"],
+                "default": "strict",
+                "order": 0
+              },
+              "ca_certificate": {
+                "type": "string",
+                "title": "CA certificate",
+                "description": "If you leave this empty, the default certificate bundle is used.",
+                "multiline": true,
+                "order": 1
+              }
+            }
+          }
+        ]
+      },
+      "engine": {
+        "title": "Engine",
+        "description": "Engine to use for new tables. The default is <b>MergeTree</b>. Refer to the <a href=\"https://clickhouse.com/docs/en/engines/table-engines\">documentation</a> for an explanation of all types.",
+        "type": "string",
+        "order": 8,
+        "default": "MergeTree",
+        "enum": [
+          "MergeTree",
+          "ReplacingMergeTree",
+          "SummingMergeTree",
+          "AggregatingMergeTree",
+          "CollapsingMergeTree",
+          "VersionedCollapsingMergeTree"
+        ]
+      },
+      "deploy_type": {
+        "title": "Deployment type",
+        "description": "Select the type of Clickhouse installation that you use.",
+        "type": "object",
+        "order": 9,
+        "oneOf": [
+          {
+            "title": "clickhouse-cloud",
+            "additionalProperties": false,
+            "description": "Clickhouse Cloud.",
+            "required": [
+              "deploy_type"
+            ],
+            "properties": {
+              "deploy_type": {
+                "type": "string",
+                "const": "clickhouse-cloud",
+                "enum": [
+                  "clickhouse-cloud"
+                ],
+                "default": "clickhouse-cloud",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "self-hosted-single-node",
+            "additionalProperties": false,
+            "description": "A single-node self-hosted Clickhouse instance.",
+            "required": [
+              "deploy_type"
+            ],
+            "properties": {
+              "deploy_type": {
+                "type": "string",
+                "const": "self-hosted-single-node",
+                "enum": [
+                  "self-hosted-single-node"
+                ],
+                "default": "self-hosted-single-node",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "self-hosted-cluster",
+            "additionalProperties": false,
+            "description": "A self-hosted Clickhouse cluster.",
+            "required": [
+              "deploy_type",
+              "replication",
+              "cluster"
+            ],
+            "properties": {
+              "deploy_type": {
+                "type": "string",
+                "const": "self-hosted-cluster",
+                "enum": [
+                  "self-hosted-cluster"
+                ],
+                "default": "self-hosted-cluster",
+                "order": 0
+              },
+              "replication": {
+                "title": "Replication",
+                "description": "Enable replication by using the Replicated version of the table engine you selected above.",
+                "type": "boolean",
+                "default": false,
+                "order": 1
+              },
+              "cluster": {
+                "title": "Cluster name",
+                "description": "The name of the cluster to write to.",
+                "default": "default",
+                "type": "string",
+                "order": 2
+              }
+            }
+          }
+        ]
       }
     }
   }

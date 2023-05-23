@@ -44,7 +44,7 @@ You need a ClickHouse user with the following permissions:
 You can create such a user by running:
 
 ```
-GRANT CREATE ON * TO airbyte_user;
+GRANT SELECT, INSERT, ALTER, CREATE DATABASE, CREATE TABLE, DROP TABLE, TRUNCATE ON database.* TO airbyte_user;
 ```
 
 You can also use a pre-existing user but we highly recommend creating a dedicated user for Airbyte.
@@ -62,7 +62,7 @@ You should now have all the requirements needed to configure ClickHouse as a des
 * **Username**
 * **Password**
 * **Database**
-* **Jdbc_url_params**
+* **Engine** (default `MergeTree`)
 
 ## Naming Conventions
 
@@ -80,6 +80,7 @@ Therefore, Airbyte ClickHouse destination will create tables and schemas using t
 
 | Version | Date       | Pull Request                                               | Subject                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------|
+| 0.3.0   | 2023-05-09 | [\#25914](https://github.com/airbytehq/airbyte/pull/25914)             | Add cluster and custom CA verification support                      |
 | 0.2.3   | 2023-04-04 | [\#24604](https://github.com/airbytehq/airbyte/pull/24604) | Support for destination checkpointing                               |
 | 0.2.2   | 2023-02-21 | [\#21509](https://github.com/airbytehq/airbyte/pull/21509) | Compatibility update with security patch for strict encrypt version |
 | 0.2.1   | 2022-12-06 | [\#19573](https://github.com/airbytehq/airbyte/pull/19573) | Update dbt version to 1.3.1                                         |

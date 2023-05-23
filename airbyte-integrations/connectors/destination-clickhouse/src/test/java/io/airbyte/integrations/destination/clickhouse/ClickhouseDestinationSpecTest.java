@@ -36,7 +36,14 @@ public class ClickhouseDestinationSpecTest {
       + "\"port\" : 8123,  "
       + "\"host\" : \"localhost\",  "
       + "\"jdbc_url_params\" : \"property1=pValue1&property2=pValue2\",  "
-      + "\"ssl\" : true "
+      + "\"ssl\" : true, "
+      + "\"ssl_mode\": {"
+      + "  \"mode\": \"none\""
+      + "},"
+      + "\"engine\" : \"MergeTree\", "
+      + "\"deploy_type\" : {"
+      + "  \"deploy_type\": \"clickhouse-cloud\""
+      + "}"
       + "}";
 
   private static JsonNode schema;

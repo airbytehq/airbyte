@@ -316,6 +316,16 @@ class TransformConfig:
     @staticmethod
     def transform_clickhouse(config: Dict[str, Any]):
         print("transform_clickhouse")
+
+        deploy_type = config.get("deploy_type", {})
+        engine = config.get("engine", "MergeTree")
+        is_cluster_mode = deploy_type.get("deploy_type") == "self-hosted-cluster"
+        cluster = ""
+        if is_cluster_mode:
+            cluster = deploy_type.get("cluster", "")
+            if deploy_type.get("replication", False):
+                engine = f"Replicated{engine}"
+
         # https://docs.getdbt.com/reference/warehouse-profiles/clickhouse-profile
         dbt_config = {
             "type": "clickhouse",
@@ -325,6 +335,9 @@ class TransformConfig:
             "port": config["port"],
             "schema": config["database"],
             "user": config["username"],
+            "cluster": cluster,
+            "cluster_mode": is_cluster_mode,
+            "engine": engine,
         }
         if "password" in config:
             dbt_config["password"] = config["password"]

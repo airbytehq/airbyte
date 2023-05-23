@@ -17,7 +17,7 @@ class TransformCatalog:
 To run this transformation:
 ```
 python3 main_dev_transform_catalog.py \
-  --integration-type <postgres|bigquery|redshift|snowflake>
+  --integration-type <postgres|bigquery|redshift|snowflake|clickhouse>
   --profile-config-dir . \
   --catalog integration_tests/catalog.json \
   --out dir \
@@ -53,6 +53,10 @@ python3 main_dev_transform_catalog.py \
             "profile_config_dir": parsed_args.profile_config_dir,
         }
 
+        # Add support for Clickhouse Replicated* Engine for self-hosted-cluster
+        if parsed_args.integration_type == "clickhouse":
+            self.config["engine"] = profiles_yml.get("engine")
+
     def process_catalog(self) -> None:
         destination_type = DestinationType.from_string(self.config["integration_type"])
         schema = self.config["schema"]
@@ -68,6 +72,10 @@ python3 main_dev_transform_catalog.py \
         filename = os.path.join(self.config["profile_config_dir"], self.DBT_PROJECT)
         config = read_yaml_config(filename)
         config["vars"] = {**config.get("vars", {}), **vars_config}
+
+        if self.config.get("engine"):
+            config["models"]["airbyte_utils"]["+engine"] = self.config.get("engine")
+
         write_yaml_config(config, filename)
 
 
