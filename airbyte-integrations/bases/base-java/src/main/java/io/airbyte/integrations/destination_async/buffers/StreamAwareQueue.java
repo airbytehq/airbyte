@@ -30,12 +30,8 @@ class StreamAwareQueue {
     return memoryAwareQueue.getCurrentMemoryUsage();
   }
 
-  public long getMaxMemoryUsage() {
-    return memoryAwareQueue.getMaxMemoryUsage();
-  }
-
-  public void setMaxMemoryUsage(final long maxMemoryUsage) {
-    memoryAwareQueue.setMaxMemoryUsage(maxMemoryUsage);
+  public void addMaxMemory(final long maxMemoryUsage) {
+    memoryAwareQueue.addMaxMemory(maxMemoryUsage);
   }
 
   public Optional<Instant> getTimeOfLastMessage() {
