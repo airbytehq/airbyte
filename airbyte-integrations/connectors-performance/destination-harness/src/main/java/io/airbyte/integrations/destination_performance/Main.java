@@ -11,6 +11,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.SyncMode;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,12 +31,15 @@ public class Main {
   private static final String CREDENTIALS_PATH = "secrets/%s_%s_credentials.json";
 
   public static void main(final String[] args) {
-    // If updating args for Github Actions, also update the run-performance-test.yml file
+    // If updating args for Github Actions, also update the run-harness-process.yaml and
+    // connector-performance-command.yml
     log.info("args: {}", Arrays.toString(args));
     String image = null;
     String dataset = "1m";
     int numOfParallelStreams = 1;
+    String syncMode = "full_refresh";
 
+    // TODO (ryankfu): Add a better way to parse arguments
     switch (args.length) {
       case 1 -> image = args[0];
       case 2 -> {
@@ -45,6 +50,12 @@ public class Main {
         image = args[0];
         dataset = args[1];
         numOfParallelStreams = Integer.parseInt(args[2]);
+      }
+      case 4 -> {
+        image = args[0];
+        dataset = args[1];
+        numOfParallelStreams = Integer.parseInt(args[2]);
+        syncMode = args[3];
       }
       default -> {
         log.info("unexpected arguments");
@@ -65,6 +76,7 @@ public class Main {
     final JsonNode catalog;
     try {
       catalog = getCatalog(dataset, connector);
+      updateSyncMode(catalog, syncMode);
       duplicateStreams(catalog, numOfParallelStreams);
     } catch (final IOException ex) {
       throw new IllegalStateException("Failed to read catalog", ex);
@@ -95,6 +107,27 @@ public class Main {
 
     }
     System.exit(0);
+  }
+
+  /**
+   * Modifies the catalog in place to update the syncMode to INCREMENTAL | APPEND to match CDC
+   * {@link CdcMssqlSourceAcceptanceTest} for reference. If the syncMode isn't INCREMENTAL then no-op
+   * since default catalog is FULL_REFERESH
+   *
+   * @param catalog ConfiguredCatalog to be modified
+   * @param syncMode syncMode to update to
+   */
+  @VisibleForTesting
+  static void updateSyncMode(final JsonNode catalog, final String syncMode) {
+    if (syncMode.equals(SyncMode.INCREMENTAL.toString())) {
+      try {
+        final ObjectNode streamObject = (ObjectNode) catalog.path("streams").get(0);
+        streamObject.put("sync_mode", SyncMode.INCREMENTAL.toString());
+        streamObject.put("destination_sync_mode", DestinationSyncMode.APPEND.toString());
+      } catch (final Exception e) {
+        log.error("Failed to update sync mode", e);
+      }
+    }
   }
 
   /**
