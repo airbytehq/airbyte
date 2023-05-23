@@ -2,7 +2,7 @@
 
 ## Overview
 
-The CallRail source supports Full Refresh and Incremental syncs.
+The CallRail source supports Full Refresh and Incremental syncs. 
 
 ### Output schema
 
@@ -12,6 +12,7 @@ This Source is capable of syncing the following core Streams:
 * [Companies](https://apidocs.callrail.com/#companies)
 * [Text Messages](https://apidocs.callrail.com/#text-messages)
 * [Users](https://apidocs.callrail.com/#users)
+
 
 ### Features
 
@@ -27,33 +28,25 @@ This Source is capable of syncing the following core Streams:
 
 ### Requirements
 
-* CallRail Account
-* CallRail API Token
+To set up the CallRail source connector in Airbyte, you will need the following:
 
-### Obtaining the API Token
+* Access to a CallRail account
+* A CallRail API Token, which can be created and obtained by following the instructions outlined in the [CallRail API documentation](https://apidocs.callrail.com/#authentication)
 
-1. Sign in to your [CallRail dashboard](https://callrail.com/login).
-2. Click on your profile avatar in the top-right corner and select "Account Center."
-3. In the "Account Center," click on the "My Profile" tab.
-4. Under the "API Tokens" section, you will find your API Key. If you do not have an API Key, click "Create API Token" to generate a new one.
+### Connection steps
 
-### Obtaining the Account ID
+1. In the Airbyte UI, navigate to the CallRail configuration form.
+2. Enter a nickname for the new connection.
+3. Enter the `api_key` and `account_id` associated with your CallRail account. The `api_key` serves as the authentication token to access the CallRail account via API. The `account_id` can be found in the URL of your CallRail account dashboard.
+4. Enter the start date that data should be synced from. The date should be in the format `YYYY-MM-DD`.
+5. Click "Save" to save the changes to the configuration.
 
-1. Once you are signed in to your [CallRail dashboard](https://callrail.com/login), click on the "Reports" tab.
-2. In the "Reports Overview" page, look at the URL in the address bar. You will see a number in the URL after "/a/", which is your Account ID.
-
-### Configuration
-
-1. **API Key:** Enter the API Key that you obtained from your CallRail dashboard in the "API Key" field.
-2. **Account ID:** Enter the Account ID obtained from the CallRail dashboard in the "Account ID" field.
-3. **Start Date:** Enter the start date from which you want to fetch the data in the "Start Date" field. The date must be in the format `YYYY-MM-DD`.
-
-Now that you have provided the required information, you can proceed with the CallRail Source connector in Airbyte.
-
-For more details, you can refer to the [CallRail API documentation](https://apidocs.callrail.com/).
+For detailed instructions on setting up your CallRail API token and finding your `account_id`, please refer to the [CallRail API documentation](https://apidocs.callrail.com/#authentication).
 
 ## Changelog
 
 | Version | Date       | Pull Request                                            | Subject                           |
 | :--- |:-----------|:--------------------------------------------------------|:----------------------------------|
 | 0.1.0 | 2022-10-31 | [18739](https://github.com/airbytehq/airbyte/pull/18739) | 🎉 New Source: CallRail                  |
+
+Note: Do not change the Changelog. Do not change any Markdown tables. Only change content that includes obvious typos or is related how to fill out the configuration. Do not assume any images are available that are not in the original documentation.
