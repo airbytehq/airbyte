@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Freshservice supports full refresh syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+The Freshservice connector supports full refresh syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
 ### Output schema
 
@@ -20,6 +20,7 @@ Several output streams are available from this source:
 * [Assets](https://api.freshservice.com/v2/#assets)
 * [PurchaseOrders](https://api.freshservice.com/v2/#purchase-order)
 * [Software](https://api.freshservice.com/v2/#software)
+* [Satisfaction Survey Responses](https://api.freshservice.com/#ticket_csat_attributes)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -40,36 +41,28 @@ The Freshservice connector should not run into Freshservice API limitations unde
 
 ### Requirements
 
-* Freshservice account
-* Freshservice API key
+* Freshservice Account
+* Freshservice API Key
 * Freshservice domain name
-* Replication start date
+* Replication Start Date
 
 ### Setup guide
 
-In order to set up the Freshservice connector, follow these steps:
+1. To obtain your Freshservice API Key, go to your Freshservice dashboard and click on your profile picture in the top right corner.
+2. Select "Profile settings" from the dropdown menu.
+3. In the "Profile settings" page, you will find your API Key under the "Your API Key" section. Copy the API Key.
+4. Go to the Airbyte Configuration form for the Freshservice connector.
+5. Enter your Freshservice domain name in the "Domain Name" field. This can be found in the website URL when you are logged in to your Freshservice account (e.g., `mydomain.freshservice.com`).
+6. Paste the copied API Key into the "API Key" field of the configuration form. Ensure that you have entered the API Key accurately, as it is case sensitive.
+7. Set the desired Replication Start Date in the "Start Date" field in the format `YYYY-MM-DDThh:mm:ssZ` (e.g., `2020-10-01T00:00:00Z`). This will ensure that any data before this date will not be replicated.
 
-1. Log in to your Freshservice account.
-2. Click on the cog icon in the bottom left corner of the screen to access the Settings page.
-3. Click on the “API Key” link. 
-4. On the API key page, copy your API key to your clipboard.
-5. Open Airbyte’s Freshservice connector configuration form and fill in the following required fields:
-    * Domain Name: The name of your Freshservice domain, for example mydomain.freshservice.com.
-    * API Key: Paste your API key from step 4.
-    * Start Date: UTC date and time in the format 2020-10-01T00:00:00Z. Any data before this date will not be replicated.
-6. Select the output streams you require from the list provided and specify tables and columns for replication.
-7. Set up a schedule for when the connector should sync data.
-8. Test the connection to ensure that it is properly established.
-9. Save the connector configuration.
-10. Run a manual sync to start replication of data from Freshservice.
-11. Monitor the sync to ensure that it runs without errors and troubleshoot any issues that arise.
-
-For more detailed information and tips on integrating Freshservice with Airbyte, refer to [Freshservice’s API documentation.](https://api.freshservice.com/v2/) 
+For more information on Freshservice authentication and how to find your API key, please refer to the [Freshservice API documentation](https://api.freshservice.com/#authentication).
 
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 1.1.0 | 2023-05-09 | [25929](https://github.com/airbytehq/airbyte/pull/25929) | Add stream for customer satisfaction survey responses endpoint  |
 | 1.0.0 | 2023-05-02 | [25743](https://github.com/airbytehq/airbyte/pull/25743) | Correct data types in tickets, agents and requesters schemas to match Freshservice API |
 | 0.1.1 | 2021-12-28 | [9143](https://github.com/airbytehq/airbyte/pull/9143) | Update titles and descriptions |
 | 0.1.0 | 2021-10-29 | [6967](https://github.com/airbytehq/airbyte/pull/6967) | 🎉 New Source: Freshservice |
