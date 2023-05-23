@@ -39,11 +39,9 @@ public class XminStateManagerTest {
 
   @Test
   void testGetXminStates() {
-
     final XminStateManager xminStateManager = new XminStateManager(List.of(XMIN_STATE_MESSAGE_1.getState(), XMIN_STATE_MESSAGE_2.getState()));
-    // TODO : enable after moving to POJO
-    //assertThat(xminStateManager.getXminStatus(PAIR1)).isEqualTo(XMIN_STATUS1);
-    //assertThat(xminStateManager.getXminStatus(PAIR2)).isEqualTo(XMIN_STATUS2);
+    assertThat(xminStateManager.getXminStatus(PAIR1)).isEqualTo(XMIN_STATUS1);
+    assertThat(xminStateManager.getXminStatus(PAIR2)).isEqualTo(XMIN_STATUS2);
   }
 
   @Test
