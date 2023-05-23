@@ -11,6 +11,17 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
+configurations.all {
+    resolutionStrategy {
+        // Forcing jetty-io https://nvd.nist.gov/vuln/detail/CVE-2023-26048
+        // Forcing jose4j due to know vulnerabilities https://github.com/advisories/GHSA-jgvc-jfgh-rjvv
+        // Forcing jetty-server https://nvd.nist.gov/vuln/detail/CVE-2023-26048 and https://nvd.nist.gov/vuln/detail/CVE-2023-26049
+        // Forcing netty-codec-http https://nvd.nist.gov/vuln/detail/CVE-2022-41915
+        force libs.jsonsmart, libs.jetty.io, 'org.bitbucket.b_c:jose4j:0.9.3',
+                'org.eclipse.jetty:jetty-server:11.0.15', 'io.netty:netty-codec-http:4.1.92.Final'
+    }
+}
+
 dependencies {
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')

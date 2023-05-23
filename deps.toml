@@ -5,42 +5,42 @@ connectors-destination-testcontainers-clickhouse = "1.17.3"
 connectors-destination-testcontainers-elasticsearch = "1.17.3"
 connectors-destination-testcontainers-oracle-xe = "1.17.3"
 connectors-source-testcontainers-clickhouse = "1.17.3"
-connectors-testcontainers = "1.15.3"
+connectors-testcontainers = "1.18.1"
 connectors-testcontainers-cassandra = "1.16.0"
 connectors-testcontainers-mariadb = "1.16.2"
 connectors-testcontainers-pulsar = "1.16.2"
 connectors-testcontainers-scylla = "1.16.2"
 connectors-testcontainers-tidb = "1.16.3"
-datadog-version = "0.111.0"
-fasterxml_version = "2.14.0"
+datadog-version = "1.14.0"
+fasterxml_version = "2.15.0"
 flyway = "7.14.0"
 glassfish_version = "2.31"
 hikaricp = "5.0.1"
 jmh = "1.36"
 jooq = "3.13.4"
 junit-jupiter = "5.9.1"
-log4j = "2.17.2"
+log4j = "2.20.0"
 lombok = "1.18.24"
-micronaut = "3.8.3"
+micronaut = "3.9.1"
 micronaut-data = "3.9.4"
 micronaut-jaxrs = "3.4.0"
 micronaut-security = "3.9.2"
 micronaut-test = "3.8.0"
-platform-testcontainers = "1.17.3"
+platform-testcontainers = "1.18.1"
 postgresql = "42.3.5"
 reactor = "3.5.2"
 segment = "2.1.1"
-slf4j = "1.7.36"
+slf4j = "2.0.7"
 temporal = "1.17.0"
 debezium = "2.2.0.Final"
 
 [libraries]
 airbyte-protocol = { module = "io.airbyte.airbyte-protocol:protocol-models", version.ref = "airbyte-protocol" }
-apache-commons = { module = "org.apache.commons:commons-compress", version = "1.20" }
+apache-commons = { module = "org.apache.commons:commons-compress", version = "1.23.0" }
 apache-commons-lang = { module = "org.apache.commons:commons-lang3", version = "3.11" }
-appender-log4j2 = { module = "com.therealvan:appender-log4j2", version = "3.6.0" }
+appender-log4j2 = { module = "com.therealvan:appender-log4j2", version = "4.1.0" }
 assertj-core = { module = "org.assertj:assertj-core", version = "3.21.0" }
-aws-java-sdk-s3 = { module = "com.amazonaws:aws-java-sdk-s3", version = "1.12.6" }
+aws-java-sdk-s3 = { module = "com.amazonaws:aws-java-sdk-s3", version = "1.12.472" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commons_io" }
 connectors-destination-testcontainers-clickhouse = { module = "org.testcontainers:clickhouse", version.ref = "connectors-destination-testcontainers-clickhouse" }
 connectors-destination-testcontainers-oracle-xe = { module = "org.testcontainers:oracle-xe", version.ref = "connectors-destination-testcontainers-oracle-xe" }
@@ -78,6 +78,7 @@ jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin"
 java-dogstatsd-client = { module = "com.datadoghq:java-dogstatsd-client", version = "4.1.0" }
 javax-databind = { module = "javax.xml.bind:jaxb-api", version = "2.4.0-b180830.0359" }
 jcl-over-slf4j = { module = "org.slf4j:jcl-over-slf4j", version.ref = "slf4j" }
+jetty-io = { module = "org.eclipse.jetty:jetty-io", version = "11.0.15"}
 jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
 jmh-annotations = { module = "org.openjdk.jmh:jmh-generator-annprocess", version.ref = "jmh" }
 jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
@@ -89,6 +90,7 @@ junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", vers
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-jupiter" }
 junit-jupiter-system-stubs = { module = "uk.org.webcompere:system-stubs-jupiter", version = "2.0.1" }
 junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version = "1.7.1" }
+jsonsmart = { module = 'net.minidev:json-smart', version = "2.4.10" }
 launchdarkly = { module = "com.launchdarkly:launchdarkly-java-server-sdk", version = "6.0.1" }
 log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }

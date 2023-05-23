@@ -35,9 +35,6 @@ configurations.all {
 }
 
 dependencies {
-    compileOnly(' com.therealvan:appender-log4j2:4.1.0') {
-        exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
-    }
     implementation 'com.google.cloud:google-cloud-storage:2.22.2'
     implementation 'com.google.auth:google-auth-library-oauth2-http:1.17.0'
   // Updating to any newer version (e.g. 3.13.22) is causing a regression with normalization. 
