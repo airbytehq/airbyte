@@ -6,6 +6,7 @@ package io.airbyte.workers.process;
 
 import io.airbyte.workers.exception.TestHarnessException;
 import java.nio.file.Path;
+import java.util.Map;
 
 /**
  * This interface provides an abstraction for launching a container that implements the Airbyte
@@ -45,7 +46,8 @@ public interface IntegrationLauncher {
                 final String configFilename,
                 final String configContents,
                 final String catalogFilename,
-                final String catalogContents)
+                final String catalogContents,
+                final Map<String, String> additionalEnvironmentVariables)
       throws TestHarnessException;
 
 }

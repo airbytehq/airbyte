@@ -6,33 +6,22 @@
 
 from __future__ import annotations
 
+import os
 import uuid
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
-from ci_connector_ops.pipelines.utils import get_file_contents, slugify
+from ci_connector_ops.pipelines.consts import (
+    CI_CONNECTOR_OPS_SOURCE_PATH,
+    CI_CREDENTIALS_SOURCE_PATH,
+    CONNECTOR_TESTING_REQUIREMENTS,
+    DEFAULT_PYTHON_EXCLUDE,
+    PYPROJECT_TOML_FILE_PATH,
+)
+from ci_connector_ops.pipelines.utils import get_file_contents, slugify, with_exit_code
 from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Platform, Secret
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
-
-
-PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
-
-CONNECTOR_TESTING_REQUIREMENTS = [
-    "pip==21.3.1",
-    "mccabe==0.6.1",
-    "flake8==4.0.1",
-    "pyproject-flake8==0.0.1a2",
-    "black==22.3.0",
-    "isort==5.6.4",
-    "pytest==6.2.5",
-    "coverage[toml]==6.3.1",
-    "pytest-custom_exit_code",
-]
-
-DEFAULT_PYTHON_EXCLUDE = ["**/.venv", "**/__pycache__"]
-CI_CREDENTIALS_SOURCE_PATH = "tools/ci_credentials"
-CI_CONNECTOR_OPS_SOURCE_PATH = "tools/ci_connector_ops"
 
 
 def with_python_base(context: PipelineContext, python_image_name: str = "python:3.9-slim") -> Container:
@@ -346,6 +335,7 @@ async def with_connector_acceptance_test(context: ConnectorContext, connector_un
         with_bound_docker_host(context, cat_container, shared_tmp_volume, docker_service_name="cat")
         .with_entrypoint([])
         .with_exec(["pip", "install", "pytest-custom_exit_code"])
+        .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
         .with_mounted_directory("/test_input", context.get_connector_dir(exclude=["secrets", ".venv"]))
         .with_directory("/test_input/secrets", context.secrets_dir)
         .with_workdir("/test_input")
@@ -407,12 +397,24 @@ def with_gradle(
         .with_env_variable("VERSION", "23.0.1")
         .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
         .with_exec(["mkdir", "/root/.gradle"])
-        .with_mounted_cache("/root/.gradle", root_gradle_cache, sharing=CacheSharingMode.LOCKED)
         .with_exec(["mkdir", "/airbyte"])
         .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
         .with_mounted_cache("/airbyte/.gradle", airbyte_gradle_cache, sharing=CacheSharingMode.LOCKED)
         .with_workdir("/airbyte")
     )
+    if context.is_ci and "S3_BUILD_CACHE_ACCESS_KEY_ID" in os.environ and "S3_BUILD_CACHE_SECRET_KEY" in os.environ:
+        openjdk_with_docker = (
+            openjdk_with_docker.with_env_variable("CI", "true")
+            .with_secret_variable(
+                "S3_BUILD_CACHE_ACCESS_KEY_ID", context.dagger_client.host().env_variable("S3_BUILD_CACHE_ACCESS_KEY_ID").secret()
+            )
+            .with_secret_variable(
+                "S3_BUILD_CACHE_SECRET_KEY", context.dagger_client.host().env_variable("S3_BUILD_CACHE_SECRET_KEY").secret()
+            )
+        )
+    else:
+        openjdk_with_docker = openjdk_with_docker.with_mounted_cache("/root/.gradle", root_gradle_cache, sharing=CacheSharingMode.LOCKED)
+
     if bind_to_docker_host:
         return with_bound_docker_host(context, openjdk_with_docker, shared_tmp_volume, docker_service_name=docker_service_name)
     else:
@@ -431,11 +433,20 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
     # Hacky way to make sure the image is always loaded
     tar_name = f"{str(uuid.uuid4())}.tar"
     docker_cli = with_docker_cli(context, docker_service_name=docker_service_name).with_mounted_file(tar_name, tar_file)
+
+    # Remove a previously existing image with the same tag if any.
+    docker_image_rm_exit_code = await with_exit_code(
+        docker_cli.with_env_variable("CACHEBUSTER", tar_name).with_exec(["docker", "image", "rm", image_tag])
+    )
+    if docker_image_rm_exit_code == 0:
+        context.logger.info(f"Removed an existing image tagged {image_tag}")
     image_load_output = await docker_cli.with_exec(["docker", "load", "--input", tar_name]).stdout()
+    context.logger.info(image_load_output)
     # Not tagged images only have a sha256 id the load output shares.
     if "sha256:" in image_load_output:
         image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
-        await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).exit_code()
+        docker_tag_output = await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).stdout()
+        context.logger.info(docker_tag_output)
 
 
 def with_poetry(context: PipelineContext) -> Container:
@@ -487,7 +498,6 @@ def with_integration_base(context: PipelineContext, build_platform: Platform) ->
 
 
 def with_integration_base_java(context: PipelineContext, build_platform: Platform, jdk_version: str = "17.0.4") -> Container:
-
     integration_base = with_integration_base(context, build_platform)
     return (
         context.dagger_client.container(platform=build_platform)
@@ -509,36 +519,72 @@ def with_integration_base_java(context: PipelineContext, build_platform: Platfor
     )
 
 
-BASE_DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING = {
-    "destination-clickhouse": "clickhouse.Dockerfile",
-    "destination-duckdb": "duckdb.Dockerfile",
-    "destination-mssql": "mssql.Dockerfile",
-    "destination-mysql": "mysql.Dockerfile",
-    "destination-oracle": "oracle.Dockerfile",
-    "destination-tidb": "tidb.Dockerfile",
-    "destination-bigquery": "Dockerfile",
-    "destination-redshift": "redshift.Dockerfile",
-    "destination-snowflake": "snowflake.Dockerfile",
+BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
+    "destination-bigquery": {
+        "dockerfile": "Dockerfile",
+        "dbt_adapter": "dbt-bigquery==1.0.0",
+        "integration_name": "bigquery",
+        "supports_in_connector_normalization": True,
+    },
+    "destination-clickhouse": {
+        "dockerfile": "clickhouse.Dockerfile",
+        "dbt_adapter": "dbt-clickhouse>=1.4.0",
+        "integration_name": "clickhouse",
+        "supports_in_connector_normalization": False,
+    },
+    "destination-duckdb": {
+        "dockerfile": "duckdb.Dockerfile",
+        "dbt_adapter": "dbt-duckdb==1.0.1",
+        "integration_name": "duckdb",
+        "supports_in_connector_normalization": False,
+    },
+    "destination-mssql": {
+        "dockerfile": "mssql.Dockerfile",
+        "dbt_adapter": "dbt-sqlserver==1.0.0",
+        "integration_name": "mssql",
+        "supports_in_connector_normalization": False,
+    },
+    "destination-mysql": {
+        "dockerfile": "mysql.Dockerfile",
+        "dbt_adapter": "dbt-mysql==1.0.0",
+        "integration_name": "mysql",
+        "supports_in_connector_normalization": False,
+    },
+    "destination-oracle": {
+        "dockerfile": "oracle.Dockerfile",
+        "dbt_adapter": "dbt-oracle==0.4.3",
+        "integration_name": "oracle",
+        "supports_in_connector_normalization": False,
+    },
+    "destination-postgres": {
+        "dockerfile": "Dockerfile",
+        "dbt_adapter": "dbt-postgres==1.0.0",
+        "integration_name": "postgres",
+        "supports_in_connector_normalization": False,
+    },
+    "destination-redshift": {
+        "dockerfile": "redshift.Dockerfile",
+        "dbt_adapter": "dbt-redshift==1.0.0",
+        "integration_name": "redshift",
+        "supports_in_connector_normalization": False,
+    },
+    "destination-snowflake": {
+        "dockerfile": "snowflake.Dockerfile",
+        "dbt_adapter": "dbt-snowflake==1.0.0",
+        "integration_name": "snowflake",
+        "supports_in_connector_normalization": False,
+    },
+    "destination-tidb": {
+        "dockerfile": "tidb.Dockerfile",
+        "dbt_adapter": "dbt-tidb==1.0.1",
+        "integration_name": "tidb",
+        "supports_in_connector_normalization": False,
+    },
 }
 
-BASE_DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING = {
-    "destination-clickhouse": "dbt-clickhouse>=1.4.0",
-    "destination-duckdb": "duckdb.Dockerfile",
-    "destination-mssql": "dbt-sqlserver==1.0.0",
-    "destination-mysql": "dbt-mysql==1.0.0",
-    "destination-oracle": "dbt-oracle==0.4.3",
-    "destination-tidb": "dbt-tidb==1.0.1",
-    "destination-bigquery": "dbt-bigquery==1.0.0",
-}
-
-DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING = {
-    **BASE_DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING,
-    **{f"{k}-strict-encrypt": v for k, v in BASE_DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING.items()},
-}
-
-DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING = {
-    **BASE_DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING,
-    **{f"{k}-strict-encrypt": v for k, v in BASE_DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING.items()},
+DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
+    **BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION,
+    **{f"{k}-strict-encrypt": v for k, v in BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION.items()},
 }
 
 
@@ -549,9 +595,7 @@ def with_normalization(context: ConnectorContext) -> Container:
     ).file("sshtunneling.sh")
     normalization_directory_with_build = normalization_directory.with_new_directory("build")
     normalization_directory_with_sshtunneling = normalization_directory_with_build.with_file("build/sshtunneling.sh", sshtunneling_file)
-    normalization_dockerfile_name = DESTINATION_SPECIFIC_NORMALIZATION_DOCKERFILE_MAPPING.get(
-        context.connector.technical_name, "Dockerfile"
-    )
+    normalization_dockerfile_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dockerfile"]
     return normalization_directory_with_sshtunneling.docker_build(normalization_dockerfile_name)
 
 
@@ -564,7 +608,8 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         "git",
     ]
 
-    dbt_adapter_package = DESTINATION_SPECIFIC_NORMALIZATION_ADAPTER_MAPPING.get(context.connector.technical_name, "dbt-bigquery==1.0.0")
+    dbt_adapter_package = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dbt_adapter"]
+    normalization_integration_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["integration_name"]
 
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
 
@@ -585,8 +630,18 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         .with_workdir("/airbyte/normalization_code")
         .with_exec(["pip3", "install", "."])
         .with_workdir("/airbyte/normalization_code/dbt-template/")
+        # amazon linux 2 isn't compatible with urllib3 2.x, so force 1.x
+        .with_exec(["pip3", "install", "urllib3<2"])
         .with_exec(["dbt", "deps"])
         .with_workdir("/airbyte")
+        .with_file(
+            "run_with_normalization.sh",
+            context.get_repo_dir("airbyte-integrations/bases/base-java", include=["run_with_normalization.sh"]).file(
+                "run_with_normalization.sh"
+            ),
+        )
+        .with_env_variable("AIRBYTE_NORMALIZATION_INTEGRATION", normalization_integration_name)
+        .with_env_variable("AIRBYTE_ENTRYPOINT", "/airbyte/run_with_normalization.sh")
     )
 
 
@@ -602,20 +657,24 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         .with_exec(["rm", "-rf", f"{application}.tar"])
     )
 
-    if context.connector.supports_normalization:
+    if (
+        context.connector.supports_normalization
+        and DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["supports_in_connector_normalization"]
+    ):
         base = with_integration_base_java_and_normalization(context, build_platform)
+        entrypoint = ["/airbyte/run_with_normalization.sh"]
     else:
         base = with_integration_base_java(context, build_platform)
+        entrypoint = ["/airbyte/base.sh"]
 
     return (
         base.with_workdir("/airbyte")
         .with_env_variable("APPLICATION", application)
-        .with_directory("builts_artifacts", build_stage.directory("/airbyte"))
+        .with_mounted_directory("builts_artifacts", build_stage.directory("/airbyte"))
         .with_exec(["sh", "-c", "mv builts_artifacts/* ."])
-        .with_exec(["rm", "-rf", "builts_artifacts"])
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
-        .with_entrypoint(["/airbyte/base.sh"])
+        .with_entrypoint(entrypoint)
     )
 
 
@@ -657,3 +716,11 @@ def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_p
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
     )
+
+
+def with_crane(context: PipelineContext) -> Container:
+    """Crane is a tool to analyze and manipulate container images.
+    We can use it to extract the image manifest and the list of layers or list the existing tags on an image repository.
+    https://github.com/google/go-containerregistry/tree/main/cmd/crane
+    """
+    return context.dagger_client.container().from_("gcr.io/go-containerregistry/crane:v0.15.1")
