@@ -69,7 +69,7 @@ public abstract class AbstractFormat implements KafkaFormat {
 
   private Map<String, Object> propertiesByProtocol(final JsonNode config) {
     final JsonNode protocolConfig = config.get("protocol");
-    LOGGER.info("Kafka protocol config: {}", protocolConfig.toString());
+    LOGGER.info("Kafka protocol : {}", protocolConfig.get("security_protocol").toString());
     final KafkaProtocol protocol = KafkaProtocol.valueOf(protocolConfig.get("security_protocol").asText().toUpperCase());
     final ImmutableMap.Builder<String, Object> builder = ImmutableMap.<String, Object>builder()
         .put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, protocol.toString());
