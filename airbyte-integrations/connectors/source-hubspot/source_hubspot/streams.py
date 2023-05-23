@@ -3,6 +3,7 @@
 #
 
 import json
+import logging
 import sys
 import time
 from abc import ABC, abstractmethod
@@ -15,12 +16,15 @@ import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import IncrementalMixin
+from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from requests import codes
+from requests import HTTPError, codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
@@ -103,6 +107,18 @@ def retry_after_handler(fixed_retry_after=None, **kwargs):
         interval=0,  # skip waiting part, we will wait in on_backoff handler
         **kwargs,
     )
+
+
+class HubspotAvailabilityStrategy(HttpAvailabilityStrategy):
+    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> Tuple[bool, Optional[str]]:
+        """Catch HTTPError thrown from parent stream which is called by get_first_stream_slice"""
+        try:
+            return super().check_availability(stream, logger, source)
+        except HTTPError as error:
+            is_available, reason = self.handle_http_error(stream, logger, source, error)
+            if reason:
+                reason = f"Unable to sync stream '{stream.name}' because of permission error in parent stream. {reason}"
+            return is_available, reason
 
 
 class API:
@@ -713,6 +729,10 @@ class Stream(HttpStream, ABC):
                 for name, association in associations.items():
                     record[name.replace(" ", "_")] = [row["id"] for row in association.get("results", [])]
             yield record
+
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return HubspotAvailabilityStrategy()
 
 
 class ClientSideIncrementalStream(Stream, IncrementalMixin):

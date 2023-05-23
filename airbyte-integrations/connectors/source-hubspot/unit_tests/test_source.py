@@ -10,7 +10,6 @@ from unittest.mock import MagicMock
 import mock
 import pendulum
 import pytest
-
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
@@ -159,6 +158,46 @@ def test_stream_forbidden(requests_mock, config, caplog):
                 {
                     "stream": {
                         "name": "workflows",
+                        "json_schema": {},
+                        "supported_sync_modes": ["full_refresh"],
+                    },
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "overwrite",
+                }
+            ]
+        }
+    )
+
+    records = list(SourceHubspot().read(logger, config, catalog, {}))
+    assert json["message"] in caplog.text
+    records = [r for r in records if r.type == Type.RECORD]
+    assert not records
+
+
+def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_list):
+    json = {
+        "status": "error",
+        "message": "This access_token does not have proper permissions!",
+    }
+    requests_mock.get("https://api.hubapi.com/marketing/v3/forms", json=json, status_code=403)
+    properties_response = [
+        {
+            "json": [
+                {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                for property_name in fake_properties_list
+            ],
+            "status_code": 200,
+        }
+    ]
+    requests_mock.get("https://api.hubapi.com/properties/v2/form/properties", properties_response)
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403)
+
+    catalog = ConfiguredAirbyteCatalog.parse_obj(
+        {
+            "streams": [
+                {
+                    "stream": {
+                        "name": "form_submissions",
                         "json_schema": {},
                         "supported_sync_modes": ["full_refresh"],
                     },
