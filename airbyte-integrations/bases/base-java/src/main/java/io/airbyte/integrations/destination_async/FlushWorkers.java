@@ -9,13 +9,16 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Parallel flushing of Destination data.
@@ -39,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 public class FlushWorkers implements AutoCloseable {
 
   public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.8);
-  public static final long QUEUE_FLUSH_THRESHOLD = 10 * 1024 * 1024; // 10MB
+  private static final long QUEUE_FLUSH_THRESHOLD_BYTES = 10 * 1024 * 1024; // 10MB
   private static final long MAX_TIME_BETWEEN_REC_MINS = 5L;
   private static final long SUPERVISOR_INITIAL_DELAY_SECS = 0L;
   private static final long SUPERVISOR_PERIOD_SECS = 1L;
@@ -50,6 +53,7 @@ public class FlushWorkers implements AutoCloseable {
   private final BufferDequeue bufferDequeue;
   private final DestinationFlushFunction flusher;
   private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
+  private final ConcurrentHashMap<StreamDescriptor, AtomicInteger> streamToInProgressWorkers = new ConcurrentHashMap<>();
 
   public FlushWorkers(final BufferDequeue bufferDequeue, final DestinationFlushFunction flushFunction) {
     this.bufferDequeue = bufferDequeue;
@@ -74,6 +78,8 @@ public class FlushWorkers implements AutoCloseable {
     workerPool.shutdown();
     final var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
     log.info("Workers shut status: {}", workersShut);
+
+    debugLoop.shutdownNow();
   }
 
   private void retrieveWork() {
@@ -82,17 +88,43 @@ public class FlushWorkers implements AutoCloseable {
     // if the total size is > n, flush all buffers
     if (bufferDequeue.getTotalGlobalQueueSizeBytes() > TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES) {
       flushAll();
+      return;
     }
+
+    final ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) workerPool;
+    var allocatableThreads = threadPoolExecutor.getMaximumPoolSize() - threadPoolExecutor.getActiveCount();
 
     // todo (cgardens) - build a score to prioritize which queue to flush next. e.g. if a queue is very
     // large, flush it first. if a queue has not been flushed in a while, flush it next.
     // otherwise, if each individual stream has crossed a specific threshold, flush
     for (final StreamDescriptor stream : bufferDequeue.getBufferedStreams()) {
-      final var exceedSize = bufferDequeue.getQueueSizeBytes(stream).get() >= QUEUE_FLUSH_THRESHOLD;
+      if (allocatableThreads == 0) {
+        break;
+      }
+
+      // although we allow multiple workers to read from the same stream queue, which means records
+      // can be processed out of order, try to avoid scheduling more workers than what is already in
+      // progress
+      final var inProgressSizeByte = (bufferDequeue.getQueueSizeBytes(stream).get() -
+          streamToInProgressWorkers.getOrDefault(stream, new AtomicInteger(0)).get() * QUEUE_FLUSH_THRESHOLD_BYTES);
+      final var exceedSize = inProgressSizeByte >= QUEUE_FLUSH_THRESHOLD_BYTES;
       final var tooLongSinceLastRecord = bufferDequeue.getTimeOfLastRecord(stream)
           .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
           .orElse(false);
+
       if (exceedSize || tooLongSinceLastRecord) {
+        log.info(
+            "Allocated stream {}, exceedSize:{}, tooLongSinceLastRecord: {}, bytes in queue: {} computed in-progress bytes: {} , threshold bytes: {}",
+            stream.getName(), exceedSize, tooLongSinceLastRecord,
+            FileUtils.byteCountToDisplaySize(bufferDequeue.getQueueSizeBytes(stream).get()),
+            FileUtils.byteCountToDisplaySize(inProgressSizeByte),
+            FileUtils.byteCountToDisplaySize(QUEUE_FLUSH_THRESHOLD_BYTES));
+        allocatableThreads--;
+        if (streamToInProgressWorkers.containsKey(stream)) {
+          streamToInProgressWorkers.get(stream).getAndAdd(1);
+        } else {
+          streamToInProgressWorkers.put(stream, new AtomicInteger(1));
+        }
         flush(stream);
       }
     }
