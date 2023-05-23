@@ -84,6 +84,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version | Date       | Pull Request                                             | Subject                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------|
+| 1.0.6   | 2023-05-18 | [26286](https://github.com/airbytehq/airbyte/pull/26286) | Add `parent` field to `Blocks` stream                           |
 | 1.0.5   | 2023-05-01 | [25709](https://github.com/airbytehq/airbyte/pull/25709) | Fixed `ai_block is unsupported by API` issue, while fetching `Blocks` stream                          |
 | 1.0.4   | 2023-04-11 | [25041](https://github.com/airbytehq/airbyte/pull/25041) | Improve error handling for API /search                          |
 | 1.0.3   | 2023-03-02 | [22931](https://github.com/airbytehq/airbyte/pull/22931) | Specified date formatting in specification                      |
