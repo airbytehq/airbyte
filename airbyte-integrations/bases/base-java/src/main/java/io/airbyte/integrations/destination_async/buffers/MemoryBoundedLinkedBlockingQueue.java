@@ -40,12 +40,8 @@ class MemoryBoundedLinkedBlockingQueue<E> {
     return hiddenQueue.currentMemoryUsage.get();
   }
 
-  public long getMaxMemoryUsage() {
-    return hiddenQueue.maxMemoryUsage.get();
-  }
-
-  public void setMaxMemoryUsage(final long maxMemoryUsage) {
-    hiddenQueue.maxMemoryUsage.set(maxMemoryUsage);
+  public void addMaxMemory(final long maxMemoryUsage) {
+    this.hiddenQueue.maxMemoryUsage.addAndGet(maxMemoryUsage);
   }
 
   public Optional<Instant> getTimeOfLastMessage() {
