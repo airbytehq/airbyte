@@ -54,6 +54,10 @@ public class MemoryAwareMessageBatch implements AutoCloseable {
     this.memoryManager = memoryManager;
     this.stateManager = stateManager;
     hasCommittedState = false;
+<<<<<<< HEAD
+=======
+    // stateManager.claim(streamDescriptor, maxMessageNum);
+>>>>>>> 0a3287daa09 (it compiles)
   }
 
   public List<AirbyteMessage> getData() {
