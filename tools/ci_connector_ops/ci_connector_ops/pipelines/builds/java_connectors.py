@@ -2,8 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import uuid
-
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import StepResult, StepStatus
 from ci_connector_ops.pipelines.builds.common import BuildConnectorImageBase, BuildConnectorImageForAllPlatformsBase
@@ -26,7 +24,6 @@ class BuildConnectorDistributionTar(GradleTask):
                 docker_service_name=self.docker_service_name,
             )
             .with_mounted_directory(str(self.context.connector.code_directory), await self._get_patched_connector_dir())
-            .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_exec(self._get_gradle_command())
             .with_workdir(f"{self.context.connector.code_directory}/build/distributions")
         )
