@@ -101,7 +101,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
 
     def __init__(self, config: MutableMapping):
         super().__init__(authenticator=config["authenticator"])
-        self.start_date = config["start_date"]
+        self.start_date = pendulum.parse(config["start_date"]).date()
         self.window_in_days: int = config.get("window_in_days", 1)
         self.view_id = config["view_id"]
         self.metrics = config["metrics"]
@@ -256,7 +256,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         """
 
         end_date = pendulum.now().date()
-        start_date = pendulum.parse(self.start_date).date()
+        start_date = self.start_date
         if stream_state:
             prev_end_date = pendulum.parse(stream_state.get(self.cursor_field)).date()
             start_date = prev_end_date.add(days=1)  # do not include previous `end_date`
@@ -545,9 +545,8 @@ class TestStreamConnection(GoogleAnalyticsV4Stream):
         """
         Override this method to fetch records from start_date up to now for testing case
         """
-        start_date = pendulum.parse(self.start_date).date()
         end_date = pendulum.now().date()
-        return [{"startDate": self.to_datetime_str(start_date), "endDate": self.to_datetime_str(end_date)}]
+        return [{"startDate": self.to_datetime_str(self.start_date), "endDate": self.to_datetime_str(end_date)}]
 
     def parse_response(self, response: requests.Response, **kwargs: Any) -> Iterable[Mapping]:
         res = response.json()
@@ -598,7 +597,7 @@ class SourceGoogleAnalyticsV4(AbstractSource):
                 f"Please check the permissions for the requested view_id: {config['view_id']}. Cannot retrieve data from that view ID.",
             )
         except ValueError as e:
-            return False, f"Invalid custom reports json structure. {e}"
+            return False, f"Invalid custom reports json structure or start date format: {e}."
         except requests.exceptions.RequestException as e:
             error_msg = e.response.json().get("error")
             if e.response.status_code == 403:

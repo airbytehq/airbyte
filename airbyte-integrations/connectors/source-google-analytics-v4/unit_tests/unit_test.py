@@ -246,12 +246,20 @@ def test_state_saved_after_each_record(test_config, mock_metrics_dimensions_type
     assert g.get_updated_state(state, record) == {g.cursor_field: today}
 
 
-def test_connection_fail_invalid_reports_json(test_config):
+@pytest.mark.parametrize(
+    ("invalid_input", "expected_error_msg"),
+    (
+        ({"custom_reports": '[{{"name": "test", "dimensions": [], "metrics": []}}]'},
+         "Expecting property name enclosed in double quotes: line 1 column 3"),
+        ({"start_date": "09-12-2021"}, "Unable to parse string")
+    )
+)
+def test_connection_fail_invalid_reports_json(test_config, invalid_input, expected_error_msg):
     source = SourceGoogleAnalyticsV4()
-    test_config["custom_reports"] = '[{{"name": "test", "dimensions": [], "metrics": []}}]'
+    test_config.update(invalid_input)
     ok, error = source.check_connection(logging.getLogger(), test_config)
     assert not ok
-    assert "Invalid custom reports json structure." in error
+    assert expected_error_msg in error
 
 
 @pytest.mark.parametrize(
