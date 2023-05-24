@@ -163,6 +163,10 @@ def test(
     Args:
         ctx (click.Context): The click context.
     """
+    if ctx.obj["is_ci"] and ctx.obj["pull_request"] and not ctx.obj["pull_request"].is_draft:
+        click.echo("Skipping connectors tests for draft pull request.")
+        sys.exit(0)
+
     click.secho(f"Will run the test pipeline for the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
 
     connectors_tests_contexts = [
