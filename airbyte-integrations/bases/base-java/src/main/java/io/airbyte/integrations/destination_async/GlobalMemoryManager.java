@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination_async;
 
-import io.airbyte.integrations.destination_async.buffers.BufferEnqueue;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -35,6 +34,7 @@ import org.slf4j.LoggerFactory;
  */
 @Slf4j
 public class GlobalMemoryManager {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(GlobalMemoryManager.class);
 
   // In cases where a queue is rapidly expanding, a larger block size allows less allocation calls. On
@@ -76,8 +76,7 @@ public class GlobalMemoryManager {
     LOGGER.trace("Memory Requested: max: {}, allocated: {}, allocated in this request: {}",
         FileUtils.byteCountToDisplaySize(maxMemoryBytes),
         FileUtils.byteCountToDisplaySize(currentMemoryBytes.get()),
-        FileUtils.byteCountToDisplaySize(toAllocateBytes)
-        );
+        FileUtils.byteCountToDisplaySize(toAllocateBytes));
     return toAllocateBytes;
   }
 
