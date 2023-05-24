@@ -39,6 +39,13 @@ update-alternatives \
 update-alternatives \
     --install /usr/bin/pip pip /usr/local/bin/pip3.${PYTHON_MINOR} 10 --force
 
+ENV ROOTPATH="/usr/local/bin:$PATH"
+ENV REQUIREPATH="/opt/.venv/bin:$PATH"
+
+RUN PATH=$ROOTPATH python -m venv /opt/.poetry-venv
+
+ENV PATH=$REQUIREPATH
+
 WORKDIR /airbyte
 COPY entrypoint.sh .
 COPY build/sshtunneling.sh .
