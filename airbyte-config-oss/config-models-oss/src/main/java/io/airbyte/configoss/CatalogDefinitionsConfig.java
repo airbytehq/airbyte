@@ -24,12 +24,6 @@ public class CatalogDefinitionsConfig {
 
   }
 
-  public static String getLocalCatalogWritePath() {
-    // We always want to write to the default path
-    // This is to prevent overwriting the catalog file in the event we are using a custom catalog path.
-    return DEFAULT_LOCAL_CONNECTOR_CATALOG_PATH;
-  }
-
   public static String getIconSubdirectory() {
     return ICON_SUBDIRECTORY;
   }
