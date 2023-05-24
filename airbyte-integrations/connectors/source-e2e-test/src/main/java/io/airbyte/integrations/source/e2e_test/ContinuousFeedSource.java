@@ -12,12 +12,16 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.destination_async.StreamDescriptorUtils;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.time.Instant;
@@ -26,6 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.CheckForNull;
 import net.jimblackler.jsongenerator.Generator;
@@ -59,6 +64,7 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
 
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final AtomicLong emittedMessages = new AtomicLong(0);
+      final AtomicBoolean emitStateNext = new AtomicBoolean(false);
       final Optional<Long> messageIntervalMs = feedConfig.getMessageIntervalMs();
 
       final SchemaStore schemaStore = new SchemaStore(true);
@@ -71,6 +77,16 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
         @CheckForNull
         @Override
         protected AirbyteMessage computeNext() {
+          if (emitStateNext.get()) {
+            emitStateNext.set(false);
+            return new AirbyteMessage()
+                .withType(Type.STATE)
+                .withState(new AirbyteStateMessage()
+                    .withType(AirbyteStateType.STREAM)
+                    .withStream(new AirbyteStreamState()
+                        .withStreamDescriptor(StreamDescriptorUtils.fromConfiguredAirbyteSteam(stream))
+                        .withStreamState(Jsons.jsonNode(emittedMessages.get()))));
+          }
 
           if (emittedMessages.get() >= feedConfig.getMaxMessages()) {
             return endOfData();
@@ -91,6 +107,11 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
             throw new RuntimeException(e);
           }
           emittedMessages.incrementAndGet();
+
+          if (feedConfig.getEmitStateEveryN().isPresent() && emittedMessages.get() % feedConfig.getEmitStateEveryN().get() == 0) {
+            emitStateNext.set(true);
+          }
+
           return new AirbyteMessage()
               .withType(Type.RECORD)
               .withRecord(new AirbyteRecordMessage()

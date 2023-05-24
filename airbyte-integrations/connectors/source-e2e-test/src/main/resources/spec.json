@@ -103,6 +103,13 @@
             "default" : 0,
             "order" : 40
           },
+          "emit_state_every_n": {
+            "title" : "State message interval",
+            "description" : "Optional field to determine how often to emit a state message. If not set, no state will be emitted.",
+            "type" : "integer",
+            "max" : 60000,
+            "order" : 40
+          },
           "mock_catalog" : {
             "title" : "Mock Catalog",
             "type" : "object",
