@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination_async.state;
 
+import com.google.common.base.Preconditions;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
@@ -23,8 +24,7 @@ import org.apache.mina.util.ConcurrentHashSet;
 
 public class AsyncStateManager {
 
-  private static final StreamDescriptor SENTINEL_GLOBAL_DESC =
-      new StreamDescriptor().withName(UUID.randomUUID().toString());
+  private static final StreamDescriptor SENTINEL_GLOBAL_DESC = new StreamDescriptor().withName(UUID.randomUUID().toString());
 
   boolean preState = true;
   private final ConcurrentMap<Long, AtomicLong> stateIdToCounter = new ConcurrentHashMap<>();
@@ -44,28 +44,10 @@ public class AsyncStateManager {
 
   public void trackState(final AirbyteMessage message) {
     if (preState) {
-      // instead of checking for global or legacy, check for the inverse of stream.
-      stateType = extractStateType(message);
-      if (stateType != AirbyteStateMessage.AirbyteStateType.STREAM) {// alias old stream-level state ids to single global state id
-        // upon conversion, all previous tracking data structures need to be cleared as we move
-        // into the non-STREAM world for correctness.
-
-        aliasIds.addAll(streamToStateIdQ.values().stream().flatMap(Collection::stream).toList());
-        streamToStateIdQ.clear();
-        retroactiveGlobalStateId = PkWhatever.getNextId();
-
-        this.streamToStateIdQ.put(SENTINEL_GLOBAL_DESC, new LinkedList<>());
-        this.streamToStateIdQ.get(SENTINEL_GLOBAL_DESC).add(retroactiveGlobalStateId);
-
-        final long combinedCounter = stateIdToCounter.values()
-            .stream()
-            .mapToLong(AtomicLong::get)
-            .sum();
-        this.stateIdToCounter.clear();
-        this.stateIdToCounter.put(retroactiveGlobalStateId, new AtomicLong(combinedCounter));
-      }
+      convertToGlobalIfNeeded(message);
       preState = false;
     }
+    Preconditions.checkArgument(stateType == extractStateType(message));
 
     closeState(message);
   }
@@ -88,12 +70,19 @@ public class AsyncStateManager {
   // Always try to flush all states with 0 counters.
   public List<AirbyteMessage> flushStates() {
     final List<AirbyteMessage> output = new ArrayList<>();
-    // for each stream
     for (final Map.Entry<StreamDescriptor, LinkedList<Long>> entry : streamToStateIdQ.entrySet()) {
       // walk up the states until we find one that has a non zero counter.
       while (true) {
         final Long peek = entry.getValue().peek();
-        if (stateIdToCounter.get(peek).get() == 0) {
+        final boolean emptyQ = peek == null;
+        final boolean noCorrespondingStateMsg = stateIdToState.get(peek) == null;
+        if (emptyQ || noCorrespondingStateMsg) {
+          break;
+        }
+
+        final boolean noPrevRecs = !stateIdToCounter.containsKey(peek);
+        final boolean allRecsEmitted = stateIdToCounter.get(peek).get() == 0;
+        if (noPrevRecs || allRecsEmitted) {
           entry.getValue().poll();
           output.add(stateIdToState.get(peek));
         } else {
@@ -102,6 +91,29 @@ public class AsyncStateManager {
       }
     }
     return output;
+  }
+
+  private void convertToGlobalIfNeeded(AirbyteMessage message) {
+    // instead of checking for global or legacy, check for the inverse of stream.
+    stateType = extractStateType(message);
+    if (stateType != AirbyteStateMessage.AirbyteStateType.STREAM) {// alias old stream-level state ids to single global state id
+      // upon conversion, all previous tracking data structures need to be cleared as we move
+      // into the non-STREAM world for correctness.
+
+      aliasIds.addAll(streamToStateIdQ.values().stream().flatMap(Collection::stream).toList());
+      streamToStateIdQ.clear();
+      retroactiveGlobalStateId = PkWhatever.getNextId();
+
+      this.streamToStateIdQ.put(SENTINEL_GLOBAL_DESC, new LinkedList<>());
+      this.streamToStateIdQ.get(SENTINEL_GLOBAL_DESC).add(retroactiveGlobalStateId);
+
+      final long combinedCounter = stateIdToCounter.values()
+          .stream()
+          .mapToLong(AtomicLong::get)
+          .sum();
+      this.stateIdToCounter.clear();
+      this.stateIdToCounter.put(retroactiveGlobalStateId, new AtomicLong(combinedCounter));
+    }
   }
 
   private AirbyteStateMessage.AirbyteStateType extractStateType(final AirbyteMessage message) {
