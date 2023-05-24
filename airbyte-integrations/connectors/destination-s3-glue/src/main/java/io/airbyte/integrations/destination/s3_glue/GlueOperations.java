@@ -34,13 +34,10 @@ public class GlueOperations implements MetastoreOperations {
 
   private final AWSGlue awsGlueClient;
 
-  private final boolean stringifyData;
-
-  public GlueOperations(AWSGlue awsGlueClient, final boolean stringifyData) {
+  public GlueOperations(AWSGlue awsGlueClient) {
     Preconditions.checkArgument(awsGlueClient != null);
     this.awsGlueClient = awsGlueClient;
     this.objectMapper = new ObjectMapper();
-    this.stringifyData = stringifyData;
   }
 
   @Override
