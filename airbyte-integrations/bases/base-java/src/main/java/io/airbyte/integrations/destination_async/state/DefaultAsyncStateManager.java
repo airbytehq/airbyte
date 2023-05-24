@@ -14,8 +14,8 @@ import java.util.List;
 // todo (cgardens) - hook it up to the memory manager.
 public class DefaultAsyncStateManager {
 
-  boolean preState;
   private final PreStateAsyncStateManager preStateAsyncStateManager;
+  boolean preState;
   private PostStateAsyncStateManager postStateAsyncStateManager;
 
   public DefaultAsyncStateManager() {
