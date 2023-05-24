@@ -1,4 +1,4 @@
-name: (WIP) Publish connectors
+name: Publish connectors on merge to master
 
 on:
   push:
@@ -33,8 +33,6 @@ jobs:
       SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
       TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
       SLACK_WEBHOOK: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-      S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-      S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -49,7 +47,7 @@ jobs:
           # Setting concurrency to 1 for safety:
           # High concurrency can lead to resource issues for java connectors.
           # As speed is not a concern in this context I think not publishing connectors in parallel is fine.
-          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --modified publish --pre-release"
+          subcommand: "connectors --concurrency=1 --execute-timeout=3600 --modified publish --main-release"
           context: "master"
       - name: Publish connectors [manual]
         id: publish-connectors

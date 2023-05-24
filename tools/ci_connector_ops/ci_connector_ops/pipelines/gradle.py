@@ -7,11 +7,12 @@ from __future__ import annotations
 from abc import ABC
 from typing import ClassVar, List, Tuple
 
+from ci_connector_ops.pipelines import consts
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import Step, StepResult
 from ci_connector_ops.pipelines.utils import slugify
 from ci_connector_ops.utils import Connector
-from dagger import CacheVolume, Directory
+from dagger import CacheVolume, Container, Directory
 
 
 class GradleTask(Step, ABC):
@@ -79,6 +80,10 @@ class GradleTask(Step, ABC):
             return [Connector(self.context.connector.technical_name.replace("-strict-encrypt", ""))]
         if self.context.connector.technical_name == "source-file-secure":
             return [Connector("source-file")]
+        if self.context.connector.technical_name == "destination-bigquery-denormalized":
+            return [Connector("destination-bigquery")]
+        if self.context.connector.technical_name == "destination-dev-null":
+            return [Connector("destination-e2e-test")]
         return []
 
     @property
@@ -116,7 +121,7 @@ class GradleTask(Step, ABC):
                 patched_file_content += line + "\n"
         return self.context.get_connector_dir().with_new_file("build.gradle", patched_file_content)
 
-    def _get_gradle_command(self, extra_options: Tuple[str] = ("--no-daemon", "--scan")) -> List:
+    def _get_gradle_command(self, extra_options: Tuple[str] = ("--no-daemon", "--scan", "--build-cache")) -> List:
         command = (
             ["./gradlew"]
             + list(extra_options)
@@ -137,5 +142,33 @@ class GradleTask(Step, ABC):
             .with_directory(f"{self.context.connector.code_directory}/secrets", self.context.secrets_dir)
             .with_exec(self._get_gradle_command())
         )
+        results = await self.get_step_result(connector_under_test)
+        await self._export_gradle_dependency_cache(connector_under_test)
+        return results
 
-        return await self.get_step_result(connector_under_test)
+    async def _export_gradle_dependency_cache(self, gradle_container: Container) -> Container:
+        """Export the Gradle writable dependency cache to the read-only dependency cache path.
+        The read-only dependency cache is persisted thanks to mounted cache volumes in environments.with_gradle().
+        You can read more about Shared readonly cache here: https://docs.gradle.org/current/userguide/dependency_resolution.html#sub:shared-readonly-cache
+        Args:
+            gradle_container (Container): The Gradle container.
+
+        Returns:
+            Container: The Gradle container, with the updated cache.
+        """
+        with_cache = gradle_container.with_exec(
+            [
+                "rsync",
+                "--archive",
+                "--quiet",
+                "--times",
+                "--exclude",
+                "*.lock",
+                "--exclude",
+                "gc.properties",
+                f"{consts.GRADLE_CACHE_PATH}/modules-2/",
+                f"{consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH}/modules-2/",
+            ]
+        )
+        await with_cache.exit_code()
+        return with_cache
