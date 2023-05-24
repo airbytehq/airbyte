@@ -143,12 +143,12 @@ class GradleTask(Step, ABC):
             .with_exec(self._get_gradle_command())
         )
         results = await self.get_step_result(connector_under_test)
-        await self._export_gradle_cache_to_read_only_cache(connector_under_test)
+        await self._export_gradle_dependency_cache(connector_under_test)
         return results
 
-    async def _export_gradle_cache_to_read_only_cache(self, gradle_container: Container) -> Container:
-        """Export the Gradle writable cache to the read only cache path.
-        The read only cache is persisted thanks to mounted cache volumes in environments.with_gradle().
+    async def _export_gradle_dependency_cache(self, gradle_container: Container) -> Container:
+        """Export the Gradle writable dependency cache to the read-only dependency cache path.
+        The read-only dependency cache is persisted thanks to mounted cache volumes in environments.with_gradle().
         You can read more about Shared readonly cache here: https://docs.gradle.org/current/userguide/dependency_resolution.html#sub:shared-readonly-cache
         Args:
             gradle_container (Container): The Gradle container.

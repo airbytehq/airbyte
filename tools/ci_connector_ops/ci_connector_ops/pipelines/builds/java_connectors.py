@@ -29,7 +29,7 @@ class BuildConnectorDistributionTar(GradleTask):
         )
         distributions = await with_built_tar.directory(".").entries()
         tar_files = [f for f in distributions if f.endswith(".tar")]
-        await self._export_gradle_cache_to_read_only_cache(with_built_tar)
+        await self._export_gradle_dependency_cache(with_built_tar)
         if len(tar_files) == 1:
             return StepResult(
                 self,
