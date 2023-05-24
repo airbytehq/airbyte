@@ -4,6 +4,7 @@
 
 """This module declares the CLI commands to run the connectors CI pipelines."""
 
+import json
 import logging
 import os
 import sys
@@ -379,9 +380,16 @@ def validate_publish_options(pre_release: bool, context_object: Dict[str, Any]):
 
 
 @connectors.command(cls=DaggerPipelineCommand, help="List all selected connectors.")
+@click.option(
+    "--output-format",
+    type=click.Choice(["table", "json"]),
+    envvar="SLACK_CHANNEL",
+    default="table",
+)
 @click.pass_context
 def list(
     ctx: click.Context,
+    output_format: str,
 ):
     selected_connectors = [
         (connector, bool(modified_files))
@@ -390,22 +398,27 @@ def list(
     ]
 
     selected_connectors = sorted(selected_connectors, key=lambda x: x[0].technical_name)
-    table = Table(title=f"{len(selected_connectors)} selected connectors")
-    table.add_column("Modified")
-    table.add_column("Connector")
-    table.add_column("Language")
-    table.add_column("Release stage")
-    table.add_column("Version")
-    table.add_column("Folder")
 
-    for connector, modified in selected_connectors:
-        modified = "X" if modified else ""
-        connector_name = Text(connector.technical_name)
-        language = Text(connector.language.value)
-        release_stage = Text(connector.release_stage)
-        version = Text(connector.version)
-        folder = Text(str(connector.code_directory))
-        table.add_row(modified, connector_name, language, release_stage, version, folder)
+    if output_format == "table":
+        table = Table(title=f"{len(selected_connectors)} selected connectors")
+        table.add_column("Modified")
+        table.add_column("Connector")
+        table.add_column("Language")
+        table.add_column("Release stage")
+        table.add_column("Version")
+        table.add_column("Folder")
 
-    console.print(table)
+        for connector, modified in selected_connectors:
+            modified = "X" if modified else ""
+            connector_name = Text(connector.technical_name)
+            language = Text(connector.language.value)
+            release_stage = Text(connector.release_stage)
+            version = Text(connector.version)
+            folder = Text(str(connector.code_directory))
+            table.add_row(modified, connector_name, language, release_stage, version, folder)
+
+        console.print(table)
+    if output_format == "json":
+        click.clear()
+        click.echo(json.dumps([connector.technical_name for connector, _ in selected_connectors]))
     return True

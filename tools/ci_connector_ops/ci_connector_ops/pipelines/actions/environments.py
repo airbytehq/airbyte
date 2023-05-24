@@ -398,7 +398,7 @@ def with_gradle(
         .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
         .with_exec(["mkdir", "/root/.gradle"])
         .with_exec(["mkdir", "/airbyte"])
-        .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
+        .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include, exclude=["tools/ci_connector_ops/*"]))
         .with_mounted_cache("/airbyte/.gradle", airbyte_gradle_cache, sharing=CacheSharingMode.LOCKED)
         .with_workdir("/airbyte")
     )
@@ -645,7 +645,7 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
     )
 
 
-async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: Platform):
+async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: Platform) -> Container:
     application = context.connector.technical_name
 
     build_stage = (
@@ -667,7 +667,7 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         base = with_integration_base_java(context, build_platform)
         entrypoint = ["/airbyte/base.sh"]
 
-    return (
+    connector_container = (
         base.with_workdir("/airbyte")
         .with_env_variable("APPLICATION", application)
         .with_mounted_directory("builts_artifacts", build_stage.directory("/airbyte"))
@@ -676,20 +676,37 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
         .with_entrypoint(entrypoint)
     )
+    return await finalize_build(context, connector_container)
 
 
-def with_airbyte_python_connector(context: ConnectorContext, build_platform):
+async def with_airbyte_python_connector(context: ConnectorContext, build_platform: Platform) -> Container:
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
-    return (
+    connector_container = (
         context.dagger_client.container(platform=build_platform)
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .build(context.get_connector_dir())
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
     )
+    return await finalize_build(context, connector_container)
 
 
-def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_platform: Platform):
+async def finalize_build(context: ConnectorContext, connector_container: Container) -> Container:
+    connector_dir_with_finalize_script = context.get_connector_dir(include=["finalize_build.sh"])
+    has_finalize_script = "finalize_build.sh" in await connector_dir_with_finalize_script.entries()
+    if has_finalize_script:
+        original_entrypoint = await connector_container.entrypoint()
+        context.logger.info(f"{context.connector.technical_name} has finalize_build.sh script, running it")
+        connector_container = (
+            connector_container.with_file("/tmp/finalize_build.sh", connector_dir_with_finalize_script.file("finalize_build.sh"))
+            .with_entrypoint("sh")
+            .with_exec(["/tmp/finalize_build.sh"])
+            .with_entrypoint(original_entrypoint)
+        )
+    return connector_container
+
+
+def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_platform: Platform) -> Container:
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
     base = context.dagger_client.container(platform=build_platform).from_("python:3.9.11-alpine3.15")
     snake_case_name = context.connector.technical_name.replace("-", "_")
