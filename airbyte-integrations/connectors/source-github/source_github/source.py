@@ -101,6 +101,7 @@ class SourceGithub(AbstractSource):
             stream = RepositoryStats(
                 authenticator=authenticator,
                 repositories=unchecked_repos,
+                # This parameter is deprecated and in future will be used sane default, page_size: 10
                 page_size_for_large_streams=config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
             )
             for record in read_full_refresh(stream):
@@ -227,6 +228,7 @@ class SourceGithub(AbstractSource):
                 failure_type=FailureType.config_error,
             )
 
+        # This parameter is deprecated and in future will be used sane default, page_size: 10
         page_size = config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
         access_token_type, _ = self.get_access_token(config)
 
