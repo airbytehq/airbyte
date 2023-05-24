@@ -262,6 +262,7 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.23  | 2023-05-24 | [25586](https://github.com/airbytehq/airbyte/pull/25586)       | No need to base64 encode strings on databases sorted with binary collation                                                                      |
 | 2.0.22  | 2023-05-22 | [25859](https://github.com/airbytehq/airbyte/pull/25859)       | Allow adding sessionVariables JDBC parameters                                                                                                   |
 | 2.0.21  | 2023-05-10 | [25460](https://github.com/airbytehq/airbyte/pull/25460)       | Handle a decimal number with 0 decimal points as an integer                                                                                     |
 | 2.0.20  | 2023-05-01 | [25740](https://github.com/airbytehq/airbyte/pull/25740)       | Disable index logging                                                                                                                           |
