@@ -37,8 +37,6 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AsyncStreamConsumer.class);
 
-  private static final String NON_STREAM_STATE_IDENTIFIER = "GLOBAL";
-  private final Consumer<AirbyteMessage> outputRecordCollector;
   private final OnStartFunction onStart;
   private final OnCloseFunction onClose;
   private final ConfiguredAirbyteCatalog catalog;
@@ -52,7 +50,6 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
   private boolean hasStarted;
   private boolean hasClosed;
-  private final long messageNum;
 
   public AsyncStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                              final OnStartFunction onStart,
@@ -63,9 +60,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
                              final BufferManager bufferManager) {
     hasStarted = false;
     hasClosed = false;
-    messageNum = 0;
 
-    this.outputRecordCollector = outputRecordCollector;
     this.onStart = onStart;
     this.onClose = onClose;
     this.catalog = catalog;
@@ -93,8 +88,8 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
     /*
      * intentionally putting extractStream outside the buffer manager so that if in the future we want
-     * to try to use a threadpool to partial deserialize to get record type and stream name, we can do
-     * it without touching buffer manager.
+     * to try to use a thread pool to partially deserialize to get record type and stream name, we can
+     * do it without touching buffer manager.
      */
     extractStream(message)
         .ifPresent(streamDescriptor -> bufferEnqueue.addRecord(streamDescriptor, message));
@@ -116,7 +111,6 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     LOGGER.info("{} closed.", AsyncStreamConsumer.class);
   }
 
-  // todo (cgardens) - handle global state.
   /**
    * Extract the stream from the message, if the message is a record or state. Otherwise, we don't
    * care.
@@ -135,14 +129,12 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
       return Optional.of(streamDescriptor);
     } else if (message.getType() == Type.STATE) {
+      // only return stream descriptor in stream cases.
       if (message.getState().getType() == AirbyteStateType.STREAM) {
         return Optional.of(message.getState().getStream().getStreamDescriptor());
-      } else {
-        return Optional.of(new StreamDescriptor().withNamespace(NON_STREAM_STATE_IDENTIFIER).withNamespace(NON_STREAM_STATE_IDENTIFIER));
       }
-    } else {
-      return Optional.empty();
     }
+    return Optional.empty();
   }
 
   private void validateRecord(final AirbyteMessage message, final StreamDescriptor streamDescriptor) {
@@ -155,12 +147,11 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
   }
 
   private void trackerIsValidRecord(final AirbyteMessage message, final StreamDescriptor streamDescriptor) {
-    // todo (cgardens) - is valid should also move inside the tracker, but don't want to blow up more
-    // constructors right now.
+    // todo (cgardens) - is valid should also move inside the tracker.
     try {
 
       if (!isValidRecord.apply(message.getRecord().getData())) {
-        ignoredRecordsTracker.addRecord(streamDescriptor, message);
+        ignoredRecordsTracker.addRecord(streamDescriptor);
       }
     } catch (final Exception e) {
       throw new RuntimeException(e);

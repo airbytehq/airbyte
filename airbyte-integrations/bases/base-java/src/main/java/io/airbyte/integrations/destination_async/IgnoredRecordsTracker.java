@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination_async;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +26,7 @@ public class IgnoredRecordsTracker {
     this.streamToIgnoredRecordCount = streamToIgnoredRecordCount;
   }
 
-  public void addRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage recordMessage) {
+  public void addRecord(final StreamDescriptor streamDescriptor) {
     streamToIgnoredRecordCount.put(streamDescriptor, streamToIgnoredRecordCount.getOrDefault(streamDescriptor, 0L) + 1L);
   }
 

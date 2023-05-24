@@ -41,10 +41,9 @@ public class BufferEnqueueTest {
   @Test
   public void testAddRecordShouldExpand() {
     final var oneKb = 1024;
-    final var initialQueueSizeBytes = 20;
     final var streamToBuffer = new ConcurrentHashMap<StreamDescriptor, StreamAwareQueue>();
     final var enqueue =
-        new BufferEnqueue(initialQueueSizeBytes, new GlobalMemoryManager(oneKb), streamToBuffer, mock(AsyncStateManager.class));
+        new BufferEnqueue(new GlobalMemoryManager(oneKb), streamToBuffer, mock(AsyncStateManager.class));
 
     final var streamName = "stream";
     final var stream = new StreamDescriptor().withName(streamName);
