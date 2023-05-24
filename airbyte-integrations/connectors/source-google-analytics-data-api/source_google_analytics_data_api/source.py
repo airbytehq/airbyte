@@ -259,6 +259,11 @@ class PivotReport(GoogleAnalyticsDataApiBaseStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         payload = super().request_body_json(stream_state, stream_slice, next_page_token)
+
+        # remove offset and limit fields according to their absence in
+        # https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport
+        payload.pop("offset")
+        payload.pop("limit")
         payload["pivots"] = self.config["pivots"]
         return payload
 
