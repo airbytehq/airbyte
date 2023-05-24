@@ -9,6 +9,10 @@ acceptance_tests:
       expect_records:
         path: integration_tests/expected_records/parquet.jsonl
       timeout_seconds: 1800
+    - config_path: secrets/parquet_dataset_config.json
+      expect_records:
+        path: integration_tests/expected_records/parquet_dataset.jsonl
+      timeout_seconds: 1800
     - config_path: secrets/avro_config.json
       expect_records:
         path: integration_tests/expected_records/avro.jsonl

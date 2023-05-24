@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.databricks.utils;
 
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_CATALOG_JDBC_KEY;
@@ -21,7 +25,7 @@ public class DatabricksDatabaseUtil {
         databricksConfig.port(),
         databricksConfig.httpPath());
   }
-  
+
   public static DataSource getDataSource(final JsonNode config) {
     final Map<String, String> property = new HashMap<>();
     if (config.has(DATABRICKS_CATALOG_KEY)) {

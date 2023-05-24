@@ -19,7 +19,7 @@ import asyncer
 import click
 import git
 from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
-from dagger import Config, Connection, Container, DaggerError, File, QueryError
+from dagger import Config, Connection, Container, DaggerError, File, ImageLayerCompression, QueryError
 from more_itertools import chunked
 
 if TYPE_CHECKING:
@@ -316,7 +316,7 @@ class DaggerPipelineCommand(click.Command):
                 raise DaggerError(f"Dagger Command {command_name} failed.")
         except DaggerError as e:
             click.secho(str(e), err=True, fg="red")
-            return sys.exit(1)
+            sys.exit(1)
 
 
 async def execute_concurrently(steps: List[Callable], concurrency=5):
@@ -346,7 +346,7 @@ async def export_container_to_tarball(
         tar_file_name = f"{context.connector.technical_name}_{context.git_revision}.tar"
     tar_file_name = slugify(tar_file_name)
     local_path = Path(f"{context.host_image_export_dir_path}/{tar_file_name}")
-    export_success = await container.export(str(local_path))
+    export_success = await container.export(str(local_path), forced_compression=ImageLayerCompression.Gzip)
     if export_success:
         exported_file = (
             context.dagger_client.host().directory(context.host_image_export_dir_path, include=[tar_file_name]).file(tar_file_name)
@@ -356,8 +356,16 @@ async def export_container_to_tarball(
         return None, None
 
 
-def sanitize_gcs_service_account_key(raw_value: str) -> str:
-    try:
-        return json.dumps(json.loads(raw_value))
-    except json.JSONDecodeError:
-        return raw_value
+def sanitize_gcs_credentials(raw_value: Optional[str]) -> Optional[str]:
+    """Try to parse the raw string input that should contain a json object with the GCS credentials.
+    It will raise an exception if the parsing fails and help us to fail fast on invalid credentials input.
+
+    Args:
+        raw_value (str): A string representing a json object with the GCS credentials.
+
+    Returns:
+        str: The raw value string if it was successfully parsed.
+    """
+    if raw_value is None:
+        return None
+    return json.dumps(json.loads(raw_value))
