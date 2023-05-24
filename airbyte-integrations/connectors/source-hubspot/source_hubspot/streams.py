@@ -381,9 +381,9 @@ class Stream(HttpStream, ABC):
         #  to get all properties for an entity. According to HubSpot Community
         #  (https://community.hubspot.com/t5/APIs-Integrations/Get-all-contact-properties-without-explicitly-listing-them/m-p/447950)
         #  and the official documentation, this does not exist at the moment.
-
-        group_by_pk = self.primary_key and not self.denormalize_records
-        post_processor: IRecordPostProcessor = GroupByKey(self.primary_key) if group_by_pk else StoreAsIs()
+        primary_key = self.identity_key if self.identity_key is not None else self.primary_key
+        group_by_pk = primary_key and not self.denormalize_records
+        post_processor: IRecordPostProcessor = GroupByKey(primary_key) if group_by_pk else StoreAsIs()
         response = None
 
         properties = self._property_wrapper
@@ -1140,6 +1140,15 @@ class CRMSearchStreamWithHistory(CRMSearchStream):
     def batch_url(self):
         return f"/crm/v3/objects/{self.entity}/batch/read"
 
+    def __init__(
+        self,
+        include_archived_only: bool = False,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self._state = None
+        self._include_archived_only = include_archived_only
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -1205,8 +1214,8 @@ class CRMSearchStreamWithHistory(CRMSearchStream):
                         del record_with_history["propertiesWithHistory"]
 
                         for property, values in properties_with_history.items():
-                            new_record = copy.copy(record_with_history)
                             for entry in values:
+                                new_record = copy.copy(record_with_history)
                                 new_record["name"] = property
                                 new_record["value"] = entry["value"]
                                 new_record["timestamp"] = entry["timestamp"]
@@ -1216,7 +1225,6 @@ class CRMSearchStreamWithHistory(CRMSearchStream):
 
                                 yield new_record
 
-            # self._update_state(latest_cursor=latest_cursor)
             next_page_token = self.next_page_token(raw_response)
             if not next_page_token:
                 pagination_complete = True
