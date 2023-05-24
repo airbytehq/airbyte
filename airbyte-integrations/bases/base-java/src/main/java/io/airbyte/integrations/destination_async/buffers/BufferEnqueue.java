@@ -57,7 +57,7 @@ public class BufferEnqueue {
     }
 
     if (message.getType() == Type.RECORD) {
-      handleRecord(streamDescriptor, message, stateManager.getStateId(streamDescriptor));
+      handleRecord(streamDescriptor, message);
     } else if (message.getType() == Type.STATE) {
       stateManager.trackState(message);
     }
