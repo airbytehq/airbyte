@@ -19,7 +19,7 @@ import asyncer
 import click
 import git
 from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
-from dagger import Config, Connection, Container, DaggerError, File, QueryError
+from dagger import Config, Connection, Container, DaggerError, File, ImageLayerCompression, QueryError
 from more_itertools import chunked
 
 if TYPE_CHECKING:
@@ -162,9 +162,14 @@ async def get_modified_files_in_branch_remote(
 
 
 def get_modified_files_in_branch_local(current_git_revision: str, diffed_branch: str = "master") -> Set[str]:
-    """Use git diff to spot the modified files on the local branch."""
+    """Use git diff and git status to spot the modified files on the local branch."""
     airbyte_repo = git.Repo()
     modified_files = airbyte_repo.git.diff("--diff-filter=MA", "--name-only", f"{diffed_branch}...{current_git_revision}").split("\n")
+    status_output = airbyte_repo.git.status("--porcelain")
+    for not_committed_change in status_output.split("\n"):
+        file_path = not_committed_change.strip().split(" ")[-1]
+        if file_path:
+            modified_files.append(file_path)
     return set(modified_files)
 
 
@@ -215,23 +220,33 @@ def get_modified_files_in_commit(current_git_branch: str, current_git_revision: 
         return anyio.run(get_modified_files_in_commit_remote, current_git_branch, current_git_revision)
 
 
-def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> Set[Connector]:
-    """Create a set of modified connectors according to the modified files on the branch."""
-    modified_connectors = []
+def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict[Connector, List[str]]:
+    """Create a mapping of modified connectors (key) and modified files (value)."""
+    modified_connectors = {}
     for file_path in modified_files:
         if str(file_path).startswith(SOURCE_CONNECTOR_PATH_PREFIX) or str(file_path).startswith(DESTINATION_CONNECTOR_PATH_PREFIX):
-            modified_connectors.append(Connector(get_connector_name_from_path(str(file_path))))
-    return set(modified_connectors)
+            modified_connector = Connector(get_connector_name_from_path(str(file_path)))
+            if modified_connector in modified_connectors:
+                modified_connectors[modified_connector].append(file_path)
+            else:
+                modified_connectors[modified_connector] = [file_path]
+    return modified_connectors
 
 
 def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
     return {
-        Path(str(f)) for f in modified_files if str(f).endswith(METADATA_FILE_NAME) and str(f).startswith("airbyte-integrations/connectors")
+        Path(str(f))
+        for f in modified_files
+        if str(f).endswith(METADATA_FILE_NAME) and str(f).startswith("airbyte-integrations/connectors") and "-scaffold-" not in str(f)
     }
 
 
 def get_all_metadata_files() -> Set[Path]:
-    return {Path(metadata_file) for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)}
+    return {
+        Path(metadata_file)
+        for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
+        if "-scaffold-" not in metadata_file
+    }
 
 
 def slugify(value: Any, allow_unicode: bool = False):
@@ -301,7 +316,7 @@ class DaggerPipelineCommand(click.Command):
                 raise DaggerError(f"Dagger Command {command_name} failed.")
         except DaggerError as e:
             click.secho(str(e), err=True, fg="red")
-            return sys.exit(1)
+            sys.exit(1)
 
 
 async def execute_concurrently(steps: List[Callable], concurrency=5):
@@ -331,7 +346,7 @@ async def export_container_to_tarball(
         tar_file_name = f"{context.connector.technical_name}_{context.git_revision}.tar"
     tar_file_name = slugify(tar_file_name)
     local_path = Path(f"{context.host_image_export_dir_path}/{tar_file_name}")
-    export_success = await container.export(str(local_path))
+    export_success = await container.export(str(local_path), forced_compression=ImageLayerCompression.Gzip)
     if export_success:
         exported_file = (
             context.dagger_client.host().directory(context.host_image_export_dir_path, include=[tar_file_name]).file(tar_file_name)
@@ -341,8 +356,16 @@ async def export_container_to_tarball(
         return None, None
 
 
-def sanitize_gcs_service_account_key(raw_value: str) -> str:
-    try:
-        return json.dumps(json.loads(raw_value))
-    except json.JSONDecodeError:
-        return raw_value
+def sanitize_gcs_credentials(raw_value: Optional[str]) -> Optional[str]:
+    """Try to parse the raw string input that should contain a json object with the GCS credentials.
+    It will raise an exception if the parsing fails and help us to fail fast on invalid credentials input.
+
+    Args:
+        raw_value (str): A string representing a json object with the GCS credentials.
+
+    Returns:
+        str: The raw value string if it was successfully parsed.
+    """
+    if raw_value is None:
+        return None
+    return json.dumps(json.loads(raw_value))

@@ -2,6 +2,9 @@
 
 This page contains the setup guide and reference information for the Azure Blob Storage source connector.
 
+:::info
+Cloud storage may incur egress costs. Egress refers to data that is transferred out of the cloud storage system, such as when you download files or access them from a different location. For more information, see the [Azure Blob Storage pricing guide](https://azure.microsoft.com/en-us/pricing/details/storage/blobs/).
+:::
 
 ## Setup guide
 

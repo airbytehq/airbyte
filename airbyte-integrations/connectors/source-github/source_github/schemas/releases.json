@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "repository": {
-      "type": ["string"]
+      "type": "string"
     },
     "url": {
       "type": ["null", "string"]
@@ -48,7 +48,7 @@
       "type": ["null", "boolean"]
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "published_at": {
@@ -94,11 +94,11 @@
             "type": ["null", "integer"]
           },
           "created_at": {
-            "type": ["null", "string"],
+            "type": "string",
             "format": "date-time"
           },
           "updated_at": {
-            "type": ["null", "string"],
+            "type": "string",
             "format": "date-time"
           },
           "uploader_id": {
@@ -106,6 +106,21 @@
           }
         }
       }
+    },
+    "body_html": {
+      "type": ["null", "string"]
+    },
+    "body_text": {
+      "type": ["null", "string"]
+    },
+    "mentions_count": {
+      "type": ["null", "integer"]
+    },
+    "discussion_url": {
+      "type": ["null", "string"]
+    },
+    "reactions": {
+      "$ref": "reactions.json"
     }
   }
 }
