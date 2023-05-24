@@ -32,7 +32,7 @@ public class BufferEnqueueTest {
             .withStream(streamName)
             .withData(Jsons.jsonNode(BufferDequeueTest.RECORD_20_BYTES)));
 
-    enqueue.addRecord(stream, record, 1);
+    enqueue.addRecord(stream, record);
     assertEquals(1, streamToBuffer.get(stream).size());
     assertEquals(20L, streamToBuffer.get(stream).getCurrentMemoryUsage());
 
@@ -54,8 +54,8 @@ public class BufferEnqueueTest {
             .withStream(streamName)
             .withData(Jsons.jsonNode(BufferDequeueTest.RECORD_20_BYTES)));
 
-    enqueue.addRecord(stream, record, 1);
-    enqueue.addRecord(stream, record, 2);
+    enqueue.addRecord(stream, record);
+    enqueue.addRecord(stream, record);
     assertEquals(2, streamToBuffer.get(stream).size());
     assertEquals(40, streamToBuffer.get(stream).getCurrentMemoryUsage());
 
