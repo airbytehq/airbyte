@@ -2,9 +2,9 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 import json
+import logging
 from typing import Any, Mapping
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, Type, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode
 from destination_timeplus import DestinationTimeplus
 
@@ -32,12 +32,12 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
     return ConfiguredAirbyteCatalog(streams=[append_stream, overwrite_stream])      
 
 def test_check_valid_config(config: Mapping):
-    outcome = DestinationTimeplus().check(AirbyteLogger(), config)
+    outcome = DestinationTimeplus().check(logging.getLogger('airbyte'), config)
     assert outcome.status == Status.SUCCEEDED
 
 
 def test_check_invalid_config():
-    outcome = DestinationTimeplus().check(AirbyteLogger(), {"secret_key": "not_a_real_secret"})
+    outcome = DestinationTimeplus().check(logging.getLogger('airbyte'), {"secret_key": "not_a_real_secret"})
     assert outcome.status == Status.FAILED  
 
 def test_write(config: Mapping):
