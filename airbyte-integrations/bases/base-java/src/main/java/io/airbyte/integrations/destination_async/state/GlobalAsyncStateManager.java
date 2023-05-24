@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.util.ConcurrentHashSet;
 
 @Slf4j
-public class AsyncStateManager {
+public class GlobalAsyncStateManager {
 
   private static final StreamDescriptor SENTINEL_GLOBAL_DESC = new StreamDescriptor().withName(UUID.randomUUID().toString());
 
