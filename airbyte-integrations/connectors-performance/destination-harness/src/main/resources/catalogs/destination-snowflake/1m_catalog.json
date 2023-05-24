@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "users",
+        "name": "users_1m",
         "namespace": "PERF_TEST_HARNESS",
         "json_schema": {
           "type": "object",
