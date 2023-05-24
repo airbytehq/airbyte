@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination_async.buffers;
 import com.google.common.base.Preconditions;
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.integrations.destination_async.state.AsyncStateManager;
-import io.airbyte.integrations.destination_async.state.AsyncStateManager2;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.List;
@@ -34,7 +33,7 @@ public class MemoryAwareMessageBatch implements AutoCloseable {
   private List<AirbyteMessage> batch;
   private final long sizeInBytes;
   private final GlobalMemoryManager memoryManager;
-  private final AsyncStateManager2 stateManager;
+  private final AsyncStateManager stateManager;
   private final long minMessageNum;
   private final long maxMessageNum;
 
