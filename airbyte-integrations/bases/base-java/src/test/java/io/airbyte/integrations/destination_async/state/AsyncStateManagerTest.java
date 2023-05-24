@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination_async.state;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.airbyte.commons.json.Jsons;
@@ -18,6 +19,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -28,15 +30,22 @@ class AsyncStateManagerTest {
 
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = STREAM_NAME + 2;
+  private static final String STREAM_NAME3 = STREAM_NAME + 3;
   private static final StreamDescriptor STREAM1_DESC = new StreamDescriptor()
       .withName(STREAM_NAME);
   private static final StreamDescriptor STREAM2_DESC = new StreamDescriptor()
       .withName(STREAM_NAME2);
+  private static final StreamDescriptor STREAM3_DESC = new StreamDescriptor()
+          .withName(STREAM_NAME3);
 
-  private static final AirbyteMessage GLOBAL_MESSAGE1 = new AirbyteMessage()
+  private static final AirbyteMessage GLOBAL_STATE_MESSAGE1 = new AirbyteMessage()
       .withType(Type.STATE)
       .withState(new AirbyteStateMessage()
-          .withType(AirbyteStateType.GLOBAL));
+          .withType(AirbyteStateType.GLOBAL).withData(Jsons.jsonNode(1)));
+  private static final AirbyteMessage GLOBAL_STATE_MESSAGE2 = new AirbyteMessage()
+          .withType(Type.STATE)
+          .withState(new AirbyteStateMessage()
+                  .withType(AirbyteStateType.GLOBAL).withData(Jsons.jsonNode(2)));
   private static final AirbyteMessage STREAM1_STATE_MESSAGE1 = new AirbyteMessage()
       .withType(Type.STATE)
       .withState(new AirbyteStateMessage()
@@ -74,10 +83,65 @@ class AsyncStateManagerTest {
       final AsyncStateManager stateManager = new AsyncStateManager();
 
       // GLOBAL
-      stateManager.trackState(GLOBAL_MESSAGE1);
-      assertEquals(List.of(GLOBAL_MESSAGE1), stateManager.flushStates());
+      stateManager.trackState(GLOBAL_STATE_MESSAGE1);
+      assertEquals(List.of(GLOBAL_STATE_MESSAGE1), stateManager.flushStates());
 
       assertThrows(IllegalArgumentException.class, () -> stateManager.trackState(STREAM1_STATE_MESSAGE1));
+    }
+
+    @Test
+    void testConversion() {
+      final AsyncStateManager stateManager = new AsyncStateManager();
+
+      final var preConvertId0 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
+      final var preConvertId1 = simulateIncomingRecords(STREAM2_DESC, 10, stateManager);
+      final var preConvertId2 = simulateIncomingRecords(STREAM3_DESC, 10, stateManager);
+      assertEquals(3, Set.of(preConvertId0, preConvertId1, preConvertId2).size());
+
+      stateManager.trackState(GLOBAL_STATE_MESSAGE1);
+
+      // Since this is actually a global state, we can only flush after all streams are done.
+      stateManager.decrement(preConvertId0, 10);
+      assertEquals(List.of(), stateManager.flushStates());
+      stateManager.decrement(preConvertId1, 10);
+      assertEquals(List.of(), stateManager.flushStates());
+      stateManager.decrement(preConvertId2, 10);
+      assertEquals(List.of(GLOBAL_STATE_MESSAGE1), stateManager.flushStates());
+    }
+
+    @Test
+    void testCorrectFlushingOneStream() {
+      final AsyncStateManager stateManager = new AsyncStateManager();
+
+      final var preConvertId0 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
+      stateManager.trackState(GLOBAL_STATE_MESSAGE1);
+      stateManager.decrement(preConvertId0, 10);
+      assertEquals(List.of(GLOBAL_STATE_MESSAGE1), stateManager.flushStates());
+
+      final var afterConvertId1 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
+      stateManager.trackState(GLOBAL_STATE_MESSAGE2);
+      stateManager.decrement(afterConvertId1, 10);
+      assertEquals(List.of(GLOBAL_STATE_MESSAGE2), stateManager.flushStates());
+    }
+
+    @Test
+    void testCorrectFlushingManyStreams() {
+      final AsyncStateManager stateManager = new AsyncStateManager();
+
+      final var preConvertId0 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
+      final var preConvertId1 = simulateIncomingRecords(STREAM2_DESC, 10, stateManager);
+      assertNotEquals(preConvertId0, preConvertId1);
+      stateManager.trackState(GLOBAL_STATE_MESSAGE1);
+      stateManager.decrement(preConvertId0, 10);
+      stateManager.decrement(preConvertId1, 10);
+      assertEquals(List.of(GLOBAL_STATE_MESSAGE1), stateManager.flushStates());
+
+      final var afterConvertId0 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
+      final var afterConvertId1 = simulateIncomingRecords(STREAM2_DESC, 10, stateManager);
+      assertEquals(afterConvertId0, afterConvertId1);
+      stateManager.trackState(GLOBAL_STATE_MESSAGE2);
+      stateManager.decrement(afterConvertId0, 20);
+      assertEquals(List.of(GLOBAL_STATE_MESSAGE2), stateManager.flushStates());
     }
   }
 
@@ -91,7 +155,7 @@ class AsyncStateManagerTest {
       stateManager.trackState(STREAM1_STATE_MESSAGE1);
       assertEquals(List.of(STREAM1_STATE_MESSAGE1), stateManager.flushStates());
 
-      assertThrows(IllegalArgumentException.class, () -> stateManager.trackState(GLOBAL_MESSAGE1));
+      assertThrows(IllegalArgumentException.class, () -> stateManager.trackState(GLOBAL_STATE_MESSAGE1));
     }
 
     @Test
@@ -125,76 +189,8 @@ class AsyncStateManagerTest {
       assertEquals(List.of(), stateManager.flushStates());
       stateManager.trackState(STREAM1_STATE_MESSAGE2);
       stateManager.decrement(stream2StateId, 3);
+      // only flush state if counter is 0.
       assertEquals(List.of(STREAM1_STATE_MESSAGE2), stateManager.flushStates());
-    }
-  }
-
-  @Test
-  void testStateAcrossMultipleStreams() {
-    final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers = new ConcurrentHashMap<>();
-    buffers.put(STREAM1_DESC, new StreamAwareQueue(BufferManager.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
-    buffers.put(STREAM2_DESC, new StreamAwareQueue(BufferManager.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
-    final AsyncStateManager stateManager = new AsyncStateManager();
-
-//    final List<AirbyteMessage> stream1Records = generateRecords(1000, STREAM_NAME);
-//    long count = 0;
-//    for (final AirbyteMessage r : stream1Records) {
-//      buffers.get(STREAM1_DESC).offer(r, count++, 160);
-//    }
-//
-//    final List<AirbyteMessage> stream2Records = generateRecords(1000, STREAM_NAME2);
-//    for (final AirbyteMessage r : stream2Records) {
-//      if (count % 1120 == 0) {
-//        stateManager.trackState(GLOBAL_MESSAGE1);
-//      }
-//      buffers.get(STREAM2_DESC).offer(r, count++, 160);
-//    }
-
-    // stateManager.claim(STREAM2_DESC, 1500);
-    // drainNRecords(buffers, STREAM2_DESC, 500);
-    // assertEquals(Optional.empty(), stateManager.fulfill(STREAM2_DESC, 1500));
-    //
-    // stateManager.claim(STREAM1_DESC, 900);
-    // drainNRecords(buffers, STREAM1_DESC, 900);
-    // assertEquals(Optional.empty(), stateManager.fulfill(STREAM1_DESC, 900));
-    //
-    // stateManager.claim(STREAM1_DESC, 1000);
-    // drainNRecords(buffers, STREAM1_DESC, 100);
-    // assertEquals(Optional.of(GLOBAL_MESSAGE1), stateManager.fulfill(STREAM1_DESC, 1000));
-  }
-
-  @Test
-  void testOutOfOrderFulfills() {
-    final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers = new ConcurrentHashMap<>();
-    buffers.put(STREAM1_DESC, new StreamAwareQueue(BufferManager.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
-    final AsyncStateManager stateManager = new AsyncStateManager();
-
-//    final List<AirbyteMessage> stream1Records = generateRecords(1000, STREAM_NAME);
-//    long count = 0;
-//    for (final AirbyteMessage r : stream1Records) {
-//      if (count > 0 && count % 950 == 0) {
-//        stateManager.trackState(GLOBAL_MESSAGE1);
-//      }
-//      buffers.get(STREAM1_DESC).offer(r, count++, 160);
-//    }
-
-    // worker 1
-    // stateManager.claim(STREAM1_DESC, 900);
-    drainNRecords(buffers, STREAM1_DESC, 900);
-    // worker 2
-    // stateManager.claim(STREAM1_DESC, 1001);
-    drainNRecords(buffers, STREAM1_DESC, 100);
-
-    // assertEquals(Optional.empty(), stateManager.fulfill(STREAM1_DESC, 1001));
-    // assertEquals(Optional.of(GLOBAL_MESSAGE1), stateManager.fulfill(STREAM1_DESC, 900));
-  }
-
-  void drainNRecords(final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers,
-                     final StreamDescriptor streamDescriptor,
-                     final int numRecord) {
-
-    for (int i = 0; i < numRecord; i++) {
-      buffers.get(streamDescriptor).poll();
     }
   }
 

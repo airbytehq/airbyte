@@ -65,12 +65,10 @@ public class AsyncStateManager {
 
   private Long getStateId(final StreamDescriptor streamDescriptor, final long increment) {
     final StreamDescriptor resolvedDescriptor = stateType == AirbyteStateMessage.AirbyteStateType.STREAM ? streamDescriptor : SENTINEL_GLOBAL_DESC;
-
     if (!streamToStateIdQ.containsKey(resolvedDescriptor)) {
       registerNewStreamDescriptor(resolvedDescriptor);
     }
-    // no unboxing should happen since we always guarantee the Long exists.
-    final Long stateId = streamToStateIdQ.get(streamDescriptor).peekLast();
+    final Long stateId = streamToStateIdQ.get(resolvedDescriptor).peekLast();
     final var update = stateIdToCounter.get(stateId).addAndGet(increment);
     log.trace("State id: {}, count: {}", stateId, update);
     return stateId;
@@ -86,26 +84,21 @@ public class AsyncStateManager {
   public List<AirbyteMessage> flushStates() {
     final List<AirbyteMessage> output = new ArrayList<>();
     for (final Map.Entry<StreamDescriptor, LinkedList<Long>> entry : streamToStateIdQ.entrySet()) {
-      // walk up the states until we find one that has a non zero counter.
+      // remove all states with 0 counters.
+      final LinkedList<Long> stateIdQueue = entry.getValue();
       while (true) {
-        System.out.println("======");
-        final Long peek = entry.getValue().peek();
-        System.out.println(peek);
-        final boolean emptyQ = peek == null;
-        final boolean noCorrespondingStateMsg = stateIdToState.get(peek) == null;
+        final Long oldestState = stateIdQueue.peek();
+        final boolean emptyQ = oldestState == null;
+        final boolean noCorrespondingStateMsg = stateIdToState.get(oldestState) == null;
         if (emptyQ || noCorrespondingStateMsg) {
-          System.out.println("broken");
           break;
         }
 
-        final boolean noPrevRecs = !stateIdToCounter.containsKey(peek);
-        System.out.println(noPrevRecs);
-        final boolean allRecsEmitted = stateIdToCounter.get(peek).get() == 0;
-        System.out.println(stateIdToCounter.get(peek).get());
-        System.out.println(allRecsEmitted);
+        final boolean noPrevRecs = !stateIdToCounter.containsKey(oldestState);
+        final boolean allRecsEmitted = stateIdToCounter.get(oldestState).get() == 0;
         if (noPrevRecs || allRecsEmitted) {
-          entry.getValue().poll();
-          output.add(stateIdToState.get(peek));
+          stateIdQueue.poll(); // we have the value from the earlier peek. poll to remove.
+          output.add(stateIdToState.get(oldestState));
         } else {
           break;
         }
