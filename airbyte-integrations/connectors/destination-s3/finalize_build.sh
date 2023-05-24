@@ -7,7 +7,7 @@ if [ "$ARCH" == "x86_64" ] || [ "$ARCH" = "amd64" ]; then
   echo "$ARCH"
   yum install lzop lzo lzo-dev -y
 
-# alanechere: I'm we need this custom install of lzo anymore. Using the yum install above works in the build context.
+# alanechere: I'm not sure we need this custom install of lzo anymore. Using the yum install above works in the build context.
 elif [ "$ARCH" == "aarch64" ] || [ "$ARCH" = "arm64" ]; then
   echo "$ARCH"
   yum group install -y "Development Tools"
