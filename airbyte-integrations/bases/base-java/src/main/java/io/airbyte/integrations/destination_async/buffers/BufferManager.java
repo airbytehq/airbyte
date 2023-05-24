@@ -62,9 +62,10 @@ public class BufferManager {
     final var queueInfo = new StringBuilder().append("QUEUE INFO").append(System.lineSeparator());
 
     queueInfo
-        .append(String.format("  Global Mem Manager -- max: %s, allocated: %s",
+        .append(String.format("  Global Mem Manager -- max: %s, allocated: %s (%s MB)",
             FileUtils.byteCountToDisplaySize(memoryManager.getMaxMemoryBytes()),
-            FileUtils.byteCountToDisplaySize(memoryManager.getCurrentMemoryBytes())))
+            FileUtils.byteCountToDisplaySize(memoryManager.getCurrentMemoryBytes()),
+            (double)memoryManager.getCurrentMemoryBytes() / 1024 / 1024))
         .append(System.lineSeparator());
 
     for (final var entry : buffers.entrySet()) {
