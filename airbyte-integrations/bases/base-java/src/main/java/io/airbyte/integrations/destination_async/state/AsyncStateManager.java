@@ -81,8 +81,8 @@ public class AsyncStateManager {
   }
 
   // called by the flush workers per message
-  public void decrement(final long stateId) {
-    stateIdToCounter.get(getStateAfterAlias(stateId)).decrementAndGet();
+  public void decrement(final long stateId, long count) {
+    stateIdToCounter.get(getStateAfterAlias(stateId)).addAndGet(-count);
   }
 
   // Always try to flush all states with 0 counters.
