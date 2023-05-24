@@ -19,11 +19,11 @@ definitions:
       inject_into: "request_parameter"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
-      datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     end_datetime:
-      datetime: "{{ now_utc().strftime('%Y-%m-%d %H:%M:%S.%f') }}"
-      datetime_format: "%Y-%m-%d %H:%M:%S.%f"
-    step: "P1W"
+      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    step: "P1M"
     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     cursor_granularity: "PT0S"
     cursor_field: "lastUpdated"
