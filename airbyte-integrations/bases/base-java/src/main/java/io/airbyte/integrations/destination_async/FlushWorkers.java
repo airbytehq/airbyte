@@ -6,10 +6,12 @@ package io.airbyte.integrations.destination_async;
 
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.integrations.destination_async.buffers.BufferManager;
+import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,6 +20,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -29,7 +32,7 @@ import org.apache.commons.io.FileUtils;
  * allows for parallel data flushing.
  * <p>
  * Parallelising is important as it 1) minimises Destination backpressure 2) minimises the effect of
- * IO pauses on Destination performance. The second point is particularly important since majority
+ * IO pauses on Destination performance. The second point is particularly important since a majority
  * of Destination work is IO bound.
  * <p>
  * The {@link #supervisorThread} assigns work to worker threads by looping over
@@ -109,7 +112,7 @@ public class FlushWorkers implements AutoCloseable {
 
       // while we allow out-of-order processing for speed improvements via multiple workers reading from
       // the same queue, also avoid scheduling more workers than what is already in progress.
-      final var inProgressSizeByte = (bufferDequeue.getQueueSizeBytes(stream).get() -
+      final var inProgressSizeByte = (bufferDequeue.getQueueSizeBytes(stream).orElseThrow() -
           streamToInProgressWorkers.getOrDefault(stream, new AtomicInteger(0)).get() * QUEUE_FLUSH_THRESHOLD_BYTES);
       final var exceedSize = inProgressSizeByte >= QUEUE_FLUSH_THRESHOLD_BYTES;
       final var tooLongSinceLastRecord = bufferDequeue.getTimeOfLastRecord(stream)
@@ -120,7 +123,7 @@ public class FlushWorkers implements AutoCloseable {
         log.info(
             "Allocated stream {}, exceedSize:{}, tooLongSinceLastRecord: {}, bytes in queue: {} computed in-progress bytes: {} , threshold bytes: {}",
             stream.getName(), exceedSize, tooLongSinceLastRecord,
-            FileUtils.byteCountToDisplaySize(bufferDequeue.getQueueSizeBytes(stream).get()),
+            FileUtils.byteCountToDisplaySize(bufferDequeue.getQueueSizeBytes(stream).orElseThrow()),
             FileUtils.byteCountToDisplaySize(inProgressSizeByte),
             FileUtils.byteCountToDisplaySize(QUEUE_FLUSH_THRESHOLD_BYTES));
         allocatableThreads--;
@@ -159,11 +162,19 @@ public class FlushWorkers implements AutoCloseable {
     workerPool.submit(() -> {
       log.info("Worker picked up work..");
       try {
-        log.info("Attempting to read from queue {}. Current queue size: {}", desc, bufferDequeue.getQueueSizeInRecords(desc).get());
+        log.info("Attempting to read from queue {}. Current queue size: {}", desc, bufferDequeue.getQueueSizeInRecords(desc).orElseThrow());
 
         try (final var batch = bufferDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
-          flusher.flush(desc, batch.getData().stream()); // todo - remove stream
-          batch.commitState().ifPresent(outputRecordCollector);
+          final Map<Long, Long> stateIdToCount = batch.getData()
+              .stream()
+              .map(MessageWithMeta::stateId)
+              .collect(Collectors.groupingBy(
+                  stateId -> stateId,
+                  Collectors.counting()));
+
+          flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
+
+          batch.flushStates(stateIdToCount).forEach(outputRecordCollector);
         }
 
         log.info("Worker finished flushing. Current queue size: {}", bufferDequeue.getQueueSizeInRecords(desc));

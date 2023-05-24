@@ -4,15 +4,12 @@
 
 package io.airbyte.integrations.destination_async.buffers;
 
-import com.google.common.base.Preconditions;
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
+import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
 import io.airbyte.integrations.destination_async.state.AsyncStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.List;
-import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Map;
 
 /**
  * POJO abstraction representing one discrete buffer read. This allows ergonomics dequeues by
@@ -27,60 +24,42 @@ import org.slf4j.LoggerFactory;
  */
 public class MemoryAwareMessageBatch implements AutoCloseable {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MemoryAwareMessageBatch.class);
-
-  private final StreamDescriptor streamDescriptor;
-  private List<AirbyteMessage> batch;
+  private List<MessageWithMeta> batch;
   private final long sizeInBytes;
   private final GlobalMemoryManager memoryManager;
   private final AsyncStateManager stateManager;
-  private final long minMessageNum;
-  private final long maxMessageNum;
 
-  private boolean hasCommittedState;
-
-  public MemoryAwareMessageBatch(final StreamDescriptor streamDescriptor,
-                                 final List<AirbyteMessage> batch,
+  public MemoryAwareMessageBatch(final List<MessageWithMeta> batch,
                                  final long sizeInBytes,
-                                 final long minMessageNum,
-                                 final long maxMessageNum,
                                  final GlobalMemoryManager memoryManager,
                                  final AsyncStateManager stateManager) {
-    this.streamDescriptor = streamDescriptor;
     this.batch = batch;
     this.sizeInBytes = sizeInBytes;
-    this.minMessageNum = minMessageNum;
-    this.maxMessageNum = maxMessageNum;
     this.memoryManager = memoryManager;
     this.stateManager = stateManager;
-    hasCommittedState = false;
   }
 
-  public List<AirbyteMessage> getData() {
+  public List<MessageWithMeta> getData() {
     return batch;
   }
 
   @Override
   public void close() throws Exception {
-    if (!hasCommittedState) {
-      LOGGER.warn("Batch closed without committing state.");
-    }
     batch = null;
     memoryManager.free(sizeInBytes);
   }
 
   /**
-   * For the batch, marks all the states that have now been flushed. Also returns the best state
-   * message that it can.
+   * For the batch, marks all the states that have now been flushed. Also returns states that can be
+   * flushed. This method is descriptrive, it assumes that whatever consumes the state messages emits
+   * them, internally it purges the states it returns. message that it can.
    * <p>
-   * This method is destructive! It must called once per batch.
    *
-   * @return
+   * @return list of states that can be flushed
    */
-  public Optional<AirbyteMessage> commitState() {
-    Preconditions.checkArgument(!hasCommittedState, "This method can only be called once.");
-    hasCommittedState = true;
-    return null;
+  public List<AirbyteMessage> flushStates(final Map<Long, Long> stateIdToCount) {
+    stateIdToCount.forEach(stateManager::decrement);
+    return stateManager.flushStates();
   }
 
 }

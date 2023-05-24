@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination_async.buffers;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -38,7 +39,7 @@ class MemoryBoundedLinkedBlockingQueue<E> {
   }
 
   public void addMaxMemory(final long maxMemoryUsage) {
-    this.hiddenQueue.maxMemoryUsage.addAndGet(maxMemoryUsage);
+    hiddenQueue.maxMemoryUsage.addAndGet(maxMemoryUsage);
   }
 
   public int size() {
@@ -97,6 +98,7 @@ class MemoryBoundedLinkedBlockingQueue<E> {
       }
     }
 
+    @Nonnull
     @Override
     public MemoryBoundedLinkedBlockingQueue.MemoryItem<E> take() throws InterruptedException {
       final MemoryItem<E> memoryItem = super.take();

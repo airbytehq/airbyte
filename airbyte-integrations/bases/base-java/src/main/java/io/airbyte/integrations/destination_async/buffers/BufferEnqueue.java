@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination_async.buffers;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.integrations.destination_async.state.AsyncStateManager;
@@ -19,9 +18,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class BufferEnqueue {
 
-  private final long initialQueueSizeBytes;
   private final RecordSizeEstimator recordSizeEstimator;
-
   private final GlobalMemoryManager memoryManager;
   private final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers;
   private final AsyncStateManager stateManager;
@@ -29,15 +26,6 @@ public class BufferEnqueue {
   public BufferEnqueue(final GlobalMemoryManager memoryManager,
                        final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers,
                        final AsyncStateManager stateManager) {
-    this(GlobalMemoryManager.BLOCK_SIZE_BYTES, memoryManager, buffers, stateManager);
-  }
-
-  @VisibleForTesting
-  public BufferEnqueue(final long initialQueueSizeBytes,
-                       final GlobalMemoryManager memoryManager,
-                       final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers,
-                       final AsyncStateManager stateManager) {
-    this.initialQueueSizeBytes = initialQueueSizeBytes;
     this.memoryManager = memoryManager;
     this.buffers = buffers;
     recordSizeEstimator = new RecordSizeEstimator();

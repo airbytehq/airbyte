@@ -6,10 +6,8 @@ package io.airbyte.integrations.destination_async.buffers;
 
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.integrations.destination_async.buffers.MemoryBoundedLinkedBlockingQueue.MemoryItem;
-import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.MessageMeta;
+import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
 import io.airbyte.integrations.destination_async.state.AsyncStateManager;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.HashSet;
@@ -48,11 +46,11 @@ public class BufferDequeue {
   }
 
   /**
-   * Primary dequeue method. Best-effort read a specified optimal memory size from the queue.
+   * Primary dequeue method. Reads from queue up to optimalBytesToRead OR until the queue is empty.
    *
    * @param streamDescriptor specific buffer to take from
    * @param optimalBytesToRead bytes to read, if possible
-   * @return
+   * @return autocloseable batch object, that frees memory.
    */
   public MemoryAwareMessageBatch take(final StreamDescriptor streamDescriptor, final long optimalBytesToRead) {
     final var queue = buffers.get(streamDescriptor);
@@ -65,10 +63,7 @@ public class BufferDequeue {
     try {
       final AtomicLong bytesRead = new AtomicLong();
 
-      final AtomicLong minMessageNum = new AtomicLong();
-      final AtomicLong maxMessageNum = new AtomicLong();
-
-      final List<AirbyteMessage> s = Stream.generate(() -> {
+      final List<MessageWithMeta> s = Stream.generate(() -> {
         try {
           return queue.poll(20, TimeUnit.MILLISECONDS);
         } catch (final InterruptedException e) {
@@ -89,23 +84,13 @@ public class BufferDequeue {
           return false;
         }
       }).map(MemoryItem::item)
-          .map(messageMeta -> {
-            if (minMessageNum.get() == 0) {
-              minMessageNum.set(messageMeta.stateId()); // assumes ascending.
-            }
-            maxMessageNum.set(messageMeta.stateId()); // assumes ascending.
-            return messageMeta.message();
-          })
-          .filter(m -> m.getType() == Type.RECORD)
           .toList();
 
       queue.addMaxMemory(-bytesRead.get());
 
-      return new MemoryAwareMessageBatch(streamDescriptor,
+      return new MemoryAwareMessageBatch(
           s,
           bytesRead.get(),
-          minMessageNum.get(),
-          maxMessageNum.get(),
           memoryManager,
           stateManager);
     } finally {
@@ -115,10 +100,9 @@ public class BufferDequeue {
 
   /**
    * The following methods are provide metadata for buffer flushing calculations. Consumers are
-   * expected to call {@link #getBufferedStreams()} to retrieve the currently buffered streams as a
-   * handle to the remaining methods.
+   * expected to call it to retrieve the currently buffered streams as a handle to the remaining
+   * methods.
    */
-
   public Set<StreamDescriptor> getBufferedStreams() {
     return new HashSet<>(buffers.keySet());
   }
@@ -127,7 +111,7 @@ public class BufferDequeue {
     return buffers.values().stream().map(StreamAwareQueue::getCurrentMemoryUsage).mapToLong(Long::longValue).sum();
   }
 
-  public Optional<MessageMeta> peek(final StreamDescriptor streamDescriptor) {
+  public Optional<MessageWithMeta> peek(final StreamDescriptor streamDescriptor) {
     return getBuffer(streamDescriptor).flatMap(StreamAwareQueue::peek);
   }
 

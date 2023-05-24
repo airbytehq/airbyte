@@ -63,7 +63,7 @@ public class AsyncStateManager {
   }
 
   // called by the flush workers per message
-  public void decrement(final long stateId, long count) {
+  public void decrement(final long stateId, final long count) {
     stateIdToCounter.get(getStateAfterAlias(stateId)).addAndGet(-count);
   }
 
@@ -93,7 +93,7 @@ public class AsyncStateManager {
     return output;
   }
 
-  private void convertToGlobalIfNeeded(AirbyteMessage message) {
+  private void convertToGlobalIfNeeded(final AirbyteMessage message) {
     // instead of checking for global or legacy, check for the inverse of stream.
     stateType = extractStateType(message);
     if (stateType != AirbyteStateMessage.AirbyteStateType.STREAM) {// alias old stream-level state ids to single global state id
@@ -104,15 +104,15 @@ public class AsyncStateManager {
       streamToStateIdQ.clear();
       retroactiveGlobalStateId = PkWhatever.getNextId();
 
-      this.streamToStateIdQ.put(SENTINEL_GLOBAL_DESC, new LinkedList<>());
-      this.streamToStateIdQ.get(SENTINEL_GLOBAL_DESC).add(retroactiveGlobalStateId);
+      streamToStateIdQ.put(SENTINEL_GLOBAL_DESC, new LinkedList<>());
+      streamToStateIdQ.get(SENTINEL_GLOBAL_DESC).add(retroactiveGlobalStateId);
 
       final long combinedCounter = stateIdToCounter.values()
           .stream()
           .mapToLong(AtomicLong::get)
           .sum();
-      this.stateIdToCounter.clear();
-      this.stateIdToCounter.put(retroactiveGlobalStateId, new AtomicLong(combinedCounter));
+      stateIdToCounter.clear();
+      stateIdToCounter.put(retroactiveGlobalStateId, new AtomicLong(combinedCounter));
     }
   }
 

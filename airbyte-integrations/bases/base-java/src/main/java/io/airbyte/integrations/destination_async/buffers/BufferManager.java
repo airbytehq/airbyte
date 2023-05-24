@@ -25,12 +25,11 @@ public class BufferManager {
   private final BufferDequeue bufferDequeue;
   private final GlobalMemoryManager memoryManager;
   private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
-  private final AsyncStateManager stateManager;
 
   public BufferManager() {
     memoryManager = new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES);
     buffers = new ConcurrentHashMap<>();
-    stateManager = new AsyncStateManager();
+    final AsyncStateManager stateManager = new AsyncStateManager();
     bufferEnqueue = new BufferEnqueue(memoryManager, buffers, stateManager);
     bufferDequeue = new BufferDequeue(memoryManager, buffers, stateManager);
     debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 10, TimeUnit.SECONDS);
