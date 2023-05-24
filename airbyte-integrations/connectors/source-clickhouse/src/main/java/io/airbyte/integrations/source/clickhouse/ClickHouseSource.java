@@ -79,7 +79,7 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
    * {@link ru.yandex.clickhouse.ClickHouseStatementImpl#setFetchSize} is empty
    */
   public ClickHouseSource() {
-    super(DRIVER_CLASS, NoOpStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
+    super(DRIVER_CLASS, NoOpStreamingQueryConfig::new, new ClickhouseSourceOperations());
   }
 
   @Override
