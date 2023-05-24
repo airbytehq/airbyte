@@ -25,6 +25,7 @@ import static io.airbyte.integrations.source.postgres.PostgresType.VARCHAR;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,9 @@ public class PostgresUtils {
   public static final Duration MIN_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(2);
   public static final Duration MAX_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(20);
   public static final Duration DEFAULT_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(5);
+  private static final int MIN_QUEUE_SIZE = 1000;
+  private static final int MAX_QUEUE_SIZE = 10000;
+
 
   public static String getPluginValue(final JsonNode field) {
     return field.has("plugin") ? field.get("plugin").asText() : PGOUTPUT_PLUGIN;
@@ -69,6 +73,33 @@ public class PostgresUtils {
       return Optional.of(seconds);
     }
     return Optional.empty();
+  }
+
+  private static OptionalInt extractQueueSizeFromConfig(final JsonNode config) {
+    final JsonNode replicationMethod = config.get("replication_method");
+    if (replicationMethod != null && replicationMethod.has("queue_size")) {
+      final int queueSize = config.get("replication_method").get("queue_size").asInt();
+      return OptionalInt.of(queueSize);
+    }
+    return OptionalInt.empty();
+  }
+
+  public static int getQueueSize(final JsonNode config) {
+    final OptionalInt sizeFromConfig = extractQueueSizeFromConfig(config);
+    if (sizeFromConfig.isPresent()) {
+      int size = sizeFromConfig.getAsInt();
+      if (size < MIN_QUEUE_SIZE) {
+        LOGGER.warn("Queue size is overridden to {} , which is the min allowed for safety.",
+            MIN_FIRST_RECORD_WAIT_TIME.toMinutes());
+        return MIN_QUEUE_SIZE;
+      } else if (size > MAX_QUEUE_SIZE) {
+        LOGGER.warn("Queue size is overridden to {} , which is the max allowed for safety.",
+            MAX_FIRST_RECORD_WAIT_TIME.toMinutes());
+        return MAX_QUEUE_SIZE;
+      }
+      return size;
+    }
+    return MAX_QUEUE_SIZE;
   }
 
   public static void checkFirstRecordWaitTime(final JsonNode config) {
