@@ -34,6 +34,8 @@ dependencies {
     implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.3') {
         exclude group: 'org.slf4j', module: 'slf4j-log4j12'
         exclude group: 'org.slf4j', module: 'slf4j-reload4j'
+        // https://nvd.nist.gov/vuln/detail/CVE-2019-20444
+        exclude group: 'io.netty', module: 'netty'
     }
     implementation ('org.apache.parquet:parquet-avro:1.12.0') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}

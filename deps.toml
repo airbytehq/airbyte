@@ -31,7 +31,7 @@ postgresql = "42.3.5"
 reactor = "3.5.2"
 segment = "2.1.1"
 slf4j = "2.0.7"
-temporal = "1.17.0"
+temporal = "1.19.1"
 debezium = "2.2.0.Final"
 
 [libraries]

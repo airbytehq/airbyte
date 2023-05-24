@@ -2,6 +2,12 @@ plugins {
     id "java-library"
 }
 
+configurations.all {
+    resolutionStrategy {
+        force libs.fasterxml
+    }
+}
+
 dependencies {
     annotationProcessor platform(libs.micronaut.bom)
     annotationProcessor libs.bundles.micronaut.annotation.processor
@@ -14,6 +20,7 @@ dependencies {
     implementation libs.guava
     implementation(libs.temporal.sdk) {
         exclude module: 'guava'
+        exclude module: 'com.fasterxml.jackson'
     }
     implementation 'org.apache.ant:ant:1.10.10'
     implementation 'org.apache.commons:commons-text:1.10.0'

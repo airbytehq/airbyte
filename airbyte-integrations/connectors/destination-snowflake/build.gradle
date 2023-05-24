@@ -26,15 +26,29 @@ application {
 
 configurations.all {
     resolutionStrategy {
-        force libs.fasterxml, 'org.apache.sshd:sshd-core:2.10.0', 'org.apache.sshd:sshd-mina:2.10.0', 'org.apache.sshd:sshd-common:2.10.0',
-                'com.fasterxml.jackson:jackson-bom:2.15.1', 'com.fasterxml.jackson.core:jackson-databind:2.15.1',
-                'com.fasterxml.jackson.core:jackson-core:2.15.1', 'io.netty:netty-all:4.1.92.Final'
-        force 'org.elasticsearch.client:elasticsearch-rest-high-level-client:7.17.10'
+        force libs.fasterxml, libs.jsonsmart, 'com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.15.1'
+//                'org.apache.sshd:sshd-core:2.10.0', 'org.apache.sshd:sshd-mina:2.10.0', 'org.apache.sshd:sshd-common:2.10.0',
+//                'com.fasterxml.jackson:jackson-bom:2.15.1', 'com.fasterxml.jackson.core:jackson-databind:2.15.1',
+//                'com.fasterxml.jackson.core:jackson-core:2.15.1', 'io.netty:netty-all:4.1.92.Final'
+        force libs.log4j.core, libs.log4j.api, libs.log4j.impl, libs.log4j.web
     }
-
 }
 
+
 dependencies {
+    implementation(libs.appender.log4j2.get()) {
+        exclude group: 'org.elasticsearch.client', module: 'elasticsearch-rest-high-level-client'
+        // https://nvd.nist.gov/vuln/detail/CVE-2022-23305
+        exclude group: 'log4j', module: 'log4j'
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-core'
+        exclude group: 'com.amazonaws', module: 'aws-java-sdk-s3'
+    }
+
+    implementation(libs.aws.java.sdk.s3.get()) {
+        exclude group: 'com.fasterxml.jackson.dataformat', module: 'jackson-dataformat-cbor'
+    }
+
+
     implementation 'com.google.cloud:google-cloud-storage:2.22.2'
     implementation 'com.google.auth:google-auth-library-oauth2-http:1.17.0'
   // Updating to any newer version (e.g. 3.13.22) is causing a regression with normalization. 
@@ -49,7 +63,7 @@ dependencies {
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
-    implementation project(':airbyte-integrations:connectors:destination-gcs')
+//    implementation project(':airbyte-integrations:connectors:destination-gcs')
     implementation project(':airbyte-integrations:bases:base-java-s3')
     implementation libs.airbyte.protocol
 
