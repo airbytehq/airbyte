@@ -99,5 +99,6 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date       | Pull Request                                               | Subject                               |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------|
+| 0.1.2   | 2023-05-23 | [\#19109](https://github.com/airbytehq/airbyte/pull/19109) | Enabled Append Dedub mode             |
 | 0.1.1   | 2023-04-04 | [\#24604](https://github.com/airbytehq/airbyte/pull/24604) | Support for destination checkpointing |
 | 0.1.0   | 2022-08-12 | [\#15592](https://github.com/airbytehq/airbyte/pull/15592) | Added TiDB destination.               |
