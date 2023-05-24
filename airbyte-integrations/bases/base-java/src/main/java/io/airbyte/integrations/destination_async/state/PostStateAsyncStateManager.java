@@ -89,10 +89,6 @@ public class PostStateAsyncStateManager {
       closeState(initialState);
     }
 
-    // streamToStateId = new ConcurrentHashMap<>();
-    // streamToOpenState = new ConcurrentHashMap<>();
-    // stateIdToState = new ConcurrentHashMap<>();
-    // stateIdToCounter = new ConcurrentHashMap<>();
   }
 
   public long getStateId(final StreamDescriptor streamDescriptor) {
