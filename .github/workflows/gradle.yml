@@ -207,7 +207,6 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
-
   # Connectors Base
   # In case of self-hosted EC2 errors, remove this block.
   start-connectors-base-build-runner:
@@ -272,7 +271,7 @@ jobs:
         run: python3 -m pip install virtualenv==16.7.9 --user
 
       - name: Install automake
-        run: apt-get install -y automake build-essential libtool libtool-bin autoconf
+        run: apt-get update && apt-get install -y automake build-essential libtool libtool-bin autoconf
 
       - name: Set up CI Gradle Properties
         run: |
