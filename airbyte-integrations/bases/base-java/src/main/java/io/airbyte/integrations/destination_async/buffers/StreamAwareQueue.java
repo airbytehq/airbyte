@@ -19,7 +19,7 @@ public class StreamAwareQueue {
   private final AtomicReference<Instant> timeOfLastMessage;
   private final AtomicLong minMessageNum;
 
-  private final MemoryBoundedLinkedBlockingQueue<Meta> memoryAwareQueue;
+  private final MemoryBoundedLinkedBlockingQueue<MessageMeta> memoryAwareQueue;
 
   public StreamAwareQueue(final long maxMemoryUsage) {
     memoryAwareQueue = new MemoryBoundedLinkedBlockingQueue<>(maxMemoryUsage);
@@ -39,18 +39,14 @@ public class StreamAwareQueue {
     return Optional.ofNullable(timeOfLastMessage.get());
   }
 
-  public long getMinMessageNum() {
-    return minMessageNum.get();
-  }
-
   // todo (make sure it gets set on first write).
   public void updateMinMessageNum() {
     if (memoryAwareQueue.peek() != null) {
-      minMessageNum.set(memoryAwareQueue.peek().item().messageNum());
+      minMessageNum.set(memoryAwareQueue.peek().item().stateId());
     }
   }
 
-  public Optional<Meta> peek() {
+  public Optional<MessageMeta> peek() {
     return Optional.ofNullable(memoryAwareQueue.peek()).map(MemoryItem::item);
   }
 
@@ -58,8 +54,8 @@ public class StreamAwareQueue {
     return memoryAwareQueue.size();
   }
 
-  public boolean offer(final AirbyteMessage message, final long messageNum, final long itemSizeInBytes) {
-    if (memoryAwareQueue.offer(new Meta(message, messageNum), itemSizeInBytes)) {
+  public boolean offer(final AirbyteMessage message, final long messageNum, final long stateId) {
+    if (memoryAwareQueue.offer(new MessageMeta(message, messageNum), stateId)) {
       timeOfLastMessage.set(Instant.now());
       return true;
     } else {
@@ -67,18 +63,18 @@ public class StreamAwareQueue {
     }
   }
 
-  public MemoryBoundedLinkedBlockingQueue.MemoryItem<Meta> take() throws InterruptedException {
+  public MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageMeta> take() throws InterruptedException {
     return memoryAwareQueue.take();
   }
 
-  public MemoryBoundedLinkedBlockingQueue.MemoryItem<Meta> poll() {
+  public MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageMeta> poll() {
     return memoryAwareQueue.poll();
   }
 
-  public MemoryBoundedLinkedBlockingQueue.MemoryItem<Meta> poll(final long timeout, final TimeUnit unit) throws InterruptedException {
+  public MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageMeta> poll(final long timeout, final TimeUnit unit) throws InterruptedException {
     return memoryAwareQueue.poll(timeout, unit);
   }
 
-  public record Meta(AirbyteMessage message, long messageNum) {}
+  public record MessageMeta(AirbyteMessage message, long stateId) {}
 
 }

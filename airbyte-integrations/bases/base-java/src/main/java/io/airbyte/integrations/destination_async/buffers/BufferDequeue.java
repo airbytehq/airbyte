@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination_async.buffers;
 
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.integrations.destination_async.buffers.MemoryBoundedLinkedBlockingQueue.MemoryItem;
-import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.Meta;
+import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.MessageMeta;
 import io.airbyte.integrations.destination_async.state.AsyncStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -89,12 +89,12 @@ public class BufferDequeue {
           return false;
         }
       }).map(MemoryItem::item)
-          .map(meta -> {
+          .map(messageMeta -> {
             if (minMessageNum.get() == 0) {
-              minMessageNum.set(meta.messageNum()); // assumes ascending.
+              minMessageNum.set(messageMeta.stateId()); // assumes ascending.
             }
-            maxMessageNum.set(meta.messageNum()); // assumes ascending.
-            return meta.message();
+            maxMessageNum.set(messageMeta.stateId()); // assumes ascending.
+            return messageMeta.message();
           })
           .filter(m -> m.getType() == Type.RECORD)
           .toList();
@@ -127,7 +127,7 @@ public class BufferDequeue {
     return buffers.values().stream().map(StreamAwareQueue::getCurrentMemoryUsage).mapToLong(Long::longValue).sum();
   }
 
-  public Optional<Meta> peek(final StreamDescriptor streamDescriptor) {
+  public Optional<MessageMeta> peek(final StreamDescriptor streamDescriptor) {
     return getBuffer(streamDescriptor).flatMap(StreamAwareQueue::peek);
   }
 

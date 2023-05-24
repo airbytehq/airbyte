@@ -64,18 +64,20 @@ public class BufferEnqueue {
     }
   }
 
-  private void handleRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message, final long messageNum) {
+  private void handleRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message) {
+    // todo (cgardens) - i hate this thing. it's mostly useless.
     final long messageSize = recordSizeEstimator.getEstimatedByteSize(message.getRecord());
+    final long stateId = stateManager.getStateId(streamDescriptor);
 
     final var queue = buffers.get(streamDescriptor);
-    var addedToQueue = queue.offer(message, messageNum, messageSize);
+    var addedToQueue = queue.offer(message, messageSize, stateId);
 
     while (!addedToQueue) {
       final var newlyAllocatedMemory = memoryManager.requestMemory();
       if (newlyAllocatedMemory > 0) {
         queue.addMaxMemory(newlyAllocatedMemory);
       }
-      addedToQueue = queue.offer(message, messageNum, messageSize);
+      addedToQueue = queue.offer(message, messageSize, stateId);
     }
   }
 
