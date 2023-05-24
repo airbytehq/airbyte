@@ -72,13 +72,13 @@ public class AsyncStateManager {
     // no unboxing should happen since we always guarantee the Long exists.
     final Long stateId = streamToStateIdQ.get(streamDescriptor).peekLast();
     final var update = stateIdToCounter.get(stateId).addAndGet(increment);
-    log.info("State id: {}, count: {}", stateId, update);
+    log.trace("State id: {}, count: {}", stateId, update);
     return stateId;
   }
 
   // called by the flush workers per message
   public void decrement(final long stateId, final long count) {
-    log.info("decrementing state id: {}, count: {}", stateId, count);
+    log.trace("decrementing state id: {}, count: {}", stateId, count);
     stateIdToCounter.get(getStateAfterAlias(stateId)).addAndGet(-count);
   }
 
