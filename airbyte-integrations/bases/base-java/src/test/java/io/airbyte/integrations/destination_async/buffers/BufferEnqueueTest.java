@@ -9,7 +9,7 @@ import static org.mockito.Mockito.mock;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
-import io.airbyte.integrations.destination_async.state.AsyncStateManager;
+import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
@@ -22,7 +22,7 @@ public class BufferEnqueueTest {
   void testAddRecordShouldAdd() {
     final var twoMB = 2 * 1024 * 1024;
     final var streamToBuffer = new ConcurrentHashMap<StreamDescriptor, StreamAwareQueue>();
-    final var enqueue = new BufferEnqueue(new GlobalMemoryManager(twoMB), streamToBuffer, mock(AsyncStateManager.class));
+    final var enqueue = new BufferEnqueue(new GlobalMemoryManager(twoMB), streamToBuffer, mock(GlobalAsyncStateManager.class));
 
     final var streamName = "stream";
     final var stream = new StreamDescriptor().withName(streamName);
@@ -43,7 +43,7 @@ public class BufferEnqueueTest {
     final var oneKb = 1024;
     final var streamToBuffer = new ConcurrentHashMap<StreamDescriptor, StreamAwareQueue>();
     final var enqueue =
-        new BufferEnqueue(new GlobalMemoryManager(oneKb), streamToBuffer, mock(AsyncStateManager.class));
+        new BufferEnqueue(new GlobalMemoryManager(oneKb), streamToBuffer, mock(GlobalAsyncStateManager.class));
 
     final var streamName = "stream";
     final var stream = new StreamDescriptor().withName(streamName);

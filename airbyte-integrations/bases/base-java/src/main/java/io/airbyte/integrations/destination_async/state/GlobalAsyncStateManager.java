@@ -20,7 +20,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.util.ConcurrentHashSet;
 
@@ -45,42 +44,58 @@ public class AsyncStateManager {
   // Always assume STREAM to begin, and convert only if needed. Most state is per stream anyway.
   private AirbyteStateMessage.AirbyteStateType stateType = AirbyteStateMessage.AirbyteStateType.STREAM;
 
+  /**
+   * Main method to process state messages.
+   * <p>
+   * The first incoming state message tells us the type of state we are dealing with. We then convert
+   * internal data structures if needed.
+   * <p>
+   * Because state messages are a watermark, all preceding records need to be flushed before the state
+   * message can be processed.
+   */
   public void trackState(final AirbyteMessage message) {
     if (preState) {
       convertToGlobalIfNeeded(message);
       preState = false;
     }
+    // stateType should not change after a conversion.
     Preconditions.checkArgument(stateType == extractStateType(message));
 
     closeState(message);
   }
 
-  public long getStateIdAndIncrement(final StreamDescriptor streamDescriptor) {
-    return getStateId(streamDescriptor, 1);
+  /**
+   * Identical to {@link #getStateId(StreamDescriptor)} except this increments the associated counter
+   * by 1. Intended to be called whenever a record is ingested.
+   *
+   * @param streamDescriptor - stream to get stateId for.
+   * @return state id
+   */
+  public long getStateIdAndIncrementCounter(final StreamDescriptor streamDescriptor) {
+    return getStateIdAndIncrement(streamDescriptor, 1);
   }
 
-  public long getStateId(final StreamDescriptor streamDescriptor) {
-    return getStateId(streamDescriptor, 0);
-  }
-
-  private Long getStateId(final StreamDescriptor streamDescriptor, final long increment) {
-    final StreamDescriptor resolvedDescriptor = stateType == AirbyteStateMessage.AirbyteStateType.STREAM ? streamDescriptor : SENTINEL_GLOBAL_DESC;
-    if (!streamToStateIdQ.containsKey(resolvedDescriptor)) {
-      registerNewStreamDescriptor(resolvedDescriptor);
-    }
-    final Long stateId = streamToStateIdQ.get(resolvedDescriptor).peekLast();
-    final var update = stateIdToCounter.get(stateId).addAndGet(increment);
-    log.trace("State id: {}, count: {}", stateId, update);
-    return stateId;
-  }
-
-  // called by the flush workers per message
+  /**
+   * Each decrement represent one written record for a state. A zero counter means there are no more
+   * inflight records associated with a state and the state can be flushed.
+   *
+   * @param stateId reference to a state.
+   * @param count to decrement.
+   */
   public void decrement(final long stateId, final long count) {
     log.trace("decrementing state id: {}, count: {}", stateId, count);
     stateIdToCounter.get(getStateAfterAlias(stateId)).addAndGet(-count);
   }
 
-  // Always try to flush all states with 0 counters.
+  /**
+   * Returns state messages with no more inflight records i.e. counter = 0 across all streams.
+   * Intended to be called by {@link io.airbyte.integrations.destination_async.FlushWorkers} after a
+   * worker has finished flushing its record batch.
+   * <p>
+   * The return list of states should be emitted back to the platform.
+   *
+   * @return list of state messages with no more inflight records.
+   */
   public List<AirbyteMessage> flushStates() {
     final List<AirbyteMessage> output = new ArrayList<>();
     for (final Map.Entry<StreamDescriptor, LinkedList<Long>> entry : streamToStateIdQ.entrySet()) {
@@ -97,7 +112,7 @@ public class AsyncStateManager {
         final boolean noPrevRecs = !stateIdToCounter.containsKey(oldestState);
         final boolean allRecsEmitted = stateIdToCounter.get(oldestState).get() == 0;
         if (noPrevRecs || allRecsEmitted) {
-          stateIdQueue.poll(); // we have the value from the earlier peek. poll to remove.
+          stateIdQueue.poll(); // poll to remove. no need to read as the earlier peek is still valid.
           output.add(stateIdToState.get(oldestState));
         } else {
           break;
@@ -107,6 +122,31 @@ public class AsyncStateManager {
     return output;
   }
 
+  private Long getStateIdAndIncrement(final StreamDescriptor streamDescriptor, final long increment) {
+    final StreamDescriptor resolvedDescriptor = stateType == AirbyteStateMessage.AirbyteStateType.STREAM ? streamDescriptor : SENTINEL_GLOBAL_DESC;
+    if (!streamToStateIdQ.containsKey(resolvedDescriptor)) {
+      registerNewStreamDescriptor(resolvedDescriptor);
+    }
+    final Long stateId = streamToStateIdQ.get(resolvedDescriptor).peekLast();
+    final var update = stateIdToCounter.get(stateId).addAndGet(increment);
+    log.trace("State id: {}, count: {}", stateId, update);
+    return stateId;
+  }
+
+  /**
+   * Return the internal id of a state message. This is the id that should be used to reference a
+   * state when interacting with all methods in this class.
+   *
+   * @param streamDescriptor - stream to get stateId for.
+   * @return state id
+   */
+  private long getStateId(final StreamDescriptor streamDescriptor) {
+    return getStateIdAndIncrement(streamDescriptor, 0);
+  }
+
+  /**
+   * Because the
+   */
   private void convertToGlobalIfNeeded(final AirbyteMessage message) {
     // instead of checking for global or legacy, check for the inverse of stream.
     stateType = extractStateType(message);
@@ -116,7 +156,7 @@ public class AsyncStateManager {
 
       aliasIds.addAll(streamToStateIdQ.values().stream().flatMap(Collection::stream).toList());
       streamToStateIdQ.clear();
-      retroactiveGlobalStateId = PkWhatever.getNextId();
+      retroactiveGlobalStateId = StateIdProvider.getNextId();
 
       streamToStateIdQ.put(SENTINEL_GLOBAL_DESC, new LinkedList<>());
       streamToStateIdQ.get(SENTINEL_GLOBAL_DESC).add(retroactiveGlobalStateId);
@@ -139,6 +179,11 @@ public class AsyncStateManager {
     }
   }
 
+  /**
+   * When a state message is received, 'close' the previous state to associate the existing state id
+   * to the newly arrived state message. We also increment the state id in preparation for the next
+   * state message.
+   */
   private void closeState(final AirbyteMessage message) {
     final StreamDescriptor resolvedDescriptor = extractStream(message).orElse(SENTINEL_GLOBAL_DESC);
     stateIdToState.put(getStateId(resolvedDescriptor), message);
@@ -163,12 +208,15 @@ public class AsyncStateManager {
   }
 
   private void registerNewStateId(final StreamDescriptor resolvedDescriptor) {
-    final long stateId = PkWhatever.getNextId();
+    final long stateId = StateIdProvider.getNextId();
     streamToStateIdQ.get(resolvedDescriptor).add(stateId);
     stateIdToCounter.put(stateId, new AtomicLong(0));
   }
 
-  private static class PkWhatever {
+  /**
+   * Simplify internal tracking by providing a global always increasing counter for state ids.
+   */
+  private static class StateIdProvider {
 
     private static long pk = 0;
 
