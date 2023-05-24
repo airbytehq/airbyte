@@ -13,6 +13,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_nested_mapping i
         ("test_field_value", "nested/field", "value"),
         ("test_number", "nested/number", 100),
         ("test_interpolated_number", "nested/nested_array/1/value", 5),
+        ("test_interpolated_boolean", "nested/nested_array/2/value", True),
         ("test_field_to_interpolate_from_config", "nested/config_value", "VALUE_FROM_CONFIG"),
         ("test_field_to_interpolate_from_kwargs", "nested/kwargs_value", "VALUE_FROM_KWARGS"),
         ("test_field_to_interpolate_from_parameters", "nested/parameters_value", "VALUE_FROM_PARAMETERS"),
@@ -27,6 +28,7 @@ def test(test_name, path, expected_value):
                 "nested_array": [
                     {"{{ parameters.k }}": "VALUE"},
                     {"value": "{{ config['num_value'] | int + 2 }}"},
+                    {"value": "{{ True }}"},
                 ],
                 "config_value": "{{ config['c'] }}",
                 "parameters_value": "{{ parameters['b'] }}",
