@@ -5,7 +5,7 @@ from orchestrator.assets.registry_report import (
     all_sources_dataframe,
     all_destinations_dataframe,
 )
-from orchestrator.assets.registry import (
+from orchestrator.assets.registry_report import (
     oss_destinations_dataframe,
     cloud_destinations_dataframe,
     oss_sources_dataframe,
