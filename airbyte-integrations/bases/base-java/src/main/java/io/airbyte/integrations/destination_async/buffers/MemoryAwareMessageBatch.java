@@ -10,6 +10,8 @@ import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * POJO abstraction representing one discrete buffer read. This allows ergonomics dequeues by
@@ -23,7 +25,7 @@ import java.util.Map;
  * freed up memory and avoid memory leaks.
  */
 public class MemoryAwareMessageBatch implements AutoCloseable {
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(MemoryAwareMessageBatch.class);
   private List<MessageWithMeta> batch;
   private final long sizeInBytes;
   private final GlobalMemoryManager memoryManager;
@@ -46,6 +48,7 @@ public class MemoryAwareMessageBatch implements AutoCloseable {
   @Override
   public void close() throws Exception {
     batch = null;
+    LOGGER.info("memoryManager.free({}})", sizeInBytes);
     memoryManager.free(sizeInBytes);
   }
 
