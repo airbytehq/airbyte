@@ -134,8 +134,16 @@ pub fn fix_nonstandard_jsonschema_attributes(schema: &mut serde_json::Value) {
         // a mapping from a jsonschema type to an internal airbyte type
         map.remove("airbyte_type");
 
-        // another attribute that is sometimes used in airbyte schemas
+        // some other attributes that are sometimes used in airbyte schemas
         map.remove("name");
+        map.remove("xml");
+
+        if let Some(serde_json::Value::String(f)) = map.get("format") {
+            if f == "int32" || f == "int64" {
+                // Insert updates values
+                map.insert("format".to_string(), json!("integer"));
+            }
+        }
     }, "".to_string())
 }
 
@@ -408,7 +416,8 @@ mod test {
                         },
                         "airbyte_type": {
                             "type": "string",
-                            "airbyte_type": "string"
+                            "airbyte_type": "string",
+                            "xml": {}
                         },
                         "id": {
                             "type": ["string", "null"],
@@ -442,6 +451,43 @@ mod test {
                                 "type": ["string", "null"]
                             }
                         }
+                    }
+                }
+            })
+        );
+    }
+
+    #[test]
+    fn test_fix_nonstandard_jsonschema_format_int32_int64() {
+        let doc_schema = r#"{
+            "type": ["object", "null"],
+            "airbyte_hidden": true,
+            "properties": {
+                "my_key": {
+                    "type": ["string", "null"],
+                    "format": "int32"
+                },
+                "my_key_2": {
+                    "type": ["string", "null"],
+                    "format": "int64"
+                }
+            }
+        }"#.to_string();
+
+        let mut doc = serde_json::from_str(&doc_schema).unwrap();
+        fix_nonstandard_jsonschema_attributes(&mut doc);
+        assert_eq!(
+            doc,
+            json!({
+                "type": ["object", "null"],
+                "properties": {
+                    "my_key": {
+                        "type": ["string", "null"],
+                        "format": "integer"
+                    },
+                    "my_key_2": {
+                        "type": ["string", "null"],
+                        "format": "integer"
                     }
                 }
             })

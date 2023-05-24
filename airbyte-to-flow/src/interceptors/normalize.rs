@@ -55,6 +55,8 @@ fn normalize_to_rfc3339(doc: &mut serde_json::Value, ptr: doc::Pointer) {
                 _ => {
                     let parsed = parse(v).or_else(|_|
                         chrono::DateTime::parse_from_str(v, "%Y-%m-%dT%H:%M:%S%.3f%z").map(|d| d.with_timezone(&chrono::Utc))
+                    ).or_else(|_|
+                        chrono::NaiveDateTime::parse_from_str(v, "%Y-%m-%dT%H:%M:%S%.3f").map(|d| d.and_local_timezone(chrono::Utc).unwrap())
                     );
                     if let Ok(parsed) = parsed {
                         let formatted = parsed.to_rfc3339_opts(SecondsFormat::AutoSi, true);
@@ -184,6 +186,38 @@ mod tests {
                     "created": "2023-01-30T02:34:15Z",
                     "nested": {
                         "x": "2020-03-25T21:03:18Z"
+                    }
+                }),
+            ),
+            (
+                serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                        "created": {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "nested": {
+                            "type": "object",
+                            "properties": {
+                                "x": {
+                                    "type": ["string", "null"],
+                                    "format": "date-time"
+                                }
+                            }
+                        }
+                    }
+                }),
+                serde_json::json!({
+                    "created": "2023-01-30 02:34:15",
+                    "nested": {
+                        "x": "2021-03-02T23:00:00"
+                    }
+                }),
+                serde_json::json!({
+                    "created": "2023-01-30T02:34:15Z",
+                    "nested": {
+                        "x": "2021-03-02T23:00:00Z"
                     }
                 }),
             )
