@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Responsible for managing global memory across multiple queues in a thread-safe way.
  * <p>
- * This means memory allocation and deallocation for each queue can be dynamically adjusted
+ * This means memory allocation and de-allocation for each queue can be dynamically adjusted
  * according to the overall available memory. Memory blocks are managed in chunks of
  * {@link #BLOCK_SIZE_BYTES}, and the total amount of memory managed is configured at creation time.
  * <p>
