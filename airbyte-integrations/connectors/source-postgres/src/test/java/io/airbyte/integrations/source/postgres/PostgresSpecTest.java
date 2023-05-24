@@ -28,7 +28,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /**
- * Tests that the poPoste some gotchas in correctly configuring the oneOf.
+ * Tests that the postgres spec passes JsonSchema validation. While this may seem like overkill, we
+ * are doing it because there are some gotchas in correctly configuring the oneOf.
  */
 public class PostgresSpecTest {
 
