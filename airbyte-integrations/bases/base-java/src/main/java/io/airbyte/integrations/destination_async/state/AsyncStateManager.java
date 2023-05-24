@@ -52,14 +52,25 @@ public class AsyncStateManager {
     closeState(message);
   }
 
+  public long getStateIdAndIncrement(final StreamDescriptor streamDescriptor) {
+    return getStateId(streamDescriptor, 1);
+  }
+
   public long getStateId(final StreamDescriptor streamDescriptor) {
+    return getStateId(streamDescriptor, 0);
+  }
+
+  private Long getStateId(StreamDescriptor streamDescriptor, long increment) {
     final StreamDescriptor resolvedDescriptor = stateType == AirbyteStateMessage.AirbyteStateType.STREAM ? streamDescriptor : SENTINEL_GLOBAL_DESC;
 
     if (!streamToStateIdQ.containsKey(resolvedDescriptor)) {
       registerNewStreamDescriptor(resolvedDescriptor);
     }
     // no unboxing should happen since we always guarantee the Long exists.
-    return streamToStateIdQ.get(streamDescriptor).peekLast();
+    final Long stateId = streamToStateIdQ.get(streamDescriptor).peekLast();
+    final var update = stateIdToCounter.get(stateId).addAndGet(increment);
+    System.out.println("Updated: " + update);
+    return stateId;
   }
 
   // called by the flush workers per message
@@ -73,15 +84,21 @@ public class AsyncStateManager {
     for (final Map.Entry<StreamDescriptor, LinkedList<Long>> entry : streamToStateIdQ.entrySet()) {
       // walk up the states until we find one that has a non zero counter.
       while (true) {
+        System.out.println("======");
         final Long peek = entry.getValue().peek();
+        System.out.println(peek);
         final boolean emptyQ = peek == null;
         final boolean noCorrespondingStateMsg = stateIdToState.get(peek) == null;
         if (emptyQ || noCorrespondingStateMsg) {
+          System.out.println("broken");
           break;
         }
 
         final boolean noPrevRecs = !stateIdToCounter.containsKey(peek);
+        System.out.println(noPrevRecs);
         final boolean allRecsEmitted = stateIdToCounter.get(peek).get() == 0;
+        System.out.println(stateIdToCounter.get(peek).get());
+        System.out.println(allRecsEmitted);
         if (noPrevRecs || allRecsEmitted) {
           entry.getValue().poll();
           output.add(stateIdToState.get(peek));
@@ -151,7 +168,7 @@ public class AsyncStateManager {
   private void registerNewStateId(final StreamDescriptor resolvedDescriptor) {
     final long stateId = PkWhatever.getNextId();
     streamToStateIdQ.get(resolvedDescriptor).add(stateId);
-    stateIdToCounter.put(stateId, new AtomicLong());
+    stateIdToCounter.put(stateId, new AtomicLong(0));
   }
 
   private static class PkWhatever {

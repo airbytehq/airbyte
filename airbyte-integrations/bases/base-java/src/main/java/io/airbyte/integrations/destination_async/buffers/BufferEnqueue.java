@@ -54,7 +54,7 @@ public class BufferEnqueue {
   private void handleRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message) {
     // todo (cgardens) - i hate this thing. it's mostly useless.
     final long messageSize = recordSizeEstimator.getEstimatedByteSize(message.getRecord());
-    final long stateId = stateManager.getStateId(streamDescriptor);
+    final long stateId = stateManager.getStateIdAndIncrement(streamDescriptor);
 
     final var queue = buffers.get(streamDescriptor);
     var addedToQueue = queue.offer(message, messageSize, stateId);
