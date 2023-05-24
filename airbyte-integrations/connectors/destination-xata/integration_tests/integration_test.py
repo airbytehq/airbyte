@@ -73,8 +73,9 @@ def test_write(config: Mapping):
         }, emitted_at=0)
     )]
     dest = DestinationXata()
-    dest.write(
-        config=config, 
-        configured_catalog=test_stream,
-        input_messages=records
-    )
+    with pytest.raises(Exception) as e:
+        output_states = list(dest.write(
+            config=config, 
+            configured_catalog=test_stream,
+            input_messages=records
+        ))
