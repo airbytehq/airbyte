@@ -15,9 +15,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Slf4j
 public class BufferManager {
+  private static final Logger LOGGER = LoggerFactory.getLogger(BufferManager.class);
 
   public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.8);
   private final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers;
@@ -27,6 +30,7 @@ public class BufferManager {
   private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
 
   public BufferManager() {
+    LOGGER.info("Memory available to the JVM {}", FileUtils.byteCountToDisplaySize(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
     memoryManager = new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES);
     buffers = new ConcurrentHashMap<>();
     final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();

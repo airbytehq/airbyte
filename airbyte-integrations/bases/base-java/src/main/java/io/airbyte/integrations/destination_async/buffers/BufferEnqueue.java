@@ -11,13 +11,15 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.concurrent.ConcurrentMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents the minimal interface over the underlying buffer queues required for enqueue
  * operations with the aim of minimizing lower-level queue access.
  */
 public class BufferEnqueue {
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(BufferEnqueue.class);
   private final RecordSizeEstimator recordSizeEstimator;
   private final GlobalMemoryManager memoryManager;
   private final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers;
