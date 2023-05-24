@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeInternalStagingDestination.class);
-  private String airbyteEnvironment;
+  private final String airbyteEnvironment;
 
   public SnowflakeInternalStagingDestination(final String airbyteEnvironment) {
     this(new SnowflakeSQLNameTransformer(), airbyteEnvironment);
@@ -113,7 +113,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    return new StagingConsumerFactory().create(
+    return new StagingConsumerFactory().createAsync(
         outputRecordCollector,
         getDatabase(getDataSource(config)),
         new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
