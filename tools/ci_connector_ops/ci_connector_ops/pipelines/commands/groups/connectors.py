@@ -401,7 +401,7 @@ def list(
     for connector, modified in selected_connectors:
         modified = "X" if modified else ""
         connector_name = Text(connector.technical_name)
-        language = Text(connector.language.value)
+        language = Text(connector.language.value) if connector.language else "N/A"
         release_stage = Text(connector.release_stage)
         version = Text(connector.version)
         folder = Text(str(connector.code_directory))
