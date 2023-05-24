@@ -722,6 +722,8 @@ async def finalize_build(context: ConnectorContext, connector_container: Contain
     return connector_container.with_entrypoint(original_entrypoint)
 
 
+# This function is not used at the moment as we decided to use Python connectors dockerfile instead of building it with dagger.
+# Some python connectors use alpine base image, other use debian... We should unify this.
 def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_platform: Platform) -> Container:
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
     base = context.dagger_client.container(platform=build_platform).from_("python:3.9.11-alpine3.15")
