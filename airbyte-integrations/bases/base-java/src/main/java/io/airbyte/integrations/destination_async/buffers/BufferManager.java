@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 @Slf4j
 public class BufferManager {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferManager.class);
 
   public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.8);

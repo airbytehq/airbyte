@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
  * operations with the aim of minimizing lower-level queue access.
  */
 public class BufferEnqueue {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferEnqueue.class);
   private final RecordSizeEstimator recordSizeEstimator;
   private final GlobalMemoryManager memoryManager;
