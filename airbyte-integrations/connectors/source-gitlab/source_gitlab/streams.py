@@ -22,6 +22,7 @@ class GitlabStream(HttpStream, ABC):
     flatten_id_keys = []
     flatten_list_keys = []
     per_page = 50
+    non_retriable_codes: List[int] = (403,)
 
     def __init__(self, api_url: str, **kwargs):
         super().__init__(**kwargs)
@@ -66,10 +67,10 @@ class GitlabStream(HttpStream, ABC):
 
     def should_retry(self, response: requests.Response) -> bool:
         # Gitlab API returns a 403 response in case a feature is disabled in a project (pipelines/jobs for instance).
-        if response.status_code == 403:
+        if response.status_code in self.non_retriable_codes:
             setattr(self, "raise_on_http_errors", False)
             self.logger.warning(
-                f"Got 403 error when accessing URL {response.request.url}."
+                f"Got {response.status_code} error when accessing URL {response.request.url}."
                 f" Very likely the feature is disabled for this project and/or group. Please double check it, or report a bug otherwise."
             )
             return False
@@ -86,7 +87,7 @@ class GitlabStream(HttpStream, ABC):
             return {"page": self.page}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.status_code == 403:
+        if response.status_code in [403, 404]:
             return []
         response_data = response.json()
         if isinstance(response_data, list):
@@ -310,26 +311,7 @@ class Branches(GitlabChildStream):
     primary_key = "name"
     flatten_id_keys = ["commit"]
     flatten_parent_id = True
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[StreamData]:
-        try:
-            yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
-        except requests.exceptions.HTTPError as error:
-            status = error.response.status_code
-            if status == 404:
-                self.logger.warning(
-                    "Got 404 error when accessing branches."
-                    " Very likely the feature is disabled for this project and/or group. Please double check it, or report a bug otherwise."
-                )
-                yield from []
-            else:
-                raise error
+    non_retriable_codes = (403, 404)
 
 
 class Commits(IncrementalGitlabChildStream):
