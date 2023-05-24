@@ -183,7 +183,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| 0.1.16  | 2023-05-24 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Removed authSpecification from spec.json in favour of advancedAuth                                              |
+| 0.1.16  | 2023-05-24 | [26512](https://github.com/airbytehq/airbyte/pull/26512) | Removed authSpecification from spec.json in favour of advancedAuth                                              |
 | 0.1.15  | 2023-02-13 | [22940](https://github.com/airbytehq/airbyte/pull/22940) | Specified date formatting in specification                                                                      |
 | 0.1.14  | 2023-02-03 | [22361](https://github.com/airbytehq/airbyte/pull/22361) | Turn on default HttpAvailabilityStrategy                                                                        |
 | 0.1.13  | 2023-01-27 | [22013](https://github.com/airbytehq/airbyte/pull/22013) | for adDirectSponsoredContents stream skip accounts which are part of organization                               |
