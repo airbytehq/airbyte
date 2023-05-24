@@ -9,7 +9,7 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
-from source_auth0.source import Auth0Stream, IncrementalAuth0Stream, Users
+from source_auth0.source import Auth0Stream, IncrementalAuth0Stream, Users, Clients
 
 
 @pytest.fixture
@@ -239,3 +239,22 @@ class TestStreamUsers:
             json=[users_instance],
         )
         assert list(stream.parse_response(response=requests.get(f"{api_url}/users"))) == [users_instance]
+
+
+class TestStreamClients:
+    def test_stream_clients(self, patch_base_class, clients_instance, url_base, api_url, requests_mock):
+        stream = Clients(url_base=url_base)
+        requests_mock.get(
+            f"{api_url}/clients",
+            json={"total": 1, "start": 0, "limit": 50, "clients": [clients_instance]},
+        )
+        inputs = {"sync_mode": SyncMode.full_refresh}
+        assert list(stream.read_records(**inputs)) == [clients_instance]
+
+    def test_clients_source_parse_response(self, requests_mock, patch_base_class, clients_instance, url_base, api_url):
+        stream = Clients(url_base=url_base)
+        requests_mock.get(
+            f"{api_url}/clients",
+            json={"total": 1, "start": 0, "limit": 50, "clients": [clients_instance]},
+        )
+        assert list(stream.parse_response(response=requests.get(f"{api_url}/clients"))) == [clients_instance]
