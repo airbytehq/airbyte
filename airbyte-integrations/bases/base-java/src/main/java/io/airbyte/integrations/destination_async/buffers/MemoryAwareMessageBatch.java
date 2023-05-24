@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination_async.buffers;
 
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
-import io.airbyte.integrations.destination_async.state.AsyncStateManager;
+import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.util.List;
 import java.util.Map;
@@ -27,12 +27,12 @@ public class MemoryAwareMessageBatch implements AutoCloseable {
   private List<MessageWithMeta> batch;
   private final long sizeInBytes;
   private final GlobalMemoryManager memoryManager;
-  private final AsyncStateManager stateManager;
+  private final GlobalAsyncStateManager stateManager;
 
   public MemoryAwareMessageBatch(final List<MessageWithMeta> batch,
                                  final long sizeInBytes,
                                  final GlobalMemoryManager memoryManager,
-                                 final AsyncStateManager stateManager) {
+                                 final GlobalAsyncStateManager stateManager) {
     this.batch = batch;
     this.sizeInBytes = sizeInBytes;
     this.memoryManager = memoryManager;

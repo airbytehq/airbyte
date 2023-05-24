@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination_async.buffers;
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.integrations.destination_async.buffers.MemoryBoundedLinkedBlockingQueue.MemoryItem;
 import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
-import io.airbyte.integrations.destination_async.state.AsyncStateManager;
+import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.HashSet;
@@ -33,12 +33,12 @@ public class BufferDequeue {
 
   private final GlobalMemoryManager memoryManager;
   private final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers;
-  private final AsyncStateManager stateManager;
+  private final GlobalAsyncStateManager stateManager;
   private final ConcurrentMap<StreamDescriptor, ReentrantLock> bufferLocks;
 
   public BufferDequeue(final GlobalMemoryManager memoryManager,
                        final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers,
-                       final AsyncStateManager stateManager) {
+                       final GlobalAsyncStateManager stateManager) {
     this.memoryManager = memoryManager;
     this.buffers = buffers;
     this.stateManager = stateManager;
