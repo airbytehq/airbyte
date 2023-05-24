@@ -9,9 +9,10 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, DestinationSyncMode, Type, AirbyteStream
 
-import json
+from logging import getLogger
 from timeplus import Stream, Environment
 
+logger = getLogger("airbyte")
 
 class DestinationTimeplus(Destination):
     def write(
@@ -43,6 +44,7 @@ class DestinationTimeplus(Destination):
         for configured_stream in configured_catalog.streams:
             is_overwrite = configured_stream.destination_sync_mode == DestinationSyncMode.overwrite
             stream_exists = configured_stream.stream.name in all_streams
+            logger.info(f"Stream {configured_stream.stream.name} {configured_stream.destination_sync_mode}")
             need_delete_stream = False
             need_create_stream = False
             if is_overwrite:
@@ -65,10 +67,12 @@ class DestinationTimeplus(Destination):
                 # delete the existing stream
                 Stream(env=env).name(
                     configured_stream.stream.name).get().delete()
+                logger.info(f"Stream {configured_stream.stream.name} deleted successfully")
             if need_create_stream:
                 # create a new stream
                 DestinationTimeplus.create_stream(
                     env, configured_stream.stream)
+                logger.info(f"Stream {configured_stream.stream.name} created successfully")
 
         for message in input_messages:
             if message.type == Type.STATE:
