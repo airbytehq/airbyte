@@ -288,6 +288,22 @@ jobs:
           org.gradle.vfs.watch=false
           EOF
 
+      - name: Add coverage to PR
+        if: github.event_name == 'pull_request'
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.3
+        with:
+          command: ./gradlew :airbyte-integrations:connectors:source-postgres:jacocoTestReport
+          # todo(mfsiega-airbyte): when v1.4 is released, use wildcards per https://github.com/Madrapps/jacoco-report/issues/20.
+          paths: |
+            ${{ env.WORKING_DIRECTORY }}/airbyte-integrations/connectors/source-postgres/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 25
+          min-coverage-changed-files: 60
+          title: Airbyte Code Coverage
+          update-comment: true
+          debug-mode: false
+
       - name: Generate Template scaffold
         uses: Wandalen/wretry.action@master
         with:
