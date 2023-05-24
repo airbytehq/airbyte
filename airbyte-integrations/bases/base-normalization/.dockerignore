@@ -1,6 +1,7 @@
 *
 !Dockerfile
 !entrypoint.sh
+!download-src
 !build/sshtunneling.sh
 !setup.py
 !normalization
