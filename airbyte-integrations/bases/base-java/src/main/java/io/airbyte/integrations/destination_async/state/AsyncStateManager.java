@@ -20,8 +20,11 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
+
+import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.util.ConcurrentHashSet;
 
+@Slf4j
 public class AsyncStateManager {
 
   private static final StreamDescriptor SENTINEL_GLOBAL_DESC = new StreamDescriptor().withName(UUID.randomUUID().toString());
@@ -60,7 +63,7 @@ public class AsyncStateManager {
     return getStateId(streamDescriptor, 0);
   }
 
-  private Long getStateId(StreamDescriptor streamDescriptor, long increment) {
+  private Long getStateId(final StreamDescriptor streamDescriptor, final long increment) {
     final StreamDescriptor resolvedDescriptor = stateType == AirbyteStateMessage.AirbyteStateType.STREAM ? streamDescriptor : SENTINEL_GLOBAL_DESC;
 
     if (!streamToStateIdQ.containsKey(resolvedDescriptor)) {
@@ -69,12 +72,13 @@ public class AsyncStateManager {
     // no unboxing should happen since we always guarantee the Long exists.
     final Long stateId = streamToStateIdQ.get(streamDescriptor).peekLast();
     final var update = stateIdToCounter.get(stateId).addAndGet(increment);
-    System.out.println("Updated: " + update);
+    log.info("State id: {}, count: {}", stateId, update);
     return stateId;
   }
 
   // called by the flush workers per message
   public void decrement(final long stateId, final long count) {
+    log.info("decrementing state id: {}, count: {}", stateId, count);
     stateIdToCounter.get(getStateAfterAlias(stateId)).addAndGet(-count);
   }
 

@@ -7,24 +7,20 @@ package io.airbyte.integrations.destination_async.state;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import java.time.Instant;
+
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import org.apache.commons.lang.RandomStringUtils;
+
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -41,12 +37,12 @@ class AsyncStateManagerTest {
       .withType(Type.STATE)
       .withState(new AirbyteStateMessage()
           .withType(AirbyteStateType.GLOBAL));
-  private static final AirbyteMessage STREAM_STATE_MESSAGE1 = new AirbyteMessage()
+  private static final AirbyteMessage STREAM1_STATE_MESSAGE1 = new AirbyteMessage()
       .withType(Type.STATE)
       .withState(new AirbyteStateMessage()
           .withType(AirbyteStateType.STREAM)
           .withStream(new AirbyteStreamState().withStreamDescriptor(STREAM1_DESC).withStreamState(Jsons.jsonNode(1))));
-  private static final AirbyteMessage STREAM_STATE_MESSAGE2 = new AirbyteMessage()
+  private static final AirbyteMessage STREAM1_STATE_MESSAGE2 = new AirbyteMessage()
       .withType(Type.STATE)
       .withState(new AirbyteStateMessage()
           .withType(AirbyteStateType.STREAM)
@@ -62,12 +58,13 @@ class AsyncStateManagerTest {
     assertEquals(firstStateId, secondStateId);
 
     stateManager.decrement(firstStateId, 2);
+    // because no state message has been tracked, there is nothing to flush yet.
     var flushed = stateManager.flushStates();
     assertEquals(0, flushed.size());
 
-    stateManager.trackState(STREAM_STATE_MESSAGE1);
+    stateManager.trackState(STREAM1_STATE_MESSAGE1);
     flushed = stateManager.flushStates();
-    assertEquals(List.of(STREAM_STATE_MESSAGE1), flushed);
+    assertEquals(List.of(STREAM1_STATE_MESSAGE1), flushed);
   }
 
   @Nested
@@ -80,7 +77,7 @@ class AsyncStateManagerTest {
       stateManager.trackState(GLOBAL_MESSAGE1);
       assertEquals(List.of(GLOBAL_MESSAGE1), stateManager.flushStates());
 
-      assertThrows(IllegalArgumentException.class, () -> stateManager.trackState(STREAM_STATE_MESSAGE1));
+      assertThrows(IllegalArgumentException.class, () -> stateManager.trackState(STREAM1_STATE_MESSAGE1));
     }
   }
 
@@ -91,42 +88,67 @@ class AsyncStateManagerTest {
       final AsyncStateManager stateManager = new AsyncStateManager();
 
       // GLOBAL
-      stateManager.trackState(STREAM_STATE_MESSAGE1);
-      assertEquals(List.of(STREAM_STATE_MESSAGE1), stateManager.flushStates());
+      stateManager.trackState(STREAM1_STATE_MESSAGE1);
+      assertEquals(List.of(STREAM1_STATE_MESSAGE1), stateManager.flushStates());
 
       assertThrows(IllegalArgumentException.class, () -> stateManager.trackState(GLOBAL_MESSAGE1));
     }
 
     @Test
-    void testCorrectFlushing1Stream() {
+    void testCorrectFlushingOneStream() {
       final AsyncStateManager stateManager = new AsyncStateManager();
 
-      stateManager.getStateIdAndIncrement(STREAM1_DESC);
-      stateManager.getStateIdAndIncrement(STREAM1_DESC);
-      stateManager.getStateIdAndIncrement(STREAM1_DESC);
+      var stateId = simulateIncomingRecords(STREAM1_DESC, 3, stateManager);
+      stateManager.trackState(STREAM1_STATE_MESSAGE1);
+      stateManager.decrement(stateId, 3);
+      assertEquals(List.of(STREAM1_STATE_MESSAGE1), stateManager.flushStates());
+
+      stateId = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
+      stateManager.trackState(STREAM1_STATE_MESSAGE2);
+      stateManager.decrement(stateId, 10);
+      assertEquals(List.of(STREAM1_STATE_MESSAGE2), stateManager.flushStates());
+
+    }
+
+    @Test
+    void testCorrectFlushingManyStream() {
+      final AsyncStateManager stateManager = new AsyncStateManager();
+
+      final var stream1StateId = simulateIncomingRecords(STREAM1_DESC, 3, stateManager);
+      final var stream2StateId = simulateIncomingRecords(STREAM2_DESC, 7, stateManager);
+
+      stateManager.trackState(STREAM1_STATE_MESSAGE1);
+      stateManager.decrement(stream1StateId, 3);
+      assertEquals(List.of(STREAM1_STATE_MESSAGE1), stateManager.flushStates());
+
+      stateManager.decrement(stream2StateId, 4);
+      assertEquals(List.of(), stateManager.flushStates());
+      stateManager.trackState(STREAM1_STATE_MESSAGE2);
+      stateManager.decrement(stream2StateId, 3);
+      assertEquals(List.of(STREAM1_STATE_MESSAGE2), stateManager.flushStates());
     }
   }
 
   @Test
-  void testStateAcrossMultipleStreams() throws InterruptedException {
+  void testStateAcrossMultipleStreams() {
     final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers = new ConcurrentHashMap<>();
     buffers.put(STREAM1_DESC, new StreamAwareQueue(BufferManager.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
     buffers.put(STREAM2_DESC, new StreamAwareQueue(BufferManager.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
     final AsyncStateManager stateManager = new AsyncStateManager();
 
-    final List<AirbyteMessage> stream1Records = generateRecords(1000, STREAM_NAME);
-    long count = 0;
-    for (final AirbyteMessage r : stream1Records) {
-      buffers.get(STREAM1_DESC).offer(r, count++, 160);
-    }
-
-    final List<AirbyteMessage> stream2Records = generateRecords(1000, STREAM_NAME2);
-    for (final AirbyteMessage r : stream2Records) {
-      if (count % 1120 == 0) {
-        stateManager.trackState(GLOBAL_MESSAGE1);
-      }
-      buffers.get(STREAM2_DESC).offer(r, count++, 160);
-    }
+//    final List<AirbyteMessage> stream1Records = generateRecords(1000, STREAM_NAME);
+//    long count = 0;
+//    for (final AirbyteMessage r : stream1Records) {
+//      buffers.get(STREAM1_DESC).offer(r, count++, 160);
+//    }
+//
+//    final List<AirbyteMessage> stream2Records = generateRecords(1000, STREAM_NAME2);
+//    for (final AirbyteMessage r : stream2Records) {
+//      if (count % 1120 == 0) {
+//        stateManager.trackState(GLOBAL_MESSAGE1);
+//      }
+//      buffers.get(STREAM2_DESC).offer(r, count++, 160);
+//    }
 
     // stateManager.claim(STREAM2_DESC, 1500);
     // drainNRecords(buffers, STREAM2_DESC, 500);
@@ -147,14 +169,14 @@ class AsyncStateManagerTest {
     buffers.put(STREAM1_DESC, new StreamAwareQueue(BufferManager.TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
     final AsyncStateManager stateManager = new AsyncStateManager();
 
-    final List<AirbyteMessage> stream1Records = generateRecords(1000, STREAM_NAME);
-    long count = 0;
-    for (final AirbyteMessage r : stream1Records) {
-      if (count > 0 && count % 950 == 0) {
-        stateManager.trackState(GLOBAL_MESSAGE1);
-      }
-      buffers.get(STREAM1_DESC).offer(r, count++, 160);
-    }
+//    final List<AirbyteMessage> stream1Records = generateRecords(1000, STREAM_NAME);
+//    long count = 0;
+//    for (final AirbyteMessage r : stream1Records) {
+//      if (count > 0 && count % 950 == 0) {
+//        stateManager.trackState(GLOBAL_MESSAGE1);
+//      }
+//      buffers.get(STREAM1_DESC).offer(r, count++, 160);
+//    }
 
     // worker 1
     // stateManager.claim(STREAM1_DESC, 900);
@@ -176,20 +198,11 @@ class AsyncStateManagerTest {
     }
   }
 
-  private static List<AirbyteMessage> generateRecords(final long numRecords, final String streamName) {
-    final List<AirbyteMessage> output = Lists.newArrayList();
-    for (int i = 0; i < numRecords; i++) {
-      final JsonNode payload =
-          Jsons.jsonNode(ImmutableMap.of("id", RandomStringUtils.randomAlphabetic(7), "name", "human " + String.format("%8d", i)));
-      final AirbyteMessage airbyteMessage = new AirbyteMessage()
-          .withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage()
-              .withStream(streamName)
-              .withEmittedAt(Instant.now().toEpochMilli())
-              .withData(payload));
-      output.add(airbyteMessage);
+  private static long simulateIncomingRecords(final StreamDescriptor desc, final long count, final AsyncStateManager manager) {
+    var stateId = 0L;
+    for (int i = 0; i < count; i++) {
+      stateId = manager.getStateIdAndIncrement(desc);
     }
-    return output;
+    return stateId;
   }
-
 }
