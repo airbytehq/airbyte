@@ -6,8 +6,6 @@ import json
 from typing import Any, Dict, Iterable, List, Mapping
 
 import pendulum as pdm
-from requests.compat import basestring, urlencode
-from requests.utils import to_key_val_list
 
 # replace `pivot` with `_pivot`, to allow redshift normalization,
 # since `pivot` is a reserved keyword for Destination Redshift,
@@ -338,34 +336,3 @@ def transform_data(records: List) -> Iterable[Mapping]:
         record = transform_col_names(record, DESTINATION_RESERVED_KEYWORDS)
 
         yield record
-
-
-def _encode_params(data):
-
-    """Encode parameters in a piece of data.
-
-    Will successfully encode parameters when passed as a dict or a list of
-    2-tuples. Order is retained if data is a list of 2-tuples but arbitrary
-    if parameters are supplied as a dict.
-    """
-
-    if isinstance(data, (str, bytes)):
-        return data
-    elif hasattr(data, "read"):
-        return data
-    elif hasattr(data, "__iter__"):
-        result = []
-        for k, vs in to_key_val_list(data):
-            if isinstance(vs, basestring) or not hasattr(vs, "__iter__"):
-                vs = [vs]
-            for v in vs:
-                if v is not None:
-                    result.append(
-                        (
-                            k.encode("utf-8") if isinstance(k, str) else k,
-                            v.encode("utf-8") if isinstance(v, str) else v,
-                        )
-                    )
-        return urlencode(result, doseq=True, safe="():,%")
-    else:
-        return data

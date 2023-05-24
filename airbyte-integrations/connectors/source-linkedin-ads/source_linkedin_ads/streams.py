@@ -6,17 +6,15 @@
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
+from urllib.parse import urlencode
 
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from requests.models import RequestEncodingMixin
 
 from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
-from .utils import _encode_params, get_parent_stream_values, transform_data
-
-RequestEncodingMixin._encode_params = staticmethod(_encode_params)  # monkey patch request params encoding
+from .utils import get_parent_stream_values, transform_data
 
 logger = logging.getLogger("airbyte")
 
@@ -132,8 +130,7 @@ class Accounts(LinkedinAdsStream):
         params = super().request_params(stream_state, stream_slice, next_page_token)
         if self.accounts:
             params["search"] = f"(id:(values:List({self.accounts})))"
-            return params
-        return params
+        return urlencode(params, safe="():,%")
 
 
 class IncrementalLinkedinAdsStream(LinkedinAdsStream):
@@ -213,7 +210,7 @@ class AccountUsers(LinkedInAdsStreamSlicing):
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["q"] = self.search_param
         params["accounts"] = f"urn:li:sponsoredAccount:{stream_slice.get('account_id')}"  # accounts=
-        return params
+        return urlencode(params, safe="():,%")
 
 
 class CampaignGroups(LinkedInAdsStreamSlicing):
@@ -248,7 +245,7 @@ class CampaignGroups(LinkedInAdsStreamSlicing):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["search"] = "(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))"
-        return params
+        return urlencode(params, safe="():,%")
 
 
 class Campaigns(LinkedInAdsStreamSlicing):
@@ -284,7 +281,7 @@ class Campaigns(LinkedInAdsStreamSlicing):
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["search"] = "(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))"
         #
-        return params
+        return urlencode(params, safe="():,%")
 
 
 class Creatives(LinkedInAdsStreamSlicing):
@@ -322,7 +319,7 @@ class Creatives(LinkedInAdsStreamSlicing):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params.update({"q": "criteria"})
-        return params
+        return urlencode(params, safe="():,%")
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = (
@@ -364,7 +361,7 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         params = self.base_analytics_params
         params.update(**update_analytics_params(stream_slice))
         params[self.search_param] = f"List(urn%3Ali%3A{self.search_param_value}%3A{self.get_primary_key_from_slice(stream_slice)})"
-        return params
+        return urlencode(params, safe="():,%")
 
     def get_primary_key_from_slice(self, stream_slice) -> str:
         return stream_slice.get(self.primary_slice_key)
