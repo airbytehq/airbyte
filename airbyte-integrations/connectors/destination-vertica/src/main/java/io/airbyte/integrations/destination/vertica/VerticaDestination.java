@@ -37,12 +37,11 @@ public class VerticaDestination extends AbstractJdbcDestination implements Desti
   public static final String DRIVER_CLASS = DatabaseDriver.VERTICA.getDriverClassName();
 
   public static final String COLUMN_NAME_AB_ID =
-          "\"" + JavaBaseConstants.COLUMN_NAME_AB_ID.toUpperCase() + "\"";
+          "\"" + JavaBaseConstants.COLUMN_NAME_AB_ID + "\"";
   public static final String COLUMN_NAME_DATA =
-          "\"" + JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase() + "\"";
+          "\"" + JavaBaseConstants.COLUMN_NAME_DATA + "\"";
   public static final String COLUMN_NAME_EMITTED_AT =
-          "\"" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT.toUpperCase() + "\"";
-
+          "\"" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT + "\"";
   private final NamingConventionTransformer namingResolver;
   private final VerticaSqlOperations verticaSqlOperations;
 

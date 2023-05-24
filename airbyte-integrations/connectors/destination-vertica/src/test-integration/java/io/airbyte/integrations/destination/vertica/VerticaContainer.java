@@ -14,9 +14,9 @@ public class VerticaContainer extends JdbcDatabaseContainer<VerticaContainer> {
 
     private static final int VERTICA_PORT = 5433;
     // Container defaults
-    static final String DEFAULT_DATABASE_NAME = "VMart";
-    static final String DEFAULT_USER = "dbadmin";
-    static final String DEFAULT_PASSWORD = "1234";
+    static final String DEFAULT_DATABASE_NAME = "airbyte";
+    static final String DEFAULT_USER = "airbyte";
+    static final String DEFAULT_PASSWORD = "airbyte123";
 
     private String databaseName = DEFAULT_DATABASE_NAME;
     private String username = DEFAULT_USER;
@@ -61,7 +61,7 @@ public class VerticaContainer extends JdbcDatabaseContainer<VerticaContainer> {
 
     @Override
     public String getJdbcUrl() {
-        String jdbcUrl = "jdbc:vertica://"+getContainerInfo().getNetworkSettings().getIpAddress()+":5433/"+getDatabaseName();
+        String jdbcUrl = "jdbc:vertica://140.236.88.151:5433/PartPub80DB";
         return jdbcUrl;
     }
 
@@ -77,7 +77,7 @@ public class VerticaContainer extends JdbcDatabaseContainer<VerticaContainer> {
 
     @Override
     protected String getTestQueryString() {
-        return "select * from store.store_dimension";
+        return "select * from airbyte.employe";
     }
 
     public Integer getVerticaPort() {
