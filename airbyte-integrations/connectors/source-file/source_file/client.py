@@ -417,9 +417,9 @@ class Client:
                         columns = fields.intersection(set(df.columns)) if fields else df.columns
                         df.replace({np.nan: None}, inplace=True)
                         yield from df[list(columns)].to_dict(orient="records")
-            except ConnectionResetError:
-                logger.info(f"Catched `connection reset error - 104`, stream: {self.stream_name} ({self.reader.full_url})")
-                raise ConnectionResetError
+            except ConnectionResetError as e:
+                logger.info(f"Caught `connection reset error - 104`, stream: {self.stream_name} ({self.reader.full_url})")
+                raise e
             except ProtocolError as err:
                 error_msg = (
                     f"File {fp} can not be opened due to connection issues on provider side. Please check provided links and options"
@@ -460,6 +460,7 @@ class Client:
             for field in fields
         }
 
+    @backoff.on_exception(backoff.expo, ConnectionResetError, on_backoff=backoff_handler, max_tries=5, max_time=60)
     def streams(self, empty_schema: bool = False) -> Iterable:
         """Discovers available streams"""
         # TODO handle discovery of directories of multiple files instead
