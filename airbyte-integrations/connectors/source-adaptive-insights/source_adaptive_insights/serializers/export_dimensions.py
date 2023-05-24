@@ -73,7 +73,11 @@ def handle_export_dimensions(data: str, version: str) -> Iterable[Mapping]:
     for dimension in dimensions:
 
         values = dimension.get("dimensionValue", None)
+
         if values:
+            if isinstance(values, dict):
+                values = [values]
+
             for value in values:
                 attributes_dict = value.get("attributes", None)
                 if attributes_dict:
