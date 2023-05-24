@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.mina.util.ConcurrentHashSet;
 
-public class AsyncStateManager2 {
+public class AsyncStateManager {
 
   private static StreamDescriptor SENTINEL_GLOBAL_DESC =
       new StreamDescriptor().withName(UUID.randomUUID().toString());
