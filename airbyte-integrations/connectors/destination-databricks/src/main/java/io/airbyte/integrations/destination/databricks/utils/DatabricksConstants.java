@@ -16,6 +16,7 @@ public class DatabricksConstants {
   public static final String DATABRICKS_PORT_KEY = "databricks_port";
   public static final String DATABRICKS_CATALOG_KEY = "database";
   public static final String DATABRICKS_SCHEMA_KEY = "schema";
+  public static final String DATABRICKS_ENABLE_SCHEMA_EVOLUTION_KEY = "enable_schema_evolution";
   public static final String DATABRICKS_CATALOG_JDBC_KEY = "ConnCatalog";
   public static final String DATABRICKS_SCHEMA_JDBC_KEY = "ConnSchema";
   public static final String DATABRICKS_PURGE_STAGING_DATA_KEY = "purge_staging_data";

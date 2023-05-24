@@ -44,10 +44,11 @@ class DatabricksDestinationConfigTest {
     assertEquals(DatabricksDestinationConfig.DEFAULT_DATABRICKS_PORT, config1.port());
     assertEquals(DatabricksDestinationConfig.DEFAULT_DATABASE_SCHEMA, config1.schema());
 
-    databricksConfig.put("databricks_port", "1000").put("schema", "testing_schema");
+    databricksConfig.put("databricks_port", "1000").put("schema", "testing_schema").put("enable_schema_evolution", true);
     final DatabricksDestinationConfig config2 = DatabricksDestinationConfig.get(databricksConfig);
     assertEquals("1000", config2.port());
     assertEquals("testing_schema", config2.schema());
+    assertEquals(true, config2.enableSchemaEvolution());
 
     assertEquals(DatabricksS3StorageConfigProvider.class, config2.storageConfig().getClass());
   }
@@ -76,11 +77,12 @@ class DatabricksDestinationConfigTest {
     assertEquals(DatabricksDestinationConfig.DEFAULT_DATABRICKS_PORT, config1.port());
     assertEquals(DatabricksDestinationConfig.DEFAULT_DATABASE_SCHEMA, config1.schema());
 
-    databricksConfig.put("databricks_port", "1000").put("schema", "testing_schema");
+    databricksConfig.put("databricks_port", "1000").put("schema", "testing_schema").put("enable_schema_evolution", true);
     final DatabricksDestinationConfig config2 = DatabricksDestinationConfig.get(databricksConfig);
     assertEquals("1000", config2.port());
     assertEquals("testing_schema", config2.schema());
-
+    assertEquals(true, config2.enableSchemaEvolution());
+    
     assertEquals(DatabricksAzureBlobStorageConfigProvider.class, config2.storageConfig().getClass());
   }
 
