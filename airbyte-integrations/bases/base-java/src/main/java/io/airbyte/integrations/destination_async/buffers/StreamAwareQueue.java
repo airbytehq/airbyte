@@ -44,8 +44,8 @@ public class StreamAwareQueue {
     return memoryAwareQueue.size();
   }
 
-  public boolean offer(final AirbyteMessage message, final long messageNum, final long stateId) {
-    if (memoryAwareQueue.offer(new MessageWithMeta(message, messageNum), stateId)) {
+  public boolean offer(final AirbyteMessage message, final long messageSizeInBytes, final long stateId) {
+    if (memoryAwareQueue.offer(new MessageWithMeta(message, stateId), messageSizeInBytes)) {
       timeOfLastMessage.set(Instant.now());
       return true;
     } else {
