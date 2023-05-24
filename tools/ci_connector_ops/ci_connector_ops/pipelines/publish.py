@@ -7,7 +7,7 @@ from typing import List, Tuple
 
 import anyio
 from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification
-from ci_connector_ops.pipelines import builds
+from ci_connector_ops.pipelines import builds, consts
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.actions.remote_storage import upload_to_gcs
 from ci_connector_ops.pipelines.bases import ConnectorReport, Step, StepResult, StepStatus
@@ -40,19 +40,6 @@ class CheckConnectorImageDoesNotExist(Step):
             if docker_tag_already_exists:
                 return StepResult(self, status=StepStatus.SKIPPED, stderr=f"{self.context.docker_image_name} already exists.")
             return StepResult(self, status=StepStatus.SUCCESS, stdout=f"No manifest found for {self.context.docker_image_name}.")
-
-
-class BuildConnectorForPublish(Step):
-    title = "Build connector for publish"
-
-    async def _run(self) -> StepResult:
-        build_connectors_results = (await builds.run_connector_build(self.context)).values()
-        for build_result in build_connectors_results:
-            if build_result.status is not StepStatus.SUCCESS:
-                return build_result
-        built_connectors_platform_variants = [step_result.output_artifact for step_result in build_connectors_results]
-
-        return StepResult(self, status=StepStatus.SUCCESS, output_artifact=built_connectors_platform_variants)
 
 
 class PushConnectorImageToRegistry(Step):
@@ -95,7 +82,7 @@ class PullConnectorImageFromRegistry(Step):
         We want to make sure that the image we are about to release is compatible with all docker versions.
         We use crane to inspect the manifest of the image and check if it only has gzip layers.
         """
-        for platform in builds.BUILD_PLATFORMS:
+        for platform in consts.BUILD_PLATFORMS:
 
             inspect = environments.with_crane(self.context).with_exec(
                 ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image_name}"]
@@ -255,13 +242,12 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             if check_connector_image_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
-            build_connector_results = await BuildConnectorForPublish(context).run()
+            build_connector_results = await builds.run_connector_build(context)
             results.append(build_connector_results)
             if build_connector_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
-            built_connector_platform_variants = build_connector_results.output_artifact
-
+            built_connector_platform_variants = list(build_connector_results.output_artifact.values())
             push_connector_image_results = await PushConnectorImageToRegistry(context).run(built_connector_platform_variants)
             results.append(push_connector_image_results)
             if push_connector_image_results.status is not StepStatus.SUCCESS:
