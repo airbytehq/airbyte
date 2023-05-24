@@ -28,8 +28,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /**
- * Tests that the postgres spec passes JsonSchema validation. While this may seem like overkill, we
- * are doing it because there are some gotchas in correctly configuring the oneOf.
+ * Tests that the poPoste some gotchas in correctly configuring the oneOf.
  */
 public class PostgresSpecTest {
 
@@ -160,23 +159,23 @@ public class PostgresSpecTest {
   @Test
   void testLsnCommitBehaviourPropertyWithWrongValue() {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-            .put(“method”, “CDC”)
-            .put(“replication_slot”, “replication_slot”)
-            .put(“publication”, “PUBLICATION”)
-            .put(“plugin”, “pgoutput”)
-            .put(“initial_waiting_seconds”, 30)
-            .put(“lsn_commit_behaviour”, “wrong_value”)
+            .put("method", "CDC")
+            .put("replication_slot", "replication_slot")
+            .put("publication", "PUBLICATION")
+            .put("plugin", "pgoutput")
+            .put("initial_waiting_seconds", 30)
+            .put("lsn_commit_behaviour", "wrong_value")
             .build());
 
     final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
-                    .put(JdbcUtils.HOST_KEY, “host”)
+                    .put(JdbcUtils.HOST_KEY, "host")
                     .put(JdbcUtils.PORT_KEY, 5432)
-                    .put(JdbcUtils.DATABASE_KEY, “dbName”)
-                    .put(JdbcUtils.SCHEMAS_KEY, List.of(“MODELS_SCHEMA”, “MODELS_SCHEMA” + “_random”))
-            .put(JdbcUtils.USERNAME_KEY, “user”)
-            .put(JdbcUtils.PASSWORD_KEY, “password”)
+                    .put(JdbcUtils.DATABASE_KEY, "dbName")
+                    .put(JdbcUtils.SCHEMAS_KEY, List.of("MODELS_SCHEMA", "MODELS_SCHEMA" + "_random"))
+            .put(JdbcUtils.USERNAME_KEY, "user")
+            .put(JdbcUtils.PASSWORD_KEY, "password")
             .put(JdbcUtils.SSL_KEY, false)
-            .put(“replication_method”, replicationMethod)
+            .put("replication_method", replicationMethod)
             .build());
     assertFalse(validator.test(schema, config));
   }
