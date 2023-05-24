@@ -2,6 +2,7 @@ package io.airbyte.integrations.destination.s3_glue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.jsonl.S3JsonlFormatConfig;
+import io.airbyte.integrations.destination.s3.util.NumericType;
 
 public class MetastoreJsonlFormatConfig extends S3JsonlFormatConfig implements MetastoreFormatConfig {
 
@@ -26,4 +27,10 @@ public class MetastoreJsonlFormatConfig extends S3JsonlFormatConfig implements M
   public String getSerializationLibrary() {
       return serializationLibrary;
   }
+
+  @Override
+  public NumericType getNumericType() { return null; }
+
+  @Override
+  public NumericType getDecimalScale() { return null; }
 }

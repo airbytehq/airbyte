@@ -4738,7 +4738,7 @@
       "destinationDefinitionId": "4816b78f-1489-44c1-9060-4b19d5fa9362",
       "name": "S3",
       "dockerRepository": "airbyte/destination-s3",
-      "dockerImageTag": "0.3.20",
+      "dockerImageTag": "0.4.2",
       "documentationUrl": "https://docs.airbyte.com/integrations/destinations/s3",
       "icon": "s3.svg",
       "spec": {
@@ -5166,7 +5166,7 @@
       "destinationDefinitionId": "471e5cab-8ed1-49f3-ba11-79c687784737",
       "name": "S3 Glue",
       "dockerRepository": "airbyte/destination-s3-glue",
-      "dockerImageTag": "0.1.2",
+      "dockerImageTag": "0.1.8",
       "documentationUrl": "https://docs.airbyte.com/integrations/destinations/s3-glue",
       "icon": "s3-glue.svg",
       "spec": {
@@ -5312,13 +5312,57 @@
               ],
               "order": 5
             },
+            "numeric": {
+              "title": "Numeric Type",
+              "type": "object",
+              "description": "Hive compatible type to map fractional numeric values. See <a href=\"https://cwiki.apache.org/confluence/display/hive/languagemanual+types#LanguageManualTypes-NumericTypes\">here</a> for more details",
+              "oneOf": [
+                {
+                  "title": "Double",
+                  "required": ["numeric_type"],
+                  "properties": {
+                    "numeric_type": {
+                      "title": "Numeric Type",
+                      "type": "string",
+                      "enum": ["Double"],
+                      "default": "Double",
+                      "order": 0
+                    }
+                  }
+                },
+                {
+                  "title": "Decimal",
+                  "required": ["numeric_type", "scale"],
+                  "properties": {
+                    "numeric_type": {
+                      "title": "Numeric Type",
+                      "type": "string",
+                      "enum": ["Decimal"],
+                      "default": "Decimal",
+                      "order": 0
+                    },
+                    "scale": {
+                      "title": "Scale",
+                      "description": "Scale of the decimal value being passed in to prevent fraction truncation",
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 38,
+                      "default": 2,
+                      "examples": [5],
+                      "order": 1
+                    }
+                  }
+                }
+              ],
+              "order": 6
+            },
             "s3_endpoint": {
               "title": "Endpoint",
               "type": "string",
               "default": "",
               "description": "Your S3 endpoint url. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use\">here</a>",
               "examples": ["http://localhost:9000"],
-              "order": 6
+              "order": 7
             },
             "s3_path_format": {
               "title": "S3 Path Format",
@@ -5327,7 +5371,7 @@
               "examples": [
                 "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_"
               ],
-              "order": 7
+              "order": 8
             },
             "file_name_pattern": {
               "type": "string",
@@ -5340,14 +5384,14 @@
                 "{part_number}",
                 "{sync_id}"
               ],
-              "order": 8
+              "order": 9
             },
             "glue_database": {
               "type": "string",
               "description": "Name of the glue database for creating the tables, leave blank if no integration",
               "title": "Glue database name",
               "examples": ["airbyte_database"],
-              "order": 9
+              "order": 10
             },
             "glue_serialization_library": {
               "title": "Serialization Library",
@@ -5358,7 +5402,7 @@
                 "org.apache.hive.hcatalog.data.JsonSerDe"
               ],
               "default": "org.openx.data.jsonserde.JsonSerDe",
-              "order": 10
+              "order": 11
             }
           }
         },

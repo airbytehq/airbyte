@@ -45,7 +45,7 @@ public class S3GlueDestination extends BaseS3Destination {
     final GlueDestinationConfig glueConfig = GlueDestinationConfig.getInstance(config);
     final MetastoreJsonlFormatConfig jsonlFormatConfig = new MetastoreJsonlFormatConfig(config);
     MetastoreOperations metastoreOperations = null;
-    // If there are multiple syncs started at the same time a stataic test table name causes a resource
+    // If there are multiple syncs started at the same time a static test table name causes a resource
     // collision and a failure to sync.
     String tableSuffix = RandomStringUtils.randomAlphabetic(9);
     String tableName = "test_table_" + tableSuffix;

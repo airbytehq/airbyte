@@ -153,7 +153,8 @@ public class S3GlueConsumerFactory {
     };
   }
 
-  private OnCloseFunction onCloseFunction(final BlobStorageOperations storageOperations,
+  private OnCloseFunction onCloseFunction(
+      final BlobStorageOperations storageOperations,
       final MetastoreOperations metastoreOperations,
       final List<S3GlueWriteConfig> writeConfigs,
       GlueDestinationConfig glueDestinationConfig,
