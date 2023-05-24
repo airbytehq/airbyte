@@ -42,19 +42,19 @@ public class BufferEnqueue {
    * @param streamDescriptor stream to buffer record to
    * @param message to buffer
    */
-  public void addRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message) {
-    if (!buffers.containsKey(streamDescriptor)) {
-      buffers.put(streamDescriptor, new StreamAwareQueue(memoryManager.requestMemory()));
-    }
-
+  public void addRecord(final AirbyteMessage message) {
     if (message.getType() == Type.RECORD) {
-      handleRecord(streamDescriptor, message);
+      handleRecord(message);
     } else if (message.getType() == Type.STATE) {
       stateManager.trackState(message);
     }
   }
 
-  private void handleRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message) {
+  private void handleRecord(final AirbyteMessage message) {
+    final StreamDescriptor streamDescriptor = extractStateFromRecord(message);
+    if (streamDescriptor != null && !buffers.containsKey(streamDescriptor)) {
+      buffers.put(streamDescriptor, new StreamAwareQueue(memoryManager.requestMemory()));
+    }
     // todo (cgardens) - i hate this thing. it's mostly useless.
     final long messageSize = recordSizeEstimator.getEstimatedByteSize(message.getRecord());
     final long stateId = stateManager.getStateIdAndIncrementCounter(streamDescriptor);
@@ -69,6 +69,12 @@ public class BufferEnqueue {
       }
       addedToQueue = queue.offer(message, messageSize, stateId);
     }
+  }
+
+  private static StreamDescriptor extractStateFromRecord(final AirbyteMessage message) {
+    return new StreamDescriptor()
+        .withNamespace(message.getRecord().getNamespace())
+        .withName(message.getRecord().getStream());
   }
 
 }
