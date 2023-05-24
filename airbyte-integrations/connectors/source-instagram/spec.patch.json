@@ -1,6 +1,7 @@
 {
   "properties": {
     "access_token": {
+      "x-oauth2-provider": "instagram",
       "description": "The value of the access token generated with instagram_basic, instagram_manage_insights, pages_show_list, pages_read_engagement, Instagram Public Content Access permissions. See the docs for more information: https://go.estuary.dev/u7vlQ7"
     }
   }
