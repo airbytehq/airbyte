@@ -65,7 +65,7 @@ public class BufferManager {
         .append(String.format("  Global Mem Manager -- max: %s, allocated: %s (%s MB)",
             FileUtils.byteCountToDisplaySize(memoryManager.getMaxMemoryBytes()),
             FileUtils.byteCountToDisplaySize(memoryManager.getCurrentMemoryBytes()),
-            (double)memoryManager.getCurrentMemoryBytes() / 1024 / 1024))
+            (double) memoryManager.getCurrentMemoryBytes() / 1024 / 1024))
         .append(System.lineSeparator());
 
     for (final var entry : buffers.entrySet()) {
