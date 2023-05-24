@@ -545,6 +545,15 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
                     yield event
 
 
+class AuditLogs(SourceZendeskSupportCursorPaginationStream):
+    """AuditLogs stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs"""
+
+    # can request a maximum of 1,00 results
+    page_size = 100
+    # audit_logs doesn't have the 'updated_by' field
+    cursor_field = "created_at"
+
+
 class Users(SourceZendeskIncrementalExportStream):
     """Users stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export"""
 
