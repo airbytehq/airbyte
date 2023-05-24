@@ -54,7 +54,6 @@ public class MemoryAwareMessageBatch implements AutoCloseable {
     this.memoryManager = memoryManager;
     this.stateManager = stateManager;
     hasCommittedState = false;
-    // stateManager.claim(streamDescriptor, maxMessageNum);
   }
 
   public List<AirbyteMessage> getData() {
@@ -82,7 +81,6 @@ public class MemoryAwareMessageBatch implements AutoCloseable {
     Preconditions.checkArgument(!hasCommittedState, "This method can only be called once.");
     hasCommittedState = true;
     return null;
-    // return stateManager.flushStates();
   }
 
 }
