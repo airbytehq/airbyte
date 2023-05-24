@@ -7,10 +7,10 @@
 from __future__ import annotations
 
 import importlib.util
-import os
 import uuid
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
+from ci_connector_ops.pipelines import consts
 from ci_connector_ops.pipelines.consts import (
     CI_CONNECTOR_OPS_SOURCE_PATH,
     CI_CREDENTIALS_SOURCE_PATH,
@@ -256,7 +256,7 @@ def with_dockerd_service(
         docker_lib_volume_name = f"{docker_lib_volume_name}-{slugify(docker_service_name)}"
     dind = (
         context.dagger_client.container()
-        .from_("docker:23.0.1-dind")
+        .from_(consts.DOCKER_DIND_IMAGE)
         .with_mounted_cache(
             "/var/lib/docker",
             context.dagger_client.cache_volume(docker_lib_volume_name),
@@ -310,7 +310,7 @@ def with_docker_cli(
     Returns:
         Container: A docker cli container bound to a docker host.
     """
-    docker_cli = context.dagger_client.container().from_("docker:23.0.1-cli")
+    docker_cli = context.dagger_client.container().from_(consts.DOCKER_CLI_IMAGE)
     return with_bound_docker_host(context, docker_cli, shared_volume, docker_service_name)
 
 
@@ -362,8 +362,6 @@ def with_gradle(
     Returns:
         Container: A container with Gradle installed and Java sources from the repository.
     """
-    airbyte_gradle_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}_airbyte_gradle_cache")
-    root_gradle_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}_root_gradle_cache")
 
     include = [
         ".root",
@@ -387,34 +385,27 @@ def with_gradle(
     if sources_to_include:
         include += sources_to_include
 
+    gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
+    gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
+
     shared_tmp_volume = ("/tmp", context.dagger_client.cache_volume("share-tmp-gradle"))
 
     openjdk_with_docker = (
         context.dagger_client.container()
-        # Use openjdk image because it's based on Debian. Alpine with Gradle and Python causes filesystem crash.
         .from_("openjdk:17.0.1-jdk-slim")
         .with_exec(["apt-get", "update"])
-        .with_exec(["apt-get", "install", "-y", "curl", "jq"])
-        .with_env_variable("VERSION", "23.0.1")
+        .with_exec(["apt-get", "install", "-y", "curl", "jq", "rsync"])
+        .with_env_variable("VERSION", consts.DOCKER_VERSION)
         .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
-        .with_exec(["mkdir", "/root/.gradle"])
+        .with_env_variable("GRADLE_HOME", "/root/.gradle")
         .with_exec(["mkdir", "/airbyte"])
-        .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include, exclude=["tools/ci_connector_ops/*"]))
-        .with_mounted_cache("/airbyte/.gradle", airbyte_gradle_cache, sharing=CacheSharingMode.LOCKED)
         .with_workdir("/airbyte")
+        .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
+        .with_exec(["mkdir", "-p", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH])
+        .with_mounted_cache(consts.GRADLE_BUILD_CACHE_PATH, gradle_build_cache, sharing=CacheSharingMode.LOCKED)
+        .with_mounted_cache(consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH, gradle_dependency_cache)
+        .with_env_variable("GRADLE_RO_DEP_CACHE", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH)
     )
-    if context.is_ci and "S3_BUILD_CACHE_ACCESS_KEY_ID" in os.environ and "S3_BUILD_CACHE_SECRET_KEY" in os.environ:
-        openjdk_with_docker = (
-            openjdk_with_docker.with_env_variable("CI", "true")
-            .with_secret_variable(
-                "S3_BUILD_CACHE_ACCESS_KEY_ID", context.dagger_client.host().env_variable("S3_BUILD_CACHE_ACCESS_KEY_ID").secret()
-            )
-            .with_secret_variable(
-                "S3_BUILD_CACHE_SECRET_KEY", context.dagger_client.host().env_variable("S3_BUILD_CACHE_SECRET_KEY").secret()
-            )
-        )
-    else:
-        openjdk_with_docker = openjdk_with_docker.with_mounted_cache("/root/.gradle", root_gradle_cache, sharing=CacheSharingMode.LOCKED)
 
     if bind_to_docker_host:
         return with_bound_docker_host(context, openjdk_with_docker, shared_tmp_volume, docker_service_name=docker_service_name)
