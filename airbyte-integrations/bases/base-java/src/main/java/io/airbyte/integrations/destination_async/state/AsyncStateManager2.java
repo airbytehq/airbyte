@@ -9,6 +9,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,7 @@ public class AsyncStateManager2 {
         // upon conversion, all previous tracking data structures need to be cleared as we move
         // into the non-STREAM world for correctness.
 
-        aliasIds.addAll(streamToStateIdQ.values());
+        aliasIds.addAll(streamToStateIdQ.values().stream().flatMap(Collection::stream).toList());
         streamToStateIdQ.clear();
         retroactiveGlobalStateId = PkWhatever.getNextId();
 
