@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.apache.commons.lang.RandomStringUtils;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class AsyncStateManagerTest {
@@ -51,26 +52,59 @@ class AsyncStateManagerTest {
           .withType(AirbyteStateType.STREAM)
           .withStream(new AirbyteStreamState().withStreamDescriptor(STREAM1_DESC).withStreamState(Jsons.jsonNode(2))));
 
+
   @Test
-  void testEmptyQueuesGlobalState() {
+  void testBasic() {
     final AsyncStateManager stateManager = new AsyncStateManager();
 
-    // GLOBAL
-    stateManager.trackState(GLOBAL_MESSAGE1);
-    assertEquals(List.of(GLOBAL_MESSAGE1), stateManager.flushStates());
+    final var firstStateId = stateManager.getStateIdAndIncrement(STREAM1_DESC);
+    final var secondStateId = stateManager.getStateIdAndIncrement(STREAM1_DESC);
+    assertEquals(firstStateId, secondStateId);
 
-    assertThrows(IllegalArgumentException.class, () -> stateManager.trackState(STREAM_STATE_MESSAGE1));
+    stateManager.decrement(firstStateId, 2);
+    var flushed = stateManager.flushStates();
+    assertEquals(0, flushed.size());
+
+    stateManager.trackState(STREAM_STATE_MESSAGE1);
+    flushed = stateManager.flushStates();
+    assertEquals(List.of(STREAM_STATE_MESSAGE1), flushed);
   }
 
-  @Test
-  void testEmptyQueuesStreamState() {
-    final AsyncStateManager stateManager = new AsyncStateManager();
+  @Nested
+  class GlobalState {
+    @Test
+    void testEmptyQueuesGlobalState() {
+      final AsyncStateManager stateManager = new AsyncStateManager();
 
-    // GLOBAL
-    stateManager.trackState(STREAM_STATE_MESSAGE1);
-    assertEquals(List.of(STREAM_STATE_MESSAGE1), stateManager.flushStates());
+      // GLOBAL
+      stateManager.trackState(GLOBAL_MESSAGE1);
+      assertEquals(List.of(GLOBAL_MESSAGE1), stateManager.flushStates());
 
-    assertThrows(IllegalArgumentException.class, () -> stateManager.trackState(GLOBAL_MESSAGE1));
+      assertThrows(IllegalArgumentException.class, () -> stateManager.trackState(STREAM_STATE_MESSAGE1));
+    }
+  }
+
+  @Nested
+  class PerStreamState {
+    @Test
+    void testEmptyQueues() {
+      final AsyncStateManager stateManager = new AsyncStateManager();
+
+      // GLOBAL
+      stateManager.trackState(STREAM_STATE_MESSAGE1);
+      assertEquals(List.of(STREAM_STATE_MESSAGE1), stateManager.flushStates());
+
+      assertThrows(IllegalArgumentException.class, () -> stateManager.trackState(GLOBAL_MESSAGE1));
+    }
+
+    @Test
+    void testCorrectFlushing1Stream() {
+      final AsyncStateManager stateManager = new AsyncStateManager();
+
+      stateManager.getStateIdAndIncrement(STREAM1_DESC);
+      stateManager.getStateIdAndIncrement(STREAM1_DESC);
+      stateManager.getStateIdAndIncrement(STREAM1_DESC);
+    }
   }
 
   @Test
