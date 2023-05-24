@@ -94,6 +94,11 @@ The HubSpot source connector supports the following streams:
 * [Ticket Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines) \(Client-Side Incremental\)
 * [Workflows](https://legacydocs.hubspot.com/docs/methods/workflows/v3/get_workflows) \(Client-Side Incremental\)
 
+### Custom CRM Objects
+Custom CRM Objects will appear as streams available for sync, alongside the standard objects listed above. 
+
+If you setup your connections before April 15th, 2023 (on Cloud) or before 0.8.0 (OSS) then you'll need to go to the Hubspot source settings page in the Airbyte UI and reauthenticate via Oauth to allow Airbyte the permissions to access custom objects. Then, go to the replication settings of your connection and click “refresh source schema” to pull in those new streams for syncing. 
+
 ### A note on the `engagements` stream
 
 Objects in the `engagements` stream can have one of the following types: `note`, `email`, `task`, `meeting`, `call`. Depending on the type of engagement, different properties is set for that object in the `engagements_metadata` table in the destination:
