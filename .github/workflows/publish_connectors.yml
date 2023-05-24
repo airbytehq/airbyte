@@ -33,8 +33,6 @@ jobs:
       SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
       TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
       SLACK_WEBHOOK: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-      S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-      S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
