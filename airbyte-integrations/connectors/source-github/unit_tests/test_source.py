@@ -11,6 +11,7 @@ import responses
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from freezegun import freeze_time
+from source_github import constants
 from source_github.source import SourceGithub
 from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
 
@@ -132,8 +133,8 @@ def test_get_org_repositories():
     assert set(organisations) == {"airbytehq", "docker"}
 
 
-def test_organization_or_repo_available():
-    SourceGithub._get_org_repositories = MagicMock(return_value=(False, False))
+def test_organization_or_repo_available(monkeypatch):
+    monkeypatch.setattr(SourceGithub, "_get_org_repositories", MagicMock(return_value=(False, False)))
     source = SourceGithub()
     with pytest.raises(Exception) as exc_info:
         config = {"access_token": "test_token", "repository": ""}
@@ -205,7 +206,8 @@ def test_check_config_repository():
             assert command_check(source, config)
 
 
-def test_streams_no_streams_available_error():
+def test_streams_no_streams_available_error(monkeypatch):
+    monkeypatch.setattr(SourceGithub, "_get_org_repositories", MagicMock(return_value=(False, False)))
     with pytest.raises(AirbyteTracedException) as e:
         SourceGithub().streams(config={"access_token": "test_token", "repository": "airbytehq/airbyte-test"})
     assert str(e.value) == "No streams available. Please check permissions"
@@ -249,3 +251,25 @@ def test_multiple_token_authenticator_with_rate_limiter(monkeypatch):
 
         assert authenticator._tokens["token1"].count == 3
         assert authenticator._tokens["token2"].count == 4
+
+
+@responses.activate
+def test_streams_page_size():
+    responses.get("https://api.github.com/repos/airbytehq/airbyte", json={"full_name": "airbytehq/airbyte", "default_branch": "master"})
+    responses.get("https://api.github.com/repos/airbytehq/airbyte/branches", json=[{"repository": "airbytehq/airbyte", "name": "master"}])
+
+    config = {
+        "credentials": {"access_token": "access_token"},
+        "repository": "airbytehq/airbyte",
+        "start_date": "1900-07-12T00:00:00Z",
+    }
+
+    source = SourceGithub()
+    streams = source.streams(config)
+    assert constants.DEFAULT_PAGE_SIZE != constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
+
+    for stream in streams:
+        if stream.large_stream:
+            assert stream.page_size == constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
+        else:
+            assert stream.page_size == constants.DEFAULT_PAGE_SIZE
