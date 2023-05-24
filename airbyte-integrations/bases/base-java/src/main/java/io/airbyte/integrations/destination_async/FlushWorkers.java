@@ -9,13 +9,16 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Parallel flushing of Destination data.
@@ -28,8 +31,8 @@ import lombok.extern.slf4j.Slf4j;
  * of Destination work is IO bound.
  * <p>
  * The {@link #supervisorThread} assigns work to worker threads by looping over
- * {@link #bufferManagerDequeue} - a dequeue interface over in-memory queues of
- * {@link AirbyteMessage}. See {@link #retrieveWork()} for assignment logic.
+ * {@link #bufferDequeue} - a dequeue interface over in-memory queues of {@link AirbyteMessage}. See
+ * {@link #retrieveWork()} for assignment logic.
  * <p>
  * Within a worker thread, a worker best-effort reads a
  * {@link DestinationFlushFunction#getOptimalBatchSizeBytes()} batch from the in-memory stream and
@@ -39,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 public class FlushWorkers implements AutoCloseable {
 
   public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.8);
-  public static final long QUEUE_FLUSH_THRESHOLD = 10 * 1024 * 1024; // 10MB
+  private static final long QUEUE_FLUSH_THRESHOLD_BYTES = 10 * 1024 * 1024; // 10MB
   private static final long MAX_TIME_BETWEEN_REC_MINS = 5L;
   private static final long SUPERVISOR_INITIAL_DELAY_SECS = 0L;
   private static final long SUPERVISOR_PERIOD_SECS = 1L;
@@ -47,12 +50,13 @@ public class FlushWorkers implements AutoCloseable {
   private static final long DEBUG_PERIOD_SECS = 10L;
   private final ScheduledExecutorService supervisorThread = Executors.newScheduledThreadPool(1);
   private final ExecutorService workerPool = Executors.newFixedThreadPool(5);
-  private final BufferDequeue bufferManagerDequeue;
+  private final BufferDequeue bufferDequeue;
   private final DestinationFlushFunction flusher;
   private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
+  private final ConcurrentHashMap<StreamDescriptor, AtomicInteger> streamToInProgressWorkers = new ConcurrentHashMap<>();
 
-  public FlushWorkers(final BufferDequeue bufferManagerDequeue, final DestinationFlushFunction flushFunction) {
-    this.bufferManagerDequeue = bufferManagerDequeue;
+  public FlushWorkers(final BufferDequeue bufferDequeue, final DestinationFlushFunction flushFunction) {
+    this.bufferDequeue = bufferDequeue;
     flusher = flushFunction;
   }
 
@@ -74,25 +78,52 @@ public class FlushWorkers implements AutoCloseable {
     workerPool.shutdown();
     final var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
     log.info("Workers shut status: {}", workersShut);
+
+    debugLoop.shutdownNow();
   }
 
   private void retrieveWork() {
     // todo (cgardens) - i'm not convinced this makes sense. as we get close to the limit, we should
     // flush more eagerly, but "flush all" is never a particularly useful thing in this world.
     // if the total size is > n, flush all buffers
-    if (bufferManagerDequeue.getTotalGlobalQueueSizeBytes() > TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES) {
+    if (bufferDequeue.getTotalGlobalQueueSizeBytes() > TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES) {
       flushAll();
+      return;
     }
+
+    final ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) workerPool;
+    var allocatableThreads = threadPoolExecutor.getMaximumPoolSize() - threadPoolExecutor.getActiveCount();
 
     // todo (cgardens) - build a score to prioritize which queue to flush next. e.g. if a queue is very
     // large, flush it first. if a queue has not been flushed in a while, flush it next.
     // otherwise, if each individual stream has crossed a specific threshold, flush
-    for (final StreamDescriptor stream : bufferManagerDequeue.getBufferedStreams()) {
-      final var exceedSize = bufferManagerDequeue.getQueueSizeBytes(stream).get() >= QUEUE_FLUSH_THRESHOLD;
-      final var tooLongSinceLastRecord = bufferManagerDequeue.getTimeOfLastRecord(stream)
+    for (final StreamDescriptor stream : bufferDequeue.getBufferedStreams()) {
+      if (allocatableThreads == 0) {
+        break;
+      }
+
+      // while we allow out-of-order processing for speed improvements via multiple workers reading from
+      // the same queue, also avoid scheduling more workers than what is already in progress.
+      final var inProgressSizeByte = (bufferDequeue.getQueueSizeBytes(stream).get() -
+          streamToInProgressWorkers.getOrDefault(stream, new AtomicInteger(0)).get() * QUEUE_FLUSH_THRESHOLD_BYTES);
+      final var exceedSize = inProgressSizeByte >= QUEUE_FLUSH_THRESHOLD_BYTES;
+      final var tooLongSinceLastRecord = bufferDequeue.getTimeOfLastRecord(stream)
           .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
           .orElse(false);
+
       if (exceedSize || tooLongSinceLastRecord) {
+        log.info(
+            "Allocated stream {}, exceedSize:{}, tooLongSinceLastRecord: {}, bytes in queue: {} computed in-progress bytes: {} , threshold bytes: {}",
+            stream.getName(), exceedSize, tooLongSinceLastRecord,
+            FileUtils.byteCountToDisplaySize(bufferDequeue.getQueueSizeBytes(stream).get()),
+            FileUtils.byteCountToDisplaySize(inProgressSizeByte),
+            FileUtils.byteCountToDisplaySize(QUEUE_FLUSH_THRESHOLD_BYTES));
+        allocatableThreads--;
+        if (streamToInProgressWorkers.containsKey(stream)) {
+          streamToInProgressWorkers.get(stream).getAndAdd(1);
+        } else {
+          streamToInProgressWorkers.put(stream, new AtomicInteger(1));
+        }
         flush(stream);
       }
     }
@@ -113,7 +144,7 @@ public class FlushWorkers implements AutoCloseable {
 
   private void flushAll() {
     log.info("Flushing all buffers..");
-    for (final StreamDescriptor desc : bufferManagerDequeue.getBufferedStreams()) {
+    for (final StreamDescriptor desc : bufferDequeue.getBufferedStreams()) {
       flush(desc);
     }
   }
@@ -122,13 +153,13 @@ public class FlushWorkers implements AutoCloseable {
     workerPool.submit(() -> {
       log.info("Worker picked up work..");
       try {
-        log.info("Attempting to read from queue {}. Current queue size: {}", desc, bufferManagerDequeue.getQueueSizeInRecords(desc).get());
+        log.info("Attempting to read from queue {}. Current queue size: {}", desc, bufferDequeue.getQueueSizeInRecords(desc).get());
 
-        try (final var batch = bufferManagerDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
+        try (final var batch = bufferDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
           flusher.flush(desc, batch.getData());
         }
 
-        log.info("Worker finished flushing. Current queue size: {}", bufferManagerDequeue.getQueueSizeInRecords(desc));
+        log.info("Worker finished flushing. Current queue size: {}", bufferDequeue.getQueueSizeInRecords(desc));
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
