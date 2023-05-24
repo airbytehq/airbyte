@@ -37,6 +37,8 @@ from yaml import safe_load
 from .utils import backoff_handler
 
 SSH_TIMEOUT = 60
+MAX_TRIES = 10
+MAX_TIME_BEFORE_GIVE_UP = 120
 
 
 class ConfigurationError(Exception):
@@ -106,7 +108,7 @@ class URLFile:
 
     def open(self):
         self.close()
-        _open = backoff.on_exception(backoff.expo, Exception, max_tries=5, giveup=self.backoff_giveup)(self._open)
+        _open = backoff.on_exception(backoff.expo, Exception, max_tries=MAX_TRIES, giveup=self.backoff_giveup)(self._open)
         try:
             self._file = _open()
         except google.api_core.exceptions.NotFound as err:
@@ -396,7 +398,7 @@ class Client:
     def reader(self) -> reader_class:
         return self.reader_class(url=self._url, provider=self._provider, binary=self.binary_source, encoding=self.encoding)
 
-    @backoff.on_exception(backoff.expo, ConnectionResetError, on_backoff=backoff_handler, max_tries=5, max_time=60)
+    @backoff.on_exception(backoff.expo, ConnectionResetError, on_backoff=backoff_handler, max_tries=MAX_TRIES, max_time=MAX_TIME_BEFORE_GIVE_UP)
     def read(self, fields: Iterable = None) -> Iterable[dict]:
         """Read data from the stream"""
         with self.reader.open() as fp:
@@ -460,7 +462,7 @@ class Client:
             for field in fields
         }
 
-    @backoff.on_exception(backoff.expo, ConnectionResetError, on_backoff=backoff_handler, max_tries=5, max_time=60)
+    @backoff.on_exception(backoff.expo, ConnectionResetError, on_backoff=backoff_handler, max_tries=MAX_TRIES, max_time=MAX_TIME_BEFORE_GIVE_UP)
     def streams(self, empty_schema: bool = False) -> Iterable:
         """Discovers available streams"""
         # TODO handle discovery of directories of multiple files instead
