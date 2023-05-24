@@ -20,8 +20,10 @@ from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_pipel
 from ci_connector_ops.pipelines.publish import run_connector_publish_pipeline
 from ci_connector_ops.pipelines.tests import run_connector_test_pipeline
 from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors, get_modified_metadata_files
-from ci_connector_ops.utils import ConnectorLanguage, get_all_released_connectors
+from ci_connector_ops.utils import ConnectorLanguage, console, get_all_released_connectors
 from rich.logging import RichHandler
+from rich.table import Table
+from rich.text import Text
 
 # CONSTANTS
 
@@ -374,3 +376,36 @@ def validate_publish_options(pre_release: bool, context_object: Dict[str, Any]):
     for k in ["spec_cache_bucket_name", "spec_cache_gcs_credentials", "metadata_service_bucket_name", "metadata_service_gcs_credentials"]:
         if not pre_release and context_object.get(k) is None:
             click.Abort(f'The --{k.replace("_", "-")} option is required when running a main release publish pipeline.')
+
+
+@connectors.command(cls=DaggerPipelineCommand, help="List all selected connectors.")
+@click.pass_context
+def list(
+    ctx: click.Context,
+):
+    selected_connectors = [
+        (connector, bool(modified_files))
+        for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
+        if connector.metadata
+    ]
+
+    selected_connectors = sorted(selected_connectors, key=lambda x: x[0].technical_name)
+    table = Table(title=f"{len(selected_connectors)} selected connectors")
+    table.add_column("Modified")
+    table.add_column("Connector")
+    table.add_column("Language")
+    table.add_column("Release stage")
+    table.add_column("Version")
+    table.add_column("Folder")
+
+    for connector, modified in selected_connectors:
+        modified = "X" if modified else ""
+        connector_name = Text(connector.technical_name)
+        language = Text(connector.language.value)
+        release_stage = Text(connector.release_stage)
+        version = Text(connector.version)
+        folder = Text(str(connector.code_directory))
+        table.add_row(modified, connector_name, language, release_stage, version, folder)
+
+    console.print(table)
+    return True
