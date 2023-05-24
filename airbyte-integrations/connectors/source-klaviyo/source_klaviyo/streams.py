@@ -248,19 +248,25 @@ class Metrics(KlaviyoStream):
     def path(self, **kwargs) -> str:
         return "metrics"
 
-def processRecord(record):
-    flattenLevels = 2
-    processRecord = record
+
+FLATTEN_LEVELS: int = 2
+
+
+def process_record(record):
+    processed_record = record
+
     # Recursively traverse record dict and string-ify all json values in the 3rd level
-    def flattenDict(record, level):
-        for key, value in record.items():
+    def flatten_dict(rec, level):
+        for key, value in rec.items():
             if isinstance(value, dict):
-                if level > flattenLevels:
-                    record[key] = json.dumps(value)
+                if level > FLATTEN_LEVELS:
+                    rec[key] = json.dumps(value)
                 else:
-                    flattenDict(value, level + 1)
-    flattenDict(processRecord, 1)
-    return processRecord
+                    flatten_dict(value, level + 1)
+
+    flatten_dict(processed_record, 1)
+    return processed_record
+
 
 class Events(IncrementalKlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/metrics-timeline"""
@@ -283,7 +289,7 @@ class Events(IncrementalKlaviyoStream):
             record["flow_message_id"] = flow_message_id
             record["campaign_id"] = flow_message_id if not flow else None
 
-            yield processRecord(record)
+            yield process_record(record)
 
 
 class Flows(ReverseIncrementalKlaviyoStream):
