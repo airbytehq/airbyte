@@ -22,6 +22,8 @@ acceptance_tests:
         empty_streams:
           - name: "bank_accounts"
             bypass_reason: "This stream can't be seeded in our sandbox account"
+          - name: "early_fraud_warnings"
+            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "external_account_bank_accounts"
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "external_account_cards"

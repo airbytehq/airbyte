@@ -55,6 +55,7 @@ The Stripe source connector supports the following streams:
 - [Customers](https://stripe.com/docs/api/customers/list) \(Incremental\)
   - This endpoint does not include deleted customers
 - [Disputes](https://stripe.com/docs/api/disputes/list) \(Incremental\)
+- [Early Fraud Warnings](https://stripe.com/docs/api/radar/early_fraud_warnings/list) \(Incremental\)
 - [Events](https://stripe.com/docs/api/events/list) \(Incremental\)
   - The Stripe API does not guarantee access to events older than 30 days, so this stream will only pull events created from the 30 days prior to the initial sync and not from the Replication start date.
 - [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
@@ -85,6 +86,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.5.0   | 2023-05-20 | [22859](https://github.com/airbytehq/airbyte/pull/22859) | Add stream `Early Fraud Warnings`                                                                                                                    |
 | 3.4.3   | 2023-05-10 | [25965](https://github.com/airbytehq/airbyte/pull/25965) | Fix Airbyte date-time data-types                                                                                                                     |
 | 3.4.2   | 2023-05-04 | [25795](https://github.com/airbytehq/airbyte/pull/25795) | Added `CDK TypeTransformer` to guarantee declared JSON Schema data-types                                                                             |
 | 3.4.1   | 2023-04-24 | [23389](https://github.com/airbytehq/airbyte/pull/23389) | Add `customer_tax_ids` to `Invoices`                                                                                                                 |
