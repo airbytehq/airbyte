@@ -30,13 +30,6 @@
             "type": "string",
             "description": "A refresh token generated using the above client ID and secret",
             "airbyte_secret": true
-          },
-          "auth_type": {
-            "type": "string",
-            "const": "Client",
-            "enum": ["Client"],
-            "default": "Client",
-            "order": 0
           }
         }
       }
@@ -44,8 +37,6 @@
   },
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
-    "predicate_key": ["credentials", "auth_type"],
-    "predicate_value": "Client",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
         "type": "object",
