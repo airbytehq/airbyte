@@ -113,7 +113,7 @@ definitions:
       name: "calls"
       cursor_field: "from"
       primary_key: "id"
-      path: "/v1/calls?from={{ stream_slice['start_time'] }}&to={{ stream_slice['end_time']}}"
+      path: "/v1/calls?from={{ stream_slice['start_time'] }}&to={{ stream_slice['end_time']}}&per_page=50"
     retriever:
       $ref: "#/definitions/calls_record_retriever"
       requester:
