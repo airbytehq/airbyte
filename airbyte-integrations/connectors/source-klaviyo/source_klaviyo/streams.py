@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
+from datetime import timedelta
 import requests
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -103,6 +104,8 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
 
         if not params.get("since"):  # skip state filter if already have one from pagination
             state_ts = int(stream_state.get(self.cursor_field, 0))
+            if state_ts > 0 and self.look_back_window_in_seconds:
+                state_ts -= self.look_back_window_in_seconds
             params["since"] = max(state_ts, self._start_ts)
         params["sort"] = "asc"
 
@@ -162,6 +165,15 @@ class ReverseIncrementalKlaviyoStream(KlaviyoStream, ABC):
 
         :return str: The name of the cursor field.
         """
+
+    @property
+    def look_back_window_in_seconds(self) -> Optional[int]:
+        """
+        How long in the past we can re fetch data to ensure we don't miss records
+
+        :returns int: The window in seconds
+        """
+        return None
 
     def request_params(self, stream_state=None, **kwargs):
         """Add incremental filters"""
@@ -252,6 +264,10 @@ class Events(IncrementalKlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/metrics-timeline"""
 
     cursor_field = "timestamp"
+
+    @property
+    def look_back_window_in_seconds(self) -> Optional[int]:
+        return timedelta(minutes=30).seconds
 
     def path(self, **kwargs) -> str:
         return "metrics/timeline"
