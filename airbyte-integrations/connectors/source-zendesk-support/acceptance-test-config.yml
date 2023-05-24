@@ -28,6 +28,7 @@ acceptance_tests:
           extra_records: yes
         fail_on_extra_columns: false
         empty_streams:
+          # This stream is only available for enterprise accounts https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/
           - name: "audit_logs"
             bypass_reason: "no records"
   incremental:
