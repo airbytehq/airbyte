@@ -26,6 +26,7 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -84,21 +85,23 @@ public class PostgresXminHandler {
         continue;
       }
 
-      // Grab the selected fields to sync
-      final TableInfo<CommonField<PostgresType>> table = tableNameToTable
-          .get(fullyQualifiedTableName);
-      final List<String> selectedDatabaseFields = table.getFields()
-          .stream()
-          .map(CommonField::getName)
-          .filter(CatalogHelpers.getTopLevelFieldNames(airbyteStream)::contains)
-          .collect(Collectors.toList());
+      if (airbyteStream.getSyncMode().equals(SyncMode.INCREMENTAL)) {
+        // Grab the selected fields to sync
+        final TableInfo<CommonField<PostgresType>> table = tableNameToTable
+            .get(fullyQualifiedTableName);
+        final List<String> selectedDatabaseFields = table.getFields()
+            .stream()
+            .map(CommonField::getName)
+            .filter(CatalogHelpers.getTopLevelFieldNames(airbyteStream)::contains)
+            .collect(Collectors.toList());
 
-      final AutoCloseableIterator<JsonNode> queryStream = queryTableXmin(selectedDatabaseFields, table.getNameSpace(), table.getName());
-      final AutoCloseableIterator<AirbyteMessage> recordIterator =
-          getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
-      final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
+        final AutoCloseableIterator<JsonNode> queryStream = queryTableXmin(selectedDatabaseFields, table.getNameSpace(), table.getName());
+        final AutoCloseableIterator<AirbyteMessage> recordIterator =
+            getRecordIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
+        final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
 
-      iteratorList.add(augmentWithLogs(recordAndMessageIterator, pair, streamName));
+        iteratorList.add(augmentWithLogs(recordAndMessageIterator, pair, streamName));
+      }
     }
 
     return iteratorList;
