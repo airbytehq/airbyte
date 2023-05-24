@@ -97,7 +97,6 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
-| 1.1.0   | 2023-05-22 | [26358](https://github.com/airbytehq/airbyte/pull/26358) | Remove deprecated authSpecification in favour of advancedAuth              |
 | 1.0.1   | 2023-05-03 | [25784](https://github.com/airbytehq/airbyte/pull/25784) | Fix Authenticator                                                          |
 | 1.0.0   | 2023-05-03 | [25784](https://github.com/airbytehq/airbyte/pull/25784) | Fix Authenticator                                                          |
 | 0.2.2   | 2023-03-22 | [22867](https://github.com/airbytehq/airbyte/pull/22867) | Specified date formatting in specification                                 |
