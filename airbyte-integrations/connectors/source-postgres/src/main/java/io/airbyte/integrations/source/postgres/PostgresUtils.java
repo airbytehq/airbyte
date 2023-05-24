@@ -90,11 +90,11 @@ public class PostgresUtils {
       int size = sizeFromConfig.getAsInt();
       if (size < MIN_QUEUE_SIZE) {
         LOGGER.warn("Queue size is overridden to {} , which is the min allowed for safety.",
-            MIN_FIRST_RECORD_WAIT_TIME.toMinutes());
+            MIN_QUEUE_SIZE);
         return MIN_QUEUE_SIZE;
       } else if (size > MAX_QUEUE_SIZE) {
         LOGGER.warn("Queue size is overridden to {} , which is the max allowed for safety.",
-            MAX_FIRST_RECORD_WAIT_TIME.toMinutes());
+            MAX_QUEUE_SIZE);
         return MAX_QUEUE_SIZE;
       }
       return size;
