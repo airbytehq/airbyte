@@ -50,7 +50,6 @@ public class BufferEnqueue {
    *
    * @param streamDescriptor stream to buffer record to
    * @param message to buffer
-   * @param messageNum
    */
   public void addRecord(final StreamDescriptor streamDescriptor, final AirbyteMessage message) {
     if (!buffers.containsKey(streamDescriptor)) {
@@ -58,7 +57,7 @@ public class BufferEnqueue {
     }
 
     if (message.getType() == Type.RECORD) {
-      handleRecord(streamDescriptor, message);
+      handleRecord(streamDescriptor, message, stateManager.getStateId(streamDescriptor));
     } else if (message.getType() == Type.STATE) {
       stateManager.trackState(message);
     }

@@ -23,7 +23,7 @@ import org.apache.mina.util.ConcurrentHashSet;
 
 public class AsyncStateManager {
 
-  private static StreamDescriptor SENTINEL_GLOBAL_DESC =
+  private static final StreamDescriptor SENTINEL_GLOBAL_DESC =
       new StreamDescriptor().withName(UUID.randomUUID().toString());
 
   boolean preState = true;
