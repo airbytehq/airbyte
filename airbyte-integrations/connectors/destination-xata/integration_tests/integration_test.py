@@ -10,11 +10,9 @@ from typing import Any, Dict, List, Mapping
 from destination_xata import DestinationXata
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
-    AirbyteStateMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
@@ -58,3 +56,25 @@ def test_check_invalid_config():
     config = json.load(f)
     outcome = DestinationXata().check(logger=Mock(), config=config)
     assert outcome.status == Status.FAILED
+
+def test_write(config: Mapping):
+    test_schema = {"type": "object", "properties": {"str_col": {"type": "str"}, "int_col": {"type": "integer"}}}
+
+    test_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name="test_stream", json_schema=test_schema, supported_sync_modes=[SyncMode.incremental]),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.append,
+    )
+
+    records = [AirbyteMessage(
+        type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={
+            "str_col": "example",
+            "int_col": 1,
+        }, emitted_at=0)
+    )]
+    dest = DestinationXata()
+    dest.write(
+        config=config, 
+        configured_catalog=test_stream,
+        input_messages=records
+    )
