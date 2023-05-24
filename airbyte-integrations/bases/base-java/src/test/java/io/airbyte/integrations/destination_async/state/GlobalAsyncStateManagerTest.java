@@ -20,7 +20,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-class AsyncStateManagerTest {
+class GlobalAsyncStateManagerTest {
 
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = STREAM_NAME + 2;
@@ -53,7 +53,7 @@ class AsyncStateManagerTest {
 
   @Test
   void testBasic() {
-    final AsyncStateManager stateManager = new AsyncStateManager();
+    final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
 
     final var firstStateId = stateManager.getStateIdAndIncrementCounter(STREAM1_DESC);
     final var secondStateId = stateManager.getStateIdAndIncrementCounter(STREAM1_DESC);
@@ -74,7 +74,7 @@ class AsyncStateManagerTest {
 
     @Test
     void testEmptyQueuesGlobalState() {
-      final AsyncStateManager stateManager = new AsyncStateManager();
+      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
 
       // GLOBAL
       stateManager.trackState(GLOBAL_STATE_MESSAGE1);
@@ -85,7 +85,7 @@ class AsyncStateManagerTest {
 
     @Test
     void testConversion() {
-      final AsyncStateManager stateManager = new AsyncStateManager();
+      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
 
       final var preConvertId0 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
       final var preConvertId1 = simulateIncomingRecords(STREAM2_DESC, 10, stateManager);
@@ -105,7 +105,7 @@ class AsyncStateManagerTest {
 
     @Test
     void testCorrectFlushingOneStream() {
-      final AsyncStateManager stateManager = new AsyncStateManager();
+      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
 
       final var preConvertId0 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
       stateManager.trackState(GLOBAL_STATE_MESSAGE1);
@@ -120,7 +120,7 @@ class AsyncStateManagerTest {
 
     @Test
     void testCorrectFlushingManyStreams() {
-      final AsyncStateManager stateManager = new AsyncStateManager();
+      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
 
       final var preConvertId0 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
       final var preConvertId1 = simulateIncomingRecords(STREAM2_DESC, 10, stateManager);
@@ -145,7 +145,7 @@ class AsyncStateManagerTest {
 
     @Test
     void testEmptyQueues() {
-      final AsyncStateManager stateManager = new AsyncStateManager();
+      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
 
       // GLOBAL
       stateManager.trackState(STREAM1_STATE_MESSAGE1);
@@ -156,7 +156,7 @@ class AsyncStateManagerTest {
 
     @Test
     void testCorrectFlushingOneStream() {
-      final AsyncStateManager stateManager = new AsyncStateManager();
+      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
 
       var stateId = simulateIncomingRecords(STREAM1_DESC, 3, stateManager);
       stateManager.trackState(STREAM1_STATE_MESSAGE1);
@@ -172,7 +172,7 @@ class AsyncStateManagerTest {
 
     @Test
     void testCorrectFlushingManyStream() {
-      final AsyncStateManager stateManager = new AsyncStateManager();
+      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
 
       final var stream1StateId = simulateIncomingRecords(STREAM1_DESC, 3, stateManager);
       final var stream2StateId = simulateIncomingRecords(STREAM2_DESC, 7, stateManager);
@@ -191,7 +191,7 @@ class AsyncStateManagerTest {
 
   }
 
-  private static long simulateIncomingRecords(final StreamDescriptor desc, final long count, final AsyncStateManager manager) {
+  private static long simulateIncomingRecords(final StreamDescriptor desc, final long count, final GlobalAsyncStateManager manager) {
     var stateId = 0L;
     for (int i = 0; i < count; i++) {
       stateId = manager.getStateIdAndIncrementCounter(desc);
