@@ -77,7 +77,7 @@ class GitlabStream(HttpStream, ABC):
         return super().should_retry(response)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if response.status_code != 200:
+        if response.status_code in self.non_retriable_codes:
             return
         response_data = response.json()
         if isinstance(response_data, dict):
@@ -87,7 +87,7 @@ class GitlabStream(HttpStream, ABC):
             return {"page": self.page}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.status_code in [403, 404]:
+        if response.status_code in self.non_retriable_codes:
             return []
         response_data = response.json()
         if isinstance(response_data, list):

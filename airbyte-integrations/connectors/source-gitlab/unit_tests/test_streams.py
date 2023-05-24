@@ -140,7 +140,7 @@ def test_updated_state(stream, current_state, latest_record, new_state):
 
 
 def test_blocked_branches(requests_mock):
-    requests_mock.get("https://gitlab.com/api/v4/projects/p_1/branches?per_page=50", status_code=404)
+    requests_mock.get("/api/v4/projects/p_1/branches", status_code=404)
     for stream_slice in branches.stream_slices(sync_mode="full_refresh"):
         records = list(branches.read_records(sync_mode="full_refresh", stream_slice=stream_slice))
     assert records == []
