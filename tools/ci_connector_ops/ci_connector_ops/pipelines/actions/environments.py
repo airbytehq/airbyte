@@ -707,7 +707,7 @@ async def finalize_build(context: ConnectorContext, connector_container: Contain
         connector_finalize_module = importlib.util.module_from_spec(connector_finalize_module_spec)
         connector_finalize_module_spec.loader.exec_module(connector_finalize_module)
         try:
-            connector_container = await connector_finalize_module.finalize_build(connector_container)
+            connector_container = await connector_finalize_module.finalize_build(context, connector_container)
         except AttributeError:
             raise Exception("Connector has a finalize_build.py script but it doesn't have a finalize_build function.")
 
