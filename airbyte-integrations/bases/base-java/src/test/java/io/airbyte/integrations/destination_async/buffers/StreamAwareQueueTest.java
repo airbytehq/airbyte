@@ -20,9 +20,9 @@ public class StreamAwareQueueTest {
     assertEquals(0, queue.getCurrentMemoryUsage());
     assertNull(queue.getTimeOfLastMessage().orElse(null));
 
-    queue.offer(new AirbyteMessage(), 1, 6);
-    queue.offer(new AirbyteMessage(), 2, 6);
-    queue.offer(new AirbyteMessage(), 3, 6);
+    queue.offer(new AirbyteMessage(), 6, 1);
+    queue.offer(new AirbyteMessage(), 6, 2);
+    queue.offer(new AirbyteMessage(), 6, 3);
 
     assertEquals(18, queue.getCurrentMemoryUsage());
     assertNotNull(queue.getTimeOfLastMessage().orElse(null));
