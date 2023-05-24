@@ -1,0 +1,10 @@
+{
+    "properties": {
+
+      "descriptionKey": {
+        "description": "The key of the project type's description.",
+        "readOnly": true,
+        "type": "string"
+      }
+    }
+  }
