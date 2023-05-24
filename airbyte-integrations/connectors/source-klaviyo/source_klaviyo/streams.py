@@ -4,6 +4,7 @@
 
 import datetime
 from abc import ABC, abstractmethod
+import json
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
@@ -247,6 +248,19 @@ class Metrics(KlaviyoStream):
     def path(self, **kwargs) -> str:
         return "metrics"
 
+def processRecord(record):
+    flattenLevels = 2
+    processRecord = record
+    # Recursively traverse record dict and string-ify all json values in the 3rd level
+    def flattenDict(record, level):
+        for key, value in record.items():
+            if isinstance(value, dict):
+                if level > flattenLevels:
+                    record[key] = json.dumps(value)
+                else:
+                    flattenDict(value, level + 1)
+    flattenDict(processRecord, 1)
+    return processRecord
 
 class Events(IncrementalKlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/metrics-timeline"""
@@ -269,7 +283,7 @@ class Events(IncrementalKlaviyoStream):
             record["flow_message_id"] = flow_message_id
             record["campaign_id"] = flow_message_id if not flow else None
 
-            yield record
+            yield processRecord(record)
 
 
 class Flows(ReverseIncrementalKlaviyoStream):
