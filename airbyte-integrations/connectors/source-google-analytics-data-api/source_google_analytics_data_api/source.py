@@ -262,8 +262,8 @@ class PivotReport(GoogleAnalyticsDataApiBaseStream):
 
         # remove offset and limit fields according to their absence in
         # https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport
-        payload.pop("offset")
-        payload.pop("limit")
+        payload.pop("offset", None)
+        payload.pop("limit", None)
         payload["pivots"] = self.config["pivots"]
         return payload
 

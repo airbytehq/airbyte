@@ -10,11 +10,10 @@ from unittest.mock import MagicMock
 
 import pytest
 from freezegun import freeze_time
-from source_google_analytics_data_api.source import GoogleAnalyticsDataApiBaseStream
+from source_google_analytics_data_api.source import GoogleAnalyticsDataApiBaseStream, PAGE_SIZE
 
 from .utils import read_incremental
 
-PAGE_SIZE = 100000
 
 json_credentials = """
 {
