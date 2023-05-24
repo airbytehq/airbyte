@@ -136,12 +136,12 @@ public class GlueOperations implements MetastoreOperations {
             yield "float";
           } else {
             if (metastoreFormatConfig.getNumericType() == NumericType.DECIMAL) {
-              yield String.format("decimal(%s)", metastoreFormatConfig.getDecimalScale());
+              yield String.format("decimal(38,%s)", metastoreFormatConfig.getDecimalScale());
             } else {
               // TODO(quazi-h) We have set the default parameter to 2 in the spec for this parameter
               // Default to use decimal as it is a more precise type and allows for large values
               // Set the default scale 38 to allow for the widest range of values
-              yield "decimal(38)";
+              yield "decimal(38,2)";
             }
           }
         }
