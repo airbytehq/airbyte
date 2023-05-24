@@ -16,6 +16,7 @@ This documentation should be helpful for both local and CI use of the CLI. We in
 ### Install
 ```bash
 # Make sure that the current Python version is >= 3.10
+pyenv shell 3.10
 pip install "ci-connector-ops[pipelines] @ git+https://github.com/airbytehq/airbyte.git@master#subdirectory=tools/ci_connector_ops"
 cd airbyte
 airbyte-ci
@@ -108,6 +109,11 @@ Test connectors changed on the current branch:
 ```mermaid
 flowchart TD
     entrypoint[[For each selected connector]]
+    subgraph version ["Connector version checks"]
+        sem["Check version follows semantic versionning"]
+        incr["Check version is incremented"]
+        sem --> incr
+    end
     subgraph static ["Static code analysis"]
       qa[Run QA checks]
       fmt[Run code format checks]
@@ -126,8 +132,9 @@ flowchart TD
         build-->integration
         build-->cat
     end
-    entrypoint-->static
-    entrypoint-->tests
+    entrypoint-->version
+    version-->static
+    version-->tests
     report["Build test report"]
     tests-->report
     static-->report
@@ -189,13 +196,20 @@ It's mainly purposed for CI use to release a connector update.
 Publish all connectors modified in the head commit: `airbyte-ci connectors --modified publish`
 
 ### Options
-| Option                             | Required | Mapped environment variable    | Description                                                                           |
-|------------------------------------|----------|--------------------------------|---------------------------------------------------------------------------------------|
-| `--spec-cache-service-account-key` | True     | `SPEC_CACHE_SERVICE_ACCOUNT`   | The service account key to upload files to the GCS bucket hosting spec cache.         |
-| `--spec-cache-bucket-name`         | True     | `SPEC_CACHE_BUCKET_NAME`       | The name of the GCS bucket where specs will be cached.                                |
-| `--metadata-service-account-key`   | True     | `METADATA_SERVICE_ACCOUNT_KEY` | The service account key to upload files to the GCS bucket hosting the metadata files. |
-| `----metadata-service-bucket-name` | True     | `METADATA_SERVICE_BUCKET_NAME` | The name of the GCS bucket where metadata files will be uploaded.                     |
 
+| Option                               | Required | Default         | Mapped environment variable        | Description                                                                                                                                                                      |
+| ------------------------------------ | -------- | --------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--pre-release/--main-release`       | False    | `--pre-release` |                                    | Whether to publish the pre-release or the main release version of a connector. Defaults to pre-release. For main release you have to set the credentials to interact with the GCS bucket. |
+| `--docker-hub-username`              | True     |                 | `DOCKER_HUB_USERNAME`              | Your username to connect to DockerHub.                                                                                                                                           |
+| `--docker-hub-password`              | True     |                 | `DOCKER_HUB_PASSWORD`              | Your password to connect to DockerHub.                                                                                                                                           |
+| `--spec-cache-gcs-credentials`       | False    |                 | `SPEC_CACHE_GCS_CREDENTIALS`       | The service account key to upload files to the GCS bucket hosting spec cache.                                                                                                    |
+| `--spec-cache-bucket-name`           | False    |                 | `SPEC_CACHE_BUCKET_NAME`           | The name of the GCS bucket where specs will be cached.                                                                                                                           |
+| `--metadata-service-gcs-credentials` | False    |                 | `METADATA_SERVICE_GCS_CREDENTIALS` | The service account key to upload files to the GCS bucket hosting the metadata files.                                                                                            |
+| `--metadata-service-bucket-name`     | False    |                 | `METADATA_SERVICE_BUCKET_NAME`     | The name of the GCS bucket where metadata files will be uploaded.                                                                                                                |
+| `--slack-webhook`                    | False    |                 | `SLACK_WEBHOOK`                    | The Slack webhook URL to send notifications to.                                                                                                                                  |
+| `--slack-channel`                    | False    |                 | `SLACK_CHANNEL`                    | The Slack channel name to send notifications to.                                                                                                                                 |
+
+I've added an empty "Default" column, and you can fill in the default values as needed.
 #### What it runs
 ```mermaid
 flowchart TD
@@ -203,10 +217,11 @@ flowchart TD
     check[Check if the connector image already exists]
     build[Build the connector image for all platform variants]
     upload_spec[Upload connector spec to the spec cache bucket]
-    push[Push the connector to DockerHub, with platform variants]
+    push[Push the connector image from DockerHub, with platform variants]
+    pull[Pull the connector image from DockerHub to check SPEC can be run and the image layers are healthy]
     upload_metadata[Upload its metadata file to the metadata service bucket]
 
-    validate-->check-->build-->upload_spec-->push-->upload_metadata
+    validate-->check-->build-->upload_spec-->push-->pull-->upload_metadata
 ```
 
 ### <a id="metadata-validate-command-subgroup"></a>`metadata` command subgroup
@@ -226,9 +241,9 @@ Validate all `metadata.yaml` files in the repo:
 `airbyte-ci metadata validate --all`
 
 #### Options
-| Option             | Default      | Description                                                                                                                 |
-|--------------------|--------------|-----------------------------------------------------------------------------------------------------------------------------|
-| `--modified/--all` | `--modified` | Flag to run validation of `metadata.yaml` files on the modified files in the head commit or all the `metadata.yaml` files.  |
+| Option             | Default      | Description                                                                                                                |
+| ------------------ | ------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `--modified/--all` | `--modified` | Flag to run validation of `metadata.yaml` files on the modified files in the head commit or all the `metadata.yaml` files. |
 
 ### <a id="metadata-upload-command"></a>`metadata upload` command
 This command upload the modified `metadata.yaml` files in the head commit, or all the `metadata.yaml` files, to a GCS bucket.
@@ -238,9 +253,9 @@ Upload all the `metadata.yaml` files to a GCS bucket:
 `airbyte-ci metadata upload --all <gcs-bucket-name>`
 
 #### Options
-| Option              | Required | Default    | Mapped environment variable | Description                                                                                                              |
-|---------------------|----------|------------|-----------------------------|--------------------------------------------------------------------------------------------------------------------------|
-| `--gcs-credentials` | True     |            | `GCS_CREDENTIALS`           | Service account credentials in JSON format with permission to get and upload on the GCS bucket                           |
+| Option              | Required | Default      | Mapped environment variable | Description                                                                                                              |
+| ------------------- | -------- | ------------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `--gcs-credentials` | True     |              | `GCS_CREDENTIALS`           | Service account credentials in JSON format with permission to get and upload on the GCS bucket                           |
 | `--modified/--all`  | True     | `--modified` |                             | Flag to upload the modified `metadata.yaml` files in the head commit or all the  `metadata.yaml`  files to a GCS bucket. |
 
 ### <a id="metadata-upload-orchestrator"></a>`metadata deploy orchestrator` command
@@ -269,9 +284,9 @@ This command runs tests for the metadata service orchestrator.
 `airbyte-ci metadata test orchestrator`
 
 ## Changelog 
-| Version | PR | Description                                                                                |
-|---------|----|--------------------------------------------------------------------------------------------|
-| 0.1.0   |    | Alpha version not in production yet. All the commands described in this doc are available. |
+| Version | PR  | Description                                                                                |
+| ------- | --- | ------------------------------------------------------------------------------------------ |
+| 0.1.0   |     | Alpha version not in production yet. All the commands described in this doc are available. |
 
 ## More info
 This project is owned by the Connectors Operations team.

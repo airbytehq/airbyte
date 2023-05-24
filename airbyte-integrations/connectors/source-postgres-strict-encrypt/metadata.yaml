@@ -11,7 +11,8 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
-  dockerImageTag: 2.0.17
+  maxSecondsBetweenMessages: 7200
+  dockerImageTag: 2.0.29
   dockerRepository: airbyte/source-postgres-strict-encrypt
   githubIssueLabel: source-postgres
   icon: postgresql.svg

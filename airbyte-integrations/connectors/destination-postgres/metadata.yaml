@@ -1,11 +1,4 @@
 data:
-  registries:
-    cloud:
-      dockerImageTag: 0.3.26
-      dockerRepository: airbyte/destination-postgres-strict-encrypt
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 25c5221d-dce2-4163-ade9-739ef790f503
@@ -18,7 +11,13 @@ data:
   normalizationConfig:
     normalizationIntegrationType: postgres
     normalizationRepository: airbyte/normalization
-    normalizationTag: 0.4.0
+    normalizationTag: 0.4.3
+  registries:
+    cloud:
+      dockerRepository: airbyte/destination-postgres-strict-encrypt
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/postgres
   supportsDbt: true

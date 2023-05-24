@@ -34,7 +34,6 @@ kubernetes:
 area/connectors:
   - airbyte-integrations/connectors/*
   - airbyte-integrations/connectors/**/*
-  - airbyte-integrations/builds.md
 
 area/documentation:
   - docs/*

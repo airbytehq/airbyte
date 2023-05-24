@@ -39,7 +39,7 @@ This can be done by signing up for the Free tier plan on [Exchange Rates API](ht
 ### Setting up the environment
 
 Besides an Exchange Rates API key, only a browser and an up-to-date running Airbyte instance is required. There are two ways to accomplish this:
-* Coming soon: Sign up on [cloud.airbyte.com](https://cloud.airbyte.com/)
+* Sign up on [cloud.airbyte.com](https://cloud.airbyte.com/)
 * Download and run Airbyte [on your own infrastructure](https://github.com/airbytehq/airbyte#quick-start). Make sure you are running version 0.43.0 or later
 
 ## Step 2 - Basic configuration
@@ -69,6 +69,8 @@ On the "global configuration" page, general settings applying to all streams are
 * Set the "Header" to `apikey`
 
 The actual API Key you copied from apilayer.com will not be part of the connector itself - instead it will be set as part of the source configuration when configuring a connection based on your connector in a later step.
+
+You can find more information about authentication method on the [authentication concept page](./authentication).
 
 ### Setting up and testing a stream
 
@@ -111,6 +113,8 @@ Each stream of a connector needs to declare how emitted records will look like (
 By default, the stream schema is set to a simple object with unspecified properties. However, the connector builder can infer the schema based on the test read you just issued. To use the infered schema, switch to the "Detected schema" tab and click the "Import schema" button.
 
 The warning icon disappears indicating that the declared schema of your stream matches the test data.
+
+You can find more information about schema declaration on the [record processing concept page](./record-processing).
 
 ## Step 3 - Advanced configuration
 
@@ -173,6 +177,8 @@ Now, you should see a dropdown above the records view that lets you step through
 
 When used in a connection, the connector will make sure exchange rates for the same day are not requested multiple times - the date of the last fetched record will be stored and the next scheduled sync will pick up from where the previous one stopped.
 
+You can find more information about incremental syncs on the [incremental sync concept page](./incremental-sync).
+
 ### Adding transformations
 
 <div style={{ position: "relative", paddingBottom: "59.66850828729282%", height: 0 }}><iframe src="https://www.loom.com/embed/42ab3872c9284296b452a99e90b26738" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%"}}></iframe></div>
@@ -185,6 +191,8 @@ To do so, follow these steps:
 * Trigger a new test read
 
 The `historical` property in the records tab and the schema warning should disappear.
+
+You can find more information about incremental syncs on the [incremental sync concept page](./incremental-sync).
 
 ## Step 4 - Publishing and syncing
 
@@ -215,11 +223,11 @@ Congratulations! You just completed the following steps:
 ## Next steps
 
 This tutorial didn't go into depth about all features that can be used in the connector builder. Check out the concept pages for more information about certain topics:
-* Authentication
-* Record processing
-* Pagination
-* Error handling
-* Incremental syncs
-* Partitioning
+* [Authentication](./authentication)
+* [Record processing](./record-processing)
+* [Pagination](./pagination)
+* [Error handling](./error-handling)
+* [Incremental sync](./incremental-sync)
+* [Partitioning](./partitioning)
 
-Not every possible API can be consumed by connectors configured in the connector builder. The [compatibility guide](/connector-development/config-based/connector-builder-compatibility#oauth) can help determining whether another technology should be used to integrate an API with the Airbyte platform.
+Not every possible API can be consumed by connectors configured in the connector builder. The [compatibility guide](/connector-development/connector-builder-ui/connector-builder-compatibility#oauth) can help determining whether another technology should be used to integrate an API with the Airbyte platform.

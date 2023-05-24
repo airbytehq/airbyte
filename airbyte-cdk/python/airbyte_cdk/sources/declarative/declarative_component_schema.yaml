@@ -561,8 +561,11 @@ definitions:
         enum: [DatetimeBasedCursor]
       cursor_field:
         title: Cursor Field
-        description: The location of the value on a record that will be used as a bookmark during sync.
+        description: The location of the value on a record that will be used as a bookmark during sync. To ensure no data loss, the API must return records in ascending order based on the cursor field. Nested fields are not supported, so the field must be at the top level of the record. You can use a combination of Add Field and Remove Field transformations to move the nested field to the top.
         type: string
+        interpolation_context:
+          - config
+          - stream_state
         examples:
           - "created_at"
           - "{{ config['record_cursor'] }}"
@@ -589,6 +592,7 @@ definitions:
         examples:
           - "2021-01-1T00:00:00Z"
           - "{{ now_utc() }}"
+          - "{{ day_delta(-1) }}"
       start_datetime:
         title: Start Datetime
         description: The datetime that determines the earliest record that should be synced.
@@ -643,7 +647,6 @@ definitions:
       - type
       - client_id
       - client_secret
-      - refresh_token
       - token_refresh_endpoint
     properties:
       type:
@@ -692,11 +695,12 @@ definitions:
           - expires_in
       grant_type:
         title: Grant Type
-        description: How the access token is granted.
+        description: Specifies the OAuth2 grant type. If set to refresh_token, the refresh_token needs to be provided as well. For client_credentials, only client id and secret are required. Other grant types are not officially supported.
         type: string
         default: "refresh_token"
         examples:
           - refresh_token
+          - client_credentials
       refresh_request_body:
         title: Refresh Request Body
         description: Body of the request sent to get a new access token.
@@ -822,11 +826,12 @@ definitions:
           - "expires_in"
       grant_type:
         title: Grant Type
-        description: How the access token is granted.
+        description: Specifies the OAuth2 grant type. If set to refresh_token, the refresh_token needs to be provided as well. For client_credentials, only client id and secret are required. Other grant types are not officially supported.
         type: string
         default: "refresh_token"
         examples:
           - refresh_token
+          - client_credentials
       refresh_request_body:
         title: Refresh Request Body
         description: Body of the request sent to get a new access token.
@@ -1346,7 +1351,7 @@ definitions:
           - "{{ config['start_time'] }}"
       datetime_format:
         title: Datetime Format
-        description: Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty.
+        description: Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use %s if the datetime value is in epoch time (Unix timestamp).
         type: string
         default: ""
         examples:
@@ -2076,7 +2081,6 @@ interpolation:
       examples:
         - "{{ day_delta(25) }}"
         - "{{ day_delta(25, format='%Y-%m-%d') }}"
-        - "{{ config['start_time'] + day_delta(2) }}"
     - title: Duration
       description: Converts an ISO8601 duratioin to datetime.timedelta.
       arguments:
