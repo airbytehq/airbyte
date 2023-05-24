@@ -1,0 +1,22 @@
+#!/bin/sh
+set -e
+
+if [ -z "${1}" ]; then
+    echo "File URL required"
+    exit 2
+fi
+
+if [ -z "${2}" ]; then
+    echo "File SHA256 required"
+    exit 2
+fi
+
+
+mkdir /downloads
+cd /downloads
+
+wget $1
+FILENAME=$(basename $1)
+echo "$2 $FILENAME" | sha256sum -c
+tar -xzvf $FILENAME
+rm $FILENAME
