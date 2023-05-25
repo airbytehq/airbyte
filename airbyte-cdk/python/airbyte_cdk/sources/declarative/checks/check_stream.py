@@ -41,6 +41,7 @@ class CheckStream(ConnectionChecker):
             try:
                 stream_is_available, reason = availability_strategy.check_availability(stream, logger, source)
                 if stream_is_available:
+                    # why do we return here and not try next stream?
                     return True, None
                 else:
                     return False, reason
