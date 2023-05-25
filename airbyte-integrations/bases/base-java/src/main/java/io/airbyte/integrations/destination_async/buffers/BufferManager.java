@@ -23,7 +23,7 @@ public class BufferManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferManager.class);
 
-  public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.8);
+  public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.25);
   private final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers;
   private final BufferEnqueue bufferEnqueue;
   private final BufferDequeue bufferDequeue;
