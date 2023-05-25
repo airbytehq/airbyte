@@ -3,8 +3,11 @@
 #
 
 
+import ssl
+import time
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from urllib.error import URLError
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -23,6 +26,7 @@ from source_bing_ads.reports import (
     HISTORICAL_FIELDS,
     LOW_QUALITY_FIELDS,
     REVENUE_FIELDS,
+    PerformanceReportsMixin,
     ReportsMixin,
 )
 from suds import sudsobject
@@ -79,7 +83,21 @@ class BingAdsStream(Stream, ABC):
 
     @property
     def _user_id(self) -> int:
-        return self._service.GetUser().User.Id
+        return self._get_user_id()
+
+    # TODO remove once Microsoft support confirm their SSL certificates are always valid...
+    def _get_user_id(self, number_of_retries=10):
+        """"""
+        try:
+            return self._service.GetUser().User.Id
+        except URLError as error:
+            if isinstance(error.reason, ssl.SSLError):
+                self.logger.warn("SSL certificate error, retrying...")
+                if number_of_retries > 0:
+                    time.sleep(1)
+                    return self._get_user_id(number_of_retries - 1)
+                else:
+                    raise error
 
     def next_page_token(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         """
@@ -343,7 +361,7 @@ class BudgetSummaryReport(ReportsMixin, BingAdsStream):
     ]
 
 
-class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
+class CampaignPerformanceReport(PerformanceReportsMixin, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "CampaignPerformanceReport"
@@ -371,6 +389,7 @@ class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
         "CampaignName",
         "CampaignType",
         "CampaignStatus",
+        "CampaignLabels",
         "Impressions",
         "Clicks",
         "Ctr",
@@ -427,7 +446,7 @@ class CampaignPerformanceReportMonthly(CampaignPerformanceReport):
     ]
 
 
-class AdPerformanceReport(ReportsMixin, BingAdsStream):
+class AdPerformanceReport(PerformanceReportsMixin, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "AdPerformanceReport"
@@ -499,7 +518,7 @@ class AdPerformanceReportMonthly(AdPerformanceReport):
     report_aggregation = "Monthly"
 
 
-class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
+class AdGroupPerformanceReport(PerformanceReportsMixin, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "AdGroupPerformanceReport"
@@ -586,7 +605,7 @@ class AdGroupPerformanceReportMonthly(AdGroupPerformanceReport):
     ]
 
 
-class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
+class KeywordPerformanceReport(PerformanceReportsMixin, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "KeywordPerformanceReport"
@@ -671,7 +690,7 @@ class KeywordPerformanceReportMonthly(KeywordPerformanceReport):
     report_aggregation = "Monthly"
 
 
-class AccountPerformanceReport(ReportsMixin, BingAdsStream):
+class AccountPerformanceReport(PerformanceReportsMixin, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "AccountPerformanceReport"

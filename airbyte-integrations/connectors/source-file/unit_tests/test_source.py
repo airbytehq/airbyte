@@ -21,6 +21,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from source_file.client import ConfigurationError
 from source_file.source import SourceFile
 
 logger = logging.getLogger("airbyte")
@@ -42,7 +43,7 @@ def test_csv_with_utf16_encoding(absolute_path, test_files):
     config_local_csv_utf16 = {
         "dataset_name": "AAA",
         "format": "csv",
-        "reader_options": '{"encoding":"utf_16"}',
+        "reader_options": '{"encoding":"utf_16", "parse_dates": [\"header5\"]}',
         "url": f"{absolute_path}/{test_files}/test_utf16.csv",
         "provider": {"storage": "local"},
     }
@@ -53,6 +54,7 @@ def test_csv_with_utf16_encoding(absolute_path, test_files):
             "header2": {"type": ["number", "null"]},
             "header3": {"type": ["number", "null"]},
             "header4": {"type": ["boolean", "null"]},
+            "header5": {"type": ["string", "null"], "format": "date-time"},
         },
         "type": "object",
     }
@@ -130,6 +132,12 @@ def test_check_invalid_config(source, invalid_config):
     assert actual.status == expected.status
 
 
+def test_check_invalid_reader_options(source, invalid_reader_options_config):
+    expected = AirbyteConnectionStatus(status=Status.FAILED)
+    actual = source.check(logger=logger, config=invalid_reader_options_config)
+    assert actual.status == expected.status
+
+
 def test_discover_dropbox_link(source, config_dropbox_link):
     source.discover(logger=logger, config=config_dropbox_link)
 
@@ -150,7 +158,7 @@ def test_discover(source, config, client):
 def test_check_wrong_reader_options(source, config):
     config["reader_options"] = '{encoding":"utf_16"}'
     assert source.check(logger=logger, config=config) == AirbyteConnectionStatus(
-        status=Status.FAILED, message="Field 'reader_options' is not valid JSON. https://www.json.org/"
+        status=Status.FAILED, message="Field 'reader_options' is not valid JSON object. https://www.json.org/"
     )
 
 
@@ -199,3 +207,20 @@ def test_pandas_header_none(absolute_path, test_files):
         {"0": "text11", "1": "text12"},
         {"0": "text21", "1": "text22"},
     ]
+
+
+def test_incorrect_reader_options(absolute_path, test_files):
+    config = {
+        "dataset_name": "test",
+        "format": "csv",
+        "reader_options": json.dumps({"sep": "4", "nrows": 20}),
+        "url": f"{absolute_path}/{test_files}/test_parser_error.csv",
+        "provider": {"storage": "local"},
+    }
+
+    catalog = get_catalog({"0": {"type": ["string", "null"]}, "1": {"type": ["string", "null"]}})
+    source = SourceFile()
+    with pytest.raises(ConfigurationError) as e:
+        records = source.read(logger=logger, config=deepcopy(config), catalog=catalog)
+        records = [r.record.data for r in records]
+    assert "can not be parsed. Please check your reader_options. https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html" in str(e.value)

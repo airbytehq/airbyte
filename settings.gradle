@@ -88,7 +88,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || (System.getenv().containsKey("S
     include ':airbyte-api'
     include ':airbyte-commons-cli'
     include ':airbyte-commons-protocol'
-    include ':airbyte-config-oss:specs-oss'
     include ':airbyte-config-oss:init-oss'
     include ':airbyte-config-oss:config-models-oss' // reused by acceptance tests in connector base.
     include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
@@ -133,6 +132,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':tools:code-generator'
 
     include 'airbyte-integrations:connectors-performance:source-harness'
+    include 'airbyte-integrations:connectors-performance:destination-harness'
 }
 
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "OCTAVIA_CLI") {

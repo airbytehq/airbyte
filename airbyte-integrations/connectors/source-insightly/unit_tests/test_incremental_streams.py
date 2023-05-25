@@ -3,8 +3,7 @@
 #
 
 
-from datetime import datetime, timezone
-
+import pendulum
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
 from pytest import fixture
 from source_insightly.source import IncrementalInsightlyStream
@@ -23,9 +22,28 @@ def patch_incremental_base_class(mocker):
 
 def test_cursor_field(patch_incremental_base_class):
     stream = IncrementalInsightlyStream(authenticator=authenticator, start_date=start_date)
-    # TODO: replace this with your expected cursor field
     expected_cursor_field = "DATE_UPDATED_UTC"
     assert stream.cursor_field == expected_cursor_field
+
+
+def test_incremental_params(patch_incremental_base_class):
+    """
+    After talking to the insightly team we learned that the DATE_UPDATED_UTC
+    cursor is exclusive. Subtracting 1 second from the previous state makes it inclusive.
+    """
+    stream = IncrementalInsightlyStream(authenticator=authenticator, start_date=start_date)
+    inputs = {
+        "stream_slice": None,
+        "stream_state": {"DATE_UPDATED_UTC": pendulum.datetime(2023, 5, 15, 18, 12, 44, tz="UTC")},
+        "next_page_token": None,
+    }
+    expected_params = {
+        "count_total": True,
+        "skip": 0,
+        "top": 500,
+        "updated_after_utc": "2023-05-15T18:12:43Z",  # 1 second subtracted from stream_state
+    }
+    assert stream.request_params(**inputs) == expected_params
 
 
 def test_get_updated_state(patch_incremental_base_class):
@@ -34,14 +52,14 @@ def test_get_updated_state(patch_incremental_base_class):
         "current_stream_state": {"DATE_UPDATED_UTC": "2021-01-01T00:00:00Z"},
         "latest_record": {"DATE_UPDATED_UTC": "2021-02-01T00:00:00Z"},
     }
-    expected_state = {"DATE_UPDATED_UTC": datetime(2021, 2, 1, 0, 0, 0, tzinfo=timezone.utc)}
+    expected_state = {"DATE_UPDATED_UTC": pendulum.datetime(2021, 2, 1, 0, 0, 0, tz="UTC")}
     assert stream.get_updated_state(**inputs) == expected_state
 
 
 def test_get_updated_state_no_current_state(patch_incremental_base_class):
     stream = IncrementalInsightlyStream(authenticator=authenticator, start_date=start_date)
     inputs = {"current_stream_state": {}, "latest_record": {"DATE_UPDATED_UTC": "2021-01-01T00:00:00Z"}}
-    expected_state = {"DATE_UPDATED_UTC": datetime(2021, 1, 1, 0, 0, 0, tzinfo=timezone.utc)}
+    expected_state = {"DATE_UPDATED_UTC": pendulum.datetime(2021, 1, 1, 0, 0, 0, tz="UTC")}
     assert stream.get_updated_state(**inputs) == expected_state
 
 

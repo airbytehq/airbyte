@@ -29,13 +29,14 @@ public class DatabricksAzureBlobStorageStreamCopierFactory implements Databricks
     try {
       final AirbyteStream stream = configuredStream.getStream();
       final String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
+      String catalog = databricksConfig.catalog();
 
       final AzureBlobStorageConfig azureConfig = databricksConfig.storageConfig().getAzureBlobStorageConfigOrThrow();
       final SpecializedBlobClientBuilder specializedBlobClientBuilder = new SpecializedBlobClientBuilder()
           .endpoint(azureConfig.getEndpointUrl())
           .sasToken(azureConfig.getSasToken())
           .containerName(azureConfig.getContainerName());
-      return new DatabricksAzureBlobStorageStreamCopier(stagingFolder, schema, configuredStream, database,
+      return new DatabricksAzureBlobStorageStreamCopier(stagingFolder, catalog, schema, configuredStream, database,
           databricksConfig, nameTransformer, sqlOperations, specializedBlobClientBuilder, azureConfig);
     } catch (final Exception e) {
       throw new RuntimeException(e);
