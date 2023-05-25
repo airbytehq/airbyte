@@ -39,6 +39,9 @@ public class BufferManager {
   public BufferManager(final long memoryLimit) {
     maxMemory = memoryLimit;
     LOGGER.info("Memory available to the JVM {}", FileUtils.byteCountToDisplaySize(maxMemory));
+    LOGGER.info("Memory available from maxMemory: {}", Runtime.getRuntime().maxMemory());
+    LOGGER.info("Memory available from totalMemory: {}", Runtime.getRuntime().totalMemory());
+    LOGGER.info("Memory available from freeMemory: {}", Runtime.getRuntime().freeMemory());
     memoryManager = new GlobalMemoryManager(maxMemory);
     buffers = new ConcurrentHashMap<>();
     final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
@@ -70,17 +73,17 @@ public class BufferManager {
     final var queueInfo = new StringBuilder().append("QUEUE INFO").append(System.lineSeparator());
 
     queueInfo
-        .append(String.format("  Global Mem Manager -- max: %s, allocated: %s (%s MB)",
-            FileUtils.byteCountToDisplaySize(memoryManager.getMaxMemoryBytes()),
-            FileUtils.byteCountToDisplaySize(memoryManager.getCurrentMemoryBytes()),
+        .append(String.format("  Global Mem Manager -- max: %s in bytes, allocated: %s in bytes (%s MB)",
+            (double) memoryManager.getMaxMemoryBytes() / 1024 / 1024,
+            (double) memoryManager.getCurrentMemoryBytes() / 1024 / 1024,
             (double) memoryManager.getCurrentMemoryBytes() / 1024 / 1024))
         .append(System.lineSeparator());
 
     for (final var entry : buffers.entrySet()) {
       final var queue = entry.getValue();
       queueInfo.append(
-          String.format("  Queue name: %s, num records: %d, num bytes: %s",
-              entry.getKey().getName(), queue.size(), FileUtils.byteCountToDisplaySize(queue.getCurrentMemoryUsage())))
+          String.format("  Queue name: %s, num records: %d, num bytes: %s, num mb: %s",
+              entry.getKey().getName(), queue.size(), queue.getCurrentMemoryUsage(), queue.getCurrentMemoryUsage() / 1024 / 1024))
           .append(System.lineSeparator());
     }
     log.info(queueInfo.toString());
