@@ -255,6 +255,7 @@ class Report:
                 "git_branch": self.pipeline_context.git_branch,
                 "git_revision": self.pipeline_context.git_revision,
                 "ci_context": self.pipeline_context.ci_context,
+                "pull_request_url": self.pipeline_context.pull_request.url if self.pipeline_context.pull_request else None,
             }
         )
 

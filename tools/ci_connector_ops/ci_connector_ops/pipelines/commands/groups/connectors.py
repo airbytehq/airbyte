@@ -182,6 +182,7 @@ def test(
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
+            pull_request=ctx.obj.get("pull_request"),
         )
         for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
     ]
@@ -358,6 +359,7 @@ def publish(
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
+            pull_request=ctx.obj.get("pull_request"),
         )
         for connector, modified_files in selected_connectors_and_files.items()
     ]

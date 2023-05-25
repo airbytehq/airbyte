@@ -10,7 +10,8 @@ from ci_connector_ops.pipelines.actions import run_steps
 from ci_connector_ops.pipelines.actions.environments import with_pip_packages, with_poetry_module, with_python_base
 from ci_connector_ops.pipelines.bases import Report, Step, StepResult
 from ci_connector_ops.pipelines.contexts import PipelineContext
-from ci_connector_ops.pipelines.utils import DAGGER_CONFIG, METADATA_FILE_NAME, execute_concurrently, METADATA_ICON_FILE_NAME
+from ci_connector_ops.pipelines.utils import DAGGER_CONFIG, METADATA_FILE_NAME, METADATA_ICON_FILE_NAME, execute_concurrently
+from github import PullRequest
 
 METADATA_DIR = "airbyte-ci/connectors/metadata_service"
 METADATA_LIB_MODULE_PATH = "lib"
@@ -162,6 +163,7 @@ async def run_metadata_validation_pipeline(
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
     metadata_to_validate: Set[Path],
+    pull_request: Optional[PullRequest],
 ) -> bool:
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Validate metadata.yaml files",
@@ -171,6 +173,7 @@ async def run_metadata_validation_pipeline(
         gha_workflow_run_url=gha_workflow_run_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
         ci_context=ci_context,
+        pull_request=pull_request,
     )
 
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
@@ -193,6 +196,7 @@ async def run_metadata_lib_test_pipeline(
     gha_workflow_run_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
+    pull_request: Optional[PullRequest],
 ) -> bool:
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Metadata Service Lib Unit Test Pipeline",
@@ -202,6 +206,7 @@ async def run_metadata_lib_test_pipeline(
         gha_workflow_run_url=gha_workflow_run_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
         ci_context=ci_context,
+        pull_request=pull_request,
     )
 
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
@@ -228,6 +233,7 @@ async def run_metadata_orchestrator_test_pipeline(
     gha_workflow_run_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
+    pull_request: Optional[PullRequest],
 ) -> bool:
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Metadata Service Orchestrator Unit Test Pipeline",
@@ -237,6 +243,7 @@ async def run_metadata_orchestrator_test_pipeline(
         gha_workflow_run_url=gha_workflow_run_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
         ci_context=ci_context,
+        pull_request=pull_request,
     )
 
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
@@ -260,6 +267,7 @@ async def run_metadata_upload_pipeline(
     ci_context: Optional[str],
     metadata_to_upload: Set[Path],
     gcs_bucket_name: str,
+    pull_request: Optional[PullRequest],
 ) -> bool:
     pipeline_context = PipelineContext(
         pipeline_name="Metadata Upload Pipeline",
@@ -269,6 +277,7 @@ async def run_metadata_upload_pipeline(
         gha_workflow_run_url=gha_workflow_run_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
         ci_context=ci_context,
+        pull_request=pull_request,
     )
 
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
@@ -303,6 +312,7 @@ async def run_metadata_orchestrator_deploy_pipeline(
     gha_workflow_run_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
+    pull_request: Optional[PullRequest],
 ) -> bool:
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Metadata Service Orchestrator Unit Test Pipeline",
@@ -312,6 +322,7 @@ async def run_metadata_orchestrator_deploy_pipeline(
         gha_workflow_run_url=gha_workflow_run_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
         ci_context=ci_context,
+        pull_request=pull_request,
     )
 
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
