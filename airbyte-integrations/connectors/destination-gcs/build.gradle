@@ -9,6 +9,12 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
+configurations.all {
+    resolutionStrategy {
+        force("org.apache.zookeeper:zookeeper:3.8.1")
+    }
+}
+
 dependencies {
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
@@ -26,7 +32,7 @@ dependencies {
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
 
     // parquet
-    implementation ('org.apache.hadoop:hadoop-common:3.3.3') {
+    implementation ('org.apache.hadoop:hadoop-common:3.3.5') {
         exclude group: 'org.slf4j', module: 'slf4j-log4j12'
         exclude group: 'org.slf4j', module: 'slf4j-reload4j'
     }
