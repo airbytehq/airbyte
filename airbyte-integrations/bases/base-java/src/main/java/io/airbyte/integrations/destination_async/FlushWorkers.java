@@ -9,6 +9,7 @@ import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.Messag
 import io.airbyte.integrations.destination_async.state.FlushFailure;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -180,22 +181,22 @@ public class FlushWorkers implements AutoCloseable {
       // while we allow out-of-order processing for speed improvements via multiple workers reading from
       // the same queue, also avoid scheduling more workers than what is already in progress.
       final long runningBytesEstimate = streamToInProgressWorkers.getOrDefault(stream, new AtomicInteger(0)).get() * QUEUE_FLUSH_THRESHOLD_BYTES;
-      final long queueSizeAfterInProgress = bufferDequeue.getQueueSizeBytes(stream).orElseThrow() - runningBytesEstimate;
-      final var isQueueSizeExceedsThreshold = queueSizeAfterInProgress >= queueSizeThresholdBytes;
+      final long inQueueBytes = bufferDequeue.getQueueSizeBytes(stream).orElseThrow() - runningBytesEstimate;
+      final var isQueueSizeExceedsThreshold = inQueueBytes >= queueSizeThresholdBytes;
       final var isTooLongSinceLastRecord = bufferDequeue.getTimeOfLastRecord(stream)
           .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
           .orElse(false);
 
       final String streamInfo = String.format(
-          "Flushing stream %s - %s, time trigger: %s, size trigger: %s current threshold: %s, queue size: %s, in-progress estimate: %s, adjusted queue size: %s",
+          "Flushing stream %s - %s, time trigger: %s, size trigger: %s current threshold b: %s, queue size b: %s, in-progress estimate b: %s, in queue b: %s",
           stream.getNamespace(),
           stream.getName(),
           isTooLongSinceLastRecord,
           isQueueSizeExceedsThreshold,
-          queueSizeThresholdBytes,
-          bufferDequeue.getQueueSizeBytes(stream).orElseThrow(),
-          runningBytesEstimate,
-          queueSizeAfterInProgress);
+          byteCountToDisplaySize(queueSizeThresholdBytes),
+          byteCountToDisplaySize(bufferDequeue.getQueueSizeBytes(stream).orElseThrow()),
+          byteCountToDisplaySize(runningBytesEstimate),
+          byteCountToDisplaySize(inQueueBytes));
       // todo make this debug
       log.info("computed: {}", streamInfo);
 
@@ -238,10 +239,10 @@ public class FlushWorkers implements AutoCloseable {
               .collect(Collectors.groupingBy(
                   stateId -> stateId,
                   Collectors.counting()));
-          final long totalSize = stateIdToCount.values().stream().mapToLong(v -> v).sum();
-          log.info("Flush Worker ({}) -- Batch contains: {} records.",
+          log.info("Flush Worker ({}) -- Batch contains: {} records, {} bytes.",
               flushWorkerId,
-              batch.getData().size());
+              batch.getData().size(),
+              FlushWorkers.byteCountToDisplaySize(batch.getSizeInBytes()));
 
           flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
           batch.flushStates(stateIdToCount).forEach(outputRecordCollector);
@@ -258,6 +259,27 @@ public class FlushWorkers implements AutoCloseable {
         streamToInProgressWorkers.get(desc).getAndDecrement();
       }
     });
+  }
+
+  public static String byteCountToDisplaySize(final long size) {
+    final double ONE_KB = 1024;
+    final double ONE_MB = ONE_KB * 1024;
+    final double ONE_GB = ONE_MB * 1024;
+    final double ONE_TB = ONE_GB * 1024;
+
+    DecimalFormat df = new DecimalFormat("#.##");
+
+    if (size < ONE_KB) {
+      return df.format(size) + " bytes";
+    } else if (size < ONE_MB) {
+      return df.format((double) size / ONE_KB) + " KB";
+    } else if (size < ONE_GB) {
+      return df.format((double) size / ONE_MB) + " MB";
+    } else if (size < ONE_TB) {
+      return df.format((double) size / ONE_GB) + " GB";
+    } else {
+      return df.format((double) size / ONE_TB) + " TB";
+    }
   }
 
 }
