@@ -79,6 +79,11 @@ public class BufferManager {
             (double) memoryManager.getCurrentMemoryBytes() / 1024 / 1024))
         .append(System.lineSeparator());
 
+    queueInfo
+        .append(String.format("Runtime.freeMemory() %s",
+            Runtime.getRuntime().freeMemory()))
+        .append(System.lineSeparator());
+
     for (final var entry : buffers.entrySet()) {
       final var queue = entry.getValue();
       queueInfo.append(
