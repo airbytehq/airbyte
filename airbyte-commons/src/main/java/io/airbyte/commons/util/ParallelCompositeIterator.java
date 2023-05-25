@@ -192,11 +192,11 @@ public final class ParallelCompositeIterator<T> extends AbstractIterator<T> impl
   }
 
   /**
-   * Calculates the thread pool size based on the number of streams, as represented by the size of the iterator
-   * list maintained by this iterator.  If the iterators list is not empty, the minimum value between the number
-   * of iterators and the maximum number of allowed threads is chosen as the thread pool size.  Otherwise, the
-   * minimum thread pool size is selected.  This is to avoid issues with attempting to create an executor service
-   * with a thread pool size of 0, which is not allowed.
+   * Calculates the thread pool size based on the number of streams, as represented by the size of the
+   * iterator list maintained by this iterator. If the iterators list is not empty, the minimum value
+   * between the number of iterators and the maximum number of allowed threads is chosen as the thread
+   * pool size. Otherwise, the minimum thread pool size is selected. This is to avoid issues with
+   * attempting to create an executor service with a thread pool size of 0, which is not allowed.
    *
    * @return The thread pool size.
    */

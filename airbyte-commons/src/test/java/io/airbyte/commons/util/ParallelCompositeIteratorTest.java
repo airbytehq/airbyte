@@ -7,7 +7,6 @@ package io.airbyte.commons.util;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
@@ -192,7 +191,7 @@ class ParallelCompositeIteratorTest {
     final AutoCloseableIterator<String> iterator = new ParallelCompositeIterator<>(List.of(childIterator), airbyteStreamStatusConsumer);
 
     assertDoesNotThrow(() -> {
-      while(iterator.hasNext()) {
+      while (iterator.hasNext()) {
         iterator.next();
       }
 
@@ -205,4 +204,5 @@ class ParallelCompositeIteratorTest {
     final ParallelCompositeIterator<String> iterator = new ParallelCompositeIterator<>(List.of(), airbyteStreamStatusConsumer);
     assertEquals(Optional.empty(), iterator.getAirbyteStream());
   }
+
 }
