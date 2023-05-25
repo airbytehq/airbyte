@@ -12,6 +12,7 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination_async.buffers.BufferEnqueue;
 import io.airbyte.integrations.destination_async.buffers.BufferManager;
+import io.airbyte.integrations.destination_async.state.FlushFailure;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
@@ -47,6 +48,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
   private final FlushWorkers flushWorkers;
   private final Set<StreamDescriptor> streamNames;
   private final IgnoredRecordsTracker ignoredRecordsTracker;
+  private final FlushFailure flushFailure;
 
   private boolean hasStarted;
   private boolean hasClosed;
@@ -67,7 +69,8 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     this.isValidRecord = isValidRecord;
     this.bufferManager = bufferManager;
     bufferEnqueue = bufferManager.getBufferEnqueue();
-    flushWorkers = new FlushWorkers(this.bufferManager.getBufferDequeue(), flusher, outputRecordCollector);
+    flushFailure = new FlushFailure();
+    flushWorkers = new FlushWorkers(this.bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure);
     streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
     ignoredRecordsTracker = new IgnoredRecordsTracker();
   }
@@ -86,6 +89,10 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
   @Override
   public void accept(final AirbyteMessage message) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
+    if (flushFailure.isFailed().get()) {
+      throw flushFailure.getException();
+    }
+
     /*
      * intentionally putting extractStream outside the buffer manager so that if in the future we want
      * to try to use a thread pool to partially deserialize to get record type and stream name, we can
