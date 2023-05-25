@@ -5,6 +5,9 @@ acceptance_tests:
     tests:
       - spec_path: source_paypal_transaction/spec.json
         backward_compatibility_tests_config:
+          # The backwards change made here was to make client_id/secret/refresh token
+          # required fields, which they essentially already are (you can't really setup
+          # the connector without them) so this is a pretty safe "backwards incopatible" change
           disable_for_version: "0.1.13"
   connection:
     tests:

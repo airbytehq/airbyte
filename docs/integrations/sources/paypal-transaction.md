@@ -87,6 +87,7 @@ Transactions sync is performed with default `stream_slice_period` = 1 day, it me
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------|
+| 1.0.0  | 2023-05-25 | [26352](https://github.com/airbytehq/airbyte/pull/26352) | Make client ID/Secret/Refresh token required fields                                                      |
 | 0.1.13  | 2023-02-20 | [22916](https://github.com/airbytehq/airbyte/pull/22916) | Specified date formatting in specification                                                      |
 | 0.1.12  | 2023-02-18 | [23211](https://github.com/airbytehq/airbyte/pull/23211) | Fix error handler                                                                                                            |
 | 0.1.11  | 2023-01-27 | [22019](https://github.com/airbytehq/airbyte/pull/22019) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                  |
