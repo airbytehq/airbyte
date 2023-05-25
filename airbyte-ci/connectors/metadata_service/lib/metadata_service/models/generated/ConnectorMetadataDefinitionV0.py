@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from datetime import date
 from typing import List, Optional
 from uuid import UUID
 
@@ -132,6 +133,17 @@ class Data(BaseModel):
     license: str
     supportUrl: AnyUrl
     githubIssueLabel: str
+    maxSecondsBetweenMessages: Optional[int] = Field(
+        None,
+        description="Maximum delay between 2 airbyte protocol messages, in second. The source will timeout if this delay is reached",
+    )
+    releaseDate: Optional[date] = Field(
+        None,
+        description="The date when this connector was first released, in yyyy-mm-dd format.",
+    )
+    protocolVersion: Optional[str] = Field(
+        None, description="the Airbyte Protocol version supported by the connector"
+    )
     connectorSubtype: Literal[
         "api", "database", "file", "custom", "message_queue", "unknown"
     ]
