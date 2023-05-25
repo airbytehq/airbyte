@@ -16,7 +16,7 @@ class BuildConnectorImage(BuildConnectorImageBase):
     """
 
     async def _run(self) -> StepResult:
-        connector = with_airbyte_python_connector(self.context, self.build_platform)
+        connector = await with_airbyte_python_connector(self.context, self.build_platform)
         try:
             return await self.get_step_result(connector.with_exec(["spec"]))
         except QueryError as e:
