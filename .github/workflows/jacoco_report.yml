@@ -9,6 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
@@ -17,7 +18,7 @@ jobs:
 
       - name: Run Coverage
         run: |
-          ${{ github.workspace }}/gradlew :airbyte-integrations:connectors:source-postgres:jacocoTestReport
+          ./gradlew :airbyte-integrations:connectors:source-postgres:jacocoTestReport
 
       - name: Add coverage to PR
         id: jacoco
