@@ -23,6 +23,25 @@ import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.util.ConcurrentHashSet;
 
+/**
+ * Responsible for managing state within the Destination. The general approach is a ref counter
+ * approach - each state message is associated with a record count. This count represents the number
+ * of preceding records. For a state to be emitted, all preceding records have to be written to the
+ * destination i.e. the counter is 0.
+ * <p>
+ * A per-stream state queue is maintained internally, with each state within the queue having a
+ * counter. This means we *ALLOW* records succeeding an unemitted state to be written. This
+ * decouples record writing from state management at the cost of potentially repeating work if an
+ * upstream state is never written.
+ * <p>
+ * One important detail here is the difference between how PER-STREAM & NON-PER-STREAM is handled.
+ * The PER-STREAM case is simple, and is as described above. The NON-PER-STREAM case is slightly
+ * tricky. Because we don't know the stream type to begin with, we always assume PER_STREAM until
+ * the first state message arrives. If this state message is a GLOBAL state, we alias all existing
+ * state ids to a single global state id via a set of alias ids. From then onwards, we use one id -
+ * {@link #SENTINEL_GLOBAL_DESC} regardless of stream. Read
+ * {@link #convertToGlobalIfNeeded(AirbyteMessage)} for more detail.
+ */
 @Slf4j
 public class GlobalAsyncStateManager {
 
