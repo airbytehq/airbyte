@@ -312,8 +312,6 @@ class ConnectorContext(PipelineContext):
             gha_workflow_run_url=gha_workflow_run_url,
             pipeline_start_timestamp=pipeline_start_timestamp,
             ci_context=ci_context,
-            # TODO: remove this once stable and our default pipeline
-            is_ci_optional=True,
             slack_webhook=slack_webhook,
             reporting_slack_channel=reporting_slack_channel,
         )
