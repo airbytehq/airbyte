@@ -70,10 +70,11 @@ public class BufferManager {
     final var queueInfo = new StringBuilder().append("QUEUE INFO").append(System.lineSeparator());
 
     queueInfo
-        .append(String.format("  Global Mem Manager -- max: %s, allocated: %s (%s MB)",
+        .append(String.format("  Global Mem Manager -- max: %s, allocated: %s (%s MB), %% used: %s",
             FileUtils.byteCountToDisplaySize(memoryManager.getMaxMemoryBytes()),
             FileUtils.byteCountToDisplaySize(memoryManager.getCurrentMemoryBytes()),
-            (double) memoryManager.getCurrentMemoryBytes() / 1024 / 1024))
+            (double) memoryManager.getCurrentMemoryBytes() / 1024 / 1024,
+            (double) memoryManager.getCurrentMemoryBytes() / memoryManager.getMaxMemoryBytes()))
         .append(System.lineSeparator());
 
     for (final var entry : buffers.entrySet()) {
