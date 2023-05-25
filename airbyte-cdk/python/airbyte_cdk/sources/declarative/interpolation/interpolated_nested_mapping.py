@@ -37,7 +37,7 @@ class InterpolatedNestedMapping:
         if isinstance(value, str):
             return self._interpolation.eval(value, config, parameters=self._parameters, **kwargs)
         elif isinstance(value, dict):
-            interpolated_dict = {self._eval(k, config, **kwargs): self._eval(v, config, **kwargs) for k, v in value.items()}
+            interpolated_dict = {self._eval(k, config, **kwargs): self._eval(v, config, **kwargs) for k, v in list(value.items())}
             return {k: v for k, v in interpolated_dict.items() if v is not None}
         elif isinstance(value, list):
             return [self._eval(v, config, **kwargs) for v in value]
