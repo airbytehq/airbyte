@@ -66,6 +66,7 @@ def update_commit_status_check(
         state = "success"
         description = f"[WARNING] optional check failed {context}: {description}"
 
+    context = context if bool(os.environ.get("PRODUCTION", False)) is True else f"[please ignore] {context}"
     airbyte_repo.get_commit(sha=sha).create_status(
         state=state,
         target_url=target_url,
