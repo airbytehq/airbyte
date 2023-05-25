@@ -8,9 +8,8 @@ from unittest.mock import patch, sentinel
 import pytest
 from pandas import read_csv, read_excel
 from paramiko import SSHException
-from source_file.client import Client, ConfigurationError, URLFile
+from source_file.client import Client, ConfigurationError, URLFile, MAX_TRIES
 from urllib3.exceptions import ProtocolError
-
 
 @pytest.fixture
 def wrong_format_client():
@@ -169,7 +168,7 @@ def test_urlfile_open_backoff_sftp(monkeypatch, mocker):
     def patched_open(self):
         nonlocal call_count
         call_count += 1
-        if call_count < 7:
+        if call_count < MAX_TRIES + 2:
             raise SSHException("Error reading SSH protocol banner[Errno 104] Connection reset by peer")
         return result
 
@@ -181,10 +180,10 @@ def test_urlfile_open_backoff_sftp(monkeypatch, mocker):
     with pytest.raises(SSHException):
         reader.open()
     assert reader._file is None
-    assert call_count == 5
+    assert call_count == MAX_TRIES
 
     reader.open()
     assert reader._file is result
-    assert call_count == 7
+    assert call_count == MAX_TRIES + 2
 
-    assert sleep_mock.call_count == 5
+    assert sleep_mock.call_count == MAX_TRIES
