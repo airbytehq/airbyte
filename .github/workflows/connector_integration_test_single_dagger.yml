@@ -10,6 +10,10 @@ on:
     paths:
       - "airbyte-integrations/connectors/**"
       #- ".github/workflows/connector_integration_test_single_dagger.yml"
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
 jobs:
   connectors_ci:
     name: Connectors CI
