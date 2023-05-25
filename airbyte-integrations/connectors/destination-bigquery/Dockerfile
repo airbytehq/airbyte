@@ -44,7 +44,7 @@ ENV AIRBYTE_NORMALIZATION_INTEGRATION bigquery
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=1.4.3
+LABEL io.airbyte.version=1.4.4
 LABEL io.airbyte.name=airbyte/destination-bigquery
 
 ENV AIRBYTE_ENTRYPOINT "/airbyte/run_with_normalization.sh"
