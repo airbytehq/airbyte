@@ -35,8 +35,6 @@ import org.slf4j.LoggerFactory;
 @Slf4j
 public class GlobalMemoryManager {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(GlobalMemoryManager.class);
-
   // In cases where a queue is rapidly expanding, a larger block size allows less allocation calls. On
   // the flip size, a smaller block size allows more granular memory management. Since this overhead
   // is minimal for now, err on a smaller block sizes.
@@ -73,7 +71,7 @@ public class GlobalMemoryManager {
     final var toAllocateBytes = Math.min(freeMem, BLOCK_SIZE_BYTES);
     currentMemoryBytes.addAndGet(toAllocateBytes);
 
-    LOGGER.info("Memory Requested: max: {}, allocated: {}, allocated in this request: {}",
+    log.debug("Memory Requested: max: {}, allocated: {}, allocated in this request: {}",
         FileUtils.byteCountToDisplaySize(maxMemoryBytes),
         FileUtils.byteCountToDisplaySize(currentMemoryBytes.get()),
         FileUtils.byteCountToDisplaySize(toAllocateBytes));

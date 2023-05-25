@@ -196,8 +196,7 @@ public class FlushWorkers implements AutoCloseable {
           AirbyteFileUtils.byteCountToDisplaySize(bufferDequeue.getQueueSizeBytes(stream).orElseThrow()),
           AirbyteFileUtils.byteCountToDisplaySize(runningBytesEstimate),
           AirbyteFileUtils.byteCountToDisplaySize(inQueueBytes));
-      // todo make this debug
-      log.info("computed: {}", streamInfo);
+      log.debug("computed: {}", streamInfo);
 
       if (isQueueSizeExceedsThreshold || isTooLongSinceLastRecord) {
         log.info("Flushing: {}", streamInfo);
