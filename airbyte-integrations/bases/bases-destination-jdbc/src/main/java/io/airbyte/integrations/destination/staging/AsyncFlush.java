@@ -48,7 +48,7 @@ class AsyncFlush implements DestinationFlushFunction {
     // write this to a file - serilizable buffer?
     // where do we create all the write configs?
     log.info("Starting staging flush..");
-    CsvSerializedBuffer writer = null;
+    final CsvSerializedBuffer writer;
     final AtomicInteger counter = new AtomicInteger();
     try {
       writer = new CsvSerializedBuffer(
@@ -58,11 +58,9 @@ class AsyncFlush implements DestinationFlushFunction {
 
       log.info("Converting to CSV file..");
       // reassign as lambdas require references to be final.
-      final CsvSerializedBuffer finalWriter = writer;
       stream.forEach(record -> {
         try {
-          // todo(davin): handle non-record airbyte messages.
-          finalWriter.accept(record.getRecord());
+          writer.accept(record.getRecord());
           counter.getAndIncrement();
         } catch (final Exception e) {
           throw new RuntimeException(e);

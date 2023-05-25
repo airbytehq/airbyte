@@ -46,6 +46,8 @@ public class BufferDequeueTest {
       // than over-pull).
       try (final MemoryAwareMessageBatch take = dequeue.take(STREAM_DESC, 50)) {
         assertEquals(2, take.getData().size());
+        // verify it only took the records from the queue that it actually returned.
+        assertEquals(2, dequeue.getQueueSizeInRecords(STREAM_DESC).orElseThrow());
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
