@@ -13,6 +13,21 @@
           "description": "The value of the access token generated with instagram_basic, instagram_manage_insights, pages_show_list, pages_read_engagement, Instagram Public Content Access permissions. See the docs for more information: https://go.estuary.dev/u7vlQ7",
           "title": "Access Token",
           "type": "string"
+        },
+        "client_id": {
+          "type": "string",
+          "title": "Client ID",
+          "description": "The Client ID of your Instagram developer application.",
+          "airbyte_secret": true,
+          "order": 3
+        },
+        "client_secret": {
+          "type": "string",
+          "title": "Client Secret",
+          "description": "The Client Secret of your Instagram developer application.",
+          "default": "",
+          "airbyte_secret": true,
+          "order": 4
         }
       }
     },
