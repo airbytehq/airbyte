@@ -99,6 +99,7 @@ class StreamProcessor(object):
         properties: Dict,
         tables_registry: TableNameRegistry,
         from_table: Union[str, dbt_macro.Macro],
+        should_normalize_children: bool = True,
     ):
         """
         See StreamProcessor.create()
@@ -128,6 +129,7 @@ class StreamProcessor(object):
         self.airbyte_normalized_at = "_airbyte_normalized_at"
         self.airbyte_unique_key = "_airbyte_unique_key"
         self.models_to_source: Dict[str, str] = {}
+        self.should_normalize_children = should_normalize_children
 
     @staticmethod
     def create_from_parent(
@@ -185,6 +187,7 @@ class StreamProcessor(object):
         properties: Dict,
         tables_registry: TableNameRegistry,
         from_table: Union[str, dbt_macro.Macro],
+        should_normalize_children: bool = True,
     ) -> "StreamProcessor":
         """
         @param stream_name of the stream being processed
@@ -218,6 +221,7 @@ class StreamProcessor(object):
             properties,
             tables_registry,
             from_table,
+            should_normalize_children,
         )
 
     def collect_table_names(self):
@@ -312,6 +316,8 @@ class StreamProcessor(object):
                 unique_key=self.get_unique_key(),
                 partition_by=PartitionScheme.UNIQUE_KEY,
             )
+        if not self.should_normalize_children:
+            return []
         return self.find_children_streams(from_table, column_names)
 
     def extract_column_names(self) -> Dict[str, Tuple[str, str]]:
@@ -1177,7 +1183,8 @@ where 1 = 1
             stg_table = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "stg", truncate_name)
             if self.name_transformer.needs_quotes(stg_table):
                 stg_table = jinja_call(self.name_transformer.apply_quote(stg_table))
-            if suffix == "scd":
+            # Merge statement for databricks remove the use for this part
+            if suffix == "scd" and self.destination_type != DestinationType.DATABRICKS:
                 hooks = []
 
                 final_table_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "", truncate_name)

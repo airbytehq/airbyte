@@ -32,6 +32,8 @@ DESTINATION_SIZE_LIMITS = {
     # According to the DuckDB team there no restriction: We don't enforce a maximum right now but I would not recommend having column names
     # longer than a few kilobytes. https://discord.com/channels/909674491309850675/1067042662827438122/1067043835768737893.
     DestinationType.DUCKDB.value: 64,
+    # https://www.stitchdata.com/docs/destinations/databricks-delta/reference#:~:text=Must%20be%20less,Databricks%20Delta%20Lake%20(AWS). (According that stitch is correct)
+    DestinationType.DATABRICKS.value: 122,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -177,11 +179,13 @@ class DestinationNameTransformer:
                 self.destination_type.value != DestinationType.MYSQL.value
                 and self.destination_type.value != DestinationType.TIDB.value
                 and self.destination_type.value != DestinationType.DUCKDB.value
+                and self.destination_type.value != DestinationType.DATABRICKS.value
             ):
                 result = result.replace('"', '""')
             else:
                 result = result.replace("`", "_")
-            result = result.replace("'", "\\'")
+            if self.destination_type.value != DestinationType.DATABRICKS.value:
+                result = result.replace("'", "\\'")
             result = self.__normalize_identifier_case(result, is_quoted=True)
             result = self.apply_quote(result)
             if not in_jinja:
@@ -215,6 +219,8 @@ class DestinationNameTransformer:
             doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", result[0]) is not None
             if is_column and doesnt_start_with_alphaunderscore:
                 result = f"_{result}"
+            elif self.destination_type.value == DestinationType.DATABRICKS.value:
+                result = transform_standard_naming(result)
         return result
 
     def __normalize_identifier_case(self, input_name: str, is_quoted: bool = False) -> str:
@@ -249,6 +255,8 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.DUCKDB.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
+        elif self.destination_type.value == DestinationType.DATABRICKS.value:
+            pass
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result
@@ -287,7 +295,7 @@ class DestinationNameTransformer:
                 result = input_name.upper()
         elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
             pass
-        elif self.destination_type.value == DestinationType.TIDB.value:
+        elif self.destination_type.value == DestinationType.TIDB.value or self.destination_type.value == DestinationType.DATABRICKS.value:
             result = input_name.lower()
         elif self.destination_type.value == DestinationType.DUCKDB.value:
             result = input_name.lower()

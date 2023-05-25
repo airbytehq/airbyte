@@ -30,13 +30,11 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabricksStreamCopier.class);
 
-  protected final String catalogName;
   protected final String schemaName;
   protected final String catalogName;
   protected final String streamName;
   protected final DestinationSyncMode destinationSyncMode;
   private final boolean purgeStagingData;
-  protected final boolean useMetastore;
   protected final JdbcDatabase database;
   protected final DatabricksSqlOperations sqlOperations;
 
@@ -55,13 +53,11 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
                                 final DatabricksDestinationConfig databricksConfig,
                                 final StandardNameTransformer nameTransformer,
                                 final SqlOperations sqlOperations) {
-    this.catalogName = catalog;
     this.schemaName = schema;
     this.catalogName = catalog;
     this.streamName = configuredStream.getStream().getName();
     this.destinationSyncMode = configuredStream.getDestinationSyncMode();
     this.purgeStagingData = databricksConfig.isPurgeStagingData();
-    this.useMetastore = databricksConfig.isUseMetastore();
     this.database = database;
     this.sqlOperations = (DatabricksSqlOperations) sqlOperations;
 
@@ -83,15 +79,8 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
 
   @Override
   public void createDestinationSchema() throws Exception {
-    if (!useMetastore) {
-      LOGGER.info("[Stream {}] Creating databricks catalog if it does not exist: {}", streamName, catalogName);
-      sqlOperations.createCatalogIfNotExists(database, catalogName);
-      LOGGER.info("[Stream {}] Creating database schema if it does not exist: {}.{}", streamName, catalogName, schemaName);
-      sqlOperations.createSchemaIfNotExists(database, String.format("%s.%s", catalogName, schemaName));
-    }  else {
-      LOGGER.info("[Stream {}] Creating database schema if it does not exist: {}", streamName, schemaName);
-      sqlOperations.createSchemaIfNotExists(database, schemaName);
-    }
+    LOGGER.info("[Stream {}] Creating database schema if it does not exist: {}", streamName, schemaName);
+    sqlOperations.createSchemaIfNotExists(database, schemaName);
   }
 
   @Override
@@ -123,13 +112,6 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
         ? "CREATE OR REPLACE TABLE"
         : "CREATE TABLE IF NOT EXISTS";
 
-    String destNamespace = String.format("%s.%s", schemaName, destTableName);
-    String tmpNamespace = String.format("%s.%s", schemaName, tmpTableName);
-    if (!useMetastore) {
-      destNamespace = String.format("%s.%s.%s", catalogName, schemaName, destTableName);
-      tmpNamespace = String.format("%s.%s.%s", catalogName, schemaName, tmpTableName);
-    }
-
     final String createTable = String.format(
         "%s %s.%s.%s " +
             "USING delta " +
@@ -137,14 +119,14 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
             "COMMENT 'Created from stream %s' " +
             "TBLPROPERTIES ('airbyte.destinationSyncMode' = '%s', %s) " +
             // create the table based on the schema of the tmp table
-            "AS SELECT * FROM %s LIMIT 0",
+            "AS SELECT * FROM %s.%s LIMIT 0",
         createStatement,
         catalogName, schemaName, destTableName,
         getDestTableLocation(),
         streamName,
         destinationSyncMode.value(),
         String.join(", ", DatabricksConstants.DEFAULT_TBL_PROPERTIES),
-        tmpNamespace);
+        schemaName, tmpTableName);
     LOGGER.info(createTable);
     database.execute(createTable);
 
@@ -155,11 +137,7 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
   public void removeFileAndDropTmpTable() throws Exception {
     if (purgeStagingData) {
       LOGGER.info("[Stream {}] Deleting tmp table: {}", streamName, tmpTableName);
-      if (!useMetastore) {
-        sqlOperations.dropTableIfExists(database, String.format("%s.%s", catalogName, schemaName), tmpTableName);
-      } else {
-        sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
-      }
+      sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
 
       deleteStagingFile();
     }

@@ -1,9 +1,9 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/destinations/databricks",
   "supportsIncremental": true,
-  "supportsNormalization": false,
-  "supportsDBT": false,
-  "supported_destination_sync_modes": ["overwrite", "append"],
+  "supportsNormalization": true,
+  "supportsDBT": true,
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Databricks Lakehouse Destination Spec",
@@ -237,6 +237,13 @@
         "description": "Default to 'true'. Switch it to 'false' for debugging purpose.",
         "default": true,
         "order": 9
+      },
+      "normalize_nested_fields": {
+        "title": "Normalize nested fields",
+        "type": "boolean",
+        "description": "Default to 'true'. Allows to only normalize the first level of value, while keeping data in json blobs for nested fields",
+        "default": true,
+        "order": 10
       }
     }
   }

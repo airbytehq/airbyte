@@ -60,6 +60,7 @@ class TransformConfig:
             DestinationType.CLICKHOUSE.value: self.transform_clickhouse,
             DestinationType.TIDB.value: self.transform_tidb,
             DestinationType.DUCKDB.value: self.transform_duckdb,
+            DestinationType.DATABRICKS.value: self.transform_databricks,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
@@ -347,6 +348,22 @@ class TransformConfig:
             "database": config["database"],
             "username": config["username"],
             "password": config.get("password", ""),
+        }
+        return dbt_config
+
+    @staticmethod
+    def transform_databricks(config: Dict[str, Any]):
+        # https://docs.getdbt.com/reference/warehouse-profiles/databricks-profile
+        dbt_config = {
+            "type": "databricks",
+            "host": config["databricks_server_hostname"],
+            "http_path": config["databricks_http_path"],
+            "token": config["databricks_personal_access_token"],
+            "threads": 8,
+            "connect_retries": 5,
+            "connect_timeout": 210,
+            "schema": config["schema"],
+            "catalog": config["database"],
         }
         return dbt_config
 

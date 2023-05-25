@@ -32,7 +32,6 @@ public class DatabricksS3StreamCopierFactory implements DatabricksStreamCopierFa
       final AirbyteStream stream = configuredStream.getStream();
       final String catalogName = databricksConfig.catalog();
       final String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
-      final String catalog = databricksConfig.getDatabricksCatalog();
 
       S3DestinationConfig s3Config = databricksConfig.storageConfig().getS3DestinationConfigOrThrow();
       final AmazonS3 s3Client = s3Config.getS3Client();

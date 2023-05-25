@@ -69,6 +69,10 @@ task airbyteDockerClickhouse(type: Exec, dependsOn: checkSshScriptCopy) {
     configure buildAirbyteDocker('clickhouse')
     dependsOn assemble
 }
+task airbyteDockerDatabricks(type: Exec, dependsOn: checkSshScriptCopy) {
+    configure buildAirbyteDocker('databricks')
+    dependsOn assemble
+}
 task airbyteDockerSnowflake(type: Exec, dependsOn: checkSshScriptCopy) {
     configure buildAirbyteDocker('snowflake')
     dependsOn assemble
@@ -90,6 +94,7 @@ airbyteDocker.dependsOn(airbyteDockerMSSql)
 airbyteDocker.dependsOn(airbyteDockerMySql)
 airbyteDocker.dependsOn(airbyteDockerOracle)
 airbyteDocker.dependsOn(airbyteDockerClickhouse)
+airbyteDocker.dependsOn(airbyteDockerDatabricks)
 airbyteDocker.dependsOn(airbyteDockerSnowflake)
 airbyteDocker.dependsOn(airbyteDockerRedshift)
 airbyteDocker.dependsOn(airbyteDockerTiDB)
@@ -108,6 +113,7 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
     dependsOn ':airbyte-integrations:connectors:destination-oracle:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-databricks:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-tidb:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-duckdb:airbyteDocker'
 }

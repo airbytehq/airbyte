@@ -5,13 +5,13 @@
 package io.airbyte.integrations.destination.databricks;
 
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_CATALOG_KEY;
+import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_DATA_SOURCE_KEY;
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_HTTP_PATH_KEY;
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_PERSONAL_ACCESS_TOKEN_KEY;
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_PORT_KEY;
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_PURGE_STAGING_DATA_KEY;
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_SCHEMA_KEY;
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_SERVER_HOSTNAME_KEY;
-import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_DATA_SOURCE_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
@@ -24,11 +24,11 @@ public record DatabricksDestinationConfig(String serverHostname,
                                           String schema,
                                           boolean isPurgeStagingData,
                                           DatabricksStorageConfigProvider storageConfig) {
+
   static final String DEFAULT_DATABRICKS_PORT = "443";
   static final String DEFAULT_DATABASE_SCHEMA = "default";
   static final String DEFAULT_CATALOG = "hive_metastore";
   static final boolean DEFAULT_PURGE_STAGING_DATA = true;
-  static final boolean DEFAULT_USE_METASTORE = true;
 
   public static DatabricksDestinationConfig get(final JsonNode config) {
     Preconditions.checkArgument(
@@ -45,4 +45,5 @@ public record DatabricksDestinationConfig(String serverHostname,
         config.has(DATABRICKS_PURGE_STAGING_DATA_KEY) ? config.get(DATABRICKS_PURGE_STAGING_DATA_KEY).asBoolean() : DEFAULT_PURGE_STAGING_DATA,
         DatabricksStorageConfigProvider.getDatabricksStorageConfig(config.get(DATABRICKS_DATA_SOURCE_KEY)));
   }
+
 }

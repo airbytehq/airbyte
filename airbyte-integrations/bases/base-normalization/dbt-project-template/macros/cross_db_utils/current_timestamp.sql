@@ -5,3 +5,7 @@
 {% macro oracle__current_timestamp() %}
     CURRENT_TIMESTAMP
 {% endmacro %}
+
+{% macro databricks__current_timestamp() %}
+    CURRENT_TIMESTAMP
+{% endmacro %}
