@@ -41,7 +41,6 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
   private final OnCloseFunction onClose;
   private final ConfiguredAirbyteCatalog catalog;
   private final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
-
   private final BufferManager bufferManager;
   private final BufferEnqueue bufferEnqueue;
   private final FlushWorkers flushWorkers;
@@ -81,7 +80,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     this.bufferManager = bufferManager;
     bufferEnqueue = bufferManager.getBufferEnqueue();
     this.flushFailure = flushFailure;
-    flushWorkers = new FlushWorkers(this.bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure);
+    flushWorkers = new FlushWorkers(bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure);
     streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
     ignoredRecordsTracker = new IgnoredRecordsTracker();
   }
@@ -128,7 +127,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     bufferManager.close();
     ignoredRecordsTracker.report();
     onClose.call();
-    
+
     // as this throws an exception, we need to be after all other close functions.
     propagateFlushWorkerExceptionIfPresent();
     LOGGER.info("{} closed.", AsyncStreamConsumer.class);
@@ -140,7 +139,10 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     }
   }
 
-  private void validateRecord(final AirbyteMessage message, final StreamDescriptor streamDescriptor) {
+  private void validateRecord(final AirbyteMessage message) {
+    final StreamDescriptor streamDescriptor = new StreamDescriptor()
+        .withNamespace(message.getRecord().getNamespace())
+        .withName(message.getRecord().getStream());
     // if stream is not part of list of streams to sync to then throw invalid stream exception
     if (!streamNames.contains(streamDescriptor)) {
       throwUnrecognizedStream(catalog, message);
