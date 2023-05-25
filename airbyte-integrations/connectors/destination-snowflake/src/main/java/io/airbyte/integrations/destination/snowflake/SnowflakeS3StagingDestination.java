@@ -51,7 +51,7 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
   public AirbyteConnectionStatus check(final JsonNode config) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(config);
     final EncryptionConfig encryptionConfig = EncryptionConfig.fromJson(config.get("loading_method").get("encryption"));
-    if (!isPurgeStagingData(config) && encryptionConfig instanceof AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL) {
+    if (!isPurgeStagingData(config) && encryptionConfig instanceof final AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL) {
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage(
@@ -138,6 +138,15 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
         config,
         catalog,
         isPurgeStagingData(config));
+//    return new StagingConsumerFactory().createAsync(
+//            outputRecordCollector,
+//            getDatabase(getDataSource(config)),
+//            new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
+//            getNamingResolver(),
+//            CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
+//            config,
+//            catalog,
+//            true);
   }
 
   private S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
