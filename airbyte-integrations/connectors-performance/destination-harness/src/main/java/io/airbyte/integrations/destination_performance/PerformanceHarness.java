@@ -160,7 +160,7 @@ public class PerformanceHarness {
                 .withStream(getStreamName(streamNames, random))
                 .withNamespace(catalog.getStreams().get(0).getStream().getNamespace())
                 .withData(Jsons.deserialize(recordString)));
-        airbyteMessage.getRecord().setEmittedAt(start);
+        airbyteMessage.getRecord().setEmittedAt(System.currentTimeMillis());
         destination.accept(airbyteMessage);
 
         totalBytes += recordString.length();
