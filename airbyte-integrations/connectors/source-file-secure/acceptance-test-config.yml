@@ -4,24 +4,31 @@
 # Here we tries to test a basic tests only.
 # The main part of tests should be executed for the source-file connector
 connector_image: airbyte/source-file-secure:dev
-tests:
+test_strictness_level: high
+acceptance_tests:
   spec:
-    - spec_path: "integration_tests/spec.json"
+    tests:
+      - spec_path: "source_file/spec.json"
   connection:
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
-    # for https
-    - config_path: "integration_tests/config.json"
-      status: "succeed"
-    # for local should be failed
-    - config_path: "integration_tests/local_config.json"
-      status: "failed"
-
+    tests:
+      - config_path: "integration_tests/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    # for https
-    - config_path: "integration_tests/config.json"
-
+    tests:
+      - config_path: "integration_tests/config.json"
   basic_read:
-    # for https
-    - config_path: "integration_tests/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "integration_tests/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+  full_refresh:
+    tests:
+      - config_path: "integration_tests/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+  incremental:
+    bypass_reason: "Incremental syncs are not supported on this connector."
