@@ -64,7 +64,7 @@ ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
 mkdir airbyte && cd airbyte
 wget https://raw.githubusercontent.com/airbytehq/airbyte/master/run-ab-platform.sh
 chmod +x run-ab-platform.sh
-./run-ab-platform.sh
+./run-ab-platform.sh -b
 ```
 
 ## Connect to Airbyte
