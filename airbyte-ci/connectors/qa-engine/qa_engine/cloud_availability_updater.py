@@ -48,11 +48,10 @@ def clone_airbyte_repo(local_repo_path: Path) -> git.Repo:
     return git.Repo.clone_from(authenticated_repo_url, local_repo_path, branch=AIRBYTE_MAIN_BRANCH_NAME)
 
 
-def get_metadata_file_path(connector: ConnectorQAReport) -> Path:
-    local_repo_path = Path(".")
+def get_metadata_file_path(airbyte_repo_path: Path, connector: ConnectorQAReport) -> Path:
     connector_folder_name = connector.connector_technical_name
     metadata_file_path = (
-        local_repo_path / f"airbyte-integrations/connectors/{connector_folder_name}/metadata.yaml"
+        airbyte_repo_path / f"airbyte-integrations/connectors/{connector_folder_name}/metadata.yaml"
     )
     if not metadata_file_path.exists():
         raise FileNotFoundError(f"Can't find the metadata file for {metadata_file_path}")
@@ -160,7 +159,7 @@ def get_pr_body(eligible_connectors: List[ConnectorQAReport], excluded_connector
     body += "\n ☝️ These eligible connectors are already in the definitions masks. They might have been explicitly pinned or excluded. We're not adding these for safety."
     return body
 
-def add_new_connector_to_cloud_catalog(airbyte_repo: git.Repo, connector: ConnectorQAReport) -> bool:
+def add_new_connector_to_cloud_catalog(airbyte_repo_path: Path, airbyte_repo: git.Repo, connector: ConnectorQAReport) -> bool:
     """Updates the local definitions mask on Airbyte cloud repo.
     Calls the generateCloudConnectorCatalog gradle task.
     Commits these changes
@@ -171,7 +170,7 @@ def add_new_connector_to_cloud_catalog(airbyte_repo: git.Repo, connector: Connec
     Returns:
         bool: Whether the connector was added or not.
     """
-    metadata_file_path = get_metadata_file_path(connector)
+    metadata_file_path = get_metadata_file_path(airbyte_repo_path, connector)
 
     updated_files = enable_in_cloud(connector, metadata_file_path)
     if updated_files:
@@ -193,7 +192,7 @@ def batch_deploy_eligible_connectors_to_cloud_repo(eligible_connectors: Iterable
     added_connectors = []
     explicitly_disabled_connectors = []
     for connector in eligible_connectors:
-        added = add_new_connector_to_cloud_catalog(airbyte_repo, connector)
+        added = add_new_connector_to_cloud_catalog(repo_path, airbyte_repo, connector)
         if added:
             added_connectors.append(connector)
         else:
