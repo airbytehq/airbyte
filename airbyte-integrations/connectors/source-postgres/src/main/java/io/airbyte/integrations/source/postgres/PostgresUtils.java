@@ -102,6 +102,18 @@ public class PostgresUtils {
     return MAX_QUEUE_SIZE;
   }
 
+  public static void checkQueueSize(final JsonNode config) {
+    final OptionalInt queueSize = extractQueueSizeFromConfig(config);
+    if (queueSize.isPresent()) {
+      final int size = queueSize.getAsInt();
+      if (size < MIN_QUEUE_SIZE || size > MAX_QUEUE_SIZE) {
+        throw new IllegalArgumentException(
+            String.format("queue_size must be between %d and %d ",
+                MIN_QUEUE_SIZE, MAX_QUEUE_SIZE));
+      }
+    }
+  }
+
   public static void checkFirstRecordWaitTime(final JsonNode config) {
     // we need to skip the check because in tests, we set initial_waiting_seconds
     // to 5 seconds for performance reasons, which is shorter than the minimum

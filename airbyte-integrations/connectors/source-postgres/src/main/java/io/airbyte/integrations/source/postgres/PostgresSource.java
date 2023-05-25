@@ -342,6 +342,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         PostgresUtils.checkFirstRecordWaitTime(config);
       });
 
+      checkOperations.add(database -> {
+        PostgresUtils.checkQueueSize(config);
+      });
+
       // Verify that a CDC connection can be created
       checkOperations.add(database -> {
         /**
