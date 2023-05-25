@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 public class MemoryAwareMessageBatch implements AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MemoryAwareMessageBatch.class);
-  private List<MessageWithMeta> batch;
+  private final List<MessageWithMeta> batch;
   private final long sizeInBytes;
   private final GlobalMemoryManager memoryManager;
   private final GlobalAsyncStateManager stateManager;
@@ -48,8 +48,6 @@ public class MemoryAwareMessageBatch implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    batch = null;
-    LOGGER.info("memoryManager.free({}})", sizeInBytes);
     memoryManager.free(sizeInBytes);
   }
 

@@ -19,7 +19,6 @@ import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
-import io.airbyte.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.integrations.destination_async.state.FlushFailure;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -82,7 +81,6 @@ class AsyncStreamConsumerTest {
   private OnCloseFunction onClose;
   private Consumer<AirbyteMessage> outputRecordCollector;
   private FlushFailure flushFailure;
-  private BufferManager bufferManager;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -93,7 +91,6 @@ class AsyncStreamConsumerTest {
     final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord = mock(CheckedFunction.class);
     outputRecordCollector = mock(Consumer.class);
     flushFailure = mock(FlushFailure.class);
-    bufferManager = mock(BufferManager.class);
     consumer = new AsyncStreamConsumer(
         outputRecordCollector,
         onStart,
@@ -101,7 +98,6 @@ class AsyncStreamConsumerTest {
         flushFunction,
         CATALOG,
         isValidRecord,
-        bufferManager,
         flushFailure);
 
     when(isValidRecord.apply(any())).thenReturn(true);
