@@ -179,7 +179,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "_numeric", "_decimal" -> {
           // If a numeric_array column precision is not 0 AND scale is 0,
           // then we know the precision and scale are purposefully chosen
-          if (isDefaultNumericType(metadata, colIndex)) {
+          if (isDefaultNumeric(metadata, colIndex)) {
             putBigIntArray(json, columnName, resultSet, colIndex);
           } else {
             putBigDecimalArray(json, columnName, resultSet, colIndex);
@@ -204,7 +204,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
             case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
             case REAL -> putFloat(json, columnName, resultSet, colIndex);
             case NUMERIC, DECIMAL -> {
-              if (isDefaultNumericType(metadata, colIndex)) {
+              if (isDefaultNumeric(metadata, colIndex)) {
                 putBigInt(json, columnName, resultSet, colIndex);
               } else {
                 putBigDecimal(json, columnName, resultSet, colIndex);
@@ -223,7 +223,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       }
     }
   }
-  private boolean isDefaultNumericType(final PgResultSetMetaData metadata, final int colIndex) throws SQLException {
+  private boolean isDefaultNumeric(final PgResultSetMetaData metadata, final int colIndex) throws SQLException {
     return metadata.getPrecision(colIndex) != 0 && metadata.getScale(colIndex) == 0;
   }
 
