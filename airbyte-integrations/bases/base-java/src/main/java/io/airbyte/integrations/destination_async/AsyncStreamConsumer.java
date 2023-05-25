@@ -124,11 +124,13 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     // we need to close the workers before closing the bufferManagers (and underlying buffers)
     // or we risk in-memory data.
     flushWorkers.close();
-    propagateFlushWorkerExceptionIfPresent();
 
     bufferManager.close();
     ignoredRecordsTracker.report();
     onClose.call();
+    
+    // as this throws an exception, we need to be after all other close functions.
+    propagateFlushWorkerExceptionIfPresent();
     LOGGER.info("{} closed.", AsyncStreamConsumer.class);
   }
 
