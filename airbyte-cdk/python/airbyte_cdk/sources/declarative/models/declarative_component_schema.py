@@ -520,7 +520,7 @@ class MinMaxDatetime(BaseModel):
     )
     datetime_format: Optional[str] = Field(
         "",
-        description='Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty.',
+        description='Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use %s if the datetime value is in epoch time (Unix timestamp).',
         examples=["%Y-%m-%dT%H:%M:%S.%f%", "%Y-%m-%d", "%s"],
         title="Datetime Format",
     )
@@ -606,8 +606,8 @@ class OAuthConfigSpecification(BaseModel):
 
 class OffsetIncrement(BaseModel):
     type: Literal["OffsetIncrement"]
-    page_size: Union[int, str] = Field(
-        ...,
+    page_size: Optional[Union[int, str]] = Field(
+        None,
         description="The number of records to include in each pages.",
         examples=[100, "{{ config['page_size'] }}"],
         title="Limit",
@@ -617,8 +617,8 @@ class OffsetIncrement(BaseModel):
 
 class PageIncrement(BaseModel):
     type: Literal["PageIncrement"]
-    page_size: int = Field(
-        ...,
+    page_size: Optional[int] = Field(
+        None,
         description="The number of records to include in each pages.",
         examples=[100, "100"],
         title="Page Size",
