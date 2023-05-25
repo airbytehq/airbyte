@@ -6,7 +6,6 @@
 
 import logging
 import os
-import sys
 from pathlib import Path
 from typing import Any, Dict, Tuple
 
@@ -130,9 +129,6 @@ def connectors(
         selected_connectors_and_files = {
             connector: modified_files for connector, modified_files in selected_connectors_and_files.items() if modified_files
         }
-    if not selected_connectors_and_files:
-        click.secho("No connector were selected according to your inputs. Please double check your filters.", fg="yellow")
-        sys.exit(0)
 
     ctx.obj["selected_connectors_and_files"] = selected_connectors_and_files
     ctx.obj["selected_connectors_names"] = [c.technical_name for c in selected_connectors_and_files.keys()]
@@ -149,7 +145,12 @@ def test(
         ctx (click.Context): The click context.
     """
     click.secho(f"Will run the test pipeline for the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
-    update_global_commit_status_check_for_tests(ctx.obj, "pending")
+    if ctx.obj["selected_connectors_and_files"]:
+        update_global_commit_status_check_for_tests(ctx.obj, "pending")
+    else:
+        click.secho("No connector were selected for testing.", fg="yellow")
+        update_global_commit_status_check_for_tests(ctx.obj, "success")
+        return True
 
     connectors_tests_contexts = [
         ConnectorContext(
