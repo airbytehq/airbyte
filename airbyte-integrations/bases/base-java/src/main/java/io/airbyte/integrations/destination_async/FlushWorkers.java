@@ -9,7 +9,6 @@ import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.Messag
 import io.airbyte.integrations.destination_async.state.FlushFailure;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -193,10 +192,10 @@ public class FlushWorkers implements AutoCloseable {
           stream.getName(),
           isTooLongSinceLastRecord,
           isQueueSizeExceedsThreshold,
-          byteCountToDisplaySize(queueSizeThresholdBytes),
-          byteCountToDisplaySize(bufferDequeue.getQueueSizeBytes(stream).orElseThrow()),
-          byteCountToDisplaySize(runningBytesEstimate),
-          byteCountToDisplaySize(inQueueBytes));
+          AirbyteFileUtils.byteCountToDisplaySize(queueSizeThresholdBytes),
+          AirbyteFileUtils.byteCountToDisplaySize(bufferDequeue.getQueueSizeBytes(stream).orElseThrow()),
+          AirbyteFileUtils.byteCountToDisplaySize(runningBytesEstimate),
+          AirbyteFileUtils.byteCountToDisplaySize(inQueueBytes));
       // todo make this debug
       log.info("computed: {}", streamInfo);
 
@@ -242,7 +241,7 @@ public class FlushWorkers implements AutoCloseable {
           log.info("Flush Worker ({}) -- Batch contains: {} records, {} bytes.",
               flushWorkerId,
               batch.getData().size(),
-              FlushWorkers.byteCountToDisplaySize(batch.getSizeInBytes()));
+              AirbyteFileUtils.byteCountToDisplaySize(batch.getSizeInBytes()));
 
           flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
           batch.flushStates(stateIdToCount).forEach(outputRecordCollector);
@@ -259,27 +258,6 @@ public class FlushWorkers implements AutoCloseable {
         streamToInProgressWorkers.get(desc).getAndDecrement();
       }
     });
-  }
-
-  public static String byteCountToDisplaySize(final long size) {
-    final double ONE_KB = 1024;
-    final double ONE_MB = ONE_KB * 1024;
-    final double ONE_GB = ONE_MB * 1024;
-    final double ONE_TB = ONE_GB * 1024;
-
-    DecimalFormat df = new DecimalFormat("#.##");
-
-    if (size < ONE_KB) {
-      return df.format(size) + " bytes";
-    } else if (size < ONE_MB) {
-      return df.format((double) size / ONE_KB) + " KB";
-    } else if (size < ONE_GB) {
-      return df.format((double) size / ONE_MB) + " MB";
-    } else if (size < ONE_TB) {
-      return df.format((double) size / ONE_GB) + " GB";
-    } else {
-      return df.format((double) size / ONE_TB) + " TB";
-    }
   }
 
 }

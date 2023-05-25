@@ -66,6 +66,14 @@ class MemoryBoundedLinkedBlockingQueue<E> {
     return hiddenQueue.poll(timeout, unit);
   }
 
+  public long getRecordsIn() {
+    return hiddenQueue.recordsIn.get();
+  }
+
+  public long getRecordsOut() {
+    return hiddenQueue.recordsOut.get();
+  }
+
   /**
    * Extends LinkedBlockingQueue so that we can get a LinkedBlockingQueue bounded by memory. Hidden as
    * an inner class, so it doesn't get misused, see top-level javadoc comment.
@@ -74,12 +82,17 @@ class MemoryBoundedLinkedBlockingQueue<E> {
    */
   private static class HiddenQueue<E> extends LinkedBlockingQueue<MemoryBoundedLinkedBlockingQueue.MemoryItem<E>> {
 
+    private final AtomicLong recordsIn;
+    private final AtomicLong recordsOut;
+
     private final AtomicLong currentMemoryUsage;
     private final AtomicLong maxMemoryUsage;
 
     public HiddenQueue(final long maxMemoryUsage) {
       currentMemoryUsage = new AtomicLong(0);
       this.maxMemoryUsage = new AtomicLong(maxMemoryUsage);
+      recordsIn = new AtomicLong(0);
+      recordsOut = new AtomicLong(0);
     }
 
     public boolean offer(final E e, final long itemSizeInBytes) {
@@ -88,6 +101,8 @@ class MemoryBoundedLinkedBlockingQueue<E> {
         final boolean success = super.offer(new MemoryItem<>(e, itemSizeInBytes));
         if (!success) {
           currentMemoryUsage.addAndGet(-itemSizeInBytes);
+        } else {
+          recordsIn.incrementAndGet();
         }
         log.debug("offer status: {}", success);
         return success;
@@ -103,6 +118,7 @@ class MemoryBoundedLinkedBlockingQueue<E> {
     public MemoryBoundedLinkedBlockingQueue.MemoryItem<E> take() throws InterruptedException {
       final MemoryItem<E> memoryItem = super.take();
       currentMemoryUsage.addAndGet(-memoryItem.size());
+      recordsOut.incrementAndGet();
       return memoryItem;
     }
 
@@ -111,6 +127,7 @@ class MemoryBoundedLinkedBlockingQueue<E> {
       final MemoryItem<E> memoryItem = super.poll();
       if (memoryItem != null) {
         currentMemoryUsage.addAndGet(-memoryItem.size());
+        recordsOut.incrementAndGet();
         return memoryItem;
       }
       return null;
@@ -121,6 +138,7 @@ class MemoryBoundedLinkedBlockingQueue<E> {
       final MemoryItem<E> memoryItem = super.poll(timeout, unit);
       if (memoryItem != null) {
         currentMemoryUsage.addAndGet(-memoryItem.size());
+        recordsOut.incrementAndGet();
         return memoryItem;
       }
       return null;

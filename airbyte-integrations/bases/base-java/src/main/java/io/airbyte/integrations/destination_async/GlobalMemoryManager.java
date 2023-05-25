@@ -73,7 +73,7 @@ public class GlobalMemoryManager {
     final var toAllocateBytes = Math.min(freeMem, BLOCK_SIZE_BYTES);
     currentMemoryBytes.addAndGet(toAllocateBytes);
 
-    LOGGER.trace("Memory Requested: max: {}, allocated: {}, allocated in this request: {}",
+    LOGGER.info("Memory Requested: max: {}, allocated: {}, allocated in this request: {}",
         FileUtils.byteCountToDisplaySize(maxMemoryBytes),
         FileUtils.byteCountToDisplaySize(currentMemoryBytes.get()),
         FileUtils.byteCountToDisplaySize(toAllocateBytes));
