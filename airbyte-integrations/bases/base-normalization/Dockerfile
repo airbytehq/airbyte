@@ -42,7 +42,7 @@ update-alternatives \
 ENV ROOTPATH="/usr/local/bin:$PATH"
 ENV REQUIREPATH="/opt/.venv/bin:$PATH"
 
-RUN PATH=$ROOTPATH python -m venv /opt/.poetry-venv
+RUN PATH=$ROOTPATH python -m venv /opt/.venv
 
 ENV PATH=$REQUIREPATH
 
