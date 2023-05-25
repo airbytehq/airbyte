@@ -1,9 +1,9 @@
 name: POC Connectors CI - nightly builds
 
 on:
-  schedule:
-    # 11AM UTC is 12AM CET, 4AM PST.
-    - cron: "0 8 * * *"
+  # schedule:
+  #   # 11AM UTC is 12AM CET, 4AM PST.
+  #   - cron: "0 8 * * *"
   workflow_dispatch:
     inputs:
       runs-on:
@@ -49,7 +49,7 @@ jobs:
       - name: Test connectors
         run: |
           export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-          DAGGER_CLI_COMMIT="d38681883bdae8668ea660c0e6da57b80f3b4aac"
+          DAGGER_CLI_COMMIT="2370d5eb65e511cf7f1611aebaacc6d48cf0907a"
           DAGGER_TMP_BINDIR="/tmp/dagger_${DAGGER_CLI_COMMIT}"
           export _EXPERIMENTAL_DAGGER_CLI_BIN="$DAGGER_TMP_BINDIR/dagger"
           if [ ! -f  "$_EXPERIMENTAL_DAGGER_CLI_BIN" ]; then
@@ -68,5 +68,3 @@ jobs:
           CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
           CI_CONTEXT: "nightly_builds"
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
-          S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}

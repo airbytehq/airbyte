@@ -18,8 +18,6 @@ Please follow these [steps](https://developers.asana.com/docs/personal-access-to
 4. Enter your `personal_access_token`
 5. Click **Set up source**
 
-⚠️ For the moment, oAuth login is disabled for Asana on Airbyte Cloud.
-
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard
