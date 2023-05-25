@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -15,7 +15,6 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   enum DestinationType {
     COPY_S3,
     COPY_GCS,
-    COPY_AZURE_BLOB,
     INTERNAL_STAGING
   }
 

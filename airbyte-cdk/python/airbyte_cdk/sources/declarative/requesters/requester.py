@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import abstractmethod
@@ -10,7 +10,6 @@ import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
 from requests.auth import AuthBase
 
 
@@ -23,7 +22,7 @@ class HttpMethod(Enum):
     POST = "POST"
 
 
-class Requester(RequestOptionsProvider, JsonSchemaMixin):
+class Requester(RequestOptionsProvider):
     @abstractmethod
     def get_authenticator(self) -> AuthBase:
         """

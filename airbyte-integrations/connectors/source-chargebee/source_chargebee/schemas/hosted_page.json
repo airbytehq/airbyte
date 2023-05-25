@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Hosted Page",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "type": {
+      "type": ["string", "null"],
+      "enum": [
+        "checkout_new", "checkout_existing", "update_payment_method", "manage_payment_sources", "collect_now",
+        "extend_subscription", "checkout_gift", "claim_gift", "checkout_one_time", "pre_cancel"
+      ]
+    },
+    "url": {
+      "type": ["string", "null"]
+    },
+    "state": {
+      "type": ["string", "null"],
+      "enum": ["created", "requested", "succeeded", "cancelled", "acknowledged"]
+    },
+    "pass_thru_content": {
+      "type": ["string", "null"]
+    },
+    "embed": {
+      "type": ["boolean", "null"]
+    },
+    "created_at": {
+      "type": ["integer", "null"]
+    },
+    "expires_at": {
+      "type": ["integer", "null"]
+    },
+    "content": {
+      "type": ["object", "null"]
+    },
+    "updated_at": {
+      "type": ["integer", "null"]
+    },
+    "resource_version": {
+      "type": ["integer", "null"]
+    },
+    "checkout_info": {
+      "type": ["object", "null"]
+    },
+    "business_entity_id": {
+      "type": ["string", "null"]
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

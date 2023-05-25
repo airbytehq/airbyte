@@ -1,31 +1,31 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-from dataclasses import dataclass
 import logging
-from pathlib import Path
-from typing import Dict, Optional, Set, Tuple, List
 import os
+from dataclasses import dataclass
+from enum import Enum
+from functools import cached_property
+from glob import glob
+from pathlib import Path
+from typing import List, Optional, Set, Tuple
+
 import git
 import requests
 import yaml
+from ci_credentials import SecretsManager
+from rich.console import Console
 
-# ensure we are at the repository root
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-os.chdir('../../..')
+console = Console()
 
-AIRBYTE_REPO = git.Repo(".")
-DIFFED_BRANCH = "origin/master"
-OSS_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json"
+DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")
+OSS_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
 SOURCE_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/source-"
+DESTINATION_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/destination-"
 ACCEPTANCE_TEST_CONFIG_FILE_NAME = "acceptance-test-config.yml"
 AIRBYTE_DOCKER_REPO = "airbyte"
-SOURCE_DEFINITIONS_FILE_PATH = "airbyte-config/init/src/main/resources/seed/source_definitions.yaml"
-DESTINATION_DEFINITIONS_FILE_PATH = "airbyte-config/init/src/main/resources/seed/destination_definitions.yaml"
-DEFINITIONS_FILE_PATH = {"source": SOURCE_DEFINITIONS_FILE_PATH, "destination": DESTINATION_DEFINITIONS_FILE_PATH}
 
 
 def download_catalog(catalog_url):
@@ -34,47 +34,60 @@ def download_catalog(catalog_url):
 
 
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
+METADATA_FILE_NAME = "metadata.yaml"
+ICON_FILE_NAME = "icon.svg"
 
 
 class ConnectorInvalidNameError(Exception):
     pass
 
+
 class ConnectorVersionNotFound(Exception):
     pass
 
-def read_definitions(definitions_file_path: str) -> Dict:
-    with open(definitions_file_path) as definitions_file:
-        return yaml.safe_load(definitions_file)
 
 def get_connector_name_from_path(path):
     return path.split("/")[2]
 
 
-def get_changed_acceptance_test_config(diff_regex: Optional[str]=None) -> Set[str]:
-    """Retrieve a list of connector names for which the acceptance_test_config file was changed in the current branch (compared to master).
+def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[str]:
+    """Retrieve the set of connectors for which the acceptance_test_config file was changed in the current branch (compared to master).
 
     Args:
         diff_regex (str): Find the edited files that contain the following regex in their change.
 
     Returns:
-        Set[str]: Set of connector names e.g {"source-pokeapi"}
+        Set[Connector]: Set of connectors that were changed
     """
+    airbyte_repo = git.Repo(search_parent_directories=True)
+
     if diff_regex is None:
         diff_command_args = ("--name-only", DIFFED_BRANCH)
     else:
-        diff_command_args = ("--name-only", f'-G{diff_regex}', DIFFED_BRANCH)
+        diff_command_args = ("--name-only", f"-G{diff_regex}", DIFFED_BRANCH)
 
     changed_acceptance_test_config_paths = {
         file_path
-        for file_path in AIRBYTE_REPO.git.diff(*diff_command_args).split("\n")
+        for file_path in airbyte_repo.git.diff(*diff_command_args).split("\n")
         if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) and file_path.endswith(ACCEPTANCE_TEST_CONFIG_FILE_NAME)
     }
-    return {get_connector_name_from_path(changed_file) for changed_file in changed_acceptance_test_config_paths}
+    return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_acceptance_test_config_paths}
+
+
+class ConnectorLanguage(str, Enum):
+    PYTHON = "python"
+    JAVA = "java"
+    LOW_CODE = "low-code"
+
+
+class ConnectorLanguageError(Exception):
+    pass
 
 
 @dataclass(frozen=True)
 class Connector:
     """Utility class to gather metadata about a connector."""
+
     technical_name: str
 
     def _get_type_and_name_from_technical_name(self) -> Tuple[str, str]:
@@ -98,52 +111,65 @@ class Connector:
 
     @property
     def icon_path(self) -> Path:
-        if self.definition and self.definition.get("icon"):
-            return Path(f"./airbyte-config/init/src/main/resources/icons/{self.definition['icon']}")
-        return Path(f"./airbyte-config/init/src/main/resources/icons/{self.name}.svg")
+        file_path = self.code_directory / ICON_FILE_NAME
+        return file_path
 
     @property
     def code_directory(self) -> Path:
         return Path(f"./airbyte-integrations/connectors/{self.technical_name}")
 
     @property
+    def metadata(self) -> Optional[dict]:
+        file_path = self.code_directory / METADATA_FILE_NAME
+        if not file_path.is_file():
+            return None
+        return yaml.safe_load((self.code_directory / METADATA_FILE_NAME).read_text())["data"]
+
+    @property
+    def language(self) -> ConnectorLanguage:
+        if Path(self.code_directory / self.technical_name.replace("-", "_") / "manifest.yaml").is_file():
+            return ConnectorLanguage.LOW_CODE
+        if Path(self.code_directory / "setup.py").is_file():
+            return ConnectorLanguage.PYTHON
+        try:
+            with open(self.code_directory / "Dockerfile") as dockerfile:
+                if "FROM airbyte/integration-base-java" in dockerfile.read():
+                    return ConnectorLanguage.JAVA
+        except FileNotFoundError:
+            pass
+        return None
+        # raise ConnectorLanguageError(f"We could not infer {self.technical_name} connector language")
+
+    @property
     def version(self) -> str:
+        if self.metadata is None:
+            return self.version_in_dockerfile_label
+        return self.metadata["dockerImageTag"]
+
+    @property
+    def version_in_dockerfile_label(self) -> str:
         with open(self.code_directory / "Dockerfile") as f:
             for line in f:
                 if "io.airbyte.version" in line:
                     return line.split("=")[1].strip()
-        raise ConnectorVersionNotFound("""
+        raise ConnectorVersionNotFound(
+            """
             Could not find the connector version from its Dockerfile.
             The io.airbyte.version tag is missing.
-            """)
-
-    @property
-    def definition(self) -> Optional[dict]:
-        """Find a connector definition from the catalog.
-        Returns:
-            Optional[Dict]: The definition if the connector was found in the catalog. Returns None otherwise.
-        """
-        try:
-            definition_type = self.technical_name.split("-")[0]
-            assert definition_type in ["source", "destination"]
-        except AssertionError:
-            raise Exception(f"Could not determine the definition type for {self.technical_name}.")
-        definitions = read_definitions(DEFINITIONS_FILE_PATH[definition_type])
-        for definition in definitions:
-            if definition["dockerRepository"].replace(f"{AIRBYTE_DOCKER_REPO}/", "") == self.technical_name:
-                return definition
+            """
+        )
 
     @property
     def release_stage(self) -> Optional[str]:
-        return self.definition.get("releaseStage") if self.definition else None
+        return self.metadata.get("releaseStage") if self.metadata else None
 
     @property
     def allowed_hosts(self) -> Optional[List[str]]:
-        return self.definition.get("allowedHosts") if self.definition else None
+        return self.metadata.get("allowedHosts") if self.metadata else None
 
     @property
     def suggested_streams(self) -> Optional[List[str]]:
-        return self.definition.get("suggestedStreams") if self.definition else None
+        return self.metadata.get("suggestedStreams") if self.metadata else None
 
     @property
     def acceptance_test_config_path(self) -> Path:
@@ -158,15 +184,41 @@ class Connector:
             logging.warning(f"No {ACCEPTANCE_TEST_CONFIG_FILE_NAME} file found for {self.technical_name}")
             return None
 
+    @property
+    def supports_normalization(self) -> bool:
+        return self.metadata and self.metadata.get("normalizationConfig") is not None
+
+    @property
+    def normalization_repository(self) -> Optional[str]:
+        if self.supports_normalization:
+            return f"{self.metadata['normalizationConfig']['normalizationRepository']}"
+
+    @property
+    def normalization_tag(self) -> Optional[str]:
+        if self.supports_normalization:
+            return f"{self.metadata['normalizationConfig']['normalizationTag']}"
+
+    def get_secret_manager(self, gsm_credentials: str):
+        return SecretsManager(connector_name=self.technical_name, gsm_credentials=gsm_credentials)
+
     def __repr__(self) -> str:
         return self.technical_name
 
+
 def get_changed_connectors() -> Set[Connector]:
-    """Retrieve a list of Connectors that were changed in the current branch (compared to master).
-    """
+    """Retrieve a set of Connectors that were changed in the current branch (compared to master)."""
+    airbyte_repo = git.Repo(search_parent_directories=True)
     changed_source_connector_files = {
         file_path
-        for file_path in AIRBYTE_REPO.git.diff("--name-only", DIFFED_BRANCH).split("\n")
+        for file_path in airbyte_repo.git.diff("--name-only", DIFFED_BRANCH).split("\n")
         if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX)
     }
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_source_connector_files}
+
+
+def get_all_released_connectors() -> Set:
+    return {
+        Connector(Path(metadata_file).parent.name)
+        for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
+        if "-scaffold-" not in metadata_file
+    }

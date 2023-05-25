@@ -21,7 +21,6 @@ select
         'datetime_no_tz',
         'time_tz',
         'time_no_tz',
-        'property_binary_data',
     ]) }} as _airbyte_exchange_rate_hashid,
     tmp.*
 from {{ ref('exchange_rate_ab2') }} tmp

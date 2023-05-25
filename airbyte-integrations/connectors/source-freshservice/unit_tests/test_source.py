@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest import mock
@@ -39,5 +39,5 @@ def test_stream_count(mocker):
     source = SourceFreshservice()
     config_mock = MagicMock()
     streams = source.streams(config_mock)
-    expected_streams_number = 12
+    expected_streams_number = 13
     assert len(streams) == expected_streams_number

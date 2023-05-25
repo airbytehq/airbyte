@@ -1,7 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import re
 from collections import namedtuple
 from unittest.mock import Mock
 
@@ -11,10 +12,11 @@ from freezegun import freeze_time
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v11.errors.types.authorization_error import AuthorizationErrorEnum
 from pendulum import today
-from source_google_ads.custom_query_stream import CustomQuery
+from source_google_ads.custom_query_stream import IncrementalCustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.source import SourceGoogleAds
 from source_google_ads.streams import AdGroupAdReport, AdGroupLabels, ServiceAccounts, chunk_date_range
+from source_google_ads.utils import GAQL
 
 from .common import MockErroringGoogleAdsClient, MockGoogleAdsClient, make_google_ads_exception
 
@@ -59,11 +61,12 @@ def mocked_gads_api(mocker):
 
 @pytest.fixture()
 def mock_fields_meta_data():
+    DataType = namedtuple("DataType", ["name"])
     Node = namedtuple("Node", ["data_type", "name", "enum_values", "is_repeated"])
     nodes = (
-        Node("RESOURCE_NAME", "campaign.accessible_bidding_strategy", [], False),
+        Node(DataType("RESOURCE_NAME"), "campaign.accessible_bidding_strategy", [], False),
         Node(
-            "ENUM",
+            DataType("ENUM"),
             "segments.ad_destination_type",
             [
                 "APP_DEEP_LINK",
@@ -82,22 +85,22 @@ def mock_fields_meta_data():
             ],
             False,
         ),
-        Node("DATE", "campaign.start_date", [], is_repeated=False),
-        Node("DATE", "campaign.end_date", [], False),
-        Node("DATE", "segments.date", [], False),
+        Node(DataType("DATE"), "campaign.start_date", [], is_repeated=False),
+        Node(DataType("DATE"), "campaign.end_date", [], False),
+        Node(DataType("DATE"), "segments.date", [], False),
         Node(
-            "ENUM",
+            DataType("ENUM"),
             "accessible_bidding_strategy.target_impression_share.location",
             ["ABSOLUTE_TOP_OF_PAGE", "ANYWHERE_ON_PAGE", "TOP_OF_PAGE", "UNKNOWN", "UNSPECIFIED"],
             False,
         ),
-        Node("STRING", "campaign.name", [], False),
-        Node("DOUBLE", "campaign.optimization_score", [], False),
-        Node("RESOURCE_NAME", "campaign.resource_name", [], False),
-        Node("INT32", "campaign.shopping_setting.campaign_priority", [], False),
-        Node("INT64", "campaign.shopping_setting.merchant_id", [], False),
-        Node("BOOLEAN", "campaign_budget.explicitly_shared", [], False),
-        Node("MESSAGE", "bidding_strategy.enhanced_cpc", [], False),
+        Node(DataType("STRING"), "campaign.name", [], False),
+        Node(DataType("DOUBLE"), "campaign.optimization_score", [], False),
+        Node(DataType("RESOURCE_NAME"), "campaign.resource_name", [], False),
+        Node(DataType("INT32"), "campaign.shopping_setting.campaign_priority", [], False),
+        Node(DataType("INT64"), "campaign.shopping_setting.merchant_id", [], False),
+        Node(DataType("BOOLEAN"), "campaign_budget.explicitly_shared", [], False),
+        Node(DataType("MESSAGE"), "bidding_strategy.enhanced_cpc", [], False),
     )
     return Mock(get_fields_metadata=Mock(return_value={node.name: node for node in nodes}))
 
@@ -159,7 +162,7 @@ def test_streams_count(config, mock_account_info):
 )
 def test_metrics_in_custom_query(query, is_metrics_in_query):
     source = SourceGoogleAds()
-    assert source.is_metrics_in_custom_query(query) is is_metrics_in_query
+    assert source.is_metrics_in_custom_query(GAQL.parse(query)) is is_metrics_in_query
 
 
 @pytest.mark.parametrize(
@@ -181,49 +184,14 @@ def test_updated_state(stream_mock, latest_record, current_state, expected_state
 def stream_instance(query, api_mock, **kwargs):
     start_date = "2021-03-04"
     conversion_window_days = 14
-    instance = CustomQuery(
+    instance = IncrementalCustomQuery(
         api=api_mock,
         conversion_window_days=conversion_window_days,
         start_date=start_date,
-        custom_query_config={"query": query, "table_name": "whatever_table"},
+        config={"query": GAQL.parse(query), "table_name": "whatever_table"},
         **kwargs,
     )
     return instance
-
-
-@pytest.mark.parametrize(
-    "query, fields",
-    [
-        (
-            """
-SELECT
-  campaign.id,
-  campaign.name,
-  campaign.status,
-  metrics.impressions
-FROM campaign
-WHERE campaign.status = 'PAUSED'
-AND metrics.impressions > 100
-ORDER BY campaign.status
-    """,
-            ["campaign.id", "campaign.name", "campaign.status", "metrics.impressions"],
-        ),
-        (
-            """
-SELECT
-  campaign.accessible_bidding_strategy,
-  segments.ad_destination_type,
-  campaign.start_date,
-  campaign.end_date
-FROM campaign
-    """,
-            ["campaign.accessible_bidding_strategy", "segments.ad_destination_type", "campaign.start_date", "campaign.end_date"],
-        ),
-        ("""selet aasdasd from aaa""", []),
-    ],
-)
-def test_get_query_fields(query, fields):
-    assert CustomQuery.get_query_fields(query) == fields
 
 
 @pytest.mark.parametrize(
@@ -246,8 +214,8 @@ SELECT
   campaign.id,
   campaign.name,
   campaign.status,
-  metrics.impressions
-, segments.date
+  metrics.impressions,
+  segments.date
 FROM campaign
 WHERE campaign.status = 'PAUSED'
 AND metrics.impressions > 100
@@ -270,8 +238,8 @@ SELECT
   campaign.id,
   campaign.name,
   campaign.status,
-  metrics.impressions
-, segments.date
+  metrics.impressions,
+  segments.date
 FROM campaign
 
 WHERE segments.date BETWEEN '1980-01-01' AND '2000-01-01'
@@ -294,8 +262,8 @@ SELECT
   campaign.id,
   campaign.name,
   campaign.status,
-  metrics.impressions
-, segments.date
+  metrics.impressions,
+  segments.date
 FROM campaign
 WHERE campaign.status = 'PAUSED'
 AND metrics.impressions > 100
@@ -316,8 +284,8 @@ SELECT
     campaign.accessible_bidding_strategy,
     segments.ad_destination_type,
     campaign.start_date,
-    campaign.end_date
-, segments.date
+    campaign.end_date,
+    segments.date
 FROM campaign
 
 WHERE segments.date BETWEEN '1980-01-01' AND '2000-01-01'
@@ -326,7 +294,8 @@ WHERE segments.date BETWEEN '1980-01-01' AND '2000-01-01'
     ],
 )
 def test_insert_date(original_query, expected_query):
-    assert CustomQuery.insert_segments_date_expr(original_query, "1980-01-01", "2000-01-01") == expected_query
+    expected_query = re.sub(r"\s+", " ", expected_query.strip())
+    assert str(IncrementalCustomQuery.insert_segments_date_expr(GAQL.parse(original_query), "1980-01-01", "2000-01-01")) == expected_query
 
 
 def test_get_json_schema_parse_query(mock_fields_meta_data, customers):

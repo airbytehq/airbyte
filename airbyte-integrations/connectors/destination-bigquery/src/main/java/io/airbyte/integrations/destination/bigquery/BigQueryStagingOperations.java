@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -59,20 +59,19 @@ public interface BigQueryStagingOperations {
    * @throws Exception
    */
   void copyIntoTableFromStage(final String datasetId,
-                                    final String stream,
-                                    final TableId tableId,
-                                    final Schema schema,
-                                    final List<String> stagedFiles)
+                              final String stream,
+                              final TableId tableId,
+                              final Schema schema,
+                              final List<String> stagedFiles)
       throws Exception;
 
   /**
-   * This method was primarily used to clean up staging area at the end of a sync, however, since we're
-   * no longer trying to commit remaining staged files at the end of a sync this is super-ceded by
-   * #dropStageIfExists
+   * This method was primarily used to clean up staging area at the end of a sync, however, since
+   * we're no longer trying to commit remaining staged files at the end of a sync this is super-ceded
+   * by #dropStageIfExists
    */
   @Deprecated
   void cleanUpStage(final String datasetId, final String stream, final List<String> stagedFiles);
-
 
   void dropTableIfExists(final String datasetId, final TableId tableId);
 

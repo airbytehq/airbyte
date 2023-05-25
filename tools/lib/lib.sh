@@ -22,7 +22,15 @@ _get_docker_label() {
 }
 
 _get_docker_image_version() {
-  _get_docker_label $1 io.airbyte.version
+  local is_pre_release; is_pre_release=$2
+  local version; version=$(_get_docker_label $1 io.airbyte.version)
+
+  # append the -dev.[git sha] if we're trying to publish a pre-release version
+  if [ "$is_pre_release" = "true" ]; then
+    echo "$version-dev.$(git rev-parse --short HEAD)"
+  else
+    echo "$version"
+  fi
 }
 
 _get_docker_image_name() {

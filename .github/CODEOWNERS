@@ -1,30 +1,10 @@
-# CDK and SAT
+# CDK and Connector Acceptance Tests
 /airbyte-cdk/ @airbytehq/connector-extensibility
-/airbyte-integrations/bases/source-acceptance-tests/ @airbytehq/connector-extensibility
 /airbyte-integrations/connector-templates/ @airbytehq/connector-extensibility
-
-# Oauth
-/airbyte-oauth/ @airbytehq/connector-operations
-/airbyte-server/src/main/java/io/airbyte/server/handlers/OAuthHandler.java @airbytehq/connector-operations
-/airbyte-server/src/test/java/io/airbyte/server/handlers/OAuthHandlerTest.java @airbytehq/connector-operations
+/airbyte-integrations/bases/connector-acceptance-tests/ @airbytehq/connector-operations
 
 # Protocol related items
-/airbyte-protocol/ @airbytehq/protocol-reviewers
 /docs/understanding-airbyte/airbyte-protocol.md @airbytehq/protocol-reviewers
-
-# Airbyte Maintainers
-airbyte-server/src/main/java/io/airbyte/server/handlers/WebBackendConnectionsHandler.java @airbytehq/airbyte-maintainers
-airbyte-config/config-persistence/src/test/java/io/airbyte/config/persistence/BaseConfigDatabaseTest.java @airbytehq/airbyte-maintainers
-airbyte-commons/src/main/ @airbytehq/airbyte-maintainers
-airbyte-commons/src/main/java/io/airbyte/commons/json/JsonSchemas.java @airbytehq/airbyte-maintainers
-airbyte-commons/src/main/java/io/airbyte/commons/json/JsonPaths.java @airbytehq/airbyte-maintainers
-airbyte-commons/src/main/java/io/airbyte/commons/json/Jsons.java @airbytehq/airbyte-maintainers
-airbyte-config/config-persistence/src/main/java/io/airbyte/config/persistence/split_secrets/ @airbytehq/airbyte-maintainers
-airbyte-config/config-persistence/src/main/java/io/airbyte/config/persistence/SecretsRepositoryReader.java @airbytehq/airbyte-maintainers
-airbyte-config/config-persistence/src/main/java/io/airbyte/config/persistence/SecretsRepositoryWriter.java @airbytehq/airbyte-maintainers
-airbyte-config/config-persistence/src/main/java/io/airbyte/config/persistence/ConfigRepository.java @airbytehq/airbyte-maintainers
-*build.gradle @airbytehq/airbyte-maintainers
-airbyte-integrations/connectors/**/build.gradle # ignore gradle files for individual connectors.
 
 # Normalization
 /airbyte-integrations/bases/base-normalization/ @airbytehq/destinations
@@ -52,7 +32,7 @@ airbyte-integrations/connectors/**/build.gradle # ignore gradle files for indivi
 # Java-based destination connectors
 /airbyte-integrations/bases/standard-destination-test/ @airbytehq/destinations
 /airbyte-integrations/bases/base-java-s3/ @airbytehq/destinations
-/airbyte-integrations/connectors/destination-jdbc/ @airbytehq/destinations
+/airbyte-integrations/bases/bases-destination-jdbc/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-bigquery/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-bigquery-denormalized/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-azure-blob-storage/ @airbytehq/destinations

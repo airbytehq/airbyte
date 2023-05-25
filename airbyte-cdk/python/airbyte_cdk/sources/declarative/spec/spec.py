@@ -1,16 +1,16 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Optional
 
 from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
-from dataclasses_jsonschema import JsonSchemaMixin
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import AuthFlow
 
 
 @dataclass
-class Spec(JsonSchemaMixin):
+class Spec:
     """
     Returns a connection specification made up of information about the connector and how it can be configured
 
@@ -20,8 +20,9 @@ class Spec(JsonSchemaMixin):
     """
 
     connection_specification: Mapping[str, Any]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     documentation_url: Optional[str] = None
+    advanced_auth: Optional[AuthFlow] = None
 
     def generate_spec(self) -> ConnectorSpecification:
         """
@@ -32,6 +33,9 @@ class Spec(JsonSchemaMixin):
 
         if self.documentation_url:
             obj["documentationUrl"] = self.documentation_url
+        if self.advanced_auth:
+            obj["advanced_auth"] = self.advanced_auth
+            obj["advanced_auth"].auth_flow_type = obj["advanced_auth"].auth_flow_type.value  # Get enum value
 
         # We remap these keys to camel case because that's the existing format expected by the rest of the platform
         return ConnectorSpecification.parse_obj(obj)

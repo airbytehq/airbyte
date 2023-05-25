@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -15,7 +15,6 @@ import pytest
 from integration_tests.dbt_integration_test import DbtIntegrationTest
 from integration_tests.utils import generate_dbt_models, run_destination_process
 from normalization.destination_type import DestinationType
-from normalization.transform_catalog import TransformCatalog
 
 temporary_folders = set()
 
@@ -71,13 +70,13 @@ def setup_test_path(request):
         ]
     ),
 )
-@pytest.mark.parametrize("destination_type", list(DestinationType))
+@pytest.mark.parametrize("destination_type", DestinationType.testable_destinations())
 def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
     if destination_type.value not in dbt_test_utils.get_test_targets():
         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
     if (
-            destination_type.value in (DestinationType.ORACLE.value, DestinationType.CLICKHOUSE.value)
-            and test_resource_name == "test_nested_streams"
+        destination_type.value in (DestinationType.ORACLE.value, DestinationType.CLICKHOUSE.value)
+        and test_resource_name == "test_nested_streams"
     ):
         pytest.skip(f"Destinations {destination_type} does not support nested streams")
 
@@ -113,7 +112,6 @@ def run_first_normalization(destination_type: DestinationType, test_resource_nam
     generate_dbt_models(destination_type, test_resource_name, test_root_dir, "models", "catalog.json", dbt_test_utils)
     # Setup test resources and models
     setup_dbt_test(destination_type, test_resource_name, test_root_dir)
-    setup_dbt_binary_test(destination_type, test_resource_name, test_root_dir)
     dbt_test_utils.dbt_check(destination_type, test_root_dir)
     # Run dbt process
     dbt_test_utils.dbt_run(destination_type, test_root_dir, force_full_refresh=True)
@@ -141,7 +139,12 @@ def run_schema_change_normalization(destination_type: DestinationType, test_reso
     if destination_type.value in [DestinationType.MYSQL.value, DestinationType.ORACLE.value]:
         # TODO: upgrade dbt-adapter repositories to work with dbt 0.21.0+ (outside airbyte's control)
         pytest.skip(f"{destination_type} does not support schema change in incremental yet (requires dbt 0.21.0+)")
-    if destination_type.value in [DestinationType.SNOWFLAKE.value, DestinationType.CLICKHOUSE.value, DestinationType.TIDB.value]:
+    if destination_type.value in [
+        DestinationType.SNOWFLAKE.value,
+        DestinationType.CLICKHOUSE.value,
+        DestinationType.TIDB.value,
+        DestinationType.DUCKDB.value,
+    ]:
         pytest.skip(f"{destination_type} is disabled as it doesnt support schema change in incremental yet (column type changes)")
     if destination_type.value in [DestinationType.MSSQL.value, DestinationType.SNOWFLAKE.value]:
         # TODO: create/fix github issue in corresponding dbt-adapter repository to handle schema changes (outside airbyte's control)
@@ -214,12 +217,15 @@ def setup_test_dir(destination_type: DestinationType, test_resource_name: str) -
     elif destination_type.value == DestinationType.TIDB.value:
         copy_tree("../dbt-project-template-tidb", test_root_dir)
         dbt_project_yaml = "../dbt-project-template-tidb/dbt_project.yml"
+    elif destination_type.value == DestinationType.DUCKDB.value:
+        copy_tree("../dbt-project-template-duckdb", test_root_dir)
+        dbt_project_yaml = "../dbt-project-template-duckdb/dbt_project.yml"
     dbt_test_utils.copy_replace(dbt_project_yaml, os.path.join(test_root_dir, "dbt_project.yml"))
     return test_root_dir
 
 
 def setup_input_raw_data(
-        destination_type: DestinationType, test_resource_name: str, test_root_dir: str, destination_config: Dict[str, Any]
+    destination_type: DestinationType, test_resource_name: str, test_root_dir: str, destination_config: Dict[str, Any]
 ) -> bool:
     """
     We run docker images of destinations to upload test data stored in the messages.txt file for each test case.
@@ -300,77 +306,6 @@ def setup_dbt_test(destination_type: DestinationType, test_resource_name: str, t
         destination_type,
         replace_identifiers,
     )
-
-
-def setup_dbt_binary_test(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
-    """
-    Prepare the data (copy) for the models for dbt test.
-    """
-    replace_identifiers = os.path.join("resources", test_resource_name, "data_input", "replace_identifiers.json")
-
-    if DestinationType.BIGQUERY == destination_type:
-        copy_test_files(
-            os.path.join("resources", test_resource_name, "dbt_test_config", "dbt_data_test_binary_tmp/dbt_data_test_bigquery_tmp"),
-            os.path.join(test_root_dir, "models/dbt_data_tests"),
-            destination_type,
-            replace_identifiers,
-        )
-
-    if DestinationType.SNOWFLAKE == destination_type:
-        copy_test_files(
-            os.path.join("resources", test_resource_name, "dbt_test_config", "dbt_data_test_binary_tmp/dbt_data_test_snowflake_tmp"),
-            os.path.join(test_root_dir, "models/dbt_data_tests"),
-            destination_type,
-            replace_identifiers,
-        )
-
-    if DestinationType.CLICKHOUSE == destination_type:
-        copy_test_files(
-            os.path.join("resources", test_resource_name, "dbt_test_config", "dbt_data_test_binary_tmp/dbt_data_test_clickhouse_tmp"),
-            os.path.join(test_root_dir, "models/dbt_data_tests"),
-            destination_type,
-            replace_identifiers,
-        )
-
-    if DestinationType.MYSQL == destination_type or DestinationType.TIDB == destination_type:
-        copy_test_files(
-            os.path.join("resources", test_resource_name, "dbt_test_config", "dbt_data_test_binary_tmp/dbt_data_test_mysql_tidb_tmp"),
-            os.path.join(test_root_dir, "models/dbt_data_tests"),
-            destination_type,
-            replace_identifiers,
-        )
-
-    if DestinationType.MSSQL == destination_type:
-        copy_test_files(
-            os.path.join("resources", test_resource_name, "dbt_test_config", "dbt_data_test_binary_tmp/dbt_data_test_mssql_tmp"),
-            os.path.join(test_root_dir, "models/dbt_data_tests"),
-            destination_type,
-            replace_identifiers,
-        )
-
-    if DestinationType.POSTGRES == destination_type:
-        copy_test_files(
-            os.path.join("resources", test_resource_name, "dbt_test_config", "dbt_data_test_binary_tmp/dbt_data_test_postgres_tmp"),
-            os.path.join(test_root_dir, "models/dbt_data_tests"),
-            destination_type,
-            replace_identifiers,
-        )
-
-    if DestinationType.ORACLE == destination_type:
-        copy_test_files(
-            os.path.join("resources", test_resource_name, "dbt_test_config", "dbt_data_test_binary_tmp/dbt_data_test_oracle_tmp"),
-            os.path.join(test_root_dir, "models/dbt_data_tests"),
-            destination_type,
-            replace_identifiers,
-        )
-
-    if DestinationType.REDSHIFT == destination_type:
-        copy_test_files(
-            os.path.join("resources", test_resource_name, "dbt_test_config", "dbt_data_test_binary_tmp/dbt_data_test_redshift_tmp"),
-            os.path.join(test_root_dir, "models/dbt_data_tests"),
-            destination_type,
-            replace_identifiers,
-        )
 
 
 def setup_dbt_incremental_test(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
@@ -483,6 +418,7 @@ def copy_test_files(src: str, dst: str, destination_type: DestinationType, repla
                         pattern.append(k.replace("\\", r"\\"))
                         replace_value.append(entry[k])
             if pattern and replace_value:
+
                 def copy_replace_identifiers(src, dst):
                     dbt_test_utils.copy_replace(src, dst, pattern, replace_value)
 
@@ -544,51 +480,3 @@ def to_lower_identifier(input: re.Match) -> str:
         return f"{input.group(1)}{input.group(2).lower()}{input.group(3)}"
     else:
         raise Exception(f"Unexpected number of groups in {input}")
-
-
-def test_redshift_normalization_migration(tmp_path, setup_test_path):
-    destination_type = DestinationType.REDSHIFT
-    clean_up_args = {
-        "destination_type": [destination_type],
-        "test_type": "ephemeral",  # "ephemeral", because we parse /tmp folders
-        "tmp_folders": [str(tmp_path)],
-    }
-    if destination_type.value not in dbt_test_utils.get_test_targets():
-        pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
-    base_dir = pathlib.Path(os.path.realpath(os.path.join(__file__, "../..")))
-    resources_dir = base_dir / "integration_tests/resources/redshift_normalization_migration"
-    catalog_file = base_dir / resources_dir / "destination_catalog.json"
-    messages_file1 = base_dir / resources_dir / "messages1.txt"
-    messages_file2 = base_dir / resources_dir / "messages2.txt"
-    dbt_test_sql = base_dir / resources_dir / "test_pokemon_super.sql.j2"
-
-    shutil.copytree(base_dir / "dbt-project-template", tmp_path, dirs_exist_ok=True)
-    shutil.copytree(base_dir / "dbt-project-template-redshift", tmp_path, dirs_exist_ok=True)
-    shutil.copy(catalog_file, tmp_path / "destination_catalog.json")
-
-    (tmp_path / "tests").mkdir()
-    shutil.copy(dbt_test_sql, tmp_path / "tests/test_pokemon_super.sql")
-
-    destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, tmp_path, random_schema=True)
-    with open(tmp_path / "destination_config.json", "w") as f:
-        f.write(json.dumps(destination_config))
-
-    transform_catalog = TransformCatalog()
-    transform_catalog.config = {
-        "integration_type": destination_type.value,
-        "schema": destination_config["schema"],
-        "catalog": [catalog_file],
-        "output_path": os.path.join(tmp_path, "models", "generated"),
-        "json_column": "_airbyte_data",
-        "profile_config_dir": tmp_path,
-    }
-    transform_catalog.process_catalog()
-
-    run_destination_process(destination_type, tmp_path, messages_file1, "destination_catalog.json", dbt_test_utils, docker_tag="0.3.29")
-    dbt_test_utils.dbt_check(destination_type, tmp_path)
-    dbt_test_utils.dbt_run(destination_type, tmp_path, force_full_refresh=True)
-    run_destination_process(destination_type, tmp_path, messages_file2, "destination_catalog.json", dbt_test_utils, docker_tag="dev")
-    dbt_test_utils.dbt_run(destination_type, tmp_path, force_full_refresh=False)
-    dbt_test(destination_type, tmp_path)
-    # clean-up test tables created for this test
-    dbt_test_utils.clean_tmp_tables(**clean_up_args)

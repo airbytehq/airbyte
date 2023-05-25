@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -49,9 +49,9 @@ def _create_response_with_list_of_records() -> Response:
 
 def test_no_key_injection():
     extractor = ObjectDpathExtractor(
-        field_pointer=["data"],
+        field_path=["data"],
         config={},
-        options={},
+        parameters={},
     )
 
     response = _create_response_with_dict_of_records()
@@ -71,10 +71,10 @@ def test_no_key_injection():
 
 def test_key_injection():
     extractor = ObjectDpathExtractor(
-        field_pointer=["data"],
+        field_path=["data"],
         inject_key_as_field="date",
         config={},
-        options={},
+        parameters={},
     )
 
     response = _create_response_with_dict_of_records()
@@ -96,10 +96,10 @@ def test_key_injection():
 
 def test_key_injection_with_interpolation():
     extractor = ObjectDpathExtractor(
-        field_pointer=["data"],
+        field_path=["data"],
         inject_key_as_field="{{ config['key_field'] }}",
         config={"key_field": "date"},
-        options={},
+        parameters={},
     )
 
     response = _create_response_with_dict_of_records()
@@ -121,9 +121,9 @@ def test_key_injection_with_interpolation():
 
 def test_list_of_records():
     extractor = ObjectDpathExtractor(
-        field_pointer=["data"],
+        field_path=["data"],
         config={},
-        options={},
+        parameters={},
     )
 
     response = _create_response_with_dict_of_records()
@@ -143,9 +143,9 @@ def test_list_of_records():
 
 def test_no_records():
     extractor = ObjectDpathExtractor(
-        field_pointer=["data"],
+        field_path=["data"],
         config={},
-        options={},
+        parameters={},
     )
 
     obj_response = _create_response_with_body({"data": {}})
@@ -161,9 +161,9 @@ def test_no_records():
 
 def test_single_record():
     extractor = ObjectDpathExtractor(
-        field_pointer=["data"],
+        field_path=["data"],
         config={},
-        options={},
+        parameters={},
     )
 
     response = _create_response_with_body({"data": {"id": "id1", "name": "name1"}})

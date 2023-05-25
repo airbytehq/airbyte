@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mariadb_columnstore;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 
-public class MariadbColumnstoreNameTransformer extends ExtendedNameTransformer {
+public class MariadbColumnstoreNameTransformer extends StandardNameTransformer {
 
   @Override
   public String getIdentifier(final String name) {

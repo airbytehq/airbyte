@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -27,9 +27,13 @@ class SourceBraintree(AbstractSource):
         """
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
-        config = BraintreeConfig(**config)
-        gateway = BraintreeStream.create_gateway(config)
-        gateway.customer.all()
+        try:
+            config = BraintreeConfig(**config)
+            gateway = BraintreeStream.create_gateway(config)
+            gateway.customer.all()
+        except Exception as exc:
+            return False, repr(exc)
+
         return True, ""
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

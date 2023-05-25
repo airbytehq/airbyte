@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-greenhouse:dev
 test_strictness_level: "high"
@@ -21,7 +21,20 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_records: yes
+        fail_on_extra_columns: false
+        empty_streams:
+          - name: eeoc
+            bypass_reason: "No data"
+          - name: prospect_pools
+            bypass_reason: "No data"
+          - name: tags
+            bypass_reason: "No data"
+          - name: user_permissions
+            bypass_reason: "No Data"
+        ignored_fields:
+          users:
+            - name: updated_at
+              bypass_reason: "Updated when you login to account"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

@@ -24,7 +24,7 @@ You will need to generate new API key with read permissions and use `Customer ke
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, enter the name for the WooCommerce connector and select **WooCommerce** from the Source
    type dropdown.
@@ -49,7 +49,7 @@ You will need to generate new API key with read permissions and use `Customer ke
 The WooCommerce source connector supports the
 following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
@@ -99,6 +99,8 @@ Useful links:
 
 | Version | Date       | Pull Request                                             | Subject                                    |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------- |
+| 0.2.2   | 2023-03-03 | [23599](https://github.com/airbytehq/airbyte/pull/23599) | Fix pagination and removed lookback window |
+| 0.2.1   | 2023-02-10 | [22821](https://github.com/airbytehq/airbyte/pull/22821) | Specified date formatting in specification |
 | 0.2.0   | 2022-11-30 | [19903](https://github.com/airbytehq/airbyte/pull/19903) | Migrate to low-code; Certification to Beta |
 | 0.1.1   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies            |
 | 0.1.0   | 2021-09-09 | [5955](https://github.com/airbytehq/airbyte/pull/5955)   | Initial Release. Source WooCommerce        |

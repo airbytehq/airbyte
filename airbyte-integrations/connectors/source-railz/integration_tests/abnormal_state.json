@@ -1,0 +1,543 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "accounting_transactions"
+      },
+      "stream_state": {
+        "b_freshbooks": {
+          "freshbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageBusinessCloud": {
+          "sageBusinessCloud": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooksDesktop": {
+          "quickbooksDesktop": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_dynamicsBusinessCentral": {
+          "dynamicsBusinessCentral": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "bank_transfers"
+      },
+      "stream_state": {
+        "b_xero": {
+          "xero": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "bills"
+      },
+      "stream_state": {
+        "b_freshbooks": {
+          "freshbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageBusinessCloud": {
+          "sageBusinessCloud": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooksDesktop": {
+          "quickbooksDesktop": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_dynamicsBusinessCentral": {
+          "dynamicsBusinessCentral": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "bills_credit_notes"
+      },
+      "stream_state": {
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "bills_payments"
+      },
+      "stream_state": {
+        "b_freshbooks": {
+          "freshbooks": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageBusinessCloud": {
+          "sageBusinessCloud": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooksDesktop": {
+          "quickbooksDesktop": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_dynamicsBusinessCentral": {
+          "dynamicsBusinessCentral": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "deposits"
+      },
+      "stream_state": {
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "estimates"
+      },
+      "stream_state": {
+        "b_freshbooks": {
+          "freshbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "invoices"
+      },
+      "stream_state": {
+        "b_freshbooks": {
+          "freshbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageBusinessCloud": {
+          "sageBusinessCloud": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooksDesktop": {
+          "quickbooksDesktop": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_wave": {
+          "wave": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_dynamicsBusinessCentral": {
+          "dynamicsBusinessCentral": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "invoices_credit_notes"
+      },
+      "stream_state": {
+        "b_freshbooks": {
+          "freshbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_dynamicsBusinessCentral": {
+          "dynamicsBusinessCentral": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "invoices_payments"
+      },
+      "stream_state": {
+        "b_freshbooks": {
+          "freshbooks": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageBusinessCloud": {
+          "sageBusinessCloud": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooksDesktop": {
+          "quickbooksDesktop": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_dynamicsBusinessCentral": {
+          "dynamicsBusinessCentral": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "journal_entries"
+      },
+      "stream_state": {
+        "b_freshbooks": {
+          "freshbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_sageBusinessCloud": {
+          "sageBusinessCloud": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooksDesktop": {
+          "quickbooksDesktop": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "purchase_orders"
+      },
+      "stream_state": {
+        "b_sageIntacct": {
+          "sageIntacct": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_oracleNetsuite": {
+          "oracleNetsuite": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_quickbooks": {
+          "quickbooks": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_dynamicsBusinessCentral": {
+          "dynamicsBusinessCentral": {
+            "postedDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "refunds"
+      },
+      "stream_state": {
+        "b_quickbooks": {
+          "quickbooks": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        },
+        "b_xero": {
+          "xero": {
+            "date": "2099-01-01T00:00:00.000Z"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "commerce_disputes"
+      },
+      "stream_state": {
+        "b_square": {
+          "square": {
+            "createdDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "commerce_orders"
+      },
+      "stream_state": {
+        "b_square": {
+          "square": {
+            "createdDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "commerce_products"
+      },
+      "stream_state": {
+        "b_square": {
+          "square": {
+            "createdDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "commerce_transactions"
+      },
+      "stream_state": {
+        "b_square": {
+          "square": {
+            "createdDate": "2099-01-01T00:00:00.000Z"
+          }
+        }
+      }
+    }
+  }
+]
+

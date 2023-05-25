@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/airtable",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Airtable Source Spec",
     "type": "object",
     "additionalProperties": true,
@@ -50,7 +50,7 @@
             }
           },
           {
-            "title": "API Key",
+            "title": "Personal Access Token",
             "type": "object",
             "required": ["api_key"],
             "properties": {
@@ -60,8 +60,8 @@
               },
               "api_key": {
                 "type": "string",
-                "description": "The API Key or PAT for the Airtable account. See the <a href=\"https://airtable.com/developers/web/guides/personal-access-tokens\">Support Guide</a> for more information on how to obtain this key.",
-                "title": "API Key",
+                "description": "The Personal Access Token for the Airtable account. See the <a href=\"https://airtable.com/developers/web/guides/personal-access-tokens\">Support Guide</a> for more information on how to obtain this token.",
+                "title": "Personal Access Token",
                 "airbyte_secret": true,
                 "examples": ["key1234567890"]
               }
