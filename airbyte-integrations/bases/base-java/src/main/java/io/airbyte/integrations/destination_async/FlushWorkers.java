@@ -240,10 +240,9 @@ public class FlushWorkers implements AutoCloseable {
                   stateId -> stateId,
                   Collectors.counting()));
           final long totalSize = stateIdToCount.values().stream().mapToLong(v -> v).sum();
-          log.info("Flush Worker ({}) -- Batch contains: {} records ({})",
+          log.info("Flush Worker ({}) -- Batch contains: {} records.",
               flushWorkerId,
-              batch.getData().size(),
-              FileUtils.byteCountToDisplaySize(totalSize));
+              batch.getData().size());
 
           flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
           batch.flushStates(stateIdToCount).forEach(outputRecordCollector);
