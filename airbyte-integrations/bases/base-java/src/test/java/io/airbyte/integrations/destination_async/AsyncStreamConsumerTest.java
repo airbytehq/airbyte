@@ -20,6 +20,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
 import io.airbyte.integrations.destination_async.buffers.BufferManager;
+import io.airbyte.integrations.destination_async.state.FlushFailure;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -31,13 +32,21 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -78,6 +87,7 @@ class AsyncStreamConsumerTest {
   private DestinationFlushFunction flushFunction;
   private OnCloseFunction onClose;
   private Consumer<AirbyteMessage> outputRecordCollector;
+  private FlushFailure flushFailure;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -87,6 +97,7 @@ class AsyncStreamConsumerTest {
     flushFunction = mock(DestinationFlushFunction.class);
     final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord = mock(CheckedFunction.class);
     outputRecordCollector = mock(Consumer.class);
+    flushFailure = mock(FlushFailure.class);
     consumer = new AsyncStreamConsumer(
         outputRecordCollector,
         onStart,
@@ -94,7 +105,8 @@ class AsyncStreamConsumerTest {
         flushFunction,
         CATALOG,
         isValidRecord,
-        new BufferManager());
+        new BufferManager(),
+        flushFailure);
 
     when(isValidRecord.apply(any())).thenReturn(true);
     when(flushFunction.getOptimalBatchSizeBytes()).thenReturn(10_000L);
@@ -144,6 +156,94 @@ class AsyncStreamConsumerTest {
     verifyStartAndClose();
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecords);
+  }
+
+  @Test
+  void testShouldBlockWhenQueuesAreFull() throws Exception {
+    consumer.start();
+
+  }
+
+  /*
+   * Tests that the consumer will block when the buffer is full. Achieves this by setting optimal
+   * batch size to 0, so the flush worker never actually pulls anything from the queue.
+   */
+  @Test
+  void testBackPressure() throws Exception {
+    flushFunction = mock(DestinationFlushFunction.class);
+    flushFailure = mock(FlushFailure.class);
+    consumer = new AsyncStreamConsumer(
+        m -> {},
+        () -> {},
+        () -> {},
+        flushFunction,
+        CATALOG,
+        m -> true,
+        new BufferManager(1024 * 10),
+        flushFailure);
+    when(flushFunction.getOptimalBatchSizeBytes()).thenReturn(0L);
+
+    final AtomicLong recordCount = new AtomicLong();
+
+    consumer.start();
+
+    final ExecutorService executor = Executors.newSingleThreadExecutor();
+    while (true) {
+      final Future<?> future = executor.submit(() -> {
+        try {
+          consumer.accept(new AirbyteMessage()
+              .withType(Type.RECORD)
+              .withRecord(new AirbyteRecordMessage()
+                  .withStream(STREAM_NAME)
+                  .withNamespace(SCHEMA_NAME)
+                  .withEmittedAt(Instant.now().toEpochMilli())
+                  .withData(Jsons.jsonNode(recordCount.getAndIncrement()))));
+        } catch (final Exception e) {
+          throw new RuntimeException(e);
+        }
+      });
+
+      try {
+        future.get(1, TimeUnit.SECONDS);
+      } catch (final TimeoutException e) {
+        future.cancel(true); // Stop the operation running in thread
+        break;
+      }
+    }
+    executor.shutdownNow();
+
+    assertTrue(recordCount.get() < 1000, String.format("Record count was %s", recordCount.get()));
+  }
+
+  @Nested
+  class ErrorHandling {
+
+    @Test
+    void testErrorOnAccept() throws Exception {
+      when(flushFailure.isFailed()).thenReturn(false).thenReturn(true);
+      when(flushFailure.getException()).thenReturn(new IOException("test exception"));
+
+      final var m = new AirbyteMessage()
+          .withType(Type.RECORD)
+          .withRecord(new AirbyteRecordMessage()
+              .withStream(STREAM_NAME)
+              .withNamespace(SCHEMA_NAME)
+              .withEmittedAt(Instant.now().toEpochMilli())
+              .withData(Jsons.deserialize("")));
+      consumer.start();
+      consumer.accept(m);
+      assertThrows(IOException.class, () -> consumer.accept(m));
+    }
+
+    @Test
+    void testErrorOnClose() throws Exception {
+      when(flushFailure.isFailed()).thenReturn(true);
+      when(flushFailure.getException()).thenReturn(new IOException("test exception"));
+
+      consumer.start();
+      assertThrows(IOException.class, () -> consumer.close());
+    }
+
   }
 
   private static void consumeRecords(final AsyncStreamConsumer consumer, final Collection<AirbyteMessage> records) {

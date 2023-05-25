@@ -21,8 +21,12 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CsvSerializedBuffer extends BaseSerializedBuffer {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(CsvSerializedBuffer.class);
 
   public static final String CSV_GZ_SUFFIX = ".csv.gz";
 
@@ -62,12 +66,20 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
 
   @Override
   protected void flushWriter() throws IOException {
-    csvPrinter.flush();
+    if (csvPrinter != null) {
+      csvPrinter.flush();
+    } else {
+      LOGGER.warn("Trying to flush but no printer is initialized");
+    }
   }
 
   @Override
   protected void closeWriter() throws IOException {
-    csvPrinter.close();
+    if (csvPrinter != null) {
+      csvPrinter.close();
+    } else {
+      LOGGER.warn("Trying to flush but no printer is initialized");
+    }
   }
 
   public static BufferCreateFunction createFunction(final S3CsvFormatConfig config,
