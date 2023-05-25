@@ -99,7 +99,10 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
     @property
     def primary_key(self):
-        return ["property_id"] + self.config.get("dimensions", [])
+        pk = ["property_id"] + self.config.get("dimensions", [])
+        if "cohort_spec" not in self.config and "date" not in pk:
+            pk.append("date_range")
+        return pk
 
     @staticmethod
     def add_dimensions(dimensions, row) -> dict:
@@ -133,6 +136,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
                 for d in self.config["dimensions"]
             }
         )
+
+        if "cohort_spec" not in self.config and "date" not in self.config["dimensions"]:
+            schema["properties"].update({"date_range": {"type": ["null", "string"]}})
 
         schema["properties"].update(
             {
@@ -177,11 +183,15 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         metrics_type_map = {h.get("name"): h.get("type") for h in r.get("metricHeaders", [{}])}
 
         for row in r.get("rows", []):
-            yield {
+            record = {
                 "property_id": self.config["property_id"],
                 **self.add_dimensions(dimensions, row),
                 **self.add_metrics(metrics, metrics_type_map, row),
             }
+
+            if "cohort_spec" not in self.config and "date" not in record:
+                record["date_range"] = stream_slice["startDate"] + "/" + stream_slice["endDate"]
+            yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         updated_state = utils.string_to_date(latest_record[self.cursor_field], self._record_date_format)
