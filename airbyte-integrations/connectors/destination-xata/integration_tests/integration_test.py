@@ -9,6 +9,8 @@ from typing import Any, Dict, List, Mapping
 
 from destination_xata import DestinationXata
 
+from xata.client import XataClient
+
 import pytest
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -72,10 +74,35 @@ def test_write(config: Mapping):
             "int_col": 1,
         }, emitted_at=0)
     )]
+
+    # setup Xata workspace
+    xata = XataClient(api_key=config["api_key"], db_url=config["db_url"])
+    db_name = xata.get_config()["dbName"]
+    # database exists ?
+    assert xata.databases().getDatabaseMetadata(db_name).status_code == 200, f"database '{db_name}' does not exist."
+    assert xata.table().createTable("test_stream").status_code == 201, "could not create table, if it already exists, please delete it."
+    assert xata.table().setTableSchema("test_stream", {
+            "columns": [
+                {"name": "str_col", "type": "string"},
+                {"name": "int_col", "type": "int"},
+            ]
+        }).status_code == 200, "failed to set table schema"
+
     dest = DestinationXata()
-    with pytest.raises(Exception) as e:
-        output_states = list(dest.write(
-            config=config, 
-            configured_catalog=test_stream,
-            input_messages=records
-        ))
+    output_states = list(dest.write(
+        config=config, 
+        configured_catalog=test_stream,
+        input_messages=records
+    ))
+
+    # fetch record
+    records = xata.data().queryTable("test_stream", {})
+    assert records.status_code == 200
+    assert len(records.json()["records"]) == 1
+
+    proof = records.json()["records"][0]
+    assert proof["str_col"] == "example"
+    assert proof["int_col"] == 1
+
+    # cleanup
+    assert xata.table().deleteTable("test_stream").status_code == 200
