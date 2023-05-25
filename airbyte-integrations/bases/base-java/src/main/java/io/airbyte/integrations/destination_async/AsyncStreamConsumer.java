@@ -16,10 +16,8 @@ import io.airbyte.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.integrations.destination_async.state.FlushFailure;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
@@ -108,8 +106,12 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
      * to try to use a thread pool to partially deserialize to get record type and stream name, we can
      * do it without touching buffer manager.
      */
-    extractStream(message)
-        .ifPresent(streamDescriptor -> bufferEnqueue.addRecord(streamDescriptor, message));
+
+    if (message.getType() == Type.RECORD) {
+      validateRecord(message);
+    }
+
+    bufferEnqueue.addRecord(message);
   }
 
   @Override
@@ -130,32 +132,6 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     LOGGER.info("{} closed.", AsyncStreamConsumer.class);
   }
 
-  /**
-   * Extract the stream from the message, if the message is a record or state. Otherwise, we don't
-   * care.
-   *
-   * @param message message to extract stream from
-   * @return stream descriptor if the message is a record or state, otherwise empty. In the case of
-   *         global state messages the stream descriptor is hardcoded
-   */
-  private Optional<StreamDescriptor> extractStream(final AirbyteMessage message) {
-    if (message.getType() == Type.RECORD) {
-      final StreamDescriptor streamDescriptor = new StreamDescriptor()
-          .withNamespace(message.getRecord().getNamespace())
-          .withName(message.getRecord().getStream());
-
-      validateRecord(message, streamDescriptor);
-
-      return Optional.of(streamDescriptor);
-    } else if (message.getType() == Type.STATE) {
-      // only return stream descriptor in stream cases.
-      if (message.getState().getType() == AirbyteStateType.STREAM) {
-        return Optional.of(message.getState().getStream().getStreamDescriptor());
-      }
-    }
-    return Optional.empty();
-  }
-
   private void propagateFlushWorkerExceptionIfPresent() throws Exception {
     if (flushFailure.isFailed()) {
       System.out.println(" +++++ propagating flush worker exception");
@@ -169,10 +145,10 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
       throwUnrecognizedStream(catalog, message);
     }
 
-    trackerIsValidRecord(message, streamDescriptor);
+    trackIsValidRecord(message, streamDescriptor);
   }
 
-  private void trackerIsValidRecord(final AirbyteMessage message, final StreamDescriptor streamDescriptor) {
+  private void trackIsValidRecord(final AirbyteMessage message, final StreamDescriptor streamDescriptor) {
     // todo (cgardens) - is valid should also move inside the tracker.
     try {
 
