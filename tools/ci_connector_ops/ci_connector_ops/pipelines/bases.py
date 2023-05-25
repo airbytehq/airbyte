@@ -23,6 +23,7 @@ from rich.panel import Panel
 from rich.style import Style
 from rich.table import Table
 from rich.text import Text
+from tabulate import tabulate
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
@@ -63,6 +64,15 @@ class StepStatus(Enum):
             return Style(color="red", bold=True)
         if self is StepStatus.SKIPPED:
             return Style(color="yellow")
+
+    def get_emoji(self) -> str:
+        """Match emoji used in the console output to the step status."""
+        if self is StepStatus.SUCCESS:
+            return "✅"
+        if self is StepStatus.FAILURE:
+            return "❌"
+        if self is StepStatus.SKIPPED:
+            return "🟡"
 
     def __str__(self) -> str:  # noqa D105
         return self.value
@@ -306,6 +316,10 @@ class ConnectorReport(Report):
     def should_be_saved(self) -> bool:  # noqa D102
         return self.pipeline_context.is_ci
 
+    @property
+    def should_be_commented_on_pr(self) -> bool:  # noqa D102
+        return self.pipeline_context.is_ci and self.pipeline_context.pull_request
+
     def to_json(self) -> str:
         """Create a JSON representation of the connector test report.
 
@@ -331,6 +345,18 @@ class ConnectorReport(Report):
                 "ci_context": self.pipeline_context.ci_context,
             }
         )
+
+    def post_comment_on_pr(self) -> None:
+        markdown_comment = f"## 🔥 {self.pipeline_context.connector.technical_name} test report 🔥\n\n"
+        markdown_comment += f"⏲️  Total pipeline duration: {round(self.run_duration)} seconds\n\n"
+        report_data = [[step_result.step.title, step_result.status.get_emoji()] for step_result in self.steps_results]
+        markdown_comment += tabulate(report_data, headers=["Step", "Result"], tablefmt="pipe") + "\n"
+        markdown_comment += f"🔗 [View the logs here]({self.pipeline_context.gha_workflow_run_url})\n\n"
+        markdown_comment += "*Please note that tests are only run on PR ready for review.\n"
+        markdown_comment += "Please set your PR to draft mode to not flood the CI engine and upstream service on following commits.\n"
+        markdown_comment += "You can run the same pipeline locally on this branch with the [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/README.md) tool with the following command*\n"
+        markdown_comment += f"```bash\nairbyte-ci connectors --name={self.pipeline_context.connector.technical_name} test\n```\n\n"
+        self.pipeline_context.pull_request.create_issue_comment(markdown_comment)
 
     def print(self):
         """Print the test report to the console in a nice way."""

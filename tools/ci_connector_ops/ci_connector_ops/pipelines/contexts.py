@@ -423,6 +423,8 @@ class ConnectorContext(PipelineContext):
             )
             if report_upload_exit_code != 0:
                 self.logger.error("Uploading the report to S3 failed.")
+        if self.report.should_be_commented_on_pr:
+            self.report.post_comment_on_pr()
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         if self.should_send_slack_message:
             await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)
