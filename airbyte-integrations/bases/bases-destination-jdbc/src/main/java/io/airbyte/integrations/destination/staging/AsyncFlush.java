@@ -16,6 +16,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -48,6 +49,7 @@ class AsyncFlush implements DestinationFlushFunction {
     // where do we create all the write configs?
     log.info("Starting staging flush..");
     CsvSerializedBuffer writer = null;
+    final AtomicInteger counter = new AtomicInteger();
     try {
       writer = new CsvSerializedBuffer(
           new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
@@ -55,13 +57,13 @@ class AsyncFlush implements DestinationFlushFunction {
           true);
 
       log.info("Converting to CSV file..");
-
       // reassign as lambdas require references to be final.
       final CsvSerializedBuffer finalWriter = writer;
       stream.forEach(record -> {
         try {
           // todo(davin): handle non-record airbyte messages.
           finalWriter.accept(record.getRecord());
+          counter.getAndIncrement();
         } catch (final Exception e) {
           throw new RuntimeException(e);
         }
@@ -90,6 +92,7 @@ class AsyncFlush implements DestinationFlushFunction {
       GeneralStagingFunctions.copyIntoTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(),
           schemaName,
           stagingOperations);
+      log.info("Uploaded and copied {} records:", counter.get());
     } catch (final Exception e) {
       log.error("Failed to flush and commit buffer data into destination's raw table", e);
       throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);

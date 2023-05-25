@@ -28,6 +28,7 @@ public class MemoryAwareMessageBatch implements AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MemoryAwareMessageBatch.class);
   private final List<MessageWithMeta> batch;
+
   private final long sizeInBytes;
   private final GlobalMemoryManager memoryManager;
   private final GlobalAsyncStateManager stateManager;
@@ -40,6 +41,10 @@ public class MemoryAwareMessageBatch implements AutoCloseable {
     this.sizeInBytes = sizeInBytes;
     this.memoryManager = memoryManager;
     this.stateManager = stateManager;
+  }
+
+  public long getSizeInBytes() {
+    return sizeInBytes;
   }
 
   public List<MessageWithMeta> getData() {
