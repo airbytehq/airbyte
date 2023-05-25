@@ -15,13 +15,9 @@ jobs:
           distribution: "zulu"
           java-version: "17"
 
-      - name: Set up gradle
-        run: |
-          gradle wrapper
-
       - name: Run Coverage
         run: |
-          ./gradlew :airbyte-integrations:connectors:source-postgres:jacocoTestReport
+          ${{ github.workspace }}/gradlew :airbyte-integrations:connectors:source-postgres:jacocoTestReport
 
       - name: Add coverage to PR
         id: jacoco
