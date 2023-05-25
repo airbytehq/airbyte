@@ -21,9 +21,7 @@ RUN yum install -y python3 python3-devel jq sshpass git gcc-c++ && \
   python -m ensurepip --upgrade && \
   pip3 install dbt-snowflake==1.0.0 "urllib3<2"
 
-# Luckily, none of normalization's files conflict with destination-bigquery's files :)
-# We don't enforce that in any way, but hopefully we're only living in this state for a short time.
-COPY --from=airbyte/normalization:dev /airbyte /airbyte
+COPY --from=airbyte/normalization-snowflake:dev /airbyte /airbyte
 # Install python dependencies
 WORKDIR /airbyte/base_python_structs
 RUN pip3 install .
