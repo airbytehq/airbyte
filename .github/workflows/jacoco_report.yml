@@ -17,7 +17,7 @@ jobs:
 
       - name: Run Coverage
         run: |
-          ./gradlew :airbyte-integrations:connectors:source-postgres:jacocoTestReport
+          gradle :airbyte-integrations:connectors:source-postgres:jacocoTestReport
 
       - name: Add coverage to PR
         id: jacoco
