@@ -76,7 +76,7 @@ class SourceTiktokMarketing(AbstractSource):
             access_token = credentials["access_token"]
             secret = credentials.get("secret")
             app_id = int(credentials.get("app_id", 0))
-            advertiser_id = credentials.get("advertiser_id", None)
+            advertiser_id = credentials.get("advertiser_id")
         else:
             # old config only has advertiser id in environment object
             # if there is a secret it is a prod config
@@ -84,7 +84,7 @@ class SourceTiktokMarketing(AbstractSource):
             secret = config.get("environment", {}).get("secret")
             is_sandbox = secret is None
             app_id = int(config.get("environment", {}).get("app_id", 0))
-            advertiser_id = config.get("environment", {}).get("advertiser_id", None)
+            advertiser_id = config.get("environment", {}).get("advertiser_id")
 
         stream_args = {
             "authenticator": TiktokTokenAuthenticator(access_token),
