@@ -54,22 +54,17 @@ docker compose version
 
 Download the Airbyte repository and deploy it on the VM:
 
-1. Run the following commands to clone the Airbyte repo:
+1. Run the following commands to download the Airbyte installation script:
 
    ```bash
    mkdir airbyte && cd airbyte
-   ```
-
    wget https://raw.githubusercontent.com/airbytehq/airbyte/master/run-ab-platform.sh
-
+   chmod +x run-ab-platform.sh
    ```
 
-   ```
-
-2. Run the following commands to get Airbyte running on your OCI VM instance using the installation script:
+2. Run the following command to get Airbyte running on your OCI VM instance using the installation script:
 
    ```bash
-   chmod +x run-ab-platform.sh
    ./run-ab-platform.sh
    ```
 
