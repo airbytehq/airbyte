@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination_async;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
@@ -60,6 +61,18 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
                              final ConfiguredAirbyteCatalog catalog,
                              final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
                              final BufferManager bufferManager) {
+    this(outputRecordCollector, onStart, onClose, flusher, catalog, isValidRecord, bufferManager, new FlushFailure());
+  }
+
+  @VisibleForTesting
+  public AsyncStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
+                             final OnStartFunction onStart,
+                             final OnCloseFunction onClose,
+                             final DestinationFlushFunction flusher,
+                             final ConfiguredAirbyteCatalog catalog,
+                             final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
+                             final BufferManager bufferManager,
+                             final FlushFailure flushFailure) {
     hasStarted = false;
     hasClosed = false;
 
@@ -69,7 +82,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     this.isValidRecord = isValidRecord;
     this.bufferManager = bufferManager;
     bufferEnqueue = bufferManager.getBufferEnqueue();
-    flushFailure = new FlushFailure();
+    this.flushFailure = flushFailure;
     flushWorkers = new FlushWorkers(this.bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure);
     streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
     ignoredRecordsTracker = new IgnoredRecordsTracker();
@@ -89,10 +102,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
   @Override
   public void accept(final AirbyteMessage message) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
-    if (flushFailure.isFailed().get()) {
-      throw flushFailure.getException();
-    }
-
+    propagateFlushWorkerExceptionIfPresent();
     /*
      * intentionally putting extractStream outside the buffer manager so that if in the future we want
      * to try to use a thread pool to partially deserialize to get record type and stream name, we can
@@ -112,6 +122,8 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     // we need to close the workers before closing the bufferManagers (and underlying buffers)
     // or we risk in-memory data.
     flushWorkers.close();
+    propagateFlushWorkerExceptionIfPresent();
+
     bufferManager.close();
     ignoredRecordsTracker.report();
     onClose.call();
@@ -142,6 +154,13 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
       }
     }
     return Optional.empty();
+  }
+
+  private void propagateFlushWorkerExceptionIfPresent() throws Exception {
+    if (flushFailure.isFailed()) {
+      System.out.println(" +++++ propagating flush worker exception");
+      throw flushFailure.getException();
+    }
   }
 
   private void validateRecord(final AirbyteMessage message, final StreamDescriptor streamDescriptor) {

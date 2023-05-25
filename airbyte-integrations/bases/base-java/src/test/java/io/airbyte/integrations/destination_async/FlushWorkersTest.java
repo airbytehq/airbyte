@@ -37,7 +37,7 @@ public class FlushWorkersTest {
     workers.start();
     workers.close();
 
-    Assertions.assertTrue(flushFailure.isFailed().get());
+    Assertions.assertTrue(flushFailure.isFailed());
     Assertions.assertEquals(IOException.class, flushFailure.getException().getClass());
   }
 

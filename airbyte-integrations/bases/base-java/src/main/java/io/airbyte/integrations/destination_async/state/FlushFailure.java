@@ -18,8 +18,8 @@ public class FlushFailure {
     this.exceptionAtomicReference.set(e);
   }
 
-  public AtomicBoolean isFailed() {
-    return isFailed;
+  public boolean isFailed() {
+    return isFailed.get();
   }
 
   public Exception getException() {
