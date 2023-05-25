@@ -22,6 +22,7 @@ class GitlabStream(HttpStream, ABC):
     flatten_id_keys = []
     flatten_list_keys = []
     per_page = 50
+    non_retriable_codes: List[int] = (403,)
 
     def __init__(self, api_url: str, **kwargs):
         super().__init__(**kwargs)
@@ -66,17 +67,17 @@ class GitlabStream(HttpStream, ABC):
 
     def should_retry(self, response: requests.Response) -> bool:
         # Gitlab API returns a 403 response in case a feature is disabled in a project (pipelines/jobs for instance).
-        if response.status_code == 403:
+        if response.status_code in self.non_retriable_codes:
             setattr(self, "raise_on_http_errors", False)
             self.logger.warning(
-                f"Got 403 error when accessing URL {response.request.url}."
+                f"Got {response.status_code} error when accessing URL {response.request.url}."
                 f" Very likely the feature is disabled for this project and/or group. Please double check it, or report a bug otherwise."
             )
             return False
         return super().should_retry(response)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if response.status_code != 200:
+        if response.status_code in self.non_retriable_codes:
             return
         response_data = response.json()
         if isinstance(response_data, dict):
@@ -86,7 +87,7 @@ class GitlabStream(HttpStream, ABC):
             return {"page": self.page}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.status_code == 403:
+        if response.status_code in self.non_retriable_codes:
             return []
         response_data = response.json()
         if isinstance(response_data, list):
@@ -310,6 +311,7 @@ class Branches(GitlabChildStream):
     primary_key = "name"
     flatten_id_keys = ["commit"]
     flatten_parent_id = True
+    non_retriable_codes = (403, 404)
 
 
 class Commits(IncrementalGitlabChildStream):
