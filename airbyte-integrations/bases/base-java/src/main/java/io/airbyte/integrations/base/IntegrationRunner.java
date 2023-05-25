@@ -147,9 +147,20 @@ public class IntegrationRunner {
           final JsonNode config = parseConfig(parsed.getConfigPath());
           validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-          try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
-            runConsumer(consumer);
-          }
+
+          final Procedure consumeWriteStreamCallable = () -> {
+            try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
+              consumeWriteStream(consumer);
+            }
+          };
+
+          watchForOrphanThreads(
+              consumeWriteStreamCallable,
+              () -> System.exit(FORCED_EXIT_CODE),
+              INTERRUPT_THREAD_DELAY_MINUTES,
+              TimeUnit.MINUTES,
+              EXIT_THREAD_DELAY_MINUTES,
+              TimeUnit.MINUTES);
         }
         default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
       }
@@ -205,16 +216,6 @@ public class IntegrationRunner {
     while (input.hasNext()) {
       consumeMessage(consumer, input.next());
     }
-  }
-
-  private static void runConsumer(final AirbyteMessageConsumer consumer) throws Exception {
-    watchForOrphanThreads(
-        () -> consumeWriteStream(consumer),
-        () -> System.exit(FORCED_EXIT_CODE),
-        INTERRUPT_THREAD_DELAY_MINUTES,
-        TimeUnit.MINUTES,
-        EXIT_THREAD_DELAY_MINUTES,
-        TimeUnit.MINUTES);
   }
 
   /**
