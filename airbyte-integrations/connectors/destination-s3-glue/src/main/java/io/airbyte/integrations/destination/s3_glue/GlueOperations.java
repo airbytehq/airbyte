@@ -132,8 +132,8 @@ public class GlueOperations implements MetastoreOperations {
         if (jsonNode.has("airbyte_type") && jsonNode.get("airbyte_type").asText().equals("integer")) {
           yield "int";
         } else {
-          if (metastoreFormatConfig.getNumericType() == NumericType.FLOAT) {
-            yield "float";
+          if (metastoreFormatConfig.getNumericType() == NumericType.DOUBLE) {
+            yield "double";
           } else {
             if (metastoreFormatConfig.getNumericType() == NumericType.DECIMAL) {
               yield String.format("decimal(38,%s)", metastoreFormatConfig.getDecimalScale());

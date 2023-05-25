@@ -243,10 +243,13 @@ Output files can be compressed. The default option is GZIP compression. If compr
 
 If your data has nested documents, you may want to enable the Stringify feature to ensure they are serialized as strings in the output. (**_available as a configuration option_**)
 
+If your data has fractional numeric fields, you may choose the either Double or Decimal as the type and input your desired scale for Decimal fields. (**_available as a configuration option_**)
+
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                             | Subject                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 0.1.9   | 2023-05-25 | [26517](https://github.com/airbytehq/airbyte/pull/26517) | Add input parameters for fractional numeric type and decimal scale                         |
 | 0.1.8   | 2023-05-10 | [25769](https://github.com/airbytehq/airbyte/pull/25769) | Add a stringify option to serialize nested documents as strings                         |
 | 0.1.7   | 2023-05-01 | [25724](https://github.com/airbytehq/airbyte/pull/25724) | Fix decimal type creation syntax to avoid overflow                                      |
 | 0.1.6   | 2023-04-13 | [25178](https://github.com/airbytehq/airbyte/pull/25178) | Fix decimal precision and scale to allow for a wider range of numeric values            |

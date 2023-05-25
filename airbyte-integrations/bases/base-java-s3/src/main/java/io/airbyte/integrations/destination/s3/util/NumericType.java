@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum NumericType {
 
-  FLOAT("Float"),
+  DOUBLE("Double"),
   DECIMAL("Decimal");
 
   private final String value;
