@@ -27,7 +27,7 @@ from rich.text import Text
 
 # CONSTANTS
 
-GITHUB_GLOBAL_CONTEXT = "[POC please ignore] Connectors CI"
+GITHUB_GLOBAL_CONTEXT = "Connectors CI tests"
 GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
 
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
@@ -153,6 +153,18 @@ def connectors(
     ctx.obj["selected_connectors_names"] = [c.technical_name for c in selected_connectors_and_files.keys()]
 
 
+def update_global_commit_status_check(click_context: dict, github_state: str):
+    update_commit_status_check(
+        click_context["git_revision"],
+        github_state,
+        click_context["gha_workflow_run_url"],
+        GITHUB_GLOBAL_DESCRIPTION,
+        GITHUB_GLOBAL_CONTEXT,
+        should_send=click_context.get("ci_context") == CIContext.PULL_REQUEST,
+        logger=logger,
+    )
+
+
 @connectors.command(cls=DaggerPipelineCommand, help="Test all the selected connectors.")
 @click.pass_context
 def test(
@@ -164,10 +176,11 @@ def test(
         ctx (click.Context): The click context.
     """
     click.secho(f"Will run the test pipeline for the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
+    update_global_commit_status_check(ctx.obj, "pending")
 
     connectors_tests_contexts = [
         ConnectorContext(
-            pipeline_name="Test",
+            pipeline_name=f"Testing connector {connector.technical_name}",
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
@@ -190,28 +203,13 @@ def test(
             ctx.obj["concurrency"],
             ctx.obj["execute_timeout"],
         )
-        update_commit_status_check(
-            ctx.obj["git_revision"],
-            "success",
-            ctx.obj["gha_workflow_run_url"],
-            GITHUB_GLOBAL_DESCRIPTION,
-            GITHUB_GLOBAL_CONTEXT,
-            should_send=ctx.obj.get("ci_context") == CIContext.PULL_REQUEST,
-            logger=logger,
-        )
     except dagger.DaggerError as e:
         click.secho(str(e), err=True, fg="red")
-        update_commit_status_check(
-            ctx.obj["git_revision"],
-            "error",
-            ctx.obj["gha_workflow_run_url"],
-            GITHUB_GLOBAL_DESCRIPTION,
-            GITHUB_GLOBAL_CONTEXT,
-            should_send=ctx.obj.get("ci_context") == CIContext.PULL_REQUEST,
-            logger=logger,
-        )
+        update_global_commit_status_check(ctx.obj, "failure")
         return False
-    return True
+    global_success = all(connector_context.state is ContextState.SUCCESSFUL for connector_context in connectors_tests_contexts)
+    update_global_commit_status_check(ctx.obj, "success" if global_success else "failure")
+    return global_success
 
 
 @connectors.command(cls=DaggerPipelineCommand, help="Build all images for the selected connectors.")
@@ -220,7 +218,7 @@ def build(ctx: click.Context) -> bool:
     click.secho(f"Will build the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
     connectors_contexts = [
         ConnectorContext(
-            pipeline_name="Build",
+            pipeline_name="Build connector {connector.technical_name}",
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
