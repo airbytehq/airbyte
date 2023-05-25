@@ -211,6 +211,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
       throws SQLException {
     super.logPreSyncDebugData(database, catalog);
+    PostgresQueryUtils.logFullVacuumStatus(database, catalog, getQuoteString());
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
       final String schemaName = stream.getStream().getNamespace();
