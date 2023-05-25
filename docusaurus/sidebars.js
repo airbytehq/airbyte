@@ -142,9 +142,6 @@ const buildAConnector = {
       },
       items: [
         "connector-development/testing-connectors/connector-acceptance-tests-reference",
-        "connector-development/testing-connectors/legacy-standard-source-tests",
-        "connector-development/testing-connectors/source-acceptance-tests-reference",
-        "connector-development/testing-connectors/standard-source-tests",
         "connector-development/testing-connectors/testing-a-local-catalog-in-development",
       ],
     },
