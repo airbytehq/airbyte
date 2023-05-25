@@ -28,7 +28,7 @@ from .utils import authenticator_class_map, get_dimensions_type, get_metrics_typ
 # the initial values should be saved once and tracked for each stream, inclusivelly.
 GoogleAnalyticsQuotaHandler: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
-LOOKBACK_WINDOW = 2
+LOOKBACK_WINDOW = datetime.timedelta(days=2)
 
 
 class ConfigurationError(Exception):
@@ -225,7 +225,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         start_date = stream_state and stream_state.get(self.cursor_field)
         if start_date:
             start_date = utils.string_to_date(start_date, self._record_date_format, old_format=DATE_FORMAT)
-            start_date -= datetime.timedelta(days=LOOKBACK_WINDOW)
+            start_date -= LOOKBACK_WINDOW
             start_date = max(start_date, self.config["date_ranges_start_date"])
         else:
             start_date = self.config["date_ranges_start_date"]
