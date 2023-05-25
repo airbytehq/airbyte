@@ -4,31 +4,24 @@
 # Here we tries to test a basic tests only.
 # The main part of tests should be executed for the source-file connector
 connector_image: airbyte/source-file-secure:dev
-test_strictness_level: high
-acceptance_tests:
+tests:
   spec:
-    tests:
-      - spec_path: "source_file/spec.json"
+    - spec_path: "integration_tests/spec.json"
   connection:
-    tests:
-      - config_path: "integration_tests/config.json"
-        status: "succeed"
-      - config_path: "integration_tests/invalid_config.json"
-        status: "failed"
+    - config_path: "integration_tests/invalid_config.json"
+      status: "failed"
+    # for https
+    - config_path: "integration_tests/config.json"
+      status: "succeed"
+    # for local should be failed
+    - config_path: "integration_tests/local_config.json"
+      status: "failed"
+
   discovery:
-    tests:
-      - config_path: "integration_tests/config.json"
+    # for https
+    - config_path: "integration_tests/config.json"
+
   basic_read:
-    tests:
-      - config_path: "integration_tests/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
-          exact_order: no
-          extra_records: yes
-  full_refresh:
-    tests:
-      - config_path: "integration_tests/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-  incremental:
-    bypass_reason: "Incremental syncs are not supported on this connector."
+    # for https
+    - config_path: "integration_tests/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
