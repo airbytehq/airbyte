@@ -7,8 +7,6 @@ package io.airbyte.integrations.destination_async;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Responsible for managing global memory across multiple queues in a thread-safe way.

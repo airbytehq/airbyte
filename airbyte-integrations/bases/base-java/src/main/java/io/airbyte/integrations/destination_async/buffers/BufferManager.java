@@ -63,13 +63,6 @@ public class BufferManager {
    */
   public void close() throws Exception {
     debugLoop.shutdownNow();
-    buffers.forEach((desc, buffer) -> {
-      log.info("queue stats -- stream: {} - {} -- records in: {} records out: {}",
-          desc.getNamespace(),
-          desc.getName(),
-          buffer.getRecordsIn(),
-          buffer.getRecordsOut());
-    });
     log.info("Buffers cleared..");
   }
 
