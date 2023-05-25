@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 public class DebeziumPropertiesManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumPropertiesManager.class);
-  public static final String BYTE_VALUE_256_MB = "268435456";
+  private static final String BYTE_VALUE_256_MB = Integer.toString(256 * 1024 * 1024);
   private final JsonNode config;
   private final AirbyteFileOffsetBackingStore offsetManager;
   private final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager;
@@ -55,7 +55,7 @@ public class DebeziumPropertiesManager {
     props.setProperty("max.batch.size", "2048");
     props.setProperty("max.queue.size", "8192");
 
-    // Disabling retries
+    // Disabling retries because debezium startup time might exceed our 60-second wait limit
     // The maximum number of retries on connection errors before failing (-1 = no limit, 0 = disabled, >
     // 0 = num of retries).
     props.setProperty("errors.max.retries", "0");
