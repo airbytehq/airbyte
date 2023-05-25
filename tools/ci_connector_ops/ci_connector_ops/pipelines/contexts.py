@@ -47,6 +47,8 @@ class ContextState(Enum):
 class PipelineContext:
     """The pipeline context is used to store configuration for a specific pipeline run."""
 
+    PRODUCTION = bool(os.environ.get("PRODUCTION", False))  # Set this to True to enable production mode (e.g. to send PR comments)
+
     DEFAULT_EXCLUDED_FILES = (
         [".git"]
         + glob("**/build", recursive=True)
