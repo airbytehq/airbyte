@@ -82,6 +82,7 @@ class AsyncStreamConsumerTest {
   private OnCloseFunction onClose;
   private Consumer<AirbyteMessage> outputRecordCollector;
   private FlushFailure flushFailure;
+  private BufferManager bufferManager;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -92,6 +93,7 @@ class AsyncStreamConsumerTest {
     final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord = mock(CheckedFunction.class);
     outputRecordCollector = mock(Consumer.class);
     flushFailure = mock(FlushFailure.class);
+    bufferManager = mock(BufferManager.class);
     consumer = new AsyncStreamConsumer(
         outputRecordCollector,
         onStart,
@@ -99,7 +101,7 @@ class AsyncStreamConsumerTest {
         flushFunction,
         CATALOG,
         isValidRecord,
-        new BufferManager(),
+        bufferManager,
         flushFailure);
 
     when(isValidRecord.apply(any())).thenReturn(true);
@@ -150,6 +152,12 @@ class AsyncStreamConsumerTest {
     verifyStartAndClose();
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecords);
+  }
+
+  @Test
+  void testShouldBlockWhenQueuesAreFull() throws Exception {
+    consumer.start();
+
   }
 
   @Nested
