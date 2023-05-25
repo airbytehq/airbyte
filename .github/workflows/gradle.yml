@@ -28,17 +28,6 @@ on:
 permissions: write-all
 
 jobs:
-  # COMMON TASKS
-  ensure-images-exist:
-    name: "Ensure all required Docker images exist on Dockerhub"
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-
-      - name: Check images exist
-        run: ./tools/bin/check_images_exist.sh all
   # The output of this job is used to trigger the following builds.
   changes:
     name: "Detect Modified Files"
@@ -218,7 +207,6 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
-
   # Connectors Base
   # In case of self-hosted EC2 errors, remove this block.
   start-connectors-base-build-runner:
@@ -283,7 +271,7 @@ jobs:
         run: python3 -m pip install virtualenv==16.7.9 --user
 
       - name: Install automake
-        run: apt-get install -y automake build-essential libtool libtool-bin autoconf
+        run: apt-get update && apt-get install -y automake build-essential libtool libtool-bin autoconf
 
       - name: Set up CI Gradle Properties
         run: |

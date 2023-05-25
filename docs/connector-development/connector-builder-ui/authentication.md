@@ -26,7 +26,6 @@ If requests are authenticated using the Basic HTTP authentication method, the do
 - "Basic Auth"
 - "Basic HTTP"
 - "Authorization: Basic"
-- "Base64"
 
 The Basic HTTP authentication method is a standard and doesn't require any further configuration. Username and password are set via "Testing values" in the connector builder and by the end user when configuring this connector as a Source.
 
@@ -81,14 +80,15 @@ curl -X GET \
 
 ### OAuth
 
-The OAuth authentication method implements authentication using an [OAuth2.0 flow with a refresh token grant type](https://oauth.net/2/grant-types/refresh-token/).
+The OAuth authentication method implements authentication using an OAuth2.0 flow with a [refresh token grant type](https://oauth.net/2/grant-types/refresh-token/) and [client credentiuals grant type](https://oauth.net/2/grant-types/client-credentials/).
 
-In this scheme, the OAuth endpoint of an API is called with a long-lived refresh token that's provided by the end user when configuring this connector as a Source. The refresh token is used to obtain a short-lived access token that's used to make requests actually extracting records. If the access token expires, the connection will automatically request a new one.
+In this scheme, the OAuth endpoint of an API is called with client id and client secret and/or a long-lived refresh token that's provided by the end user when configuring this connector as a Source. These credentials are used to obtain a short-lived access token that's used to make requests actually extracting records. If the access token expires, the connection will automatically request a new one.
 
-The connector needs to be configured with the endpoint to call to obtain access tokens with the refresh token. OAuth client id/secret and the refresh token are provided via "Testing values" in the connector builder as well as when configuring this connector as a Source.
+The connector needs to be configured with the endpoint to call to obtain access tokens with the client id/secret and/or the refresh token. OAuth client id/secret and the refresh token are provided via "Testing values" in the connector builder as well as when configuring this connector as a Source.
 
 Depending on how the refresh endpoint is implemented exactly, additional configuration might be necessary to specify how to request an access token with the right permissions (configuring OAuth scopes and grant type) and how to extract the access token and the expiry date out of the response (configuring expiry date format and property name as well as the access key property name):
 * **Scopes** - the [OAuth scopes](https://oauth.net/2/scope/) the access token will have access to. if not specified, no scopes are sent along with the refresh token request
+* **Grant type** - the used OAuth grant type (either refresh token or client credentials). In case of refresh_token, a refresh token has to be provided by the end user when configuring the connector as a Source.
 * **Token expiry property name** - the name of the property in the response that contains token expiry information. If not specified, it's set to `expires_in`
 * **Token expire property date format** - if not specified, the expiry property is interpreted as the number of seconds the access token will be valid
 * **Access token property name** - the name of the property in the response that contains the access token to do requests. If not specified, it's set to `access_token`
