@@ -163,7 +163,7 @@ async def run_metadata_validation_pipeline(
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
     metadata_to_validate: Set[Path],
-    pull_request: Optional[PullRequest],
+    pull_request: PullRequest,
 ) -> bool:
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Validate metadata.yaml files",
@@ -196,7 +196,7 @@ async def run_metadata_lib_test_pipeline(
     gha_workflow_run_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
-    pull_request: Optional[PullRequest],
+    pull_request: PullRequest,
 ) -> bool:
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Metadata Service Lib Unit Test Pipeline",
@@ -233,7 +233,7 @@ async def run_metadata_orchestrator_test_pipeline(
     gha_workflow_run_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
-    pull_request: Optional[PullRequest],
+    pull_request: PullRequest,
 ) -> bool:
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Metadata Service Orchestrator Unit Test Pipeline",
@@ -267,7 +267,7 @@ async def run_metadata_upload_pipeline(
     ci_context: Optional[str],
     metadata_to_upload: Set[Path],
     gcs_bucket_name: str,
-    pull_request: Optional[PullRequest],
+    pull_request: PullRequest,
 ) -> bool:
     pipeline_context = PipelineContext(
         pipeline_name="Metadata Upload Pipeline",
@@ -312,7 +312,7 @@ async def run_metadata_orchestrator_deploy_pipeline(
     gha_workflow_run_url: Optional[str],
     pipeline_start_timestamp: Optional[int],
     ci_context: Optional[str],
-    pull_request: Optional[PullRequest],
+    pull_request: PullRequest,
 ) -> bool:
     metadata_pipeline_context = PipelineContext(
         pipeline_name="Metadata Service Orchestrator Unit Test Pipeline",

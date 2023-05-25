@@ -73,7 +73,7 @@ class PipelineContext:
         is_ci_optional: bool = False,
         slack_webhook: Optional[str] = None,
         reporting_slack_channel: Optional[str] = None,
-        pull_request: Optional[PullRequest] = None,
+        pull_request: PullRequest = None,
     ):
         """Initialize a pipeline context.
 
@@ -88,7 +88,7 @@ class PipelineContext:
             is_ci_optional (bool, optional): Whether the CI is optional. Defaults to False.
             slack_webhook (Optional[str], optional): Slack webhook to send messages to. Defaults to None.
             reporting_slack_channel (Optional[str], optional): Slack channel to send messages to. Defaults to None.
-            pull_request (Optional[PullRequest], optional): The pull request object if the pipeline was triggered by a pull request. Defaults to None.
+            pull_request (PullRequest, optional): The pull request object if the pipeline was triggered by a pull request. Defaults to None.
         """
         self.pipeline_name = pipeline_name
         self.is_local = is_local
@@ -281,7 +281,7 @@ class ConnectorContext(PipelineContext):
         ci_context: Optional[str] = None,
         slack_webhook: Optional[str] = None,
         reporting_slack_channel: Optional[str] = None,
-        pull_request: Optional[PullRequest] = None,
+        pull_request: PullRequest = None,
     ):
         """Initialize a connector context.
 
@@ -299,7 +299,7 @@ class ConnectorContext(PipelineContext):
             ci_context (Optional[str], optional): Pull requests, workflow dispatch or nightly build. Defaults to None.
             slack_webhook (Optional[str], optional): The slack webhook to send messages to. Defaults to None.
             reporting_slack_channel (Optional[str], optional): The slack channel to send messages to. Defaults to None.
-            pull_request (Optional[PullRequest], optional): The pull request object if the pipeline was triggered by a pull request. Defaults to None.
+            pull_request (PullRequest, optional): The pull request object if the pipeline was triggered by a pull request. Defaults to None.
         """
 
         self.pipeline_name = pipeline_name
@@ -453,7 +453,7 @@ class PublishConnectorContext(ConnectorContext):
         gha_workflow_run_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
-        pull_request: Optional[PullRequest] = None,
+        pull_request: PullRequest = None,
     ):
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
