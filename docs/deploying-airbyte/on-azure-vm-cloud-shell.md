@@ -85,7 +85,7 @@ Download Airbyte and deploy it in the VM using Docker Compose:
 
    ```bash
    chmod +x run-ab-platform.sh
-   ./run-ab-platform.sh
+   ./run-ab-platform.sh -b
    ```
 
 ## Connect to Airbyte
