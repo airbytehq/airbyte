@@ -97,6 +97,10 @@ public class BufferDequeue {
     return new HashSet<>(buffers.keySet());
   }
 
+  public long getMaxQueueSizeBytes() {
+    return memoryManager.getMaxMemoryBytes();
+  }
+
   public long getTotalGlobalQueueSizeBytes() {
     return buffers.values().stream().map(StreamAwareQueue::getCurrentMemoryUsage).mapToLong(Long::longValue).sum();
   }
