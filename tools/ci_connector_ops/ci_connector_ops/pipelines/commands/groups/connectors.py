@@ -12,7 +12,6 @@ from typing import Any, Dict, Tuple
 
 import anyio
 import click
-import dagger
 from ci_connector_ops.pipelines.builds import run_connector_build_pipeline
 from ci_connector_ops.pipelines.contexts import ConnectorContext, ContextState, PublishConnectorContext
 from ci_connector_ops.pipelines.github import update_global_commit_status_check_for_tests
@@ -177,7 +176,7 @@ def test(
             ctx.obj["concurrency"],
             ctx.obj["execute_timeout"],
         )
-    except dagger.DaggerError as e:
+    except Exception as e:
         click.secho(str(e), err=True, fg="red")
         update_global_commit_status_check_for_tests(ctx.obj, "failure")
         return False
