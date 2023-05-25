@@ -1,0 +1,9 @@
+{
+  "authorization": {
+    "refresh_token": "refresh_token",
+    "client_id": "client_id",
+    "client_secret": "client_secret",
+    "auth_type": "oauth2.0"
+  },
+  "replication_start_date": "2021-06-01T10:10:10Z"
+}

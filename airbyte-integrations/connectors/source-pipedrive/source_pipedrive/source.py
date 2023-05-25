@@ -93,7 +93,7 @@ class SourcePipedrive(AbstractSource):
     def get_authenticator(config: Mapping[str, Any]):
         authorization = config.get("authorization")
         if authorization:
-            if authorization["auth_type"] == "Client":
+            if authorization["auth_type"] == "oauth2.0":
                 return Oauth2Authenticator(
                     token_refresh_endpoint="https://oauth.pipedrive.com/oauth/token",
                     client_id=authorization["client_id"],
