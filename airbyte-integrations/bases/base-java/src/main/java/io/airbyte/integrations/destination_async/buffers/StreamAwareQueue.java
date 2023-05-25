@@ -64,14 +64,6 @@ public class StreamAwareQueue {
     return memoryAwareQueue.poll(timeout, unit);
   }
 
-  public long getRecordsIn() {
-    return memoryAwareQueue.getRecordsIn();
-  }
-
-  public long getRecordsOut() {
-    return memoryAwareQueue.getRecordsOut();
-  }
-
   public record MessageWithMeta(AirbyteMessage message, long stateId) {}
 
 }

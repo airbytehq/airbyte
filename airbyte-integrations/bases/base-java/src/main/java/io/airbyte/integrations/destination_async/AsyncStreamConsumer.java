@@ -37,8 +37,6 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AsyncStreamConsumer.class);
 
-  private static long counter = 0L;
-
   private final OnStartFunction onStart;
   private final OnCloseFunction onClose;
   private final ConfiguredAirbyteCatalog catalog;
@@ -113,7 +111,6 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     }
 
     bufferEnqueue.addRecord(message);
-    counter++;
   }
 
   @Override
@@ -133,7 +130,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
     // as this throws an exception, we need to be after all other close functions.
     propagateFlushWorkerExceptionIfPresent();
-    LOGGER.info("{} closed and saw {} records", AsyncStreamConsumer.class, counter);
+    LOGGER.info("{} closed", AsyncStreamConsumer.class);
   }
 
   private void propagateFlushWorkerExceptionIfPresent() throws Exception {
