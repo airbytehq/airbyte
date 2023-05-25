@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Optional
 
+from ci_connector_ops.pipelines.contexts import CIContext
 from ci_connector_ops.utils import console
 
 if TYPE_CHECKING:
@@ -17,6 +18,8 @@ if TYPE_CHECKING:
 from github import Github
 
 AIRBYTE_GITHUB_REPO = "airbytehq/airbyte"
+GITHUB_GLOBAL_CONTEXT_FOR_TESTS = "Connectors CI tests"
+GITHUB_GLOBAL_DESCRIPTION_FOR_TESTS = "Running connectors tests"
 
 
 def safe_log(logger: Optional[Logger], message: str, level: str = "info") -> None:
@@ -70,3 +73,15 @@ def update_commit_status_check(
         context=context,
     )
     safe_log(logger, f"Created {state} status for commit {sha} on Github in {context} context with desc: {description}.")
+
+
+def update_global_commit_status_check_for_tests(click_context: dict, github_state: str, logger: Logger = None):
+    update_commit_status_check(
+        click_context["git_revision"],
+        github_state,
+        click_context["gha_workflow_run_url"],
+        GITHUB_GLOBAL_DESCRIPTION_FOR_TESTS,
+        GITHUB_GLOBAL_CONTEXT_FOR_TESTS,
+        should_send=click_context.get("ci_context") == CIContext.PULL_REQUEST,
+        logger=logger,
+    )

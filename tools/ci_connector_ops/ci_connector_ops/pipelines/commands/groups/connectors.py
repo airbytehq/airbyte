@@ -14,8 +14,8 @@ import anyio
 import click
 import dagger
 from ci_connector_ops.pipelines.builds import run_connector_build_pipeline
-from ci_connector_ops.pipelines.contexts import CIContext, ConnectorContext, ContextState, PublishConnectorContext
-from ci_connector_ops.pipelines.github import update_commit_status_check
+from ci_connector_ops.pipelines.contexts import ConnectorContext, ContextState, PublishConnectorContext
+from ci_connector_ops.pipelines.github import update_global_commit_status_check_for_tests
 from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_pipelines
 from ci_connector_ops.pipelines.publish import run_connector_publish_pipeline
 from ci_connector_ops.pipelines.tests import run_connector_test_pipeline
@@ -24,11 +24,6 @@ from ci_connector_ops.utils import ConnectorLanguage, console, get_all_released_
 from rich.logging import RichHandler
 from rich.table import Table
 from rich.text import Text
-
-# CONSTANTS
-
-GITHUB_GLOBAL_CONTEXT = "Connectors CI tests"
-GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
 
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
 
@@ -107,15 +102,6 @@ def connectors(
     ctx.obj["modified"] = modified
     ctx.obj["concurrency"] = concurrency
     ctx.obj["execute_timeout"] = execute_timeout
-    update_commit_status_check(
-        ctx.obj["git_revision"],
-        "pending",
-        ctx.obj["gha_workflow_run_url"],
-        GITHUB_GLOBAL_DESCRIPTION,
-        GITHUB_GLOBAL_CONTEXT,
-        should_send=ctx.obj["ci_context"] == CIContext.PULL_REQUEST,
-        logger=logger,
-    )
 
     all_connectors = get_all_released_connectors()
 
@@ -153,18 +139,6 @@ def connectors(
     ctx.obj["selected_connectors_names"] = [c.technical_name for c in selected_connectors_and_files.keys()]
 
 
-def update_global_commit_status_check(click_context: dict, github_state: str):
-    update_commit_status_check(
-        click_context["git_revision"],
-        github_state,
-        click_context["gha_workflow_run_url"],
-        GITHUB_GLOBAL_DESCRIPTION,
-        GITHUB_GLOBAL_CONTEXT,
-        should_send=click_context.get("ci_context") == CIContext.PULL_REQUEST,
-        logger=logger,
-    )
-
-
 @connectors.command(cls=DaggerPipelineCommand, help="Test all the selected connectors.")
 @click.pass_context
 def test(
@@ -176,7 +150,7 @@ def test(
         ctx (click.Context): The click context.
     """
     click.secho(f"Will run the test pipeline for the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
-    update_global_commit_status_check(ctx.obj, "pending")
+    update_global_commit_status_check_for_tests(ctx.obj, "pending")
 
     connectors_tests_contexts = [
         ConnectorContext(
@@ -205,10 +179,10 @@ def test(
         )
     except dagger.DaggerError as e:
         click.secho(str(e), err=True, fg="red")
-        update_global_commit_status_check(ctx.obj, "failure")
+        update_global_commit_status_check_for_tests(ctx.obj, "failure")
         return False
     global_success = all(connector_context.state is ContextState.SUCCESSFUL for connector_context in connectors_tests_contexts)
-    update_global_commit_status_check(ctx.obj, "success" if global_success else "failure")
+    update_global_commit_status_check_for_tests(ctx.obj, "success" if global_success else "failure")
     # If we reach this point, it means that all the connectors have been tested so the pipeline did its job and can exit with success.
     return True
 
