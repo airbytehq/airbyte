@@ -42,26 +42,19 @@ class AsyncFlush implements DestinationFlushFunction {
     this.catalog = catalog;
   }
 
-  // todo(davin): exceptions are too broad.
   @Override
   public void flush(final StreamDescriptor decs, final Stream<AirbyteMessage> stream) throws Exception {
-    // write this to a file - serilizable buffer?
-    // where do we create all the write configs?
-    log.info("Starting staging flush..");
     final CsvSerializedBuffer writer;
-    final AtomicInteger counter = new AtomicInteger();
     try {
       writer = new CsvSerializedBuffer(
           new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
           new StagingDatabaseCsvSheetGenerator(),
           true);
 
-      log.info("Converting to CSV file..");
       // reassign as lambdas require references to be final.
       stream.forEach(record -> {
         try {
           writer.accept(record.getRecord());
-          counter.getAndIncrement();
         } catch (final Exception e) {
           throw new RuntimeException(e);
         }
@@ -70,9 +63,8 @@ class AsyncFlush implements DestinationFlushFunction {
       throw new RuntimeException(e);
     }
 
-    log.info("Converted to CSV file..");
     writer.flush();
-    log.info("Flushing buffer for stream {} ({}) to staging", decs.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
+    log.info("Flushing CSV buffer for stream {} ({}) to staging", decs.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
     if (!streamDescToWriteConfig.containsKey(decs)) {
       throw new IllegalArgumentException(
           String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));
@@ -85,12 +77,10 @@ class AsyncFlush implements DestinationFlushFunction {
         stagingOperations.getStagingPath(StagingConsumerFactory.RANDOM_CONNECTION_ID, schemaName, writeConfig.getStreamName(),
             writeConfig.getWriteDatetime());
     try {
-      log.info("Starting upload to stage..");
       final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
       GeneralStagingFunctions.copyIntoTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(),
           schemaName,
           stagingOperations);
-      log.info("Uploaded and copied {} records:", counter.get());
     } catch (final Exception e) {
       log.error("Failed to flush and commit buffer data into destination's raw table", e);
       throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
