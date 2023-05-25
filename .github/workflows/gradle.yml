@@ -213,7 +213,7 @@ jobs:
     steps:
       - name: Get PR branch
         uses: xt0rted/pull-request-comment-branch@v1
-        id: duy/code-coverage
+        id: comment-branch
 
       - name: Checkout PR branch
         uses: actions/checkout@v3
