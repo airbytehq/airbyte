@@ -149,7 +149,7 @@ public class FlushWorkers implements AutoCloseable {
         // when we are closing, flush regardless of how few items are in the queue.
         final long computedQueueThreshold = isClosing.get() ? 0 : QUEUE_FLUSH_THRESHOLD_BYTES;
 
-        final Optional<StreamDescriptor> next = getNext(computedQueueThreshold);
+        final Optional<StreamDescriptor> next = getNextStreamToFlush(computedQueueThreshold);
 
         if (next.isPresent()) {
           final StreamDescriptor desc = next.get();
@@ -171,7 +171,7 @@ public class FlushWorkers implements AutoCloseable {
     }
   }
 
-  private Optional<StreamDescriptor> getNext(final long queueSizeThresholdBytes) {
+  private Optional<StreamDescriptor> getNextStreamToFlush(final long queueSizeThresholdBytes) {
     // todo (cgardens) - prefer finding a new stream over flushing more records from a stream that's
     // already flushing. this random is a lazy verison of this.
     final ArrayList<StreamDescriptor> shuffled = new ArrayList<>(bufferDequeue.getBufferedStreams());
