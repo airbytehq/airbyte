@@ -4,7 +4,7 @@ plugins {
 
 configurations.all {
     resolutionStrategy {
-        force 'org.codehaus.jettison:jettison:1.5.4', 'org.eclipse.jetty.websocket:websocket-client:9.4.51.v20230217'
+        force 'org.codehaus.jettison:jettison:1.5.4', 'org.eclipse.jetty.websocket:websocket-client:9.4.51.v20230217', libs.jsonsmart
     }
 }
 
@@ -35,9 +35,11 @@ dependencies {
         exclude group: 'org.apache.hadoop.thirdparty', module: 'hadoop-shaded-guava'
         // https://nvd.nist.gov/vuln/detail/CVE-2023-26048
         exclude group: 'org.eclipse.jetty', module: 'jetty-server'
+        // https://nvd.nist.gov/vuln/detail/CVE-2023-1370
+        exclude group: 'net.minidev', module: 'json-smart'
     }
     implementation ('org.apache.hadoop:hadoop-aws:3.3.5') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
-
+    implementation ('org.jetbrains.kotlin:kotlin-stdlib:1.8.21')
     implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.5') {
         exclude group: 'org.slf4j', module: 'slf4j-log4j12'
         exclude group: 'org.slf4j', module: 'slf4j-reload4j'
@@ -47,6 +49,8 @@ dependencies {
         exclude group: 'org.apache.hadoop.thirdparty', module: 'hadoop-shaded-protobuf_3_7'
         // https://nvd.nist.gov/vuln/detail/CVE-2023-26048 via org.eclipse.jetty:jetty-io:9.4.48.v20220622
         exclude group: 'org.eclipse.jetty.websocket', module: 'websocket-client'
+        // https://nvd.nist.gov/vuln/detail/CVE-2022-24329
+        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib'
     }
 
     implementation ('org.apache.parquet:parquet-avro:1.13.1') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
