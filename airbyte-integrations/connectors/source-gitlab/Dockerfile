@@ -13,5 +13,6 @@ COPY main.py ./
 
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
+LABEL io.airbyte.version=1.2.0
 LABEL io.airbyte.version=1.1.1
 LABEL io.airbyte.name=airbyte/source-gitlab
