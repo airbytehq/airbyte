@@ -36,6 +36,12 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.apache.commons.lang.RandomStringUtils;
@@ -82,7 +88,6 @@ class AsyncStreamConsumerTest {
   private OnCloseFunction onClose;
   private Consumer<AirbyteMessage> outputRecordCollector;
   private FlushFailure flushFailure;
-  private BufferManager bufferManager;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -93,7 +98,6 @@ class AsyncStreamConsumerTest {
     final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord = mock(CheckedFunction.class);
     outputRecordCollector = mock(Consumer.class);
     flushFailure = mock(FlushFailure.class);
-    bufferManager = mock(BufferManager.class);
     consumer = new AsyncStreamConsumer(
         outputRecordCollector,
         onStart,
@@ -101,7 +105,7 @@ class AsyncStreamConsumerTest {
         flushFunction,
         CATALOG,
         isValidRecord,
-        bufferManager,
+        new BufferManager(),
         flushFailure);
 
     when(isValidRecord.apply(any())).thenReturn(true);
@@ -158,6 +162,57 @@ class AsyncStreamConsumerTest {
   void testShouldBlockWhenQueuesAreFull() throws Exception {
     consumer.start();
 
+  }
+
+  /*
+   * Tests that the consumer will block when the buffer is full. Achieves this by setting optimal
+   * batch size to 0, so the flush worker never actually pulls anything from the queue.
+   */
+  @Test
+  void testBackPressure() throws Exception {
+    flushFunction = mock(DestinationFlushFunction.class);
+    flushFailure = mock(FlushFailure.class);
+    consumer = new AsyncStreamConsumer(
+        m -> {},
+        () -> {},
+        () -> {},
+        flushFunction,
+        CATALOG,
+        m -> true,
+        new BufferManager(1024 * 10),
+        flushFailure);
+    when(flushFunction.getOptimalBatchSizeBytes()).thenReturn(0L);
+
+    final AtomicLong recordCount = new AtomicLong();
+
+    consumer.start();
+
+    final ExecutorService executor = Executors.newSingleThreadExecutor();
+    while (true) {
+      final Future<?> future = executor.submit(() -> {
+        try {
+          consumer.accept(new AirbyteMessage()
+              .withType(Type.RECORD)
+              .withRecord(new AirbyteRecordMessage()
+                  .withStream(STREAM_NAME)
+                  .withNamespace(SCHEMA_NAME)
+                  .withEmittedAt(Instant.now().toEpochMilli())
+                  .withData(Jsons.jsonNode(recordCount.getAndIncrement()))));
+        } catch (final Exception e) {
+          throw new RuntimeException(e);
+        }
+      });
+
+      try {
+        future.get(1, TimeUnit.SECONDS);
+      } catch (final TimeoutException e) {
+        future.cancel(true); // Stop the operation running in thread
+        break;
+      }
+    }
+    executor.shutdownNow();
+
+    assertTrue(recordCount.get() < 1000, String.format("Record count was %s", recordCount.get()));
   }
 
   @Nested

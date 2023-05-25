@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -25,15 +25,22 @@ public class FlushWorkersTest {
 
   @Test
   void testErrorHandling() throws Exception {
+    final AtomicBoolean hasThrownError = new AtomicBoolean(false);
     final var desc = new StreamDescriptor().withName("test");
     final var dequeue = mock(BufferDequeue.class);
     when(dequeue.getBufferedStreams()).thenReturn(Set.of(desc));
-    when(dequeue.take(desc, 1000)).thenReturn(new MemoryAwareMessageBatch(List.of(), 0, null, null));
-    when(dequeue.getQueueSizeInRecords(desc)).thenReturn(Optional.of(1L));
-    final var collector = mock(Consumer.class);
+    when(dequeue.take(desc, 1000)).thenReturn(new MemoryAwareMessageBatch(List.of(), 10, null, null));
+    when(dequeue.getQueueSizeBytes(desc)).thenReturn(Optional.of(10L));
+    when(dequeue.getQueueSizeInRecords(desc)).thenAnswer(ignored -> {
+      if (hasThrownError.get()) {
+        return Optional.of(0L);
+      } else {
+        return Optional.of(1L);
+      }
+    });
 
     final var flushFailure = new FlushFailure();
-    final var workers = new FlushWorkers(dequeue, new ErrorOnFlush(), collector, flushFailure);
+    final var workers = new FlushWorkers(dequeue, new ErrorOnFlush(hasThrownError), m -> {}, flushFailure);
     workers.start();
     workers.close();
 
@@ -43,8 +50,15 @@ public class FlushWorkersTest {
 
   private static class ErrorOnFlush implements DestinationFlushFunction {
 
+    private final AtomicBoolean hasThrownError;
+
+    public ErrorOnFlush(final AtomicBoolean hasThrownError) {
+      this.hasThrownError = hasThrownError;
+    }
+
     @Override
-    public void flush(final StreamDescriptor decs, final Stream<AirbyteMessage> stream) throws Exception {
+    public void flush(final StreamDescriptor desc, final Stream<AirbyteMessage> stream) throws Exception {
+      hasThrownError.set(true);
       throw new IOException("Error on flush");
     }
 
