@@ -207,6 +207,36 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
+  run-code-coverage:
+    runs-on: ubuntu-latest
+    if: github.event.issue.pull_request
+    steps:
+      - name: Get PR branch
+        uses: xt0rted/pull-request-comment-branch@v1
+        id: duy/code-coverage
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ steps.comment-branch.outputs.head_ref }}
+
+      - name: Run Coverage
+        run: ./gradlew :airbyte-integrations:connectors:source-postgres:jacocoTestReport
+
+      - name: Add coverage to PR
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.3
+        with:
+          # todo(mfsiega-airbyte): when v1.4 is released, use wildcards per https://github.com/Madrapps/jacoco-report/issues/20.
+          paths: |
+            ${{ env.WORKING_DIRECTORY }}/airbyte-integrations/connectors/source-postgres/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 25
+          min-coverage-changed-files: 60
+          title: Airbyte Code Coverage
+          update-comment: true
+          debug-mode: false
+
   # Connectors Base
   # In case of self-hosted EC2 errors, remove this block.
   start-connectors-base-build-runner:
@@ -286,21 +316,6 @@ jobs:
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
           EOF
-
-      - name: Add coverage to PR
-        if: github.event_name == 'pull_request'
-        id: jacoco
-        uses: madrapps/jacoco-report@v1.3
-        with:
-          # todo(mfsiega-airbyte): when v1.4 is released, use wildcards per https://github.com/Madrapps/jacoco-report/issues/20.
-          paths: |
-            ${{ env.WORKING_DIRECTORY }}/airbyte-integrations/connectors/source-postgres/build/reports/jacoco/test/jacocoTestReport.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 25
-          min-coverage-changed-files: 60
-          title: Airbyte Code Coverage
-          update-comment: true
-          debug-mode: false
 
       - name: Generate Template scaffold
         uses: Wandalen/wretry.action@master
