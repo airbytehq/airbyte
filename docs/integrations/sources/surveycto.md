@@ -46,4 +46,5 @@ The SurveyCTO source connector supports the following streams:
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
+| 0.1.1   | 2023-04-25 | [24784](https://github.com/airbytehq/airbyte/pull/24784)   | Fix incremental sync       |
 | 0.1.0   | 2022-11-16 | [19371](https://github.com/airbytehq/airbyte/pull/19371)   | SurveyCTO Source Connector |

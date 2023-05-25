@@ -23,10 +23,12 @@ properties:
       - license
       - supportUrl
       - githubIssueLabel
-      - sourceType
+      - connectorSubtype
       - releaseStage
     properties:
       name:
+        type: string
+      icon:
         type: string
       definitionId:
         type: string
@@ -51,8 +53,25 @@ properties:
         format: uri
       githubIssueLabel:
         type: string
-      sourceType:
+      maxSecondsBetweenMessages:
+        description: Maximum delay between 2 airbyte protocol messages, in second. The source will timeout if this delay is reached
+        type: integer
+      releaseDate:
+        description: The date when this connector was first released, in yyyy-mm-dd format.
         type: string
+        format: date
+      protocolVersion:
+        type: string
+        description: the Airbyte Protocol version supported by the connector
+      connectorSubtype:
+        type: string
+        enum:
+          - api
+          - database
+          - file
+          - custom
+          - message_queue
+          - unknown
       releaseStage:
         type: string
         enum:
@@ -61,17 +80,17 @@ properties:
           - generally_available
           - source
 
-      catalogs:
+      registries:
         anyOf:
           - type: object
             additionalProperties: false
             properties:
               oss:
                 anyOf:
-                  - "$ref": CatalogOverrides.yaml
+                  - "$ref": RegistryOverrides.yaml
               cloud:
                 anyOf:
-                  - "$ref": CatalogOverrides.yaml
+                  - "$ref": RegistryOverrides.yaml
 
       allowedHosts:
         "$ref": AllowedHosts.yaml

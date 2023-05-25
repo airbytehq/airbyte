@@ -15,7 +15,7 @@ import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.commons.protocol.DefaultProtocolSerializer;
 import io.airbyte.commons.protocol.ProtocolSerializer;
-import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.configoss.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.TestHarnessUtils;

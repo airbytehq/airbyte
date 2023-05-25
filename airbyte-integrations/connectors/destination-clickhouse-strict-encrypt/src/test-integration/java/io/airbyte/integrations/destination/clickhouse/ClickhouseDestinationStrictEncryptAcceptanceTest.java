@@ -92,6 +92,11 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   }
 
   @Override
+  protected String getDestinationDefinitionKey() {
+    return "airbyte/destination-clickhouse";
+  }
+
+  @Override
   protected String getDefaultSchema(final JsonNode config) {
     if (config.get(JdbcUtils.DATABASE_KEY) == null) {
       return null;
@@ -184,6 +189,7 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
     db.close();
   }
 
+  @Override
   @ParameterizedTest
   @ArgumentsSource(DataTypeTestArgumentProvider.class)
   public void testDataTypeTestWithNormalization(final String messagesFilename,

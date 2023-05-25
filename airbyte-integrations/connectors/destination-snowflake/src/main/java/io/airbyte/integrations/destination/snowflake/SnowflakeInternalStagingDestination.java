@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
+import static io.airbyte.integrations.destination.snowflake.SnowflakeDestinationResolver.getNumberOfFileBuffers;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -116,7 +118,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         getDatabase(getDataSource(config)),
         new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
         getNamingResolver(),
-        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX)),
+        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
         config,
         catalog,
         true);

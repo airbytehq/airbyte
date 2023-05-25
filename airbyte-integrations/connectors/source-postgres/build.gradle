@@ -7,12 +7,11 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.postgres.PostgresSourceRunner'
+    mainClass = 'io.airbyte.integrations.source.postgres.PostgresSource'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {
-    implementation 'io.debezium:debezium-api:2.1.2.Final'
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:bases:debezium')
@@ -28,6 +27,7 @@ dependencies {
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation project(":airbyte-json-validation")
     testImplementation project(':airbyte-test-utils')
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
     testImplementation libs.connectors.testcontainers.jdbc
     testImplementation libs.connectors.testcontainers.postgresql
     testImplementation libs.junit.jupiter.system.stubs

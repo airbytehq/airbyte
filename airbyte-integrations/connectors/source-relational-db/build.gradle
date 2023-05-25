@@ -11,7 +11,7 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-json-validation')
-    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config-oss:config-models-oss')
 
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation libs.bundles.datadog

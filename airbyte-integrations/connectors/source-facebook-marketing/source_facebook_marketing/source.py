@@ -8,11 +8,12 @@ from typing import Any, List, Mapping, Optional, Tuple, Type
 import facebook_business
 import pendulum
 import requests
-from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
+from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, FailureType, OAuth2Specification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.utils import AirbyteTracedException
 from pydantic.error_wrappers import ValidationError
-from source_facebook_marketing.api import API
+from source_facebook_marketing.api import API, FacebookAPIException
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
     Activities,
@@ -59,12 +60,14 @@ class SourceFacebookMarketing(AbstractSource):
         try:
             config = self._validate_and_transform(config)
 
+            if config.end_date > pendulum.now():
+                return False, "Date range can not be in the future."
             if config.end_date < config.start_date:
                 return False, "end_date must be equal or after start_date."
 
             api = API(account_id=config.account_id, access_token=config.access_token)
             logger.info(f"Select account {api.account}")
-        except (requests.exceptions.RequestException, ValidationError) as e:
+        except (requests.exceptions.RequestException, ValidationError, FacebookAPIException) as e:
             return False, e
 
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
@@ -189,11 +192,14 @@ class SourceFacebookMarketing(AbstractSource):
             insight_fields = set(insight.fields)
             if insight_fields.intersection(UNSUPPORTED_FIELDS):
                 # https://github.com/airbytehq/oncall/issues/1137
-                mes = (
-                    f"Please remove Following fields from the Custom {insight.name} fields list due to possible "
-                    f"errors on Facebook side: {insight_fields.intersection(UNSUPPORTED_FIELDS)}"
+                message = (
+                    f"The custom fields `{insight_fields.intersection(UNSUPPORTED_FIELDS)}` are not a valid configuration for"
+                    f" `{insight.name}'. Review Facebook Marketing's docs https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/ for valid breakdowns."
                 )
-                raise ValueError(mes)
+                raise AirbyteTracedException(
+                    message=message,
+                    failure_type=FailureType.config_error,
+                )
             stream = AdsInsights(
                 api=api,
                 name=f"Custom{insight.name}",

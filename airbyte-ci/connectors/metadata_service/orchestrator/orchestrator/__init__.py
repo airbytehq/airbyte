@@ -1,56 +1,64 @@
-from dagster import Definitions
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+from dagster import Definitions, load_assets_from_modules
 
-from .resources.gcp_resources import gcp_gcs_client, gcs_bucket_manager, gcs_file_manager, gcs_file_blob
-from .assets.catalog_assets import (
-    oss_destinations_dataframe,
-    cloud_destinations_dataframe,
-    oss_sources_dataframe,
-    cloud_sources_dataframe,
-    latest_oss_catalog_dict,
-    latest_cloud_catalog_dict,
-    all_sources_dataframe,
-    all_destinations_dataframe,
-    connector_catalog_location_markdown,
-    connector_catalog_location_html,
+from orchestrator.resources.gcp import gcp_gcs_client, gcs_bucket_manager, gcs_directory_blobs, gcs_file_blob, gcs_file_manager
+from orchestrator.resources.github import github_client, github_connector_repo, github_connectors_directory
+
+from orchestrator.assets import (
+    github,
+    specs_secrets_mask,
+    spec_cache,
+    registry,
+    registry_report,
+    metadata,
 )
-from .jobs.catalog_jobs import generate_catalog_markdown
-from .sensors.catalog_sensors import catalog_updated_sensor
 
-from .config import REPORT_FOLDER, CATALOG_FOLDER
+from orchestrator.jobs.registry import generate_registry_reports, generate_registry
+from orchestrator.sensors.registry import registry_updated_sensor
+from orchestrator.sensors.metadata import metadata_updated_sensor
 
+from orchestrator.config import REPORT_FOLDER, REGISTRIES_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME
+from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 
-ASSETS = [
-    oss_destinations_dataframe,
-    cloud_destinations_dataframe,
-    oss_sources_dataframe,
-    cloud_sources_dataframe,
-    latest_oss_catalog_dict,
-    latest_cloud_catalog_dict,
-    all_sources_dataframe,
-    all_destinations_dataframe,
-    connector_catalog_location_markdown,
-    connector_catalog_location_html,
-]
+ASSETS = load_assets_from_modules(
+    [
+        github,
+        specs_secrets_mask,
+        spec_cache,
+        metadata,
+        registry,
+        registry_report,
+    ]
+)
+
 
 RESOURCES = {
+    "github_client": github_client.configured({"github_token": {"env": "GITHUB_METADATA_SERVICE_TOKEN"}}),
+    "github_connector_repo": github_connector_repo.configured({"connector_repo_name": CONNECTOR_REPO_NAME}),
+    "github_connectors_directory": github_connectors_directory.configured({"connectors_path": CONNECTORS_PATH}),
     "gcp_gcs_client": gcp_gcs_client.configured(
         {
             "gcp_gcs_cred_string": {"env": "GCS_CREDENTIALS"},
         }
     ),
     "gcs_bucket_manager": gcs_bucket_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}}),
-    "catalog_report_directory_manager": gcs_file_manager.configured(
-        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "gcs_prefix": REPORT_FOLDER}
-    ),
-    "latest_oss_catalog_gcs_file": gcs_file_blob.configured({"gcs_prefix": CATALOG_FOLDER, "gcs_filename": "oss_catalog.json"}),
-    "latest_cloud_catalog_gcs_file": gcs_file_blob.configured({"gcs_prefix": CATALOG_FOLDER, "gcs_filename": "cloud_catalog.json"}),
+    "registry_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER}),
+    "registry_report_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REPORT_FOLDER}),
+    "latest_metadata_file_blobs": gcs_directory_blobs.configured({"prefix": METADATA_FOLDER, "suffix": f"latest/{METADATA_FILE_NAME}"}),
+    "latest_oss_registry_gcs_blob": gcs_file_blob.configured({"prefix": REGISTRIES_FOLDER, "gcs_filename": "oss_registry.json"}),
+    "latest_cloud_registry_gcs_blob": gcs_file_blob.configured({"prefix": REGISTRIES_FOLDER, "gcs_filename": "cloud_registry.json"}),
 }
 
-SENSORS = [catalog_updated_sensor(job=generate_catalog_markdown, resources_def=RESOURCES)]
+SENSORS = [
+    registry_updated_sensor(job=generate_registry_reports, resources_def=RESOURCES),
+    metadata_updated_sensor(job=generate_registry, resources_def=RESOURCES),
+]
 
 SCHEDULES = []
 
-JOBS = [generate_catalog_markdown]
+JOBS = [generate_registry_reports, generate_registry]
 
 """
 START HERE

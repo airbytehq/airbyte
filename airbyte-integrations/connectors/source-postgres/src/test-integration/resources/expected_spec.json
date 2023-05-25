@@ -68,15 +68,6 @@
         "group": "advanced",
         "pattern_descriptor": "key1=value1&key2=value2"
       },
-      "ssl": {
-        "title": "Connect using SSL",
-        "description": "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
-        "type": "boolean",
-        "default": false,
-        "order": 7,
-        "group": "security",
-        "always_show": true
-      },
       "ssl_mode": {
         "title": "SSL Modes",
         "description": "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
@@ -149,7 +140,7 @@
               },
               "ca_certificate": {
                 "type": "string",
-                "title": "CA certificate",
+                "title": "CA Certificate",
                 "description": "CA certificate",
                 "airbyte_secret": true,
                 "multiline": true,
@@ -161,7 +152,8 @@
                 "description": "Client certificate",
                 "airbyte_secret": true,
                 "multiline": true,
-                "order": 2
+                "order": 2,
+                "always_show": true
               },
               "client_key": {
                 "type": "string",
@@ -169,7 +161,8 @@
                 "description": "Client key",
                 "airbyte_secret": true,
                 "multiline": true,
-                "order": 3
+                "order": 3,
+                "always_show": true
               },
               "client_key_password": {
                 "type": "string",
@@ -205,7 +198,8 @@
                 "description": "Client certificate",
                 "airbyte_secret": true,
                 "multiline": true,
-                "order": 2
+                "order": 2,
+                "always_show": true
               },
               "client_key": {
                 "type": "string",
@@ -213,7 +207,8 @@
                 "description": "Client key",
                 "airbyte_secret": true,
                 "multiline": true,
-                "order": 3
+                "order": 3,
+                "always_show": true
               },
               "client_key_password": {
                 "type": "string",

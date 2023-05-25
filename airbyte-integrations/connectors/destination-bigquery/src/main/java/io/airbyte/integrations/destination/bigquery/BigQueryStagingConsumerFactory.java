@@ -7,15 +7,14 @@ package io.airbyte.integrations.destination.bigquery;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.commons.functional.CheckedBiConsumer;
-import io.airbyte.commons.functional.CheckedBiFunction;
-import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
+import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
+import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
+import io.airbyte.integrations.destination.record_buffer.FlushBufferFunction;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
@@ -44,7 +43,7 @@ public class BigQueryStagingConsumerFactory {
                                        final ConfiguredAirbyteCatalog catalog,
                                        final Consumer<AirbyteMessage> outputRecordCollector,
                                        final BigQueryStagingOperations bigQueryGcsOperations,
-                                       final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
+                                       final BufferCreateFunction onCreateBuffer,
                                        final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
                                        final Function<String, String> tmpTableNameTransformer,
                                        final Function<String, String> targetTableNameTransformer) {
@@ -110,8 +109,8 @@ public class BigQueryStagingConsumerFactory {
    * @param writeConfigs configuration settings used to describe how to write data and where it exists
    * @return
    */
-  private VoidCallable onStartFunction(final BigQueryStagingOperations bigQueryGcsOperations,
-                                       final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs) {
+  private OnStartFunction onStartFunction(final BigQueryStagingOperations bigQueryGcsOperations,
+                                          final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs) {
     return () -> {
       LOGGER.info("Preparing airbyte_raw tables in destination started for {} streams", writeConfigs.size());
       for (final BigQueryWriteConfig writeConfig : writeConfigs.values()) {
@@ -140,9 +139,10 @@ public class BigQueryStagingConsumerFactory {
    * @param writeConfigs book keeping configurations for writing and storing state to write records
    * @param catalog configured Airbyte catalog
    */
-  private CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> flushBufferFunction(final BigQueryStagingOperations bigQueryGcsOperations,
-                                                                                                               final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                                                                                               final ConfiguredAirbyteCatalog catalog) {
+  private FlushBufferFunction flushBufferFunction(
+                                                  final BigQueryStagingOperations bigQueryGcsOperations,
+                                                  final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                                  final ConfiguredAirbyteCatalog catalog) {
     return (pair, writer) -> {
       LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!writeConfigs.containsKey(pair)) {
@@ -178,8 +178,8 @@ public class BigQueryStagingConsumerFactory {
    * @param writeConfigs configuration settings used to describe how to write data and where it exists
    * @return
    */
-  private CheckedConsumer<Boolean, Exception> onCloseFunction(final BigQueryStagingOperations bigQueryGcsOperations,
-                                                              final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs) {
+  private OnCloseFunction onCloseFunction(final BigQueryStagingOperations bigQueryGcsOperations,
+                                          final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs) {
     return (hasFailed) -> {
       /*
        * Previously the hasFailed value was used to commit any remaining staged files into destination,
