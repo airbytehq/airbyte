@@ -11,6 +11,9 @@ jobs:
     steps:
       - name: Set up Java
         uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17"
 
       - name: Run Coverage
         run: |
