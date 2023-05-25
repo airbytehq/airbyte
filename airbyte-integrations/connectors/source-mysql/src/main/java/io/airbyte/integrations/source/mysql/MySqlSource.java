@@ -20,11 +20,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mysql.cj.MysqlType;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -68,6 +70,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
@@ -458,4 +461,15 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     CDC
   }
 
+  @Override
+  protected AutoCloseableIterator<AirbyteMessage> createIterator(final List<AutoCloseableIterator<AirbyteMessage>> iteratorList,
+      final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer, final VoidCallable voidCallable, final JsonNode config) {
+    if (isCdc(config)) {
+      return super.createIterator(iteratorList, airbyteStreamStatusConsumer, voidCallable, config);
+    } else {
+      return AutoCloseableIterators
+          .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList, airbyteStreamStatusConsumer,
+              AutoCloseableIterators.IterationMode.PARALLEL), voidCallable);
+    }
+  }
 }

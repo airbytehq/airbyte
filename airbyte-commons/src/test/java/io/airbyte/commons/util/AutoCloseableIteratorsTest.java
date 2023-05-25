@@ -6,18 +6,21 @@ package io.airbyte.commons.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import io.airbyte.commons.concurrency.VoidCallable;
+import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
+import io.airbyte.commons.util.AutoCloseableIterators.IterationMode;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
@@ -73,7 +76,7 @@ class AutoCloseableIteratorsTest {
   @Test
   void testTransform() {
     final Iterator<Integer> transform = Iterators.transform(MoreIterators.of(1, 2, 3), i -> i + 1);
-    assertEquals(ImmutableList.of(2, 3, 4), MoreIterators.toList(transform));
+    assertEquals(List.of(2, 3, 4), MoreIterators.toList(transform));
   }
 
   @Test
@@ -81,22 +84,40 @@ class AutoCloseableIteratorsTest {
     final VoidCallable onClose1 = mock(VoidCallable.class);
     final VoidCallable onClose2 = mock(VoidCallable.class);
 
-    final AutoCloseableIterator<String> iterator = new CompositeIterator<>(ImmutableList.of(
+    final AutoCloseableIterator<String> iterator = new CompositeIterator<>(List.of(
         AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b"), onClose1, null),
         AutoCloseableIterators.fromIterator(MoreIterators.of("d"), onClose2, null)), null);
 
-    assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1, onClose2));
+    assertOnCloseInvocations(List.of(), List.of(onClose1, onClose2));
     assertNext(iterator, "a");
     assertNext(iterator, "b");
     assertNext(iterator, "d");
-    assertOnCloseInvocations(ImmutableList.of(onClose1), ImmutableList.of(onClose2));
+    assertOnCloseInvocations(List.of(onClose1), List.of(onClose2));
     assertFalse(iterator.hasNext());
-    assertOnCloseInvocations(ImmutableList.of(onClose1, onClose2), ImmutableList.of());
+    assertOnCloseInvocations(List.of(onClose1, onClose2), List.of());
 
     iterator.close();
 
     verify(onClose1, times(1)).call();
     verify(onClose2, times(1)).call();
+  }
+
+  @Test
+  void testConcatWithEagerCloseParallel() {
+    final VoidCallable onClose1 = mock(VoidCallable.class);
+    final VoidCallable onClose2 = mock(VoidCallable.class);
+    final List<AutoCloseableIterator<String>> iterators = List.of(
+        AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b"), onClose1, null),
+        AutoCloseableIterators.fromIterator(MoreIterators.of("d"), onClose2, null));
+    final Consumer<AirbyteStreamStatusHolder> consumer = mock(Consumer.class);
+
+    final AutoCloseableIterator<String> parallelIterator = AutoCloseableIterators.concatWithEagerClose(iterators, consumer, IterationMode.PARALLEL);
+    assertNotNull(parallelIterator);
+    assertEquals(ParallelCompositeIterator.class, parallelIterator.getClass());
+
+    final AutoCloseableIterator<String> serialIterator = AutoCloseableIterators.concatWithEagerClose(iterators, consumer, IterationMode.SERIAL);
+    assertNotNull(serialIterator);
+    assertEquals(CompositeIterator.class, serialIterator.getClass());
   }
 
   private void assertOnCloseInvocations(final List<VoidCallable> haveClosed, final List<VoidCallable> haveNotClosed) throws Exception {

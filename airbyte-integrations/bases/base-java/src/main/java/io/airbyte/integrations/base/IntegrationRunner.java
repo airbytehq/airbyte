@@ -32,6 +32,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.ThreadUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -46,6 +47,19 @@ import org.slf4j.LoggerFactory;
 public class IntegrationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationRunner.class);
+
+  /**
+   * Filters threads that should not be considered when looking for orphaned threads at shutdown of
+   * the integration runner.
+   * <p>
+   * </p>
+   * <b>N.B.</b> Daemon threads don't block the JVM if the main `currentThread` exits, so they are not
+   * problematic. Additionally, ignore database connection pool threads, which stay active so long as
+   * the database connection pool is open.
+   */
+  @VisibleForTesting
+  static final Predicate<Thread> ORPHANED_THREAD_FILTER = runningThread -> !runningThread.getName().equals(Thread.currentThread().getName())
+      && !runningThread.isDaemon() && !runningThread.getName().startsWith("pool-");
 
   public static final int INTERRUPT_THREAD_DELAY_MINUTES = 60;
   public static final int EXIT_THREAD_DELAY_MINUTES = 70;
@@ -140,6 +154,10 @@ public class IntegrationRunner {
           final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
           try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
             produceMessages(messageIterator);
+          } finally {
+            if (source instanceof AutoCloseable) {
+              AutoCloseable.class.cast(source).close();
+            }
           }
         }
         // destination only
@@ -242,8 +260,7 @@ public class IntegrationRunner {
     } finally {
       final List<Thread> runningThreads = ThreadUtils.getAllThreads()
           .stream()
-          // daemon threads don't block the JVM if the main `currentThread` exits, so they are not problematic
-          .filter(runningThread -> !runningThread.getName().equals(currentThread.getName()) && !runningThread.isDaemon())
+          .filter(ORPHANED_THREAD_FILTER)
           .collect(Collectors.toList());
       if (!runningThreads.isEmpty()) {
         LOGGER.warn("""

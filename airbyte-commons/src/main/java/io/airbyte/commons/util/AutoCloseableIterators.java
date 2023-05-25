@@ -185,13 +185,46 @@ public class AutoCloseableIterators {
     return concatWithEagerClose(List.of(iterators), null);
   }
 
+  /**
+   * Creates a {@link CompositeIterator} that reads from the provided iterators in a serial fashion.
+   *
+   * @param iterators The list of iterators to be used in a serial fashion.
+   * @param airbyteStreamStatusConsumer The stream status consumer used to report stream status during
+   *        iteration.
+   * @return A {@link CompositeIterator}.
+   * @param <T> The type of data contained in each iterator.
+   */
   public static <T> CompositeIterator<T> concatWithEagerClose(final List<AutoCloseableIterator<T>> iterators,
                                                               final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer) {
     return new CompositeIterator<>(iterators, airbyteStreamStatusConsumer);
   }
 
-  public static <T> CompositeIterator<T> concatWithEagerClose(final List<AutoCloseableIterator<T>> iterators) {
-    return concatWithEagerClose(iterators, null);
+  /**
+   * Creates a {@link AutoCloseableIterator} that exposes data from the provided list of iterators.
+   * The iterators are processed in either a serial or parallel fashion based on the value of the
+   * {@code supportsParallelization} flag.
+   *
+   * @param iterators The list of iterators.
+   * @param airbyteStreamStatusConsumer The stream status consumer used to report stream status during
+   *        iteration.
+   * @param iterationMode The iteration mode to be used to retrieve data from the provided iterators.
+   * @return A {@link AutoCloseableIterator}
+   * @param <T> The type of data contained in each iterator.
+   */
+  public static <T> AutoCloseableIterator<T> concatWithEagerClose(final List<AutoCloseableIterator<T>> iterators,
+                                                                  final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer,
+                                                                  final IterationMode iterationMode) {
+    return IterationMode.PARALLEL.equals(iterationMode) ? new ParallelCompositeIterator<>(iterators, airbyteStreamStatusConsumer)
+        : concatWithEagerClose(iterators, airbyteStreamStatusConsumer);
+  }
+
+  /**
+   * Defines the iteration mode of the main iterator in relation to any child iterators wrapped by the
+   * iterator.
+   */
+  public enum IterationMode {
+    SERIAL,
+    PARALLEL;
   }
 
 }

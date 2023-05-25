@@ -9,12 +9,14 @@ import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getError
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import datadog.trace.api.Trace;
+import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.lang.Exceptions;
+import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -57,6 +59,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -168,12 +171,28 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         .flatMap(Collection::stream)
         .collect(Collectors.toList());
 
-    return AutoCloseableIterators
-        .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList, AirbyteTraceMessageUtility::emitStreamStatusTrace), () -> {
+    return createIterator(iteratorList,  AirbyteTraceMessageUtility::emitStreamStatusTrace, () -> {
           LOGGER.info("Closing database connection pool.");
           Exceptions.toRuntime(this::close);
           LOGGER.info("Closed database connection pool.");
-        });
+        }, config);
+  }
+
+  /**
+   * Constructs the {@link AutoCloseableIterator} used to retrieve {@link AirbyteMessage}s from the configured streams associated with this source.
+   *
+   * @param iteratorList The list of {@link AutoCloseableIterator}s that represents each configured stream in the source.
+   * @param airbyteStreamStatusConsumer The stream status consumer used to report individual stream progress.
+   * @param voidCallable The on-close callback.
+   * @param config The source configuration.
+   * @return The {@link AutoCloseableIterator} that iterates over all configured streams.
+   */
+  protected AutoCloseableIterator<AirbyteMessage> createIterator(final List<AutoCloseableIterator<AirbyteMessage>> iteratorList,
+      final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer,
+      final VoidCallable voidCallable,
+      final JsonNode config) {
+    return AutoCloseableIterators
+        .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList, airbyteStreamStatusConsumer), voidCallable);
   }
 
   private void validateCursorFieldForIncrementalTables(
