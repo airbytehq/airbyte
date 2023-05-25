@@ -1096,7 +1096,7 @@ class HttpRequester(BaseModel):
     )
     request_body_json: Optional[Union[str, Dict[str, Any]]] = Field(
         None,
-        description="Specifies how to populate the body of the request with a JSON payload. Can contain nested objects",
+        description="Specifies how to populate the body of the request with a JSON payload. Can contain nested objects.",
         examples=[
             {"sort_order": "ASC", "sort_field": "CREATED_AT"},
             {"key": "{{ config['value'] }}"},

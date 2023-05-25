@@ -34,12 +34,12 @@ class InterpolatedNestedMapping:
 
     def _eval(self, value, config, **kwargs):
         # Recursively interpolate dictionaries and lists
-        if type(value) == str:
+        if isinstance(value, str):
             return self._interpolation.eval(value, config, parameters=self._parameters, **kwargs)
-        elif type(value) == dict:
+        elif isinstance(value, dict):
             interpolated_dict = {self._eval(k, config, **kwargs): self._eval(v, config, **kwargs) for k, v in value.items()}
             return {k: v for k, v in interpolated_dict.items() if v is not None}
-        elif type(value) == list:
+        elif isinstance(value, list):
             return [self._eval(v, config, **kwargs) for v in value]
         else:
             return value

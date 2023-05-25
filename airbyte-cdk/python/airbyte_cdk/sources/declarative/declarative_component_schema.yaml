@@ -1127,7 +1127,7 @@ definitions:
               }, "orderBy": 1, "columnName": "Timestamp"}]/
       request_body_json:
         title: Request Body JSON Payload
-        description: Specifies how to populate the body of the request with a JSON payload. Can contain nested objects
+        description: Specifies how to populate the body of the request with a JSON payload. Can contain nested objects.
         anyOf:
           - type: string
           - type: object
