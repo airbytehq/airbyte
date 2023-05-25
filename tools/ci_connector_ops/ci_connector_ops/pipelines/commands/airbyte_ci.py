@@ -32,7 +32,7 @@ from .groups.metadata import metadata
 @click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)
 @click.option("--ci-context", default=CIContext.MANUAL, envvar="CI_CONTEXT", type=click.Choice(CIContext))
 @click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
-@click.option("--pull-request-number", envvar="PULL_REQUEST_NUMBER", type=str)
+@click.option("--pull-request-number", envvar="PULL_REQUEST_NUMBER", type=int)
 @click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str)
 @click.pass_context
 def airbyte_ci(
@@ -44,7 +44,7 @@ def airbyte_ci(
     gha_workflow_run_id: str,
     ci_context: str,
     pipeline_start_timestamp: int,
-    pull_request_number: str,
+    pull_request_number: int,
     ci_github_access_token: str,
 ):  # noqa D103
     ctx.ensure_object(dict)

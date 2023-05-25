@@ -72,7 +72,7 @@ def update_commit_status_check(
     safe_log(logger, f"Created {state} status for commit {sha} on Github in {context} context with desc: {description}.")
 
 
-def get_pull_request(pull_request_number: str, github_access_token: str) -> PullRequest:
+def get_pull_request(pull_request_number: int, github_access_token: str) -> PullRequest:
     """Get a pull request object from its number.
 
     Args:
