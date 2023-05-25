@@ -96,7 +96,7 @@ def test_check_stream_with_no_stream_slices_aborts():
             403,
             False,
             [
-                "The endpoint to access stream 'mock_http_stream' returned 403: Forbidden.",
+                "Unable to read mock_http_stream stream",
                 "This is most likely due to insufficient permissions on the credentials in use.",
             ],
         ),
