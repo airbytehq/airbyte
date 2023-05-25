@@ -111,16 +111,18 @@ class KYVEStream(HttpStream, IncrementalMixin):
     ) -> Iterable[Mapping]:
         try:
             # set the state to store the latest bundle_id
-            latest_bundle = response.json().get("finalized_bundles")[-1]
+            bundles = response.json().get("finalized_bundles")
+            latest_bundle = bundles[-1]
+
             self._cursor_value = latest_bundle.get("id")
         except IndexError:
-            return []
+            yield from ()
 
-        r = []
-        for bundle in response.json().get("finalized_bundles"):
+        for bundle in bundles:
             storage_id = bundle.get("storage_id")
             # retrieve file from Arweave
             response_from_arweave = requests.get(f"https://arweave.net/{storage_id}")
+
             if not response.ok:
                 logger.error(f"Reading bundle {storage_id} with status code {response.status_code}")
                 # todo future: this is a temporary fix until the bugs with Arweave are solved
@@ -140,9 +142,7 @@ class KYVEStream(HttpStream, IncrementalMixin):
             decompressed_as_json = json.loads(decompressed)
 
             # extract the value from the key -> value mapping
-            for _ in decompressed_as_json:
-                r.append(_)
-        return r
+            yield from decompressed_as_json
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         # in case we set a max_pages parameter we need to abort
