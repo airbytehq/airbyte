@@ -227,11 +227,10 @@ public class FlushWorkers implements AutoCloseable {
       final String flushWorkerId = UUID.randomUUID().toString().substring(0, 5);
       log.info("Flush Worker ({}) -- Worker picked up work.", flushWorkerId);
       try {
-        log.info("Flush Worker ({}) -- Attempting to read from queue namespace: {}, stream: {}. Remaining records in queue: {}",
+        log.info("Flush Worker ({}) -- Attempting to read from queue namespace: {}, stream: {}.",
             flushWorkerId,
             desc.getNamespace(),
-            desc.getName(),
-            bufferDequeue.getQueueSizeInRecords(desc).orElseThrow());
+            desc.getName());
 
         try (final var batch = bufferDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
           final Map<Long, Long> stateIdToCount = batch.getData()
