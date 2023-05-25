@@ -104,19 +104,19 @@ def test_upload_metadata_to_gcs_valid_metadata(
     assert blob_id == mocks["mock_version_blob"].id
 
     if not version_blob_exists:
-        mocks["mock_version_blob"].upload_from_filename.assert_called_with(str(metadata_file_path))
+        mocks["mock_version_blob"].upload_from_filename.assert_called_with(metadata_file_path)
         assert uploaded
 
     if not latest_blob_exists:
-        mocks["mock_latest_blob"].upload_from_filename.assert_called_with(str(metadata_file_path))
+        mocks["mock_latest_blob"].upload_from_filename.assert_called_with(metadata_file_path)
         assert uploaded
 
     if version_blob_md5_hash != local_file_md5_hash:
-        mocks["mock_version_blob"].upload_from_filename.assert_called_with(str(metadata_file_path))
+        mocks["mock_version_blob"].upload_from_filename.assert_called_with(metadata_file_path)
         assert uploaded
 
     if latest_blob_md5_hash != local_file_md5_hash:
-        mocks["mock_latest_blob"].upload_from_filename.assert_called_with(str(metadata_file_path))
+        mocks["mock_latest_blob"].upload_from_filename.assert_called_with(metadata_file_path)
         assert uploaded
 
 

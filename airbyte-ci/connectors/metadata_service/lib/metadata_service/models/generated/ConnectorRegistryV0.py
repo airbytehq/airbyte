@@ -112,6 +112,7 @@ class ConnectorRegistrySourceDefinition(BaseModel):
     dockerImageTag: str
     documentationUrl: str
     icon: Optional[str] = None
+    iconUrl: Optional[str] = None
     sourceType: Optional[Literal["api", "file", "database", "custom"]] = None
     spec: Dict[str, Any]
     tombstone: Optional[bool] = Field(
@@ -152,6 +153,7 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     dockerImageTag: str
     documentationUrl: str
     icon: Optional[str] = None
+    iconUrl: Optional[str] = None
     spec: Dict[str, Any]
     tombstone: Optional[bool] = Field(
         False,

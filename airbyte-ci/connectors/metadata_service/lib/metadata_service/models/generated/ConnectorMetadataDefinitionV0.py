@@ -135,7 +135,7 @@ class Data(BaseModel):
     githubIssueLabel: str
     maxSecondsBetweenMessages: Optional[int] = Field(
         None,
-        description="Number of seconds allowed between 2 airbyte protocol messages. The source will timeout if this delay is reach",
+        description="Maximum delay between 2 airbyte protocol messages, in second. The source will timeout if this delay is reached",
     )
     releaseDate: Optional[date] = Field(
         None,

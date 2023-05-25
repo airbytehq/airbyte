@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
 METADATA_FILE_NAME = "metadata.yaml"
+METADATA_ICON_FILE_NAME = "icon.svg"
 
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
