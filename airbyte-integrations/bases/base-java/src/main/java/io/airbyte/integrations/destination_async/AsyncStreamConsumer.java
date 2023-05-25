@@ -134,7 +134,6 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
   private void propagateFlushWorkerExceptionIfPresent() throws Exception {
     if (flushFailure.isFailed()) {
-      System.out.println(" +++++ propagating flush worker exception");
       throw flushFailure.getException();
     }
   }
