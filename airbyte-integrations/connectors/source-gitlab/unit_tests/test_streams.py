@@ -6,7 +6,7 @@ import datetime
 
 import pytest
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-from source_gitlab.streams import Commits, Jobs, MergeRequestCommits, MergeRequests, Pipelines, Projects, Releases, Tags
+from source_gitlab.streams import Branches, Commits, Jobs, MergeRequestCommits, MergeRequests, Pipelines, Projects, Releases, Tags
 
 auth_params = {"authenticator": NoAuth(), "api_url": "gitlab.com"}
 
@@ -19,6 +19,7 @@ tags = Tags(parent_stream=projects, repository_part=True, **auth_params)
 releases = Releases(parent_stream=projects, **auth_params)
 jobs = Jobs(parent_stream=pipelines, **auth_params)
 merge_request_commits = MergeRequestCommits(parent_stream=merge_requests, **auth_params)
+branches = Branches(parent_stream=projects, **auth_params)
 commits = Commits(parent_stream=projects, repository_part=True, start_date=str(start_date), **auth_params)
 
 
@@ -136,3 +137,11 @@ def test_transform(requests_mock, stream, response_mocks, expected_records):
 )
 def test_updated_state(stream, current_state, latest_record, new_state):
     assert stream.get_updated_state(current_state, latest_record) == new_state
+
+
+def test_blocked_branches(requests_mock):
+    requests_mock.get("/api/v4/projects/p_1/branches", status_code=404)
+    for stream_slice in branches.stream_slices(sync_mode="full_refresh"):
+        records = list(branches.read_records(sync_mode="full_refresh", stream_slice=stream_slice))
+    assert records == []
+    assert requests_mock.call_count == 1
