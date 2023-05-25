@@ -45,7 +45,7 @@ To install and start Airbyte :
   mkdir airbyte && cd airbyte
   wget https://raw.githubusercontent.com/airbytehq/airbyte/master/run-ab-platform.sh
   chmod +x run-ab-platform.sh
-  ./run-ab-platform.sh
+  ./run-ab-platform.sh -b
 ```
 
 2. Verify the connection by visiting [http://localhost:8000](http://localhost:8000) in your browser.
