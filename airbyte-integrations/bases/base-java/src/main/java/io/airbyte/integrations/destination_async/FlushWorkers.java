@@ -13,6 +13,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -98,14 +99,28 @@ public class FlushWorkers implements AutoCloseable {
     isClosing.set(true);
     // wait for all buffers to be flushed.
     while (true) {
-      final boolean anyRecordsLeft = bufferDequeue.getBufferedStreams()
+      final Map<StreamDescriptor, Long> streamDescriptorToRemainingRecords = bufferDequeue.getBufferedStreams()
           .stream()
-          .anyMatch(streamDesc -> bufferDequeue.getQueueSizeInRecords(streamDesc).map(size -> size > 0).orElseThrow());
-      log.info("anyRecordsLeft: {}", anyRecordsLeft);
+          .collect(Collectors.toMap(desc -> desc, desc -> bufferDequeue.getQueueSizeInRecords(desc).orElseThrow()));
+
+      final boolean anyRecordsLeft = streamDescriptorToRemainingRecords
+          .values()
+          .stream()
+          .anyMatch(size -> size > 0);
+
       if (!anyRecordsLeft) {
         break;
       }
 
+      final var workerInfo = new StringBuilder().append("REMAINING_BUFFERS_INFO").append(System.lineSeparator());
+      streamDescriptorToRemainingRecords.entrySet()
+          .stream()
+          .filter(entry -> entry.getValue() > 0)
+          .forEach(entry -> workerInfo.append(String.format("  Namespace: %s Stream: %s -- remaining records: %d",
+              entry.getKey().getNamespace(),
+              entry.getKey().getName(),
+              entry.getValue())));
+      log.info(workerInfo.toString());
       log.info("Waiting for all streams to flush.");
       Thread.sleep(1000);
     }
@@ -113,19 +128,19 @@ public class FlushWorkers implements AutoCloseable {
 
     supervisorThread.shutdown();
     final var supervisorShut = supervisorThread.awaitTermination(5L, TimeUnit.MINUTES);
-    log.info("Closing flush workers -- Supervisor shut status: {}", supervisorShut);
+    log.info("Closing flush workers -- Supervisor shutdown status: {}", supervisorShut);
 
     log.info("Closing flush workers -- Starting worker pool shutdown..");
     workerPool.shutdown();
     final var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
-    log.info("Closing flush workers -- Workers shut status: {}", workersShut);
+    log.info("Closing flush workers -- Workers shutdown status: {}", workersShut);
 
     debugLoop.shutdownNow();
   }
 
   private void retrieveWork() {
     try {
-      log.info("retrieving queues to process");
+      log.info("Retrieve Work -- Finding queues to flush");
       final ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) workerPool;
       int allocatableThreads = threadPoolExecutor.getMaximumPoolSize() - threadPoolExecutor.getActiveCount();
 
@@ -166,15 +181,21 @@ public class FlushWorkers implements AutoCloseable {
           .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
           .orElse(false);
 
+      final String streamInfo = String.format(
+          "Flushing stream %s - %s, time trigger: %s, size trigger: %s current threshold: %s, queue size: %s, in-progress estimate: %s, adjusted queue size: %s",
+          stream.getNamespace(),
+          stream.getName(),
+          isTooLongSinceLastRecord,
+          isQueueSizeExceedsThreshold,
+          queueSizeThresholdBytes,
+          bufferDequeue.getQueueSizeBytes(stream).orElseThrow(),
+          runningBytesEstimate,
+          queueSizeAfterInProgress);
+      // todo make this debug
+      log.info("computed: {}", streamInfo);
+
       if (isQueueSizeExceedsThreshold || isTooLongSinceLastRecord) {
-        log.info(
-            "Allocated stream {}, exceedSize:{}, tooLongSinceLastRecord: {}, bytes in queue: {} computed after in-progress bytes: {} , threshold bytes: {}",
-            stream.getName(),
-            isQueueSizeExceedsThreshold,
-            isTooLongSinceLastRecord,
-            FileUtils.byteCountToDisplaySize(bufferDequeue.getQueueSizeBytes(stream).orElseThrow()),
-            FileUtils.byteCountToDisplaySize(queueSizeAfterInProgress),
-            FileUtils.byteCountToDisplaySize(QUEUE_FLUSH_THRESHOLD_BYTES));
+        log.info("Flushing: {}", streamInfo);
 
         return Optional.of(stream);
       }
@@ -197,27 +218,40 @@ public class FlushWorkers implements AutoCloseable {
 
   private void flush(final StreamDescriptor desc) {
     workerPool.submit(() -> {
-      log.info("Worker picked up work..");
+      final String flushWorkerId = UUID.randomUUID().toString().substring(0, 5);
+      log.info("Flush Worker ({}) -- Worker picked up work.", flushWorkerId);
       try {
-        log.info("Attempting to read from queue {}. Current queue size: {}", desc, bufferDequeue.getQueueSizeInRecords(desc).orElseThrow());
+        log.info("Flush Worker ({}) -- Attempting to read from queue namespace: {}, stream: {}. Current queue size: {}",
+            flushWorkerId,
+            desc.getNamespace(),
+            desc.getName(),
+            bufferDequeue.getQueueSizeInRecords(desc).orElseThrow());
 
         try (final var batch = bufferDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
+          flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
+
           final Map<Long, Long> stateIdToCount = batch.getData()
               .stream()
               .map(MessageWithMeta::stateId)
               .collect(Collectors.groupingBy(
                   stateId -> stateId,
                   Collectors.counting()));
-          flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
+          final long totalSize = stateIdToCount.values().stream().mapToLong(v -> v).sum();
+          log.info("Flush Worker ({}) -- Worked flushed: {} records ({})", flushWorkerId, batch.getData(),
+              FileUtils.byteCountToDisplaySize(totalSize));
 
           batch.flushStates(stateIdToCount).forEach(outputRecordCollector);
         }
 
-        log.info("Worker finished flushing. Current queue size: {}", bufferDequeue.getQueueSizeInRecords(desc));
+        log.info("Flush Worker ({}) -- Worker finished flushing. Current queue size: {}",
+            flushWorkerId,
+            bufferDequeue.getQueueSizeInRecords(desc).orElseThrow());
       } catch (final Exception e) {
-        log.error("Flush worker error: ", e);
+        log.error(String.format("Flush Worker (%s) -- flush worker error: ", flushWorkerId), e);
         flushFailure.propagateException(e);
         throw new RuntimeException(e);
+      } finally {
+        streamToInProgressWorkers.get(desc).getAndDecrement();
       }
     });
   }

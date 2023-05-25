@@ -18,6 +18,7 @@ import io.airbyte.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
+import io.airbyte.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -95,7 +96,8 @@ public class StagingConsumerFactory {
         () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData).accept(false),
         flusher,
         catalog,
-        stagingOperations::isValidData);
+        stagingOperations::isValidData,
+        new BufferManager());
   }
 
   private static Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig(final List<WriteConfig> writeConfigs) {

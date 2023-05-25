@@ -56,8 +56,9 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
                              final OnCloseFunction onClose,
                              final DestinationFlushFunction flusher,
                              final ConfiguredAirbyteCatalog catalog,
-                             final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord) {
-    this(outputRecordCollector, onStart, onClose, flusher, catalog, isValidRecord, new FlushFailure());
+                             final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
+                             final BufferManager bufferManager) {
+    this(outputRecordCollector, onStart, onClose, flusher, catalog, isValidRecord, bufferManager, new FlushFailure());
   }
 
   @VisibleForTesting
@@ -67,6 +68,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
                              final DestinationFlushFunction flusher,
                              final ConfiguredAirbyteCatalog catalog,
                              final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
+                             final BufferManager bufferManager,
                              final FlushFailure flushFailure) {
     hasStarted = false;
     hasClosed = false;
@@ -75,7 +77,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     this.onClose = onClose;
     this.catalog = catalog;
     this.isValidRecord = isValidRecord;
-    bufferManager = new BufferManager();
+    this.bufferManager = bufferManager;
     bufferEnqueue = bufferManager.getBufferEnqueue();
     this.flushFailure = flushFailure;
     flushWorkers = new FlushWorkers(bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure);

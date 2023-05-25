@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination_async.buffers;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.destination_async.FlushWorkers;
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
@@ -23,20 +24,27 @@ public class BufferManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferManager.class);
 
-  public static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = (long) (Runtime.getRuntime().maxMemory() * 0.8);
+  public final long maxMemory;
   private final ConcurrentMap<StreamDescriptor, StreamAwareQueue> buffers;
   private final BufferEnqueue bufferEnqueue;
   private final BufferDequeue bufferDequeue;
   private final GlobalMemoryManager memoryManager;
-  private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
+  private final ScheduledExecutorService debugLoop;
 
   public BufferManager() {
-    LOGGER.info("Memory available to the JVM {}", FileUtils.byteCountToDisplaySize(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
-    memoryManager = new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES);
+    this((long) (Runtime.getRuntime().maxMemory() * 0.8));
+  }
+
+  @VisibleForTesting
+  public BufferManager(final long memoryLimit) {
+    maxMemory = memoryLimit;
+    LOGGER.info("Memory available to the JVM {}", FileUtils.byteCountToDisplaySize(maxMemory));
+    memoryManager = new GlobalMemoryManager(maxMemory);
     buffers = new ConcurrentHashMap<>();
     final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
     bufferEnqueue = new BufferEnqueue(memoryManager, buffers, stateManager);
     bufferDequeue = new BufferDequeue(memoryManager, buffers, stateManager);
+    debugLoop = Executors.newSingleThreadScheduledExecutor();
     debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 10, TimeUnit.SECONDS);
   }
 
