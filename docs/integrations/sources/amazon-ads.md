@@ -67,7 +67,7 @@ This source is capable of syncing the following streams:
 * [Sponsored Products Targetings](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20targeting)
 * [Brands Reports](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports)
 * [Brand Video Reports](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports)
-* [Display Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Reports)
+* [Display Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Reports) (Contextual targeting only)
 * [Products Reports](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Reports)
 * [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/)
 
@@ -82,7 +82,7 @@ Information about expected report generation waiting time you may find [here](ht
 ### Data type mapping
 
 | Integration Type         | Airbyte Type |
-| :----------------------- | :----------- |
+|:-------------------------|:-------------|
 | `string`                 | `string`     |
 | `int`, `float`, `number` | `number`     |
 | `date`                   | `date`       |
@@ -94,6 +94,10 @@ Information about expected report generation waiting time you may find [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 1.1.0   | 2023-04-22 | [25412](https://github.com/airbytehq/airbyte/pull/25412) | Add missing reporting metrics                                                                                   |
+| 1.0.6   | 2023-05-09 | [25913](https://github.com/airbytehq/airbyte/pull/25913) | Small schema fixes                                                                                              |
+| 1.0.5   | 2023-05-08 | [25885](https://github.com/airbytehq/airbyte/pull/25885) | Improve error handling for attribution_report(s) streams                                                        |
+| 1.0.4   | 2023-05-04 | [25792](https://github.com/airbytehq/airbyte/pull/25792) | Add availability strategy for basic streams (not including report streams)                                      |
 | 1.0.3   | 2023-04-13 | [25146](https://github.com/airbytehq/airbyte/pull/25146) | Validate pk for reports when expected pk is not returned                                                        |
 | 1.0.2   | 2023-02-03 | [22355](https://github.com/airbytehq/airbyte/pull/22355) | Migrate `products_report` stream to API v3                                                                      |
 | 1.0.1   | 2022-11-01 | [18677](https://github.com/airbytehq/airbyte/pull/18677) | Add optional config report_record_types                                                                         |

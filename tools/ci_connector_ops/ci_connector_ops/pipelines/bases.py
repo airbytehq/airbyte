@@ -11,10 +11,10 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, ClassVar, List, Optional
+from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 
 import asyncer
-from ci_connector_ops.pipelines.actions import environments
+from ci_connector_ops.pipelines.consts import PYPROJECT_TOML_FILE_PATH
 from ci_connector_ops.pipelines.utils import check_path_in_workdir, with_exit_code, with_stderr, with_stdout
 from ci_connector_ops.utils import console
 from dagger import Container, QueryError
@@ -25,7 +25,7 @@ from rich.table import Table
 from rich.text import Text
 
 if TYPE_CHECKING:
-    from ci_connector_ops.pipelines.contexts import ConnectorTestContext, PipelineContext
+    from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
 
 
 class StepStatus(Enum):
@@ -49,13 +49,11 @@ class StepStatus(Enum):
         """
         if exit_code == 0:
             return StepStatus.SUCCESS
-        if exit_code == 1:
-            return StepStatus.FAILURE
         # pytest returns a 5 exit code when no test is found.
-        if exit_code == 5:
+        elif exit_code == 5:
             return StepStatus.SKIPPED
         else:
-            raise ValueError(f"No step status is mapped to exit code {exit_code}")
+            return StepStatus.FAILURE
 
     def get_rich_style(self) -> Style:
         """Match color used in the console output to the step status."""
@@ -76,9 +74,8 @@ class Step(ABC):
     title: ClassVar[str]
     started_at: ClassVar[datetime]
 
-    def __init__(self, context: ConnectorTestContext) -> None:  # noqa D107
+    def __init__(self, context: ConnectorContext) -> None:  # noqa D107
         self.context = context
-        self.host_image_export_dir_path = "." if self.context.is_ci else "/tmp"
 
     async def run(self, *args, **kwargs) -> StepResult:
         """Public method to run the step. It output a step result.
@@ -129,7 +126,13 @@ class Step(ABC):
             soon_exit_code = task_group.soonify(with_exit_code)(container)
             soon_stderr = task_group.soonify(with_stderr)(container)
             soon_stdout = task_group.soonify(with_stdout)(container)
-        return StepResult(self, StepStatus.from_exit_code(soon_exit_code.value), stderr=soon_stderr.value, stdout=soon_stdout.value)
+        return StepResult(
+            self,
+            StepStatus.from_exit_code(soon_exit_code.value),
+            stderr=soon_stderr.value,
+            stdout=soon_stdout.value,
+            output_artifact=container,
+        )
 
 
 class PytestStep(Step, ABC):
@@ -146,7 +149,7 @@ class PytestStep(Step, ABC):
             StepResult: The inferred step result according to the log.
         """
         last_log_line = logs.split("\n")[-2]
-        if "failed" in last_log_line:
+        if "failed" in last_log_line or "errors" in last_log_line:
             return StepResult(self, StepStatus.FAILURE, stderr=logs)
         elif "no tests ran" in last_log_line:
             return StepResult(self, StepStatus.SKIPPED, stdout=logs)
@@ -165,9 +168,7 @@ class PytestStep(Step, ABC):
         Returns:
             Tuple[StepStatus, Optional[str], Optional[str]]: Tuple of StepStatus, stderr and stdout.
         """
-        test_config = (
-            "pytest.ini" if await check_path_in_workdir(connector_under_test, "pytest.ini") else "/" + environments.PYPROJECT_TOML_FILE_PATH
-        )
+        test_config = "pytest.ini" if await check_path_in_workdir(connector_under_test, "pytest.ini") else "/" + PYPROJECT_TOML_FILE_PATH
         if await check_path_in_workdir(connector_under_test, test_directory):
             tester = connector_under_test.with_exec(
                 [
@@ -197,18 +198,20 @@ class StepResult:
     created_at: datetime = field(default_factory=datetime.utcnow)
     stderr: Optional[str] = None
     stdout: Optional[str] = None
+    output_artifact: Any = None
 
     def __repr__(self) -> str:  # noqa D105
         return f"{self.step.title}: {self.status.value}"
 
 
 @dataclass(frozen=True)
-class TestReport:
-    """A dataclass to build test reports to share pipelines executions results with the user."""
+class Report:
+    """A dataclass to build reports to share pipelines executions results with the user."""
 
     pipeline_context: PipelineContext
     steps_results: List[StepResult]
     created_at: datetime = field(default_factory=datetime.utcnow)
+    name: str = "REPORT"
 
     @property
     def failed_steps(self) -> List[StepResult]:  # noqa D102
@@ -224,7 +227,7 @@ class TestReport:
 
     @property
     def success(self) -> bool:  # noqa D102
-        return len(self.failed_steps) == 0 and len(self.steps_results) > 0
+        return len(self.failed_steps) == 0
 
     @property
     def run_duration(self) -> int:  # noqa D102
@@ -258,7 +261,7 @@ class TestReport:
     def print(self):
         """Print the test report to the console in a nice way."""
         pipeline_name = self.pipeline_context.pipeline_name
-        main_panel_title = Text(f"{pipeline_name.upper()} - TEST RESULTS")
+        main_panel_title = Text(f"{pipeline_name.upper()} - {self.name}")
         main_panel_title.stylize(Style(color="blue", bold=True))
         duration_subtitle = Text(f"⏲️  Total pipeline duration for {pipeline_name}: {round(self.run_duration)} seconds")
         step_results_table = Table(title="Steps results")
@@ -295,7 +298,7 @@ class TestReport:
 
 
 @dataclass(frozen=True)
-class ConnectorTestReport(TestReport):
+class ConnectorReport(Report):
     """A dataclass to build connector test reports to share pipelines executions results with the user."""
 
     @property
@@ -331,7 +334,7 @@ class ConnectorTestReport(TestReport):
     def print(self):
         """Print the test report to the console in a nice way."""
         connector_name = self.pipeline_context.connector.technical_name
-        main_panel_title = Text(f"{connector_name.upper()} - TEST RESULTS")
+        main_panel_title = Text(f"{connector_name.upper()} - {self.name}")
         main_panel_title.stylize(Style(color="blue", bold=True))
         duration_subtitle = Text(f"⏲️  Total pipeline duration for {connector_name}: {round(self.run_duration)} seconds")
         step_results_table = Table(title="Steps results")

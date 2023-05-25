@@ -124,16 +124,16 @@ class MssqlSourceTest {
       });
 
       ConfiguredAirbyteStream configuredAirbyteStream = new ConfiguredAirbyteStream().withSyncMode(
-              SyncMode.INCREMENTAL)
+          SyncMode.INCREMENTAL)
           .withCursorField(Lists.newArrayList("id"))
           .withDestinationSyncMode(DestinationSyncMode.APPEND)
           .withSyncMode(SyncMode.INCREMENTAL)
           .withStream(CatalogHelpers.createAirbyteStream(
-                  STREAM_NAME,
-                  DB_NAME,
-                  Field.of("id", JsonSchemaType.INTEGER),
-                  Field.of("name", JsonSchemaType.STRING),
-                  Field.of("born", JsonSchemaType.STRING))
+              STREAM_NAME,
+              DB_NAME,
+              Field.of("id", JsonSchemaType.INTEGER),
+              Field.of("name", JsonSchemaType.STRING),
+              Field.of("born", JsonSchemaType.STRING))
               .withSupportedSyncModes(
                   Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
               .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
