@@ -209,11 +209,10 @@ jobs:
 
   run-code-coverage:
     runs-on: ubuntu-latest
-    if: github.base_ref == 'duy/code_coverage'
-    steps:
-      - name: Get PR branch
-        uses: xt0rted/pull-request-comment-branch@v1
-        id: comment-branch
+#    steps:
+#      - name: Get PR branch
+#        uses: xt0rted/pull-request-comment-branch@v1
+#        id: comment-branch
 
       - name: Checkout PR branch
         uses: actions/checkout@v3
