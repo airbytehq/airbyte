@@ -49,6 +49,7 @@ def validate_at_least_one_langauge_tag(metadata_definition: ConnectorMetadataDef
 
     return True, None
 
+
 def validate_all_tags_are_keyvalue_pairs(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
     """Ensure that all tags are of the form <KEY>:<VALUE>."""
     for tag in metadata_definition.data.tags:
