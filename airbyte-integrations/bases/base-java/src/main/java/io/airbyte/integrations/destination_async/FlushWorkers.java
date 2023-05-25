@@ -82,58 +82,45 @@ public class FlushWorkers implements AutoCloseable {
   }
 
   public void start() {
-    try {
-      supervisorThread.scheduleAtFixedRate(this::retrieveWork,
-          SUPERVISOR_INITIAL_DELAY_SECS,
-          SUPERVISOR_PERIOD_SECS,
-          TimeUnit.SECONDS);
-      debugLoop.scheduleAtFixedRate(this::printWorkerInfo,
-          DEBUG_INITIAL_DELAY_SECS,
-          DEBUG_PERIOD_SECS,
-          TimeUnit.SECONDS);
-    } catch (final Exception e) {
-      log.error("Flush worker error: ", e);
-      flushFailure.propagateException(e);
-      throw new RuntimeException(e);
-    }
+    supervisorThread.scheduleAtFixedRate(this::retrieveWork,
+        SUPERVISOR_INITIAL_DELAY_SECS,
+        SUPERVISOR_PERIOD_SECS,
+        TimeUnit.SECONDS);
+    debugLoop.scheduleAtFixedRate(this::printWorkerInfo,
+        DEBUG_INITIAL_DELAY_SECS,
+        DEBUG_PERIOD_SECS,
+        TimeUnit.SECONDS);
   }
 
   @Override
   public void close() throws Exception {
-    try {
-
-      log.info("Closing flush workers -- waiting for all buffers to flush");
-      isClosing.set(true);
-      // wait for all buffers to be flushed.
-      while (true) {
-        final boolean anyRecordsLeft = bufferDequeue.getBufferedStreams()
-            .stream()
-            .anyMatch(streamDesc -> bufferDequeue.getQueueSizeInRecords(streamDesc).map(size -> size > 0).orElseThrow());
-        log.info("anyRecordsLeft: {}", anyRecordsLeft);
-        if (!anyRecordsLeft) {
-          break;
-        }
-
-        log.info("Waiting for all streams to flush.");
-        Thread.sleep(1000);
+    log.info("Closing flush workers -- waiting for all buffers to flush");
+    isClosing.set(true);
+    // wait for all buffers to be flushed.
+    while (true) {
+      final boolean anyRecordsLeft = bufferDequeue.getBufferedStreams()
+          .stream()
+          .anyMatch(streamDesc -> bufferDequeue.getQueueSizeInRecords(streamDesc).map(size -> size > 0).orElseThrow());
+      log.info("anyRecordsLeft: {}", anyRecordsLeft);
+      if (!anyRecordsLeft) {
+        break;
       }
-      log.info("Closing flush workers -- all buffers flushed");
 
-      supervisorThread.shutdown();
-      final var supervisorShut = supervisorThread.awaitTermination(5L, TimeUnit.MINUTES);
-      log.info("Closing flush workers -- Supervisor shut status: {}", supervisorShut);
-
-      log.info("Closing flush workers -- Starting worker pool shutdown..");
-      workerPool.shutdown();
-      final var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
-      log.info("Closing flush workers -- Workers shut status: {}", workersShut);
-
-      debugLoop.shutdownNow();
-    } catch (final Exception e) {
-      log.error("Flush worker error: ", e);
-      flushFailure.propagateException(e);
-      throw new RuntimeException(e);
+      log.info("Waiting for all streams to flush.");
+      Thread.sleep(1000);
     }
+    log.info("Closing flush workers -- all buffers flushed");
+
+    supervisorThread.shutdown();
+    final var supervisorShut = supervisorThread.awaitTermination(5L, TimeUnit.MINUTES);
+    log.info("Closing flush workers -- Supervisor shut status: {}", supervisorShut);
+
+    log.info("Closing flush workers -- Starting worker pool shutdown..");
+    workerPool.shutdown();
+    final var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
+    log.info("Closing flush workers -- Workers shut status: {}", workersShut);
+
+    debugLoop.shutdownNow();
   }
 
   private void retrieveWork() {
