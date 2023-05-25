@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   dockerRepository: airbyte/destination-selectdb
   githubIssueLabel: destination-selectdb
-  icon: select.db
+  icon: selectdb.svg
   license: MIT
   name: SelectDB
   registries:
