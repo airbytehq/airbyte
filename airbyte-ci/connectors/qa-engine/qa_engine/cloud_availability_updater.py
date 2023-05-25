@@ -10,6 +10,8 @@ from typing import Iterable, List, Optional
 import yaml
 import git
 import requests
+import tempfile
+import shutil
 from pytablewriter import MarkdownTableWriter
 from pydash.objects import get, set_
 
@@ -40,11 +42,15 @@ def set_git_identity(repo: git.repo) -> git.repo:
 def get_authenticated_repo_url(git_username: str, github_api_token: str) -> str:
     return AIRBYTE_GITHUB_REPO_URL.replace("https://", f"https://{git_username}:{github_api_token}@")
 
+def clone_airbyte_repo(local_repo_path: Path) -> git.Repo:
+    logger.info(f"Cloning {AIRBYTE_GITHUB_REPO_URL} to {local_repo_path}")
+    authenticated_repo_url = get_authenticated_repo_url(GIT_USERNAME_FOR_AUTH, GITHUB_API_TOKEN)
+    return git.Repo.clone_from(authenticated_repo_url, local_repo_path, branch=AIRBYTE_MAIN_BRANCH_NAME)
+
 
 def get_metadata_file_path(connector: ConnectorQAReport) -> Path:
     local_repo_path = Path(".")
     connector_folder_name = connector.connector_technical_name
-    # TODO QA CHANGE 2
     metadata_file_path = (
         local_repo_path / f"airbyte-integrations/connectors/{connector_folder_name}/metadata.yaml"
     )
@@ -61,7 +67,6 @@ def checkout_new_branch(airbyte_repo: git.Repo, new_branch_name: str) -> git.Hea
 
 
 def enable_in_cloud(connector: ConnectorQAReport, metadata_file_path: Path) -> Optional[Path]:
-    # TODO QA CHANGE 3
     with open(metadata_file_path, "r") as f:
         metadata = yaml.safe_load(f)
         connector_already_enabled_in_cloud = get(metadata, "data.registries.cloud.enabled", False)
@@ -168,7 +173,6 @@ def add_new_connector_to_cloud_catalog(airbyte_repo: git.Repo, connector: Connec
     """
     metadata_file_path = get_metadata_file_path(connector)
 
-    # TODO QA CHANGE 1
     updated_files = enable_in_cloud(connector, metadata_file_path)
     if updated_files:
         commit_all_files(airbyte_repo, f"🤖 Add {connector.connector_name} connector to cloud")
@@ -177,7 +181,8 @@ def add_new_connector_to_cloud_catalog(airbyte_repo: git.Repo, connector: Connec
 
 
 def batch_deploy_eligible_connectors_to_cloud_repo(eligible_connectors: Iterable):
-    airbyte_repo = git.Repo(".")
+    repo_path = Path(tempfile.mkdtemp())
+    airbyte_repo = clone_airbyte_repo(repo_path)
     airbyte_repo = set_git_identity(airbyte_repo)
     current_date = datetime.utcnow().strftime("%Y%m%d")
     airbyte_repo.git.checkout(AIRBYTE_MAIN_BRANCH_NAME)
@@ -202,5 +207,4 @@ def batch_deploy_eligible_connectors_to_cloud_repo(eligible_connectors: Iterable
             PR_LABELS,
         )
 
-    # TODO do we need this?
-    # shutil.rmtree(airbyte_repo)
+    shutil.rmtree(repo_path)

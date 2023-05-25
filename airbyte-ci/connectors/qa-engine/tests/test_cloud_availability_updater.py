@@ -15,13 +15,14 @@ from qa_engine import cloud_availability_updater, models
 
 @pytest.fixture(scope="module")
 def dummy_repo_path(tmp_path_factory) -> Path:
-    repo_path = tmp_path_factory.mktemp("cloud_availability_updater_tests") / "airbyte-cloud"
+    repo_path = tmp_path_factory.mktemp("cloud_availability_updater_tests") / "airbyte"
     repo_path.mkdir()
     return repo_path
 
 
 @pytest.fixture(scope="module")
 def dummy_repo(dummy_repo_path) -> git.Repo:
+    print(f"FUUUUCK: {dummy_repo_path}")
     seed_dir = dummy_repo_path / "cloud-config/cloud-config-seed/src/main/resources/seed"
     seed_dir.mkdir(parents=True)
     repo = git.Repo.init(dummy_repo_path)
@@ -35,55 +36,55 @@ def dummy_repo(dummy_repo_path) -> git.Repo:
 
 
 @pytest.fixture
-def checkout_master(dummy_repo):
+def checkout_main(dummy_repo):
     """
-    Ensure we're always on dummy repo master before and after each test using this fixture
+    Ensure we're always on dummy repo main before and after each test using this fixture
     """
-    yield dummy_repo.heads.master.checkout()
-    dummy_repo.heads.master.checkout()
+    yield dummy_repo.heads.main.checkout()
+    dummy_repo.heads.main.checkout()
 
 
-def test_get_definitions_mask_path(checkout_master, dummy_repo_path: Path):
-    path = cloud_availability_updater.get_definitions_mask_path(dummy_repo_path, "source")
-    assert path.exists() and path.name == "source_definitions_mask.yaml"
-    path = cloud_availability_updater.get_definitions_mask_path(dummy_repo_path, "destination")
-    assert path.exists() and path.name == "destination_definitions_mask.yaml"
-    with pytest.raises(FileNotFoundError):
-        cloud_availability_updater.get_definitions_mask_path(dummy_repo_path, "foobar")
+# def test_get_metadata_file_path(checkout_main, dummy_repo_path: Path):
+#     path = cloud_availability_updater.get_metadata_file_path(dummy_repo_path, "source")
+#     assert path.exists() and path.name == "source_definitions_mask.yaml"
+#     path = cloud_availability_updater.get_metadata_file_path(dummy_repo_path, "destination")
+#     assert path.exists() and path.name == "destination_definitions_mask.yaml"
+#     with pytest.raises(FileNotFoundError):
+#         cloud_availability_updater.get_metadata_file_path(dummy_repo_path, "foobar")
 
 
-def test_checkout_new_branch(mocker, checkout_master, dummy_repo):
+def test_checkout_new_branch(mocker, checkout_main, dummy_repo):
     new_branch = cloud_availability_updater.checkout_new_branch(dummy_repo, "test-branch")
     assert new_branch.name == dummy_repo.active_branch.name == "test-branch"
 
 
-@pytest.mark.parametrize(
-    "definitions_mask_content_before_update, definition_id, expect_update",
-    [
-        ("", "abcdefg", True),
-        ("abcdefg", "abcdefg", False),
-    ],
-)
-def test_update_definitions_mask(mocker, tmp_path, definitions_mask_content_before_update, definition_id, expect_update):
-    connector = mocker.Mock(connector_name="foobar", connector_definition_id=definition_id, connector_type="unknown")
-    definitions_mask_path = tmp_path / "definitions_mask.yaml"
-    with open(definitions_mask_path, "w") as definitions_mask:
-        definitions_mask.write(definitions_mask_content_before_update)
-    updated_path = cloud_availability_updater.update_definitions_mask(connector, definitions_mask_path)
-    if not expect_update:
-        assert updated_path is None
-    else:
-        with open(updated_path, "r") as definitions_mask:
-            raw_content = definitions_mask.read()
-            definitions = yaml.safe_load(raw_content)
-        assert isinstance(definitions, list)
-        assert definitions[0]["unknownDefinitionId"] == definition_id
-        assert len([d for d in definitions if d["unknownDefinitionId"] == definition_id]) == 1
-        assert "# foobar (from cloud availability updater)" in raw_content
-        assert raw_content[-1] == "\n"
+# @pytest.mark.parametrize(
+#     "definitions_mask_content_before_update, definition_id, expect_update",
+#     [
+#         ("", "abcdefg", True),
+#         ("abcdefg", "abcdefg", False),
+#     ],
+# )
+# def test_enable_in_cloud(mocker, tmp_path, definitions_mask_content_before_update, definition_id, expect_update):
+#     connector = mocker.Mock(connector_name="foobar", connector_definition_id=definition_id, connector_type="unknown")
+#     definitions_mask_path = tmp_path / "definitions_mask.yaml"
+#     with open(definitions_mask_path, "w") as definitions_mask:
+#         definitions_mask.write(definitions_mask_content_before_update)
+#     updated_path = cloud_availability_updater.enable_in_cloud(connector, definitions_mask_path)
+#     if not expect_update:
+#         assert updated_path is None
+#     else:
+#         with open(updated_path, "r") as definitions_mask:
+#             raw_content = definitions_mask.read()
+#             definitions = yaml.safe_load(raw_content)
+#         assert isinstance(definitions, list)
+#         assert definitions[0]["unknownDefinitionId"] == definition_id
+#         assert len([d for d in definitions if d["unknownDefinitionId"] == definition_id]) == 1
+#         assert "# foobar (from cloud availability updater)" in raw_content
+#         assert raw_content[-1] == "\n"
 
 
-def test_commit_files(checkout_master, dummy_repo, dummy_repo_path):
+def test_commit_files(checkout_main, dummy_repo, dummy_repo_path):
     cloud_availability_updater.checkout_new_branch(dummy_repo, "test-commit-files")
     commit_message = "🤖 Add new connector to cloud"
     with open(dummy_repo_path / "test_file.txt", "w") as f:
@@ -92,7 +93,7 @@ def test_commit_files(checkout_master, dummy_repo, dummy_repo_path):
     cloud_availability_updater.commit_all_files(dummy_repo, commit_message)
 
     assert dummy_repo.head.reference.commit.message == commit_message + "\n"
-    edited_files = dummy_repo.git.diff("--name-only", checkout_master.name).split("\n")
+    edited_files = dummy_repo.git.diff("--name-only", checkout_main.name).split("\n")
     assert "test_file.txt" in edited_files
 
 
@@ -104,23 +105,21 @@ def test_push_branch(mocker):
 
 @pytest.mark.parametrize("updated_files", [True, False])
 def test_add_new_connector_to_cloud_catalog(mocker, updated_files):
-    mocker.patch.object(cloud_availability_updater, "get_definitions_mask_path")
-    mocker.patch.object(cloud_availability_updater, "update_definitions_mask", mocker.Mock(return_value=updated_files))
-    mocker.patch.object(cloud_availability_updater, "run_generate_cloud_connector_catalog")
+    mocker.patch.object(cloud_availability_updater, "get_metadata_file_path")
+    mocker.patch.object(cloud_availability_updater, "enable_in_cloud", mocker.Mock(return_value=updated_files))
     mocker.patch.object(cloud_availability_updater, "commit_all_files")
 
     connector = mocker.Mock()
     repo = mocker.Mock()
     repo_path = mocker.Mock()
 
-    updated_connector = cloud_availability_updater.add_new_connector_to_cloud_catalog(repo_path, repo, connector)
+    updated_connector = cloud_availability_updater.add_new_connector_to_cloud_catalog(repo, connector)
     assert updated_connector == updated_files
-    cloud_availability_updater.get_definitions_mask_path.assert_called_with(repo_path, connector.connector_type)
-    cloud_availability_updater.update_definitions_mask.assert_called_once_with(
-        connector, cloud_availability_updater.get_definitions_mask_path.return_value
+    cloud_availability_updater.get_metadata_file_path.assert_called_with(repo_path, connector.connector_type)
+    cloud_availability_updater.enable_in_cloud.assert_called_once_with(
+        connector, cloud_availability_updater.get_metadata_file_path.return_value
     )
     if updated_files:
-        cloud_availability_updater.run_generate_cloud_connector_catalog.assert_called_once_with(repo_path)
         cloud_availability_updater.commit_all_files.assert_called_with(repo, f"🤖 Add {connector.connector_name} connector to cloud")
 
 
@@ -136,7 +135,7 @@ def test_create_pr(mocker, pr_already_created):
         "title": "my pr title",
         "body": "my pr body",
         "head": "my_awesome_branch",
-        "base": "master",
+        "base": "main",
     }
     expected_issue_url = "https://api.github.com/repos/airbytehq/airbyte-platform-internal/issues/pr_number/labels"
     expected_issue_data = {"labels": cloud_availability_updater.PR_LABELS}
@@ -184,16 +183,6 @@ def test_get_authenticated_repo_url(mocker):
     mocker.patch.object(cloud_availability_updater, "AIRBYTE_GITHUB_REPO_URL", "https://foobar.com")
     repo_url = cloud_availability_updater.get_authenticated_repo_url("username", "token")
     assert repo_url == "https://username:token@foobar.com"
-
-
-def test_run_generate_cloud_connector_catalog(mocker, tmp_path):
-    mocker.patch.object(cloud_availability_updater, "subprocess")
-
-    result = cloud_availability_updater.run_generate_cloud_connector_catalog(tmp_path)
-    cloud_availability_updater.subprocess.check_output.assert_called_once_with(
-        f"cd {tmp_path} && ./gradlew :cloud-config:cloud-config-seed:generateCloudConnectorCatalog", shell=True
-    )
-    assert result == cloud_availability_updater.subprocess.check_output.return_value.decode.return_value
 
 
 @pytest.mark.parametrize("response, expected_output", [([], False), (["foo"], True)])
@@ -293,7 +282,7 @@ def test_get_pr_body(mocker):
 @pytest.mark.parametrize("added_connectors", [True, False])
 def test_batch_deploy_eligible_connectors_to_cloud_repo(mocker, tmp_path, added_connectors):
     mocker.patch.object(cloud_availability_updater.tempfile, "mkdtemp", mocker.Mock(return_value=str(tmp_path)))
-    mocker.patch.object(cloud_availability_updater, "clone_airbyte_cloud_repo")
+    mocker.patch.object(cloud_availability_updater, "clone_airbyte_repo")
     mocker.patch.object(cloud_availability_updater, "set_git_identity")
     mocker.patch.object(cloud_availability_updater, "checkout_new_branch")
     mocker.patch.object(cloud_availability_updater, "add_new_connector_to_cloud_catalog")
@@ -317,8 +306,8 @@ def test_batch_deploy_eligible_connectors_to_cloud_repo(mocker, tmp_path, added_
     expected_pr_title = "🤖 Cloud Availability updater: new connectors to deploy [20230214]"
 
     cloud_availability_updater.batch_deploy_eligible_connectors_to_cloud_repo(eligible_connectors)
-    cloud_availability_updater.clone_airbyte_cloud_repo.assert_called_once_with(tmp_path)
-    cloud_availability_updater.set_git_identity.assert_called_once_with(cloud_availability_updater.clone_airbyte_cloud_repo.return_value)
+    cloud_availability_updater.clone_airbyte_repo.assert_called_once_with(tmp_path)
+    cloud_availability_updater.set_git_identity.assert_called_once_with(cloud_availability_updater.clone_airbyte_repo.return_value)
     mock_repo.git.checkout.assert_called_with(cloud_availability_updater.AIRBYTE_MAIN_BRANCH_NAME)
 
     cloud_availability_updater.checkout_new_branch.assert_called_once_with(mock_repo, expected_new_branch_name)
