@@ -209,7 +209,8 @@ def test(
         return False
     global_success = all(connector_context.state is ContextState.SUCCESSFUL for connector_context in connectors_tests_contexts)
     update_global_commit_status_check(ctx.obj, "success" if global_success else "failure")
-    return global_success
+    # If we reach this point, it means that all the connectors have been tested so the pipeline did its job and can exit with success.
+    return True
 
 
 @connectors.command(cls=DaggerPipelineCommand, help="Build all images for the selected connectors.")
