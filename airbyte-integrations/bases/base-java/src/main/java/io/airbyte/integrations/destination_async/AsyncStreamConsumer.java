@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination_async;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
@@ -12,6 +13,7 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination_async.buffers.BufferEnqueue;
 import io.airbyte.integrations.destination_async.buffers.BufferManager;
+import io.airbyte.integrations.destination_async.state.FlushFailure;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -45,6 +47,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
   private final FlushWorkers flushWorkers;
   private final Set<StreamDescriptor> streamNames;
   private final IgnoredRecordsTracker ignoredRecordsTracker;
+  private final FlushFailure flushFailure;
 
   private boolean hasStarted;
   private boolean hasClosed;
@@ -56,6 +59,18 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
                              final ConfiguredAirbyteCatalog catalog,
                              final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
                              final BufferManager bufferManager) {
+    this(outputRecordCollector, onStart, onClose, flusher, catalog, isValidRecord, bufferManager, new FlushFailure());
+  }
+
+  @VisibleForTesting
+  public AsyncStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
+                             final OnStartFunction onStart,
+                             final OnCloseFunction onClose,
+                             final DestinationFlushFunction flusher,
+                             final ConfiguredAirbyteCatalog catalog,
+                             final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
+                             final BufferManager bufferManager,
+                             final FlushFailure flushFailure) {
     hasStarted = false;
     hasClosed = false;
 
@@ -65,7 +80,8 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     this.isValidRecord = isValidRecord;
     this.bufferManager = bufferManager;
     bufferEnqueue = bufferManager.getBufferEnqueue();
-    flushWorkers = new FlushWorkers(this.bufferManager.getBufferDequeue(), flusher, outputRecordCollector);
+    this.flushFailure = flushFailure;
+    flushWorkers = new FlushWorkers(this.bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure);
     streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
     ignoredRecordsTracker = new IgnoredRecordsTracker();
   }
@@ -84,6 +100,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
   @Override
   public void accept(final AirbyteMessage message) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
+    propagateFlushWorkerExceptionIfPresent();
     /*
      * intentionally putting extractStream outside the buffer manager so that if in the future we want
      * to try to use a thread pool to partially deserialize to get record type and stream name, we can
@@ -107,17 +124,23 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     // we need to close the workers before closing the bufferManagers (and underlying buffers)
     // or we risk in-memory data.
     flushWorkers.close();
+
     bufferManager.close();
     ignoredRecordsTracker.report();
     onClose.call();
+    
+    // as this throws an exception, we need to be after all other close functions.
+    propagateFlushWorkerExceptionIfPresent();
     LOGGER.info("{} closed.", AsyncStreamConsumer.class);
   }
 
-  private void validateRecord(final AirbyteMessage message) {
-    final StreamDescriptor streamDescriptor = new StreamDescriptor()
-        .withNamespace(message.getRecord().getNamespace())
-        .withName(message.getRecord().getStream());
+  private void propagateFlushWorkerExceptionIfPresent() throws Exception {
+    if (flushFailure.isFailed()) {
+      throw flushFailure.getException();
+    }
+  }
 
+  private void validateRecord(final AirbyteMessage message, final StreamDescriptor streamDescriptor) {
     // if stream is not part of list of streams to sync to then throw invalid stream exception
     if (!streamNames.contains(streamDescriptor)) {
       throwUnrecognizedStream(catalog, message);

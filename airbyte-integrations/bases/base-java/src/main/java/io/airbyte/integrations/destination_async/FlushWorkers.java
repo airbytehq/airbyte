@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination_async;
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
+import io.airbyte.integrations.destination_async.state.FlushFailure;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
@@ -60,12 +61,16 @@ public class FlushWorkers implements AutoCloseable {
   private final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
   private final ConcurrentHashMap<StreamDescriptor, AtomicInteger> streamToInProgressWorkers = new ConcurrentHashMap<>();
 
+  private final FlushFailure flushFailure;
+
   public FlushWorkers(final BufferDequeue bufferDequeue,
                       final DestinationFlushFunction flushFunction,
-                      final Consumer<AirbyteMessage> outputRecordCollector) {
+                      final Consumer<AirbyteMessage> outputRecordCollector,
+                      final FlushFailure flushFailure) {
     this.bufferDequeue = bufferDequeue;
-    flusher = flushFunction;
+    this.flusher = flushFunction;
     this.outputRecordCollector = outputRecordCollector;
+    this.flushFailure = flushFailure;
   }
 
   public void start() {
@@ -171,7 +176,6 @@ public class FlushWorkers implements AutoCloseable {
               .collect(Collectors.groupingBy(
                   stateId -> stateId,
                   Collectors.counting()));
-
           flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
 
           batch.flushStates(stateIdToCount).forEach(outputRecordCollector);
@@ -179,6 +183,8 @@ public class FlushWorkers implements AutoCloseable {
 
         log.info("Worker finished flushing. Current queue size: {}", bufferDequeue.getQueueSizeInRecords(desc));
       } catch (final Exception e) {
+        log.info("Flush worker error: ", e);
+        flushFailure.propagateException(e);
         throw new RuntimeException(e);
       }
     });
