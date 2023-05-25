@@ -163,7 +163,7 @@ def test(
     Args:
         ctx (click.Context): The click context.
     """
-    if ctx.obj["is_ci"] and ctx.obj["pull_request"] and not ctx.obj["pull_request"].draft:
+    if ctx.obj["is_ci"] and ctx.obj["pull_request"] and ctx.obj["pull_request"].draft:
         click.echo("Skipping connectors tests for draft pull request.")
         sys.exit(0)
 
