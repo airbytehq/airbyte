@@ -11,6 +11,8 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -171,7 +173,11 @@ public class FlushWorkers implements AutoCloseable {
   }
 
   private Optional<StreamDescriptor> getNext(final long queueSizeThresholdBytes) {
-    for (final StreamDescriptor stream : bufferDequeue.getBufferedStreams()) {
+    // todo (cgardens) - prefer finding a new stream over flushing more records from a stream that's
+    // already flushing. this random is a lazy verison of this.
+    final ArrayList<StreamDescriptor> shuffled = new ArrayList<>(bufferDequeue.getBufferedStreams());
+    Collections.shuffle(shuffled);
+    for (final StreamDescriptor stream : shuffled) {
       // while we allow out-of-order processing for speed improvements via multiple workers reading from
       // the same queue, also avoid scheduling more workers than what is already in progress.
       final long runningBytesEstimate = streamToInProgressWorkers.getOrDefault(stream, new AtomicInteger(0)).get() * QUEUE_FLUSH_THRESHOLD_BYTES;
@@ -221,15 +227,13 @@ public class FlushWorkers implements AutoCloseable {
       final String flushWorkerId = UUID.randomUUID().toString().substring(0, 5);
       log.info("Flush Worker ({}) -- Worker picked up work.", flushWorkerId);
       try {
-        log.info("Flush Worker ({}) -- Attempting to read from queue namespace: {}, stream: {}. Current queue size: {}",
+        log.info("Flush Worker ({}) -- Attempting to read from queue namespace: {}, stream: {}. Remaining records in queue: {}",
             flushWorkerId,
             desc.getNamespace(),
             desc.getName(),
             bufferDequeue.getQueueSizeInRecords(desc).orElseThrow());
 
         try (final var batch = bufferDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
-          flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
-
           final Map<Long, Long> stateIdToCount = batch.getData()
               .stream()
               .map(MessageWithMeta::stateId)
@@ -237,11 +241,12 @@ public class FlushWorkers implements AutoCloseable {
                   stateId -> stateId,
                   Collectors.counting()));
           final long totalSize = stateIdToCount.values().stream().mapToLong(v -> v).sum();
-          log.info("Flush Worker ({}) -- Worked flushed: {} records ({})",
+          log.info("Flush Worker ({}) -- Batch contains: {} records ({})",
               flushWorkerId,
               batch.getData().size(),
               FileUtils.byteCountToDisplaySize(totalSize));
 
+          flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
           batch.flushStates(stateIdToCount).forEach(outputRecordCollector);
         }
 
