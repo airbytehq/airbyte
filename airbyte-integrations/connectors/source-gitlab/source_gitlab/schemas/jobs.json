@@ -57,14 +57,30 @@
     "tag_list": {
       "type": ["null", "array"]
     },
+    "user": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
     "user_id": {
       "type": ["null", "integer"]
+    },
+    "pipeline": {
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "pipeline_id": {
       "type": ["null", "integer"]
     },
+    "runner": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
     "runner_id": {
       "type": ["null", "integer"]
+    },
+    "commit": {
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "commit_id": {
       "type": ["null", "string"]
