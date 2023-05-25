@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Optional
 
-from ci_connector_ops.pipelines.contexts import CIContext
+from ci_connector_ops.pipelines.bases import CIContext
 from ci_connector_ops.utils import console
 
 if TYPE_CHECKING:
