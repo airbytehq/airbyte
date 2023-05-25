@@ -217,14 +217,17 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
         ConnectorReport: The reports holding publish results.
     """
 
-    metadata_upload_step = metadata.MetadataUpload(
-        context=context,
-        metadata_service_gcs_credentials_secret=context.metadata_service_gcs_credentials_secret,
-        docker_hub_username_secret=context.docker_hub_username_secret,
-        docker_hub_password_secret=context.docker_hub_password_secret,
-        metadata_bucket_name=context.metadata_bucket_name,
-        metadata_path=context.metadata_path,
-    )
+    if not context.pre_release:
+        metadata_upload_step = metadata.MetadataUpload(
+            context=context,
+            metadata_service_gcs_credentials_secret=context.metadata_service_gcs_credentials_secret,
+            docker_hub_username_secret=context.docker_hub_username_secret,
+            docker_hub_password_secret=context.docker_hub_password_secret,
+            metadata_bucket_name=context.metadata_bucket_name,
+            metadata_path=context.metadata_path,
+        )
+    else:
+        metadata_upload_step = None
 
     def create_connector_report(results: List[StepResult]) -> ConnectorReport:
         report = ConnectorReport(context, results, name="PUBLISH RESULTS")
