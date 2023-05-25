@@ -119,7 +119,7 @@
         "type": "string",
         "title": "Data State",
         "enum": ["final", "all"],
-        "description": "If \"all\", data will include fresh data. If \"final\" or if this parameter is omitted, the returned data will include only finalized data.",
+        "description": "If \"final\" or if this parameter is omitted, the returned data will include only finalized data. Setting this parameter to \"all\" should not be used with Incremental Sync mode as it may cause data loss. If \"all\", data will include fresh data.",
         "examples": ["final"],
         "default": "final",
         "order": 5
