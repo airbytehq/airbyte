@@ -292,7 +292,6 @@ jobs:
         id: jacoco
         uses: madrapps/jacoco-report@v1.3
         with:
-          command: ./gradlew :airbyte-integrations:connectors:source-postgres:jacocoTestReport
           # todo(mfsiega-airbyte): when v1.4 is released, use wildcards per https://github.com/Madrapps/jacoco-report/issues/20.
           paths: |
             ${{ env.WORKING_DIRECTORY }}/airbyte-integrations/connectors/source-postgres/build/reports/jacoco/test/jacocoTestReport.xml

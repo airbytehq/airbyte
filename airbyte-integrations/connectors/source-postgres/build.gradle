@@ -8,7 +8,7 @@ plugins {
 }
 
 jacocoTestReport {
-    dependsOn test, integrationTestJava
+    dependsOn test
     reports {
         xml.enabled true
     }
