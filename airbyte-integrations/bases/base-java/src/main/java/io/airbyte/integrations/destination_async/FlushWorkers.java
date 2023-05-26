@@ -50,6 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FlushWorkers implements AutoCloseable {
 
+  private static final double EAGER_FLUSH_THRESHOLD = 0.90;
   private static final long QUEUE_FLUSH_THRESHOLD_BYTES = 10 * 1024 * 1024; // 10MB
   private static final long MAX_TIME_BETWEEN_REC_MINS = 5L;
   private static final long SUPERVISOR_INITIAL_DELAY_SECS = 0L;
@@ -146,8 +147,10 @@ public class FlushWorkers implements AutoCloseable {
       int allocatableThreads = threadPoolExecutor.getMaximumPoolSize() - threadPoolExecutor.getActiveCount();
 
       while (allocatableThreads > 0) {
-        // when we are closing, flush regardless of how few items are in the queue.
-        final long computedQueueThreshold = isClosing.get() ? 0 : QUEUE_FLUSH_THRESHOLD_BYTES;
+        final boolean isBuffer90Full =
+            EAGER_FLUSH_THRESHOLD <= (double) bufferDequeue.getTotalGlobalQueueSizeBytes() / bufferDequeue.getTotalGlobalQueueSizeBytes();
+        // when we are closing or queues are very fully, flush regardless of how few items are in the queue.
+        final long computedQueueThreshold = isClosing.get() || isBuffer90Full ? 0 : QUEUE_FLUSH_THRESHOLD_BYTES;
 
         final Optional<StreamDescriptor> next = getNextStreamToFlush(computedQueueThreshold);
 
@@ -180,24 +183,23 @@ public class FlushWorkers implements AutoCloseable {
       // while we allow out-of-order processing for speed improvements via multiple workers reading from
       // the same queue, also avoid scheduling more workers than what is already in progress.
       final long runningBytesEstimate = streamToInProgressWorkers.getOrDefault(stream, new AtomicInteger(0)).get() * QUEUE_FLUSH_THRESHOLD_BYTES;
-      final long queueSizeAfterInProgress = bufferDequeue.getQueueSizeBytes(stream).orElseThrow() - runningBytesEstimate;
-      final var isQueueSizeExceedsThreshold = queueSizeAfterInProgress >= queueSizeThresholdBytes;
+      final long inQueueBytes = bufferDequeue.getQueueSizeBytes(stream).orElseThrow() - runningBytesEstimate;
+      final var isQueueSizeExceedsThreshold = inQueueBytes >= queueSizeThresholdBytes;
       final var isTooLongSinceLastRecord = bufferDequeue.getTimeOfLastRecord(stream)
           .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MINS, ChronoUnit.MINUTES)))
           .orElse(false);
 
       final String streamInfo = String.format(
-          "Flushing stream %s - %s, time trigger: %s, size trigger: %s current threshold: %s, queue size: %s, in-progress estimate: %s, adjusted queue size: %s",
+          "Flushing stream %s - %s, time trigger: %s, size trigger: %s current threshold b: %s, queue size b: %s, in-progress estimate b: %s, in queue b: %s",
           stream.getNamespace(),
           stream.getName(),
           isTooLongSinceLastRecord,
           isQueueSizeExceedsThreshold,
-          queueSizeThresholdBytes,
-          bufferDequeue.getQueueSizeBytes(stream).orElseThrow(),
-          runningBytesEstimate,
-          queueSizeAfterInProgress);
-      // todo make this debug
-      log.info("computed: {}", streamInfo);
+          AirbyteFileUtils.byteCountToDisplaySize(queueSizeThresholdBytes),
+          AirbyteFileUtils.byteCountToDisplaySize(bufferDequeue.getQueueSizeBytes(stream).orElseThrow()),
+          AirbyteFileUtils.byteCountToDisplaySize(runningBytesEstimate),
+          AirbyteFileUtils.byteCountToDisplaySize(inQueueBytes));
+      log.debug("computed: {}", streamInfo);
 
       if (isQueueSizeExceedsThreshold || isTooLongSinceLastRecord) {
         log.info("Flushing: {}", streamInfo);
@@ -238,10 +240,10 @@ public class FlushWorkers implements AutoCloseable {
               .collect(Collectors.groupingBy(
                   stateId -> stateId,
                   Collectors.counting()));
-          final long totalSize = stateIdToCount.values().stream().mapToLong(v -> v).sum();
-          log.info("Flush Worker ({}) -- Batch contains: {} records.",
+          log.info("Flush Worker ({}) -- Batch contains: {} records, {} bytes.",
               flushWorkerId,
-              batch.getData().size());
+              batch.getData().size(),
+              AirbyteFileUtils.byteCountToDisplaySize(batch.getSizeInBytes()));
 
           flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
           batch.flushStates(stateIdToCount).forEach(outputRecordCollector);

@@ -7,8 +7,6 @@ package io.airbyte.integrations.destination_async;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Responsible for managing global memory across multiple queues in a thread-safe way.
@@ -34,8 +32,6 @@ import org.slf4j.LoggerFactory;
  */
 @Slf4j
 public class GlobalMemoryManager {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(GlobalMemoryManager.class);
 
   // In cases where a queue is rapidly expanding, a larger block size allows less allocation calls. On
   // the flip size, a smaller block size allows more granular memory management. Since this overhead
@@ -73,7 +69,7 @@ public class GlobalMemoryManager {
     final var toAllocateBytes = Math.min(freeMem, BLOCK_SIZE_BYTES);
     currentMemoryBytes.addAndGet(toAllocateBytes);
 
-    LOGGER.trace("Memory Requested: max: {}, allocated: {}, allocated in this request: {}",
+    log.debug("Memory Requested: max: {}, allocated: {}, allocated in this request: {}",
         FileUtils.byteCountToDisplaySize(maxMemoryBytes),
         FileUtils.byteCountToDisplaySize(currentMemoryBytes.get()),
         FileUtils.byteCountToDisplaySize(toAllocateBytes));

@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination_async.buffers;
 
-import io.airbyte.integrations.destination_async.buffers.MemoryBoundedLinkedBlockingQueue.MemoryItem;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.time.Instant;
 import java.util.Optional;
@@ -36,8 +35,8 @@ public class StreamAwareQueue {
     return Optional.ofNullable(timeOfLastMessage.get());
   }
 
-  public Optional<MessageWithMeta> peek() {
-    return Optional.ofNullable(memoryAwareQueue.peek()).map(MemoryItem::item);
+  public Optional<MemoryBoundedLinkedBlockingQueue.MemoryItem<MessageWithMeta>> peek() {
+    return Optional.ofNullable(memoryAwareQueue.peek());
   }
 
   public int size() {

@@ -130,7 +130,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
 
     // as this throws an exception, we need to be after all other close functions.
     propagateFlushWorkerExceptionIfPresent();
-    LOGGER.info("{} closed.", AsyncStreamConsumer.class);
+    LOGGER.info("{} closed", AsyncStreamConsumer.class);
   }
 
   private void propagateFlushWorkerExceptionIfPresent() throws Exception {

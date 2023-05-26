@@ -44,7 +44,7 @@ public class BufferManager {
     LOGGER.info("Memory available from freeMemory: {}", Runtime.getRuntime().freeMemory());
     memoryManager = new GlobalMemoryManager(maxMemory);
     buffers = new ConcurrentHashMap<>();
-    final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
+    final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager(memoryManager);
     bufferEnqueue = new BufferEnqueue(memoryManager, buffers, stateManager);
     bufferDequeue = new BufferDequeue(memoryManager, buffers, stateManager);
     debugLoop = Executors.newSingleThreadScheduledExecutor();

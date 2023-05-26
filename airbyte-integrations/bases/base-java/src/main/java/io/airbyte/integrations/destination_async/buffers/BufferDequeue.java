@@ -11,15 +11,14 @@ import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Stream;
 
 /**
  * Represents the minimal interface over the underlying buffer queues required for dequeue
@@ -63,33 +62,24 @@ public class BufferDequeue {
     try {
       final AtomicLong bytesRead = new AtomicLong();
 
-      final List<MessageWithMeta> s = Stream.generate(() -> {
-        try {
-          return queue.poll(20, TimeUnit.MILLISECONDS);
-        } catch (final InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-      }).takeWhile(memoryItem -> {
-        // if no new records after waiting, the stream is done.
-        if (memoryItem == null) {
-          return false;
-        }
+      final List<MessageWithMeta> output = new LinkedList<>();
+      while (queue.size() > 0) {
+        final MemoryItem<MessageWithMeta> memoryItem = queue.peek().orElseThrow();
 
         // otherwise pull records until we hit the memory limit.
         final long newSize = memoryItem.size() + bytesRead.get();
         if (newSize <= optimalBytesToRead) {
           bytesRead.addAndGet(memoryItem.size());
-          return true;
+          output.add(queue.poll().item());
         } else {
-          return false;
+          break;
         }
-      }).map(MemoryItem::item)
-          .toList();
+      }
 
       queue.addMaxMemory(-bytesRead.get());
 
       return new MemoryAwareMessageBatch(
-          s,
+          output,
           bytesRead.get(),
           memoryManager,
           stateManager);
@@ -107,12 +97,12 @@ public class BufferDequeue {
     return new HashSet<>(buffers.keySet());
   }
 
-  public long getTotalGlobalQueueSizeBytes() {
-    return buffers.values().stream().map(StreamAwareQueue::getCurrentMemoryUsage).mapToLong(Long::longValue).sum();
+  public long getMaxQueueSizeBytes() {
+    return memoryManager.getMaxMemoryBytes();
   }
 
-  public Optional<MessageWithMeta> peek(final StreamDescriptor streamDescriptor) {
-    return getBuffer(streamDescriptor).flatMap(StreamAwareQueue::peek);
+  public long getTotalGlobalQueueSizeBytes() {
+    return buffers.values().stream().map(StreamAwareQueue::getCurrentMemoryUsage).mapToLong(Long::longValue).sum();
   }
 
   public Optional<Long> getQueueSizeInRecords(final StreamDescriptor streamDescriptor) {
