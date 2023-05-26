@@ -163,6 +163,7 @@ public class IntegrationRunner {
                 consumeWriteStream(consumer);
               }
             } else {
+              LOGGER.info("using consumer2");
               try (final AirbyteMessageConsumer2 consumer = destination.getConsumer2(config, catalog, outputRecordCollector)) {
                 consumeWriteStream2(consumer);
               }
@@ -347,7 +348,6 @@ public class IntegrationRunner {
    */
   @VisibleForTesting
   static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString) throws Exception {
-    inputString.getBytes(StandardCharsets.UTF_8);
     final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
     if (messageOptional.isPresent()) {
       consumer.accept(messageOptional.get());
