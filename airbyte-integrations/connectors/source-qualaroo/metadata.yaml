@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b08e4776-d1de-4e80-ab5c-1e51dad934a2
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-qualaroo
   githubIssueLabel: source-qualaroo
   icon: qualaroo.svg
