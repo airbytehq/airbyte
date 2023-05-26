@@ -58,8 +58,8 @@ public class GlobalAsyncStateManager {
   private static final StreamDescriptor SENTINEL_GLOBAL_DESC = new StreamDescriptor().withName(UUID.randomUUID().toString());
   private final GlobalMemoryManager memoryManager;
 
-  private Long memoryAllocated;
-  private Long memoryUsed;
+  private final AtomicLong memoryAllocated;
+  private final AtomicLong memoryUsed;
 
   boolean preState = true;
   private final ConcurrentMap<Long, AtomicLong> stateIdToCounter = new ConcurrentHashMap<>();
@@ -76,8 +76,8 @@ public class GlobalAsyncStateManager {
 
   public GlobalAsyncStateManager(final GlobalMemoryManager memoryManager) {
     this.memoryManager = memoryManager;
-    memoryAllocated = memoryManager.requestMemory();
-    memoryUsed = 0L;
+    memoryAllocated = new AtomicLong(memoryManager.requestMemory());
+    memoryUsed = new AtomicLong();
   }
 
   // Always assume STREAM to begin, and convert only if needed. Most state is per stream anyway.
@@ -196,15 +196,17 @@ public class GlobalAsyncStateManager {
    * @param bytesFlushed bytes that were flushed (and should be removed from memory used).
    */
   private void freeBytes(final long bytesFlushed) {
-    memoryUsed -= bytesFlushed;
+    memoryUsed.addAndGet(-bytesFlushed);
     LOGGER.debug("Bytes flushed memory to store state message. Allocated: {}, Used: {}, Flushed: {}, % Used: {}",
-        FileUtils.byteCountToDisplaySize(memoryAllocated),
-        FileUtils.byteCountToDisplaySize(memoryUsed),
+        FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
+        FileUtils.byteCountToDisplaySize(memoryUsed.get()),
         FileUtils.byteCountToDisplaySize(bytesFlushed),
-        (double) memoryUsed / memoryAllocated);
-    if (memoryUsed < memoryAllocated * RETURN_MEMORY_THRESHOLD) {
-      final long bytesToFree = (long) (memoryAllocated * RETURN_MEMORY_THRESHOLD);
-      memoryManager.free(bytesToFree);
+        (double) memoryUsed.get() / memoryAllocated.get());
+    if (memoryUsed.get() < memoryAllocated.get() * RETURN_MEMORY_THRESHOLD) {
+      // todo (cgardens) - do something smarter. just returning half the used memory.
+      final long bytesToFree = (memoryAllocated.get() - memoryUsed.get()) / 2;
+      memoryAllocated.addAndGet(-bytesToFree);
+      freeBytes(-bytesToFree);
       LOGGER.debug("Returned {} of memory back to the memory manager.", FileUtils.byteCountToDisplaySize(bytesToFree));
     }
   }
@@ -262,26 +264,26 @@ public class GlobalAsyncStateManager {
    */
   @SuppressWarnings("BusyWait")
   private void allocateMemoryToState(final long sizeInBytes) {
-    if (memoryAllocated < memoryUsed + sizeInBytes) {
-      while (memoryAllocated < memoryUsed + sizeInBytes) {
-        memoryAllocated += memoryManager.requestMemory();
+    if (memoryAllocated.get() < memoryUsed.get() + sizeInBytes) {
+      while (memoryAllocated.get() < memoryUsed.get() + sizeInBytes) {
+        memoryAllocated.addAndGet(memoryManager.requestMemory());
         try {
           LOGGER.debug("Insufficient memory to store state message. Allocated: {}, Used: {}, Size of State Msg: {}, Needed: {}",
-              FileUtils.byteCountToDisplaySize(memoryAllocated),
-              FileUtils.byteCountToDisplaySize(memoryUsed),
+              FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
+              FileUtils.byteCountToDisplaySize(memoryUsed.get()),
               FileUtils.byteCountToDisplaySize(sizeInBytes),
-              FileUtils.byteCountToDisplaySize(sizeInBytes - (memoryAllocated - memoryUsed)));
+              FileUtils.byteCountToDisplaySize(sizeInBytes - (memoryAllocated.get() - memoryUsed.get())));
           sleep(1000);
         } catch (final InterruptedException e) {
           throw new RuntimeException(e);
         }
       }
     }
-    memoryUsed += sizeInBytes;
+    memoryUsed.addAndGet(sizeInBytes);
     LOGGER.debug("State Manager memory usage: Allocated: {}, Used: {}, % Used {}",
-        FileUtils.byteCountToDisplaySize(memoryAllocated),
-        FileUtils.byteCountToDisplaySize(memoryUsed),
-        (double) memoryUsed / memoryAllocated);
+        FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
+        FileUtils.byteCountToDisplaySize(memoryUsed.get()),
+        (double) memoryUsed.get() / memoryAllocated.get());
   }
 
   private static Optional<StreamDescriptor> extractStream(final AirbyteMessage message) {
