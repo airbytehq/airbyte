@@ -222,6 +222,7 @@ class IntegrationRunnerTest {
     final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
     new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
 
+    // noinspection resource
     verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE);
     verify(stdoutConsumer).accept(message1);
     verify(stdoutConsumer).accept(message2);
@@ -245,6 +246,7 @@ class IntegrationRunnerTest {
     final Throwable throwable = catchThrowable(() -> new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS));
 
     assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    // noinspection resource
     verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE);
   }
 
@@ -317,9 +319,9 @@ class IntegrationRunnerTest {
     final JsonNode config = Jsons.deserialize(snoflakeConfigString);
     configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, snoflakeConfigString);
 
-    final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
+    final AirbyteMessageConsumer2 airbyteMessageConsumerMock = mock(AirbyteMessageConsumer2.class);
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(destination.getConsumer(config, CONFIGURED_CATALOG, stdoutConsumer)).thenReturn(airbyteMessageConsumerMock);
+    when(destination.getConsumer2(config, CONFIGURED_CATALOG, stdoutConsumer)).thenReturn(airbyteMessageConsumerMock);
 
     final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
     when(destination.spec()).thenReturn(expectedConnSpec);
@@ -436,7 +438,7 @@ class IntegrationRunnerTest {
     }
     final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
         .filter(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(testName))
-        .collect(Collectors.toList());
+        .toList();
     // a thread that refuses to be interrupted should remain
     assertEquals(1, runningThreads.size());
     assertEquals(1, caughtExceptions.size());
