@@ -290,29 +290,31 @@ def test_get_pr_body(mocker, eligible_connectors, excluded_connectors):
 @freezegun.freeze_time("2023-02-14")
 @pytest.mark.parametrize("added_connectors", [True, False])
 def test_batch_deploy_eligible_connectors_to_cloud_repo(mocker, dummy_repo_path, added_connectors, eligible_connectors, excluded_connectors):
+    all_connectors = eligible_connectors + excluded_connectors
     mocker.patch.object(cloud_availability_updater.tempfile, "mkdtemp", mocker.Mock(return_value=str(dummy_repo_path)))
     mocker.patch.object(cloud_availability_updater, "clone_airbyte_repo")
     mocker.patch.object(cloud_availability_updater, "set_git_identity")
     mocker.patch.object(cloud_availability_updater, "checkout_new_branch")
     mocker.patch.object(cloud_availability_updater, "add_new_connector_to_cloud_catalog")
+    mocker.patch.object(cloud_availability_updater, "enable_in_cloud", side_effect=False)
     mocker.patch.object(cloud_availability_updater, "push_branch")
     mocker.patch.object(cloud_availability_updater, "get_pr_body")
     mocker.patch.object(cloud_availability_updater, "create_pr")
     mocker.patch.object(cloud_availability_updater, "shutil")
 
-    # eligible_connectors = [mocker.Mock(should_be_added=True), mocker.Mock(should_be_added=True), mocker.Mock(should_be_added=False)]
     if added_connectors:
-        cloud_availability_updater.add_new_connector_to_cloud_catalog.side_effect = eligible_connectors
+        cloud_availability_updater.add_new_connector_to_cloud_catalog.side_effect = lambda _path, _repo, connector: (connector not in expected_excluded_connectors)
         expected_added_connectors = eligible_connectors
     else:
         cloud_availability_updater.add_new_connector_to_cloud_catalog.return_value = False
 
     expected_excluded_connectors = excluded_connectors
+
     mock_repo = cloud_availability_updater.set_git_identity.return_value
     expected_new_branch_name = "cloud-availability-updater/batch-deploy/20230214"
     expected_pr_title = "🤖 Cloud Availability updater: new connectors to deploy [20230214]"
 
-    cloud_availability_updater.batch_deploy_eligible_connectors_to_cloud_repo(eligible_connectors)
+    cloud_availability_updater.batch_deploy_eligible_connectors_to_cloud_repo(all_connectors)
     cloud_availability_updater.clone_airbyte_repo.assert_called_once_with(dummy_repo_path)
     cloud_availability_updater.set_git_identity.assert_called_once_with(cloud_availability_updater.clone_airbyte_repo.return_value)
     mock_repo.git.checkout.assert_called_with(cloud_availability_updater.AIRBYTE_MAIN_BRANCH_NAME)
