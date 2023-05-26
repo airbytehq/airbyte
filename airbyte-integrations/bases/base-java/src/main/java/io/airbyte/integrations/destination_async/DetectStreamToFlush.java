@@ -9,10 +9,12 @@ import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -45,11 +47,7 @@ public class DetectStreamToFlush {
 
   @VisibleForTesting
   Optional<StreamDescriptor> getNextStreamToFlush(final long queueSizeThresholdBytes) {
-    // todo (cgardens) - prefer finding a new stream over flushing more records from a stream that's
-    // already flushing. this random is a lazy verison of this.
-    final ArrayList<StreamDescriptor> shuffled = new ArrayList<>(bufferDequeue.getBufferedStreams());
-    Collections.shuffle(shuffled);
-    for (final StreamDescriptor stream : shuffled) {
+    for (final StreamDescriptor stream : orderStreamsByPriority(bufferDequeue.getBufferedStreams())) {
       // while we allow out-of-order processing for speed improvements via multiple workers reading from
       // the same queue, also avoid scheduling more workers than what is already in progress.
       final long runningBytesEstimate = runningFlushWorkers.getNumFlushWorkers(stream) * QUEUE_FLUSH_THRESHOLD_BYTES;
@@ -78,6 +76,15 @@ public class DetectStreamToFlush {
       }
     }
     return Optional.empty();
+  }
+
+  @VisibleForTesting
+  List<StreamDescriptor> orderStreamsByPriority(final Set<StreamDescriptor> stream) {
+    return stream.stream()
+        .sorted(Comparator.comparing((StreamDescriptor s) -> bufferDequeue.getQueueSizeBytes(s).orElseThrow(), Comparator.reverseOrder())
+            .thenComparing(s -> bufferDequeue.getTimeOfLastRecord(s).orElseThrow())
+            .thenComparing(s -> s.getNamespace() + s.getName()))
+        .collect(Collectors.toList());
   }
 
 }
