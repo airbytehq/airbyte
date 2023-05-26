@@ -19,5 +19,4 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/scaffold-java-jdbc
   tags:
     - language:java
-    - language:python
 metadataSpecVersion: "1.0"
