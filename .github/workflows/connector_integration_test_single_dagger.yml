@@ -8,7 +8,7 @@ on:
         default: "--modified"
   pull_request:
     paths:
-      - "airbyte-integrations/connectors/**"
+      #- "airbyte-integrations/connectors/**"
       #- ".github/workflows/connector_integration_test_single_dagger.yml"
     types:
       - opened
