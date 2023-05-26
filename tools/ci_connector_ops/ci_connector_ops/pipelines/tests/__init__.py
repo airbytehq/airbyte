@@ -13,7 +13,7 @@ from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.pipelines.metadata import MetadataValidation
 from ci_connector_ops.pipelines.tests import java_connectors, python_connectors
 from ci_connector_ops.pipelines.tests.common import QaChecks, VersionFollowsSemverCheck, VersionIncrementCheck
-from ci_connector_ops.utils import ConnectorLanguage
+from ci_connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
 
 LANGUAGE_MAPPING = {
     "run_all_tests": {
@@ -38,7 +38,7 @@ async def run_metadata_validation(context: ConnectorContext) -> List[StepResult]
         List[StepResult]: The results of the metadata validation steps.
     """
     context.logger.info("Run metadata validation.")
-    return [await MetadataValidation(context).run()]
+    return [await MetadataValidation(context, context.connector.code_directory / METADATA_FILE_NAME).run()]
 
 
 async def run_version_checks(context: ConnectorContext) -> List[StepResult]:
