@@ -156,7 +156,7 @@ jobs:
 
       - uses: actions/setup-python@v3
         with:
-          python-version: '3.9'
+          python-version: "3.9"
 
       - uses: actions/setup-java@v1
         with:
@@ -187,7 +187,7 @@ jobs:
                    --build-arg AIRBYTE_TO_FLOW_TAG=$AIRBYTE_TO_FLOW_TAG \
                    -t ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
           fi
-          
+
           docker push ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
 
       - name: Push ${{ matrix.connector.name }} image with 'dev' and version tags
@@ -196,7 +196,7 @@ jobs:
         run: |
           source tools/lib/lib.sh
           export IMAGE_VERSION=$(_get_docker_image_version airbyte-integrations/connectors/${{ matrix.connector.name }}/Dockerfile)
-          
+
           docker pull ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
           echo "Publishing image ghcr.io/estuary/${{ matrix.connector.name }}:dev"
           docker tag ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/${{ matrix.connector.name }}:dev
@@ -211,7 +211,7 @@ jobs:
         run: |
           source tools/lib/lib.sh
           export IMAGE_VERSION=$(_get_docker_image_version airbyte-integrations/connectors/${{ matrix.connector.name }}/Dockerfile)
-          
+
           docker pull ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
           echo "Publishing image ghcr.io/estuary/${{ matrix.connector.alias }}:dev"
           docker tag ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/${{ matrix.connector.alias }}:dev
@@ -222,7 +222,9 @@ jobs:
 
       - name: Install psql
         if: ${{ github.event_name == 'push' }}
-        run: sudo apt install postgresql-client
+        run: |
+          sudo apt update
+          sudo apt install postgresql
 
       - name: Refresh connector tags for ${{ matrix.connector.name }}
         if: ${{ github.event_name == 'push' }}
