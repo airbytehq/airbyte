@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination_async.buffers;
 
+import static java.lang.Thread.sleep;
+
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -54,12 +56,21 @@ public class BufferEnqueue {
     final var queue = buffers.get(streamDescriptor);
     var addedToQueue = queue.offer(message, sizeInBytes, stateId);
 
+    int i = 0;
     while (!addedToQueue) {
       final var newlyAllocatedMemory = memoryManager.requestMemory();
       if (newlyAllocatedMemory > 0) {
         queue.addMaxMemory(newlyAllocatedMemory);
       }
       addedToQueue = queue.offer(message, sizeInBytes, stateId);
+      i++;
+      if(i > 5) {
+        try {
+          sleep(500);
+        } catch (final InterruptedException e) {
+          throw new RuntimeException(e);
+        }
+      }
     }
   }
 
