@@ -41,7 +41,7 @@ public class BufferManager {
     LOGGER.info("Memory available to the JVM {}", FileUtils.byteCountToDisplaySize(maxMemory));
     memoryManager = new GlobalMemoryManager(maxMemory);
     buffers = new ConcurrentHashMap<>();
-    final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
+    final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager(memoryManager);
     bufferEnqueue = new BufferEnqueue(memoryManager, buffers, stateManager);
     bufferDequeue = new BufferDequeue(memoryManager, buffers, stateManager);
     debugLoop = Executors.newSingleThreadScheduledExecutor();
