@@ -4,6 +4,7 @@
 
 
 import argparse
+import json
 import os
 from typing import Any, Dict
 
@@ -40,12 +41,12 @@ python3 main_dev_transform_catalog.py \
         parser.add_argument("--integration-type", type=str, required=True, help="type of integration dialect to use")
         parser.add_argument("--profile-config-dir", type=str, required=True, help="path to directory containing DBT profiles.yml")
         parser.add_argument("--catalog", nargs="+", type=str, required=True, help="path to Catalog (JSON Schema) file")
-        parser.add_argument("--catalog", type=str, required=True, help="path to Config file")
+        parser.add_argument("--config", type=str, required=True, help="path to Config file")
         parser.add_argument("--out", type=str, required=True, help="path to output generated DBT Models to")
         parser.add_argument("--json-column", type=str, required=False, help="name of the column containing the json blob")
         parsed_args = parser.parse_args(args)
         profiles_yml = read_profiles_yml(parsed_args.profile_config_dir)
-        config = parsed_args.config
+        config = read_json_config(parsed_args.config)
         self.config = {
             "integration_type": parsed_args.integration_type,
             "schema": extract_schema(profiles_yml),
@@ -68,7 +69,12 @@ python3 main_dev_transform_catalog.py \
         )
         for catalog_file in self.config["catalog"]:
             print(f"Processing {catalog_file}...")
-            processor.process(catalog_file=catalog_file, json_column_name=json_col, default_schema=schema)
+            processor.process(
+                catalog_file=catalog_file,
+                json_column_name=json_col,
+                default_schema=schema,
+                should_normalize_children=self.config["should_normalize_children"],
+            )
         self.update_dbt_project_vars(json_column=self.config["json_column"], models_to_source=processor.models_to_source)
 
     def update_dbt_project_vars(self, **vars_config: Dict[str, Any]):
@@ -96,6 +102,12 @@ def read_yaml_config(filename: str) -> Dict[str, Any]:
 def write_yaml_config(config: Dict[str, Any], filename: str):
     with open(filename, "w") as fp:
         fp.write(yaml.dump(config, sort_keys=False))
+
+
+def read_json_config(input_path: str):
+    with open(input_path, "r") as file:
+        contents = file.read()
+    return json.loads(contents)
 
 
 def extract_schema(profiles_yml: Dict) -> str:
