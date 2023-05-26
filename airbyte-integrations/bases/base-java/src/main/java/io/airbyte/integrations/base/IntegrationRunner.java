@@ -66,7 +66,7 @@ public class IntegrationRunner {
   }
 
   public IntegrationRunner(final Source source) {
-    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source, false);
+    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source);
   }
 
   @VisibleForTesting
