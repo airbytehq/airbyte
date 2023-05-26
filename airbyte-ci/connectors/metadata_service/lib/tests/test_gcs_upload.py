@@ -132,7 +132,7 @@ def test_upload_metadata_to_gcs_invalid_metadata(invalid_metadata_yaml_files):
         except (ValueError, StopIteration):
             continue
         except Exception as e:
-            assert False, f"Expected ValueError for invalid metadata file: {metadata_file_path}. Got: {e}"
+            assert False, f"Expected ValueError for invalid metadata file: {metadata_file_path}. Got this instead: {e}"
 
 
 def test_upload_metadata_to_gcs_non_existent_metadata_file():
