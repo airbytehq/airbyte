@@ -328,6 +328,7 @@ class ConnectorReport(Report):
                 "git_branch": self.pipeline_context.git_branch,
                 "git_revision": self.pipeline_context.git_revision,
                 "ci_context": self.pipeline_context.ci_context,
+                "cdk_version": self.pipeline_context.cdk_version,
             }
         )
 
