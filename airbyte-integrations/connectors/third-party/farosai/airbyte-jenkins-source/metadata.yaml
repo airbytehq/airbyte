@@ -15,5 +15,6 @@ data:
   name: Jenkins
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/jenkins
-  tags: []
+  tags:
+    - language:unknown
 metadataSpecVersion: "1.0"

@@ -15,5 +15,6 @@ data:
   name: PagerDuty
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/pagerduty
-  tags: []
+  tags:
+    - language:unknown
 metadataSpecVersion: "1.0"

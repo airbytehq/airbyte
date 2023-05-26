@@ -15,5 +15,6 @@ data:
   name: VictorOps
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/victorops
-  tags: []
+  tags:
+    - language:unknown
 metadataSpecVersion: "1.0"
