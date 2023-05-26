@@ -3,14 +3,16 @@
 #
 
 from abc import ABC, abstractmethod
+from deepdiff import DeepDiff
 from enum import Enum
-
+import datetime
 import jsonschema
+
+from hypothesis import HealthCheck, Verbosity, given, settings, strategies as st
+from hypothesis_jsonschema import from_schema
+
 from airbyte_cdk.models import ConnectorSpecification
 from connector_acceptance_test.utils import SecretDict
-from deepdiff import DeepDiff
-from hypothesis import HealthCheck, Verbosity, given, settings
-from hypothesis_jsonschema import from_schema
 
 
 class BackwardIncompatibilityContext(Enum):
@@ -180,6 +182,15 @@ class SpecDiffChecker(BaseDiffChecker):
             self._raise_error("An 'enum' field was declared on an existing property", diff)
 
 
+# Custom strategy for generating ISO 8601 datetime values with three-digit milliseconds
+# This is because by default hypothesis generates all valid RFC 3339 datetime values
+# Many of which we dont currently support
+iso8601_datetime_strategy = st.datetimes(
+    min_value=datetime.datetime(1900, 1, 1),
+    max_value=datetime.datetime(9999, 12, 31, 23, 59, 59, 999999),
+).map(lambda dt: dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:23] + "Z")
+
+
 def validate_previous_configs(
     previous_connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification, number_of_configs_to_generate=100
 ):
@@ -187,10 +198,10 @@ def validate_previous_configs(
     1. Generate fake previous config with the previous connector specification json schema.
     2. Validate a fake previous config against the actual connector specification json schema."""
 
-    @given(from_schema(previous_connector_spec.dict()["connectionSpecification"]))
+    @given(from_schema(previous_connector_spec.dict()["connectionSpecification"], custom_formats={"date-time": iso8601_datetime_strategy}))
     @settings(
         max_examples=number_of_configs_to_generate,
-        verbosity=Verbosity.quiet,
+        verbosity=Verbosity.verbose,
         suppress_health_check=(HealthCheck.too_slow, HealthCheck.filter_too_much),
     )
     def check_fake_previous_config_against_actual_spec(fake_previous_config):
