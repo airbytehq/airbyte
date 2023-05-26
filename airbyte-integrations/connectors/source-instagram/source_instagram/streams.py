@@ -344,7 +344,7 @@ class MediaInsights(Media):
             account_id = ig_account.get("id")
             insights = self._get_insights(ig_media, account_id)
             if insights is None:
-                break
+                continue
 
             insights["id"] = ig_media["id"]
             insights["page_id"] = account["page_id"]
