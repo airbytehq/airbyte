@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.airbyte.db.SourceOperations;
 import io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
@@ -28,6 +29,7 @@ import static io.airbyte.db.jdbc.JdbcUtils.ALLOWED_CURSOR_TYPES;
 public class ClickhouseSourceOperations extends AbstractJdbcCompatibleSourceOperations<JDBCType> implements SourceOperations<ResultSet, JDBCType> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSourceOperations.class);
+    private static final ObjectMapper mapper =  new ObjectMapper().registerModule(new JavaTimeModule());
 
     protected JDBCType safeGetJdbcType(final int columnTypeInt) {
         try {
@@ -144,17 +146,15 @@ public class ClickhouseSourceOperations extends AbstractJdbcCompatibleSourceOper
 
     @Override
     protected void putArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-        final ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+        final ArrayNode arrayNode = mapper.createArrayNode();
         try {
             final ResultSet arrayResultSet = resultSet.getArray(index).getResultSet();
             while (arrayResultSet.next()) {
                 arrayNode.add(arrayResultSet.getString(2));
             }
+            node.set(columnName, arrayNode);
         } catch (final SQLException e) {
-            arrayNode.add(new ObjectMapper().valueToTree(resultSet.getString(index)));
+            node.set(columnName, mapper.valueToTree(resultSet.getObject(index)));
         }
-        node.set(columnName, arrayNode);
     }
-
-
 }
