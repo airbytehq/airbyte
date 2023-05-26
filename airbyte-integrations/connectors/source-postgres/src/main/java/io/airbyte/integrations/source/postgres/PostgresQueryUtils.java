@@ -54,11 +54,11 @@ public class PostgresQueryUtils {
             txid_snapshot_xmin(txid_current_snapshot()) AS xmin_raw_value;
       """;
 
-  public static final String CTID_FULL_VACUUM_IN_PROGRESS =
+  public static final String CTID_FULL_VACUUM_IN_PROGRESS_QUERY =
       """
-      SELECT phase FROM pg_stat_progress_cluster WHERE relid=to_regclass('%s')::oid    
+      SELECT phase FROM pg_stat_progress_cluster WHERE command = 'VACUUM FULL' AND relid=to_regclass('%s')::oid    
       """;
-  public static final String CTID_FULL_VACUUM_REL_FILENODE =
+  public static final String CTID_FULL_VACUUM_REL_FILENODE_QUERY =
       """
       SELECT pg_relation_filenode('%s')    
       """;
@@ -97,12 +97,12 @@ public class PostgresQueryUtils {
           getFullyQualifiedTableNameWithQuoting(schemaName, streamName, quoteString);
       LOGGER.info("Full Vacuum information for {}", fullTableName);
       try {
-        List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(CTID_FULL_VACUUM_REL_FILENODE.formatted(fullTableName)).executeQuery(),
+        List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(CTID_FULL_VACUUM_REL_FILENODE_QUERY.formatted(fullTableName)).executeQuery(),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
         Preconditions.checkState(jsonNodes.size() == 1);
         LOGGER.info("Relation filenode is {}", jsonNodes.get(0).get("pg_relation_filenode"));
 
-        jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(CTID_FULL_VACUUM_IN_PROGRESS.formatted(fullTableName)).executeQuery(),
+        jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(CTID_FULL_VACUUM_IN_PROGRESS_QUERY.formatted(fullTableName)).executeQuery(),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
         if (jsonNodes.size() == 0) {
           LOGGER.info("No full vacuum currently in progress");
