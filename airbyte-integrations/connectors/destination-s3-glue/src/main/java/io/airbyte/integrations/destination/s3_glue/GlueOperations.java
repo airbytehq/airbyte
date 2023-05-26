@@ -130,24 +130,13 @@ public class GlueOperations implements MetastoreOperations {
       case "string" -> "string";
       case "number" -> {
         if (jsonNode.has("airbyte_type") && jsonNode.get("airbyte_type").asText().equals("integer")) {
-          yield "int";
+          yield "bigint";
         } else {
-          if (metastoreFormatConfig.getNumericType() == NumericType.DOUBLE) {
-            yield "double";
-          } else {
-            if (metastoreFormatConfig.getNumericType() == NumericType.DECIMAL) {
-              yield String.format("decimal(38,%s)", metastoreFormatConfig.getDecimalScale());
-            } else {
-              // TODO(quazi-h) We have set the default parameter to 2 in the spec for this parameter
-              // Default to use decimal as it is a more precise type and allows for large values
-              // Set the default scale 38 to allow for the widest range of values
-              yield "decimal(38,2)";
-            }
-          }
+          yield metastoreFormatConfig.getNumericType();
         }
       }
       case "boolean" -> "boolean";
-      case "integer" -> "int";
+      case "integer" -> "bigint";
       case "array" -> {
         String arrayType = "array<";
         Set<String> itemTypes;
