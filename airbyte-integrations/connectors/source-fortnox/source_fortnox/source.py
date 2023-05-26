@@ -18,6 +18,8 @@ from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.models import SyncMode
 from datetime import datetime
 
+from .helper import signal_last
+
 logger = logging.getLogger('airbyte')
 
 
@@ -225,19 +227,6 @@ class FinancialYearParentMixin(FortnoxStream, ABC):
         if financial_year is not None:
             super_params["financialyear"] = financial_year
         return super_params
-
-
-def signal_last(it: Iterable[Any]) -> Iterable[Tuple[bool, Any]]:
-    """ Helper method to find out whether we are on the last iteration"""
-    try:
-        iterable = iter(it)
-        ret_var = next(iterable)
-        for val in iterable:
-            yield False, ret_var
-            ret_var = val
-        yield True, ret_var
-    except StopIteration:
-        yield from ()
 
 
 class Accounts(FortnoxIncrementalStream, FortnoxSubstream, FinancialYearParentMixin):

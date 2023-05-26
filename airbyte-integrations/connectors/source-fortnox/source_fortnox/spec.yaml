@@ -45,7 +45,3 @@ connectionSpecification:
           title: "Token Expiry Date"
           description: "The date-time when the access token should be refreshed."
           format: "date-time"
-
-supportsNormalization: false
-supportsDBT: false
-supported_destination_sync_modes: []
