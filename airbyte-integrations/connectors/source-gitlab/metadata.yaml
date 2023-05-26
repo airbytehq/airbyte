@@ -17,5 +17,7 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/gitlab
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gitlab
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"
