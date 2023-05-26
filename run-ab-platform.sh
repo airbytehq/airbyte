@@ -169,6 +169,8 @@ if test $? -ne 0; then
 fi
 
 ########## Ending Docker ##########
-docker compose down
-
-echo -e "$blue_text""Stopping Docker Compose""$default_text"
+if [ -z "$dockerDetachedMode" ]; then
+  docker compose down
+else
+  echo -e "$blue_text""Airbyte containers are running!""$default_text"
+fi
