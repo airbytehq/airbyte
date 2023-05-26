@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -21,6 +22,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class GlobalAsyncStateManagerTest {
+  private static final long TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES = 100 * 1024 * 1024; // 10MB
+
+  private static final long STATE_MSG_SIZE = 1000;
 
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = STREAM_NAME + 2;
@@ -53,7 +57,7 @@ class GlobalAsyncStateManagerTest {
 
   @Test
   void testBasic() {
-    final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
+    final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
     final var firstStateId = stateManager.getStateIdAndIncrementCounter(STREAM1_DESC);
     final var secondStateId = stateManager.getStateIdAndIncrementCounter(STREAM1_DESC);
@@ -64,7 +68,7 @@ class GlobalAsyncStateManagerTest {
     var flushed = stateManager.flushStates();
     assertEquals(0, flushed.size());
 
-    stateManager.trackState(STREAM1_STATE_MESSAGE1);
+    stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE);
     flushed = stateManager.flushStates();
     assertEquals(List.of(STREAM1_STATE_MESSAGE1), flushed);
   }
@@ -74,25 +78,25 @@ class GlobalAsyncStateManagerTest {
 
     @Test
     void testEmptyQueuesGlobalState() {
-      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
+      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
       // GLOBAL
-      stateManager.trackState(GLOBAL_STATE_MESSAGE1);
+      stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE);
       assertEquals(List.of(GLOBAL_STATE_MESSAGE1), stateManager.flushStates());
 
-      assertThrows(IllegalArgumentException.class, () -> stateManager.trackState(STREAM1_STATE_MESSAGE1));
+      assertThrows(IllegalArgumentException.class, () -> stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE));
     }
 
     @Test
     void testConversion() {
-      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
+      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
       final var preConvertId0 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
       final var preConvertId1 = simulateIncomingRecords(STREAM2_DESC, 10, stateManager);
       final var preConvertId2 = simulateIncomingRecords(STREAM3_DESC, 10, stateManager);
       assertEquals(3, Set.of(preConvertId0, preConvertId1, preConvertId2).size());
 
-      stateManager.trackState(GLOBAL_STATE_MESSAGE1);
+      stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE);
 
       // Since this is actually a global state, we can only flush after all streams are done.
       stateManager.decrement(preConvertId0, 10);
@@ -105,27 +109,27 @@ class GlobalAsyncStateManagerTest {
 
     @Test
     void testCorrectFlushingOneStream() {
-      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
+      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
       final var preConvertId0 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
-      stateManager.trackState(GLOBAL_STATE_MESSAGE1);
+      stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE);
       stateManager.decrement(preConvertId0, 10);
       assertEquals(List.of(GLOBAL_STATE_MESSAGE1), stateManager.flushStates());
 
       final var afterConvertId1 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
-      stateManager.trackState(GLOBAL_STATE_MESSAGE2);
+      stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE);
       stateManager.decrement(afterConvertId1, 10);
       assertEquals(List.of(GLOBAL_STATE_MESSAGE2), stateManager.flushStates());
     }
 
     @Test
     void testCorrectFlushingManyStreams() {
-      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
+      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
       final var preConvertId0 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
       final var preConvertId1 = simulateIncomingRecords(STREAM2_DESC, 10, stateManager);
       assertNotEquals(preConvertId0, preConvertId1);
-      stateManager.trackState(GLOBAL_STATE_MESSAGE1);
+      stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE);
       stateManager.decrement(preConvertId0, 10);
       stateManager.decrement(preConvertId1, 10);
       assertEquals(List.of(GLOBAL_STATE_MESSAGE1), stateManager.flushStates());
@@ -133,7 +137,7 @@ class GlobalAsyncStateManagerTest {
       final var afterConvertId0 = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
       final var afterConvertId1 = simulateIncomingRecords(STREAM2_DESC, 10, stateManager);
       assertEquals(afterConvertId0, afterConvertId1);
-      stateManager.trackState(GLOBAL_STATE_MESSAGE2);
+      stateManager.trackState(GLOBAL_STATE_MESSAGE2, STATE_MSG_SIZE);
       stateManager.decrement(afterConvertId0, 20);
       assertEquals(List.of(GLOBAL_STATE_MESSAGE2), stateManager.flushStates());
     }
@@ -145,26 +149,26 @@ class GlobalAsyncStateManagerTest {
 
     @Test
     void testEmptyQueues() {
-      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
+      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
       // GLOBAL
-      stateManager.trackState(STREAM1_STATE_MESSAGE1);
+      stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE);
       assertEquals(List.of(STREAM1_STATE_MESSAGE1), stateManager.flushStates());
 
-      assertThrows(IllegalArgumentException.class, () -> stateManager.trackState(GLOBAL_STATE_MESSAGE1));
+      assertThrows(IllegalArgumentException.class, () -> stateManager.trackState(GLOBAL_STATE_MESSAGE1, STATE_MSG_SIZE));
     }
 
     @Test
     void testCorrectFlushingOneStream() {
-      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
+      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
       var stateId = simulateIncomingRecords(STREAM1_DESC, 3, stateManager);
-      stateManager.trackState(STREAM1_STATE_MESSAGE1);
+      stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE);
       stateManager.decrement(stateId, 3);
       assertEquals(List.of(STREAM1_STATE_MESSAGE1), stateManager.flushStates());
 
       stateId = simulateIncomingRecords(STREAM1_DESC, 10, stateManager);
-      stateManager.trackState(STREAM1_STATE_MESSAGE2);
+      stateManager.trackState(STREAM1_STATE_MESSAGE2, STATE_MSG_SIZE);
       stateManager.decrement(stateId, 10);
       assertEquals(List.of(STREAM1_STATE_MESSAGE2), stateManager.flushStates());
 
@@ -172,18 +176,18 @@ class GlobalAsyncStateManagerTest {
 
     @Test
     void testCorrectFlushingManyStream() {
-      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager();
+      final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager(new GlobalMemoryManager(TOTAL_QUEUES_MAX_SIZE_LIMIT_BYTES));
 
       final var stream1StateId = simulateIncomingRecords(STREAM1_DESC, 3, stateManager);
       final var stream2StateId = simulateIncomingRecords(STREAM2_DESC, 7, stateManager);
 
-      stateManager.trackState(STREAM1_STATE_MESSAGE1);
+      stateManager.trackState(STREAM1_STATE_MESSAGE1, STATE_MSG_SIZE);
       stateManager.decrement(stream1StateId, 3);
       assertEquals(List.of(STREAM1_STATE_MESSAGE1), stateManager.flushStates());
 
       stateManager.decrement(stream2StateId, 4);
       assertEquals(List.of(), stateManager.flushStates());
-      stateManager.trackState(STREAM1_STATE_MESSAGE2);
+      stateManager.trackState(STREAM1_STATE_MESSAGE2, STATE_MSG_SIZE);
       stateManager.decrement(stream2StateId, 3);
       // only flush state if counter is 0.
       assertEquals(List.of(STREAM1_STATE_MESSAGE2), stateManager.flushStates());
