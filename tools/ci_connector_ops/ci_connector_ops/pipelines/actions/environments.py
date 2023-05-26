@@ -6,10 +6,11 @@
 
 from __future__ import annotations
 
-import os
+import importlib.util
 import uuid
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
+from ci_connector_ops.pipelines import consts
 from ci_connector_ops.pipelines.consts import (
     CI_CONNECTOR_OPS_SOURCE_PATH,
     CI_CREDENTIALS_SOURCE_PATH,
@@ -255,7 +256,7 @@ def with_dockerd_service(
         docker_lib_volume_name = f"{docker_lib_volume_name}-{slugify(docker_service_name)}"
     dind = (
         context.dagger_client.container()
-        .from_("docker:23.0.1-dind")
+        .from_(consts.DOCKER_DIND_IMAGE)
         .with_mounted_cache(
             "/var/lib/docker",
             context.dagger_client.cache_volume(docker_lib_volume_name),
@@ -309,7 +310,7 @@ def with_docker_cli(
     Returns:
         Container: A docker cli container bound to a docker host.
     """
-    docker_cli = context.dagger_client.container().from_("docker:23.0.1-cli")
+    docker_cli = context.dagger_client.container().from_(consts.DOCKER_CLI_IMAGE)
     return with_bound_docker_host(context, docker_cli, shared_volume, docker_service_name)
 
 
@@ -361,8 +362,6 @@ def with_gradle(
     Returns:
         Container: A container with Gradle installed and Java sources from the repository.
     """
-    airbyte_gradle_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}_airbyte_gradle_cache")
-    root_gradle_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}_root_gradle_cache")
 
     include = [
         ".root",
@@ -386,34 +385,27 @@ def with_gradle(
     if sources_to_include:
         include += sources_to_include
 
+    gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
+    gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
+
     shared_tmp_volume = ("/tmp", context.dagger_client.cache_volume("share-tmp-gradle"))
 
     openjdk_with_docker = (
         context.dagger_client.container()
-        # Use openjdk image because it's based on Debian. Alpine with Gradle and Python causes filesystem crash.
         .from_("openjdk:17.0.1-jdk-slim")
         .with_exec(["apt-get", "update"])
-        .with_exec(["apt-get", "install", "-y", "curl", "jq"])
-        .with_env_variable("VERSION", "23.0.1")
+        .with_exec(["apt-get", "install", "-y", "curl", "jq", "rsync"])
+        .with_env_variable("VERSION", consts.DOCKER_VERSION)
         .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
-        .with_exec(["mkdir", "/root/.gradle"])
+        .with_env_variable("GRADLE_HOME", "/root/.gradle")
         .with_exec(["mkdir", "/airbyte"])
-        .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
-        .with_mounted_cache("/airbyte/.gradle", airbyte_gradle_cache, sharing=CacheSharingMode.LOCKED)
         .with_workdir("/airbyte")
+        .with_mounted_directory("/airbyte", context.get_repo_dir(".", include=include))
+        .with_exec(["mkdir", "-p", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH])
+        .with_mounted_cache(consts.GRADLE_BUILD_CACHE_PATH, gradle_build_cache, sharing=CacheSharingMode.LOCKED)
+        .with_mounted_cache(consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH, gradle_dependency_cache)
+        .with_env_variable("GRADLE_RO_DEP_CACHE", consts.GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH)
     )
-    if context.is_ci and "S3_BUILD_CACHE_ACCESS_KEY_ID" in os.environ and "S3_BUILD_CACHE_SECRET_KEY" in os.environ:
-        openjdk_with_docker = (
-            openjdk_with_docker.with_env_variable("CI", "true")
-            .with_secret_variable(
-                "S3_BUILD_CACHE_ACCESS_KEY_ID", context.dagger_client.host().env_variable("S3_BUILD_CACHE_ACCESS_KEY_ID").secret()
-            )
-            .with_secret_variable(
-                "S3_BUILD_CACHE_SECRET_KEY", context.dagger_client.host().env_variable("S3_BUILD_CACHE_SECRET_KEY").secret()
-            )
-        )
-    else:
-        openjdk_with_docker = openjdk_with_docker.with_mounted_cache("/root/.gradle", root_gradle_cache, sharing=CacheSharingMode.LOCKED)
 
     if bind_to_docker_host:
         return with_bound_docker_host(context, openjdk_with_docker, shared_tmp_volume, docker_service_name=docker_service_name)
@@ -566,7 +558,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "redshift.Dockerfile",
         "dbt_adapter": "dbt-redshift==1.0.0",
         "integration_name": "redshift",
-        "supports_in_connector_normalization": False,
+        "supports_in_connector_normalization": True,
     },
     "destination-snowflake": {
         "dockerfile": "snowflake.Dockerfile",
@@ -645,7 +637,7 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
     )
 
 
-async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: Platform):
+async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: Platform) -> Container:
     application = context.connector.technical_name
 
     build_stage = (
@@ -667,7 +659,7 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         base = with_integration_base_java(context, build_platform)
         entrypoint = ["/airbyte/base.sh"]
 
-    return (
+    connector_container = (
         base.with_workdir("/airbyte")
         .with_env_variable("APPLICATION", application)
         .with_mounted_directory("builts_artifacts", build_stage.directory("/airbyte"))
@@ -676,20 +668,63 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
         .with_entrypoint(entrypoint)
     )
+    return await finalize_build(context, connector_container)
 
 
-def with_airbyte_python_connector(context: ConnectorContext, build_platform):
+async def with_airbyte_python_connector(context: ConnectorContext, build_platform: Platform) -> Container:
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
-    return (
+    connector_container = (
         context.dagger_client.container(platform=build_platform)
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .build(context.get_connector_dir())
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
     )
+    return await finalize_build(context, connector_container)
 
 
-def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_platform: Platform):
+async def finalize_build(context: ConnectorContext, connector_container: Container) -> Container:
+    """Finalize build by running finalize_build.sh or finalize_build.py if present in the connector directory."""
+    connector_dir_with_finalize_script = context.get_connector_dir(include=["finalize_build.sh", "finalize_build.py"])
+    finalize_scripts = await connector_dir_with_finalize_script.entries()
+    if not finalize_scripts:
+        return connector_container
+
+    # We don't want finalize scripts to override the entrypoint so we keep it in memory to reset it after finalization
+    original_entrypoint = await connector_container.entrypoint()
+
+    has_finalize_bash_script = "finalize_build.sh" in finalize_scripts
+    has_finalize_python_script = "finalize_build.py" in finalize_scripts
+    if has_finalize_python_script and has_finalize_bash_script:
+        raise Exception("Connector has both finalize_build.sh and finalize_build.py, please remove one of them")
+
+    if has_finalize_python_script:
+        context.logger.info(f"{context.connector.technical_name} has a finalize_build.py script, running it to finalize build...")
+        module_path = context.connector.code_directory / "finalize_build.py"
+        connector_finalize_module_spec = importlib.util.spec_from_file_location(
+            f"{context.connector.code_directory.name}_finalize", module_path
+        )
+        connector_finalize_module = importlib.util.module_from_spec(connector_finalize_module_spec)
+        connector_finalize_module_spec.loader.exec_module(connector_finalize_module)
+        try:
+            connector_container = await connector_finalize_module.finalize_build(context, connector_container)
+        except AttributeError:
+            raise Exception("Connector has a finalize_build.py script but it doesn't have a finalize_build function.")
+
+    if has_finalize_bash_script:
+        context.logger.info(f"{context.connector.technical_name} has finalize_build.sh script, running it to finalize build...")
+        connector_container = (
+            connector_container.with_file("/tmp/finalize_build.sh", connector_dir_with_finalize_script.file("finalize_build.sh"))
+            .with_entrypoint("sh")
+            .with_exec(["/tmp/finalize_build.sh"])
+        )
+
+    return connector_container.with_entrypoint(original_entrypoint)
+
+
+# This function is not used at the moment as we decided to use Python connectors dockerfile instead of building it with dagger.
+# Some python connectors use alpine base image, other use debian... We should unify this.
+def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_platform: Platform) -> Container:
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
     base = context.dagger_client.container(platform=build_platform).from_("python:3.9.11-alpine3.15")
     snake_case_name = context.connector.technical_name.replace("-", "_")
@@ -716,3 +751,11 @@ def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_p
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
     )
+
+
+def with_crane(context: PipelineContext) -> Container:
+    """Crane is a tool to analyze and manipulate container images.
+    We can use it to extract the image manifest and the list of layers or list the existing tags on an image repository.
+    https://github.com/google/go-containerregistry/tree/main/cmd/crane
+    """
+    return context.dagger_client.container().from_("gcr.io/go-containerregistry/crane:v0.15.1")
