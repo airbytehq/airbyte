@@ -35,6 +35,7 @@ def download_catalog(catalog_url):
 
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
 METADATA_FILE_NAME = "metadata.yaml"
+ICON_FILE_NAME = "icon.svg"
 
 
 class ConnectorInvalidNameError(Exception):
@@ -110,9 +111,8 @@ class Connector:
 
     @property
     def icon_path(self) -> Path:
-        if self.metadata and self.metadata.get("icon"):
-            return Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{self.metadata['icon']}")
-        return Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{self.name}.svg")
+        file_path = self.code_directory / ICON_FILE_NAME
+        return file_path
 
     @property
     def code_directory(self) -> Path:

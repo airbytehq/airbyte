@@ -1,14 +1,17 @@
 import pandas as pd
 import numpy as np
+import os
 from typing import List
 from dagster import Output, asset, OpExecutionContext
 import yaml
 
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+from metadata_service.constants import METADATA_FILE_NAME, ICON_FILE_NAME
 
 from orchestrator.utils.object_helpers import are_values_equal, merge_values
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
-from orchestrator.models.metadata import PartialMetadataDefinition, MetadataDefinition
+from orchestrator.models.metadata import PartialMetadataDefinition, MetadataDefinition, LatestMetadataEntry
+from orchestrator.config import get_public_url_for_gcs_file
 
 GROUP_NAME = "metadata"
 
@@ -174,14 +177,29 @@ def validate_metadata(metadata: PartialMetadataDefinition) -> tuple[bool, str]:
 
 
 @asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME)
-def metadata_definitions(context: OpExecutionContext) -> List[MetadataDefinition]:
+def metadata_definitions(context: OpExecutionContext) -> List[LatestMetadataEntry]:
     latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
 
-    metadata_definitions = []
+    metadata_entries = []
     for blob in latest_metadata_file_blobs:
         yaml_string = blob.download_as_string().decode("utf-8")
         metadata_dict = yaml.safe_load(yaml_string)
         metadata_def = MetadataDefinition.parse_obj(metadata_dict)
-        metadata_definitions.append(metadata_def)
 
-    return metadata_definitions
+        metadata_file_path = blob.name
+        icon_file_path = metadata_file_path.replace(METADATA_FILE_NAME, ICON_FILE_NAME)
+        icon_blob = blob.bucket.blob(icon_file_path)
+
+        icon_url = (
+            get_public_url_for_gcs_file(icon_blob.bucket.name, icon_blob.name, os.getenv("METADATA_CDN_BASE_URL"))
+            if icon_blob.exists()
+            else None
+        )
+
+        metadata_entry = LatestMetadataEntry(
+            metadata_definition=metadata_def,
+            icon_url=icon_url,
+        )
+        metadata_entries.append(metadata_entry)
+
+    return metadata_entries
