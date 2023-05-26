@@ -95,7 +95,7 @@ public class PostgresQueryUtils {
       final String schemaName = stream.getStream().getNamespace();
       final String fullTableName =
           getFullyQualifiedTableNameWithQuoting(schemaName, streamName, quoteString);
-      LOGGER.info("Full Vacuum information for {}:", fullTableName);
+      LOGGER.info("Full Vacuum information for {}", fullTableName);
       try {
         List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(CTID_FULL_VACUUM_REL_FILENODE.formatted(fullTableName)).executeQuery(),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
