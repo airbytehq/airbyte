@@ -100,13 +100,10 @@ def checkout_master(dummy_repo):
     dummy_repo.heads.master.checkout()
 
 
-# def test_get_metadata_file_path(checkout_master, dummy_repo_path: Path):
-#     path = cloud_availability_updater.get_metadata_file_path(dummy_repo_path, "source")
-#     assert path.exists() and path.name == "source_definitions_mask.yaml"
-#     path = cloud_availability_updater.get_metadata_file_path(dummy_repo_path, "destination")
-#     assert path.exists() and path.name == "destination_definitions_mask.yaml"
-#     with pytest.raises(FileNotFoundError):
-#         cloud_availability_updater.get_metadata_file_path(dummy_repo_path, "foobar")
+def test_get_metadata_file_path(checkout_master, eligible_connectors, dummy_repo_path: Path):
+    for connector in eligible_connectors:
+        path = cloud_availability_updater.get_metadata_file_path(dummy_repo_path, connector)
+        assert path.exists() and path.name == "metadata.yaml"
 
 
 def test_checkout_new_branch(mocker, checkout_master, dummy_repo):
