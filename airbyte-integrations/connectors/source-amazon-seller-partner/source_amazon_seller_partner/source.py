@@ -98,6 +98,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             "report_options": config.report_options,
             "max_wait_seconds": config.max_wait_seconds,
             "replication_end_date": config.replication_end_date,
+            "advanced_stream_options": config.advanced_stream_options,
         }
         return stream_kwargs
 

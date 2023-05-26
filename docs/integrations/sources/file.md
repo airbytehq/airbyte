@@ -3,11 +3,11 @@
 This page contains the setup guide and reference information for the Files source connector.
 
 ## Prerequisites
-* URL to access the file
-* Format
-* Reader options
-* Storage Providers
 
+- URL to access the file
+- Format
+- Reader options
+- Storage Providers
 
 ## Setup guide
 
@@ -29,38 +29,38 @@ Setup through Airbyte Cloud will be exactly the same as the open-source setup, e
 
 ### Fields description
 
-- For `Dataset Name` use the *name* of the final table to replicate this file into (should include letters, numbers dash and underscores only).
-- For `File Format` use the *format* of the file which should be replicated (Warning: some formats may be experimental, please refer to the docs).
-- For `Reader Options` use a *string in JSON* format. It depends on the chosen file format to provide additional options and tune its behavior. For example, `{}` for empty options, `{"sep": " "}` for set up separator to one space ' '.
-- For `URL` use the *URL* path to access the file which should be replicated.
-- For `Storage Provider` use the *storage Provider* or *Location* of the file(s) which should be replicated.
-  - [Default] *Public Web*
+- For `Dataset Name` use the _name_ of the final table to replicate this file into (should include letters, numbers dash and underscores only).
+- For `File Format` use the _format_ of the file which should be replicated (Warning: some formats may be experimental, please refer to the docs).
+- For `Reader Options` use a _string in JSON_ format. It depends on the chosen file format to provide additional options and tune its behavior. For example, `{}` for empty options, `{"sep": " "}` for set up separator to one space ' '.
+- For `URL` use the _URL_ path to access the file which should be replicated.
+- For `Storage Provider` use the _storage Provider_ or _Location_ of the file(s) which should be replicated.
+  - [Default] _Public Web_
     - `User-Agent` set to active if you want to add User-Agent to requests
-  - *GCS: Google Cloud Storage*
+  - _GCS: Google Cloud Storage_
     - `Service Account JSON` In order to access private Buckets stored on Google Cloud, this connector would need a service account json credentials with the proper permissions as described <a href="https://cloud.google.com/iam/docs/service-accounts" target="_blank">here</a>. Please generate the credentials.json file and copy/paste its content to this field (expecting JSON formats). If accessing publicly available data, this field is not necessary.
-  - *S3: Amazon Web Services*
+  - _S3: Amazon Web Services_
     - `AWS Access Key ID` In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary.
     - `AWS Secret Access Key`In order to access private Buckets stored on AWS S3, this connector would need credentials with the proper permissions. If accessing publicly available data, this field is not necessary.
-  - *AzBlob: Azure Blob Storage*
+  - _AzBlob: Azure Blob Storage_
     - `Storage Account` The globally unique name of the storage account that the desired blob sits within. See <a href="https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview" target="_blank">here</a> for more details.
     - `SAS Token` To access Azure Blob Storage, this connector would need credentials with the proper permissions. One option is a SAS (Shared Access Signature) token. If accessing publicly available data, this field is not necessary.
     - `Shared Key` To access Azure Blob Storage, this connector would need credentials with the proper permissions. One option is a storage account shared key (aka account key or access key). If accessing publicly available data, this field is not necessary.
-  - *SSH: Secure Shell*
-    - `User` use *username*.
-    - `Password` use *password*.
-    - `Host` use a *host*.
-    - `Port` use a *port* for your host.
-  - *SCP: Secure copy protocol*
-    - `User` use *username*.
-    - `Password` use *password*.
-    - `Host` use a *host*.
-    - `Port` use a *port* for your host.
-  - *SFTP: Secure File Transfer Protocol*
-    - `User` use *username*.
-    - `Password` use *password*.
-    - `Host` use a *host*.
-    - `Port` use a *port* for your host.
-  - *Local Filesystem (limited)*
+  - _SSH: Secure Shell_
+    - `User` use _username_.
+    - `Password` use _password_.
+    - `Host` use a _host_.
+    - `Port` use a _port_ for your host.
+  - _SCP: Secure copy protocol_
+    - `User` use _username_.
+    - `Password` use _password_.
+    - `Host` use a _host_.
+    - `Port` use a _port_ for your host.
+  - _SFTP: Secure File Transfer Protocol_
+    - `User` use _username_.
+    - `Password` use _password_.
+    - `Host` use a _host_.
+    - `Port` use a _port_ for your host.
+  - _Local Filesystem (limited)_
     - `Storage` WARNING: Note that the local storage URL available for reading must start with the local mount "/local/" at the moment until we implement more advanced docker mounting options.
 
 #### Provider Specific Information
@@ -79,7 +79,7 @@ For example, if the format `CSV` is selected, then options from the [read_csv](h
 
 - It is therefore possible to customize the `delimiter` (or `sep`) to in case of tab separated files.
 - Header line can be ignored with `header=0` and customized with `names`
-- Parse dates for in specified columns 
+- Parse dates for in specified columns
 - etc
 
 We would therefore provide in the `reader_options` the following json:
@@ -189,50 +189,57 @@ In order to read large files from a remote location, this connector uses the [sm
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                 |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
-| 0.3.2   | 2023-05-01 | [25641](https://github.com/airbytehq/airbyte/pull/25641) | Handle network errors                                                                                   |
-| 0.3.1   | 2023-04-27 | [25575](https://github.com/airbytehq/airbyte/pull/25575) | Fix OOM; read Excel files in chunks using `openpyxl`                                                    |
-| 0.3.0   | 2023-04-24 | [25445](https://github.com/airbytehq/airbyte/pull/25445) | Add datatime format parsing support for csv files                                                       |
-| 0.2.38  | 2023-04-12 | [23759](https://github.com/airbytehq/airbyte/pull/23759) | Fix column data types for numerical values                                                              |
-| 0.2.37  | 2023-04-06 | [24525](https://github.com/airbytehq/airbyte/pull/24525) | Fix examples in spec                                                                                    |
-| 0.2.36  | 2023-03-27 | [24588](https://github.com/airbytehq/airbyte/pull/24588) | Remove traceback from user messages.                                                                    |
-| 0.2.35  | 2023-03-03 | [24278](https://github.com/airbytehq/airbyte/pull/24278) | Read only file header when checking connectivity; read only a single chunk when discovering the schema. |
-| 0.2.34  | 2023-03-03 | [23723](https://github.com/airbytehq/airbyte/pull/23723) | Update description in spec, make user-friendly error messages and docs.                                 |
-| 0.2.33  | 2023-01-04 | [21012](https://github.com/airbytehq/airbyte/pull/21012) | Fix special characters bug                                                                              |
-| 0.2.32  | 2022-12-21 | [20740](https://github.com/airbytehq/airbyte/pull/20740) | Source File: increase SSH timeout to 60s                                                                |
-| 0.2.31  | 2022-11-17 | [19567](https://github.com/airbytehq/airbyte/pull/19567) | Source File: bump 0.2.31                                                                                |
-| 0.2.30  | 2022-11-10 | [19222](https://github.com/airbytehq/airbyte/pull/19222) | Use AirbyteConnectionStatus for "check" command                                                         |
-| 0.2.29  | 2022-11-08 | [18587](https://github.com/airbytehq/airbyte/pull/18587) | Fix pandas read_csv header none issue.                                                                  |
-| 0.2.28  | 2022-10-27 | [18428](https://github.com/airbytehq/airbyte/pull/18428) | Add retry logic for `Connection reset error - 104`                                                      |
-| 0.2.27  | 2022-10-26 | [18481](https://github.com/airbytehq/airbyte/pull/18481) | Fix check for wrong format                                                                              |
-| 0.2.26  | 2022-10-18 | [18116](https://github.com/airbytehq/airbyte/pull/18116) | Transform Dropbox shared link                                                                           |
-| 0.2.25  | 2022-10-14 | [17994](https://github.com/airbytehq/airbyte/pull/17994) | Handle `UnicodeDecodeError` during discover step.                                                       |
-| 0.2.24  | 2022-10-03 | [17504](https://github.com/airbytehq/airbyte/pull/17504) | Validate data for `HTTPS` while `check_connection`                                                      |
-| 0.2.23  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state.                                                                            |
-| 0.2.22  | 2022-09-15 | [16772](https://github.com/airbytehq/airbyte/pull/16772) | Fix schema generation for JSON files containing arrays                                                  |
-| 0.2.21  | 2022-08-26 | [15568](https://github.com/airbytehq/airbyte/pull/15568) | Specify `pyxlsb` library for Excel Binary Workbook files                                                |
-| 0.2.20  | 2022-08-23 | [15870](https://github.com/airbytehq/airbyte/pull/15870) | Fix CSV schema discovery                                                                                |
-| 0.2.19  | 2022-08-19 | [15768](https://github.com/airbytehq/airbyte/pull/15768) | Convert 'nan' to 'null'                                                                                 |
-| 0.2.18  | 2022-08-16 | [15698](https://github.com/airbytehq/airbyte/pull/15698) | Cache binary stream to file for discover                                                                |
-| 0.2.17  | 2022-08-11 | [15501](https://github.com/airbytehq/airbyte/pull/15501) | Cache binary stream to file                                                                             |
-| 0.2.16  | 2022-08-10 | [15293](https://github.com/airbytehq/airbyte/pull/15293) | Add support for encoding reader option                                                                  |
-| 0.2.15  | 2022-08-05 | [15269](https://github.com/airbytehq/airbyte/pull/15269) | Bump `smart-open` version to 6.0.0                                                                      |
-| 0.2.12  | 2022-07-12 | [14535](https://github.com/airbytehq/airbyte/pull/14535) | Fix invalid schema generation for JSON files                                                            |
-| 0.2.11  | 2022-07-12 | [9974](https://github.com/airbytehq/airbyte/pull/14588)  | Add support to YAML format                                                                              |
-| 0.2.9   | 2022-02-01 | [9974](https://github.com/airbytehq/airbyte/pull/9974)   | Update airbyte-cdk 0.1.47                                                                               |
-| 0.2.8   | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524)   | Update connector fields title/description                                                               |
-| 0.2.7   | 2021-10-28 | [7387](https://github.com/airbytehq/airbyte/pull/7387)   | Migrate source to CDK structure, add SAT testing.                                                       |
-| 0.2.6   | 2021-08-26 | [5613](https://github.com/airbytehq/airbyte/pull/5613)   | Add support to xlsb format                                                                              |
-| 0.2.5   | 2021-07-26 | [4953](https://github.com/airbytehq/airbyte/pull/4953)   | Allow non-default port for SFTP type                                                                    |
-| 0.2.4   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add AIRBYTE_ENTRYPOINT for Kubernetes support                                                           |
-| 0.2.3   | 2021-06-01 | [3771](https://github.com/airbytehq/airbyte/pull/3771)   | Add Azure Storage Blob Files option                                                                     |
-| 0.2.2   | 2021-04-16 | [2883](https://github.com/airbytehq/airbyte/pull/2883)   | Fix CSV discovery memory consumption                                                                    |
-| 0.2.1   | 2021-04-03 | [2726](https://github.com/airbytehq/airbyte/pull/2726)   | Fix base connector versioning                                                                           |
-| 0.2.0   | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238)   | Protocol allows future/unknown properties                                                               |
-| 0.1.10  | 2021-02-18 | [2118](https://github.com/airbytehq/airbyte/pull/2118)   | Support JSONL format                                                                                    |
-| 0.1.9   | 2021-02-02 | [1768](https://github.com/airbytehq/airbyte/pull/1768)   | Add test cases for all formats                                                                          |
-| 0.1.8   | 2021-01-27 | [1738](https://github.com/airbytehq/airbyte/pull/1738)   | Adopt connector best practices                                                                          |
-| 0.1.7   | 2020-12-16 | [1331](https://github.com/airbytehq/airbyte/pull/1331)   | Refactor Python base connector                                                                          |
-| 0.1.6   | 2020-12-08 | [1249](https://github.com/airbytehq/airbyte/pull/1249)   | Handle NaN values                                                                                       |
-| 0.1.5   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                                                 |
+| Version   | Date         | Pull Request                                               | Subject                                                                                                   |
+|:----------|:-------------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 0.3.9     | 2023-05-18   | [26275](https://github.com/airbytehq/airbyte/pull/26275)   | add ParserError handling                                                                                  |
+| 0.3.8     | 2023-05-17   | [26210](https://github.com/airbytehq/airbyte/pull/26210)   | Bugfix for https://github.com/airbytehq/airbyte/pull/26115                                                |
+| 0.3.7     | 2023-05-16   | [26131](https://github.com/airbytehq/airbyte/pull/26131)   | Re-release source-file to be in sync with source-file-secure                                              |
+| 0.3.6     | 2023-05-16   | [26115](https://github.com/airbytehq/airbyte/pull/26115)   | Add retry on SSHException('Error reading SSH protocol banner')                                            |
+| 0.3.5     | 2023-05-16   | [26117](https://github.com/airbytehq/airbyte/pull/26117)   | Check if reader options is a valid JSON object                                                            |
+| 0.3.4     | 2023-05-10   | [25965](https://github.com/airbytehq/airbyte/pull/25965)   | fix Pandas date-time parsing to airbyte type                                                              |
+| 0.3.3     | 2023-05-04   | [25819](https://github.com/airbytehq/airbyte/pull/25819)   | GCP service_account_json is a secret                                                                      |
+| 0.3.2     | 2023-05-01   | [25641](https://github.com/airbytehq/airbyte/pull/25641)   | Handle network errors                                                                                     |
+| 0.3.1     | 2023-04-27   | [25575](https://github.com/airbytehq/airbyte/pull/25575)   | Fix OOM; read Excel files in chunks using `openpyxl`                                                      |
+| 0.3.0     | 2023-04-24   | [25445](https://github.com/airbytehq/airbyte/pull/25445)   | Add datatime format parsing support for csv files                                                         |
+| 0.2.38    | 2023-04-12   | [23759](https://github.com/airbytehq/airbyte/pull/23759)   | Fix column data types for numerical values                                                                |
+| 0.2.37    | 2023-04-06   | [24525](https://github.com/airbytehq/airbyte/pull/24525)   | Fix examples in spec                                                                                      |
+| 0.2.36    | 2023-03-27   | [24588](https://github.com/airbytehq/airbyte/pull/24588)   | Remove traceback from user messages.                                                                      |
+| 0.2.35    | 2023-03-03   | [24278](https://github.com/airbytehq/airbyte/pull/24278)   | Read only file header when checking connectivity; read only a single chunk when discovering the schema.   |
+| 0.2.34    | 2023-03-03   | [23723](https://github.com/airbytehq/airbyte/pull/23723)   | Update description in spec, make user-friendly error messages and docs.                                   |
+| 0.2.33    | 2023-01-04   | [21012](https://github.com/airbytehq/airbyte/pull/21012)   | Fix special characters bug                                                                                |
+| 0.2.32    | 2022-12-21   | [20740](https://github.com/airbytehq/airbyte/pull/20740)   | Source File: increase SSH timeout to 60s                                                                  |
+| 0.2.31    | 2022-11-17   | [19567](https://github.com/airbytehq/airbyte/pull/19567)   | Source File: bump 0.2.31                                                                                  |
+| 0.2.30    | 2022-11-10   | [19222](https://github.com/airbytehq/airbyte/pull/19222)   | Use AirbyteConnectionStatus for "check" command                                                           |
+| 0.2.29    | 2022-11-08   | [18587](https://github.com/airbytehq/airbyte/pull/18587)   | Fix pandas read_csv header none issue.                                                                    |
+| 0.2.28    | 2022-10-27   | [18428](https://github.com/airbytehq/airbyte/pull/18428)   | Add retry logic for `Connection reset error - 104`                                                        |
+| 0.2.27    | 2022-10-26   | [18481](https://github.com/airbytehq/airbyte/pull/18481)   | Fix check for wrong format                                                                                |
+| 0.2.26    | 2022-10-18   | [18116](https://github.com/airbytehq/airbyte/pull/18116)   | Transform Dropbox shared link                                                                             |
+| 0.2.25    | 2022-10-14   | [17994](https://github.com/airbytehq/airbyte/pull/17994)   | Handle `UnicodeDecodeError` during discover step.                                                         |
+| 0.2.24    | 2022-10-03   | [17504](https://github.com/airbytehq/airbyte/pull/17504)   | Validate data for `HTTPS` while `check_connection`                                                        |
+| 0.2.23    | 2022-09-28   | [17304](https://github.com/airbytehq/airbyte/pull/17304)   | Migrate to per-stream state.                                                                              |
+| 0.2.22    | 2022-09-15   | [16772](https://github.com/airbytehq/airbyte/pull/16772)   | Fix schema generation for JSON files containing arrays                                                    |
+| 0.2.21    | 2022-08-26   | [15568](https://github.com/airbytehq/airbyte/pull/15568)   | Specify `pyxlsb` library for Excel Binary Workbook files                                                  |
+| 0.2.20    | 2022-08-23   | [15870](https://github.com/airbytehq/airbyte/pull/15870)   | Fix CSV schema discovery                                                                                  |
+| 0.2.19    | 2022-08-19   | [15768](https://github.com/airbytehq/airbyte/pull/15768)   | Convert 'nan' to 'null'                                                                                   |
+| 0.2.18    | 2022-08-16   | [15698](https://github.com/airbytehq/airbyte/pull/15698)   | Cache binary stream to file for discover                                                                  |
+| 0.2.17    | 2022-08-11   | [15501](https://github.com/airbytehq/airbyte/pull/15501)   | Cache binary stream to file                                                                               |
+| 0.2.16    | 2022-08-10   | [15293](https://github.com/airbytehq/airbyte/pull/15293)   | Add support for encoding reader option                                                                    |
+| 0.2.15    | 2022-08-05   | [15269](https://github.com/airbytehq/airbyte/pull/15269)   | Bump `smart-open` version to 6.0.0                                                                        |
+| 0.2.12    | 2022-07-12   | [14535](https://github.com/airbytehq/airbyte/pull/14535)   | Fix invalid schema generation for JSON files                                                              |
+| 0.2.11    | 2022-07-12   | [9974](https://github.com/airbytehq/airbyte/pull/14588)    | Add support to YAML format                                                                                |
+| 0.2.9     | 2022-02-01   | [9974](https://github.com/airbytehq/airbyte/pull/9974)     | Update airbyte-cdk 0.1.47                                                                                 |
+| 0.2.8     | 2021-12-06   | [8524](https://github.com/airbytehq/airbyte/pull/8524)     | Update connector fields title/description                                                                 |
+| 0.2.7     | 2021-10-28   | [7387](https://github.com/airbytehq/airbyte/pull/7387)     | Migrate source to CDK structure, add SAT testing.                                                         |
+| 0.2.6     | 2021-08-26   | [5613](https://github.com/airbytehq/airbyte/pull/5613)     | Add support to xlsb format                                                                                |
+| 0.2.5     | 2021-07-26   | [4953](https://github.com/airbytehq/airbyte/pull/4953)     | Allow non-default port for SFTP type                                                                      |
+| 0.2.4     | 2021-06-09   | [3973](https://github.com/airbytehq/airbyte/pull/3973)     | Add AIRBYTE_ENTRYPOINT for Kubernetes support                                                             |
+| 0.2.3     | 2021-06-01   | [3771](https://github.com/airbytehq/airbyte/pull/3771)     | Add Azure Storage Blob Files option                                                                       |
+| 0.2.2     | 2021-04-16   | [2883](https://github.com/airbytehq/airbyte/pull/2883)     | Fix CSV discovery memory consumption                                                                      |
+| 0.2.1     | 2021-04-03   | [2726](https://github.com/airbytehq/airbyte/pull/2726)     | Fix base connector versioning                                                                             |
+| 0.2.0     | 2021-03-09   | [2238](https://github.com/airbytehq/airbyte/pull/2238)     | Protocol allows future/unknown properties                                                                 |
+| 0.1.10    | 2021-02-18   | [2118](https://github.com/airbytehq/airbyte/pull/2118)     | Support JSONL format                                                                                      |
+| 0.1.9     | 2021-02-02   | [1768](https://github.com/airbytehq/airbyte/pull/1768)     | Add test cases for all formats                                                                            |
+| 0.1.8     | 2021-01-27   | [1738](https://github.com/airbytehq/airbyte/pull/1738)     | Adopt connector best practices                                                                            |
+| 0.1.7     | 2020-12-16   | [1331](https://github.com/airbytehq/airbyte/pull/1331)     | Refactor Python base connector                                                                            |
+| 0.1.6     | 2020-12-08   | [1249](https://github.com/airbytehq/airbyte/pull/1249)     | Handle NaN values                                                                                         |
+| 0.1.5     | 2020-11-30   | [1046](https://github.com/airbytehq/airbyte/pull/1046)     | Add connectors using an index YAML file                                                                   |
