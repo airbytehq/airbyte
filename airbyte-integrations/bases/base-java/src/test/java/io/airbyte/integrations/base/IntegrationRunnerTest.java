@@ -28,6 +28,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.integrations.base.Destination.ShimToSerializedAirbyteMessageConsumer;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -295,9 +296,9 @@ class IntegrationRunnerTest {
   @Test
   void testWrite() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.write(configPath, configuredCatalogPath);
-    final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
+    final SerializedAirbyteMessageConsumer consumerMock = mock(SerializedAirbyteMessageConsumer.class);
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(destination.getConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer)).thenReturn(airbyteMessageConsumerMock);
+    when(destination.getSerializedMessageConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer)).thenReturn(consumerMock);
 
     final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
     when(destination.spec()).thenReturn(expectedConnSpec);
@@ -308,7 +309,7 @@ class IntegrationRunnerTest {
     final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator));
     runner.run(ARGS);
 
-    verify(destination).getConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer);
+    verify(destination).getSerializedMessageConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer);
     verify(jsonSchemaValidator).validate(any(), any());
   }
 
@@ -319,9 +320,9 @@ class IntegrationRunnerTest {
     final JsonNode config = Jsons.deserialize(snoflakeConfigString);
     configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, snoflakeConfigString);
 
-    final AirbyteMessageConsumer2 airbyteMessageConsumerMock = mock(AirbyteMessageConsumer2.class);
+    final SerializedAirbyteMessageConsumer airbyteMessageConsumerMock = mock(SerializedAirbyteMessageConsumer.class);
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
-    when(destination.getConsumer2(config, CONFIGURED_CATALOG, stdoutConsumer)).thenReturn(airbyteMessageConsumerMock);
+    when(destination.getSerializedMessageConsumer(config, CONFIGURED_CATALOG, stdoutConsumer)).thenReturn(airbyteMessageConsumerMock);
 
     final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
     when(destination.spec()).thenReturn(expectedConnSpec);
@@ -333,7 +334,7 @@ class IntegrationRunnerTest {
     runner.run(ARGS);
 
     verify(destination, never()).getConsumer(config, CONFIGURED_CATALOG, stdoutConsumer);
-    verify(destination).getConsumer2(config, CONFIGURED_CATALOG, stdoutConsumer);
+    verify(destination).getSerializedMessageConsumer(config, CONFIGURED_CATALOG, stdoutConsumer);
     verify(jsonSchemaValidator).validate(any(), any());
   }
 
@@ -359,12 +360,13 @@ class IntegrationRunnerTest {
         + Jsons.serialize(message2) + "\n"
         + Jsons.serialize(stateMessage)).getBytes(StandardCharsets.UTF_8)));
 
-    try (final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class)) {
+    try (final SerializedAirbyteMessageConsumer airbyteMessageConsumerMock = mock(SerializedAirbyteMessageConsumer.class)) {
       IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock);
       final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
-      inOrder.verify(airbyteMessageConsumerMock).accept(message1);
-      inOrder.verify(airbyteMessageConsumerMock).accept(message2);
-      inOrder.verify(airbyteMessageConsumerMock).accept(stateMessage);
+      inOrder.verify(airbyteMessageConsumerMock).accept(Jsons.serialize(message1), Jsons.serialize(message1).getBytes(StandardCharsets.UTF_8).length);
+      inOrder.verify(airbyteMessageConsumerMock).accept(Jsons.serialize(message2), Jsons.serialize(message2).getBytes(StandardCharsets.UTF_8).length);
+      inOrder.verify(airbyteMessageConsumerMock).accept(Jsons.serialize(stateMessage),
+          Jsons.serialize(stateMessage).getBytes(StandardCharsets.UTF_8).length);
     }
   }
 
@@ -384,11 +386,12 @@ class IntegrationRunnerTest {
             .withEmittedAt(EMITTED_AT));
     System.setIn(new ByteArrayInputStream((Jsons.serialize(message1) + "\n" + Jsons.serialize(message2)).getBytes(StandardCharsets.UTF_8)));
 
-    try (final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class)) {
-      doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(message1);
+    try (final SerializedAirbyteMessageConsumer airbyteMessageConsumerMock = mock(SerializedAirbyteMessageConsumer.class)) {
+      doThrow(new IOException("error")).when(airbyteMessageConsumerMock).accept(Jsons.serialize(message1),
+          Jsons.serialize(message1).getBytes(StandardCharsets.UTF_8).length);
       assertThrows(IOException.class, () -> IntegrationRunner.consumeWriteStream(airbyteMessageConsumerMock));
       final InOrder inOrder = inOrder(airbyteMessageConsumerMock);
-      inOrder.verify(airbyteMessageConsumerMock).accept(message1);
+      inOrder.verify(airbyteMessageConsumerMock).accept(Jsons.serialize(message1), Jsons.serialize(message1).getBytes(StandardCharsets.UTF_8).length);
       inOrder.verifyNoMoreInteractions();
     }
   }
@@ -491,7 +494,7 @@ class IntegrationRunnerTest {
 
     Assertions.assertThrows(IllegalStateException.class, () -> {
       try (final AirbyteMessageConsumer consumer = mock(AirbyteMessageConsumer.class)) {
-        IntegrationRunner.consumeMessage(consumer, invalidStateMessage);
+        ShimToSerializedAirbyteMessageConsumer.consumeMessage(consumer, invalidStateMessage);
       }
     });
   }
@@ -511,7 +514,7 @@ class IntegrationRunnerTest {
 
     Assertions.assertDoesNotThrow(() -> {
       try (final AirbyteMessageConsumer consumer = mock(AirbyteMessageConsumer.class)) {
-        IntegrationRunner.consumeMessage(consumer, invalidNonStateMessage);
+        ShimToSerializedAirbyteMessageConsumer.consumeMessage(consumer, invalidNonStateMessage);
         verify(consumer, times(0)).accept(any(AirbyteMessage.class));
       }
     });
