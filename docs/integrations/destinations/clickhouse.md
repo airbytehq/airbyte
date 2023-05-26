@@ -3,12 +3,12 @@
 
 ## Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Incremental - Deduped History | Yes |  |
-| Namespaces | Yes |  |
+| Feature                       | Supported?\(Yes/No\) | Notes |
+|:------------------------------|:---------------------|:------|
+| Full Refresh Sync             | Yes                  |       |
+| Incremental - Append Sync     | Yes                  |       |
+| Incremental - Deduped History | Yes                  |       |
+| Namespaces                    | Yes                  |       |
 
 #### Output Schema
 
@@ -78,17 +78,19 @@ Therefore, Airbyte ClickHouse destination will create tables and schemas using t
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                                      |
-|:--------|:-----------| :--- |:---------------------------------------------|
-| 0.2.1  | 2022-12-06 | [19573](https://github.com/airbytehq/airbyte/pull/19573)   | Update dbt version to 1.3.1 |
-| 0.2.0  | 2022-09-27 | [16970](https://github.com/airbytehq/airbyte/pull/16970)   | Remove TCP port from spec parameters |
-| 0.1.12  | 2022-09-08 | [16444](https://github.com/airbytehq/airbyte/pull/16444)   | Added custom jdbc params field |
-| 0.1.10  | 2022-07-05 | [\#13639](https://github.com/airbytehq/airbyte/pull/13639) | Change JDBC ClickHouse version into 0.3.2-patch9 |
-| 0.1.8   | 2022-07-05 | [\#13516](https://github.com/airbytehq/airbyte/pull/13516) | Added JDBC default parameter socket timeout |
-| 0.1.7   | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852) | Updated stacktrace format for any trace message errors |
-| 0.1.6   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
-| 0.1.5   | 2022-04-06 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Bump mina-sshd from 2.7.0 to 2.8.0           |
-| 0.1.4   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling            |
-| 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
-| 0.1.1   | 2021-12-21 | [\#8982](https://github.com/airbytehq/airbyte/pull/8982) | Set isSchemaRequired to false                |
-| 0.1.0   | 2021-11-04 | [\#7620](https://github.com/airbytehq/airbyte/pull/7620) | Add ClickHouse destination                   |
+| Version | Date       | Pull Request                                               | Subject                                                             |
+|:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------|
+| 0.2.3   | 2023-04-04 | [\#24604](https://github.com/airbytehq/airbyte/pull/24604) | Support for destination checkpointing                               |
+| 0.2.2   | 2023-02-21 | [\#21509](https://github.com/airbytehq/airbyte/pull/21509) | Compatibility update with security patch for strict encrypt version |
+| 0.2.1   | 2022-12-06 | [\#19573](https://github.com/airbytehq/airbyte/pull/19573) | Update dbt version to 1.3.1                                         |
+| 0.2.0   | 2022-09-27 | [\#16970](https://github.com/airbytehq/airbyte/pull/16970) | Remove TCP port from spec parameters                                |
+| 0.1.12  | 2022-09-08 | [\#16444](https://github.com/airbytehq/airbyte/pull/16444) | Added custom jdbc params field                                      |
+| 0.1.10  | 2022-07-05 | [\#13639](https://github.com/airbytehq/airbyte/pull/13639) | Change JDBC ClickHouse version into 0.3.2-patch9                    |
+| 0.1.8   | 2022-07-05 | [\#13516](https://github.com/airbytehq/airbyte/pull/13516) | Added JDBC default parameter socket timeout                         |
+| 0.1.7   | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852) | Updated stacktrace format for any trace message errors              |
+| 0.1.6   | 2022-05-17 | [\#12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance                              |
+| 0.1.5   | 2022-04-06 | [\#11729](https://github.com/airbytehq/airbyte/pull/11729) | Bump mina-sshd from 2.7.0 to 2.8.0                                  |
+| 0.1.4   | 2022-02-25 | [\#10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                   |
+| 0.1.3   | 2022-02-14 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option                        |
+| 0.1.1   | 2021-12-21 | [\#8982](https://github.com/airbytehq/airbyte/pull/8982)   | Set isSchemaRequired to false                                       |
+| 0.1.0   | 2021-11-04 | [\#7620](https://github.com/airbytehq/airbyte/pull/7620)   | Add ClickHouse destination                                          |

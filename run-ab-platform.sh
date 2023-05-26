@@ -1,7 +1,9 @@
+#!/bin/bash
+
+VERSION=0.44.5
 # Run away from anything even a little scary
 set -o nounset # -u exit if a variable is not set
-set -o errexit # -f exit for any command failure
-
+set -o errexit # -f exit for any command failure"
 
 # text color escape codes (please note \033 == \e but OSX doesn't respect the \e)
 blue_text='\033[94m'
@@ -17,28 +19,30 @@ PS4="$blue_text""${BASH_SOURCE}:${LINENO}: ""$default_text"
 Help()
 {
    # Display Help
-   echo "This Script will download the necessary files for running docker compose"
-   echo "It will also run docker compose up"
-   echo "Take Warning! These assets may become stale over time!"
+   echo -e "This Script will download the necessary files for running docker compose"
+   echo -e "It will also run docker compose up"
+   echo -e "Take Warning! These assets may become stale over time!"
    echo
    # $0 is the currently running program
-   echo "Syntax: $0"
-   echo "options:"
-   echo "   -d --download    Only download files - don't run docker compose"
-   echo "   -r --refresh     ${red_text}DELETE${default_text} existing assets and re-download new ones"
-   echo "   -h --help        Print this Help."
-   echo "   -x --debug       Verbose mode."
-   echo
+   echo -e "Syntax: $0"
+   echo -e "options:"
+   echo -e "   -d --download    Only download files - don't run docker compose"
+   echo -e "   -r --refresh     ${red_text}DELETE${default_text} existing assets and re-download new ones"
+   echo -e "   -h --help        Print this Help."
+   echo -e "   -x --debug       Verbose mode."
+   echo -e ""
 }
 
 ########## Declare assets care about ##########
-docker_compose_yaml="docker-compose.yaml"
-            dot_env=".env"
-        dot_env_dev=".env.dev"
-              flags="flags.yml"
+      docker_compose_yaml="docker-compose.yaml"
+docker_compose_debug_yaml="docker-compose.debug.yaml"
+                  dot_env=".env"
+              dot_env_dev=".env.dev"
+                     flags="flags.yml"
 # any string is an array to POSIX shell. Space seperates values
-all_files="$docker_compose_yaml $dot_env $dot_env_dev $flags"
-base_github_url="https://raw.githubusercontent.com/airbytehq/airbyte-platform/main/"
+all_files="$docker_compose_yaml $docker_compose_debug_yaml $dot_env $dot_env_dev $flags"
+
+base_github_url="https://raw.githubusercontent.com/airbytehq/airbyte-platform/v$VERSION/"
 
 ############################################################
 # Download                                                 #
@@ -50,13 +54,13 @@ Download()
     if test -f $file; then
       # Check if the assets are old.  A possibly sharp corner
       if test $(find $file -type f -mtime +60 > /dev/null); then
-        echo "$red_text""Warning your $file may be stale!""$default_text"
-        echo "$red_text""rm $file to refresh!""$default_text"
+        echo -e "$red_text""Warning your $file may be stale!""$default_text"
+        echo -e "$red_text""rm $file to refresh!""$default_text"
       else
-        echo "$blue_text""found $file locally!""$default_text"
+        echo -e "$blue_text""found $file locally!""$default_text"
       fi
     else
-      echo "$blue_text""Downloading $file""$default_text"
+      echo -e "$blue_text""Downloading $file""$default_text"
       curl --location\
         --fail\
         --silent\
@@ -69,11 +73,11 @@ Download()
 DeleteLocalAssets()
 {
   for file in $all_files; do
-    echo "$blue_text""Attempting to delete $file!""$default_text"
+    echo -e "$blue_text""Attempting to delete $file!""$default_text"
     if test -f $file; then
-      rm $file && echo "It's gone!"
+      rm $file && echo -e "It's gone!"
     else
-      echo "$file not found locally.  Nothing to delete."
+      echo -e "$file not found locally.  Nothing to delete."
     fi
   done
 }
@@ -117,22 +121,23 @@ done
 # Make sure the console is huuuge
 if test $(tput cols) -ge 64; then
   # Make it green!
-  echo "\033[32m"
-  echo " █████╗ ██╗██████╗ ██████╗ ██╗   ██╗████████╗███████╗"
-  echo "██╔══██╗██║██╔══██╗██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝"
-  echo "███████║██║██████╔╝██████╔╝ ╚████╔╝    ██║   █████╗  "
-  echo "██╔══██║██║██╔══██╗██╔══██╗  ╚██╔╝     ██║   ██╔══╝  "
-  echo "██║  ██║██║██║  ██║██████╔╝   ██║      ██║   ███████╗"
-  echo "╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚═════╝    ╚═╝      ╚═╝   ╚══════╝"
-  echo "                                            Move Data"
+  echo -e "\033[32m"
+  echo -e " █████╗ ██╗██████╗ ██████╗ ██╗   ██╗████████╗███████╗"
+  echo -e "██╔══██╗██║██╔══██╗██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝"
+  echo -e "███████║██║██████╔╝██████╔╝ ╚████╔╝    ██║   █████╗  "
+  echo -e "██╔══██║██║██╔══██╗██╔══██╗  ╚██╔╝     ██║   ██╔══╝  "
+  echo -e "██║  ██║██║██║  ██║██████╔╝   ██║      ██║   ███████╗"
+  echo -e "╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚═════╝    ╚═╝      ╚═╝   ╚══════╝"
+  echo -e "                                            Move Data"
   # Make it less green
-  echo "\033[0m"
+  echo -e "\033[0m"
   sleep 1
 fi
 
 ########## Dependency Check ##########
-if ! which -s docker-compose; then
-  echo "$red_text""docker compose not found! please install docker compose!""$default_text"
+if ! docker compose version >/dev/null 2>/dev/null; then
+  echo -e "$red_text""docker compose v2 not found! please install docker compose!""$default_text"
+  exit 1
 fi
 
 Download
@@ -140,7 +145,7 @@ Download
 ########## Source Envionmental Variables ##########
 
 for file in $dot_env $dot_env_dev; do
-  echo "$blue_text""Loading Shell Variables from $file...""$default_text"
+  echo -e "$blue_text""Loading Shell Variables from $file...""$default_text"
   source $file
 done
 
@@ -148,17 +153,17 @@ done
 ########## Start Docker ##########
 
 echo
-echo "$blue_text""Starting Docker Compose""$default_text"
+echo -e "$blue_text""Starting Docker Compose""$default_text"
 
-docker-compose up
+docker compose up
 
-# $? is the exit code of the last command. So here: docker-compose up
+# $? is the exit code of the last command. So here: docker compose up
 if test $? -ne 0; then
-  echo "$red_text""Docker compose failed.  If you are seeing container conflicts""$default_text"
-  echo "$red_text""please consider removing old containers""$default_text"
+  echo -e "$red_text""Docker compose failed.  If you are seeing container conflicts""$default_text"
+  echo -e "$red_text""please consider removing old containers""$default_text"
 fi
 
 ########## Ending Docker ##########
-docker-compose down
+docker compose down
 
-echo "$blue_text""Starting Docker Compose""$default_text"
+echo -e "$blue_text""Stopping Docker Compose""$default_text"

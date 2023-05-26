@@ -40,7 +40,7 @@ If the target SQS Queue is not public, you will need the following permissions o
 Required properties are 'Queue URL' and 'AWS Region' as noted in **bold** below.
 
 * **Queue URL** (STRING)
-  * The full AWS endpoint URL of the queue e.g. https://sqs.eu-west-1.amazonaws.com/1234567890/example-queue-url
+  * The full AWS endpoint URL of the queue e.g.`https://sqs.eu-west-1.amazonaws.com/1234567890/example-queue-url`
 * **AWS Region** (STRING)
   * The region code for the SQS Queue e.g. eu-west-1
 * Message Delay (INT)

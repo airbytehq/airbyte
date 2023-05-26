@@ -44,6 +44,7 @@ class AmazonSPStream(HttpStream, ABC):
         marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
+        advanced_stream_options: Optional[str],
         max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
         *args,
@@ -173,6 +174,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         report_options: Optional[str],
         max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
+        advanced_stream_options: Optional[str],
         authenticator: HttpAuthenticator = None,
     ):
         self._authenticator = authenticator
@@ -185,6 +187,9 @@ class ReportsAmazonSPStream(Stream, ABC):
         self.period_in_days = max(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work as well
         self._report_options = report_options or "{}"
         self.max_wait_seconds = max_wait_seconds
+        self._advanced_stream_options = dict()
+        if advanced_stream_options is not None:
+            self._advanced_stream_options = json_lib.loads(advanced_stream_options)
 
     @property
     def url_base(self) -> str:
@@ -241,7 +246,11 @@ class ReportsAmazonSPStream(Stream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-        return {"reportType": self.name, "marketplaceIds": [self.marketplace_id], **stream_slice}
+        params = {"reportType": self.name, "marketplaceIds": [self.marketplace_id], **(stream_slice or {})}
+        options = self.report_options()
+        if options is not None:
+            params.update({"reportOptions": options})
+        return params
 
     def _create_report(
         self,
@@ -521,36 +530,10 @@ class XmlAllOrdersDataByOrderDataGeneral(ReportsAmazonSPStream):
 
 
 class MerchantListingsReportBackCompat(ReportsAmazonSPStream):
-    def _report_data(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Mapping[str, Any]:
-        params = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-        options = self.report_options()
-        if options is not None:
-            params.update({"reportOptions": options})
-        return params
-
     name = "GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT"
 
 
 class MerchantCancelledListingsReport(ReportsAmazonSPStream):
-    def _report_data(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Mapping[str, Any]:
-        params = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-        options = self.report_options()
-        if options is not None:
-            params.update({"reportOptions": options})
-        return params
-
     name = "GET_MERCHANT_CANCELLED_LISTINGS_DATA"
 
 
@@ -585,19 +568,6 @@ class FbaInventoryPlaningReport(ReportsAmazonSPStream):
 
 
 class LedgerSummaryViewReport(ReportsAmazonSPStream):
-    def _report_data(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Mapping[str, Any]:
-        params = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-        options = self.report_options()
-        if options is not None:
-            params.update({"reportOptions": options})
-        return params
-
     name = "GET_LEDGER_SUMMARY_VIEW_DATA"
 
 
@@ -615,45 +585,42 @@ class AnalyticsStream(ReportsAmazonSPStream):
     ) -> Mapping[str, Any]:
         data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
         options = self.report_options()
-        if options is not None:
+        if options and options.get("reportPeriod") is not None:
             data.update(self._augmented_data(self, options))
         return data
 
     @staticmethod
     def _augmented_data(self, report_options) -> Mapping[str, Any]:
-        if report_options.get("reportPeriod") is None:
-            return {"reportOptions": report_options}
+        now = pendulum.now("utc")
+        if report_options["reportPeriod"] == "DAY":
+            now = now.subtract(days=self.availability_sla_days)
+            data_start_time = now.start_of("day")
+            data_end_time = now.end_of("day")
+        elif report_options["reportPeriod"] == "WEEK":
+            now = now.subtract(days=self.availability_sla_days).subtract(weeks=1)
+            # According to report api docs
+            # dataStartTime must be a Sunday and dataEndTime must be the following Saturday
+            pendulum.week_starts_at(pendulum.SUNDAY)
+            pendulum.week_ends_at(pendulum.SATURDAY)
+
+            data_start_time = now.start_of("week")
+            data_end_time = now.end_of("week")
+
+            # Reset week start and end
+            pendulum.week_starts_at(pendulum.MONDAY)
+            pendulum.week_ends_at(pendulum.SUNDAY)
+        elif report_options["reportPeriod"] == "MONTH":
+            now = now.subtract(months=1)
+            data_start_time = now.start_of("month")
+            data_end_time = now.end_of("month")
         else:
-            now = pendulum.now("utc")
-            if report_options["reportPeriod"] == "DAY":
-                now = now.subtract(days=self.availability_sla_days)
-                data_start_time = now.start_of("day")
-                data_end_time = now.end_of("day")
-            elif report_options["reportPeriod"] == "WEEK":
-                now = now.subtract(days=self.availability_sla_days).subtract(weeks=1)
-                # According to report api docs
-                # dataStartTime must be a Sunday and dataEndTime must be the following Saturday
-                pendulum.week_starts_at(pendulum.SUNDAY)
-                pendulum.week_ends_at(pendulum.SATURDAY)
+            raise Exception([{"message": "This reportPeriod is not implemented."}])
 
-                data_start_time = now.start_of("week")
-                data_end_time = now.end_of("week")
-
-                # Reset week start and end
-                pendulum.week_starts_at(pendulum.MONDAY)
-                pendulum.week_ends_at(pendulum.SUNDAY)
-            elif report_options["reportPeriod"] == "MONTH":
-                now = now.subtract(months=1)
-                data_start_time = now.start_of("month")
-                data_end_time = now.end_of("month")
-            else:
-                raise Exception([{"message": "This reportPeriod is not implemented."}])
-
-            return {
-                "dataStartTime": data_start_time.strftime(DATE_TIME_FORMAT),
-                "dataEndTime": data_end_time.strftime(DATE_TIME_FORMAT),
-                "reportOptions": report_options,
-            }
+        return {
+            "dataStartTime": data_start_time.strftime(DATE_TIME_FORMAT),
+            "dataEndTime": data_end_time.strftime(DATE_TIME_FORMAT),
+            "reportOptions": report_options,
+        }
 
 
 class BrandAnalyticsMarketBasketReports(AnalyticsStream):
@@ -733,6 +700,7 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
         A2NODRKZP88ZB9="YYYY-MM-DD",  # SE
         A33AVAJ2PDY3EV="D/M/YY",  # TR
         A1F83G8C2ARO7P="D/M/YY",  # UK
+        AMEN7PMS3EDWL="D/M/YY",  # BE
         # fe
         A39IBJ37TRP1C6="D/M/YY",  # AU
         A1VC38T7YXB528="YY/M/D",  # JP
@@ -952,6 +920,15 @@ class SellerAnalyticsSalesAndTrafficReports(IncrementalAnalyticsStream):
     cursor_field = "queryEndDate"
     fixed_period_in_days = 1
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.name in self._advanced_stream_options.keys():
+            _options: dict = self._advanced_stream_options[self.name]
+            if isinstance(_options, dict):
+                for _option_attr, _option_val in _options.items():
+                    setattr(self, _option_attr, _option_val)
+
 
 class VendorSalesReports(IncrementalAnalyticsStream):
     name = "GET_VENDOR_SALES_REPORT"
@@ -1025,7 +1002,7 @@ class FinanceStream(AmazonSPStream, ABC):
             return dict(next_page_token)
 
         # for finance APIs, end date-time must be no later than two minutes before the request was submitted
-        end_date = pendulum.now("utc").subtract(minutes=2, seconds=10).strftime(DATE_TIME_FORMAT)
+        end_date = pendulum.now("utc").subtract(minutes=5).strftime(DATE_TIME_FORMAT)
         if self._replication_end_date:
             end_date = self._replication_end_date
 
@@ -1163,3 +1140,11 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
             params = {"nextToken": next_value}
             if not next_value:
                 complete = True
+
+
+class FbaReimbursementsReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/help/hub/reference/G200732720
+    """
+
+    name = "GET_FBA_REIMBURSEMENTS_DATA"

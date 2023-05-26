@@ -7,11 +7,13 @@ import logging
 import shutil
 import subprocess
 import tempfile
+from datetime import datetime
 from pathlib import Path
 from typing import Iterable, List, Optional
 
 import git
 import requests
+from pytablewriter import MarkdownTableWriter
 
 from .constants import (
     AIRBYTE_PLATFORM_INTERNAL_GITHUB_REPO_URL,
@@ -117,17 +119,10 @@ def add_labels_to_pr(pr_number: str, labels_to_add: List) -> requests.Response:
     return response
 
 
-def create_pr(connector: ConnectorQAReport, branch: str) -> Optional[requests.Response]:
-    body = f"""The Cloud Availability Updater decided that it's the right time to make {connector.connector_name} available on Cloud!
-    - Technical name: {connector.connector_technical_name}
-    - Version: {connector.connector_version}
-    - Definition ID: {connector.connector_definition_id}
-    - OSS sync success rate: {connector.sync_success_rate}
-    - OSS number of connections: {connector.number_of_connections}
-    """
+def create_pr(pr_title: str, pr_body: str, branch: str, labels: Optional[List]) -> Optional[requests.Response]:
     data = {
-        "title": f"🤖 Add {connector.connector_technical_name} to cloud",
-        "body": body,
+        "title": pr_title,
+        "body": pr_body,
         "head": branch,
         "base": AIRBYTE_PLATFORM_INTERNAL_MAIN_BRANCH_NAME,
     }
@@ -136,41 +131,87 @@ def create_pr(connector: ConnectorQAReport, branch: str) -> Optional[requests.Re
         response.raise_for_status()
         pr_url = response.json().get("url")
         pr_number = response.json().get("number")
-        logger.info(f"A PR was opened for {connector.connector_technical_name}: {pr_url}")
-        add_labels_to_pr(pr_number, PR_LABELS)
+        logger.info(f"A PR was opened: {pr_url}")
+        if labels:
+            add_labels_to_pr(pr_number, labels)
         return response
     else:
         logger.warning(f"A PR already exists for branch {branch}")
 
 
-def deploy_new_connector_to_cloud_repo(airbyte_cloud_repo_path: Path, airbyte_cloud_repo: git.Repo, connector: ConnectorQAReport):
+def get_pr_body(eligible_connectors: List[ConnectorQAReport], excluded_connectors: List[ConnectorQAReport]) -> str:
+    body = (
+        f"The Cloud Availability Updater decided that it's the right time to make the following {len(eligible_connectors)} connectors available on Cloud!"
+        + "\n\n"
+    )
+    headers = ["connector_technical_name", "connector_version", "connector_definition_id", "sync_success_rate", "number_of_connections"]
+
+    writer = MarkdownTableWriter(
+        max_precision=2,
+        table_name="Promoted connectors",
+        headers=headers,
+        value_matrix=[[connector.dict()[h] for h in headers] for connector in eligible_connectors],
+    )
+    body += writer.dumps()
+    body += "\n"
+
+    writer = MarkdownTableWriter(
+        table_name="Excluded but eligible connectors",
+        max_precision=2,
+        headers=headers,
+        value_matrix=[[connector.dict()[h] for h in headers] for connector in excluded_connectors],
+    )
+
+    body += writer.dumps()
+    body += "\n ☝️ These eligible connectors are already in the definitions masks. They might have been explicitly pinned or excluded. We're not adding these for safety."
+    return body
+
+
+def add_new_connector_to_cloud_catalog(airbyte_cloud_repo_path: Path, airbyte_cloud_repo: git.Repo, connector: ConnectorQAReport) -> bool:
     """Updates the local definitions mask on Airbyte cloud repo.
     Calls the generateCloudConnectorCatalog gradle task.
-    Commits these changes on a new branch.
-    Pushes these new branch to the origin.
+    Commits these changes
 
     Args:
         airbyte_cloud_repo_path (Path): The local path to Airbyte Cloud repository.
         airbyte_cloud_repo (git.Repo): The Airbyte Cloud repo instance.
         connector (ConnectorQAReport): The connector to add to a definitions mask.
+    Returns:
+        bool: Whether the connector was added or not.
     """
-    airbyte_cloud_repo.git.checkout(AIRBYTE_PLATFORM_INTERNAL_MAIN_BRANCH_NAME)
-    new_branch_name = f"cloud-availability-updater/deploy-{connector.connector_technical_name}"
-    checkout_new_branch(airbyte_cloud_repo, new_branch_name)
     definitions_mask_path = get_definitions_mask_path(airbyte_cloud_repo_path, connector.connector_type)
     updated_files = update_definitions_mask(connector, definitions_mask_path)
     if updated_files:
         run_generate_cloud_connector_catalog(airbyte_cloud_repo_path)
         commit_all_files(airbyte_cloud_repo, f"🤖 Add {connector.connector_name} connector to cloud")
-        push_branch(airbyte_cloud_repo, new_branch_name)
-        create_pr(connector, new_branch_name)
-        airbyte_cloud_repo.git.checkout(AIRBYTE_PLATFORM_INTERNAL_MAIN_BRANCH_NAME)
+        return True
+    return False
 
 
-def deploy_eligible_connectors_to_cloud_repo(eligible_connectors: Iterable):
+def batch_deploy_eligible_connectors_to_cloud_repo(eligible_connectors: Iterable):
     cloud_repo_path = Path(tempfile.mkdtemp())
     airbyte_cloud_repo = clone_airbyte_cloud_repo(cloud_repo_path)
     airbyte_cloud_repo = set_git_identity(airbyte_cloud_repo)
+    current_date = datetime.utcnow().strftime("%Y%m%d")
+    airbyte_cloud_repo.git.checkout(AIRBYTE_PLATFORM_INTERNAL_MAIN_BRANCH_NAME)
+
+    new_branch_name = f"cloud-availability-updater/batch-deploy/{current_date}"
+    checkout_new_branch(airbyte_cloud_repo, new_branch_name)
+
+    added_connectors = []
+    explicitly_disabled_connectors = []
     for connector in eligible_connectors:
-        deploy_new_connector_to_cloud_repo(cloud_repo_path, airbyte_cloud_repo, connector)
+        added = add_new_connector_to_cloud_catalog(cloud_repo_path, airbyte_cloud_repo, connector)
+        if added:
+            added_connectors.append(connector)
+        else:
+            explicitly_disabled_connectors.append(connector)
+    if added_connectors:
+        push_branch(airbyte_cloud_repo, new_branch_name)
+        create_pr(
+            f"🤖 Cloud Availability updater: new connectors to deploy [{current_date}]",
+            get_pr_body(added_connectors, explicitly_disabled_connectors),
+            new_branch_name,
+            PR_LABELS,
+        )
     shutil.rmtree(cloud_repo_path)

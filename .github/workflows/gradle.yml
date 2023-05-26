@@ -1,5 +1,9 @@
 name: Airbyte Connectors & Octavia CI
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
   S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
@@ -24,17 +28,6 @@ on:
 permissions: write-all
 
 jobs:
-  # COMMON TASKS
-  ensure-images-exist:
-    name: "Ensure all required Docker images exist on Dockerhub"
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-
-      - name: Check images exist
-        run: ./tools/bin/check_images_exist.sh all
   # The output of this job is used to trigger the following builds.
   changes:
     name: "Detect Modified Files"
@@ -45,8 +38,8 @@ jobs:
     if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     outputs:
-      backend: ${{ steps.filter.outputs.backend }}
       build: ${{ steps.filter.outputs.build }}
+      cdk: ${{ steps.filter.outputs.cdk }}
       cli: ${{ steps.filter.outputs.cli }}
       connectors: ${{ steps.filter.outputs.connectors }}
       db: ${{ steps.filter.outputs.db }}
@@ -59,25 +52,21 @@ jobs:
         with:
           # Note, the following glob expression within a filters are ORs.
           filters: |
-            backend:
-              - 'airbyte-!(cdk|integrations|webapp|webapp-e2e-tests)/**'
-              - 'airbyte-integrations/connectors/(destination-jdbc|destination-postgres|source-jdbc|source-postgres)/**'
-              - 'airbyte-config/init/src/main/resources/seed/(source|destination)_definitions.yaml'
-              - 'docker-compose*.yaml'
-              - '(charts|kube)/**'
             build:
               - '.github/**'
               - 'buildSrc/**'
               - 'tools/**'
               - '*.gradle'
               - 'deps.toml'
+              - 'airbyte-config-oss/**'
+            cdk:
+              - 'airbyte-cdk/**'
             cli:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
             connectors:
-              - 'airbyte-cdk/**'
               - 'airbyte-integrations/**'
-              - 'airbyte-commons-worker/**'
+              - 'airbyte-connector-test-harnesses/acceptance-test-harness/**'
             db:
               - 'airbyte-db/**'
 
@@ -102,6 +91,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -117,6 +108,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
 
       - name: Set up CI Gradle Properties
         run: |
@@ -153,6 +145,66 @@ jobs:
         uses: Wandalen/wretry.action@master
         with:
           command: ./tools/bin/integration_tests_octavia.sh
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+
+  cdk-build:
+    needs: changes
+    runs-on: ubuntu-latest
+    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
+    if: needs.changes.outputs.cdk == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
+    name: "Airbyte CDK: Build"
+    timeout-minutes: 90
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+
+      - name: Cache Build Artifacts
+        uses: ./.github/actions/cache-build-artifacts
+        with:
+          cache-key: ${{ secrets.CACHE_VERSION }}-cdk
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m \
+            --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
+
+      - name: Format
+        uses: Wandalen/wretry.action@master
+        with:
+          command: SUB_BUILD=CDK ./gradlew format --scan --info --stacktrace
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+
+      - name: Commit Formatting Changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Automated Commit - Formatting Changes
+          commit_user_name: Octavia Squidington III
+          commit_user_email: octavia-squidington-iii@users.noreply.github.com
+
+      - name: Build
+        uses: Wandalen/wretry.action@master
+        with:
+          command: SUB_BUILD=CDK ./gradlew build --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
@@ -195,11 +247,13 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
         with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
+          cache-key: ${{ secrets.CACHE_VERSION }}-connectors
 
       - uses: actions/setup-java@v3
         with:
@@ -218,7 +272,7 @@ jobs:
         run: python3 -m pip install virtualenv==16.7.9 --user
 
       - name: Install automake
-        run: apt-get install -y automake build-essential libtool libtool-bin autoconf
+        run: apt-get update && apt-get install -y automake build-essential libtool libtool-bin autoconf
 
       - name: Set up CI Gradle Properties
         run: |
@@ -241,16 +295,16 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
+      # Verify that the only committed file changes will be those made by the build, formatter or processResources
+      - name: Ensure no file change from code formatting
+        run: git --no-pager diff && test -z "$(git --no-pager diff)"
+
       - name: Format
         uses: Wandalen/wretry.action@master
         with:
           command: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
           attempt_limit: 3
           attempt_delay: 5000 # in ms
-
-      # Verify that the linter is happy
-      - name: Ensure no file change from code formatting
-        run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       - name: Build
         uses: Wandalen/wretry.action@master
@@ -259,9 +313,19 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
-      # Ensure that the connector autogenerated files are happy
-      - name: Ensure no file change from regenerating connector definitions/specs
-        run: git --no-pager diff && test -z "$(git --no-pager diff)"
+      - name: Process Resources
+        uses: Wandalen/wretry.action@master
+        with:
+          command: SUB_BUILD=CONNECTORS_BASE ./gradlew :airbyte-config-oss:init-oss:processResources --scan
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+
+      - name: Commit Changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Automated Change
+          commit_user_name: Octavia Squidington III
+          commit_user_email: octavia-squidington-iii@users.noreply.github.com
 
       - name: Publish Connectors Base Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
@@ -302,7 +366,7 @@ jobs:
           # Specify top-level and second-level modules. Note there cannot be a space between the comma.
           path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
           reporter: java-junit
-          fail-on-error: 'false'
+          fail-on-error: "false"
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-connectors-base-build-runner:

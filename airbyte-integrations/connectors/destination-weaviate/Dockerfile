@@ -7,8 +7,8 @@ WORKDIR /airbyte/integration_code
 # upgrade pip to the latest version
 RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
-    && apk --no-cache add tzdata build-base
-
+    && apk --no-cache add tzdata build-base \
+    && apk add libffi-dev
 
 COPY setup.py ./
 # install necessary packages to a temporary folder
@@ -34,5 +34,5 @@ COPY destination_weaviate ./destination_weaviate
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.version=0.1.1
 LABEL io.airbyte.name=airbyte/destination-weaviate

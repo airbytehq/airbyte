@@ -11,7 +11,7 @@ First we'll update the spec block in `source_exchange_rates_tutorial/manifest.ya
 
 ```yaml
 spec: 
-  documentation_url: https://docs.airbyte.io/integrations/sources/exchangeratesapi
+  documentation_url: https://docs.airbyte.com/integrations/sources/exchangeratesapi
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
     title: exchangeratesapi.io Source Spec
@@ -203,7 +203,7 @@ check:
   stream_names:
     - "rates"
 spec: 
-  documentation_url: https://docs.airbyte.io/integrations/sources/exchangeratesapi
+  documentation_url: https://docs.airbyte.com/integrations/sources/exchangeratesapi
   connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
     title: exchangeratesapi.io Source Spec

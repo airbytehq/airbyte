@@ -5,14 +5,14 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteMessage, SyncMode
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice
-from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.streams.core import Stream, StreamData
 
 
 @dataclass
@@ -100,12 +100,31 @@ class DeclarativeStream(Stream):
         for record in self.retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
             yield self._apply_transformations(record, self.config, stream_slice)
 
-    def _apply_transformations(self, record: Mapping[str, Any], config: Config, stream_slice: StreamSlice):
-        output_record = record
+    def _apply_transformations(
+        self,
+        message_or_record_data: StreamData,
+        config: Config,
+        stream_slice: StreamSlice,
+    ):
+        # If the input is an AirbyteMessage with a record, transform the record's data
+        # If the input is another type of AirbyteMessage, return it as is
+        # If the input is a dict, transform it
+        if isinstance(message_or_record_data, AirbyteMessage):
+            if message_or_record_data.record:
+                record = message_or_record_data.record.data
+            else:
+                return message_or_record_data
+        elif isinstance(message_or_record_data, dict):
+            record = message_or_record_data
+        else:
+            # Raise an error because this is unexpected and indicative of a typing problem in the CDK
+            raise ValueError(
+                f"Unexpected record type. Expected {StreamData}. Got {type(message_or_record_data)}. This is probably due to a bug in the CDK."
+            )
         for transformation in self.transformations:
-            output_record = transformation.transform(record, config=config, stream_state=self.state, stream_slice=stream_slice)
+            transformation.transform(record, config=config, stream_state=self.state, stream_slice=stream_slice)
 
-        return output_record
+        return message_or_record_data
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """

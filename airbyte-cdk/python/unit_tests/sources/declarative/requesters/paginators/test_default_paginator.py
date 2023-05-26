@@ -16,6 +16,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.default_paginator imp
     RequestOptionType,
 )
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.offset_increment import OffsetIncrement
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 
 
@@ -183,11 +184,17 @@ def test_reset():
     page_token_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="offset", parameters={})
     url_base = "https://airbyte.io"
     config = {}
-    strategy = MagicMock()
-    DefaultPaginator(
+    strategy = OffsetIncrement(config={}, page_size=2, parameters={})
+    paginator = DefaultPaginator(
         strategy, config, url_base, parameters={}, page_size_option=page_size_request_option, page_token_option=page_token_request_option
-    ).reset()
-    assert strategy.reset.called
+    )
+    initial_request_parameters = paginator.get_request_params()
+    paginator.next_page_token(MagicMock(), [{"first key": "first value"}, {"second key": "second value"}])
+    request_parameters_for_second_request = paginator.get_request_params()
+    paginator.reset()
+    request_parameters_after_reset = paginator.get_request_params()
+    assert initial_request_parameters == request_parameters_after_reset
+    assert request_parameters_for_second_request != request_parameters_after_reset
 
 
 def test_limit_page_fetched():
@@ -210,3 +217,17 @@ def test_limit_page_fetched():
         assert last_token
 
     assert not paginator.next_page_token(MagicMock(), MagicMock())
+
+
+def test_paginator_with_page_option_no_page_size():
+    pagination_strategy = OffsetIncrement(config={}, page_size=None, parameters={})
+
+    with pytest.raises(ValueError):
+        DefaultPaginator(
+            page_size_option=MagicMock(),
+            page_token_option=RequestOption("limit", RequestOptionType.request_parameter, parameters={}),
+            pagination_strategy=pagination_strategy,
+            config=MagicMock(),
+            url_base=MagicMock(),
+            parameters={},
+        ),
