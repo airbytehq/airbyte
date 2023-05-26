@@ -118,7 +118,8 @@ public class PerformanceHarness {
         final Optional<AirbyteMessage> messageOptional;
         try {
           messageOptional = destination.attemptRead();
-//          messageOptional.ifPresent(airbyteMessage -> log.info("dst log: {}", airbyteMessage.getLog().getMessage()));
+          // messageOptional.ifPresent(airbyteMessage -> log.info("dst log: {}",
+          // airbyteMessage.getLog().getMessage()));
 
         } catch (final Exception e) {
           throw new DestinationException("Destination process read attempt failed", e);

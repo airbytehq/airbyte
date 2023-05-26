@@ -11,9 +11,8 @@ import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.concurrent.ConcurrentMap;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Represents the minimal interface over the underlying buffer queues required for enqueue
@@ -67,7 +66,7 @@ public class BufferEnqueue {
       }
       addedToQueue = queue.offer(message, sizeInBytes, stateId);
       i++;
-      if(i > 5) {
+      if (i > 5) {
         try {
           sleep(500);
         } catch (final InterruptedException e) {
