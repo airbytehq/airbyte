@@ -20,6 +20,7 @@ from ci_connector_ops.pipelines.consts import (
 )
 from ci_connector_ops.pipelines.utils import get_file_contents, slugify, with_exit_code
 from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Platform, Secret
+from dagger.engine._version import CLI_VERSION as dagger_engine_version
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
@@ -672,6 +673,16 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
     return await finalize_build(context, connector_container)
 
 
+async def get_cdk_version_from_python_connector(python_connector: Container) -> Optional[str]:
+
+    pip_freeze_stdout = await python_connector.with_entrypoint("pip").with_exec(["freeze"]).stdout()
+    pip_dependencies = [dep.split("==") for dep in pip_freeze_stdout.split("\n")]
+    for package_name, package_version in pip_dependencies:
+        if package_name == "airbyte-cdk":
+            return package_version
+    return None
+
+
 async def with_airbyte_python_connector(context: ConnectorContext, build_platform: Platform) -> Container:
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
     connector_container = (
@@ -681,11 +692,16 @@ async def with_airbyte_python_connector(context: ConnectorContext, build_platfor
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
     )
+    cdk_version = await get_cdk_version_from_python_connector(connector_container)
+    if cdk_version:
+        connector_container = connector_container.with_label("io.airbyte.cdk_version", cdk_version)
+        context.cdk_version = cdk_version
     return await finalize_build(context, connector_container)
 
 
 async def finalize_build(context: ConnectorContext, connector_container: Container) -> Container:
-    """Finalize build by running finalize_build.sh or finalize_build.py if present in the connector directory."""
+    """Finalize build by adding dagger engine version label and running finalize_build.sh or finalize_build.py if present in the connector directory."""
+    connector_container = connector_container.with_label("io.dagger.engine_version", dagger_engine_version)
     connector_dir_with_finalize_script = context.get_connector_dir(include=["finalize_build.sh", "finalize_build.py"])
     finalize_scripts = await connector_dir_with_finalize_script.entries()
     if not finalize_scripts:
