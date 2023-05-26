@@ -1,5 +1,7 @@
 FROM alpine:3.18 as base
 
+COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
+
 ENV LANG=C.UTF-8
 
 RUN apk update &&\
@@ -66,7 +68,8 @@ RUN pip install .
 
 WORKDIR /airbyte/normalization_code/dbt-template/
 # Download external dbt dependencies
-RUN dbt deps
+RUN pip install dbt-core
+RUN apk add git && touch profiles.yml && dbt deps --profiles-dir . && apk del git
 
 WORKDIR /airbyte
 ENV AIRBYTE_ENTRYPOINT "/airbyte/entrypoint.sh"

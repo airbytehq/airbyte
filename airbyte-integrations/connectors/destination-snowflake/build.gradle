@@ -31,6 +31,9 @@ configurations.all {
 //                'com.fasterxml.jackson:jackson-bom:2.15.1', 'com.fasterxml.jackson.core:jackson-databind:2.15.1',
 //                'com.fasterxml.jackson.core:jackson-core:2.15.1', 'io.netty:netty-all:4.1.92.Final'
         force libs.log4j.core, libs.log4j.api, libs.log4j.impl, libs.log4j.web
+        force 'org.apache.hadoop:hadoop-common:3.3.5'
+        force 'org.apache.zookeeper:zookeeper:3.8.1'
+        force 'org.eclipse.jetty:jetty-server:10.0.14'
     }
 }
 
@@ -63,7 +66,7 @@ dependencies {
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
-//    implementation project(':airbyte-integrations:connectors:destination-gcs')
+    implementation project(':airbyte-integrations:connectors:destination-gcs')
     implementation project(':airbyte-integrations:bases:base-java-s3')
     implementation libs.airbyte.protocol
 
