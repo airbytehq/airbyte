@@ -82,13 +82,9 @@ public class AdaptiveDestinationRunner {
     }
 
     public void run(final String[] args) throws Exception {
-      run(args, false);
-    }
-
-    public void run(final String[] args, final boolean useStringConsumer) throws Exception {
       final Destination destination = getDestination();
       LOGGER.info("Starting destination: {}", destination.getClass().getName());
-      new IntegrationRunner(destination, useStringConsumer).run(args);
+      new IntegrationRunner(destination).run(args);
       LOGGER.info("Completed destination: {}", destination.getClass().getName());
     }
 

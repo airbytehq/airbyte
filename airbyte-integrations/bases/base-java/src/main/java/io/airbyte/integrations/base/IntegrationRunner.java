@@ -60,14 +60,9 @@ public class IntegrationRunner {
   private final Destination destination;
   private final Source source;
   private static JsonSchemaValidator validator;
-  private final boolean useConsumer2;
 
   public IntegrationRunner(final Destination destination) {
-    this(destination, false);
-  }
-
-  public IntegrationRunner(final Destination destination, final boolean useConsumer2) {
-    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null, useConsumer2);
+    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null);
   }
 
   public IntegrationRunner(final Source source) {
@@ -78,9 +73,7 @@ public class IntegrationRunner {
   IntegrationRunner(final IntegrationCliParser cliParser,
                     final Consumer<AirbyteMessage> outputRecordCollector,
                     final Destination destination,
-                    final Source source,
-                    final boolean useConsumer2) {
-    this.useConsumer2 = useConsumer2;
+                    final Source source) {
     Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
     this.cliParser = cliParser;
     this.outputRecordCollector = outputRecordCollector;
@@ -99,7 +92,7 @@ public class IntegrationRunner {
                     final Destination destination,
                     final Source source,
                     final JsonSchemaValidator jsonSchemaValidator) {
-    this(cliParser, outputRecordCollector, destination, source, false);
+    this(cliParser, outputRecordCollector, destination, source);
     validator = jsonSchemaValidator;
   }
 
@@ -154,11 +147,16 @@ public class IntegrationRunner {
         // destination only
         case WRITE -> {
           final JsonNode config = parseConfig(parsed.getConfigPath());
+          // detect if running on internal staging for snowflake, if so run consumer2.
+          final boolean useConsumer2ForSnowflake = config.has("loading_method")
+              && config.get("loading_method").has("method")
+              && config.get("loading_method").get("method").asText().equals("Internal Staging");
+
           validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
 
           final Procedure consumeWriteStreamCallable = () -> {
-            if (!useConsumer2) {
+            if (!useConsumer2ForSnowflake) {
               try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
                 consumeWriteStream(consumer);
               }
@@ -176,7 +174,8 @@ public class IntegrationRunner {
               INTERRUPT_THREAD_DELAY_MINUTES,
               TimeUnit.MINUTES,
               EXIT_THREAD_DELAY_MINUTES,
-              TimeUnit.MINUTES);        }
+              TimeUnit.MINUTES);
+        }
         default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
       }
     } catch (final Exception e) {
