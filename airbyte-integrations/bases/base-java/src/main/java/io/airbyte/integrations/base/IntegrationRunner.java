@@ -22,6 +22,8 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
@@ -58,25 +60,32 @@ public class IntegrationRunner {
   private final Destination destination;
   private final Source source;
   private static JsonSchemaValidator validator;
+  private final boolean useConsumer2;
 
   public IntegrationRunner(final Destination destination) {
-    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null);
+    this(destination, false);
+  }
+
+  public IntegrationRunner(final Destination destination, final boolean useConsumer2) {
+    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null, useConsumer2);
   }
 
   public IntegrationRunner(final Source source) {
-    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source);
+    this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, null, source, false);
   }
 
   @VisibleForTesting
   IntegrationRunner(final IntegrationCliParser cliParser,
                     final Consumer<AirbyteMessage> outputRecordCollector,
                     final Destination destination,
-                    final Source source) {
+                    final Source source,
+                    final boolean useConsumer2) {
+    this.useConsumer2 = useConsumer2;
     Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
     this.cliParser = cliParser;
     this.outputRecordCollector = outputRecordCollector;
     // integration iface covers the commands that are the same for both source and destination.
-    this.integration = source != null ? source : destination;
+    integration = source != null ? source : destination;
     this.source = source;
     this.destination = destination;
     validator = new JsonSchemaValidator();
@@ -90,7 +99,7 @@ public class IntegrationRunner {
                     final Destination destination,
                     final Source source,
                     final JsonSchemaValidator jsonSchemaValidator) {
-    this(cliParser, outputRecordCollector, destination, source);
+    this(cliParser, outputRecordCollector, destination, source, false);
     validator = jsonSchemaValidator;
   }
 
@@ -149,8 +158,15 @@ public class IntegrationRunner {
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
 
           final Procedure consumeWriteStreamCallable = () -> {
-            try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
-              consumeWriteStream(consumer);
+            if (!useConsumer2) {
+              try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
+                consumeWriteStream(consumer);
+              }
+            } else {
+              LOGGER.info("using consumer2");
+              try (final AirbyteMessageConsumer2 consumer = destination.getConsumer2(config, catalog, outputRecordCollector)) {
+                consumeWriteStream2(consumer);
+              }
             }
           };
 
@@ -160,8 +176,7 @@ public class IntegrationRunner {
               INTERRUPT_THREAD_DELAY_MINUTES,
               TimeUnit.MINUTES,
               EXIT_THREAD_DELAY_MINUTES,
-              TimeUnit.MINUTES);
-        }
+              TimeUnit.MINUTES);        }
         default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
       }
     } catch (final Exception e) {
@@ -216,6 +231,50 @@ public class IntegrationRunner {
     while (input.hasNext()) {
       consumeMessage(consumer, input.next());
     }
+  }
+
+  @VisibleForTesting
+  static void consumeWriteStream2(final AirbyteMessageConsumer2 consumer) throws Exception {
+    try (final BufferedInputStream bis = new BufferedInputStream(System.in);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+      consumeWriteStream2(consumer, bis, baos);
+    }
+  }
+
+  @VisibleForTesting
+  static void consumeWriteStream2(final AirbyteMessageConsumer2 consumer, final BufferedInputStream bis, final ByteArrayOutputStream baos)
+      throws Exception {
+    // try (final BufferedInputStream bis = new BufferedInputStream(System.in);
+    // final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+    final byte[] buffer = new byte[8192]; // 8K buffer
+    int bytesRead;
+    int byteCount = 0;
+    boolean lastWasNewLine = false;
+
+    while ((bytesRead = bis.read(buffer)) != -1) {
+      for (int i = 0; i < bytesRead; i++) {
+        final byte b = buffer[i];
+        if (b == '\n' || b == '\r') {
+          if (!lastWasNewLine && baos.size() > 0) {
+            consumer.accept(baos.toString(StandardCharsets.UTF_8), byteCount);
+            baos.reset();
+            byteCount = 0;
+          }
+          lastWasNewLine = true;
+        } else {
+          baos.write(b);
+          byteCount++;
+          lastWasNewLine = false;
+        }
+      }
+    }
+
+    // Handle last line if there's one
+    if (baos.size() > 0) {
+      consumer.accept(baos.toString(StandardCharsets.UTF_8), byteCount);
+    }
+    // }
   }
 
   /**
@@ -289,7 +348,6 @@ public class IntegrationRunner {
    */
   @VisibleForTesting
   static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString) throws Exception {
-
     final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
     if (messageOptional.isPresent()) {
       consumer.accept(messageOptional.get());
