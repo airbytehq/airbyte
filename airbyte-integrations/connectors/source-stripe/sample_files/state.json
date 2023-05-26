@@ -1,5 +1,6 @@
 {
   "charges": { "created": 1617030403 },
+  "early_fraud_warnings": { "created": 1617493847 },
   "events": { "created": 1617493847 },
   "customers": { "created": 1600837969 },
   "plans": { "created": 1594848350 },
