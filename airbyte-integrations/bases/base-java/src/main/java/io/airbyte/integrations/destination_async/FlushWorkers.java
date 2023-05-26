@@ -182,7 +182,8 @@ public class FlushWorkers implements AutoCloseable {
             desc.getNamespace(),
             desc.getName());
 
-        try (final var batch = bufferDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
+//        try (final var batch = bufferDequeue.take(desc, flusher.getOptimalBatchSizeBytes())) {
+          try (final var batch = bufferDequeue.take(desc, 0)) {
           final Map<Long, Long> stateIdToCount = batch.getData()
               .stream()
               .map(MessageWithMeta::stateId)
@@ -194,7 +195,7 @@ public class FlushWorkers implements AutoCloseable {
               batch.getData().size(),
               AirbyteFileUtils.byteCountToDisplaySize(batch.getSizeInBytes()));
 
-          flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
+//          flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
           batch.flushStates(stateIdToCount).forEach(outputRecordCollector);
         }
 

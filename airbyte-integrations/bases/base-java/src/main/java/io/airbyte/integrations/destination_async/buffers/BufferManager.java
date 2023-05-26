@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination_async.buffers;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.integrations.destination_async.AirbyteFileUtils;
 import io.airbyte.integrations.destination_async.FlushWorkers;
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
@@ -38,10 +39,9 @@ public class BufferManager {
   @VisibleForTesting
   public BufferManager(final long memoryLimit) {
     maxMemory = memoryLimit;
-    LOGGER.info("Memory available to the JVM {}", FileUtils.byteCountToDisplaySize(maxMemory));
-    LOGGER.info("Memory available from maxMemory: {}", Runtime.getRuntime().maxMemory());
-    LOGGER.info("Memory available from totalMemory: {}", Runtime.getRuntime().totalMemory());
-    LOGGER.info("Memory available from freeMemory: {}", Runtime.getRuntime().freeMemory());
+    LOGGER.info("Memory available from totalMemory: {}", AirbyteFileUtils.byteCountToDisplaySize(Runtime.getRuntime().totalMemory()));
+    LOGGER.info("Memory available from maxMemory: {}", AirbyteFileUtils.byteCountToDisplaySize(Runtime.getRuntime().maxMemory()));
+    LOGGER.info("Memory available from freeMemory: {}", AirbyteFileUtils.byteCountToDisplaySize(Runtime.getRuntime().freeMemory()));
     memoryManager = new GlobalMemoryManager(maxMemory);
     buffers = new ConcurrentHashMap<>();
     final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager(memoryManager);
@@ -73,22 +73,22 @@ public class BufferManager {
     final var queueInfo = new StringBuilder().append("QUEUE INFO").append(System.lineSeparator());
 
     queueInfo
-        .append(String.format("  Global Mem Manager -- max: %s in megabytes, allocated: %s in bytes (%s MB)",
+        .append(String.format("  Global Mem Manager -- max: %s in megabytes, allocated: %s MB",
             (double) memoryManager.getMaxMemoryBytes() / 1024 / 1024,
             (double) memoryManager.getCurrentMemoryBytes() / 1024 / 1024,
             (double) memoryManager.getCurrentMemoryBytes() / 1024 / 1024))
         .append(System.lineSeparator());
 
     queueInfo
-        .append(String.format("Runtime.freeMemory() %s",
-            Runtime.getRuntime().freeMemory()))
+        .append(String.format("  Runtime.freeMemory(): %s MB",
+            Runtime.getRuntime().freeMemory() / 1024 / 1024))
         .append(System.lineSeparator());
 
     for (final var entry : buffers.entrySet()) {
       final var queue = entry.getValue();
       queueInfo.append(
-          String.format("  Queue name: %s, num records: %d, num bytes: %s, num mb: %s",
-              entry.getKey().getName(), queue.size(), queue.getCurrentMemoryUsage(), queue.getCurrentMemoryUsage() / 1024 / 1024))
+          String.format("  Queue name: %s, num records: %d, num mb: %s",
+              entry.getKey().getName(), queue.size(), queue.getCurrentMemoryUsage() / 1024 / 1024))
           .append(System.lineSeparator());
     }
     log.info(queueInfo.toString());

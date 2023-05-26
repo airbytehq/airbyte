@@ -11,12 +11,15 @@ import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.concurrent.ConcurrentMap;
 
 /**
  * Represents the minimal interface over the underlying buffer queues required for enqueue
  * operations with the aim of minimizing lower-level queue access.
  */
+@Slf4j
 public class BufferEnqueue {
 
   private final GlobalMemoryManager memoryManager;
