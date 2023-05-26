@@ -95,11 +95,15 @@ class JiraStream(HttpStream, ABC):
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == requests.codes.bad_request:
+            # Refernce issue: https://github.com/airbytehq/oncall/issues/2133
+            # we should skip the slice with `board id` which doesn't support `sprints`
+            # it's generally applied to all streams that might have the same error hit in the future.
             errors = response.json().get("errorMessages")
             self.logger.error(f"Stream `{self.name}`. An error occured, details: {errors}. Skipping.")
             setattr(self, "raise_on_http_errors", False)
             return False
         else:
+            # for all other HTTP errors the defaul handling is applied
             return super().should_retry(response)
 
 
