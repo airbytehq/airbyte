@@ -93,3 +93,4 @@ jobs:
           CI_CONTEXT: "pull_request"
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
           PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+          PRODUCTION: "true"
