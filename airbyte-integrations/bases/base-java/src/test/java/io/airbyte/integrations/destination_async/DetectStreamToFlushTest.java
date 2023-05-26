@@ -84,14 +84,14 @@ class DetectStreamToFlushTest {
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
     when(runningFlushWorkers.getNumFlushWorkers(any())).thenReturn(0);
     final DetectStreamToFlush detectStreamToFlush = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false));
-    // if below threshold, triggers
+    // if above threshold, triggers
     assertEquals(Optional.of(DESC1), detectStreamToFlush.getNextStreamToFlush(0));
-    // if above threshold, no trigger
+    // if below threshold, no trigger
     assertEquals(Optional.empty(), detectStreamToFlush.getNextStreamToFlush(1));
   }
 
   @Test
-  void testGetNextRespectsHigherThresholdWhenDescAlreadyRunning() {
+  void testGetNextAccountsForAlreadyRunningWorkers() {
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
     when(bufferDequeue.getBufferedStreams()).thenReturn(Set.of(DESC1));
     when(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(1L));

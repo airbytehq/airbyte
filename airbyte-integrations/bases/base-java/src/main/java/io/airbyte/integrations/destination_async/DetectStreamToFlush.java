@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * This classes finds the best, next stream to flush.
+ * This class finds the best, next stream to flush.
  */
 @Slf4j
 public class DetectStreamToFlush {
@@ -65,7 +65,7 @@ public class DetectStreamToFlush {
   long computeQueueThreshold() {
     final boolean isBuffer90Full =
         EAGER_FLUSH_THRESHOLD <= (double) bufferDequeue.getTotalGlobalQueueSizeBytes() / bufferDequeue.getMaxQueueSizeBytes();
-    // when we are closing or queues are very fully, flush regardless of how few items are in the queue.
+    // when we are closing or queues are very full, flush regardless of how few items are in the queue.
     return isClosing.get() || isBuffer90Full ? 0 : QUEUE_FLUSH_THRESHOLD_BYTES;
   }
 
@@ -73,7 +73,7 @@ public class DetectStreamToFlush {
   // workers will process. we have access to their batch sizes after all!
   /**
    * Iterates over streams until it finds one that is ready to flush. Streams are ordered by priority.
-   * If no stream is ready, it returns an empty optional.
+   * Return an empty optional if no streams are ready.
    * <p>
    * A stream is ready to flush if it either meets a size threshold or a time threshold. For the size
    * threshold, the size of the data in the queue is compared to the threshold that is passed into
