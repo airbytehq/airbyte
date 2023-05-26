@@ -44,8 +44,8 @@ function configuredbt() {
     transform-config --config "${CONFIG_FILE}" --integration-type "${INTEGRATION_TYPE}" --out "${PROJECT_DIR}"
     if [[ -n "${CATALOG_FILE}" ]]; then
       # If catalog file is provided, generate normalization models, otherwise skip it
-      echo "Running: transform-catalog --integration-type ${INTEGRATION_TYPE} --profile-config-dir ${PROJECT_DIR} --catalog ${CATALOG_FILE} --out ${PROJECT_DIR}/models/generated/ --json-column _airbyte_data"
-      transform-catalog --integration-type "${INTEGRATION_TYPE}" --profile-config-dir "${PROJECT_DIR}" --catalog "${CATALOG_FILE}" --out "${PROJECT_DIR}/models/generated/" --json-column "_airbyte_data"
+      echo "Running: transform-catalog --integration-type ${INTEGRATION_TYPE} --profile-config-dir ${PROJECT_DIR} --catalog ${CATALOG_FILE} --out ${PROJECT_DIR}/models/generated/ --json-column _airbyte_data --config ${CONFIG_FILE}"
+      transform-catalog --integration-type "${INTEGRATION_TYPE}" --profile-config-dir "${PROJECT_DIR}" --catalog "${CATALOG_FILE}" --out "${PROJECT_DIR}/models/generated/" --json-column "_airbyte_data" --config "${CONFIG_FILE}"
       TRANSFORM_EXIT_CODE=$?
       if [ ${TRANSFORM_EXIT_CODE} -ne 0 ]; then
         echo -e "\nShowing destination_catalog.json to diagnose/debug errors (${TRANSFORM_EXIT_CODE}):\n"

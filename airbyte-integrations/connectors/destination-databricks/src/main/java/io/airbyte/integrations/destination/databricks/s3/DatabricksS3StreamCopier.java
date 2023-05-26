@@ -111,10 +111,6 @@ public class DatabricksS3StreamCopier extends DatabricksStreamCopier {
 
   @Override
   public String generateMergeStatement(final String destTableName) {
-    String namespace = String.format("%s.%s", schemaName, destTableName);
-    if (!useMetastore) {
-      namespace = String.format("%s.%s.%s", catalogName, schemaName, destTableName);
-    }
     final String copyData = String.format(
         "COPY INTO %s.%s.%s " +
             "FROM '%s' " +

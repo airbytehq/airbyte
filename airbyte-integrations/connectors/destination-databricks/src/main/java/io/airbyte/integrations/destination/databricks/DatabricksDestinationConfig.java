@@ -29,7 +29,6 @@ public record DatabricksDestinationConfig(String serverHostname,
   static final String DEFAULT_DATABASE_SCHEMA = "default";
   static final String DEFAULT_CATALOG = "hive_metastore";
   static final boolean DEFAULT_PURGE_STAGING_DATA = true;
-  static final boolean DEFAULT_USE_METASTORE = true;
 
   public static DatabricksDestinationConfig get(final JsonNode config) {
     Preconditions.checkArgument(

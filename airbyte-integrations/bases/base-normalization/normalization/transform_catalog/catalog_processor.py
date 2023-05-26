@@ -38,7 +38,7 @@ class CatalogProcessor:
         self.name_transformer: DestinationNameTransformer = DestinationNameTransformer(destination_type)
         self.models_to_source: Dict[str, str] = {}
 
-    def process(self, catalog_file: str, json_column_name: str, default_schema: str):
+    def process(self, catalog_file: str, json_column_name: str, default_schema: str, should_normalize_children=True):
         """
         This method first parse and build models to handle top-level streams.
         In a second loop will go over the substreams that were nested in a breadth-first traversal manner.
@@ -59,6 +59,7 @@ class CatalogProcessor:
             name_transformer=self.name_transformer,
             destination_type=self.destination_type,
             tables_registry=tables_registry,
+            should_normalize_children=should_normalize_children,
         )
         for stream_processor in stream_processors:
             stream_processor.collect_table_names()
@@ -95,6 +96,7 @@ class CatalogProcessor:
         name_transformer: DestinationNameTransformer,
         destination_type: DestinationType,
         tables_registry: TableNameRegistry,
+        should_normalize_children: bool = True,
     ) -> List[StreamProcessor]:
         result = []
         for configured_stream in get_field(catalog, "streams", "Invalid Catalog: 'streams' is not defined in Catalog"):
@@ -161,6 +163,7 @@ class CatalogProcessor:
                 properties=properties,
                 tables_registry=tables_registry,
                 from_table=from_table,
+                should_normalize_children=should_normalize_children,
             )
             result.append(stream_processor)
         return result

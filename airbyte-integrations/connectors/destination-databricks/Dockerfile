@@ -24,5 +24,5 @@ ENV APPLICATION destination-databricks
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=1.0.2
+LABEL io.airbyte.version=1.0.6
 LABEL io.airbyte.name=airbyte/destination-databricks

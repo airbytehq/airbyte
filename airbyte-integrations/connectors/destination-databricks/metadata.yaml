@@ -3,7 +3,7 @@ data:
   connectorType: destination
   definitionId: 072d5540-f236-4294-ba7c-ade8fd918496
   dockerImageTag: 1.0.2
-  dockerRepository: airbyte/destination-databricks
+  dockerRepository: 227743832892.dkr.ecr.eu-west-1.amazonaws.com/airbyte/destination-databricks
   githubIssueLabel: destination-databricks
   icon: databricks.svg
   license: MIT
@@ -15,4 +15,9 @@ data:
       enabled: true
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/destinations/databricks
+  supportsDbt: true
+  normalizationConfig:
+    normalizationRepository: 227743832892.dkr.ecr.eu-west-1.amazonaws.com/airbyte/normalization-databricks
+    normalizationTag: 0.2.25
+    normalizationIntegrationType: databricks
 metadataSpecVersion: "1.0"

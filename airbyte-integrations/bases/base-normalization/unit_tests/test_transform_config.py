@@ -538,6 +538,32 @@ class TestTransformConfig:
         assert expected == actual
         assert extract_path(actual) == "/local/testing.duckdb"
 
+    def test_transform_databricks(self):
+        input = {
+            "databricks_server_hostname": "airbyte.io",
+            "schema": "default",
+            "databricks_http_path": "/sql/1.0/endpoints/aeb42c",
+            "databricks_personal_access_token": "aebd43",
+            "accept_terms": True,
+            "database": "airbyte",
+            "data_source": {"data_source_type": "MANAGED_TABLES_STORAGE"},
+        }
+        actual = TransformConfig().transform_databricks(input)
+        expected = {
+            "type": "databricks",
+            "host": "airbyte.io",
+            "http_path": "/sql/1.0/endpoints/aeb42c",
+            "token": "aebd43",
+            "threads": 8,
+            "connect_retries": 5,
+            "connect_timeout": 210,
+            "schema": "default",
+            "catalog": "airbyte",
+        }
+
+        assert expected == actual
+        assert extract_schema(actual) == "default"
+
     def get_base_config(self):
         return {
             "config": {
