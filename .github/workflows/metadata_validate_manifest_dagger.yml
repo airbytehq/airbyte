@@ -20,3 +20,4 @@ jobs:
         with:
           subcommand: "metadata validate"
           context: "pull_request"
+          github-token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
