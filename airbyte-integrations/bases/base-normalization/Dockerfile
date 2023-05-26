@@ -46,6 +46,8 @@ RUN PATH=$ROOTPATH python -m venv /opt/.venv
 
 ENV PATH=$REQUIREPATH
 
+RUN pip install --upgrade pip
+
 WORKDIR /airbyte
 COPY entrypoint.sh .
 COPY build/sshtunneling.sh .
