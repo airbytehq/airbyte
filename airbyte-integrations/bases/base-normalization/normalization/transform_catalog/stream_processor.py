@@ -316,9 +316,11 @@ class StreamProcessor(object):
                 unique_key=self.get_unique_key(),
                 partition_by=PartitionScheme.UNIQUE_KEY,
             )
-        if not self.should_normalize_children:
-            return []
-        return self.find_children_streams(from_table, column_names)
+        children = []
+        if self.should_normalize_children:
+            children = self.find_children_streams(from_table, column_names)
+
+        return children
 
     def extract_column_names(self) -> Dict[str, Tuple[str, str]]:
         """
@@ -1193,7 +1195,7 @@ where 1 = 1
             if self.name_transformer.needs_quotes(stg_table):
                 stg_table = jinja_call(self.name_transformer.apply_quote(stg_table))
             # Merge statement for databricks remove the use for this part
-            if suffix == "scd" and self.destination_type != DestinationType.DATABRICKS:
+            if suffix == "scd":
                 hooks = []
 
                 final_table_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, "", truncate_name)
@@ -1283,7 +1285,8 @@ where 1 = 1
                     unique_key_reference=unique_key_reference,
                     clickhouse_nullable_join_setting=clickhouse_nullable_join_setting,
                 )
-                hooks.append(deletion_hook)
+                if self.destination_type != DestinationType.DATABRICKS:
+                    hooks.append(deletion_hook)
 
                 if self.destination_type.value == DestinationType.POSTGRES.value:
                     # Keep only rows with the max emitted_at to keep incremental behavior
@@ -1293,6 +1296,27 @@ where 1 = 1
                 else:
                     hooks.append(f"drop view {stg_schema}.{stg_table}")
 
+                source_table_name = self.from_table.table_name
+                print(f"  Adding drop table hook for {source_table_name} to {file_name}")
+                source_deletion_hook = Template(
+                    """
+                    {{ '{%' }}
+                        set source_table_relation = adapter.get_relation(
+                            database=this.database,
+                            schema=this.schema,
+                            identifier='{{ source_table_name }}'
+                        )
+                    {{ '%}' }}
+                    {{ '{%' }}
+                        if source_table_relation is not none
+                    {{ '%}' }}
+                    {{ '{%' }}
+                            do adapter.drop_relation(source_table_relation)
+                    {{ '%}' }}
+                    {{ '{% endif %}' }}
+                        """
+                ).render(source_table_name=source_table_name)
+                hooks.append(source_deletion_hook)
                 config["post_hook"] = "[" + ",".join(map(wrap_in_quotes, hooks)) + "]"
             else:
                 # incremental is handled in the SCD SQL already
