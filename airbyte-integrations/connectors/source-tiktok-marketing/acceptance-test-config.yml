@@ -7,6 +7,10 @@ acceptance_tests:
   spec:
     tests:
     - spec_path: "source_tiktok_marketing/spec.json"
+      # the spec was changed with the `format: date` for start/end dates input,
+      # to satisfy the DatePicker requirements
+      backward_compatibility_tests_config:
+        disable_for_version: "3.1.0" # attribution windows: add min/max values; change default 0 -> 3
   connection:
     tests:
     - config_path: "secrets/prod_config.json"
