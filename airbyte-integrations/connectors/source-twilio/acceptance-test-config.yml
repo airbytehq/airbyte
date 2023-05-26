@@ -46,6 +46,8 @@ acceptance_tests:
             bypass_reason: "very volatile data"
           - name: "usage_records"
             bypass_reason: "very volatile data"
+          - name: "executions"
+            bypass_reason: "very volatile data"
         timeout_seconds: 600
         fail_on_extra_columns: false
   incremental:
