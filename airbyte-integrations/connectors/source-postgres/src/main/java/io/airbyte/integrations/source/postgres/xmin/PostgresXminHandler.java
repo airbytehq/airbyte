@@ -138,7 +138,9 @@ public class PostgresXminHandler {
           quoteString);
 
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
-      final String sql = String.format("SELECT %s FROM %s WHERE xmin::text::bigint > ?",
+      // The xmin state that we save represents the lowest XID that is still in progress. To make sure we don't miss
+      // data associated with the current transaction, we have to issue an >=
+      final String sql = String.format("SELECT %s FROM %s WHERE xmin::text::bigint >= ?",
           wrappedColumnNames, fullTableName);
 
       final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
