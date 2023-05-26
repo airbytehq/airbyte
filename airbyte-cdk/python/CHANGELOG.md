@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.38.0
+Allow nested objects in request_body_json
+
 ## 0.37.0
 low-code: Make refresh token in oauth authenticator optional
 
