@@ -59,7 +59,7 @@ public class DetectStreamToFlush {
   @VisibleForTesting
   long computeQueueThreshold() {
     final boolean isBuffer90Full =
-        EAGER_FLUSH_THRESHOLD <= (double) bufferDequeue.getTotalGlobalQueueSizeBytes() / bufferDequeue.getTotalGlobalQueueSizeBytes();
+        EAGER_FLUSH_THRESHOLD <= (double) bufferDequeue.getTotalGlobalQueueSizeBytes() / bufferDequeue.getMaxQueueSizeBytes();
     // when we are closing or queues are very fully, flush regardless of how few items are in the queue.
     return isClosing.get() || isBuffer90Full ? 0 : QUEUE_FLUSH_THRESHOLD_BYTES;
   }

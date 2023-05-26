@@ -50,9 +50,9 @@ class DetectStreamToFlushTest {
     final AtomicBoolean isClosing = new AtomicBoolean(false);
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
     when(bufferDequeue.getTotalGlobalQueueSizeBytes()).thenReturn(8L);
-    when(bufferDequeue.getTotalGlobalQueueSizeBytes()).thenReturn(10L);
+    when(bufferDequeue.getMaxQueueSizeBytes()).thenReturn(10L);
     final DetectStreamToFlush detectStreamToFlush = new DetectStreamToFlush(bufferDequeue, null, isClosing);
-    assertEquals(0, detectStreamToFlush.computeQueueThreshold());
+    assertEquals(SIZE_10MB, detectStreamToFlush.computeQueueThreshold());
   }
 
   @Test
@@ -60,7 +60,7 @@ class DetectStreamToFlushTest {
     final AtomicBoolean isClosing = new AtomicBoolean(false);
     final BufferDequeue bufferDequeue = mock(BufferDequeue.class);
     when(bufferDequeue.getTotalGlobalQueueSizeBytes()).thenReturn(9L);
-    when(bufferDequeue.getTotalGlobalQueueSizeBytes()).thenReturn(10L);
+    when(bufferDequeue.getMaxQueueSizeBytes()).thenReturn(10L);
     final DetectStreamToFlush detectStreamToFlush = new DetectStreamToFlush(bufferDequeue, null, isClosing);
     assertEquals(0, detectStreamToFlush.computeQueueThreshold());
   }
