@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "createdat": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedat": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "name": {
+      "type": ["string"]
+    },
+    "sourceid": {
+      "type": ["null", "string"]
+    },
+    "sourceType": {
+      "type": ["null", "string"]
+    },
+    "timestamp": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "value": {
+      "type": ["null", "string"]
+    }
+  }
+}
