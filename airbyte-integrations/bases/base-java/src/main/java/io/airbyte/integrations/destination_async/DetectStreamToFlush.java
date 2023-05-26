@@ -113,10 +113,10 @@ public class DetectStreamToFlush {
   }
 
   /**
-   * Finally, the time trigger is based on the last time a record was added to the queue. We don't
-   * want records to sit forever, even if the queue is not that full (bad for time to value for
-   * users). Also, the more time passes since a record was added, the less likely another record is
-   * coming (caveat is CDC where it's random).
+   * The time trigger is based on the last time a record was added to the queue. We don't want records
+   * to sit forever, even if the queue is not that full (bad for time to value for users). Also, the
+   * more time passes since a record was added, the less likely another record is coming (caveat is
+   * CDC where it's random).
    * <p>
    * This method also returns debug string with info that about the computation. We do it this way, so
    * that the debug info that is printed is exactly what is used in the computation.
@@ -124,7 +124,8 @@ public class DetectStreamToFlush {
    * @param stream stream
    * @return is time triggered and a debug string
    */
-  private ImmutablePair<Boolean, String> isTimeTriggered(final StreamDescriptor stream) {
+  @VisibleForTesting
+  ImmutablePair<Boolean, String> isTimeTriggered(final StreamDescriptor stream) {
     final Boolean isTimeTriggered = bufferDequeue.getTimeOfLastRecord(stream)
         .map(time -> time.isBefore(Instant.now().minus(MAX_TIME_BETWEEN_REC_MIN, ChronoUnit.MINUTES)))
         .orElse(false);
@@ -151,7 +152,8 @@ public class DetectStreamToFlush {
    * @param queueSizeThresholdBytes min size threshold to determine if a queue is ready to flush
    * @return is size triggered and a debug string
    */
-  private ImmutablePair<Boolean, String> isSizeTriggered(final StreamDescriptor stream, final long queueSizeThresholdBytes) {
+  @VisibleForTesting
+  ImmutablePair<Boolean, String> isSizeTriggered(final StreamDescriptor stream, final long queueSizeThresholdBytes) {
     final long currentQueueSize = bufferDequeue.getQueueSizeBytes(stream).orElseThrow();
     final long sizeOfRunningWorkersEstimate = estimateSizeOfRunningWorkers(stream, currentQueueSize);
     final long queueSizeAfterRunningWorkers = currentQueueSize - sizeOfRunningWorkersEstimate;
@@ -183,11 +185,12 @@ public class DetectStreamToFlush {
   long estimateSizeOfRunningWorkers(final StreamDescriptor stream, final long currentQueueSize) {
     final List<Optional<Long>> runningWorkerBatchesSizes = runningFlushWorkers.getSizesOfRunningWorkerBatches(stream);
     final long workersWithBatchesSize = runningWorkerBatchesSizes.stream().filter(Optional::isPresent).mapToLong(Optional::get).sum();
-    final long workersWithoutBatches = runningWorkerBatchesSizes.stream().filter(Optional::isEmpty).count();
-    final long workersWithoutBatchesSizeEstimate = Math.min(flusher.getOptimalBatchSizeBytes(), currentQueueSize) * workersWithoutBatches;
+    final long workersWithoutBatchesCount = runningWorkerBatchesSizes.stream().filter(Optional::isEmpty).count();
+    final long workersWithoutBatchesSizeEstimate = Math.min(flusher.getOptimalBatchSizeBytes(), currentQueueSize) * workersWithoutBatchesCount;
     return workersWithBatchesSize + workersWithoutBatchesSizeEstimate;
   }
 
+  // todo (cgardens) - perf test whether it would make sense to flip 1 & 2.
   /**
    * Sort stream descriptors in order of priority with which we would want to flush them.
    * <p>

@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Track the number of flush workers that are currently running for a given stream.
+ * Track the number of flush workers (and their size) that are currently running for a given stream.
  */
 public class RunningFlushWorkers {
 
