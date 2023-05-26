@@ -219,8 +219,8 @@ public class PerformanceHarness {
     final ResourceRequirements resourceReqs = new ResourceRequirements()
         .withCpuLimit("2.5")
         .withCpuRequest("2.5")
-        .withMemoryLimit("500Mi")
-        .withMemoryRequest("500Mi");
+        .withMemoryLimit("1Gi")
+        .withMemoryRequest("1Gi");
     final AllowedHosts allowedHosts = new AllowedHosts().withHosts(List.of("*"));
     return new AirbyteIntegrationLauncher("1", 0, this.imageName, processFactory, resourceReqs,
         allowedHosts, false, new EnvVariableFeatureFlags());

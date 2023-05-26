@@ -89,7 +89,14 @@ class MemoryBoundedLinkedBlockingQueue<E> {
         if (!success) {
           currentMemoryUsage.addAndGet(-itemSizeInBytes);
         }
-        log.debug("offer status: {}", success);
+        // log.info("currentMemoryUsage: {}, maxMemoryUsage: {}, itemSizeInBytes: {}", currentMemoryUsage,
+        // maxMemoryUsage, itemSizeInBytes);
+        // log.info("maxMemory: {}, freeMemory for JVM: {}, totalMemory: {}",
+        // (Runtime.getRuntime().maxMemory() / 1024 / 1024), (Runtime.getRuntime().freeMemory() / 1024 /
+        // 1024), Runtime.getRuntime().totalMemory());
+        // log.info("usedMemory: {}", (Runtime.getRuntime().totalMemory() -
+        // Runtime.getRuntime().freeMemory()) / 1024 / 1024);
+        // log.debug("offer status: {}", success);
         return success;
       } else {
         currentMemoryUsage.addAndGet(-itemSizeInBytes);
