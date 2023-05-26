@@ -150,11 +150,9 @@ public class ClickhouseSourceOperations extends AbstractJdbcCompatibleSourceOper
             while (arrayResultSet.next()) {
                 arrayNode.add(arrayResultSet.getString(2));
             }
+            node.set(columnName, arrayNode);
         } catch (final SQLException e) {
-            arrayNode.add(new ObjectMapper().valueToTree(resultSet.getString(index)));
+            node.set(columnName, new ObjectMapper().valueToTree(resultSet.getString(index)));
         }
-        node.set(columnName, arrayNode);
     }
-
-
 }
