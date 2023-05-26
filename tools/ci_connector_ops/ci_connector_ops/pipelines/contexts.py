@@ -304,6 +304,7 @@ class ConnectorContext(PipelineContext):
         self.s3_report_key = s3_report_key
         self._secrets_dir = None
         self._updated_secrets_dir = None
+        self.cdk_version = None
         super().__init__(
             pipeline_name=pipeline_name,
             is_local=is_local,

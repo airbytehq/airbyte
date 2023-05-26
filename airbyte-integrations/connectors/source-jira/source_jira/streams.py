@@ -28,6 +28,7 @@ class JiraStream(HttpStream, ABC):
     extract_field: Optional[str] = None
     api_v1 = False
     skip_http_status_codes = []
+    raise_on_http_errors = True
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
         super().__init__(**kwargs)
@@ -91,6 +92,19 @@ class JiraStream(HttpStream, ABC):
         except HTTPError as e:
             if not (self.skip_http_status_codes and e.response.status_code in self.skip_http_status_codes):
                 raise e
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == requests.codes.bad_request:
+            # Refernce issue: https://github.com/airbytehq/oncall/issues/2133
+            # we should skip the slice with `board id` which doesn't support `sprints`
+            # it's generally applied to all streams that might have the same error hit in the future.
+            errors = response.json().get("errorMessages")
+            self.logger.error(f"Stream `{self.name}`. An error occured, details: {errors}. Skipping.")
+            setattr(self, "raise_on_http_errors", False)
+            return False
+        else:
+            # for all other HTTP errors the defaul handling is applied
+            return super().should_retry(response)
 
 
 class StartDateJiraStream(JiraStream, ABC):
@@ -1083,6 +1097,8 @@ class Sprints(JiraStream):
         available_board_types = ["scrum", "simple"]
         for board in read_full_refresh(self.boards_stream):
             if board["type"] in available_board_types:
+                board_details = {"name": board["name"], "id": board["id"]}
+                self.logger.info(f"Fetching sprints for board: {board_details}")
                 yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
 
 

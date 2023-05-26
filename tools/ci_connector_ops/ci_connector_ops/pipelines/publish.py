@@ -217,6 +217,18 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
         ConnectorReport: The reports holding publish results.
     """
 
+    if not context.pre_release:
+        metadata_upload_step = metadata.MetadataUpload(
+            context=context,
+            metadata_service_gcs_credentials_secret=context.metadata_service_gcs_credentials_secret,
+            docker_hub_username_secret=context.docker_hub_username_secret,
+            docker_hub_password_secret=context.docker_hub_password_secret,
+            metadata_bucket_name=context.metadata_bucket_name,
+            metadata_path=context.metadata_path,
+        )
+    else:
+        metadata_upload_step = None
+
     def create_connector_report(results: List[StepResult]) -> ConnectorReport:
         report = ConnectorReport(context, results, name="PUBLISH RESULTS")
         context.report = report
@@ -234,9 +246,14 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             results.append(check_connector_image_results)
             if check_connector_image_results.status is StepStatus.SKIPPED and not context.pre_release:
                 context.logger.info(
-                    "The connector version is already published. Let's upload metadata.yaml to GCS even if no version bump happened."
+                    "The connector version is already published. Let's upload metadata.yaml and spec to GCS even if no version bump happened."
                 )
-                metadata_upload_results = await metadata.MetadataUpload(context).run()
+                already_published_connector = context.dagger_client.container().from_(context.docker_image_from_metadata)
+                upload_to_spec_cache_results = await UploadSpecToCache(context).run(already_published_connector)
+                results.append(upload_to_spec_cache_results)
+                if upload_to_spec_cache_results.status is not StepStatus.SUCCESS:
+                    return create_connector_report(results)
+                metadata_upload_results = await metadata_upload_step.run()
                 results.append(metadata_upload_results)
 
             if check_connector_image_results.status is not StepStatus.SUCCESS:
@@ -268,7 +285,7 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
                     return create_connector_report(results)
 
                 # Only upload to metadata service bucket if the connector is not a pre-release.
-                metadata_upload_results = await metadata.MetadataUpload(context).run()
+                metadata_upload_results = await metadata_upload_step.run()
                 results.append(metadata_upload_results)
 
             return create_connector_report(results)
