@@ -349,9 +349,14 @@ class ConnectorReport(Report):
     def post_comment_on_pr(self) -> None:
         icon_url = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
         global_status_emoji = "✅" if self.success else "❌"
-        markdown_comment = f'## <img src="{icon_url}" />  width="40" height="40"> {self.pipeline_context.connector.technical_name} test report (commit `{self.pipeline_context.git_revision[:10]}`) - {global_status_emoji}\n\n'
+        commit_url = f"{self.pipeline_context.pull_request.url}/commits/{self.pipeline_context.git_revision}"
+        markdown_comment = f'## <img src="{icon_url}" width="40" height="40"> {self.pipeline_context.connector.technical_name} test report (commit [`{self.pipeline_context.git_revision[:10]}`]({commit_url})) - {global_status_emoji}\n\n'
         markdown_comment += f"⏲️  Total pipeline duration: {round(self.run_duration)} seconds\n\n"
-        report_data = [[step_result.step.title, step_result.status.get_emoji()] for step_result in self.steps_results]
+        report_data = [
+            [step_result.step.title, step_result.status.get_emoji()]
+            for step_result in self.steps_results
+            if step_result.status is not StepStatus.SKIPPED
+        ]
         markdown_comment += tabulate(report_data, headers=["Step", "Result"], tablefmt="pipe") + "\n\n"
         markdown_comment += f"🔗 [View the logs here]({self.pipeline_context.gha_workflow_run_url})\n\n"
         markdown_comment += "*Please note that tests are only run on PR ready for review. Please set your PR to draft mode to not flood the CI engine and upstream service on following commits.*\n"
