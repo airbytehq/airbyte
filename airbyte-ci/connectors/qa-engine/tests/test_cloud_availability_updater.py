@@ -19,6 +19,7 @@ def dummy_repo_path(tmp_path_factory) -> Path:
     repo_path.mkdir()
     return repo_path
 
+
 @pytest.fixture(scope="module")
 def eligible_connectors():
     return [
@@ -43,6 +44,7 @@ def eligible_connectors():
             number_of_connections=12,
         )
     ]
+
 
 @pytest.fixture(scope="module")
 def excluded_connectors():
@@ -278,7 +280,9 @@ def test_get_pr_body(mocker, eligible_connectors, excluded_connectors):
 
 @freezegun.freeze_time("2023-02-14")
 @pytest.mark.parametrize("added_connectors", [True, False])
-def test_batch_deploy_eligible_connectors_to_cloud_repo(mocker, dummy_repo_path, added_connectors, eligible_connectors, excluded_connectors):
+def test_batch_deploy_eligible_connectors_to_cloud_repo(
+    mocker, dummy_repo_path, added_connectors, eligible_connectors, excluded_connectors
+):
     all_connectors = eligible_connectors + excluded_connectors
     mocker.patch.object(cloud_availability_updater.tempfile, "mkdtemp", mocker.Mock(return_value=str(dummy_repo_path)))
     mocker.patch.object(cloud_availability_updater, "clone_airbyte_repo")
@@ -292,7 +296,9 @@ def test_batch_deploy_eligible_connectors_to_cloud_repo(mocker, dummy_repo_path,
     mocker.patch.object(cloud_availability_updater, "shutil")
 
     if added_connectors:
-        cloud_availability_updater.add_new_connector_to_cloud_catalog.side_effect = lambda _path, _repo, connector: (connector not in expected_excluded_connectors)
+        cloud_availability_updater.add_new_connector_to_cloud_catalog.side_effect = lambda _path, _repo, connector: (
+            connector not in expected_excluded_connectors
+        )
         expected_added_connectors = eligible_connectors
     else:
         cloud_availability_updater.add_new_connector_to_cloud_catalog.return_value = False

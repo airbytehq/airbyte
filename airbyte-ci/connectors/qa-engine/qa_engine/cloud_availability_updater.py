@@ -42,6 +42,7 @@ def set_git_identity(repo: git.repo) -> git.repo:
 def get_authenticated_repo_url(git_username: str, github_api_token: str) -> str:
     return AIRBYTE_GITHUB_REPO_URL.replace("https://", f"https://{git_username}:{github_api_token}@")
 
+
 def clone_airbyte_repo(local_repo_path: Path) -> git.Repo:
     logger.info(f"Cloning {AIRBYTE_GITHUB_REPO_URL} to {local_repo_path}")
     authenticated_repo_url = get_authenticated_repo_url(GIT_USERNAME_FOR_AUTH, GITHUB_API_TOKEN)
@@ -50,9 +51,7 @@ def clone_airbyte_repo(local_repo_path: Path) -> git.Repo:
 
 def get_metadata_file_path(airbyte_repo_path: Path, connector: ConnectorQAReport) -> Path:
     connector_folder_name = connector.connector_technical_name
-    metadata_file_path = (
-        airbyte_repo_path / f"airbyte-integrations/connectors/{connector_folder_name}/metadata.yaml"
-    )
+    metadata_file_path = airbyte_repo_path / f"airbyte-integrations/connectors/{connector_folder_name}/metadata.yaml"
     if not metadata_file_path.exists():
         raise FileNotFoundError(f"Can't find the metadata file for {metadata_file_path}")
     return metadata_file_path
@@ -158,6 +157,7 @@ def get_pr_body(eligible_connectors: List[ConnectorQAReport], excluded_connector
     body += writer.dumps()
     body += "\n ☝️ These eligible connectors are already in the definitions masks. They might have been explicitly pinned or excluded. We're not adding these for safety."
     return body
+
 
 def add_new_connector_to_cloud_catalog(airbyte_repo_path: Path, airbyte_repo: git.Repo, connector: ConnectorQAReport) -> bool:
     """Updates the local definitions mask on Airbyte cloud repo.
