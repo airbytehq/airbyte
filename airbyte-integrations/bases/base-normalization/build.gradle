@@ -54,11 +54,12 @@ def buildAirbyteDocker(String customConnector) {
     // We are lucky that all the python code dbt uses is mutli-arch compatible
 
     def arch = 'linux/amd64'
-    if (Os.isArch("aarch_64")) {
+    if (Os.isArch("aarch_64") || Os.isArch("aarch64")) {
         arch = 'linux/arm64'
     }
 
     def baseCommand = ['docker', 'buildx', 'build', '--load', '--platform', arch, '-f', getDockerfile(customConnector), '-t', getImageNameWithTag(customConnector), '.']
+    println("Building normalization container: " + baseCommand.join(" "))
 
     return {
         commandLine baseCommand
