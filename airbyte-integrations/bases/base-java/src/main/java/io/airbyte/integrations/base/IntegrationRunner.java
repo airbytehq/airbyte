@@ -155,15 +155,17 @@ public class IntegrationRunner {
           validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
 
+          LOGGER.info("destination class: {}", destination.getClass());
           final Procedure consumeWriteStreamCallable = () -> {
-            if (!useConsumer2ForSnowflake) {
-              try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
-                consumeWriteStream(consumer);
+            if (useConsumer2ForSnowflake) {
+              LOGGER.info("using consumer2");
+              try (final AirbyteMessageConsumer2 consumer2 = destination.getConsumer2(config, catalog, outputRecordCollector)) {
+                consumeWriteStream2(consumer2);
               }
             } else {
-              LOGGER.info("using consumer2");
-              try (final AirbyteMessageConsumer2 consumer = destination.getConsumer2(config, catalog, outputRecordCollector)) {
-                consumeWriteStream2(consumer);
+              LOGGER.info("using consumer1");
+              try (final AirbyteMessageConsumer consumer1 = destination.getConsumer(config, catalog, outputRecordCollector)) {
+                consumeWriteStream(consumer1);
               }
             }
           };
@@ -245,6 +247,8 @@ public class IntegrationRunner {
       throws Exception {
     // try (final BufferedInputStream bis = new BufferedInputStream(System.in);
     // final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+
+    consumer.start();
 
     final byte[] buffer = new byte[8192]; // 8K buffer
     int bytesRead;

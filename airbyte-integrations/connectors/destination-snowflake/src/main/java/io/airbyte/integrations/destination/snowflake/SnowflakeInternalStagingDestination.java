@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.AirbyteMessageConsumer2;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
@@ -113,6 +114,13 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
+    throw new UnsupportedOperationException("Use getConsumer2 instead.");
+  }
+
+  @Override
+  public AirbyteMessageConsumer2 getConsumer2(final JsonNode config,
+                                              final ConfiguredAirbyteCatalog catalog,
+                                              final Consumer<AirbyteMessage> outputRecordCollector) {
     return new StagingConsumerFactory().createAsync(
         outputRecordCollector,
         getDatabase(getDataSource(config)),
