@@ -576,6 +576,11 @@ class TestDiscovery(BaseTest):
         ({"string", "null"}, "date"),
         ({"string", "null"}, "date-time"),
     ]
+    VALID_TYPE_AIRBYTE_TYPE_COMBINATIONS = [
+        ({"string"}, "timestamp_with_timezone"),
+        ({"string"}, "timestamp_without_timezone"),
+        ({"string", "null"}, "timestamp_with_timezone"),
+    ]
 
     @pytest.fixture(name="skip_backward_compatibility_tests")
     def skip_backward_compatibility_tests_fixture(
@@ -684,7 +689,9 @@ class TestDiscovery(BaseTest):
         checker.assert_is_backward_compatible()
 
     def test_catalog_has_supported_data_types(self, discovered_catalog: Mapping[str, Any]):
-        """Check that all streams have supported data types, format and airbyte_types."""
+        """Check that all streams have supported data types, format and airbyte_types.
+        Supported data types are listed there: https://docs.airbyte.com/understanding-airbyte/supported-data-types/
+        """
 
         for stream_name, stream_data in discovered_catalog.items():
             schema_helper = JsonSchemaHelper(stream_data.json_schema)
@@ -704,13 +711,19 @@ class TestDiscovery(BaseTest):
                 if property_format and property_format not in self.VALID_FORMATS:
                     raise AssertionError(f"Found unsupported format ({property_format}) in {stream_name} stream on property {parent_path}")
 
-                # Check unsupported airbyte_type and type/format combination
+                # Check unsupported airbyte_type and type/airbyte_type combination
                 airbyte_type = parent.get("airbyte_type")
                 if airbyte_type and airbyte_type not in self.VALID_AIRBYTE_TYPES:
                     raise AssertionError(
                         f"Found unsupported airbyte_type ({airbyte_type}) in {stream_name} stream on property {parent_path}"
                     )
-
+                if airbyte_type:
+                    type_airbyte_type_combination = (type_values, airbyte_type)
+                    if type_airbyte_type_combination not in self.VALID_TYPE_AIRBYTE_TYPE_COMBINATIONS:
+                        raise AssertionError(
+                            f"Found unsupported type/airbyte_type combination {type_airbyte_type_combination} in {stream_name} stream on property {parent_path}"
+                        )
+                # Check unsupported type/format combination
                 if property_format:
                     type_format_combination = (type_values, property_format)
                     if type_format_combination not in self.VALID_TYPE_FORMAT_COMBINATIONS:
