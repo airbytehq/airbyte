@@ -55,6 +55,7 @@ public class LegacyExceptionAfterNSource extends BaseConnector implements Source
   @Override
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
     final long throwAfterNRecords = config.get("throw_after_n_records").asLong();
+    final boolean shouldLogEachRecord = !config.has("log_each_record") || config.get("log_each_record").asBoolean();
 
     final AtomicLong recordsEmitted = new AtomicLong();
     final AtomicLong recordValue;
@@ -73,7 +74,9 @@ public class LegacyExceptionAfterNSource extends BaseConnector implements Source
       protected AirbyteMessage computeNext() {
         if (recordsEmitted.get() % 5 == 0 && !hasEmittedStateAtCount.get()) {
 
-          LOGGER.info("{}: emitting state record with value {}", LegacyExceptionAfterNSource.class, recordValue.get());
+          if (shouldLogEachRecord) {
+            LOGGER.info("{}: emitting state record with value {}", LegacyExceptionAfterNSource.class, recordValue.get());
+          }
 
           hasEmittedStateAtCount.set(true);
           return new AirbyteMessage()
@@ -84,8 +87,10 @@ public class LegacyExceptionAfterNSource extends BaseConnector implements Source
           recordValue.incrementAndGet();
           hasEmittedStateAtCount.set(false);
 
-          LOGGER.info("{} ExceptionAfterNSource: emitting record with value {}. record {} in sync.",
-              LegacyExceptionAfterNSource.class, recordValue.get(), recordsEmitted.get());
+          if (shouldLogEachRecord) {
+            LOGGER.info("{} ExceptionAfterNSource: emitting record with value {}. record {} in sync.",
+                LegacyExceptionAfterNSource.class, recordValue.get(), recordsEmitted.get());
+          }
 
           return new AirbyteMessage()
               .withType(Type.RECORD)

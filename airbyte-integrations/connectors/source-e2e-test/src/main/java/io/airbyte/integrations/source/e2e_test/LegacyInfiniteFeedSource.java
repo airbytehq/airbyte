@@ -47,6 +47,7 @@ public class LegacyInfiniteFeedSource extends BaseConnector implements Source {
     final LongPredicate anotherRecordPredicate = config.has("max_records")
         ? recordNumber -> recordNumber < config.get("max_records").asLong()
         : recordNumber -> true;
+    final boolean shouldLogEachRecord = !config.has("log_each_record") || config.get("log_each_record").asBoolean();
 
     final Optional<Long> sleepTime = Optional.ofNullable(config.get("message_interval")).map(JsonNode::asLong);
 
@@ -62,7 +63,9 @@ public class LegacyInfiniteFeedSource extends BaseConnector implements Source {
 
         if (sleepTime.isPresent() && i.get() != 0) {
           try {
-            LOGGER.info("sleeping for {} ms", sleepTime.get());
+            if (shouldLogEachRecord) {
+              LOGGER.info("sleeping for {} ms", sleepTime.get());
+            }
             sleep(sleepTime.get());
           } catch (final InterruptedException e) {
             throw new RuntimeException(e);
@@ -70,7 +73,9 @@ public class LegacyInfiniteFeedSource extends BaseConnector implements Source {
         }
 
         i.incrementAndGet();
-        LOGGER.info("source emitting record {}:", i.get());
+        if (shouldLogEachRecord) {
+          LOGGER.info("source emitting record {}:", i.get());
+        }
         return new AirbyteMessage()
             .withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage()
