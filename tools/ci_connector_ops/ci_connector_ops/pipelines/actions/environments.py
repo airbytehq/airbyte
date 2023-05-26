@@ -474,6 +474,7 @@ def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_p
         python_with_poetry.with_mounted_directory("/src", parent_dir)
         .with_workdir(f"/src/{module_path}")
         .with_exec(poetry_install_dependencies_cmd)
+        .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
     )
 
 
