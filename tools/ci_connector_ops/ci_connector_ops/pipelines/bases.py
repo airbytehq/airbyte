@@ -350,7 +350,7 @@ class ConnectorReport(Report):
     def post_comment_on_pr(self) -> None:
         icon_url = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
         global_status_emoji = "✅" if self.success else "❌"
-        commit_url = f"{self.pipeline_context.pull_request.commits_url}/{self.pipeline_context.git_revision}"
+        commit_url = f"{self.pipeline_context.pull_request.html_url}/commits/{self.pipeline_context.git_revision}"
         markdown_comment = f'## <img src="{icon_url}" width="40" height="40"> {self.pipeline_context.connector.technical_name} test report (commit [`{self.pipeline_context.git_revision[:10]}`]({commit_url})) - {global_status_emoji}\n\n'
         markdown_comment += f"⏲️  Total pipeline duration: {round(self.run_duration)} seconds\n\n"
         report_data = [
