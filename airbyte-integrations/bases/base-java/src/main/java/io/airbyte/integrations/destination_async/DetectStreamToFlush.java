@@ -36,6 +36,11 @@ public class DetectStreamToFlush {
     this.isClosing = isClosing;
   }
 
+  /**
+   * Get the best, next stream that is ready to be flushed.
+   *
+   * @return best, next stream to flush. If no stream is ready to be flushed, return empty.
+   */
   public Optional<StreamDescriptor> getNextStreamToFlush() {
     return getNextStreamToFlush(computeQueueThreshold());
   }
