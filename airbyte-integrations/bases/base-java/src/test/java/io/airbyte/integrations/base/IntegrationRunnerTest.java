@@ -14,6 +14,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -90,6 +91,7 @@ class IntegrationRunnerTest {
   private Path configPath;
   private Path configuredCatalogPath;
   private Path statePath;
+  private Path configDir;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -98,7 +100,7 @@ class IntegrationRunnerTest {
     stdoutConsumer = Mockito.mock(Consumer.class);
     destination = mock(Destination.class);
     source = mock(Source.class);
-    final Path configDir = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
+    configDir = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
     configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, CONFIG_STRING);
     configuredCatalogPath = IOs.writeFile(configDir, CONFIGURED_CATALOG_FILE_NAME, Jsons.serialize(CONFIGURED_CATALOG));
@@ -305,6 +307,31 @@ class IntegrationRunnerTest {
     runner.run(ARGS);
 
     verify(destination).getConsumer(CONFIG, CONFIGURED_CATALOG, stdoutConsumer);
+    verify(jsonSchemaValidator).validate(any(), any());
+  }
+
+  @Test
+  void testWriteSnowflakeInternal() throws Exception {
+    final IntegrationConfig intConfig = IntegrationConfig.write(configPath, configuredCatalogPath);
+    final String snoflakeConfigString = "{ \"loading_method\": { \"method\": \"Internal Staging\"\n } }";
+    final JsonNode config = Jsons.deserialize(snoflakeConfigString);
+    configPath = IOs.writeFile(configDir, CONFIG_FILE_NAME, snoflakeConfigString);
+
+    final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
+    when(cliParser.parse(ARGS)).thenReturn(intConfig);
+    when(destination.getConsumer(config, CONFIGURED_CATALOG, stdoutConsumer)).thenReturn(airbyteMessageConsumerMock);
+
+    final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
+    when(destination.spec()).thenReturn(expectedConnSpec);
+    when(expectedConnSpec.getConnectionSpecification()).thenReturn(config);
+
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+
+    final IntegrationRunner runner = spy(new IntegrationRunner(cliParser, stdoutConsumer, destination, null, jsonSchemaValidator));
+    runner.run(ARGS);
+
+    verify(destination, never()).getConsumer(config, CONFIGURED_CATALOG, stdoutConsumer);
+    verify(destination).getConsumer2(config, CONFIGURED_CATALOG, stdoutConsumer);
     verify(jsonSchemaValidator).validate(any(), any());
   }
 

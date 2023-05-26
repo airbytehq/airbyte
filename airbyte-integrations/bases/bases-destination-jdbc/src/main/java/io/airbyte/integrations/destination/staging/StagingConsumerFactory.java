@@ -12,6 +12,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.AirbyteMessageConsumer2;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
@@ -78,14 +79,14 @@ public class StagingConsumerFactory {
         stagingOperations::isValidData);
   }
 
-  public AirbyteMessageConsumer createAsync(final Consumer<AirbyteMessage> outputRecordCollector,
-                                            final JdbcDatabase database,
-                                            final StagingOperations stagingOperations,
-                                            final NamingConventionTransformer namingResolver,
-                                            final BufferCreateFunction onCreateBuffer,
-                                            final JsonNode config,
-                                            final ConfiguredAirbyteCatalog catalog,
-                                            final boolean purgeStagingData) {
+  public AirbyteMessageConsumer2 createAsync(final Consumer<AirbyteMessage> outputRecordCollector,
+                                             final JdbcDatabase database,
+                                             final StagingOperations stagingOperations,
+                                             final NamingConventionTransformer namingResolver,
+                                             final BufferCreateFunction onCreateBuffer,
+                                             final JsonNode config,
+                                             final ConfiguredAirbyteCatalog catalog,
+                                             final boolean purgeStagingData) {
     final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog);
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
     final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog);
