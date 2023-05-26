@@ -21,14 +21,15 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
  * <li>1. Instantiate consumer.</li>
  * <li>2. start() to initialize any resources that need to be created BEFORE the consumer consumes
  * any messages.</li>
- * <li>3. Consumes ALL records via {@link AirbyteMessageConsumer2#accept(AirbyteMessage)}</li>
+ * <li>3. Consumes ALL records via
+ * {@link SerializedAirbyteMessageConsumer#accept(AirbyteMessage)}</li>
  * <li>4. Always (on success or failure) finalize by calling
- * {@link AirbyteMessageConsumer2#close()}</li>
+ * {@link SerializedAirbyteMessageConsumer#close()}</li>
  * </ul>
  * We encourage implementing this interface using the {@link FailureTrackingAirbyteMessageConsumer}
  * class.
  */
-public interface AirbyteMessageConsumer2 extends CheckedBiConsumer<String, Integer, Exception>, AutoCloseable {
+public interface SerializedAirbyteMessageConsumer extends CheckedBiConsumer<String, Integer, Exception>, AutoCloseable {
 
   void start() throws Exception;
 
@@ -50,10 +51,10 @@ public interface AirbyteMessageConsumer2 extends CheckedBiConsumer<String, Integ
   void close() throws Exception;
 
   /**
-   * Append a function to be called on {@link AirbyteMessageConsumer2#close}.
+   * Append a function to be called on {@link SerializedAirbyteMessageConsumer#close}.
    */
-  static AirbyteMessageConsumer2 appendOnClose(final AirbyteMessageConsumer2 consumer, final VoidCallable voidCallable) {
-    return new AirbyteMessageConsumer2() {
+  static SerializedAirbyteMessageConsumer appendOnClose(final SerializedAirbyteMessageConsumer consumer, final VoidCallable voidCallable) {
+    return new SerializedAirbyteMessageConsumer() {
 
       @Override
       public void start() throws Exception {

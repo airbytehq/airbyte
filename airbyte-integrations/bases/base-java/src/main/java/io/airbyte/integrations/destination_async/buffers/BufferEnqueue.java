@@ -64,7 +64,7 @@ public class BufferEnqueue {
       }
       addedToQueue = queue.offer(message, sizeInBytes, stateId);
       i++;
-      if(i > 5) {
+      if (i > 5) {
         try {
           sleep(500);
         } catch (final InterruptedException e) {

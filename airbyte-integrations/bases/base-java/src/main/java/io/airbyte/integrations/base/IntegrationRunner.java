@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.base;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -28,13 +26,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.ThreadUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
@@ -147,26 +143,12 @@ public class IntegrationRunner {
         // destination only
         case WRITE -> {
           final JsonNode config = parseConfig(parsed.getConfigPath());
-          // detect if running on internal staging for snowflake, if so run consumer2.
-          final boolean useConsumer2ForSnowflake = config.has("loading_method")
-              && config.get("loading_method").has("method")
-              && config.get("loading_method").get("method").asText().equals("Internal Staging");
-
           validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
 
-          LOGGER.info("destination class: {}", destination.getClass());
           final Procedure consumeWriteStreamCallable = () -> {
-            if (useConsumer2ForSnowflake) {
-              LOGGER.info("using consumer2");
-              try (final AirbyteMessageConsumer2 consumer2 = destination.getConsumer2(config, catalog, outputRecordCollector)) {
-                consumeWriteStream2(consumer2);
-              }
-            } else {
-              LOGGER.info("using consumer1");
-              try (final AirbyteMessageConsumer consumer1 = destination.getConsumer(config, catalog, outputRecordCollector)) {
-                consumeWriteStream(consumer1);
-              }
+            try (final SerializedAirbyteMessageConsumer consumer = destination.getSerializedMessageConsumer(config, catalog, outputRecordCollector)) {
+              consumeWriteStream(consumer);
             }
           };
 
@@ -224,30 +206,18 @@ public class IntegrationRunner {
   }
 
   @VisibleForTesting
-  static void consumeWriteStream(final AirbyteMessageConsumer consumer) throws Exception {
-    // use a Scanner that only processes new line characters to strictly abide with the
-    // https://jsonlines.org/ standard
-    final Scanner input = new Scanner(System.in, StandardCharsets.UTF_8).useDelimiter("[\r\n]+");
-    consumer.start();
-    while (input.hasNext()) {
-      consumeMessage(consumer, input.next());
-    }
-  }
-
-  @VisibleForTesting
-  static void consumeWriteStream2(final AirbyteMessageConsumer2 consumer) throws Exception {
+  static void consumeWriteStream(final SerializedAirbyteMessageConsumer consumer) throws Exception {
     try (final BufferedInputStream bis = new BufferedInputStream(System.in);
         final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-      consumeWriteStream2(consumer, bis, baos);
+      consumeWriteStream(consumer, bis, baos);
     }
   }
 
   @VisibleForTesting
-  static void consumeWriteStream2(final AirbyteMessageConsumer2 consumer, final BufferedInputStream bis, final ByteArrayOutputStream baos)
+  static void consumeWriteStream(final SerializedAirbyteMessageConsumer consumer,
+                                 final BufferedInputStream bis,
+                                 final ByteArrayOutputStream baos)
       throws Exception {
-    // try (final BufferedInputStream bis = new BufferedInputStream(System.in);
-    // final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-
     consumer.start();
 
     final byte[] buffer = new byte[8192]; // 8K buffer
@@ -284,7 +254,7 @@ public class IntegrationRunner {
    * This method calls a runMethod and make sure that it won't produce orphan non-daemon active
    * threads once it is done. Active non-daemon threads blocks JVM from exiting when the main thread
    * is done, whereas daemon ones don't.
-   *
+   * <p>
    * If any active non-daemon threads would be left as orphans, this method will schedule some
    * interrupt/exit hooks after giving it some time delay to close up properly. It is generally
    * preferred to have a proper closing sequence from children threads instead of interrupting or
@@ -307,7 +277,7 @@ public class IntegrationRunner {
           .stream()
           // daemon threads don't block the JVM if the main `currentThread` exits, so they are not problematic
           .filter(runningThread -> !runningThread.getName().equals(currentThread.getName()) && !runningThread.isDaemon())
-          .collect(Collectors.toList());
+          .toList();
       if (!runningThreads.isEmpty()) {
         LOGGER.warn("""
                     The main thread is exiting while children non-daemon threads from a connector are still active.
@@ -334,31 +304,6 @@ public class IntegrationRunner {
             exitHook.run();
           }
         }, exitTimeDelay, exitTimeUnit);
-      }
-    }
-  }
-
-  /**
-   * Consumes an {@link AirbyteMessage} for processing.
-   *
-   * If the provided JSON string is invalid AND represents a {@link AirbyteMessage.Type#STATE}
-   * message, processing is halted. Otherwise, the invalid message is logged and execution continues.
-   *
-   * @param consumer An {@link AirbyteMessageConsumer} that can handle the provided message.
-   * @param inputString JSON representation of an {@link AirbyteMessage}.
-   * @throws Exception if an invalid state message is provided or the consumer is unable to accept the
-   *         provided message.
-   */
-  @VisibleForTesting
-  static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString) throws Exception {
-    final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
-    if (messageOptional.isPresent()) {
-      consumer.accept(messageOptional.get());
-    } else {
-      if (isStateMessage(inputString)) {
-        throw new IllegalStateException("Invalid state message: " + inputString);
-      } else {
-        LOGGER.error("Received invalid message: " + inputString);
       }
     }
   }
@@ -396,43 +341,6 @@ public class IntegrationRunner {
 
     final String[] tokens = connectorImage.split(":");
     return tokens[tokens.length - 1];
-  }
-
-  /**
-   * Tests whether the provided JSON string represents a state message.
-   *
-   * @param input a JSON string that represents an {@link AirbyteMessage}.
-   * @return {@code true} if the message is a state message, {@code false} otherwise.
-   */
-  private static boolean isStateMessage(final String input) {
-    final Optional<AirbyteTypeMessage> deserialized = Jsons.tryDeserialize(input, AirbyteTypeMessage.class);
-    if (deserialized.isPresent()) {
-      return deserialized.get().getType() == Type.STATE;
-    } else {
-      return false;
-    }
-  }
-
-  /**
-   * Custom class that can be used to parse a JSON message to determine the type of the represented
-   * {@link AirbyteMessage}.
-   */
-  private static class AirbyteTypeMessage {
-
-    @JsonProperty("type")
-    @JsonPropertyDescription("Message type")
-    private AirbyteMessage.Type type;
-
-    @JsonProperty("type")
-    public AirbyteMessage.Type getType() {
-      return type;
-    }
-
-    @JsonProperty("type")
-    public void setType(final AirbyteMessage.Type type) {
-      this.type = type;
-    }
-
   }
 
 }

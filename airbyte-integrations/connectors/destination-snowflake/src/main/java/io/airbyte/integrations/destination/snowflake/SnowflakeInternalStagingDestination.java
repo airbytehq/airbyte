@@ -11,8 +11,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.AirbyteMessageConsumer2;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
@@ -118,9 +118,9 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   }
 
   @Override
-  public AirbyteMessageConsumer2 getConsumer2(final JsonNode config,
-                                              final ConfiguredAirbyteCatalog catalog,
-                                              final Consumer<AirbyteMessage> outputRecordCollector) {
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final Consumer<AirbyteMessage> outputRecordCollector) {
     return new StagingConsumerFactory().createAsync(
         outputRecordCollector,
         getDatabase(getDataSource(config)),
