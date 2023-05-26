@@ -11,7 +11,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteMessageConsumer2;
+import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination_async.buffers.BufferEnqueue;
 import io.airbyte.integrations.destination_async.buffers.BufferManager;
@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * {@link FlushWorkers}. See the other linked class for more detail.
  */
 @Slf4j
-public class AsyncStreamConsumer implements AirbyteMessageConsumer2 {
+public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AsyncStreamConsumer.class);
 

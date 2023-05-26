@@ -16,10 +16,10 @@ import java.util.List;
 import java.util.Scanner;
 import org.junit.jupiter.api.Test;
 
-public class IntegrationRunner2Test {
+public class IntegrationRunnerBackwardsCompatbilityTest {
 
   @Test
-  void testImplementations() throws Exception {
+  void testByteArrayInputStreamVersusScanner() throws Exception {
     final String[] testInputs = new String[] {
       "This is line 1\nThis is line 2\nThis is line 3",
       "This is line 1\n\nThis is line 2\n\n\nThis is line 3",
@@ -38,7 +38,7 @@ public class IntegrationRunner2Test {
       final MockConsumer consumer2 = new MockConsumer();
       try (final BufferedInputStream bis = new BufferedInputStream(stream1);
           final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-        IntegrationRunner.consumeWriteStream2(consumer2, bis, baos);
+        IntegrationRunner.consumeWriteStream(consumer2, bis, baos);
       }
       final List<String> newOutput = consumer2.getOutput();
 
@@ -54,23 +54,22 @@ public class IntegrationRunner2Test {
     }
   }
 
-  private static class MockConsumer implements AirbyteMessageConsumer2 {
+  private static class MockConsumer implements SerializedAirbyteMessageConsumer {
 
     private final List<String> output = new ArrayList<>();
 
     @Override
-    public void start() throws Exception {
+    public void start() {
 
     }
 
     @Override
-    public void accept(final String message, final Integer sizeInBytes) throws Exception {
-      System.out.println("message = " + message + "sizeInBytes = " + sizeInBytes);
+    public void accept(final String message, final Integer sizeInBytes) {
       output.add(message);
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
 
     }
 
