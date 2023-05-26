@@ -53,7 +53,6 @@ import org.slf4j.LoggerFactory;
 public class GlobalAsyncStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GlobalAsyncStateManager.class);
-  private static final double RETURN_MEMORY_THRESHOLD = .75;
 
   private static final StreamDescriptor SENTINEL_GLOBAL_DESC = new StreamDescriptor().withName(UUID.randomUUID().toString());
   private final GlobalMemoryManager memoryManager;
@@ -196,19 +195,16 @@ public class GlobalAsyncStateManager {
    * @param bytesFlushed bytes that were flushed (and should be removed from memory used).
    */
   private void freeBytes(final long bytesFlushed) {
-    memoryUsed.addAndGet(-bytesFlushed);
     LOGGER.debug("Bytes flushed memory to store state message. Allocated: {}, Used: {}, Flushed: {}, % Used: {}",
         FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
         FileUtils.byteCountToDisplaySize(memoryUsed.get()),
         FileUtils.byteCountToDisplaySize(bytesFlushed),
         (double) memoryUsed.get() / memoryAllocated.get());
-    if (memoryUsed.get() < memoryAllocated.get() * RETURN_MEMORY_THRESHOLD) {
-      // todo (cgardens) - do something smarter. just returning half the used memory.
-      final long bytesToFree = (memoryAllocated.get() - memoryUsed.get()) / 2;
-      memoryAllocated.addAndGet(-bytesToFree);
-      freeBytes(-bytesToFree);
-      LOGGER.debug("Returned {} of memory back to the memory manager.", FileUtils.byteCountToDisplaySize(bytesToFree));
-    }
+
+    memoryManager.free(bytesFlushed);
+    memoryAllocated.addAndGet(-bytesFlushed);
+    memoryUsed.addAndGet(-bytesFlushed);
+    LOGGER.debug("Returned {} of memory back to the memory manager.", FileUtils.byteCountToDisplaySize(bytesFlushed));
   }
 
   private void convertToGlobalIfNeeded(final AirbyteMessage message) {
