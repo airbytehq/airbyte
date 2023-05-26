@@ -114,30 +114,22 @@ def test_checkout_new_branch(mocker, checkout_master, dummy_repo):
     assert new_branch.name == dummy_repo.active_branch.name == "test-branch"
 
 
-# @pytest.mark.parametrize(
-#     "definitions_mask_content_before_update, definition_id, expect_update",
-#     [
-#         ("", "abcdefg", True),
-#         ("abcdefg", "abcdefg", False),
-#     ],
-# )
-# def test_enable_in_cloud(mocker, tmp_path, definitions_mask_content_before_update, definition_id, expect_update):
-#     connector = mocker.Mock(connector_name="foobar", connector_definition_id=definition_id, connector_type="unknown")
-#     definitions_mask_path = tmp_path / "definitions_mask.yaml"
-#     with open(definitions_mask_path, "w") as definitions_mask:
-#         definitions_mask.write(definitions_mask_content_before_update)
-#     updated_path = cloud_availability_updater.enable_in_cloud(connector, definitions_mask_path)
-#     if not expect_update:
-#         assert updated_path is None
-#     else:
-#         with open(updated_path, "r") as definitions_mask:
-#             raw_content = definitions_mask.read()
-#             definitions = yaml.safe_load(raw_content)
-#         assert isinstance(definitions, list)
-#         assert definitions[0]["unknownDefinitionId"] == definition_id
-#         assert len([d for d in definitions if d["unknownDefinitionId"] == definition_id]) == 1
-#         assert "# foobar (from cloud availability updater)" in raw_content
-#         assert raw_content[-1] == "\n"
+@pytest.mark.parametrize("expect_update", [True, False])
+def test_enable_in_cloud(mocker, dummy_repo_path, expect_update, eligible_connectors):
+    connector = eligible_connectors[0]
+    connector_metadata_path = dummy_repo_path / f"airbyte-integrations/connectors/{connector.connector_technical_name}" / "metadata.yaml"
+    with open(connector_metadata_path, "w") as definitions_mask:
+        mask_yaml = yaml.safe_dump({"data": {"registries": {"cloud": {"enabled": not expect_update}}}})
+        definitions_mask.write(mask_yaml)
+    updated_path = cloud_availability_updater.enable_in_cloud(connector, connector_metadata_path)
+    if not expect_update:
+        assert updated_path is None
+    else:
+        with open(updated_path, "r") as definitions_mask:
+            raw_content = definitions_mask.read()
+            metadata_content = yaml.safe_load(raw_content)
+        assert isinstance(metadata_content, dict)
+        assert metadata_content["data"]["registries"]["cloud"]["enabled"] is True
 
 
 def test_commit_files(checkout_master, dummy_repo, dummy_repo_path):
