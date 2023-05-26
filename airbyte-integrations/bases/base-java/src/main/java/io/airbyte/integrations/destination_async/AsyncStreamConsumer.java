@@ -4,12 +4,14 @@
 
 package io.airbyte.integrations.destination_async;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.AirbyteMessageConsumer2;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination_async.buffers.BufferEnqueue;
 import io.airbyte.integrations.destination_async.buffers.BufferManager;
@@ -18,6 +20,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * {@link FlushWorkers}. See the other linked class for more detail.
  */
 @Slf4j
-public class AsyncStreamConsumer implements AirbyteMessageConsumer {
+public class AsyncStreamConsumer implements AirbyteMessageConsumer2 {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AsyncStreamConsumer.class);
 
@@ -97,7 +100,7 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
   }
 
   @Override
-  public void accept(final AirbyteMessage message) throws Exception {
+  public void accept(final String messageString, final Integer sizeInBytes) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
     propagateFlushWorkerExceptionIfPresent();
     /*
@@ -105,12 +108,65 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
      * to try to use a thread pool to partially deserialize to get record type and stream name, we can
      * do it without touching buffer manager.
      */
+    deserializeAirbyteMessage(messageString)
+        .ifPresent(message -> {
+          if (message.getType() == Type.RECORD) {
+            validateRecord(message);
+          }
 
-    if (message.getType() == Type.RECORD) {
-      validateRecord(message);
+          bufferEnqueue.addRecord(message, sizeInBytes);
+        });
+  }
+
+  private Optional<AirbyteMessage> deserializeAirbyteMessage(final String messageString) {
+    final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(messageString, AirbyteMessage.class);
+    if (messageOptional.isPresent()) {
+      return messageOptional;
+    } else {
+      if (isStateMessage(messageString)) {
+        throw new IllegalStateException("Invalid state message: " + messageString);
+      } else {
+        LOGGER.error("Received invalid message: " + messageString);
+        return Optional.empty();
+      }
+    }
+  }
+
+  /**
+   * Tests whether the provided JSON string represents a state message.
+   *
+   * @param input a JSON string that represents an {@link AirbyteMessage}.
+   * @return {@code true} if the message is a state message, {@code false} otherwise.
+   */
+  private static boolean isStateMessage(final String input) {
+    final Optional<AirbyteTypeMessage> deserialized = Jsons.tryDeserialize(input, AirbyteTypeMessage.class);
+    if (deserialized.isPresent()) {
+      return deserialized.get().getType() == Type.STATE;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Custom class that can be used to parse a JSON message to determine the type of the represented
+   * {@link AirbyteMessage}.
+   */
+  private static class AirbyteTypeMessage {
+
+    @JsonProperty("type")
+    @JsonPropertyDescription("Message type")
+    private AirbyteMessage.Type type;
+
+    @JsonProperty("type")
+    public AirbyteMessage.Type getType() {
+      return type;
     }
 
-    bufferEnqueue.addRecord(message);
+    @JsonProperty("type")
+    public void setType(final AirbyteMessage.Type type) {
+      this.type = type;
+    }
+
   }
 
   @Override

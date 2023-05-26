@@ -52,6 +52,8 @@ import org.mockito.ArgumentCaptor;
 
 class AsyncStreamConsumerTest {
 
+  private static final int RECORD_SIZE_20_BYTES = 20;
+
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = STREAM_NAME + 2;
@@ -118,7 +120,7 @@ class AsyncStreamConsumerTest {
 
     consumer.start();
     consumeRecords(consumer, expectedRecords);
-    consumer.accept(STATE_MESSAGE1);
+    consumer.accept(Jsons.serialize(STATE_MESSAGE1), RECORD_SIZE_20_BYTES);
     consumer.close();
 
     verifyStartAndClose();
@@ -134,8 +136,8 @@ class AsyncStreamConsumerTest {
 
     consumer.start();
     consumeRecords(consumer, expectedRecords);
-    consumer.accept(STATE_MESSAGE1);
-    consumer.accept(STATE_MESSAGE2);
+    consumer.accept(Jsons.serialize(STATE_MESSAGE1), RECORD_SIZE_20_BYTES);
+    consumer.accept(Jsons.serialize(STATE_MESSAGE2), RECORD_SIZE_20_BYTES);
     consumer.close();
 
     verifyStartAndClose();
@@ -191,13 +193,14 @@ class AsyncStreamConsumerTest {
     while (true) {
       final Future<?> future = executor.submit(() -> {
         try {
-          consumer.accept(new AirbyteMessage()
+          consumer.accept(Jsons.serialize(new AirbyteMessage()
               .withType(Type.RECORD)
               .withRecord(new AirbyteRecordMessage()
                   .withStream(STREAM_NAME)
                   .withNamespace(SCHEMA_NAME)
                   .withEmittedAt(Instant.now().toEpochMilli())
-                  .withData(Jsons.jsonNode(recordCount.getAndIncrement()))));
+                  .withData(Jsons.jsonNode(recordCount.getAndIncrement())))),
+              RECORD_SIZE_20_BYTES);
         } catch (final Exception e) {
           throw new RuntimeException(e);
         }
@@ -231,8 +234,8 @@ class AsyncStreamConsumerTest {
               .withEmittedAt(Instant.now().toEpochMilli())
               .withData(Jsons.deserialize("")));
       consumer.start();
-      consumer.accept(m);
-      assertThrows(IOException.class, () -> consumer.accept(m));
+      consumer.accept(Jsons.serialize(m), RECORD_SIZE_20_BYTES);
+      assertThrows(IOException.class, () -> consumer.accept(Jsons.serialize(m), RECORD_SIZE_20_BYTES));
     }
 
     @Test
@@ -249,7 +252,7 @@ class AsyncStreamConsumerTest {
   private static void consumeRecords(final AsyncStreamConsumer consumer, final Collection<AirbyteMessage> records) {
     records.forEach(m -> {
       try {
-        consumer.accept(m);
+        consumer.accept(Jsons.serialize(m), RECORD_SIZE_20_BYTES);
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
