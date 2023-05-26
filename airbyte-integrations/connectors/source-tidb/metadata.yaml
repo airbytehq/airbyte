@@ -18,5 +18,8 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/tidb
+  documentationUrl: https://docs.airbyte.com/integrations/sources/tidb
+  tags:
+    - language:java
+    - language:python
 metadataSpecVersion: "1.0"
