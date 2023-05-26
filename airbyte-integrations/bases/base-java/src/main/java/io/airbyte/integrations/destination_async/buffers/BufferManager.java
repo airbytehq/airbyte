@@ -32,7 +32,7 @@ public class BufferManager {
   private final ScheduledExecutorService debugLoop;
 
   public BufferManager() {
-    this((long) (Runtime.getRuntime().maxMemory() * 0.8));
+    this((long) (Runtime.getRuntime().maxMemory() * 0.25));
   }
 
   @VisibleForTesting
@@ -48,7 +48,7 @@ public class BufferManager {
     bufferEnqueue = new BufferEnqueue(memoryManager, buffers, stateManager);
     bufferDequeue = new BufferDequeue(memoryManager, buffers, stateManager);
     debugLoop = Executors.newSingleThreadScheduledExecutor();
-    debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 10, TimeUnit.SECONDS);
+    debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 2, TimeUnit.SECONDS);
   }
 
   public BufferEnqueue getBufferEnqueue() {
@@ -73,7 +73,7 @@ public class BufferManager {
     final var queueInfo = new StringBuilder().append("QUEUE INFO").append(System.lineSeparator());
 
     queueInfo
-        .append(String.format("  Global Mem Manager -- max: %s in bytes, allocated: %s in bytes (%s MB)",
+        .append(String.format("  Global Mem Manager -- max: %s in megabytes, allocated: %s in bytes (%s MB)",
             (double) memoryManager.getMaxMemoryBytes() / 1024 / 1024,
             (double) memoryManager.getCurrentMemoryBytes() / 1024 / 1024,
             (double) memoryManager.getCurrentMemoryBytes() / 1024 / 1024))

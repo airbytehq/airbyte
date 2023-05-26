@@ -110,4 +110,5 @@ public class ClickhouseDestinationSpecTest {
     ((ObjectNode) config).remove("username");
     assertFalse(validator.test(schema, config));
   }
+
 }

@@ -147,15 +147,16 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
         config,
         catalog,
         isPurgeStagingData(config));
-//    return new StagingConsumerFactory().createAsync(
-//            outputRecordCollector,
-//            getDatabase(getDataSource(config)),
-//            new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
-//            getNamingResolver(),
-//            CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
-//            config,
-//            catalog,
-//            true);
+    // return new StagingConsumerFactory().createAsync(
+    // outputRecordCollector,
+    // getDatabase(getDataSource(config)),
+    // new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
+    // getNamingResolver(),
+    // CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX,
+    // getNumberOfFileBuffers(config))),
+    // config,
+    // catalog,
+    // true);
 
   }
 

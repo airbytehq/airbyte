@@ -138,15 +138,16 @@ public class SnowflakeS3StagingDestination extends AbstractJdbcDestination imple
         config,
         catalog,
         isPurgeStagingData(config));
-//    return new StagingConsumerFactory().createAsync(
-//            outputRecordCollector,
-//            getDatabase(getDataSource(config)),
-//            new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
-//            getNamingResolver(),
-//            CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
-//            config,
-//            catalog,
-//            true);
+    // return new StagingConsumerFactory().createAsync(
+    // outputRecordCollector,
+    // getDatabase(getDataSource(config)),
+    // new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
+    // getNamingResolver(),
+    // CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX,
+    // getNumberOfFileBuffers(config))),
+    // config,
+    // catalog,
+    // true);
   }
 
   private S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
