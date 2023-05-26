@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8540a80-6120-485d-b7d6-272bca477d9b
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.6
   dockerRepository: airbyte/source-openweather
   githubIssueLabel: source-openweather
   icon: openweather.svg
