@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.integrations.destination_async.buffers.MemoryAwareMessageBatch;
 import io.airbyte.integrations.destination_async.state.FlushFailure;
+import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.io.IOException;
@@ -40,7 +41,7 @@ public class FlushWorkersTest {
     });
 
     final var flushFailure = new FlushFailure();
-    final var workers = new FlushWorkers(dequeue, new ErrorOnFlush(hasThrownError), m -> {}, flushFailure);
+    final var workers = new FlushWorkers(dequeue, new ErrorOnFlush(hasThrownError), m -> {}, flushFailure, mock(GlobalAsyncStateManager.class));
     workers.start();
     workers.close();
 
