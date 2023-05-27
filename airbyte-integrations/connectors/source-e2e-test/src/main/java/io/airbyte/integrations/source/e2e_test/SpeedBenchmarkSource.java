@@ -19,10 +19,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This source is optimized for creating records very fast. It optimizes for speed over flexibility.
  */
+@Slf4j
 public class SpeedBenchmarkSource extends BaseConnector implements Source {
 
   @Override
@@ -42,28 +44,31 @@ public class SpeedBenchmarkSource extends BaseConnector implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode jsonConfig, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
+  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state) {
     return null;
   }
 
-  // @Override
-  public void read2(final JsonNode jsonConfig,
-                    final ConfiguredAirbyteCatalog catalog,
-                    final JsonNode state,
-                    final Consumer<AirbyteMessage> outputRecordCollector) {
-    final SpeedBenchmarkConfig sourceConfig = SpeedBenchmarkConfig.parseFromConfig(jsonConfig);
-    if (sourceConfig.streamCount() == 1) {
-      thread(1, sourceConfig, outputRecordCollector);
-    } else {
-      final ExecutorService workerPool = Executors.newFixedThreadPool(sourceConfig.streamCount());
-      // keep counting 1 indexed to be consistent with the rest of the source.
-      final CompletableFuture<?>[] futures = IntStream.range(1, sourceConfig.threadCount() + 1)
-          .mapToObj(i -> CompletableFuture.runAsync(() -> thread(i, sourceConfig, outputRecordCollector), workerPool))
-          .toArray(CompletableFuture[]::new);
+  @Override
+  public void read(final JsonNode config,
+                   final ConfiguredAirbyteCatalog catalog,
+                   final JsonNode state,
+                   final Consumer<AirbyteMessage> outputRecordCollector) {
+    final SpeedBenchmarkConfig sourceConfig = SpeedBenchmarkConfig.parseFromConfig(config);
+    // if (sourceConfig.threadCount() == 1) {
+    // thread(1, sourceConfig, outputRecordCollector);
+    // } else {
+    final int threadCount = 2;
+    log.info("using {} threads", threadCount);
+    // final ExecutorService workerPool = Executors.newFixedThreadPool(sourceConfig.streamCount());
+    final ExecutorService workerPool = Executors.newFixedThreadPool(threadCount);
+    // keep counting 1 indexed to be consistent with the rest of the source.
+    final CompletableFuture<?>[] futures = IntStream.range(1, sourceConfig.threadCount() + 1)
+        .mapToObj(i -> CompletableFuture.runAsync(() -> thread(i, sourceConfig, outputRecordCollector), workerPool))
+        .toArray(CompletableFuture[]::new);
 
-      CompletableFuture.allOf(futures);
-      workerPool.shutdown();
-    }
+    CompletableFuture.allOf(futures);
+    workerPool.shutdown();
+    // }
   }
 
   void thread(final int threadNum, final SpeedBenchmarkConfig sourceConfig, final Consumer<AirbyteMessage> outputRecordCollector) {
