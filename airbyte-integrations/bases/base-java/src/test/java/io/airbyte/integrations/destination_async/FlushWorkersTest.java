@@ -12,7 +12,6 @@ import io.airbyte.integrations.destination_async.buffers.MemoryAwareMessageBatch
 import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.integrations.destination_async.state.FlushFailure;
 import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.io.IOException;
 import java.util.List;
