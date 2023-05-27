@@ -54,21 +54,19 @@ public class SpeedBenchmarkSource extends BaseConnector implements Source {
                    final JsonNode state,
                    final Consumer<AirbyteMessage> outputRecordCollector) {
     final SpeedBenchmarkConfig sourceConfig = SpeedBenchmarkConfig.parseFromConfig(config);
-    // if (sourceConfig.threadCount() == 1) {
-    // thread(1, sourceConfig, outputRecordCollector);
-    // } else {
-    final int threadCount = 2;
-    log.info("using {} threads", threadCount);
-    // final ExecutorService workerPool = Executors.newFixedThreadPool(sourceConfig.streamCount());
-    final ExecutorService workerPool = Executors.newFixedThreadPool(threadCount);
-    // keep counting 1 indexed to be consistent with the rest of the source.
-    final CompletableFuture<?>[] futures = IntStream.range(1, sourceConfig.threadCount() + 1)
-        .mapToObj(i -> CompletableFuture.runAsync(() -> thread(i, sourceConfig, outputRecordCollector), workerPool))
-        .toArray(CompletableFuture[]::new);
+    if (sourceConfig.threadCount() == 1) {
+      thread(1, sourceConfig, outputRecordCollector);
+    } else {
+      log.info("using {} threads", sourceConfig.threadCount());
+      final ExecutorService workerPool = Executors.newFixedThreadPool(sourceConfig.streamCount());
+      // keep counting 1 indexed to be consistent with the rest of the source.
+      final CompletableFuture<?>[] futures = IntStream.range(1, sourceConfig.threadCount() + 1)
+          .mapToObj(i -> CompletableFuture.runAsync(() -> thread(i, sourceConfig, outputRecordCollector), workerPool))
+          .toArray(CompletableFuture[]::new);
 
-    CompletableFuture.allOf(futures);
-    workerPool.shutdown();
-    // }
+      CompletableFuture.allOf(futures);
+      workerPool.shutdown();
+    }
   }
 
   void thread(final int threadNum, final SpeedBenchmarkConfig sourceConfig, final Consumer<AirbyteMessage> outputRecordCollector) {
