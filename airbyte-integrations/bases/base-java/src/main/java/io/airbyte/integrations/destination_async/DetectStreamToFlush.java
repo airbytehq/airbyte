@@ -187,7 +187,7 @@ public class DetectStreamToFlush {
     final long workersWithBatchesSize = runningWorkerBatchesSizes.stream().filter(Optional::isPresent).mapToLong(Optional::get).sum();
     final long workersWithoutBatchesCount = runningWorkerBatchesSizes.stream().filter(Optional::isEmpty).count();
     final long workersWithoutBatchesSizeEstimate = Math.min(flusher.getOptimalBatchSizeBytes(), currentQueueSize) * workersWithoutBatchesCount;
-    return workersWithBatchesSize + workersWithoutBatchesSizeEstimate;
+    return (workersWithBatchesSize + workersWithoutBatchesSizeEstimate) / 2;
   }
 
   // todo (cgardens) - perf test whether it would make sense to flip 1 & 2.
@@ -212,7 +212,9 @@ public class DetectStreamToFlush {
   List<StreamDescriptor> orderStreamsByPriority(final Set<StreamDescriptor> streams) {
     return streams.stream()
         .sorted(Comparator.comparing((StreamDescriptor s) -> bufferDequeue.getQueueSizeBytes(s).orElseThrow(), Comparator.reverseOrder())
-            .thenComparing(s -> bufferDequeue.getTimeOfLastRecord(s).orElseThrow())
+            // if no time is present, it suggests the queue has no records. set MAX time as a sentinel value to
+            // represent no records.
+            .thenComparing(s -> bufferDequeue.getTimeOfLastRecord(s).orElse(Instant.MAX))
             .thenComparing(s -> s.getNamespace() + s.getName()))
         .collect(Collectors.toList());
   }

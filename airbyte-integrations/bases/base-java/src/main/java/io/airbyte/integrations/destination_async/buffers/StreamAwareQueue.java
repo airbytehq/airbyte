@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination_async.buffers;
 
-import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +43,7 @@ public class StreamAwareQueue {
     return memoryAwareQueue.size();
   }
 
-  public boolean offer(final AirbyteMessage message, final long messageSizeInBytes, final long stateId) {
+  public boolean offer(final PartialAirbyteMessage message, final long messageSizeInBytes, final long stateId) {
     if (memoryAwareQueue.offer(new MessageWithMeta(message, stateId), messageSizeInBytes)) {
       timeOfLastMessage.set(Instant.now());
       return true;
@@ -64,6 +64,6 @@ public class StreamAwareQueue {
     return memoryAwareQueue.poll(timeout, unit);
   }
 
-  public record MessageWithMeta(AirbyteMessage message, long stateId) {}
+  public record MessageWithMeta(PartialAirbyteMessage message, long stateId) {}
 
 }

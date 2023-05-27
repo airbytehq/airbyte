@@ -7,8 +7,8 @@ package io.airbyte.integrations.destination_async.buffers;
 import static java.lang.Thread.sleep;
 
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.concurrent.ConcurrentMap;
@@ -38,7 +38,7 @@ public class BufferEnqueue {
    * @param message to buffer
    * @param sizeInBytes
    */
-  public void addRecord(final AirbyteMessage message, final Integer sizeInBytes) {
+  public void addRecord(final PartialAirbyteMessage message, final Integer sizeInBytes) {
     if (message.getType() == Type.RECORD) {
       handleRecord(message, sizeInBytes);
     } else if (message.getType() == Type.STATE) {
@@ -46,7 +46,7 @@ public class BufferEnqueue {
     }
   }
 
-  private void handleRecord(final AirbyteMessage message, final Integer sizeInBytes) {
+  private void handleRecord(final PartialAirbyteMessage message, final Integer sizeInBytes) {
     final StreamDescriptor streamDescriptor = extractStateFromRecord(message);
     if (streamDescriptor != null && !buffers.containsKey(streamDescriptor)) {
       buffers.put(streamDescriptor, new StreamAwareQueue(memoryManager.requestMemory()));
@@ -74,7 +74,7 @@ public class BufferEnqueue {
     }
   }
 
-  private static StreamDescriptor extractStateFromRecord(final AirbyteMessage message) {
+  private static StreamDescriptor extractStateFromRecord(final PartialAirbyteMessage message) {
     return new StreamDescriptor()
         .withNamespace(message.getRecord().getNamespace())
         .withName(message.getRecord().getStream());

@@ -8,9 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -23,11 +23,10 @@ public class BufferDequeueTest {
   public static final String RECORD_20_BYTES = "abc";
   private static final String STREAM_NAME = "stream1";
   private static final StreamDescriptor STREAM_DESC = new StreamDescriptor().withName(STREAM_NAME);
-  private static final AirbyteMessage RECORD_MSG_20_BYTES = new AirbyteMessage()
+  private static final PartialAirbyteMessage RECORD_MSG_20_BYTES = new PartialAirbyteMessage()
       .withType(Type.RECORD)
-      .withRecord(new AirbyteRecordMessage()
-          .withStream(STREAM_NAME)
-          .withData(Jsons.jsonNode(RECORD_20_BYTES)));
+      .withRecord(new PartialAirbyteRecordMessage()
+          .withStream(STREAM_NAME));
 
   @Nested
   class Take {
@@ -99,7 +98,7 @@ public class BufferDequeueTest {
     enqueue.addRecord(RECORD_MSG_20_BYTES, RECORD_SIZE_20_BYTES);
 
     final var secondStream = new StreamDescriptor().withName("stream_2");
-    final AirbyteMessage recordFromSecondStream = Jsons.clone(RECORD_MSG_20_BYTES);
+    final PartialAirbyteMessage recordFromSecondStream = Jsons.clone(RECORD_MSG_20_BYTES);
     recordFromSecondStream.getRecord().withStream(secondStream.getName());
     enqueue.addRecord(recordFromSecondStream, RECORD_SIZE_20_BYTES);
 
