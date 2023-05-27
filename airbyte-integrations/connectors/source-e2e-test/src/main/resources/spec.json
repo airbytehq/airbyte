@@ -31,6 +31,12 @@
             "title" : "Message Interval",
             "description" : "Interval between messages in ms.",
             "type" : "integer"
+          },
+          "log_each_record" : {
+            "title" : "Should log each record",
+            "description" : "If true, will log each record and state.",
+            "type" : "boolean",
+            "default": false
           }
         }
       },
@@ -55,6 +61,12 @@
             "type" : "integer",
             "min" : 1
           }
+        },
+        "log_each_record" : {
+          "title" : "Should log each record",
+          "description" : "If true, will log each record and state.",
+          "type" : "boolean",
+          "default": false
         }
       },
       {
