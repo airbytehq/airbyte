@@ -15,7 +15,7 @@ import java.util.List;
 public record SpeedBenchmarkConfig(SpeedBenchmarkConfig.SchemaType schemaType,
                                    SpeedBenchmarkConfig.TerminationCondition terminationCondition,
                                    long maxRecords,
-                                   int streamNumber) {
+                                   int streamCount) {
 
   private static final String FIVE_STRING_COLUMNS_SCHEMA = """
                                                                {
@@ -40,34 +40,34 @@ public record SpeedBenchmarkConfig(SpeedBenchmarkConfig.SchemaType schemaType,
                                                                    }
                                                            """;
 
-  private static final AirbyteStream BASE_STREAM = new AirbyteStream()
+  private static final AirbyteStream FIVE_STRING_COLUMNS_STREAM = new AirbyteStream()
       .withJsonSchema(Jsons.deserialize(FIVE_STRING_COLUMNS_SCHEMA))
       .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
 
   private static final String STREAM_PREFIX = "stream";
 
-  private static final AirbyteCatalog FIVE_STRING_COLUMNS_CATALOG = new AirbyteCatalog().withStreams(List.of(
-      new AirbyteStream().withName("stream1").withJsonSchema(Jsons.deserialize(FIVE_STRING_COLUMNS_SCHEMA))
-          .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH))));
-
+  /**
+   * Enum lets you pick which stream schema you want. Then when getting the catalog, pass in the
+   * number of streams with that schema that you want
+   */
   enum SchemaType {
 
-    FIVE_STRING_COLUMNS(FIVE_STRING_COLUMNS_CATALOG);
+    FIVE_STRING_COLUMNS(FIVE_STRING_COLUMNS_STREAM);
 
-    private final AirbyteCatalog catalog;
+    private final AirbyteStream baseStream;
 
-    SchemaType(final AirbyteCatalog catalog) {
-      this.catalog = catalog;
+    SchemaType(final AirbyteStream baseStream) {
+      this.baseStream = baseStream;
     }
 
-    public AirbyteCatalog getCatalog(final int streamNumber) {
-      return generateCatalog(streamNumber);
+    public AirbyteCatalog getCatalog(final int streamCount) {
+      return generateCatalog(streamCount);
     }
 
-    private AirbyteCatalog generateCatalog(final int streamNumber) {
+    private AirbyteCatalog generateCatalog(final int streamCount) {
       final List<AirbyteStream> streams = new ArrayList<>();
-      for (int i = 1; i <= streamNumber; i++) {
-        streams.add(Jsons.clone(BASE_STREAM).withName(STREAM_PREFIX + i));
+      for (int i = 1; i <= streamCount; i++) {
+        streams.add(Jsons.clone(baseStream).withName(STREAM_PREFIX + i));
       }
       return new AirbyteCatalog().withStreams(streams);
     }
@@ -85,11 +85,11 @@ public record SpeedBenchmarkConfig(SpeedBenchmarkConfig.SchemaType schemaType,
         SchemaType.valueOf(config.get("schema").asText()),
         terminationCondition,
         terminationCondition == TerminationCondition.MAX_RECORDS ? config.get("terminationCondition").get("max").asLong() : 0,
-        config.has("stream_number") ? config.get("stream_number").asInt() : 1);
+        config.has("stream_count") ? config.get("stream_count").asInt() : 1);
   }
 
   public AirbyteCatalog getCatalog() {
-    return schemaType.getCatalog(streamNumber);
+    return schemaType.getCatalog(streamCount);
   }
 
 }

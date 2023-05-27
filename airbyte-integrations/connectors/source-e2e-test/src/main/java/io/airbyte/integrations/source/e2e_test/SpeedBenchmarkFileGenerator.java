@@ -26,15 +26,15 @@ public class SpeedBenchmarkFileGenerator {
     }
   }
 
-  private static SpeedBenchmarkGeneratorIterator getGenerator() {
-    return new SpeedBenchmarkGeneratorIterator(24_000_000, 1);
+  private static SpeedBenchmark5ColumnGeneratorIterator getGenerator() {
+    return new SpeedBenchmark5ColumnGeneratorIterator(24_000_000, 1);
   }
 
   /**
    * Writes a text file with one record per line. Useful for dumping in S3 / GCS / etc.
    */
   public static void generateTextFile() {
-    final SpeedBenchmarkGeneratorIterator speedBenchmarkGeneratorIterator = getGenerator();
+    final SpeedBenchmark5ColumnGeneratorIterator speedBenchmarkGeneratorIterator = getGenerator();
 
     final FileWriter fileWriter;
     try {
@@ -57,7 +57,7 @@ public class SpeedBenchmarkFileGenerator {
    * Command to upload: `\copy stream1 from '/tmp/benchmark_data_csv.txt' delimiter ','`
    */
   public static void generateCsvFile() {
-    final SpeedBenchmarkGeneratorIterator speedBenchmarkGeneratorIterator = getGenerator();
+    final SpeedBenchmark5ColumnGeneratorIterator speedBenchmarkGeneratorIterator = getGenerator();
 
     final FileWriter fileWriter;
     try {
