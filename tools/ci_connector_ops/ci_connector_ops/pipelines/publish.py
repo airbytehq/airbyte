@@ -178,8 +178,6 @@ class UploadSpecToCache(Step):
         return self.context.get_connector_dir().with_new_file(name, spec).file(name)
 
     async def _run(self, built_connector: Container) -> StepResult:
-        print(f"Uploading spec for {self.context.docker_image_name}")
-
         try:
             oss_spec: str = await self._get_connector_spec(built_connector, "OSS")
             cloud_spec: str = await self._get_connector_spec(built_connector, "CLOUD")
@@ -241,8 +239,6 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             # TODO add a strucutre to hold the results of each step. and perform skips and failures.
 
             results = []
-
-            context.logger.info(f"Running!!! publish pipeline for {context.docker_image_name}")
 
             metadata_validation_results = await metadata.MetadataValidation(context, context.metadata_path).run()
             results.append(metadata_validation_results)

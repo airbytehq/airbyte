@@ -164,7 +164,7 @@ STEPS_TO_PATCH = [
     (publish, "UploadSpecToCache"),
     (publish, "PushConnectorImageToRegistry"),
     (publish, "PullConnectorImageFromRegistry"),
-    # (publish, "BuildConnectorForPublish"),
+    (publish, "BuildConnectorForPublish"),
 ]
 
 
@@ -296,9 +296,9 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
     )
 
     built_connector_platform = mocker.Mock()
-    # publish.BuildConnectorForPublish.return_value.run.return_value = mocker.Mock(
-    #     name="build_connector_for_publish_result", status=build_step_status, output_artifact=[built_connector_platform]
-    # )
+    publish.BuildConnectorForPublish.return_value.run.return_value = mocker.Mock(
+        name="build_connector_for_publish_result", status=build_step_status, output_artifact=[built_connector_platform]
+    )
 
     publish.PushConnectorImageToRegistry.return_value.run.return_value = mocker.Mock(
         name="push_connector_image_to_registry_result", status=push_step_status
@@ -315,7 +315,7 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
         name="metadata_upload_result", status=metadata_upload_step_status
     )
 
-    context = mocker.MagicMock(pre_release=pre_release)
+    context = mocker.MagicMock(pre_release=pre_release, )
     semaphore = anyio.Semaphore(1)
     report = await publish.run_connector_publish_pipeline(context, semaphore)
 
