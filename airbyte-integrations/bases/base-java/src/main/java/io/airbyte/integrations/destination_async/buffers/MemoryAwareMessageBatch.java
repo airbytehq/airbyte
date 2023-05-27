@@ -6,8 +6,8 @@ package io.airbyte.integrations.destination_async.buffers;
 
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -64,7 +64,7 @@ public class MemoryAwareMessageBatch implements AutoCloseable {
    *
    * @return list of states that can be flushed
    */
-  public List<AirbyteMessage> flushStates(final Map<Long, Long> stateIdToCount) {
+  public List<PartialAirbyteMessage> flushStates(final Map<Long, Long> stateIdToCount) {
     stateIdToCount.forEach(stateManager::decrement);
     return stateManager.flushStates();
   }

@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import org.junit.jupiter.api.Test;
 
 public class StreamAwareQueueTest {
@@ -20,9 +20,9 @@ public class StreamAwareQueueTest {
     assertEquals(0, queue.getCurrentMemoryUsage());
     assertNull(queue.getTimeOfLastMessage().orElse(null));
 
-    queue.offer(new AirbyteMessage(), 6, 1);
-    queue.offer(new AirbyteMessage(), 6, 2);
-    queue.offer(new AirbyteMessage(), 6, 3);
+    queue.offer(new PartialAirbyteMessage(), 6, 1);
+    queue.offer(new PartialAirbyteMessage(), 6, 2);
+    queue.offer(new PartialAirbyteMessage(), 6, 3);
 
     assertEquals(18, queue.getCurrentMemoryUsage());
     assertNotNull(queue.getTimeOfLastMessage().orElse(null));

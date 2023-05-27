@@ -8,9 +8,10 @@ import static java.lang.Thread.sleep;
 
 import com.google.common.base.Preconditions;
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteStreamState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -64,7 +65,7 @@ public class GlobalAsyncStateManager {
   private final ConcurrentMap<Long, AtomicLong> stateIdToCounter = new ConcurrentHashMap<>();
   private final ConcurrentMap<StreamDescriptor, LinkedList<Long>> streamToStateIdQ = new ConcurrentHashMap<>();
 
-  private final ConcurrentMap<Long, ImmutablePair<AirbyteMessage, Long>> stateIdToState = new ConcurrentHashMap<>();
+  private final ConcurrentMap<Long, ImmutablePair<PartialAirbyteMessage, Long>> stateIdToState = new ConcurrentHashMap<>();
   // empty in the STREAM case.
 
   // Alias-ing only exists in the non-STREAM case where we have to convert existing state ids to one
@@ -91,7 +92,7 @@ public class GlobalAsyncStateManager {
    * Because state messages are a watermark, all preceding records need to be flushed before the state
    * message can be processed.
    */
-  public void trackState(final AirbyteMessage message, final long sizeInBytes) {
+  public void trackState(final PartialAirbyteMessage message, final long sizeInBytes) {
     if (preState) {
       convertToGlobalIfNeeded(message);
       preState = false;
@@ -134,8 +135,8 @@ public class GlobalAsyncStateManager {
    *
    * @return list of state messages with no more inflight records.
    */
-  public List<AirbyteMessage> flushStates() {
-    final List<AirbyteMessage> output = new ArrayList<>();
+  public List<PartialAirbyteMessage> flushStates() {
+    final List<PartialAirbyteMessage> output = new ArrayList<>();
     Long bytesFlushed = 0L;
     for (final Map.Entry<StreamDescriptor, LinkedList<Long>> entry : streamToStateIdQ.entrySet()) {
       // remove all states with 0 counters.
@@ -207,7 +208,7 @@ public class GlobalAsyncStateManager {
     LOGGER.debug("Returned {} of memory back to the memory manager.", FileUtils.byteCountToDisplaySize(bytesFlushed));
   }
 
-  private void convertToGlobalIfNeeded(final AirbyteMessage message) {
+  private void convertToGlobalIfNeeded(final PartialAirbyteMessage message) {
     // instead of checking for global or legacy, check for the inverse of stream.
     stateType = extractStateType(message);
     if (stateType != AirbyteStateMessage.AirbyteStateType.STREAM) {// alias old stream-level state ids to single global state id
@@ -230,7 +231,7 @@ public class GlobalAsyncStateManager {
     }
   }
 
-  private AirbyteStateMessage.AirbyteStateType extractStateType(final AirbyteMessage message) {
+  private AirbyteStateMessage.AirbyteStateType extractStateType(final PartialAirbyteMessage message) {
     if (message.getState().getType() == null) {
       // Treated the same as GLOBAL.
       return AirbyteStateMessage.AirbyteStateType.LEGACY;
@@ -244,7 +245,7 @@ public class GlobalAsyncStateManager {
    * to the newly arrived state message. We also increment the state id in preparation for the next
    * state message.
    */
-  private void closeState(final AirbyteMessage message, final long sizeInBytes) {
+  private void closeState(final PartialAirbyteMessage message, final long sizeInBytes) {
     final StreamDescriptor resolvedDescriptor = extractStream(message).orElse(SENTINEL_GLOBAL_DESC);
     stateIdToState.put(getStateId(resolvedDescriptor), ImmutablePair.of(message, sizeInBytes));
     registerNewStateId(resolvedDescriptor);
@@ -282,8 +283,8 @@ public class GlobalAsyncStateManager {
         (double) memoryUsed.get() / memoryAllocated.get());
   }
 
-  private static Optional<StreamDescriptor> extractStream(final AirbyteMessage message) {
-    return Optional.ofNullable(message.getState().getStream()).map(AirbyteStreamState::getStreamDescriptor);
+  private static Optional<StreamDescriptor> extractStream(final PartialAirbyteMessage message) {
+    return Optional.ofNullable(message.getState().getStream()).map(PartialAirbyteStreamState::getStreamDescriptor);
   }
 
   private long getStateAfterAlias(final long stateId) {

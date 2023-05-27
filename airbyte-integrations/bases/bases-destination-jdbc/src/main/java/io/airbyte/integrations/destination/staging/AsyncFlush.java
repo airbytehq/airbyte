@@ -4,13 +4,14 @@
 
 package io.airbyte.integrations.destination.staging;
 
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.integrations.destination_async.DestinationFlushFunction;
-import io.airbyte.protocol.models.Jsons;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
@@ -42,7 +43,7 @@ class AsyncFlush implements DestinationFlushFunction {
   }
 
   @Override
-  public void flush(final StreamDescriptor decs, final Stream<AirbyteMessage> stream) throws Exception {
+  public void flush(final StreamDescriptor decs, final Stream<PartialAirbyteMessage> stream) throws Exception {
     final CsvSerializedBuffer writer;
     try {
       writer = new CsvSerializedBuffer(
@@ -53,7 +54,10 @@ class AsyncFlush implements DestinationFlushFunction {
       // reassign as lambdas require references to be final.
       stream.forEach(record -> {
         try {
-          writer.accept(record.getRecord());
+          // todo (cgardens) - most writers just go ahead and re-serialize the contents of the record message.
+          // we should either just pass the raw string or at least have a way to do that and create a default
+          // impl that maintains backwards compatible behavior.
+          writer.accept(Jsons.deserialize(record.getSerialized(), AirbyteMessage.class).getRecord());
         } catch (final Exception e) {
           throw new RuntimeException(e);
         }

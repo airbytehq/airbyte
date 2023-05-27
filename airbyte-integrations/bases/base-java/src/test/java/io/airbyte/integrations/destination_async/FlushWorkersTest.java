@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.integrations.destination_async.buffers.MemoryAwareMessageBatch;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.integrations.destination_async.state.FlushFailure;
 import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -58,7 +59,7 @@ public class FlushWorkersTest {
     }
 
     @Override
-    public void flush(final StreamDescriptor desc, final Stream<AirbyteMessage> stream) throws Exception {
+    public void flush(final StreamDescriptor desc, final Stream<PartialAirbyteMessage> stream) throws Exception {
       hasThrownError.set(true);
       throw new IOException("Error on flush");
     }
