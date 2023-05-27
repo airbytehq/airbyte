@@ -26,8 +26,7 @@ public class BufferDequeueTest {
   private static final PartialAirbyteMessage RECORD_MSG_20_BYTES = new PartialAirbyteMessage()
       .withType(Type.RECORD)
       .withRecord(new PartialAirbyteRecordMessage()
-          .withStream(STREAM_NAME)
-          .withData(Jsons.jsonNode(RECORD_20_BYTES)));
+          .withStream(STREAM_NAME));
 
   @Nested
   class Take {

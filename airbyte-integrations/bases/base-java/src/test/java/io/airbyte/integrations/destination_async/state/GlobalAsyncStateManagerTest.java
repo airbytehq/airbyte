@@ -8,13 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteStateMessage;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteStreamState;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.List;
 import java.util.Set;
@@ -37,24 +36,24 @@ class GlobalAsyncStateManagerTest {
   private static final StreamDescriptor STREAM3_DESC = new StreamDescriptor()
       .withName(STREAM_NAME3);
 
-  private static final AirbyteMessage GLOBAL_STATE_MESSAGE1 = new AirbyteMessage()
+  private static final PartialAirbyteMessage GLOBAL_STATE_MESSAGE1 = new PartialAirbyteMessage()
       .withType(Type.STATE)
-      .withState(new AirbyteStateMessage()
-          .withType(AirbyteStateType.GLOBAL).withData(Jsons.jsonNode(1)));
-  private static final AirbyteMessage GLOBAL_STATE_MESSAGE2 = new AirbyteMessage()
+      .withState(new PartialAirbyteStateMessage()
+          .withType(AirbyteStateType.GLOBAL));
+  private static final PartialAirbyteMessage GLOBAL_STATE_MESSAGE2 = new PartialAirbyteMessage()
       .withType(Type.STATE)
-      .withState(new AirbyteStateMessage()
-          .withType(AirbyteStateType.GLOBAL).withData(Jsons.jsonNode(2)));
-  private static final AirbyteMessage STREAM1_STATE_MESSAGE1 = new AirbyteMessage()
+      .withState(new PartialAirbyteStateMessage()
+          .withType(AirbyteStateType.GLOBAL));
+  private static final PartialAirbyteMessage STREAM1_STATE_MESSAGE1 = new PartialAirbyteMessage()
       .withType(Type.STATE)
-      .withState(new AirbyteStateMessage()
+      .withState(new PartialAirbyteStateMessage()
           .withType(AirbyteStateType.STREAM)
-          .withStream(new AirbyteStreamState().withStreamDescriptor(STREAM1_DESC).withStreamState(Jsons.jsonNode(1))));
-  private static final AirbyteMessage STREAM1_STATE_MESSAGE2 = new AirbyteMessage()
+          .withStream(new PartialAirbyteStreamState().withStreamDescriptor(STREAM1_DESC)));
+  private static final PartialAirbyteMessage STREAM1_STATE_MESSAGE2 = new PartialAirbyteMessage()
       .withType(Type.STATE)
-      .withState(new AirbyteStateMessage()
+      .withState(new PartialAirbyteStateMessage()
           .withType(AirbyteStateType.STREAM)
-          .withStream(new AirbyteStreamState().withStreamDescriptor(STREAM1_DESC).withStreamState(Jsons.jsonNode(2))));
+          .withStream(new PartialAirbyteStreamState().withStreamDescriptor(STREAM1_DESC)));
 
   @Test
   void testBasic() {

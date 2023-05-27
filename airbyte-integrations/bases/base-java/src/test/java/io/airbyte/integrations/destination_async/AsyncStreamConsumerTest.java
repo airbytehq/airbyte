@@ -20,6 +20,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
 import io.airbyte.integrations.destination_async.buffers.BufferManager;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteRecordMessage;
 import io.airbyte.integrations.destination_async.state.FlushFailure;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -116,7 +118,7 @@ class AsyncStreamConsumerTest {
 
   @Test
   void test1StreamWith1State() throws Exception {
-    final List<AirbyteMessage> expectedRecords = generateRecords(1_000);
+    final List<PartialAirbyteMessage> expectedRecords = generateRecords(1_000);
 
     consumer.start();
     consumeRecords(consumer, expectedRecords);
@@ -132,7 +134,7 @@ class AsyncStreamConsumerTest {
 
   @Test
   void test1StreamWith2State() throws Exception {
-    final List<AirbyteMessage> expectedRecords = generateRecords(1_000);
+    final List<PartialAirbyteMessage> expectedRecords = generateRecords(1_000);
 
     consumer.start();
     consumeRecords(consumer, expectedRecords);
@@ -149,7 +151,7 @@ class AsyncStreamConsumerTest {
 
   @Test
   void test1StreamWith0State() throws Exception {
-    final List<AirbyteMessage> expectedRecords = generateRecords(1_000);
+    final List<PartialAirbyteMessage> expectedRecords = generateRecords(1_000);
 
     consumer.start();
     consumeRecords(consumer, expectedRecords);
@@ -249,7 +251,7 @@ class AsyncStreamConsumerTest {
 
   }
 
-  private static void consumeRecords(final AsyncStreamConsumer consumer, final Collection<AirbyteMessage> records) {
+  private static void consumeRecords(final AsyncStreamConsumer consumer, final Collection<PartialAirbyteMessage> records) {
     records.forEach(m -> {
       try {
         consumer.accept(Jsons.serialize(m), RECORD_SIZE_20_BYTES);
@@ -261,21 +263,19 @@ class AsyncStreamConsumerTest {
 
   // NOTE: Generates records at chunks of 160 bytes
   @SuppressWarnings("SameParameterValue")
-  private static List<AirbyteMessage> generateRecords(final long targetSizeInBytes) {
-    final List<AirbyteMessage> output = Lists.newArrayList();
+  private static List<PartialAirbyteMessage> generateRecords(final long targetSizeInBytes) {
+    final List<PartialAirbyteMessage> output = Lists.newArrayList();
     long bytesCounter = 0;
     for (int i = 0;; i++) {
       final JsonNode payload =
           Jsons.jsonNode(ImmutableMap.of("id", RandomStringUtils.randomAlphabetic(7), "name", "human " + String.format("%8d", i)));
       final long sizeInBytes = RecordSizeEstimator.getStringByteSize(payload);
       bytesCounter += sizeInBytes;
-      final AirbyteMessage airbyteMessage = new AirbyteMessage()
+      final PartialAirbyteMessage airbyteMessage = new PartialAirbyteMessage()
           .withType(Type.RECORD)
-          .withRecord(new AirbyteRecordMessage()
+          .withRecord(new PartialAirbyteRecordMessage()
               .withStream(STREAM_NAME)
-              .withNamespace(SCHEMA_NAME)
-              .withEmittedAt(Instant.now().toEpochMilli())
-              .withData(payload));
+              .withNamespace(SCHEMA_NAME));
       if (bytesCounter > targetSizeInBytes) {
         break;
       } else {
@@ -291,8 +291,9 @@ class AsyncStreamConsumerTest {
   }
 
   @SuppressWarnings({"unchecked", "SameParameterValue"})
-  private void verifyRecords(final String streamName, final String namespace, final Collection<AirbyteMessage> expectedRecords) throws Exception {
-    final ArgumentCaptor<Stream<AirbyteMessage>> argumentCaptor = ArgumentCaptor.forClass(Stream.class);
+  private void verifyRecords(final String streamName, final String namespace, final Collection<PartialAirbyteMessage> expectedRecords)
+      throws Exception {
+    final ArgumentCaptor<Stream<PartialAirbyteMessage>> argumentCaptor = ArgumentCaptor.forClass(Stream.class);
     verify(flushFunction).flush(
         eq(new StreamDescriptor().withNamespace(namespace).withName(streamName)),
         argumentCaptor.capture());
