@@ -99,17 +99,17 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
     module = "pytest"
     command = "-s integration_tests"
 
-    dependsOn ':airbyte-integrations:bases:base-normalization:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-bigquery:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-mysql:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-postgres:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-redshift:airbyteDocker'
+//    dependsOn ':airbyte-integrations:bases:base-normalization:airbyteDocker'
+//    dependsOn ':airbyte-integrations:connectors:destination-bigquery:airbyteDocker'
+//    dependsOn ':airbyte-integrations:connectors:destination-mysql:airbyteDocker'
+//    dependsOn ':airbyte-integrations:connectors:destination-postgres:airbyteDocker'
+//    dependsOn ':airbyte-integrations:connectors:destination-redshift:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-snowflake:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-oracle:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-tidb:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-duckdb:airbyteDocker'
+//    dependsOn ':airbyte-integrations:connectors:destination-oracle:airbyteDocker'
+//    dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
+//    dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
+//    dependsOn ':airbyte-integrations:connectors:destination-tidb:airbyteDocker'
+//    dependsOn ':airbyte-integrations:connectors:destination-duckdb:airbyteDocker'
 }
 
 // not really sure what this task does differently from customIntegrationTestPython, but it seems to also run integration tests
