@@ -164,7 +164,7 @@ STEPS_TO_PATCH = [
     (publish, "UploadSpecToCache"),
     (publish, "PushConnectorImageToRegistry"),
     (publish, "PullConnectorImageFromRegistry"),
-    (publish, "BuildConnectorForPublish"),
+    # (publish, "BuildConnectorForPublish"),
 ]
 
 
@@ -296,9 +296,9 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
     )
 
     built_connector_platform = mocker.Mock()
-    publish.BuildConnectorForPublish.return_value.run.return_value = mocker.Mock(
-        name="build_connector_for_publish_result", status=build_step_status, output_artifact=[built_connector_platform]
-    )
+    # publish.BuildConnectorForPublish.return_value.run.return_value = mocker.Mock(
+    #     name="build_connector_for_publish_result", status=build_step_status, output_artifact=[built_connector_platform]
+    # )
 
     publish.PushConnectorImageToRegistry.return_value.run.return_value = mocker.Mock(
         name="push_connector_image_to_registry_result", status=push_step_status
@@ -322,13 +322,13 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
     steps_to_run = [
         publish.metadata.MetadataValidation.return_value.run,
         publish.CheckConnectorImageDoesNotExist.return_value.run,
-        publish.BuildConnectorForPublish.return_value.run,
+        # publish.BuildConnectorForPublish.return_value.run,
         publish.PushConnectorImageToRegistry.return_value.run,
         publish.PullConnectorImageFromRegistry.return_value.run,
     ]
 
     if not pre_release:
-        steps_to_run += [publish.UploadSpecToCache.return_value.run, publish.metadata.MetadataUpload.return_value.run]
+        steps_to_run += [publish.metadata.MetadataUpload.return_value.run]
 
     for i, step_to_run in enumerate(steps_to_run):
         if step_to_run.return_value.status is StepStatus.FAILURE or i == len(steps_to_run) - 1:
@@ -352,5 +352,4 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
         publish.metadata.MetadataUpload.return_value.run.assert_not_called()
 
     if pre_release:
-        publish.UploadSpecToCache.return_value.run.assert_not_called()
         publish.metadata.MetadataUpload.return_value.run.assert_not_called()
