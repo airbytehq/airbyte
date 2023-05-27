@@ -41,7 +41,7 @@ public class SpeedBenchmarkSource extends BaseConnector implements Source {
       throws Exception {
     final SpeedBenchmarkConfig sourceConfig = SpeedBenchmarkConfig.parseFromConfig(jsonConfig);
     return AutoCloseableIterators.fromIterator(new SpeedBenchmarkGeneratorIterator(sourceConfig.maxRecords(),
-            jsonConfig.has("stream_number") ? jsonConfig.get("stream_number").asInt() : 1));
+        jsonConfig.has("stream_number") ? jsonConfig.get("stream_number").asInt() : 1));
   }
 
 }

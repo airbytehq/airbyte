@@ -11,7 +11,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-
 import java.time.Instant;
 import java.util.Random;
 import javax.annotation.CheckForNull;
@@ -23,46 +22,45 @@ import javax.annotation.CheckForNull;
  */
 class SpeedBenchmarkGeneratorIterator extends AbstractIterator<AirbyteMessage> {
 
-    private static final String fieldBase = "field";
-    private static final String valueBase = "valuevaluevaluevaluevalue";
-    private static final AirbyteMessage message = new AirbyteMessage()
-            .withType(Type.RECORD)
-            .withRecord(new AirbyteRecordMessage().withEmittedAt(Instant.EPOCH.toEpochMilli()));
-    private static final JsonNode jsonNode = Jsons.emptyObject();
+  private static final String fieldBase = "field";
+  private static final String valueBase = "valuevaluevaluevaluevalue";
+  private static final AirbyteMessage message = new AirbyteMessage()
+      .withType(Type.RECORD)
+      .withRecord(new AirbyteRecordMessage().withEmittedAt(Instant.EPOCH.toEpochMilli()));
+  private static final JsonNode jsonNode = Jsons.emptyObject();
 
-    private final long maxRecords;
-    private long numRecordsEmitted;
-    private final int numberOfStreams;
-    private final Random random = new Random(54321);
+  private final long maxRecords;
+  private long numRecordsEmitted;
+  private final int numberOfStreams;
+  private final Random random = new Random(54321);
 
-    public SpeedBenchmarkGeneratorIterator(final long maxRecords, final int numberOfStreams) {
-        this.maxRecords = maxRecords;
-        this.numberOfStreams = numberOfStreams;
-        numRecordsEmitted = 0;
+  public SpeedBenchmarkGeneratorIterator(final long maxRecords, final int numberOfStreams) {
+    this.maxRecords = maxRecords;
+    this.numberOfStreams = numberOfStreams;
+    numRecordsEmitted = 0;
+  }
+
+  @CheckForNull
+  @Override
+  protected AirbyteMessage computeNext() {
+    if (numRecordsEmitted == maxRecords) {
+      return endOfData();
     }
 
-    @CheckForNull
-    @Override
-    protected AirbyteMessage computeNext() {
-        if (numRecordsEmitted == maxRecords) {
-            return endOfData();
-        }
+    numRecordsEmitted++;
 
-        numRecordsEmitted++;
-
-        for (int j = 1; j <= 5; ++j) {
-            // do % 10 so that all records are same length.
-            ((ObjectNode) jsonNode).put(fieldBase + j, valueBase + numRecordsEmitted % 10);
-        }
-
-        final var cloned = Jsons.clone(message);
-
-        cloned.getRecord()
-                .withData(jsonNode)
-                .withStream("stream" + random.nextInt(numberOfStreams) + 1);
-        ;
-
-        return cloned;
+    for (int j = 1; j <= 5; ++j) {
+      // do % 10 so that all records are same length.
+      ((ObjectNode) jsonNode).put(fieldBase + j, valueBase + numRecordsEmitted % 10);
     }
+
+    final var cloned = Jsons.clone(message);
+
+    cloned.getRecord()
+        .withData(jsonNode)
+        .withStream("stream" + (random.nextInt(numberOfStreams) + 1));
+
+    return cloned;
+  }
 
 }

@@ -9,7 +9,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
-
 import java.util.ArrayList;
 import java.util.List;
 
