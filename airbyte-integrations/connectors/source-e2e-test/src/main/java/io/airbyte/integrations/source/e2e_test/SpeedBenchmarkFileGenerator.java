@@ -27,7 +27,7 @@ public class SpeedBenchmarkFileGenerator {
   }
 
   private static SpeedBenchmark5ColumnGeneratorIterator getGenerator() {
-    return new SpeedBenchmark5ColumnGeneratorIterator(24_000_000, 1);
+    return new SpeedBenchmark5ColumnGeneratorIterator(24_000_000, 1, 1);
   }
 
   /**

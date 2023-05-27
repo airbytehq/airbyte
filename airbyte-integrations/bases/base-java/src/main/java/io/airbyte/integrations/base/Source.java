@@ -9,6 +9,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.util.function.Consumer;
 
 public interface Source extends Integration {
 
@@ -35,5 +36,15 @@ public interface Source extends Integration {
    * @throws Exception - any exception.
    */
   AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception;
+
+  default void read(final JsonNode config,
+                    final ConfiguredAirbyteCatalog catalog,
+                    final JsonNode state,
+                    final Consumer<AirbyteMessage> outputRecordCollector)
+      throws Exception {
+    try (final AutoCloseableIterator<AirbyteMessage> messageIterator = read(config, catalog, state)) {
+      messageIterator.forEachRemaining(outputRecordCollector);
+    }
+  }
 
 }

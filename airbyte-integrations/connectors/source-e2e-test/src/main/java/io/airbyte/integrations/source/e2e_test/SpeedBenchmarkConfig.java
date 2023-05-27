@@ -15,7 +15,8 @@ import java.util.List;
 public record SpeedBenchmarkConfig(SpeedBenchmarkConfig.SchemaType schemaType,
                                    SpeedBenchmarkConfig.TerminationCondition terminationCondition,
                                    long maxRecords,
-                                   int streamCount) {
+                                   int streamCount,
+                                   int threadCount) {
 
   private static final String FIVE_STRING_COLUMNS_SCHEMA = """
                                                                {
@@ -85,7 +86,8 @@ public record SpeedBenchmarkConfig(SpeedBenchmarkConfig.SchemaType schemaType,
         SchemaType.valueOf(config.get("schema").asText()),
         terminationCondition,
         terminationCondition == TerminationCondition.MAX_RECORDS ? config.get("terminationCondition").get("max").asLong() : 0,
-        config.has("stream_count") ? config.get("stream_count").asInt() : 1);
+        config.has("stream_count") ? config.get("stream_count").asInt() : 1,
+        config.has("thread_count") ? config.get("thread_count").asInt() : 1);
   }
 
   public AirbyteCatalog getCatalog() {

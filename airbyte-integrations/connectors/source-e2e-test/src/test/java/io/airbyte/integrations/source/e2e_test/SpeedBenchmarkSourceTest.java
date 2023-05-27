@@ -47,6 +47,7 @@ class SpeedBenchmarkSourceTest {
       SchemaType.FIVE_STRING_COLUMNS,
       TerminationCondition.MAX_RECORDS,
       100,
+      1,
       1);
   public static final String SCHEMA = """
                                           {

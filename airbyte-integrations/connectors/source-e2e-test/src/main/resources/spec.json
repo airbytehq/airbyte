@@ -243,6 +243,14 @@
             "min" : 1,
             "max" : 5000,
             "default" : 1
+          },
+          "thread_count": {
+            "title": "Number of Threads",
+            "description": "number of threads to use to generate records",
+            "type": "integer",
+            "min" : 1,
+            "max" : 100,
+            "default" : 1
           }
         }
       }
