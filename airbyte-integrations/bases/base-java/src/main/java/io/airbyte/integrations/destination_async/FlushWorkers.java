@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination_async;
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
 import io.airbyte.integrations.destination_async.state.FlushFailure;
+import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Map;
@@ -61,15 +62,18 @@ public class FlushWorkers implements AutoCloseable {
   private final FlushFailure flushFailure;
 
   private final AtomicBoolean isClosing;
+  private final GlobalAsyncStateManager stateManager;
 
   public FlushWorkers(final BufferDequeue bufferDequeue,
                       final DestinationFlushFunction flushFunction,
                       final Consumer<AirbyteMessage> outputRecordCollector,
-                      final FlushFailure flushFailure) {
+                      final FlushFailure flushFailure,
+                      final GlobalAsyncStateManager stateManager) {
     this.bufferDequeue = bufferDequeue;
-    flusher = flushFunction;
     this.outputRecordCollector = outputRecordCollector;
     this.flushFailure = flushFailure;
+    this.stateManager = stateManager;
+    flusher = flushFunction;
     debugLoop = Executors.newSingleThreadScheduledExecutor();
     supervisorThread = Executors.newScheduledThreadPool(1);
     workerPool = Executors.newFixedThreadPool(5);
@@ -122,6 +126,8 @@ public class FlushWorkers implements AutoCloseable {
     }
     log.info("Closing flush workers -- all buffers flushed");
 
+    // before shutting down the supervisor, flush all state.
+    stateManager.flushStates().forEach(outputRecordCollector);
     supervisorThread.shutdown();
     final var supervisorShut = supervisorThread.awaitTermination(5L, TimeUnit.MINUTES);
     log.info("Closing flush workers -- Supervisor shutdown status: {}", supervisorShut);
