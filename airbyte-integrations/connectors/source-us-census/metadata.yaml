@@ -14,5 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/us-census
+  documentationUrl: https://docs.airbyte.com/integrations/sources/us-census
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"
