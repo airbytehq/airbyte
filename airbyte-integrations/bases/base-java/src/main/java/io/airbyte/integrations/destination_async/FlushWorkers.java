@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination_async;
 
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination_async.buffers.BufferDequeue;
 import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
 import io.airbyte.integrations.destination_async.state.FlushFailure;
@@ -200,7 +201,10 @@ public class FlushWorkers implements AutoCloseable {
               AirbyteFileUtils.byteCountToDisplaySize(batch.getSizeInBytes()));
 
           flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
-          batch.flushStates(stateIdToCount).forEach(outputRecordCollector);
+          batch.flushStates(stateIdToCount)
+              .stream()
+              .map(partial -> Jsons.deserialize(partial.getSerialized(), AirbyteMessage.class))
+              .forEach(outputRecordCollector);
         }
 
         log.info("Flush Worker ({}) -- Worker finished flushing. Current queue size: {}",

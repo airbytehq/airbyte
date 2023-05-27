@@ -15,6 +15,7 @@ import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.integrations.destination_async.buffers.BufferEnqueue;
 import io.airbyte.integrations.destination_async.buffers.BufferManager;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.integrations.destination_async.state.FlushFailure;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -118,8 +119,9 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
         });
   }
 
-  private Optional<AirbyteMessage> deserializeAirbyteMessage(final String messageString) {
-    final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(messageString, AirbyteMessage.class);
+  private Optional<PartialAirbyteMessage> deserializeAirbyteMessage(final String messageString) {
+    final Optional<PartialAirbyteMessage> messageOptional = Jsons.tryDeserialize(messageString, PartialAirbyteMessage.class)
+        .map(partial -> partial.withSerialized(messageString));
     if (messageOptional.isPresent()) {
       return messageOptional;
     } else {
@@ -195,7 +197,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     }
   }
 
-  private void validateRecord(final AirbyteMessage message) {
+  private void validateRecord(final PartialAirbyteMessage message) {
     final StreamDescriptor streamDescriptor = new StreamDescriptor()
         .withNamespace(message.getRecord().getNamespace())
         .withName(message.getRecord().getStream());
@@ -207,19 +209,19 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     trackIsValidRecord(message, streamDescriptor);
   }
 
-  private void trackIsValidRecord(final AirbyteMessage message, final StreamDescriptor streamDescriptor) {
+  private void trackIsValidRecord(final PartialAirbyteMessage message, final StreamDescriptor streamDescriptor) {
     // todo (cgardens) - is valid should also move inside the tracker.
     try {
 
-      if (!isValidRecord.apply(message.getRecord().getData())) {
-        ignoredRecordsTracker.addRecord(streamDescriptor);
-      }
+      // if (!isValidRecord.apply(message.getRecord().getData())) {
+      // ignoredRecordsTracker.addRecord(streamDescriptor);
+      // }
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private static void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final AirbyteMessage message) {
+  private static void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final PartialAirbyteMessage message) {
     throw new IllegalArgumentException(
         String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s , \nmessage: %s",
             Jsons.serialize(catalog), Jsons.serialize(message)));
