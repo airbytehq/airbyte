@@ -50,11 +50,22 @@ public class ContinuousFeedConfig {
   private final long maxMessages;
   private final Optional<Long> messageIntervalMs;
 
+  private final Long emitStateEveryN; // null means never emit state.
+
   public ContinuousFeedConfig(final JsonNode config) throws JsonValidationException {
-    this.seed = parseSeed(config);
-    this.mockCatalog = parseMockCatalog(config);
-    this.maxMessages = parseMaxMessages(config);
-    this.messageIntervalMs = parseMessageIntervalMs(config);
+    seed = parseSeed(config);
+    mockCatalog = parseMockCatalog(config);
+    maxMessages = parseMaxMessages(config);
+    messageIntervalMs = parseMessageIntervalMs(config);
+    emitStateEveryN = parseEmitStateEveryN(config);
+  }
+
+  private static Long parseEmitStateEveryN(final JsonNode config) {
+    if (config.has("emit_state_every_n") && !config.get("emit_state_every_n").isLong()) {
+      return config.get("emit_state_every_n").asLong();
+    } else {
+      return null;
+    }
   }
 
   static long parseSeed(final JsonNode config) {
@@ -161,6 +172,10 @@ public class ContinuousFeedConfig {
     return messageIntervalMs;
   }
 
+  public Optional<Long> getEmitStateEveryN() {
+    return Optional.ofNullable(emitStateEveryN);
+  }
+
   @Override
   public String toString() {
     return String.format("%s{maxMessages=%d, seed=%d, messageIntervalMs=%s, mockCatalog=%s}",
@@ -176,10 +191,10 @@ public class ContinuousFeedConfig {
     if (!(other instanceof final ContinuousFeedConfig that)) {
       return false;
     }
-    return this.maxMessages == that.maxMessages
-        && this.seed == that.seed
-        && this.messageIntervalMs.equals(that.messageIntervalMs)
-        && this.mockCatalog.equals(that.mockCatalog);
+    return maxMessages == that.maxMessages
+        && seed == that.seed
+        && messageIntervalMs.equals(that.messageIntervalMs)
+        && mockCatalog.equals(that.mockCatalog);
   }
 
   @Override
