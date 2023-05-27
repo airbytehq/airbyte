@@ -300,9 +300,12 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
         name="check_connector_image_does_not_exist_result", status=StepStatus.SUCCESS
     )
 
+    # have output_artifact.values return []
     built_connector_platform = mocker.Mock()
-    publish.builds.run_connector_build.return_value.run.return_value = mocker.Mock(
-        name="build_connector_for_publish_result", status=build_step_status, output_artifact=[built_connector_platform]
+    built_connector_platform.values.return_value = ["linux/amd64"]
+
+    publish.builds.run_connector_build.return_value = mocker.Mock(
+        name="build_connector_for_publish_result", status=build_step_status, output_artifact=built_connector_platform
     )
 
     publish.PushConnectorImageToRegistry.return_value.run.return_value = mocker.Mock(
@@ -327,10 +330,9 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
     steps_to_run = [
         publish.metadata.MetadataValidation.return_value.run,
         publish.CheckConnectorImageDoesNotExist.return_value.run,
-        publish.builds.run_connector_build.return_value.run,
+        publish.builds.run_connector_build,
         publish.PushConnectorImageToRegistry.return_value.run,
         publish.PullConnectorImageFromRegistry.return_value.run,
-        publish.UploadSpecToCache.return_value.run,
     ]
 
     if not pre_release:
@@ -341,7 +343,7 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
             assert len(report.steps_results) == len(context.report.steps_results)
 
             previous_steps = steps_to_run[:i]
-            for step_ran in previous_steps:
+            for k, step_ran in enumerate(previous_steps):
                 step_ran.assert_called_once()
                 step_ran.return_value
 
@@ -350,7 +352,7 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
                 step_to_run.assert_not_called()
             break
     if build_step_status is StepStatus.SUCCESS:
-        publish.PushConnectorImageToRegistry.return_value.run.assert_called_once_with([built_connector_platform])
+        publish.PushConnectorImageToRegistry.return_value.run.assert_called_once_with(["linux/amd64"])
     else:
         publish.PushConnectorImageToRegistry.return_value.run.assert_not_called()
         publish.PullConnectorImageFromRegistry.return_value.run.assert_not_called()

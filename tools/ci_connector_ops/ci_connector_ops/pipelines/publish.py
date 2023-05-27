@@ -264,6 +264,7 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
                 metadata_upload_results = await metadata_upload_step.run()
                 results.append(metadata_upload_results)
 
+
             # Exit early if the connector image already exists or has failed to build
             if check_connector_image_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
