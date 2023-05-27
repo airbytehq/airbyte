@@ -115,7 +115,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
             validateRecord(message);
           }
 
-          bufferEnqueue.addRecord(message, sizeInBytes * 10);
+          bufferEnqueue.addRecord(message, sizeInBytes);
         });
   }
 

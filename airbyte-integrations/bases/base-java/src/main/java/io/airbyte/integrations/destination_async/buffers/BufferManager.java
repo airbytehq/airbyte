@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination_async.buffers;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.integrations.destination_async.AirbyteFileUtils;
 import io.airbyte.integrations.destination_async.FlushWorkers;
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
@@ -71,8 +72,8 @@ public class BufferManager {
 
     queueInfo
         .append(String.format("  Global Mem Manager -- max: %s, allocated: %s (%s MB), %% used: %s",
-            FileUtils.byteCountToDisplaySize(memoryManager.getMaxMemoryBytes()),
-            FileUtils.byteCountToDisplaySize(memoryManager.getCurrentMemoryBytes()),
+            AirbyteFileUtils.byteCountToDisplaySize(memoryManager.getMaxMemoryBytes()),
+            AirbyteFileUtils.byteCountToDisplaySize(memoryManager.getCurrentMemoryBytes()),
             (double) memoryManager.getCurrentMemoryBytes() / 1024 / 1024,
             (double) memoryManager.getCurrentMemoryBytes() / memoryManager.getMaxMemoryBytes()))
         .append(System.lineSeparator());
@@ -81,7 +82,7 @@ public class BufferManager {
       final var queue = entry.getValue();
       queueInfo.append(
           String.format("  Queue name: %s, num records: %d, num bytes: %s",
-              entry.getKey().getName(), queue.size(), FileUtils.byteCountToDisplaySize(queue.getCurrentMemoryUsage())))
+              entry.getKey().getName(), queue.size(), AirbyteFileUtils.byteCountToDisplaySize(queue.getCurrentMemoryUsage())))
           .append(System.lineSeparator());
     }
     log.info(queueInfo.toString());
