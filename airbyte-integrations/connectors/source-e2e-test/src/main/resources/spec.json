@@ -235,6 +235,14 @@
                 }
               }
             ]
+          },
+          "stream_number": {
+            "title": "Number of Streams",
+            "description": "number of streams to emit records to",
+            "type": "integer",
+            "min" : 1,
+            "max" : 60000,
+            "default" : 1
           }
         }
       }

@@ -46,7 +46,8 @@ class SpeedBenchmarkSourceTest {
   public static final SpeedBenchmarkConfig CONFIG = new SpeedBenchmarkConfig(
       SchemaType.FIVE_STRING_COLUMNS,
       TerminationCondition.MAX_RECORDS,
-      100);
+      100,
+      1);
   public static final String SCHEMA = """
                                           {
                                                 "type": "object",

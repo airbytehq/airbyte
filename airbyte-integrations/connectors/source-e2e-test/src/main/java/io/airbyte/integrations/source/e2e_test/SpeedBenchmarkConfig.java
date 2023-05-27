@@ -9,11 +9,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public record SpeedBenchmarkConfig(SpeedBenchmarkConfig.SchemaType schemaType,
                                    SpeedBenchmarkConfig.TerminationCondition terminationCondition,
-                                   long maxRecords) {
+                                   long maxRecords,
+                                   int streamNumber) {
 
   private static final String FIVE_STRING_COLUMNS_SCHEMA = """
                                                                {
@@ -38,6 +41,12 @@ public record SpeedBenchmarkConfig(SpeedBenchmarkConfig.SchemaType schemaType,
                                                                    }
                                                            """;
 
+  private static final AirbyteStream BASE_STREAM = new AirbyteStream()
+      .withJsonSchema(Jsons.deserialize(FIVE_STRING_COLUMNS_SCHEMA))
+      .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
+
+  private static final String STREAM_PREFIX = "stream";
+
   private static final AirbyteCatalog FIVE_STRING_COLUMNS_CATALOG = new AirbyteCatalog().withStreams(List.of(
       new AirbyteStream().withName("stream1").withJsonSchema(Jsons.deserialize(FIVE_STRING_COLUMNS_SCHEMA))
           .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH))));
@@ -52,8 +61,16 @@ public record SpeedBenchmarkConfig(SpeedBenchmarkConfig.SchemaType schemaType,
       this.catalog = catalog;
     }
 
-    public AirbyteCatalog getCatalog() {
-      return catalog;
+    public AirbyteCatalog getCatalog(final int streamNumber) {
+      return generateCatalog(streamNumber);
+    }
+
+    private AirbyteCatalog generateCatalog(final int streamNumber) {
+      final List<AirbyteStream> streams = new ArrayList<>();
+      for (int i = 1; i <= streamNumber; i++) {
+        streams.add(Jsons.clone(BASE_STREAM).withName(STREAM_PREFIX + i));
+      }
+      return new AirbyteCatalog().withStreams(streams);
     }
 
   }
@@ -68,11 +85,12 @@ public record SpeedBenchmarkConfig(SpeedBenchmarkConfig.SchemaType schemaType,
     return new SpeedBenchmarkConfig(
         SchemaType.valueOf(config.get("schema").asText()),
         terminationCondition,
-        terminationCondition == TerminationCondition.MAX_RECORDS ? config.get("terminationCondition").get("max").asLong() : 0);
+        terminationCondition == TerminationCondition.MAX_RECORDS ? config.get("terminationCondition").get("max").asLong() : 0,
+        config.has("stream_number") ? config.get("stream_number").asInt() : 1);
   }
 
   public AirbyteCatalog getCatalog() {
-    return schemaType.getCatalog();
+    return schemaType.getCatalog(streamNumber);
   }
 
 }

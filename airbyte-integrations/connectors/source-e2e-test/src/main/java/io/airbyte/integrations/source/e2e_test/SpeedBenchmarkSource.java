@@ -40,7 +40,8 @@ public class SpeedBenchmarkSource extends BaseConnector implements Source {
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode jsonConfig, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     final SpeedBenchmarkConfig sourceConfig = SpeedBenchmarkConfig.parseFromConfig(jsonConfig);
-    return AutoCloseableIterators.fromIterator(new SpeedBenchmarkGeneratorIterator(sourceConfig.maxRecords()));
+    return AutoCloseableIterators.fromIterator(new SpeedBenchmarkGeneratorIterator(sourceConfig.maxRecords(),
+            jsonConfig.has("stream_number") ? jsonConfig.get("stream_number").asInt() : 1));
   }
 
 }
