@@ -6,6 +6,10 @@ package io.airbyte.integrations.destination_async;
 
 import java.text.DecimalFormat;
 
+/**
+ * Replicate the behavior of {@link org.apache.commons.io.FileUtils} to match the proclivities of
+ * Davin and Charles. Courteously written by ChatGPT.
+ */
 public class AirbyteFileUtils {
 
   private static final double ONE_KB = 1024;
@@ -14,6 +18,13 @@ public class AirbyteFileUtils {
   private static final double ONE_TB = ONE_GB * 1024;
   private static final DecimalFormat df = new DecimalFormat("#.##");
 
+  /**
+   * Replicate the behavior of {@link org.apache.commons.io.FileUtils} but instead of rounding down to
+   * the nearest whole number, it rounds to two decimal places.
+   *
+   * @param sizeInBytes size in bytes
+   * @return human-readable size
+   */
   public static String byteCountToDisplaySize(final long sizeInBytes) {
 
     if (sizeInBytes < ONE_KB) {

@@ -30,6 +30,8 @@ public class BufferManager {
   private final BufferEnqueue bufferEnqueue;
   private final BufferDequeue bufferDequeue;
   private final GlobalMemoryManager memoryManager;
+
+  private final GlobalAsyncStateManager stateManager;
   private final ScheduledExecutorService debugLoop;
 
   public BufferManager() {
@@ -41,12 +43,16 @@ public class BufferManager {
     maxMemory = memoryLimit;
     LOGGER.info("Memory available to the JVM {}", FileUtils.byteCountToDisplaySize(maxMemory));
     memoryManager = new GlobalMemoryManager(maxMemory);
+    this.stateManager = new GlobalAsyncStateManager(memoryManager);
     buffers = new ConcurrentHashMap<>();
-    final GlobalAsyncStateManager stateManager = new GlobalAsyncStateManager(memoryManager);
     bufferEnqueue = new BufferEnqueue(memoryManager, buffers, stateManager);
     bufferDequeue = new BufferDequeue(memoryManager, buffers, stateManager);
     debugLoop = Executors.newSingleThreadScheduledExecutor();
     debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 10, TimeUnit.SECONDS);
+  }
+
+  public GlobalAsyncStateManager getStateManager() {
+    return stateManager;
   }
 
   public BufferEnqueue getBufferEnqueue() {
