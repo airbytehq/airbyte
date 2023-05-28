@@ -5,35 +5,29 @@ The Kyriba source retrieves data from [Kyriba](https://kyriba.com/) using their 
 
 ## Setup Guide
 
-### Requirements
+### Prerequisites
+
+To set up the Kyriba Source connector in Airbyte, you will need the following:
+
 - Kyriba domain
-- Username 
+- Username
 - Password
 
-### Obtain the required information from Kyriba
+You have to reach out to Kyriba to obtain these credentials or access them from your existing account. Refer to the [Kyriba Support](https://www.kyriba.com/company/contact/).
 
-To obtain the Kyriba domain, username, and password, follow these steps:
+### Step-by-Step Configuration
 
-1. Log in to your Kyriba account at [https://signin.kyriba.com/login](https://signin.kyriba.com/login).
+1. **Kyriba domain:** Enter the domain of your Kyriba instance. It should follow the pattern `subdomain.kyriba.com`. You can find this in your browser's address bar when you are logged into your Kyriba instance. The domain will look like `https://yoursubdomain.kyriba.com`, where `yoursubdomain` should be replaced with your actual subdomain.
 
-2. Click on your username in the top-right corner and select **Profile** from the drop-down menu.
+2. **Username:** Enter your Kyriba account username that will be used for API access. This is the same username you use to log into your Kyriba account.
 
-3. Under the **API Access** section, take note of the following:
-   - Kyriba Domain: This is the URL used to access your Kyriba account. For example, `demo.kyriba.com`.
-   - Username: Your Kyriba account's username, used for API authentication.
-   - Password: Your Kyriba account's password, used for API authentication.
+3. **Password:** Enter your Kyriba account password associated with the provided username. This is the same password you use to log into your Kyriba account.
 
-If you still have difficulty obtaining the required information, you can reach out to Kyriba support by creating a ticket in the [Kyriba Client support portal](https://login.kyriba.com/kyribaservice/login.asp).
+4. **Start Date:** Specify the start date for the data synchronization between Airbyte and Kyriba. Enter the date in the format `YYYY-MM-DD`. This date will represent the earliest records you want to retrieve from Kyriba.
 
-### Configure the Kyriba Source in Airbyte
+5. **End Date (optional):** Specify the end date for the data synchronization between Airbyte and Kyriba. Enter the date in the format `YYYY-MM-DD`. This date will represent the latest records you want to retrieve from Kyriba. If left empty, the sync will run up to the current date.
 
-Once you have obtained the required information from Kyriba, enter it into the Airbyte Connector configuration form:
-
-- **Domain**: Enter the Kyriba domain you obtained in the API Access section of your Kyriba profile.
-- **Username**: Enter the Kyriba username you obtained in the API Access section of your Kyriba profile.
-- **Password**: Enter the Kyriba password you obtained in the API Access section of your Kyriba profile.
-- **Start Date**: Enter the date the sync should start from, in the format `YYYY-MM-DD`. For example, `2021-01-10`.
-- **End Date**: (Optional) Enter the date the sync should end. If left empty, the sync will run up to the current date. The format is `YYYY-MM-DD`. For example, `2022-03-01`.
+Once you have filled in the required fields, you can proceed to set up the connection between Airbyte and your Kyriba instance.
 
 ## Supported Streams
 - [Accounts](https://developer.kyriba.com/site/global/apis/accounts/index.gsp)
