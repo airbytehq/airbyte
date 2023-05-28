@@ -62,22 +62,61 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 The Looker connector should not run into Looker API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
-## Getting started
+## Setup Guide
 
-### Requirements
+To set up the Looker Source connector in Airbyte, you'll need:
 
-To set up the Looker source connector, you will need the following:
+1. Domain
+2. Client ID
+3. Client Secret
 
-* Client ID
-* Client Secret
-* Domain
+### Obtaining the Domain, Client ID, and Client Secret:
 
-### Setup guide
+#### Domain
 
-#### Obtain the Client ID and Client Secret
+The Domain is the URL for your Looker account. It is generally formatted as `<your-domain>.looker.com` or `looker.<your-domain>.com` (e.g., `domainname.looker.com` or `looker.clientname.com`). It could also be an IP address (e.g., `123.123.124.123:8000`).
 
-1. Navigate to the Admin section in your Looker instance. 
-2. Select Users and click on the User for which you want to generate an API3 key.
-3. Click on Edit User.
-4. Scroll down to the API3 Keys section and click on Create API3 Key.
-5. Give your API3 key a description (optional), ensure it has the appropriate permissions, and click Generate API3 Key.
+#### Client ID and Client Secret (API3 Key)
+
+API3 keys are used to authenticate requests to Looker API. To generate a new API3 key, follow these steps:
+
+1. Log in to your **Looker account** with an admin user.
+2. Navigate to **Admin** in the top right corner of the main navigation bar. It will drop down a list.
+3. Select **Users** from the list.
+4. Find and click on the user for which you want to generate the API3 key. This takes you to the user's account page.
+5. Scroll down to the **API3 Keys** section.
+6. If the user has no existing API3 keys, click **New API3 Key** to create one.
+7. The **Client ID** and **Client Secret** can be found in the **API3 Keys** section. Copy and store these securely, as the **Client Secret** is only shown once.
+
+For more information about API3 keys, refer to the official [Looker User documentation](https://docs.looker.com/admin-options/settings/users#api3_keys).
+
+### Connector Configuration
+
+With the required information, you can now configure the Looker Source connector in the Airbyte configuration form.
+
+1. Enter the obtained **Domain** in the `Domain` field.
+2. Enter the obtained **Client ID** in the `Client ID` field.
+3. Enter the obtained **Client Secret** in the `Client Secret` field.
+
+You can also specify an optional list of Look IDs to run by entering one or more comma-separated Look IDs in the `Look IDs to Run` field.
+
+After entering the necessary information, click the Save button to complete the Looker Source connector setup.
+
+Please note that you may also test the connector configuration by clicking on the `Test Connector` button before saving the configuration.
+
+## CHANGELOG
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.2.8 | 2022-12-07 | [20182](https://github.com/airbytehq/airbyte/pull/20182) | Fix schema transformation issue |
+| 0.2.7 | 2022-01-24 | [9609](https://github.com/airbytehq/airbyte/pull/9609) | Migrate to native CDK and fixing of intergration tests. |
+| 0.2.6 | 2021-12-07 | [8578](https://github.com/airbytehq/airbyte/pull/8578) | Update titles and descriptions. |
+| 0.2.5 | 2021-10-27 | [7284](https://github.com/airbytehq/airbyte/pull/7284) | Migrate Looker source to CDK structure, add SAT testing. |
+| 0.2.4 | 2021-06-25 | [3911](https://github.com/airbytehq/airbyte/pull/3911) | Add `run_look` endpoint. |
+| 0.2.3 | 2021-06-22 | [3587](https://github.com/airbytehq/airbyte/pull/3587) | Add support for self-hosted instances. |
+| 0.2.2 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` for kubernetes support. |
+| 0.2.1 | 2021-04-02 | [2726](https://github.com/airbytehq/airbyte/pull/2726) | Fix connector base versioning. |
+| 0.2.0 | 2021-03-09 | [2238](https://github.com/airbytehq/airbyte/pull/2238) | Allow future / unknown properties in the protocol. |
+| 0.1.1 | 2021-01-27 | [1857](https://github.com/airbytehq/airbyte/pull/1857) | Fix failed CI tests. |
+| 0.1.0 | 2020-12-24 | [1441](https://github.com/airbytehq/airbyte/pull/1441) | Add looker connector. |
+
