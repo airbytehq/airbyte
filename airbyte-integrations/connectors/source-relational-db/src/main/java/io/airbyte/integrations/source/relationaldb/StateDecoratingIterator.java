@@ -137,14 +137,17 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
           if (cursorComparison < 0) {
             // Update the current max cursor only when current max cursor < cursor candidate from the message
             if (stateEmissionFrequency > 0 && !Objects.equals(currentMaxCursor, initialCursor) && messageIterator.hasNext()) {
-              // Only emit an intermediate state when it is not the first or last record message,
-              // because the last state message will be taken care of in a different branch.
+              // Only create an intermediate state when it is not the first or last record message.
+              // The last state message will be processed seperately.
               intermediateStateMessage = createStateMessage(false, totalRecordCount);
             }
             currentMaxCursor = cursorCandidate;
             currentMaxCursorRecordCount = 1L;
           } else if (cursorComparison == 0) {
             currentMaxCursorRecordCount++;
+          } else if (cursorComparison > 0 && stateEmissionFrequency > 0) {
+            LOGGER.warn("Intermediate state emission feature requires records to be processed in order according to the cursor value. Otherwise, "
+                + "data loss can occur.");
           }
         }
 
@@ -196,7 +199,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
    * @param totalRecordCount count of read messages
    * @return AirbyteMessage which includes information on state of records read so far
    */
-  public AirbyteMessage createStateMessage(final boolean isFinalState, int totalRecordCount) {
+  public AirbyteMessage createStateMessage(final boolean isFinalState, final int totalRecordCount) {
     final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, currentMaxCursor, currentMaxCursorRecordCount);
     final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(pair);
     // logging once every 100 messages to reduce log verbosity

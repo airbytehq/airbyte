@@ -1,0 +1,20 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: db04ecd1-42e7-4115-9cec-95812905c626
+  dockerImageTag: 0.1.6
+  dockerRepository: airbyte/source-retently
+  githubIssueLabel: source-retently
+  icon: retently.svg
+  license: MIT
+  name: Retently
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/retently
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

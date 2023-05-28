@@ -20,7 +20,6 @@ class SimpleLocalFileManager(LocalFileManager):
 
     Much of this code is borrowed from the LocalFileManager in dagster and modified slightly.
 
-    TODO(ben): Remove this once catalogs are live
     https://docs.dagster.io/_modules/dagster/_core/storage/file_manager#local_file_manager
     """
 

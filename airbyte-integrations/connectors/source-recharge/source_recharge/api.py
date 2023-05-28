@@ -8,21 +8,26 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 class RechargeStream(HttpStream, ABC):
-
     primary_key = "id"
     url_base = "https://api.rechargeapps.com/"
 
     limit = 250
     page_num = 1
+    period_in_months = 1  # Slice data request for 1 month
     raise_on_http_errors = True
 
     # regestring the default schema transformation
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
+    def __init__(self, config, **kwargs):
+        super().__init__(**kwargs)
+        self._start_date = config["start_date"]
 
     @property
     def data_path(self):
@@ -42,11 +47,15 @@ class RechargeStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = {"limit": self.limit}
+        params = {
+            "limit": self.limit,
+            "updated_at_min": (stream_slice or {}).get("start_date", self._start_date),
+            "updated_at_max": (stream_slice or {}).get("end_date", self._start_date),
+        }
+
         if next_page_token:
             params.update(next_page_token)
-        if stream_slice:
-            params.update(stream_slice)
+
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -70,14 +79,23 @@ class RechargeStream(HttpStream, ABC):
 
         return super().should_retry(response)
 
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        start_date = (stream_state or {}).get(self.cursor_field, self._start_date) if self.cursor_field else self._start_date
+
+        now = pendulum.now()
+
+        start_date = pendulum.parse(start_date)
+
+        while start_date <= now:
+            end_date = start_date.add(months=self.period_in_months)
+            yield {"start_date": start_date.strftime("%Y-%m-%d %H:%M:%S"), "end_date": end_date.strftime("%Y-%m-%d %H:%M:%S")}
+            start_date = end_date
+
 
 class IncrementalRechargeStream(RechargeStream, ABC):
-
     cursor_field = "updated_at"
-
-    def __init__(self, start_date, **kwargs):
-        super().__init__(**kwargs)
-        self._start_date = pendulum.parse(start_date)
 
     @property
     def state_checkpoint_interval(self):
@@ -88,18 +106,6 @@ class IncrementalRechargeStream(RechargeStream, ABC):
         if current_stream_state.get(self.cursor_field):
             return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
         return {self.cursor_field: latest_benchmark}
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-
-        start_datetime = self._start_date
-        if stream_state.get(self.cursor_field):
-            start_datetime = pendulum.parse(stream_state[self.cursor_field])
-
-        params.update({f"{self.cursor_field}_min": start_datetime.strftime("%Y-%m-%d %H:%M:%S")})
-        return params
 
 
 class Addresses(IncrementalRechargeStream):
@@ -137,10 +143,20 @@ class Metafields(RechargeStream):
     Metafields Stream: https://developer.rechargepayments.com/v1-shopify?python#list-metafields
     """
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = {"limit": self.limit, "owner_resource": (stream_slice or {}).get("owner_resource")}
+        if next_page_token:
+            params.update(next_page_token)
+
+        return params
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         owner_resources = ["customer", "store", "subscription"]
-        for owner in owner_resources:
-            yield from super().read_records(stream_slice={"owner_resource": owner}, **kwargs)
+        yield from [{"owner_resource": owner} for owner in owner_resources]
 
 
 class Onetimes(IncrementalRechargeStream):

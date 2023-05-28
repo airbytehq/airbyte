@@ -1,0 +1,23 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.salesloft.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 41991d12-d4b5-439e-afd0-260a31d4c53f
+  dockerImageTag: 1.1.0
+  dockerRepository: airbyte/source-salesloft
+  githubIssueLabel: source-salesloft
+  icon: salesloft.svg
+  license: MIT
+  name: SalesLoft
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: beta
+  documentationUrl: https://docs.airbyte.com/integrations/sources/salesloft
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

@@ -1,14 +1,14 @@
 name: POC Connectors CI - nightly builds
 
 on:
-  schedule:
-    # 11AM UTC is 12AM CET, 4AM PST.
-    - cron: "0 11 * * *"
+  # schedule:
+  #   # 11AM UTC is 12AM CET, 4AM PST.
+  #   - cron: "0 8 * * *"
   workflow_dispatch:
     inputs:
       runs-on:
         type: string
-        default: large-runner
+        default: dev-large-runner
         required: true
       test-connectors-options:
         default: --concurrency=5 --release-stage=generally_available --release-stage=beta
@@ -20,11 +20,16 @@ jobs:
   test_connectors:
     name: Test connectors ${{ inputs.test-connectors-options || 'Nightly builds GA and Beta connectors' }}
     timeout-minutes: 360 # 6 hours
-    runs-on: ${{ inputs.runs-on || 'large-runner' }}
+    runs-on: ${{ inputs.runs-on || 'dev-large-runner' }}
     steps:
       - name: Get start timestamp
         id: get-start-timestamp
         run: echo "::set-output name=start-timestamp::$(date +%s)"
+      - name: Login to DockerHub
+        run: "docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}"
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
@@ -39,19 +44,20 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
       - name: Install ci-connector-ops package
         run: pip install ./tools/ci_connector_ops\[pipelines]\
       - name: Test connectors
         run: |
           export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-          DAGGER_CLI_COMMIT="f0119bcde82e06731558a8baf70d6e7d271b21d1"
+          DAGGER_CLI_COMMIT="2370d5eb65e511cf7f1611aebaacc6d48cf0907a"
           DAGGER_TMP_BINDIR="/tmp/dagger_${DAGGER_CLI_COMMIT}"
           export _EXPERIMENTAL_DAGGER_CLI_BIN="$DAGGER_TMP_BINDIR/dagger"
           if [ ! -f  "$_EXPERIMENTAL_DAGGER_CLI_BIN" ]; then
-              mkdir -p "$DAGGER_TMP_BINDIR"
-              curl "https://dl.dagger.io/dagger/main/${DAGGER_CLI_COMMIT}/dagger_${DAGGER_CLI_COMMIT}_$(uname -s | tr A-Z a-z)_$(uname -m | sed s/x86_64/amd64/).tar.gz" | tar xvz -C "$DAGGER_TMP_BINDIR"
+            mkdir -p "$DAGGER_TMP_BINDIR"
+            curl "https://dl.dagger.io/dagger/main/${DAGGER_CLI_COMMIT}/dagger_${DAGGER_CLI_COMMIT}_$(uname -s | tr A-Z a-z)_$(uname -m | sed s/x86_64/amd64/).tar.gz" | tar xvz -C "$DAGGER_TMP_BINDIR"
           fi
-          airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} connectors test ${{ inputs.test-connectors-options || '--concurrency=5 --release-stage=generally_available --release-stage=beta' }}
+          airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} connectors ${{ inputs.test-connectors-options || '--concurrency=5 --release-stage=generally_available --release-stage=beta' }} test
         env:
           _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -61,6 +67,5 @@ jobs:
           TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
           CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
-          CI_GIT_REVISION: ${{ github.sha }}
           CI_CONTEXT: "nightly_builds"
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}

@@ -4,6 +4,7 @@
 
 import json
 import re
+import uuid
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass
@@ -17,6 +18,7 @@ import backoff
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from pendulum import Date
 from pydantic import BaseModel
@@ -131,6 +133,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     def model(self) -> CatalogModel:
         return self._model
 
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -165,7 +171,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     profileId=report_info.profile_id,
                     recordType=report_info.record_type,
                     reportDate=report_date,
-                    recordId=metric_object[self.metrics_type_to_id_map[report_info.record_type]],
+                    recordId=metric_object.get(self.metrics_type_to_id_map[report_info.record_type], str(uuid.uuid4())),
                     metric=metric_object,
                 ).dict()
 

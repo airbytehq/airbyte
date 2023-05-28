@@ -10,7 +10,7 @@ This page guides you through setting up the BigQuery destination connector.
 - [A Google Cloud project with BigQuery enabled](https://cloud.google.com/bigquery/docs/quickstarts/query-public-dataset-console)
 - [A BigQuery dataset](https://cloud.google.com/bigquery/docs/quickstarts/quickstart-web-ui#create_a_dataset) to sync data to.
 
-    **Note:** Queries written in BigQuery can only reference datasets in the same physical location. If you plan on combining the data that Airbyte syncs with data from other datasets in your queries, create the datasets in the same location on Google Cloud. For more information, read [Introduction to Datasets](https://cloud.google.com/bigquery/docs/datasets-intro)
+  **Note:** Queries written in BigQuery can only reference datasets in the same physical location. If you plan on combining the data that Airbyte syncs with data from other datasets in your queries, create the datasets in the same location on Google Cloud. For more information, read [Introduction to Datasets](https://cloud.google.com/bigquery/docs/datasets-intro)
 
 - (Required for Airbyte Cloud; Optional for Airbyte Open Source) A Google Cloud [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the [`BigQuery User`](https://cloud.google.com/bigquery/docs/access-control#bigquery) and [`BigQuery Data Editor`](https://cloud.google.com/bigquery/docs/access-control#bigquery) roles and the [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
 
@@ -50,14 +50,14 @@ You can use BigQuery's [`INSERT`](https://cloud.google.com/bigquery/docs/referen
 4. Enter the name for the BigQuery connector.
 5. For **Project ID**, enter your [Google Cloud project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects).
 6. For **Dataset Location**, select the location of your BigQuery dataset.
-    :::warning
-    You cannot change the location later.
-    :::
+   :::warning
+   You cannot change the location later.
+   :::
 7. For **Default Dataset ID**, enter the BigQuery [Dataset ID](https://cloud.google.com/bigquery/docs/datasets#create-dataset).
 8. For **Loading Method**, select [Standard Inserts](#using-insert) or [GCS Staging](#recommended-using-a-google-cloud-storage-bucket).
-    :::tip
-    We recommend using the GCS Staging option.
-    :::
+   :::tip
+   We recommend using the GCS Staging option.
+   :::
 9. For **Service Account Key JSON (Required for cloud, optional for open-source)**, enter the Google Cloud [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
 10. For **Transformation Query Run Type (Optional)**, select **interactive** to have [BigQuery run interactive query jobs](https://cloud.google.com/bigquery/docs/running-queries#queries) or **batch** to have [BigQuery run batch queries](https://cloud.google.com/bigquery/docs/running-queries#batch).
 
@@ -79,9 +79,9 @@ The BigQuery destination connector supports the following [sync modes](https://d
 
 Airbyte outputs each stream into its own table in BigQuery. Each table contains three columns:
 
-* `_airbyte_ab_id`: A UUID assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
-* `_airbyte_emitted_at`: A timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
-* `_airbyte_data`: A JSON blob representing the event data. The column type in BigQuery is `String`.
+- `_airbyte_ab_id`: A UUID assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
+- `_airbyte_emitted_at`: A timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
+- `_airbyte_data`: A JSON blob representing the event data. The column type in BigQuery is `String`.
 
 The output tables in BigQuery are partitioned and clustered by the Time-unit column `_airbyte_emitted_at` at a daily granularity. Partitions boundaries are based on UTC time.
 This is useful to limit the number of partitions scanned when querying these partitioned tables, by using a predicate filter (a `WHERE` clause). Filters on the partitioning column are used to prune the partitions and reduce the query cost. (The parameter **Require partition filter** is not enabled by Airbyte, but you may toggle it by updating the produced tables.)
@@ -95,7 +95,7 @@ Airbyte converts any invalid characters into `_` characters when writing data. H
 ## Data type map
 
 | Airbyte type                        | BigQuery type | BigQuery denormalized type |
-|:------------------------------------|:--------------|:---------------------------|
+| :---------------------------------- | :------------ | :------------------------- |
 | DATE                                | DATE          | DATE                       |
 | STRING (BASE64)                     | STRING        | STRING                     |
 | NUMBER                              | FLOAT         | NUMBER                     |
@@ -129,16 +129,25 @@ Now that you have set up the BigQuery destination connector, check out the follo
 - [Replicate Salesforce data to BigQuery](https://airbyte.com/tutorials/replicate-salesforce-data-to-bigquery)
 - [Partition and cluster BigQuery tables with Airbyte and dbt](https://airbyte.com/tutorials/bigquery-partition-cluster)
 
-
 ## Changelog
 
 ### bigquery
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                  |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
-| 1.2.19  | 2023-03-29 | [#24671](https://github.com/airbytehq/airbyte/pull/24671)  | Fail faster in certain error cases                                                                                       |
-| 1.2.18  | 2023-03-23 | [#24447](https://github.com/airbytehq/airbyte/pull/24447)  | Set the Service Account Key JSON field to always_show: true so that it isn't collapsed into an optional fields section   |
-| 1.2.17  | 2023-03-17 | [#23788](https://github.com/airbytehq/airbyte/pull/23788)  | S3-Parquet: added handler to process null values in arrays                                                               |
+| 1.4.4   | 2023-05-25 | [\#26585](https://github.com/airbytehq/airbyte/pull/26585) | Small tweak in logs for clarity                                                                                          |
+| 1.4.3   | 2023-05-17 | [\#26213](https://github.com/airbytehq/airbyte/pull/26213) | Fix bug in parsing file buffer config count                                                                              |
+| 1.4.2   | 2023-05-10 | [\#25925](https://github.com/airbytehq/airbyte/pull/25925) | Testing update. Normalization tests are now done in the destination container.                                           |
+| 1.4.1   | 2023-05-11 | [\#25993](https://github.com/airbytehq/airbyte/pull/25993) | Internal library update                                                                                                  |
+| 1.4.0   | 2023-04-29 | [\#25570](https://github.com/airbytehq/airbyte/pull/25570) | Internal library update. Bumping version to stay in sync with BigQuery-denormalized.                                     |
+| 1.3.4   | 2023-04-28 | [\#25588](https://github.com/airbytehq/airbyte/pull/25588) | Internal scaffolding change for future development                                                                       |
+| 1.3.3   | 2023-04-27 | [\#25346](https://github.com/airbytehq/airbyte/pull/25346) | Internal code cleanup                                                                                                    |
+| 1.3.1   | 2023-04-20 | [\#25097](https://github.com/airbytehq/airbyte/pull/25097) | Internal scaffolding change for future development                                                                       |
+| 1.3.0   | 2023-04-19 | [\#25287](https://github.com/airbytehq/airbyte/pull/25287) | Add parameter to configure the number of file buffers when GCS is used as the loading method                             |
+| 1.2.20  | 2023-04-12 | [\#25122](https://github.com/airbytehq/airbyte/pull/25122) | Add additional data centers                                                                                              |
+| 1.2.19  | 2023-03-29 | [\#24671](https://github.com/airbytehq/airbyte/pull/24671) | Fail faster in certain error cases                                                                                       |
+| 1.2.18  | 2023-03-23 | [\#24447](https://github.com/airbytehq/airbyte/pull/24447) | Set the Service Account Key JSON field to always_show: true so that it isn't collapsed into an optional fields section   |
+| 1.2.17  | 2023-03-17 | [\#23788](https://github.com/airbytehq/airbyte/pull/23788) | S3-Parquet: added handler to process null values in arrays                                                               |
 | 1.2.16  | 2023-03-10 | [\#23931](https://github.com/airbytehq/airbyte/pull/23931) | Added support for periodic buffer flush                                                                                  |
 | 1.2.15  | 2023-03-10 | [\#23466](https://github.com/airbytehq/airbyte/pull/23466) | Changed S3 Avro type from Int to Long                                                                                    |
 | 1.2.14  | 2023-02-08 | [\#22497](https://github.com/airbytehq/airbyte/pull/22497) | Fixed table already exists error                                                                                         |

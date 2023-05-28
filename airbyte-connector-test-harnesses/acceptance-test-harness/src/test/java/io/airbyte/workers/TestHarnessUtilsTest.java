@@ -12,7 +12,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.config.StandardSyncInput;
+import io.airbyte.configoss.StandardSyncInput;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.test_utils.TestConfigHelpers;

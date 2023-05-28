@@ -18,8 +18,10 @@ from source_hubspot.streams import (
     ContactLists,
     Contacts,
     ContactsListMemberships,
+    CustomObject,
     DealPipelines,
     Deals,
+    DealsArchived,
     EmailEvents,
     EmailSubscriptions,
     Engagements,
@@ -30,6 +32,7 @@ from source_hubspot.streams import (
     EngagementsTasks,
     Forms,
     FormSubmissions,
+    Goals,
     LineItems,
     MarketingEmails,
     Owners,
@@ -92,6 +95,7 @@ class SourceHubspot(AbstractSource):
             ContactsListMemberships(**common_params),
             DealPipelines(**common_params),
             Deals(**common_params),
+            DealsArchived(**common_params),
             EmailEvents(**common_params),
             EmailSubscriptions(**common_params),
             Engagements(**common_params),
@@ -102,6 +106,7 @@ class SourceHubspot(AbstractSource):
             EngagementsTasks(**common_params),
             Forms(**common_params),
             FormSubmissions(**common_params),
+            Goals(**common_params),
             LineItems(**common_params),
             MarketingEmails(**common_params),
             Owners(**common_params),
@@ -115,7 +120,7 @@ class SourceHubspot(AbstractSource):
 
         api = API(credentials=credentials)
         if api.is_oauth2():
-            authenticator = API(credentials=credentials).get_authenticator()
+            authenticator = api.get_authenticator()
             granted_scopes = self.get_granted_scopes(authenticator)
             self.logger.info(f"The following scopes were granted: {granted_scopes}")
 
@@ -132,4 +137,13 @@ class SourceHubspot(AbstractSource):
             self.logger.info("No scopes to grant when authenticating with API key.")
             available_streams = streams
 
+        available_streams.extend(self.get_custom_object_streams(api=api, common_params=common_params))
+
         return available_streams
+
+    def get_custom_object_streams(self, api: API, common_params: Mapping[str, Any]):
+        schemas = api.get_custom_object_schemas()
+        streams = []
+        for entity, schema in schemas.items():
+            streams.append(CustomObject(entity=entity, schema=schema, **common_params))
+        return streams

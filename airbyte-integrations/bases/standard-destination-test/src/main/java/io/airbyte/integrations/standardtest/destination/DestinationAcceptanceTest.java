@@ -26,14 +26,14 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.config.JobGetSpecConfig;
-import io.airbyte.config.OperatorDbt;
-import io.airbyte.config.StandardCheckConnectionInput;
-import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.WorkerDestinationConfig;
-import io.airbyte.config.init.LocalDefinitionsProvider;
+import io.airbyte.configoss.JobGetSpecConfig;
+import io.airbyte.configoss.OperatorDbt;
+import io.airbyte.configoss.StandardCheckConnectionInput;
+import io.airbyte.configoss.StandardCheckConnectionOutput;
+import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
+import io.airbyte.configoss.StandardDestinationDefinition;
+import io.airbyte.configoss.WorkerDestinationConfig;
+import io.airbyte.configoss.init.LocalDefinitionsProvider;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
@@ -125,6 +125,17 @@ public abstract class DestinationAcceptanceTest {
    * @return docker image name
    */
   protected abstract String getImageName();
+
+  protected boolean supportsInDestinationNormalization() {
+    return false;
+  }
+
+  protected Map<String, String> inDestinationNormalizationFlags(final boolean shouldNormalize) {
+    if (shouldNormalize && supportsInDestinationNormalization()) {
+      return Map.of("NORMALIZATION_TECHNIQUE", "LEGACY");
+    }
+    return Collections.emptyMap();
+  }
 
   private String getImageNameWithoutTag() {
     return getImageName().contains(":") ? getImageName().split(":")[0] : getImageName();
@@ -1340,7 +1351,7 @@ public abstract class DestinationAcceptanceTest {
 
     final AirbyteDestination destination = getDestination();
 
-    destination.start(destinationConfig, jobRoot);
+    destination.start(destinationConfig, jobRoot, inDestinationNormalizationFlags(runNormalization));
     messages.forEach(
         message -> Exceptions.toRuntime(() -> destination.accept(convertProtocolObject(message, io.airbyte.protocol.models.AirbyteMessage.class))));
     destination.notifyEndOfInput();
@@ -1352,7 +1363,7 @@ public abstract class DestinationAcceptanceTest {
 
     destination.close();
 
-    if (!runNormalization) {
+    if (!runNormalization || (runNormalization && supportsInDestinationNormalization())) {
       return destinationOutput;
     }
 
@@ -1543,7 +1554,7 @@ public abstract class DestinationAcceptanceTest {
     final AirbyteDestination destination = getDestination();
 
     // Start destination
-    destination.start(destinationConfig, jobRoot);
+    destination.start(destinationConfig, jobRoot, Collections.emptyMap());
 
     final AtomicInteger currentStreamNumber = new AtomicInteger(0);
     final AtomicInteger currentRecordNumberForStream = new AtomicInteger(0);

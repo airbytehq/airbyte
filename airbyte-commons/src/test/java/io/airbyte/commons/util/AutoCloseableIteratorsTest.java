@@ -26,7 +26,7 @@ class AutoCloseableIteratorsTest {
   @Test
   void testFromIterator() throws Exception {
     final VoidCallable onClose = mock(VoidCallable.class);
-    final AutoCloseableIterator<String> iterator = AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose);
+    final AutoCloseableIterator<String> iterator = AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b", "c"), onClose, null);
 
     assertNext(iterator, "a");
     assertNext(iterator, "b");
@@ -42,7 +42,7 @@ class AutoCloseableIteratorsTest {
     final Stream<String> stream = Stream.of("a", "b", "c");
     stream.onClose(() -> isClosed.set(true));
 
-    final AutoCloseableIterator<String> iterator = AutoCloseableIterators.fromStream(stream);
+    final AutoCloseableIterator<String> iterator = AutoCloseableIterators.fromStream(stream, null);
 
     assertNext(iterator, "a");
     assertNext(iterator, "b");
@@ -62,7 +62,7 @@ class AutoCloseableIteratorsTest {
     final VoidCallable onClose1 = mock(VoidCallable.class);
     final VoidCallable onClose2 = mock(VoidCallable.class);
 
-    final AutoCloseableIterator<Integer> iterator = AutoCloseableIterators.fromIterator(MoreIterators.of(1, 2, 3), onClose1);
+    final AutoCloseableIterator<Integer> iterator = AutoCloseableIterators.fromIterator(MoreIterators.of(1, 2, 3), onClose1, null);
     final AutoCloseableIterator<Integer> iteratorWithExtraClose = AutoCloseableIterators.appendOnClose(iterator, onClose2);
 
     iteratorWithExtraClose.close();
@@ -82,8 +82,8 @@ class AutoCloseableIteratorsTest {
     final VoidCallable onClose2 = mock(VoidCallable.class);
 
     final AutoCloseableIterator<String> iterator = new CompositeIterator<>(ImmutableList.of(
-        AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b"), onClose1),
-        AutoCloseableIterators.fromIterator(MoreIterators.of("d"), onClose2)));
+        AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b"), onClose1, null),
+        AutoCloseableIterators.fromIterator(MoreIterators.of("d"), onClose2, null)), null);
 
     assertOnCloseInvocations(ImmutableList.of(), ImmutableList.of(onClose1, onClose2));
     assertNext(iterator, "a");

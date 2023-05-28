@@ -326,14 +326,14 @@ run SQL queries on Airbyte database.
 If you have connections with Microsoft SQL Source using _Standard_ replication method, run this SQL:
 
 ```sql
-update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "STANDARD"}', true)  
+update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "STANDARD"}', true)
 WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configuration->>'replication_method' = 'STANDARD');
 ```
 
 If you have connections with Microsoft SQL Source using _Logicai Replication (CDC)_ method,  run this SQL:
 
 ```sql
-update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "CDC"}', true)  
+update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "CDC"}', true)
 WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configuration->>'replication_method' = 'CDC');
 ```
 
@@ -341,10 +341,19 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.8   | 2022-03-28 | [24166](https://github.com/airbytehq/airbyte/pull/24166)                                                          | Fix InterruptedException bug during Debezium shutdown                                                                                           |
-| 1.0.7   | 2022-03-27 | [24529](https://github.com/airbytehq/airbyte/pull/24373)                                                          | Preparing the connector for CDC checkpointing                                                                                                   |
+| 1.0.17  | 2023-05-25 | [26473](https://github.com/airbytehq/airbyte/pull/26473)                                                          | CDC : Limit queue size                                                                                                                          |
+| 1.0.16  | 2023-05-01 | [25740](https://github.com/airbytehq/airbyte/pull/25740)                                                          | Disable index logging                                                                                                                           |
+| 1.0.15  | 2023-04-26 | [25401](https://github.com/airbytehq/airbyte/pull/25401)                                                          | CDC : Upgrade Debezium to version 2.2.0                                                                                                         |
+| 1.0.14  | 2023-04-19 | [25345](https://github.com/airbytehq/airbyte/pull/25345)                                                          | Logging : Log database indexes per stream                                                                                                       |
+| 1.0.13  | 2023-04-19 | [24582](https://github.com/airbytehq/airbyte/pull/24582)                                                          | CDC : refactor for performance improvement                                                                                                      |
+| 1.0.12  | 2023-04-17 | [25220](https://github.com/airbytehq/airbyte/pull/25220)                                                          | Logging changes : Log additional metadata & clean up noisy logs                                                                                 |
+| 1.0.11  | 2023-04-11 | [24656](https://github.com/airbytehq/airbyte/pull/24656)                                                          | CDC minor refactor                                                                                                                              |
+| 1.0.10  | 2023-04-06 | [24820](https://github.com/airbytehq/airbyte/pull/24820)                                                          | Fix data loss bug during an initial failed non-CDC incremental sync                                                                             | 
+| 1.0.9   | 2023-04-04 | [24833](https://github.com/airbytehq/airbyte/pull/24833)                                                          | Fix Debezium retry policy configuration                                                                                                         |
+| 1.0.8   | 2023-03-28 | [24166](https://github.com/airbytehq/airbyte/pull/24166)                                                          | Fix InterruptedException bug during Debezium shutdown                                                                                           |
+| 1.0.7   | 2023-03-27 | [24529](https://github.com/airbytehq/airbyte/pull/24373)                                                          | Preparing the connector for CDC checkpointing                                                                                                   |
 | 1.0.6   | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760)                                                          | Removed redundant date-time datatypes formatting                                                                                                |
-| 1.0.5   | 2022-03-21 | [24207](https://github.com/airbytehq/airbyte/pull/24207)                                                          | Fix incorrect schema change warning in CDC mode                                                                                                 |
+| 1.0.5   | 2023-03-21 | [24207](https://github.com/airbytehq/airbyte/pull/24207)                                                          | Fix incorrect schema change warning in CDC mode                                                                                                 |
 | 1.0.4   | 2023-03-21 | [24147](https://github.com/airbytehq/airbyte/pull/24275)                                                          | Fix error with CDC checkpointing                                                                                                                |
 | 1.0.3   | 2023-03-15 | [24082](https://github.com/airbytehq/airbyte/pull/24082)                                                          | Fixed NPE during cursor values validation                                                                                                       |
 | 1.0.2   | 2023-03-14 | [23908](https://github.com/airbytehq/airbyte/pull/23908)                                                          | Log warning on null cursor values                                                                                                               |

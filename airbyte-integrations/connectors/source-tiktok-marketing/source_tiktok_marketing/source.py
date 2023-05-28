@@ -14,18 +14,26 @@ from .streams import (
     DEFAULT_END_DATE,
     DEFAULT_START_DATE,
     AdGroupAudienceReports,
+    AdGroupAudienceReportsByCountry,
+    AdGroupAudienceReportsByPlatform,
     AdGroups,
     AdGroupsReports,
     Ads,
     AdsAudienceReports,
+    AdsAudienceReportsByCountry,
+    AdsAudienceReportsByPlatform,
     AdsReports,
     AdvertiserIds,
     Advertisers,
     AdvertisersAudienceReports,
+    AdvertisersAudienceReportsByCountry,
+    AdvertisersAudienceReportsByPlatform,
     AdvertisersReports,
     BasicReports,
     Campaigns,
+    CampaignsAudienceReports,
     CampaignsAudienceReportsByCountry,
+    CampaignsAudienceReportsByPlatform,
     CampaignsReports,
     Daily,
     Hourly,
@@ -68,7 +76,7 @@ class SourceTiktokMarketing(AbstractSource):
             access_token = credentials["access_token"]
             secret = credentials.get("secret")
             app_id = int(credentials.get("app_id", 0))
-            advertiser_id = int(credentials.get("advertiser_id", 0))
+            advertiser_id = credentials.get("advertiser_id")
         else:
             # old config only has advertiser id in environment object
             # if there is a secret it is a prod config
@@ -76,18 +84,23 @@ class SourceTiktokMarketing(AbstractSource):
             secret = config.get("environment", {}).get("secret")
             is_sandbox = secret is None
             app_id = int(config.get("environment", {}).get("app_id", 0))
-            advertiser_id = int(config.get("environment", {}).get("advertiser_id", 0))
+            advertiser_id = config.get("environment", {}).get("advertiser_id")
 
-        return {
+        stream_args = {
             "authenticator": TiktokTokenAuthenticator(access_token),
             "start_date": config.get("start_date") or DEFAULT_START_DATE,
             "end_date": config.get("end_date") or DEFAULT_END_DATE,
-            "advertiser_id": advertiser_id,
             "app_id": app_id,
             "secret": secret,
             "access_token": access_token,
             "is_sandbox": is_sandbox,
+            "attribution_window": config.get("attribution_window"),
         }
+        
+        if advertiser_id:
+            stream_args.update(**{"advertiser_id": advertiser_id})
+
+        return stream_args
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
@@ -166,15 +179,32 @@ class SourceTiktokMarketing(AbstractSource):
 
             # 2. Basic report streams:
             reports = [AdsReports, AdGroupsReports, CampaignsReports]
-            audience_reports = [AdsAudienceReports, AdGroupAudienceReports, CampaignsAudienceReportsByCountry]
+            audience_reports = [
+                AdsAudienceReports,
+                AdsAudienceReportsByCountry,
+                AdsAudienceReportsByPlatform,
+                AdGroupAudienceReports,
+                AdGroupAudienceReportsByCountry,
+                AdGroupAudienceReportsByPlatform,
+                CampaignsAudienceReports,
+                CampaignsAudienceReportsByCountry,
+                CampaignsAudienceReportsByPlatform,
+            ]
             if is_production:
                 # 2.1 streams work only in prod env
                 reports.append(AdvertisersReports)
-                audience_reports.append(AdvertisersAudienceReports)
+                audience_reports.extend(
+                    [
+                        AdvertisersAudienceReports,
+                        AdvertisersAudienceReportsByCountry,
+                        AdvertisersAudienceReportsByPlatform,
+                    ]
+                )
 
             for Report in reports:
                 for Granularity in [Hourly, Daily, Lifetime]:
                     streams.append(get_report_stream(Report, Granularity)(**args))
+                    # add a for loop here for the other dimension to split by
 
             # 3. Audience report streams:
             for Report in audience_reports:

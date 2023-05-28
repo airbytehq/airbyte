@@ -12,7 +12,7 @@ import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.TRUST_K
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.debezium.internals.PostgresConverter;
+import io.airbyte.integrations.debezium.internals.postgres.PostgresConverter;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import java.net.URI;
 import java.nio.file.Path;
@@ -62,7 +62,7 @@ public class PostgresCdcProperties {
     }
 
     // Check params for SSL connection in config and add properties for CDC SSL connection
-    // https://debezium.io/documentation/reference/2.1/connectors/postgresql.html#postgresql-property-database-sslmode
+    // https://debezium.io/documentation/reference/2.2/connectors/postgresql.html#postgresql-property-database-sslmode
     if (!sourceConfig.has(JdbcUtils.SSL_KEY) || sourceConfig.get(JdbcUtils.SSL_KEY).asBoolean()) {
       if (sourceConfig.has(JdbcUtils.SSL_MODE_KEY) && sourceConfig.get(JdbcUtils.SSL_MODE_KEY).has(JdbcUtils.MODE_KEY)) {
 

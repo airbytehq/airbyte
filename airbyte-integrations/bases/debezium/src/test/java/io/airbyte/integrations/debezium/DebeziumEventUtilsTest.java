@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -27,9 +28,9 @@ class DebeziumEventUtilsTest {
     final String stream = "names";
     final Instant emittedAt = Instant.now();
     final CdcMetadataInjector cdcMetadataInjector = new DummyMetadataInjector();
-    final ChangeEvent<String, String> insertChangeEvent = mockChangeEvent("insert_change_event.json");
-    final ChangeEvent<String, String> updateChangeEvent = mockChangeEvent("update_change_event.json");
-    final ChangeEvent<String, String> deleteChangeEvent = mockChangeEvent("delete_change_event.json");
+    final ChangeEventWithMetadata insertChangeEvent = mockChangeEvent("insert_change_event.json");
+    final ChangeEventWithMetadata updateChangeEvent = mockChangeEvent("update_change_event.json");
+    final ChangeEventWithMetadata deleteChangeEvent = mockChangeEvent("delete_change_event.json");
 
     final AirbyteMessage actualInsert = DebeziumEventUtils.toAirbyteMessage(insertChangeEvent, cdcMetadataInjector, emittedAt);
     final AirbyteMessage actualUpdate = DebeziumEventUtils.toAirbyteMessage(updateChangeEvent, cdcMetadataInjector, emittedAt);
@@ -44,12 +45,12 @@ class DebeziumEventUtilsTest {
     deepCompare(expectedDelete, actualDelete);
   }
 
-  private static ChangeEvent<String, String> mockChangeEvent(final String resourceName) throws IOException {
+  private static ChangeEventWithMetadata mockChangeEvent(final String resourceName) throws IOException {
     final ChangeEvent<String, String> mocked = mock(ChangeEvent.class);
     final String resource = MoreResources.readResource(resourceName);
     when(mocked.value()).thenReturn(resource);
 
-    return mocked;
+    return new ChangeEventWithMetadata(mocked);
   }
 
   private static AirbyteMessage createAirbyteMessage(final String stream, final Instant emittedAt, final String resourceName) throws IOException {

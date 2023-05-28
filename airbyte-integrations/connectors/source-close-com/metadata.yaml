@@ -1,0 +1,24 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.close.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: dfffecb7-9a13-43e9-acdc-b92af7997ca9
+  dockerImageTag: 0.3.0
+  dockerRepository: airbyte/source-close-com
+  githubIssueLabel: source-close-com
+  icon: close.svg
+  license: MIT
+  name: Close.com
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: beta
+  documentationUrl: https://docs.airbyte.com/integrations/sources/close-com
+  tags:
+    - language:low-code
+    - language:python
+metadataSpecVersion: "1.0"
