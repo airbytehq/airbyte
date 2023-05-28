@@ -5,23 +5,36 @@
 * Close.com Account
 * Close.com API Key
 
-To connect your Close.com account to Airbyte, you'll need an API key. Follow these steps to create an API key from your Close.com account:
+Visit the [Close.com API Keys page](https://app.close.com/settings/api/) in the Close.com dashboard to access the secret key for your account. Secret key will be prefixed with `api_`.
+See [this guide](https://help.close.com/docs/api-keys) if you need to create a new one.
 
-1. Sign in to your [Close.com account](https://app.close.com/login/).
-2. Click on your profile picture in the top-right corner and select **Settings**.
-3. Navigate to the **API Keys** tab.
-4. If you don't have an API key yet, click **Create New API Key**. Otherwise, retrieve an existing API key.
-5. We recommend creating a restricted key specifically for Airbyte access by clicking the pencil icon next to the API key. Grant read permissions for all resources, and then confirm changes by clicking **Save**.
+We recommend creating a restricted key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access. For ease of use, we recommend using read permissions for all resources and configuring which resource to replicate in the Airbyte UI.
 
-Your API key will be displayed in the API Keys tab, prefixed with `api_`. For more information, refer to the [Close.com API key guide](https://help.close.com/docs/api-keys).
+## Setup Guide
 
-## Setup guide
+### Obtain Close.com API Key
 
-1. Log into your Airbyte account.
-2. Once you're in the Source configuration form, provide a custom **Name** for the Close.com connector.
-3. Locate the **API Key** field and enter your Close.com API key obtained from the prerequisites steps.
-4. (Optional) Specify a **Start Date** for the data sync. The format should be YYYY-MM-DD. If you leave this field blank, a full sync will be performed. Setting a Start Date will sync data from that date onwards.
-5. Click **Set up source** to finish configuring the Close.com connector.
+To configure the Close.com source connector in Airbyte, you'll need a Close.com API key. Follow the steps below to obtain an API key:
+
+1. [Log in](https://app.close.com/login/) to your Close.com account.
+2. Click on your profile icon in the top-right corner and select **Settings**.
+3. In the left sidebar, click on **API Keys**.
+4. Click **+ New API Key** in the top-right corner.
+5. Provide a description for this API key, such as "Airbyte."
+6. Save the API key. You'll need it to set up the connector in Airbyte. _Note: The API key is only displayed once when created, so make sure to copy it.
+
+For more details, consult the [Close.com API Key documentation](https://help.close.com/docs/where-to-find-your-api-key).
+
+### Configure the Close.com Connector in Airbyte
+
+With your Close.com API key in hand, you can set up the connector in Airbyte:
+
+1. In the Airbyte new source configuration form, locate the `API Key` field.
+2. Paste the API key you obtained from Close.com into the `API Key` field. The key usually starts with `api_`.
+3. In the `Start Date` field, enter a start date for the data sync. The format should be "YYYY-MM-DD" (e.g., "2021-01-01"). You can leave this field blank for a full sync of your data.
+4. Click **Set up source** to complete the configuration.
+
+With these steps, you have successfully set up the Close.com source connector in Airbyte.
 
 ## Supported sync modes
 
@@ -100,3 +113,4 @@ The Close.com Connector has rate limit. There are 60 RPS for Organizations. You 
 | 0.2.1   | 2023-02-15 | [23074](https://github.com/airbytehq/airbyte/pull/23074) | Specified date formatting in specification                                                             |
 | 0.2.0   | 2022-11-04 | [18968](https://github.com/airbytehq/airbyte/pull/18968) | Migrate to Low-Code                                                                                    |
 | 0.1.0   | 2021-08-10 | [5366](https://github.com/airbytehq/airbyte/pull/5366)   | Initial release of Close.com connector for Airbyte                                                     |
+
