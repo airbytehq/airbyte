@@ -4,9 +4,9 @@
 
 import logging
 import os
+import re
 from dataclasses import dataclass
 from enum import Enum
-from functools import cached_property
 from glob import glob
 from pathlib import Path
 from typing import List, Optional, Set, Tuple
@@ -26,6 +26,7 @@ SOURCE_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/source-"
 DESTINATION_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/destination-"
 ACCEPTANCE_TEST_CONFIG_FILE_NAME = "acceptance-test-config.yml"
 AIRBYTE_DOCKER_REPO = "airbyte"
+GRADLE_PROJECT_RE_PATTERN = r"project\((['\"])(.+?)\1\)"
 
 
 def download_catalog(catalog_url):
@@ -72,6 +73,23 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[
         if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) and file_path.endswith(ACCEPTANCE_TEST_CONFIG_FILE_NAME)
     }
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_acceptance_test_config_paths}
+
+
+def get_gradle_project_dependencies_paths(gradle_file_path: Path):
+    dependencies_paths = []
+    with open(gradle_file_path) as gradle_file:
+        for line in gradle_file:
+            if "implementation project" in line or "implementation files" in line:
+                match = re.search(GRADLE_PROJECT_RE_PATTERN, line)
+                if match:
+                    project_name = match.group(2)
+                    if project_name.startswith(":"):
+                        project_path = project_name[1:].replace(":", "/")
+                        dependencies_paths.append(Path(project_path))
+                        dependency_gradle_file = Path(f"{project_path}/build.gradle")
+                        if dependency_gradle_file.exists():
+                            dependencies_paths += get_gradle_project_dependencies_paths(dependency_gradle_file)
+    return dependencies_paths
 
 
 class ConnectorLanguage(str, Enum):
@@ -203,6 +221,14 @@ class Connector:
 
     def __repr__(self) -> str:
         return self.technical_name
+
+    def get_local_dependencies_paths(self):
+        dependencies_paths = [self.code_directory]
+        if self.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
+            dependencies_paths.append("airbyte-cdk")
+        elif self.language == ConnectorLanguage.JAVA:
+            dependencies_paths += get_gradle_project_dependencies_paths(self.code_directory / "build.gradle")
+        return set(dependencies_paths)
 
 
 def get_changed_connectors() -> Set[Connector]:
