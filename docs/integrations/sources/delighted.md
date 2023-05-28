@@ -1,29 +1,62 @@
-# Delighted Source Connector
+# Delighted
 
-This page contains the setup guide and reference information for the Delighted source connector in Airbyte.
+This page contains the setup guide and reference information for the Delighted source connector.
 
 ## Prerequisites
 
-Before setting up the Delighted source connector, you'll need the following:
+To set up the Delighted source connector, you'll need the [Delighted API key](https://app.delighted.com/docs/api#authentication).
 
-1. A Delighted account with the necessary permissions to access the API.
-2. Delighted API key.
+## Setup Guide
 
-To obtain the API key from your Delighted account, follow these steps:
+This guide will help you set up the Delighted source connector in Airbyte.
 
-1. Log into your Delighted account.
-2. Click on the **Settings** icon in the top right corner and select **API** from the menu.
-3. On the API settings page, you will find your API key. Copy this key as it will be required for configuring the Delighted source connector in Airbyte.
+### Obtain API Key from Delighted
 
-Refer to the [Delighted API documentation](https://api.delighted.com/docs/) for more information.
+1. Log into your [Delighted account](https://delighted.com/login).
+2. Click on **Settings** at the bottom left corner of the page.
+3. Select **API** from the settings menu.
+4. Find the **API key** section and copy the generated API key. If the API key is not visible, click on **Generate API key** to create one.
 
-## Set up the Delighted Connector in Airbyte
+   For more information, please refer to the [Delighted API Key Guide](https://help.delighted.com/article/69-about-delighteds-api#api-key).
 
-1. Begin by providing a **name** for your Delighted connector. This can be any name that you find descriptive.
-2. For **API Key**, enter the Delighted API key you obtained in the Prerequisites section.
-3. For **Since**, enter the starting date from which you'd like to replicate the data in either an `RFC3339` format like `2022-05-30T04:50:23Z` or a `datetime string` format like `2022-05-30 04:50:23`. Any data added on and after this date will be replicated.
-4. After filling in the required fields, click **Set up source**.
+### Configure the Delighted Source Connector
 
-Now, the Delighted source connector is set up and ready to use in Airbyte.
+1. In the connector configuration form in Airbyte, enter the following information:
 
-Please note that the content above provides only the updated setup section for the Delighted source connector in Airbyte. The rest of the documentation remains unchanged, including the Changelog and any tables in the original document. No images have been assumed or included in this response.
+   - **API Key**: Paste the API key you copied from the Delighted website.
+   - **Date Since**: Enter the date from which you want to replicate the data. The input format should be one of the following: `YYYY-MM-DDTHH:mm:ssZ` or `YYYY-MM-DD HH:mm:ss`. Please note that data added on and after this date will be replicated.
+
+2. After entering the required information, proceed to complete the setup process.
+
+Now you have successfully set up the Delighted source connector in Airbyte.
+
+## Supported sync modes
+
+The Delighted source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+
+## Supported Streams
+
+This Source is capable of syncing the following core Streams:
+
+* [Survey Responses](https://app.delighted.com/docs/api/listing-survey-responses)
+* [People](https://app.delighted.com/docs/api/listing-people)
+* [Bounced People](https://app.delighted.com/docs/api/listing-bounced-people)
+* [Unsubscribed People](https://app.delighted.com/docs/api/listing-unsubscribed-people)
+
+## Changelog
+
+| Version | Date       | Pull Request                                             | Subject                                                                                              |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
+| 0.2.2   | 2023-03-09 | [23909](https://github.com/airbytehq/airbyte/pull/23909) | Updated the input config pattern to accept both `RFC3339` and `datetime string` formats in UI    |
+| 0.2.1   | 2023-02-14 | [23009](https://github.com/airbytehq/airbyte/pull/23009) |Specified date formatting in specification                                                                |
+| 0.2.0   | 2022-11-22 | [19822](https://github.com/airbytehq/airbyte/pull/19822) | Migrate to Low code + certify to Beta                                                                |
+| 0.1.4   | 2022-06-10 | [13439](https://github.com/airbytehq/airbyte/pull/13439) | Change since parameter input to iso date                                                             |
+| 0.1.3   | 2022-01-31 | [9550](https://github.com/airbytehq/airbyte/pull/9550)   | Output only records in which cursor field is greater than the value in state for incremental streams |
+| 0.1.2   | 2022-01-06 | [9333](https://github.com/airbytehq/airbyte/pull/9333)   | Add incremental sync mode to streams in `integration_tests/configured_catalog.json`                  |
+| 0.1.1   | 2022-01-04 | [9275](https://github.com/airbytehq/airbyte/pull/9275)   | Fix pagination handling for `survey_responses`, `bounces` and `unsubscribes` streams                 |
+| 0.1.0   | 2021-10-27 | [4551](https://github.com/airbytehq/airbyte/pull/4551)   | Add Delighted source connector                                                                       |
