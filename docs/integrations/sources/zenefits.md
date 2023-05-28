@@ -4,29 +4,37 @@ This page contains the setup guide and reference information for the Zenefits so
 
 ## Prerequisites
 
-- Access to the Zenefits account where you want to integrate Airbyte.
-- A Zenefits API token. Follow the steps given below to obtain the token.
+- A Zenefits [token](https://developers.zenefits.com/v1.0/docs/auth)
 
-### Obtaining the Zenefits API Token
+## Setup Guide
 
-1. Sign in to your Zenefits account.
-2. Navigate to the [Zenefits Developer Dashboard](https://developers.zenefits.com/dashboard).
-3. In the Dashboard, click on **Create New Project**.
-4. Enter all the relevant details for your project and click **Submit**.
-5. Once the project is created, click the **Settings** tab.
-6. Under the **API Permissions** section, select the data scopes that you want to grant access to Airbyte.
-7. Click the **Save** button to save API Permissions.
-8. Click the **Authentication** tab.
-9. Copy the token displayed under **Bearer Token**. This token will be used while setting up the Zenefits source connector in Airbyte.
+This guide will help you set up the Zenefits Source connector in Airbyte. Before you begin, ensure that you have an active Zenefits account. If you do not have one, please [sign up for an account](https://www.zenefits.com/) or contact your Zenefits administrator.
 
-For more details, please refer to the [Zenefits API Authentication Documentation](https://developers.zenefits.com/v1.0/docs/auth).
+### Obtain Zenefits API Token
 
-## Set up Zenefits as a source in Airbyte
+1. Visit the [Zenefits Developers home page](https://developers.zenefits.com/) and sign in with your Zenefits credentials.
 
-To set up Zenefits as a source in Airbyte, simply fill out the configuration form with the required information:
+2. Click on **My Apps** in the top navigation bar.
 
-1. For **Token**, paste the Zenefits API token obtained from your Zenefits Developer Dashboard.
-2. Click **Set up source**.
+3. Click on **Create New App**.
+
+4. Fill in the required fields: App Name, Redirect URIs, and App permissions. For Redirect URIs, input any placeholder URI; this will not be used in Airbyte's connection.
+
+5. Once your app is created, visit the **App Details** page.
+
+6. Click on the **Sync with Zenefits** button. A new window will open requesting authorization for your app.
+
+7. After authorizing the app, you will be redirected to the URI specified earlier. The Zenefits API token will be included in the URL as a query parameter named `access_token`. Extract this token for use in the Airbyte configuration.
+
+### Configure Zenefits Source
+
+1. Enter a name for your Zenefits connector in the **Name** field.
+
+2. Input the extracted API token into the **Token** field.
+
+3. Click on **Set up source** to complete the configuration process.
+
+That's it! Zenefits is now set up as a Source connector in Airbyte.
 
 ## Supported sync modes
 
