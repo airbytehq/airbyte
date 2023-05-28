@@ -7,38 +7,48 @@ This page contains the setup guide and reference information for the Facebook Pa
 To set up the Facebook Pages source connector with Airbyte, you'll need to create your Facebook Application and use both long-lived Page access token and Facebook Page ID.
 
 :::note
-The Facebook Pages source connector is currently only compatible with v15 of the Facebook Graph API.
+The Facebook Pages souce connector is currently only compatible with v15 of the Facebook Graph API.
 :::
 
-## Setup guide
-### Step 1: Set up Facebook Pages
+## Setup Guide
+The following steps will guide you through setting up the Facebook Pages Source connector with the required authentication details and proper access.
 
-1. Create a Facebook Developer Account. Follow the [instructions](https://developers.facebook.com/async/registration/) to create one.
-2. Create a [Facebook App](https://developers.facebook.com/apps/). Choose "Company" as the purpose of the app. Fill out the remaining fields to create your app, then follow along the "Connect a User Page" section.
-3. Connect a User [Page](https://developers.facebook.com/tools/explorer/). Choose your app at the `Meta App` field. Choose your Page at the `User or Page` field. Add the following permissions:
+### Step 1: Set up Facebook Pages
+1. Create a Facebook Developer Account: To create a facebook developer account, follow the [instructions](https://developers.facebook.com/async/registration/).
+
+2. Create a Facebook App: To create a new facebook app, visit the [Facebook App dashboard](https://developers.facebook.com/apps/) and click on the "Create App" button. Choose "Company" as the purpose of the app. Provide the requested details and submit the form.
+
+3. Connect a Page: To connect a user page, go to the [Facebook Graph API explorer](https://developers.facebook.com/tools/explorer/). In the "Meta App" field, select the app you just created. In the "User or Page" field, select the page you want to connect to. Add the following permissions to the app:
    * pages_read_engagement
-   * pages_read_user_content 
+   * pages_read_user_content
    * pages_show_list
    * read_insights
-4. Click Generate Access Token and follow the instructions.
 
-After all the steps, the token should be generated.
+   Click "Generate Access Token" and follow the instructions.
 
-5. [Generate](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#get-a-long-lived-user-access-token) Long-Lived User Access Token.
-6. [Generate](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#long-lived-page-token) Long-Lived Page Token.
+4. Generate Long-Lived User Access Token: To get a long-lived user access token, follow the [instructions](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#get-a-long-lived-user-access-token).
+
+5. Generate Long-Lived Page Token: To get a long-lived page token, follow the [instructions](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#long-lived-page-token).
 
 ### Step 2: Set up the Facebook Pages connector in Airbyte
+1. In the Airbyte UI, access the "Set up the source" page.
 
-1. Enter the name for the Facebook Pages connector.
-2. Select **Facebook Pages** from the Source type dropdown.
-3. Fill in Page Access Token with Long-Lived Page Token
-4. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be`Test-1111111111`)
+2. Enter a name for the Facebook Pages connector and select "Facebook Pages" as the Source type in the dropdown list.
+
+3. Input the "Page Access Token" and "Page ID" as follows:
+
+   * Page Access Token: Paste the Long-Lived Page Token you generated in step 5 of the "Set up Facebook Pages" section.
+
+   * Page ID: This is the ID of the Facebook page you want to connect. If you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be `Test-1111111111`.
+
+4. Complete the setup process by clicking on "Save & Continue".
 
 ## Supported sync modes
 
 The Facebook Pages source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 * [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+
 
 ## Supported Streams
 
@@ -56,11 +66,14 @@ The Facebook Pages source connector supports the following [sync modes](https://
 | `array`          | `array`      |       |
 | `object`         | `object`     |       |
 
+
+
 ## Performance considerations
 
-Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting follow the instructions in the Setup Guide above to access better rate limits.
+Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting follow the instructions in the Setup Guide below to access better rate limits.
 
 See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) for more information on requesting a quota upgrade.
+
 
 ## Changelog
 
