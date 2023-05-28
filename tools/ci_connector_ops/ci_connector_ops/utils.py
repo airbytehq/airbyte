@@ -224,9 +224,7 @@ class Connector:
 
     def get_local_dependencies_paths(self):
         dependencies_paths = [self.code_directory]
-        if self.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
-            dependencies_paths.append("airbyte-cdk")
-        elif self.language == ConnectorLanguage.JAVA:
+        if self.language == ConnectorLanguage.JAVA:
             dependencies_paths += get_gradle_project_dependencies_paths(self.code_directory / "build.gradle")
         return set(dependencies_paths)
 

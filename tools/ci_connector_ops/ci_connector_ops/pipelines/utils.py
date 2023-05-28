@@ -18,7 +18,7 @@ import anyio
 import asyncer
 import click
 import git
-from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
+from ci_connector_ops.utils import get_all_released_connectors
 from dagger import Config, Connection, Container, DaggerError, File, ImageLayerCompression, QueryError
 from more_itertools import chunked
 
@@ -221,16 +221,19 @@ def get_modified_files_in_commit(current_git_branch: str, current_git_revision: 
         return anyio.run(get_modified_files_in_commit_remote, current_git_branch, current_git_revision)
 
 
-def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict[Connector, List[str]]:
+def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
     """Create a mapping of modified connectors (key) and modified files (value)."""
+    all_connectors = get_all_released_connectors()
     modified_connectors = {}
-    for file_path in modified_files:
-        if str(file_path).startswith(SOURCE_CONNECTOR_PATH_PREFIX) or str(file_path).startswith(DESTINATION_CONNECTOR_PATH_PREFIX):
-            modified_connector = Connector(get_connector_name_from_path(str(file_path)))
-            if modified_connector in modified_connectors:
-                modified_connectors[modified_connector].append(file_path)
-            else:
-                modified_connectors[modified_connector] = [file_path]
+    for connector in all_connectors:
+        connector_dependencies = connector.get_local_dependencies_paths()
+        matching_files = [
+            str(modified_file)
+            for modified_file in modified_files
+            if any(str(modified_file).startswith(str(connector_dependency)) for connector_dependency in connector_dependencies)
+        ]
+        if matching_files:
+            modified_connectors[connector] = matching_files
     return modified_connectors
 
 
