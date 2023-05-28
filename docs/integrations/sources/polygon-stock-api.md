@@ -2,7 +2,7 @@
 
 ## Sync overview
 
-This source can provide information about stock data available on 
+This source can give information about stocks data available on 
 [PolygonStocksApi](https://polygon.io). It currently only supports Full Refresh
 syncs.
 
@@ -22,34 +22,40 @@ This source is capable of syncing the following streams:
 ### Performance considerations
 
 Polygon Stocks API allows only 5 API Calls/Minute on the free plan. Use of this connector
-may require a paid plan based on your requirements.
+may require a paid plan based upon your requirements.
 
-## Getting started
+## Setup Guide
 
-### Requirements
+To set up the Polygon Stocks API source connector, you will need to provide the following information:
 
-1. Obtain an API key from [PolygonStocksApi](https://polygon.io).
-2. Find out the exchange symbol of the stock you're interested in, also known as the Ticker Symbol. This can be found using a search engine (e.g., the Ticker Symbol for Microsoft is MSFT).
-3. Choose and verify other options for fetching stock details. [Polygon API Documentation](https://polygon.io/docs/stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to).
+1. [Obtain your API key from Polygon.io](https://polygon.io/dashboard/signup)
+2. Determine the stock ticker symbol (exchange symbol) for the stock you want to fetch data for. You can search for the stock ticker symbol using a search engine or financial news websites.
+3. Choose any additional options you need for fetching stock details. More information on these options can be found in the [Polygon Documentation](https://polygon.io/docs/stocks/get_v2_aggs_ticker__stocksticker__range__multiplier___timespan___from___to).
 
-### Setup guide
+### Required Fields
 
-The following fields are required for the connector to work:
+To configure the Polygon Stocks API source connector, you will need to input the following required fields:
 
-- `apiKey`: Your Polygon Stocks API key. This can be obtained by signing up for an account on their [website](https://polygon.io/signup) and then accessing the API section under "Dashboard".
-- `stocksTicker`: The Ticker Symbol of the `stock/equity` you want to access. For example, if you're interested in Microsoft's stock data, use "MSFT".
-- `multiplier`: The size of the timespan multiplier. This is an integer value that represents your desired timespan increment, e.g., 1 or 2.
-- `timespan`: The basic timespan unit for aggregating stock data. Supported options are "day", "hour", "minute", etc. For example, if you want daily stock data, use "day".
-- `start_date`: The start of the aggregate time window. The format should be in YYYY-MM-DD format, e.g., "2020-10-14".
-- `end_date`: The end of the aggregate time window. The format should be in YYYY-MM-DD format, e.g., "2020-11-14".
+- **apiKey**: Your Polygon Stocks API key. This can be found in your [Polygon dashboard](https://polygon.io/dashboard/api-keys/).
+- **stocksTicker**: The stock ticker symbol (exchange symbol) of the stock you want to fetch data for (e.g., "MSFT" for Microsoft).
+- **multiplier**: The size of the timespan multiplier. This will be an integer value, such as 1 or 2.
+- **timespan**: The size of the time window. Possible values include: "minute", "hour", "day", "week", "month", "quarter", or "year".
+- **start_date**: The start of the aggregate time window. This value should be a date in the format "YYYY-MM-DD" (e.g., "2022-01-01").
+- **end_date**: The end of the aggregate time window. This value should be a date in the format "YYYY-MM-DD" (e.g., "2022-12-31").
 
-(Optional) Additional fields can also be provided:
+### Optional Fields
 
-- `adjusted`: Determines whether or not the results are adjusted for splits. By default, results are adjusted and set to "true". Set this to "false" to get results that are NOT adjusted for splits.
-- `sort`: Sort the results by timestamp. "asc" will return results in ascending order (oldest at the top), "desc" will return results in descending order (newest at the top).
-- `limit`: Limits the number of base aggregates queried to create the aggregate results. Max 50000 and Default 5000. Read more about how the limit is used to calculate aggregate results in their [blog post on Aggregate Data API Improvements](https://polygon.io/blog/aggs-api-updates/).
+The following fields are optional but can be provided to further refine the data fetched by the connector:
 
-Once you have completed the fields in the Airbyte configuration form, click "Set up Source" to save your settings and begin syncing your stock data.
+- **adjusted** (optional): Determines whether the results are adjusted for stock splits. By default, results are adjusted and set to "true". Set this value to "false" to get results that are NOT adjusted for stock splits.
+- **sort** (optional): Sort the results by timestamp. Use "asc" to return results in ascending order (oldest at the top) or "desc" to return results in descending order (newest at the top).
+- **limit** (optional): Limits the number of base aggregates queried to create the aggregate results. The maximum limit is 50,000, and the default limit is 5,000. Read more about how limit is used to calculate aggregate results in the [Polygon blog post on Aggregate Data API Improvements](https://polygon.io/blog/aggs-api-updates/).
+
+With the above information, fill in the corresponding fields in the Polygon Stocks API source connector configuration form in Airbyte. After configuring the connector, proceed to create a new connection to start syncing data from the Polygon Stocks API.
+
+
+
+
 
 ## Changelog
 
