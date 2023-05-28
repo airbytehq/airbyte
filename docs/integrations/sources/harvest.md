@@ -6,58 +6,40 @@ This page contains the setup guide and reference information for the Harvest sou
 
 To set up the Harvest source connector, you'll need the [Harvest Account ID and API key](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
 
-# Harvest Source Connector Setup
+## Setup Guide
 
-To set up the Harvest Source connector in Airbyte, you will need to provide your Harvest account ID, start date, and authentication mechanism. This guide will walk you through the process of obtaining these details and configuring the connector.
+In this guide, you'll learn how to set up the Harvest Source connector in Airbyte. You can choose to authenticate using OAuth or Personal Access Token. Both methods require your Harvest Account ID.
 
-## Obtain your Harvest Account ID
+### Obtain Harvest Account ID
 
-Your Harvest account ID is required for all Harvest API requests. To find your account ID:
+1. Log in to your Harvest account.
+2. Navigate to the [Harvest Developer page](https://id.getharvest.com/developers).
+3. Click on "Create New Personal Access Token".
+4. Your Harvest Account ID can be found at the top of the page under "Account ID".
 
-1. Log in to your Harvest account at [https://id.getharvest.com](https://id.getharvest.com).
-2. Click on your profile picture in the top right corner and select **Account Settings**.
-3. On the Account Settings page, you will find your account ID displayed at the top.
+### Option 1: Authenticate with Personal Access Token
 
-For more information, refer to the [Harvest Authentication documentation](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
+1. On the Airbyte configuration form, enter your Harvest Account ID.
+2. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated.
+3. For **Authentication mechanism**, select **Authenticate with Personal Access Token** from the dropdown.
+4. To create your Personal Access Token, go to the [Harvest Developer page](https://id.getharvest.com/developers) and click on "Create New Personal Access Token". Give it a name, and click "Create".
+5. Copy the generated token and paste it into the **Personal Access Token** field in the Airbyte configuration form.
+6. Save your configuration.
 
-## Set the Start Date
+### Option 2: Authenticate with OAuth
 
-The start date determines which data will be replicated from your Harvest account. Any data added on or after the specified date will be replicated. To set the start date:
+1. On the Airbyte configuration form, enter your Harvest Account ID.
+2. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated.
+3. For **Authentication mechanism**, select **Authenticate via Harvest (OAuth)** from the dropdown.
+4. Navigate to the [Harvest OAuth2 Developer page](https://id.getharvest.com/oauth2/applications) and click on "Create New OAuth2 Application".
+5. Fill out the required fields. Use `http://localhost:8000` as the Redirect URL. This is required for the callback during authentication on your local development environment.
+6. Click on "Create Application".
+7. Copy the generated **Client ID** and **Client Secret** and paste them into the respective fields in the Airbyte configuration form.
+8. Click on **Authenticate your Harvest account** in the Airbyte configuration form. Log in and authorize your Harvest account by clicking "Authorize".
+9. Airbyte will obtain a **Refresh Token** and populate the **Refresh Token** field in the configuration form automatically.
+10. Save your configuration.
 
-1. Enter the date in the "Start Date" field using the following format: `YYYY-MM-DDTHH:mm:ssZ` (e.g., 2021-01-01T00:00:00Z).
-
-## Choose an Authentication Mechanism
-
-There are two methods available for authenticating with Harvest: OAuth or Personal Access Token.
-
-### Authenticate via Harvest (OAuth)
-
-To authenticate via OAuth:
-
-1. Create a new Harvest developer application by following the instructions in the [Harvest OAuth2 Guide](https://help.getharvest.com/api-v2/authentication-api/authentication/oauth2/).
-2. Obtain the Client ID and Client Secret from your Harvest developer application.
-3. In the Airbyte connector configuration, select "Authenticate via Harvest (OAuth)" as the authentication mechanism.
-4. Enter the Client ID and Client Secret obtained from your Harvest developer application in the corresponding fields.
-5. Click "Authenticate your Harvest account" and log in to your Harvest account, then authorize the application.
-6. Once authorized, the connector will fetch a refresh token, which will be used to renew the access token when it expires.
-
-### Authenticate with Personal Access Token
-
-To authenticate with a Personal Access Token:
-
-1. Log in to your Harvest account at [https://id.getharvest.com](https://id.getharvest.com).
-2. Click on your profile picture in the top right corner and select **Developer**.
-3. On the Developer page, click "Create New Personal Access Token".
-4. Name your token and click "Create Personal Access Token".
-5. Copy the generated token.
-6. In the Airbyte connector configuration, select "Authenticate with Personal Access Token" as the authentication mechanism.
-7. Enter the Personal Access Token obtained from your Harvest account in the corresponding field.
-
-For more information, refer to the [Harvest Personal Access Tokens documentation](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#personal-access-tokens).
-
-## Complete the Setup
-
-Once you have provided your Harvest account ID, start date, and chosen an authentication mechanism, click "Set up source" to complete the configuration of the Harvest Source connector in Airbyte.
+You have now successfully set up the Harvest Source connector in Airbyte.
 
 ## Supported sync modes
 
