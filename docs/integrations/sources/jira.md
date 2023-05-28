@@ -12,21 +12,21 @@ This page contains the setup guide and reference information for the Jira source
 
 ### Step 1: Set up Jira
 
-1. Create an API token for your Jira account by following the instructions in this [documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/). You will need this token to connect Jira to Airbyte.
+1. To get access to the Jira API, you need to create an API token. Please follow the instructions in [Atlassian's documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/). 
 
 ### Step 2: Set up the Jira connector in Airbyte
 
-1. In the Airbyte UI, select **Jira** from the Source type dropdown and enter a name for this connector.
-2. In the **API Token** field, enter the API token that you generated in Step 1. This token is used for authorization to your Jira account via BasicAuth.
-3. In the **Domain** field, enter the domain for your Jira account. This will be in the format of `<your-domain>.atlassian.net`, `<your-domain>.jira.com`, or `jira.<your-domain>.com`, depending on your Jira account.
-4. In the **Email** field, enter the email address associated with your Jira account. This is the email address you used to generate the API token. This field is also used for authorization to your Jira account via BasicAuth.
-5. In the **Projects** field, enter a comma-separated list of project keys for which you want to replicate data. Alternatively, leave this field empty to replicate data for all projects.
-6. In the **Start Date** field, enter the date from which you want to replicate data from Jira. Use the format `YYYY-MM-DDT00:00:00Z`. Note that this field only applies to certain streams, and only data generated on or after the start date will be replicated. Alternatively, leave this field empty to replicate all data. For more information, refer to the [Jira documentation](https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-search/#api-rest-api-2-search-get).
-7. Toggle the **Expand Issue Changelog** switch if you want to get a list of recent updates to every issue in the Issues stream.
-8. Toggle the **Render Issue Fields** switch if you want to return field values rendered in HTML format in the Issues stream.
-9. Toggle the **Enable Experimental Streams** switch if you want to enable experimental PullRequests stream. Note that this relies on undocumented Jira API endpoints. For more information, refer to the [Airbyte documentation](https://docs.airbyte.com/integrations/sources/jira#experimental-tables).
+1. In the Airbyte connector setup page, select **Jira** from the Source type dropdown and enter a name for this connector.
+2. In the **API Token** field, enter the API token you generated in Step 1. This token is used for authorization to your account by BasicAuth.
+3. In the **Domain** field, enter the domain for your Jira account. For example, if your Jira account is hosted at `airbyteio.atlassian.net`, enter `airbyteio.atlassian.net` in this field.
+4. In the **Email** field, enter the email address for your Jira account that you used to generate the API token. This field is used for authorization to your account by BasicAuth.
+5. In the **Projects (Optional)** field, enter a comma-separated list of Jira project keys for which you want to replicate data. If you want to replicate data for all projects, leave this field empty.
+6. In the **Start Date (Optional)** field, enter the date from which you want to replicate data from Jira in the format `YYYY-MM-DDTHH:MM:SSZ`. Note that this field only applies to certain streams, and only data generated on or after the start date will be replicated. If you want to replicate all data, leave this field empty. For more information, refer to the [Jira documentation](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get).
+7. Toggle **Expand Issue Changelog** to get a list of recent updates to every issue in the Issues stream.
+8. Toggle **Render Issue Fields** to return field values rendered in HTML format in the Issues stream.
+9. Toggle **Enable Experimental Streams** to enable experimental PullRequests stream. Note that this feature relies on undocumented Jira API endpoints. See [Airbyte's documentation](https://docs.airbyte.com/integrations/sources/jira#experimental-tables) for more information.
 
-Note: If you encounter any issues, refer to the [Jira API documentation](https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-search/#api-rest-api-2-search-get) for more information.## Supported sync modes
+Note: The Jira connector in Airbyte uses the Jira REST API. For more information on the Jira REST API, refer to the [Jira documentation](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/).## Supported sync modes
 
 The Jira source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
@@ -122,6 +122,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.3.10  | 2023-05-26 | [\#26652](https://github.com/airbytehq/airbyte/pull/26652) | Fixed bug when `board` doesn't support `sprints`                                                                        |
 | 0.3.9   | 2023-05-16 | [\#26114](https://github.com/airbytehq/airbyte/pull/26114) | Update fields info in docs and spec, update to latest airbyte-cdk                                                       |
 | 0.3.8   | 2023-05-04 | [\#25798](https://github.com/airbytehq/airbyte/pull/25798) | Add sprint info to `sprint_issues` and `sprints` streams for team-managed projects                                      |
 | 0.3.7   | 2023-04-18 | [\#25275](https://github.com/airbytehq/airbyte/pull/25275) | Add missing types to issues json schema                                                                                 |
