@@ -211,7 +211,7 @@ jobs:
     needs:
       - start-publish-image-runner-0
       - preprocess-matrix
-      - write-initial-output-to-comment
+#      - write-initial-output-to-comment
     strategy:
       max-parallel: 5
       fail-fast: false
