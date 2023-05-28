@@ -8,35 +8,25 @@ This page contains the setup guide and reference information for the Jira source
 - Domain
 - Email
 
-# Jira Source Connector Setup
+## Setup Guide
 
-## Prerequisites
+### Step 1: Obtain Jira API Token
 
-Before setting up the Jira source connector in Airbyte, you need to create an API token for your Jira account. To generate an API token, follow the instructions in [Atlassian's documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
+1. Generate a Jira API token by following the instructions in the [Jira documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
+2. Save the API token for use in the next step.
 
-## Jira Connector Configuration
+### Step 2: Configure the Jira Source Connector in Airbyte
 
-To set up the Jira source connector in Airbyte, you need to provide the following information:
+1. Enter the **API Token** that you created in the previous step. API Token is used for Authorization to your account by BasicAuth.
+2. Enter the **Domain** for your Jira account, e.g., `<your-domain>.atlassian.net` or `<your-domain>.jira.com`. You can find your Jira domain in the address bar of your web browser when logged into the Jira website.
+3. Enter the **Email** associated with your Jira account, which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.
+4. (Optional) Enter the list of **Projects** you wish to replicate data for by entering their project keys. Leave this field empty if you want to replicate data for all projects. Examples: `PROJ1`, `PROJ2`.
+5. (Optional) Enter the **Start Date** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated. Leave this field empty if you want to replicate all data. Note that this field only applies to certain streams. Examples: `2021-03-01T00:00:00Z`.
+6. (Optional) Toggle **Expand Issue Changelog** if you would like to get a list of recent updates to every issue in the Issues stream.
+7. (Optional) Toggle **Render Issue Fields** if you would like the field values returned in HTML format in the Issues stream.
+8. (Optional) Toggle **Enable Experimental Streams** to enable experimental PullRequests stream.
 
-1. **API Token**: The API token you generated for your Jira account. This token is used for authorization to your account by BasicAuth.
-
-2. **Domain**: The domain for your Jira account, e.g., `your-domain.atlassian.net`, `your-domain.jira.com`, or `jira.your-domain.com`.
-
-3. **Email**: The email address associated with your Jira account, which you used to generate the API token. This field is used for authorization to your account by BasicAuth.
-
-4. **Projects (Optional)**: Enter the list of project keys for which you want to replicate data. Leave this field empty if you want to replicate data for all projects. For example: `["PROJ1", "PROJ2"]`.
-
-5. **Start Date (Optional)**: Enter the date from which you want to replicate data from Jira in the format `YYYY-MM-DDTHH:MM:SSZ`. All data generated after this date will be replicated. Leave this field empty if you want to replicate all data. Note that this field only applies to certain streams. For example: `2021-03-01T00:00:00Z`.
-
-6. **Expand Issue Changelog**: Toggle this option if you want to get a list of recent updates to every issue in the Issues stream.
-
-7. **Render Issue Fields**: Toggle this option if you want to return field values rendered in HTML format in the Issues stream.
-
-8. **Enable Experimental Streams**: Toggle this option if you want to enable the experimental PullRequests stream.
-
-After you have entered the required information, click **Continue** to proceed with the setup and test the connection.
-
-For more details on the configuration properties and their usage, refer to the [Jira connector spec](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-jira/source_jira/spec.json).
+Once you have entered the necessary configuration information, proceed to test the connection and set up the replication process as usual.
 
 ## Supported sync modes
 
