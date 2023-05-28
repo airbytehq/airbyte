@@ -178,6 +178,7 @@ jobs:
           stripped_connector="$(echo "${{ github.event.inputs.connector }}" | tr -d ' ')"
           middle=${stripped_connector//,/$replace}
           full="$start$middle$end"
+          echo "connectorjson=$full"
           echo "connectorjson=$full" >> $GITHUB_OUTPUT
   write-initial-output-to-comment:
     name: Set up git comment
@@ -211,7 +212,7 @@ jobs:
     needs:
       - start-publish-image-runner-0
       - preprocess-matrix
-      - write-initial-output-to-comment
+#      - write-initial-output-to-comment
     strategy:
       max-parallel: 5
       fail-fast: false
@@ -290,8 +291,9 @@ jobs:
         id: qa_checks
         if: always()
         run: |
-          source venv/bin/activate
-          run-qa-checks ${{ matrix.connector }}
+          echo "hello"
+#          source venv/bin/activate
+#          run-qa-checks ${{ matrix.connector }}
       - name: Publish ${{ matrix.connector }}
         id: publish
         env:

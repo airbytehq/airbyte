@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.BaseConnector;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -15,6 +16,7 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class TestingSources extends BaseConnector implements Source {
 
@@ -60,7 +62,16 @@ public class TestingSources extends BaseConnector implements Source {
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state)
       throws Exception {
-    return selectSource(config).read(config, catalog, state);
+    return null;
+  }
+
+  @Override
+  public void read(final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final JsonNode state,
+      final Consumer<AirbyteMessage> outputRecordCollector)
+      throws Exception {
+    selectSource(config).read(config, catalog, state, outputRecordCollector);
   }
 
   public static void main(final String[] args) throws Exception {

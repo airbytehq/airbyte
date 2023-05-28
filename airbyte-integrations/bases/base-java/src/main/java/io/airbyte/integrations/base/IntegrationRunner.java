@@ -14,7 +14,6 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions.Procedure;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.util.ApmTraceUtils;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -76,7 +75,7 @@ public class IntegrationRunner {
     this.cliParser = cliParser;
     this.outputRecordCollector = outputRecordCollector;
     // integration iface covers the commands that are the same for both source and destination.
-    this.integration = source != null ? source : destination;
+    integration = source != null ? source : destination;
     this.source = source;
     this.destination = destination;
     validator = new JsonSchemaValidator();
@@ -138,9 +137,10 @@ public class IntegrationRunner {
           validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
           final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
-          try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
-            produceMessages(messageIterator);
-          }
+          final Procedure readProcedure = () -> {
+            source.read(config, catalog, stateOptional.orElse(null), outputRecordCollector);
+          };
+          produceMessages(readProcedure);
         }
         // destination only
         case WRITE -> {
@@ -186,9 +186,9 @@ public class IntegrationRunner {
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
   }
 
-  private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator) throws Exception {
+  private void produceMessages(final Procedure readProcedure) throws Exception {
     watchForOrphanThreads(
-        () -> messageIterator.forEachRemaining(outputRecordCollector),
+        readProcedure,
         () -> System.exit(FORCED_EXIT_CODE),
         INTERRUPT_THREAD_DELAY_MINUTES,
         TimeUnit.MINUTES,

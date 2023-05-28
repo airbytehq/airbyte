@@ -22,15 +22,14 @@ import javax.annotation.CheckForNull;
  */
 class SpeedBenchmark5ColumnGeneratorIterator extends AbstractIterator<AirbyteMessage> {
 
+  private static final long FIXED_TIME = Instant.EPOCH.toEpochMilli();
   private static final String STREAM_BASE = "stream";
   private static final int FIRST_COLUMN_SUFFIX = 1;
   private static final int COLUMN_COUNT = 5;
   private static final String COLUMN_BASE = "field";
   private static final String VALUE_BASE = "valuevaluevaluevaluevalue";
-  private static final AirbyteMessage message = new AirbyteMessage()
-      .withType(Type.RECORD)
-      .withRecord(new AirbyteRecordMessage().withEmittedAt(Instant.EPOCH.toEpochMilli()).withStream(STREAM_BASE + "1"));
-  private static final JsonNode jsonNode = Jsons.emptyObject();
+
+  private final String valueBaseWithThread;
 
   private final long maxRecords;
   private long numRecordsEmitted;
@@ -39,12 +38,13 @@ class SpeedBenchmark5ColumnGeneratorIterator extends AbstractIterator<AirbyteMes
 
   private final String[] columnNames;
 
-  public SpeedBenchmark5ColumnGeneratorIterator(final long maxRecords, final int streamCount) {
+  public SpeedBenchmark5ColumnGeneratorIterator(final long maxRecords, final int streamCount, final int threadNum) {
     this.maxRecords = maxRecords;
     this.streamCount = streamCount;
     numRecordsEmitted = 0;
     random = new Random(54321);
     columnNames = generateFields();
+    valueBaseWithThread = VALUE_BASE + "-" + threadNum + "-";
   }
 
   private static String[] generateFields() {
@@ -64,23 +64,18 @@ class SpeedBenchmark5ColumnGeneratorIterator extends AbstractIterator<AirbyteMes
 
     numRecordsEmitted++;
 
+    final JsonNode jsonNode = Jsons.emptyObject();
     for (int j = FIRST_COLUMN_SUFFIX; j <= COLUMN_COUNT; ++j) {
       // do % 10 so that all records are same length.
-      ((ObjectNode) jsonNode).put(columnNames[j - 1], VALUE_BASE + numRecordsEmitted % 10);
+      ((ObjectNode) jsonNode).put(columnNames[j - 1], valueBaseWithThread + numRecordsEmitted % 10);
     }
 
-    final var cloned = Jsons.clone(message);
-
-    if (streamCount == 1) {
-      cloned.getRecord()
-          .withData(jsonNode);
-    } else {
-      cloned.getRecord()
-          .withData(jsonNode)
-          .withStream(STREAM_BASE + (random.nextInt(streamCount) + 1));
-    }
-
-    return cloned;
+    return new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withEmittedAt(FIXED_TIME)
+            .withStream(streamCount == 1 ? STREAM_BASE + "1" : STREAM_BASE + (random.nextInt(streamCount) + 1))
+            .withData(jsonNode));
   }
 
 }
