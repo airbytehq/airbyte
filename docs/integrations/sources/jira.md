@@ -12,21 +12,28 @@ This page contains the setup guide and reference information for the Jira source
 
 ### Step 1: Set up Jira
 
-1. To get access to the Jira API, you need to create an API token. Please follow the instructions in [Atlassian's documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/). 
+1. To get access to the Jira API you need to create an API token. Follow the instructions in the [Atlassian documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/) to generate your API token. 
 
 ### Step 2: Set up the Jira connector in Airbyte
 
-1. In the Airbyte connector setup page, select **Jira** from the Source type dropdown and enter a name for this connector.
-2. In the **API Token** field, enter the API token you generated in Step 1. This token is used for authorization to your account by BasicAuth.
-3. In the **Domain** field, enter the domain for your Jira account. For example, if your Jira account is hosted at `airbyteio.atlassian.net`, enter `airbyteio.atlassian.net` in this field.
-4. In the **Email** field, enter the email address for your Jira account that you used to generate the API token. This field is used for authorization to your account by BasicAuth.
-5. In the **Projects (Optional)** field, enter a comma-separated list of Jira project keys for which you want to replicate data. If you want to replicate data for all projects, leave this field empty.
-6. In the **Start Date (Optional)** field, enter the date from which you want to replicate data from Jira in the format `YYYY-MM-DDTHH:MM:SSZ`. Note that this field only applies to certain streams, and only data generated on or after the start date will be replicated. If you want to replicate all data, leave this field empty. For more information, refer to the [Jira documentation](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get).
-7. Toggle **Expand Issue Changelog** to get a list of recent updates to every issue in the Issues stream.
-8. Toggle **Render Issue Fields** to return field values rendered in HTML format in the Issues stream.
-9. Toggle **Enable Experimental Streams** to enable experimental PullRequests stream. Note that this feature relies on undocumented Jira API endpoints. See [Airbyte's documentation](https://docs.airbyte.com/integrations/sources/jira#experimental-tables) for more information.
+To set up the Jira connector in Airbyte, follow these steps:
 
-Note: The Jira connector in Airbyte uses the Jira REST API. For more information on the Jira REST API, refer to the [Jira documentation](https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/).## Supported sync modes
+1. In the Airbyte UI, navigate to **Sources**. In the top-right corner, click **+ new source**.
+2. On the source setup page, select **Jira** from the Source type dropdown and enter a name for this connector.
+3. Enter the **API Token** you generated in Step 1. This token is used for Authorization to your account by BasicAuth.
+4. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`. This field is the domain for your Jira account, which can be found in your Jira URL.
+5. Enter the **Email** for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.
+6. (Optional) Enter a list of **Projects** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
+7. (Optional) Enter the **Start Date** from which you'd like to replicate data for Jira in the format `YYYY-MM-DDTHH:MM:SSZ`. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams:BoardIssues, IssueComments, IssueProperties, IssueRemoteLinks, IssueVotes, IssueWatchers, IssueWorklogs, Issues, PullRequests, SprintIssues. For other streams, it will replicate all data. For more information on how to format the start date, refer to the [Airbyte documentation](https://docs.airbyte.com/integrations/sources/jira/#spec).
+8. (Optional) Toggle **Expand Issue Changelog** to get a list of recent updates to every issue in the Issues stream.
+9. (Optional) Toggle **Render Issue Fields** to return field values rendered in HTML format in the Issues stream.
+10. (Optional) Toggle **Enable Experimental Streams** to enable experimental PullRequests stream. For more information on the experimental streams, refer to the [Airbyte documentation](https://docs.airbyte.com/integrations/sources/jira/#experimental-tables).
+
+Once you've completed the steps above, click **Test** to verify your credentials and connectivity to the Jira API. If the test is successful, click **Create** to create the new source. 
+
+Congratulations! You've successfully set up the Jira connector in Airbyte.
+
+## Supported sync modes
 
 The Jira source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
