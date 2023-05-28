@@ -75,45 +75,34 @@ The source is capable of syncing the content stream.
 
 ## Setup Guide
 
-### Obtaining API Key
+This guide will walk you through the configuration process for the the-guardian-api Source connector in Airbyte. To set up the connector, you will need to provide the required information in the configuration form. Below is a step-by-step guide to help you fill in the form correctly.
 
-In order to set up the the-guardian-api source connector, you will need to obtain an API key from the Guardian API website. To get an API key, follow these steps:
+### Obtain API Key
 
-1. Visit the [The Guardian Open Platform website](https://open-platform.theguardian.com/).
-2. Click on the "Get Started" button.
-3. Fill out the registration form and click "Register" to create an account.
-4. Once your account is created, log in and click on the "API Console" button.
-5. In the API Console, click on the "Register new API key" button.
-6. Fill out the form with a name and description for your API key, then click "Register".
-7. After registration, you will be provided with an API Key which can be used to configure the the-guardian-api source connector.
+In order to use the the-guardian-api Source connector, you will need an API Key. If you don't already have one, follow these steps to obtain it:
 
-### Configuring the Connector
+1. Go to the [Guardian Open Platform website](https://open-platform.theguardian.com/).
+2. Click on the "Get an API key" button located in the top right.
+3. Fill out the following form to register for a new API key. Be sure to choose the correct API Key type (Developer or Commercial) based on your needs.
+4. Once you have filled out the form, click "Submit" to request your API key. You will receive an email with the API key in your inbox after successfully completing the registration.
 
-With your API Key in hand, you can proceed to configure the the-guardian-api source connector in Airbyte. The following options are available for configuration:
+### Configure the the-guardian-api Source Connector
 
-- **API Key**: Enter the API Key obtained in the previous step. The key is case sensitive.
+After obtaining your API Key, provide the necessary information in the configuration form as described below:
 
-- **Start Date**: Enter the minimum date (YYYY-MM-DD) of the results. Results older than the start_date will not be shown.
+1. **API Key**: Enter the API Key obtained in the previous step. This field is case sensitive and should be entered exactly as provided.
 
-- **Query** (Optional): Enter a search term to filter the results to only those that include that term. The 'q' parameter supports AND, OR, and NOT operators. Examples:
-  - `environment AND NOT water`
-  - `environment AND political`
-  - `amusement park`
-  - `political`
+2. **Start Date**: Enter the minimum date (YYYY-MM-DD) for the articles you want returned by the API. Any results older than the start date will not be shown.
 
-- **Tag** (Optional): Enter a tag to filter results by showing only the ones matching the entered tag. You can find a list of all tags [here](https://content.guardianapis.com/tags?api-key=test) and the tags endpoint documentation [here](https://open-platform.theguardian.com/documentation/tag). Examples:
-  - `environment/recycling`
-  - `environment/plasticbags`
-  - `environment/energyefficiency`
+3. **Query** (Optional): If you wish to filter the results by a specific search term, enter it here. This field supports AND, OR, and NOT operators. For example, you can enter `environment AND NOT water` or `environment AND political`.
 
-- **Section** (Optional): Enter a section to filter the results by a particular section. You can find a list of all sections [here](https://content.guardianapis.com/sections?api-key=test) and the sections endpoint documentation [here](https://open-platform.theguardian.com/documentation/section). Examples:
-  - `media`
-  - `technology`
-  - `housing-network`
+4. **Tag** (Optional): The Guardian categorizes content using tags. You can use this field to filter results by a specific tag. You can find a list of all tags [here](https://content.guardianapis.com/tags?api-key=test) and additional documentation on tags [here](https://open-platform.theguardian.com/documentation/tag). Enter the tag you want to filter by, for example, `environment/recycling` or `environment/plasticbags`.
 
-- **End Date** (Optional): Enter the maximum date (YYYY-MM-DD) of the results. Results newer than the end_date will not be shown. Default is set to the current date (today) for incremental syncs.
+5. **Section** (Optional): You can also filter the results by a particular section. To find a list of all available sections, click [here](https://content.guardianapis.com/sections?api-key=test). Additional documentation on sections can be found [here](https://open-platform.theguardian.com/documentation/section). Enter the section you want to filter by, for example, `media` or `technology`.
 
-Once you have completed your configuration, click "Save" to start using the the-guardian-api source connector with Airbyte.
+6. **End Date** (Optional): Enter the maximum date (YYYY-MM-DD) for the articles you want returned by the API. Any results newer than the end date will not be shown. The default value for incremental syncs is the current date (today).
+
+After providing the necessary information, you can use the the-guardian-api Source connector to fetch data from the Guardian API in your Airbyte environment.
 
 ## Step 1: Set up the The Guardian API connector in Airbyte
 
