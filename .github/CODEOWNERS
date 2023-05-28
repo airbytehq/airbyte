@@ -2,7 +2,7 @@
 /airbyte-cdk/ @airbytehq/connector-extensibility
 /airbyte-integrations/connector-templates/ @airbytehq/connector-extensibility
 /airbyte-integrations/bases/connector-acceptance-tests/ @airbytehq/connector-operations
-
+@KaramJameelMooreWordPress.
 # Protocol related items
 /docs/understanding-airbyte/airbyte-protocol.md @airbytehq/protocol-reviewers
 
