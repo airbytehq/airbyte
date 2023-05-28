@@ -7,40 +7,39 @@ The Gutendex source can sync data from the [Gutendex API](https://gutendex.com/)
 ## Requirements
 
 Gutendex requires no access token/API key to make requests.
-The following (optional) parameters can be provided to the connector:
-
+The following (optional) parameters can be provided to the connector :-
+___
 ##### `author_year_start` and `author_year_end`
 Use these to find books with at least one author alive in a given range of years. They must have positive (CE) or negative (BCE) integer values. 
 
 For example, `/books?author_year_start=1800&author_year_end=1899` gives books with authors alive in the 19th Century.
-
+___
 ##### `copyright`
 Use this to find books with a certain copyright status: true for books with existing copyrights, false for books in the public domain in the USA, or null for books with no available copyright information.
-
+___
 ##### `languages`
 Use this to find books in any of a list of languages. They must be comma-separated, two-character language codes. For example, `/books?languages=en` gives books in English, and `/books?languages=fr,fi` gives books in either French or Finnish or both.
-
+___
 ##### `search`
 Use this to search author names and book titles with given words. They must be separated by a space (i.e. %20 in URL-encoded format) and are case-insensitive. For example, `/books?search=dickens%20great` includes Great Expectations by Charles Dickens.
-
+___
 ##### `sort`
 Use this to sort books: ascending for Project Gutenberg ID numbers from lowest to highest, descending for IDs highest to lowest, or popular (the default) for most popular to least popular by number of downloads.
-
+___
 ##### `topic`
 Use this to search for a case-insensitive key-phrase in books' bookshelves or subjects. For example, `/books?topic=children` gives books on the "Children's Literature" bookshelf, with the subject "Sick children -- Fiction", and so on.
+___
 
 ## Output schema
 
-Lists of book information in the Project Gutenberg database are queried using the API at /books (e.g. gutendex.com/books). Book data will be returned in the format:
+Lists of book information in the Project Gutenberg database are queried using the API at /books (e.g. gutendex.com/books). Book data will be returned in the format:-
 
-```
-{
-    "count": <number>,
-    "next": <string or null>,
-    "previous": <string or null>,
-    "results": <array of Books>
-}
-```
+    {
+        "count": <number>,
+        "next": <string or null>,
+        "previous": <string or null>,
+        "results": <array of Books>
+    }
 
 where `results` is an array of 0-32 book objects, next and previous are URLs to the next and previous pages of results, and count in the total number of books for the query on all pages combined.
 
@@ -48,18 +47,52 @@ By default, books are ordered by popularity, determined by their numbers of down
 
 The source is capable of syncing the results stream.
 
-## Setup guide
+```
+## Setup Guide
 
-1. Once you are in the Gutendex Source configuration form in Airbyte, you can provide the optional parameters as per your requirement.
-    - `author_year_start`: (Optional) Enter the minimum birth year of the authors.
-    - `author_year_end`: (Optional) Enter the maximum birth year of the authors.
-    - `copyright`: (Optional) Select the copyright status from the dropdown menu. Options are "true," "false," or "null."
-    - `languages`: (Optional) Enter comma-separated, two-character language codes for the languages you want to find books in (e.g., "en,fr,fi").
-    - `search`: (Optional) Enter the words you want to search for in author names and book titles, separated by space (e.g., "dickens great").
-    - `sort`: (Optional) Select the sorting criteria from the dropdown menu. Options are "ascending," "descending," or "popular."
-    - `topic`: (Optional) Enter a key-phrase to search for in books' bookshelves or subjects.
+This guide will walk you through the process of setting up the Gutendex Source connector in Airbyte. 
 
-2. Once you have provided the optional parameters, click **Continue** to proceed with the configuration of the Gutendex Source connector.
+### Connector Configuration
+
+The connector requires specific information (properties) to be entered for its configuration. You can leave a property empty if it is marked as optional.
+
+| Property            | Description                                                                                                                                                       |
+|---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| author_year_start   | (Optional) Enter the minimum birth year of the authors. Books by authors born prior to the start year will not be returned. It supports both positive (CE) or negative (BCE) integer values; e.g., 2002, 500, -500, 2020.   |
+| author_year_end     | (Optional) Enter the maximum birth year of the authors. Books by authors born after the end year will not be returned. It supports both positive (CE) or negative (BCE) integer values; e.g., 2002, 500, -500, 2020.         |
+| copyright           | (Optional) Enter the copyright status of the books you want to find: true (copyrighted), false (public domain in the USA), or null (no available information); e.g., true, false, null.                                            |
+| languages           | (Optional) Enter comma-separated, two-character language codes to find books in specific languages; e.g., en, en,fr,fi.                                                                                 |
+| search              | (Optional) Enter words separated by a space (%20 URL-encoded) for a case-insensitive search in author names and book titles; e.g., dickens%20great%20expect, dickens.                                                            |
+| sort                | (Optional) Enter a sorting method: ascending (lowest to highest by Project Gutenberg ID numbers), descending (highest to lowest by IDs), or popular (most to least popular by number of downloads); e.g., ascending, descending, popular.  |
+| topic               | (Optional) Enter a key-phrase to search case-insensitively in books' bookshelves or subjects; e.g., children, fantasy.                                                                          |
+
+After setting the properties, you can save the new connector configuration.
+
+### Navigating the Gutendex Website Interface
+
+Gutendex currently doesn't have an official website interface to navigate. You can use the [Gutendex API documentation](https://gutendex.com/api/docs/) for details regarding filters and sorting when retrieving books.
+
+### Important Links
+
+- [Gutendex API documentation](https://gutendex.com/api/docs/)
+
+Note: The API doesn't require any API key or authentication for these services. Therefore, you don't need to obtain credentials for the connector setup.
+```
+
+## Step 1: Set up the Gutendex connector in Airbyte
+
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up the source page, select **Gutendex** from the Source type dropdown.
+4. Click **Set up source**.
+
+### For Airbyte OSS:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Set the name for your source (Gutendex).
+3. Click **Set up source**.
 
 ## Supported sync modes
 
