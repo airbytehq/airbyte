@@ -21,31 +21,32 @@ This source can sync data from the [Secoda API](https://docs.secoda.co/secoda-ap
 
 ## Setup Guide
 
-In this guide, we will show you how to set up the Secoda Source connector in Airbyte. To configure the connector, you will need the API access key for your Secoda account. We will go through the steps to obtain the API key, and then configure the connector.
+This guide will walk you through setting up the secoda source connector in Airbyte. To configure this connector, you will need an API Access Key from secoda. Follow the steps below to obtain the required API key and configure the connector.
 
-### Obtain API Access Key from Secoda
+### Obtaining the API Access Key
 
-1. Log in to your Secoda account at [https://app.secoda.co/](https://app.secoda.co/). If you do not have a Secoda account, you can sign up for a new one.
+1. Log into your secoda account on the [secoda web interface](https://www.secoda.co/login). If you don't have an account, sign up for a free trial or register for an account.
+2. After logging in, go to the [API Access](https://my.secoda.co/#/api) section within your account settings.
+3. Find the "API Access Key" section. If you haven't already generated a key, click on the "Generate API Key" button.
+4. Copy the generated API Key. You'll need to provide this in the Airbyte connector configuration.
 
-2. Navigate to the [API Access section](https://app.secoda.co/settings/api) within your account settings by clicking on the gear icon in the top-right corner, then selecting `API Access` from the left navigation menu.
+**Note:** You can always return to this page to find your API Key if needed.
 
-3. You will see a list of your existing API keys. If you haven't created any API keys before, the list will be empty. To create a new API key, click on the `+` icon in the top-right corner.
+### Configuring the secoda Connector
 
-4. Enter a name for your new API key, and optionally, add a description to help you identify it later. Next, click on `Create API Key` to generate the key.
+Once you have your API Access Key, follow the steps below to configure the secoda source connector in Airbyte.
 
-5. You will see the new API key displayed on your screen. Be sure to copy and store your API key securely since you will not be able to access it again after navigating away from this page.
+1. In the connector configuration form, enter the API Access Key you previously obtained from secoda.
+   ```
+   Api Key: <your-api-key>
+   ```
+   Make sure to replace `<your-api-key>` with the API key you copied from your secoda account.
 
-For more information about managing API keys in Secoda, you can refer to the official [API Authentication documentation](https://docs.secoda.co/secoda-api/authentication).
+2. Click "Check connection" to ensure Airbyte can authenticate and connect to the secoda API using the provided API key.
 
-### Configure the Secoda Source connector
+3. Once the connection is successful, you can continue configuring the rest of the connector settings as needed, such as syncing frequency and any additional options.
 
-Once you have obtained your API access key from Secoda, you are ready to configure the connector in Airbyte.
-
-1. In the Secoda Source connector configuration form, locate the `Api Key` text field.
-
-2. Paste your Secoda API key in the `Api Key` field. Remember that the key is case sensitive, so make sure you enter it exactly as it appears in your Secoda account.
-
-That's it! After entering the API key, you can proceed with setting up the rest of your Airbyte connection.
+You have now successfully set up the secoda source connector in Airbyte. For more information on using the secoda API, visit the [secoda API documentation](https://docs.secoda.co/secoda-api/).
 
 ## Changelog
 
