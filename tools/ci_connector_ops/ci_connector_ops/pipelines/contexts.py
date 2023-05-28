@@ -304,6 +304,7 @@ class ConnectorContext(PipelineContext):
         self.s3_report_key = s3_report_key
         self._secrets_dir = None
         self._updated_secrets_dir = None
+        self.cdk_version = None
         super().__init__(
             pipeline_name=pipeline_name,
             is_local=is_local,
@@ -518,7 +519,6 @@ class PublishConnectorContext(ConnectorContext):
         message += f" {self.state.value['description']}\n"
         if self.state is ContextState.SUCCESSFUL:
             message += f"⏲️ Run duration: {round(self.report.run_duration)}s\n"
-        # TODO: renable this when pipeline is stable
-        # if self.state is ContextState.FAILURE:
-        #     message += "\ncc. <!channel>"
+        if self.state is ContextState.FAILURE:
+            message += "\ncc. <!channel>"
         return message

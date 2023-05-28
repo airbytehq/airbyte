@@ -173,13 +173,20 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
     @staticmethod
     def _parse_next_page_number(response: requests.Response) -> Optional[int]:
         """Parses a response and tries to find next page number"""
-        next_page = response.json().get("next_page")
+        try:
+            next_page = response.json().get("next_page")
+        except requests.exceptions.JSONDecodeError:
+            next_page = None
+
         return dict(parse_qsl(urlparse(next_page).query)).get("page") if next_page else None
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         """try to select relevant data only"""
 
-        records = response.json().get(self.response_list_name or self.name) or []
+        try:
+            records = response.json().get(self.response_list_name or self.name) or []
+        except requests.exceptions.JSONDecodeError:
+            records = []
 
         if not self.cursor_field:
             yield from records
@@ -192,7 +199,11 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 403:
-            self.logger.error(f"Skipping stream {self.name}: Check permissions, error message: {response.json().get('error')}.")
+            try:
+                error = response.json().get("error")
+            except requests.exceptions.JSONDecodeError:
+                error = {"title": "Forbidden", "message": "Received empty JSON response"}
+            self.logger.error(f"Skipping stream {self.name}: Check permissions, error message: {error}.")
             setattr(self, "raise_on_http_errors", False)
             return False
         return super().should_retry(response)
@@ -532,6 +543,15 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
                         for prop in self.list_entities_from_event:
                             event[prop] = record.get(prop)
                     yield event
+
+
+class AuditLogs(SourceZendeskSupportCursorPaginationStream):
+    """AuditLogs stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs"""
+
+    # can request a maximum of 1,00 results
+    page_size = 100
+    # audit_logs doesn't have the 'updated_by' field
+    cursor_field = "created_at"
 
 
 class Users(SourceZendeskIncrementalExportStream):
