@@ -3,10 +3,14 @@
 ## Sync overview
 
 **Recreation Information Database - RIDB**
-RIDB is a part of the Recreation One Stop (R1S) program, which oversees the operation of Recreation.gov -- a user-friendly, web-based resource to citizens, offering a single point of access to information about recreational opportunities nationwide. The website represents an authoritative source of information and services for millions of visitors to federal lands, historic sites, museums, waterways and other activities and destinations.
+RIDB is a part of the Recreation One Stop (R1S) program, 
+which oversees the operation of Recreation.gov -- a user-friendly, web-based 
+resource to citizens, offering a single point of access to information about 
+recreational opportunities nationwide. The website represents an authoritative 
+source of information and services for millions of visitors to federal lands, 
+historic sites, museums, waterways and other activities and destinations.
 
 This source retrieves data from the [Recreation API](https://ridb.recreation.gov/landing).
-
 ### Output schema
 
 This source is capable of syncing the following streams:
@@ -35,26 +39,34 @@ This source is capable of syncing the following streams:
 
 The Recreation API has a rate limit of 50 requests per minute.
 
-## Getting started
+## Setup Guide
 
-### Requirements
+In this guide, you will learn how to set up the Recreation Source connector in Airbyte. This involves obtaining an API key from the Recreation website, and configuring the connector with the necessary information.
 
-1. A Recreation API key. You can get one by signing up [here](https://ridb.recreation.gov/).
-2. Find your key by signing in to the API docs portal and clicking on your name in the top right corner.
+### Prerequisites
 
-### Setup guide
+To set up the Recreation Source connector, you need to have an Recreation API key. If you do not have one yet, you can obtain it by following these steps:
 
-Follow the steps below to set up the Recreation Source connector with your API key:
+1. Sign up for an account on the Recreation website by visiting [https://www.recreation.gov/](https://www.recreation.gov/) and clicking on "Sign In / Sign Up" at the top right corner of the page.
+2. After signing up, sign in to your account.
+3. Navigate to the [API documentation portal](https://ridb.recreation.gov/).
+4. Click on “Get API Key” to request an API key. Your API key will be sent to the email address you provided during the sign-up process.
 
-1. If you don't already have an account, create one at [Recreation.gov](https://www.recreation.gov/) by clicking on "Sign Up" in the top right corner.
-2. Go to the [API docs](https://ridb.recreation.gov/docs) portal and sign in by clicking on "Sign In" in the top right corner.
-3. Click on your name or email address in the top right corner, then click on "My Account".
-4. In the "My Account" section, under the "API Keys" tab, you will see your Recreation API key. If you haven't generated one yet, click on the "Generate API Key" button, then copy the generated key.
-5. In the Airbyte connector configuration form for Recreation, provide the following required field:
-   - `api_key`: Paste your copied Recreation API key in this field.
-6. (Optional) If you want to query a specific campsite, you can provide the `query_campsites` field with the relevant campsite ID or name.
+Once you have the API key, you can proceed with the connector configuration.
 
-Now you are all set to use the Recreation Source connector in Airbyte.
+### Configuring the Connector
+
+To configure the Recreation Source connector in Airbyte, you need to provide the API key you obtained in the previous step. Here is a step-by-step guide:
+
+1. In the Airbyte UI, locate the "Create Source" form.
+2. Fill in the required fields as follows:
+   * `apikey`: Enter your Recreation API key obtained in the previous step.
+   * `query_campsites`: (Optional) Enter a search query if you want to filter campsites.
+3. Click on the "Set up Source" button to save and validate your configuration.
+
+After configuring the connector, Airbyte will use the provided API key to access and synchronize data from the Recreation API.
+
+For further information on the Recreation API, refer to their official [documentation](https://ridb.recreation.gov/public/apis/docs).
 
 ## Changelog
 
