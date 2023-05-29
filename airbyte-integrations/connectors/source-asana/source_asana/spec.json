@@ -67,6 +67,11 @@
   },
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
+    "predicate_key": [
+      "credentials",
+      "auth_type"
+    ],
+    "predicate_value": "oauth2.0",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
         "type": "object",
