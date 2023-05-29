@@ -117,11 +117,11 @@ Airbyte also supports the following Prebuilt Facebook AdInsights Reports:
 | Ad Insights Action Video Sound                    |                              ---                               |                  `action_video_sound`                   |
 | Ad Insights Action Video Type                     |                              ---                               |                   `action_video_type`                   |
 | Ad Insights Action Type                           |                              ---                               |                      `action_type`                      |
+| Ad Insights Age And Gender                        |                        `age`, `gender`                         | `action_type`, `action_target_id`, `action_destination` |
 | Ad Insights Delivery Device                       |                       `device_platform`                        |                      `action_type`                      |
 | Ad Insights Delivery Platform                     |                      `publisher_platform`                      |                      `action_type`                      |
 | Ad Insights Delivery Platform And Device Platform |            `publisher_platform`, `device_platform`             |                      `action_type`                      |
 | Ad Insights Demographics Age                      |                             `age`                              |                      `action_type`                      |
-| Ad Insights Demographics Age And Gender           |                        `age`, `gender`                         | `action_type`, `action_target_id`, `action_destination` |
 | Ad Insights Demographics Country                  |                           `country`                            |                      `action_type`                      |
 | Ad Insights Demographics DMA Region               |                             `dma`                              |                      `action_type`                      |
 | Ad Insights Demographics Gender                   |                            `gender`                            |                      `action_type`                      |

@@ -49,7 +49,7 @@ acceptance_tests:
             bypass_reason: "Data not permanent"
           - name: "ads_insights_demographics_age"
             bypass_reason: "Data not permanent"
-          - name: "ads_insights_demographics_age_and_gender"
+          - name: "ads_insights_age_and_gender"
             bypass_reason: "Data not permanent"
           - name: "ads_insights_demographics_country"
             bypass_reason: "Data not permanent"

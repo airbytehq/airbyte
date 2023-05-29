@@ -134,7 +134,7 @@
     },
     {
       "stream": {
-        "name": "ads_insights_demographics_age_and_gender",
+        "name": "ads_insights_age_and_gender",
         "json_schema": {},
         "supported_sync_modes": [
           "full_refresh",
