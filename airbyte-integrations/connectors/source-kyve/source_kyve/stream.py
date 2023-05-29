@@ -93,12 +93,12 @@ class KYVEStream(HttpStream, IncrementalMixin):
 
         # Handle pagination by inserting the next page's token in the request parameters
         if next_page_token:
-            params.update(**next_page_token)
+            params['next_page_token'] = next_page_token
+
         # In case we use incremental streaming, we start with the stored _offset
-        if self.cursor_field in stream_state:
-            params.update({"pagination.offset": stream_state.get(self.cursor_field)})
-        else:
-            params.update({"pagination.offset": self._offset})
+        offset = stream_state.get(self.cursor_field, self._offset) or 0
+
+        params["pagination.offset"] = offset
 
         return params
 
@@ -116,7 +116,7 @@ class KYVEStream(HttpStream, IncrementalMixin):
 
             self._cursor_value = latest_bundle.get("id")
         except IndexError:
-            yield from ()
+            bundles = []
 
         for bundle in bundles:
             storage_id = bundle.get("storage_id")
