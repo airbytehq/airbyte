@@ -16,21 +16,12 @@ import yaml
 from anyio import Path
 from asyncer import asyncify
 from ci_connector_ops.pipelines.actions import remote_storage, secrets
-from ci_connector_ops.pipelines.bases import ConnectorReport, Report
+from ci_connector_ops.pipelines.bases import CIContext, ConnectorReport, Report
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.slack import send_message_to_webhook
 from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, sanitize_gcs_credentials
 from ci_connector_ops.utils import Connector
 from dagger import Client, Directory, Secret
-
-
-class CIContext(str, Enum):
-    """An enum for Ci context values which can be ["manual", "pull_request", "nightly_builds"]."""
-
-    MANUAL = "manual"
-    PULL_REQUEST = "pull_request"
-    NIGHTLY_BUILDS = "nightly_builds"
-    MASTER = "master"
 
 
 class ContextState(Enum):
@@ -313,8 +304,6 @@ class ConnectorContext(PipelineContext):
             gha_workflow_run_url=gha_workflow_run_url,
             pipeline_start_timestamp=pipeline_start_timestamp,
             ci_context=ci_context,
-            # TODO: remove this once stable and our default pipeline
-            is_ci_optional=True,
             slack_webhook=slack_webhook,
             reporting_slack_channel=reporting_slack_channel,
         )
