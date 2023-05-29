@@ -219,7 +219,7 @@ class SFTPClient:
 
                 # Using pandas to make reading files in different formats easier
                 if file_type == "csv":
-                    header = header_names if header_names is not None else 0
+                    header = header_names or 0
                     df = pd.read_csv(
                         f,
                         engine="python",
