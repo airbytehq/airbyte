@@ -6,6 +6,8 @@ import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
 from source_stripe.streams import (
+    ApplicationFees,
+    ApplicationFeesRefunds,
     BalanceTransactions,
     BankAccounts,
     Charges,
@@ -156,6 +158,8 @@ def config_fixture():
 @pytest.mark.parametrize(
     "stream, kwargs, expected",
     [
+        (ApplicationFees, {}, "application_fees"),
+        (ApplicationFeesRefunds, {"stream_slice": {"refund_id": "fr"}}, "application_fees/fr/refunds"),
         (Customers, {}, "customers"),
         (BalanceTransactions, {}, "balance_transactions"),
         (Charges, {}, "charges"),

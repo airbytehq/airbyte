@@ -14,5 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/dv-360
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dv-360
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"
