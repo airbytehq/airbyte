@@ -82,6 +82,7 @@ AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyt
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 1.0.7   | 2023-05-26 | [26656](https://github.com/airbytehq/airbyte/pull/26656) | Remove authSpecification from connector specification in favour of advancedAuth                                 |
 | 1.0.6   | 2023-03-28 | [26599](https://github.com/airbytehq/airbyte/pull/26599) | Media posted before business account conversion                                                                 |
 | 1.0.5   | 2023-03-28 | [24634](https://github.com/airbytehq/airbyte/pull/24634) | Add user-friendly message for no instagram_business_accounts case                                               |
 | 1.0.4   | 2023-03-15 | [23671](https://github.com/airbytehq/airbyte/pull/23671) | Add info about main permissions in spec and doc links in error message to navigate user                         |
