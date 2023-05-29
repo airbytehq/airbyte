@@ -1,7 +1,6 @@
 data:
   registries:
     cloud:
-      dockerRepository: airbyte/destination-vertica-strict-encrypt
       enabled: true
     oss:
       enabled: true
