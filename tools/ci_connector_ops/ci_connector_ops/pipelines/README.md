@@ -31,6 +31,7 @@ N.B: This project will eventually be moved to `airbyte-ci` root directory.
   * [Options](#options)
 - [`connectors` command subgroup](#connectors-command-subgroup)
   * [Options](#options-1)
+- [`connectors list` command](#connectors-list-command)
 - [`connectors test` command](#connectors-test-command)
   * [Examples](#examples-)
   * [What it runs](#what-it-runs-)
@@ -87,6 +88,30 @@ Available commands:
 | `--language`           | True     |               | Select connectors with a specific language: `python`, `low-code`, `java`. Can be used multiple times to select multiple languages.                                                                                                                                                                    |
 | `--modified`           | False    | False         | Run the pipeline on only the modified connectors on the branch or previous commit (depends on the pipeline implementation).                                                                                                                                                                           |
 | `--concurrency`        | False    | 5             | Control the number of connector pipelines that can run in parallel. Useful to speed up pipelines or control their resource usage.                                                                                                                                                                     |
+
+### <a id="connectors-list-command"></a>`connectors list` command
+Retrieve the list of connectors satisfying the provided filters.
+
+#### Examples
+List all connectors:
+
+`airbyte-ci connectors list`
+
+List generally available connectors:
+
+`airbyte-ci connectors --release-stage=generally_available list`
+
+List connectors changed on the current branch:
+
+`airbyte-ci connectors --modified list`
+
+List connectors with a specific language:
+
+`airbyte-ci connectors --language=python list`
+
+List connectors with multiple filters:
+
+`airbyte-ci connectors --language=low-code --release-stage=generally_available list`
 
 ### <a id="connectors-test-command"></a>`connectors test` command
 Run a test pipeline for one or multiple connectors.

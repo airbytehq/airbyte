@@ -114,6 +114,15 @@
         "type": "string",
         "title": "Custom Reports",
         "description": "A JSON array describing the custom reports you want to sync from Google Search Console. See <a href=\"https://docs.airbyte.com/integrations/sources/google-search-console#step-2-set-up-the-google-search-console-connector-in-airbyte\">the docs</a> for more information about the exact format you can use to fill out this field."
+      },
+      "data_state": {
+        "type": "string",
+        "title": "Data State",
+        "enum": ["final", "all"],
+        "description": "If \"final\" or if this parameter is omitted, the returned data will include only finalized data. Setting this parameter to \"all\" should not be used with Incremental Sync mode as it may cause data loss. If \"all\", data will include fresh data.",
+        "examples": ["final"],
+        "default": "final",
+        "order": 5
       }
     }
   },
