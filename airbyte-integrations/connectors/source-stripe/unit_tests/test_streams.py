@@ -6,6 +6,8 @@ import pendulum
 import pytest
 from airbyte_cdk.models import SyncMode
 from source_stripe.streams import (
+    ApplicationFees,
+    ApplicationFeesRefunds,
     BalanceTransactions,
     BankAccounts,
     Charges,
@@ -15,6 +17,7 @@ from source_stripe.streams import (
     CustomerBalanceTransactions,
     Customers,
     Disputes,
+    EarlyFraudWarnings,
     Events,
     ExternalAccount,
     ExternalAccountBankAccounts,
@@ -28,8 +31,10 @@ from source_stripe.streams import (
     Products,
     PromotionCodes,
     Refunds,
+    SetupIntents,
     SubscriptionItems,
     Subscriptions,
+    SubscriptionSchedule,
     Transfers,
 )
 
@@ -153,12 +158,15 @@ def config_fixture():
 @pytest.mark.parametrize(
     "stream, kwargs, expected",
     [
+        (ApplicationFees, {}, "application_fees"),
+        (ApplicationFeesRefunds, {"stream_slice": {"refund_id": "fr"}}, "application_fees/fr/refunds"),
         (Customers, {}, "customers"),
         (BalanceTransactions, {}, "balance_transactions"),
         (Charges, {}, "charges"),
         (CustomerBalanceTransactions, {"stream_slice": {"id": "C1"}}, "customers/C1/balance_transactions"),
         (Coupons, {}, "coupons"),
         (Disputes, {}, "disputes"),
+        (EarlyFraudWarnings, {}, "radar/early_fraud_warnings"),
         (Events, {}, "events"),
         (Invoices, {}, "invoices"),
         (InvoiceLineItems, {"stream_slice": {"invoice_id": "I1"}}, "invoices/I1/lines"),
@@ -168,6 +176,7 @@ def config_fixture():
         (Products, {}, "products"),
         (Subscriptions, {}, "subscriptions"),
         (SubscriptionItems, {}, "subscription_items"),
+        (SubscriptionSchedule, {}, "subscription_schedules"),
         (Transfers, {}, "transfers"),
         (Refunds, {}, "refunds"),
         (PaymentIntents, {}, "payment_intents"),
@@ -176,6 +185,7 @@ def config_fixture():
         (CheckoutSessionsLineItems, {"stream_slice": {"checkout_session_id": "CS1"}}, "checkout/sessions/CS1/line_items"),
         (PromotionCodes, {}, "promotion_codes"),
         (ExternalAccount, {}, "accounts/<account_id>/external_accounts"),
+        (SetupIntents, {}, "setup_intents"),
     ],
 )
 def test_path(

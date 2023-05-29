@@ -2,7 +2,7 @@ data:
   allowedHosts:
     hosts:
       - ${host}
-  catalogs:
+  registries:
     cloud:
       enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
     oss:
@@ -17,5 +17,7 @@ data:
   license: MIT
   name: Cockroachdb
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/cockroachdb
+  documentationUrl: https://docs.airbyte.com/integrations/sources/cockroachdb
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

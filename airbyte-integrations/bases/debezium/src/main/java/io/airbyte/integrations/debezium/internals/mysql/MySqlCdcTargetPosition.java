@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.debezium.internals.mysql;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
+import io.airbyte.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
 import java.sql.SQLException;
 import java.util.List;
@@ -68,16 +68,15 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition<MySqlCdcPositio
   }
 
   @Override
-  public boolean reachedTargetPosition(final JsonNode valueAsJson) {
-    final String eventFileName = valueAsJson.get("source").get("file").asText();
-    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.fromString(valueAsJson.get("source").get("snapshot").asText());
-    if (SnapshotMetadata.isSnapshotEventMetadata(snapshotMetadata)) {
+  public boolean reachedTargetPosition(final ChangeEventWithMetadata changeEventWithMetadata) {
+    if (changeEventWithMetadata.isSnapshotEvent()) {
       return false;
-    } else if (SnapshotMetadata.LAST == snapshotMetadata) {
+    } else if (SnapshotMetadata.LAST == changeEventWithMetadata.snapshotMetadata()) {
       LOGGER.info("Signalling close because Snapshot is complete");
       return true;
     } else {
-      final long eventPosition = valueAsJson.get("source").get("pos").asLong();
+      final String eventFileName = changeEventWithMetadata.eventValueAsJson().get("source").get("file").asText();
+      final long eventPosition = changeEventWithMetadata.eventValueAsJson().get("source").get("pos").asLong();
       final boolean isEventPositionAfter =
           eventFileName.compareTo(targetPosition.fileName) > 0 || (eventFileName.compareTo(
               targetPosition.fileName) == 0 && eventPosition >= targetPosition.position);

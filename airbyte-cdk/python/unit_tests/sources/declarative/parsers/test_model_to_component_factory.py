@@ -6,7 +6,7 @@ import datetime
 
 import pytest
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
-from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator
+from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator, BearerAuthenticator, SessionTokenAuthenticator
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
@@ -437,7 +437,6 @@ def test_datetime_based_cursor():
     stream_slicer = factory.create_component(model_type=DatetimeBasedCursorModel, component_definition=slicer_manifest, config=input_config)
 
     assert isinstance(stream_slicer, DatetimeBasedCursor)
-    assert stream_slicer._timezone == datetime.timezone.utc
     assert stream_slicer._step == datetime.timedelta(days=10)
     assert stream_slicer.cursor_field.string == "created"
     assert stream_slicer.cursor_granularity == "PT0.000001S"
@@ -451,7 +450,6 @@ def test_datetime_based_cursor():
 
     assert isinstance(stream_slicer.start_datetime, MinMaxDatetime)
     assert stream_slicer.start_datetime._datetime_format == "%Y-%m-%dT%H:%M:%S.%f%z"
-    assert stream_slicer.start_datetime._timezone == datetime.timezone.utc
     assert stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
     assert stream_slicer.start_datetime.min_datetime.string == "{{ config['start_time'] + day_delta(2) }}"
 
@@ -687,6 +685,43 @@ requester:
     assert isinstance(selector._request_options_provider, InterpolatedRequestOptionsProvider)
     assert selector._request_options_provider._parameter_interpolator._interpolator.mapping["a_parameter"] == "something_here"
     assert selector._request_options_provider._headers_interpolator._interpolator.mapping["header"] == "header_value"
+
+
+def test_create_request_with_session_authenticator():
+    content = """
+requester:
+  type: HttpRequester
+  path: "/v3/marketing/lists"
+  $parameters:
+    name: 'lists'
+  url_base: "https://api.sendgrid.com"
+  authenticator:
+    type: "SessionTokenAuthenticator"
+    username: "{{ parameters.name}}"
+    password: "{{ config.apikey }}"
+    login_url: "login"
+    header: "token"
+    session_token_response_key: "session"
+    validate_session_url: validate
+  request_parameters:
+    a_parameter: "something_here"
+  request_headers:
+    header: header_value
+    """
+    name = "name"
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
+
+    selector = factory.create_component(
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name
+    )
+
+    assert isinstance(selector, HttpRequester)
+    assert isinstance(selector.authenticator, SessionTokenAuthenticator)
+    assert selector.authenticator._username.eval(input_config) == "lists"
+    assert selector.authenticator._password.eval(input_config) == "verysecrettoken"
+    assert selector.authenticator._api_url.eval(input_config) == "https://api.sendgrid.com"
 
 
 def test_create_composite_error_handler():
@@ -1323,3 +1358,29 @@ def test_simple_retriever_emit_log_messages():
     )
 
     assert isinstance(retriever, SimpleRetrieverTestReadDecorator)
+
+
+def test_ignore_retry():
+    requester_model = {
+        "type": "SimpleRetriever",
+        "record_selector": {
+            "type": "RecordSelector",
+            "extractor": {
+                "type": "DpathExtractor",
+                "field_path": [],
+            },
+        },
+        "requester": {"type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api"},
+    }
+
+    connector_builder_factory = ModelToComponentFactory(disable_retries=True)
+    retriever = connector_builder_factory.create_component(
+        model_type=SimpleRetrieverModel,
+        component_definition=requester_model,
+        config={},
+        name="Test",
+        primary_key="id",
+        stream_slicer=None,
+    )
+
+    assert retriever.max_retries == 0
