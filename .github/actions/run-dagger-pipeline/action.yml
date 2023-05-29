@@ -10,6 +10,9 @@ inputs:
   context:
     description: "CI context (e.g., pull_request, manual)"
     required: true
+  github_token:
+    description: "GitHub token"
+    required: true
 runs:
   using: "composite"
   steps:
@@ -31,6 +34,7 @@ runs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
+        token: ${{ inputs.github_token }}
     - name: Install ci-connector-ops package
       shell: bash
       run: pip install --quiet -e ./tools/ci_connector_ops\[pipelines]\

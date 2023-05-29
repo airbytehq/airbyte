@@ -6,7 +6,6 @@ data:
   icon: braze.svg
   dockerRepository: airbyte/source-braze
   githubIssueLabel: source-braze
-  icon: braze.svg
   license: MIT
   name: Braze
   registries:
@@ -15,5 +14,8 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.io/integrations/sources/braze
+  documentationUrl: https://docs.airbyte.io/integrations/sources/braze
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

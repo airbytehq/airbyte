@@ -17,5 +17,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/drift
+  documentationUrl: https://docs.airbyte.com/integrations/sources/drift
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"
