@@ -120,11 +120,11 @@
         "name": "pivot_report",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["property_id"], ["browser"], ["country"], ["language"], ["date_range"]]
+        "source_defined_primary_key": [["property_id"], ["browser"], ["country"], ["language"], ["startDate"], ["endDate"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
-      "primary_key": [["property_id"], ["browser"], ["country"], ["language"], ["date_range"]]
+      "primary_key": [["property_id"], ["browser"], ["country"], ["language"], ["startDate"], ["endDate"]]
     }
   ]
 }

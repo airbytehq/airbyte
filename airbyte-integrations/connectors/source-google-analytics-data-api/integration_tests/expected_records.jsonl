@@ -78,13 +78,13 @@
 {"stream":"cohort_report","data":{"property_id":"314186564","cohort":"cohort_0","cohortNthDay":"0011","cohortActiveUsers":4},"emitted_at":1681405973102}
 {"stream":"cohort_report","data":{"property_id":"314186564","cohort":"cohort_0","cohortNthDay":"0013","cohortActiveUsers":4},"emitted_at":1681405973102}
 {"stream":"cohort_report","data":{"property_id":"314186564","cohort":"cohort_0","cohortNthDay":"0025","cohortActiveUsers":4},"emitted_at":1681405973102}
-{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Chrome","country":"United States","language":"English","sessions":24293,"date_range":"2023-04-01/2023-04-30"},"emitted_at":1685012261616}
-{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Chrome","country":"India","language":"English","sessions":9419,"date_range":"2023-04-01/2023-04-30"},"emitted_at":1685012261618}
-{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Safari","country":"United States","language":"English","sessions":3863,"date_range":"2023-04-01/2023-04-30"},"emitted_at":1685012261618}
-{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Chrome","country":"Canada","language":"English","sessions":2560,"date_range":"2023-04-01/2023-04-30"},"emitted_at":1685012261618}
-{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Chrome","country":"United Kingdom","language":"English","sessions":1964,"date_range":"2023-04-01/2023-04-30"},"emitted_at":1685012261618}
-{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Edge","country":"United States","language":"English","sessions":1351,"date_range":"2023-04-01/2023-04-30"},"emitted_at":1685012261619}
-{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Chrome","country":"Australia","language":"English","sessions":1307,"date_range":"2023-04-01/2023-04-30"},"emitted_at":1685012261619}
-{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Chrome","country":"Brazil","language":"Portuguese","sessions":1302,"date_range":"2023-04-01/2023-04-30"},"emitted_at":1685012261619}
-{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Chrome","country":"Vietnam","language":"English","sessions":1196,"date_range":"2023-04-01/2023-04-30"},"emitted_at":1685012261619}
-{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Chrome","country":"Germany","language":"English","sessions":963,"date_range":"2023-04-01/2023-04-30"},"emitted_at":1685012261619}
+{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Chrome","country":"United States","language":"English","sessions":24293,"startDate":"2023-04-01","endDate":"2023-04-30"},"emitted_at":1685012261616}
+{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Chrome","country":"India","language":"English","sessions":9419,"startDate":"2023-04-01","endDate":"2023-04-30"},"emitted_at":1685012261618}
+{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Safari","country":"United States","language":"English","sessions":3863,"startDate":"2023-04-01","endDate":"2023-04-30"},"emitted_at":1685012261618}
+{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Chrome","country":"Canada","language":"English","sessions":2560,"startDate":"2023-04-01","endDate":"2023-04-30"},"emitted_at":1685012261618}
+{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Chrome","country":"United Kingdom","language":"English","sessions":1964,"startDate":"2023-04-01","endDate":"2023-04-30"},"emitted_at":1685012261618}
+{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Edge","country":"United States","language":"English","sessions":1351,"startDate":"2023-04-01","endDate":"2023-04-30"},"emitted_at":1685012261619}
+{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Chrome","country":"Australia","language":"English","sessions":1307,"startDate":"2023-04-01","endDate":"2023-04-30"},"emitted_at":1685012261619}
+{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Chrome","country":"Brazil","language":"Portuguese","sessions":1302,"startDate":"2023-04-01","endDate":"2023-04-30"},"emitted_at":1685012261619}
+{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Chrome","country":"Vietnam","language":"English","sessions":1196,"startDate":"2023-04-01","endDate":"2023-04-30"},"emitted_at":1685012261619}
+{"stream":"pivot_report","data":{"property_id":"314186564","browser":"Chrome","country":"Germany","language":"English","sessions":963,"startDate":"2023-04-01","endDate":"2023-04-30"},"emitted_at":1685012261619}
