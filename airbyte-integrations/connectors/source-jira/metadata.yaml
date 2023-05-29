@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
-  dockerImageTag: 0.3.9
+  dockerImageTag: 0.3.10
   maxSecondsBetweenMessages: 21600
   dockerRepository: airbyte/source-jira
   githubIssueLabel: source-jira
@@ -17,6 +17,8 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/jira
+  releaseStage: generally_available
+  documentationUrl: https://docs.airbyte.com/integrations/sources/jira
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

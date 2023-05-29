@@ -18,6 +18,8 @@ data:
     normalizationRepository: airbyte/normalization
     normalizationTag: 0.4.1
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/postgres
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/postgres
   supportsDbt: true
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

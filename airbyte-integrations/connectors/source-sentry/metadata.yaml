@@ -18,5 +18,8 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/sentry
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"
