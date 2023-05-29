@@ -17,5 +17,8 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/tempo
+  documentationUrl: https://docs.airbyte.com/integrations/sources/tempo
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"
