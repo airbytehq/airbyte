@@ -102,8 +102,4 @@ streams:
 
 check:
   stream_names:
-    - "features"
     - "products"
-    - "ideas"
-    - "users"
-    - "goals"

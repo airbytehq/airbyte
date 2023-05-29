@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 import uuid
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
@@ -19,6 +20,7 @@ from ci_connector_ops.pipelines.consts import (
 )
 from ci_connector_ops.pipelines.utils import get_file_contents, slugify, with_exit_code
 from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Platform, Secret
+from dagger.engine._version import CLI_VERSION as dagger_engine_version
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
@@ -473,6 +475,7 @@ def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_p
         python_with_poetry.with_mounted_directory("/src", parent_dir)
         .with_workdir(f"/src/{module_path}")
         .with_exec(poetry_install_dependencies_cmd)
+        .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
     )
 
 
@@ -557,7 +560,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "redshift.Dockerfile",
         "dbt_adapter": "dbt-redshift==1.0.0",
         "integration_name": "redshift",
-        "supports_in_connector_normalization": False,
+        "supports_in_connector_normalization": True,
     },
     "destination-snowflake": {
         "dockerfile": "snowflake.Dockerfile",
@@ -636,7 +639,7 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
     )
 
 
-async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: Platform):
+async def with_airbyte_java_connector(context: ConnectorContext, connector_java_tar_file: File, build_platform: Platform) -> Container:
     application = context.connector.technical_name
 
     build_stage = (
@@ -658,7 +661,7 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         base = with_integration_base_java(context, build_platform)
         entrypoint = ["/airbyte/base.sh"]
 
-    return (
+    connector_container = (
         base.with_workdir("/airbyte")
         .with_env_variable("APPLICATION", application)
         .with_mounted_directory("builts_artifacts", build_stage.directory("/airbyte"))
@@ -667,20 +670,78 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
         .with_entrypoint(entrypoint)
     )
+    return await finalize_build(context, connector_container)
 
 
-def with_airbyte_python_connector(context: ConnectorContext, build_platform):
+async def get_cdk_version_from_python_connector(python_connector: Container) -> Optional[str]:
+
+    pip_freeze_stdout = await python_connector.with_entrypoint("pip").with_exec(["freeze"]).stdout()
+    pip_dependencies = [dep.split("==") for dep in pip_freeze_stdout.split("\n")]
+    for package_name, package_version in pip_dependencies:
+        if package_name == "airbyte-cdk":
+            return package_version
+    return None
+
+
+async def with_airbyte_python_connector(context: ConnectorContext, build_platform: Platform) -> Container:
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
-    return (
+    connector_container = (
         context.dagger_client.container(platform=build_platform)
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .build(context.get_connector_dir())
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
     )
+    cdk_version = await get_cdk_version_from_python_connector(connector_container)
+    if cdk_version:
+        connector_container = connector_container.with_label("io.airbyte.cdk_version", cdk_version)
+        context.cdk_version = cdk_version
+    return await finalize_build(context, connector_container)
 
 
-def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_platform: Platform):
+async def finalize_build(context: ConnectorContext, connector_container: Container) -> Container:
+    """Finalize build by adding dagger engine version label and running finalize_build.sh or finalize_build.py if present in the connector directory."""
+    connector_container = connector_container.with_label("io.dagger.engine_version", dagger_engine_version)
+    connector_dir_with_finalize_script = context.get_connector_dir(include=["finalize_build.sh", "finalize_build.py"])
+    finalize_scripts = await connector_dir_with_finalize_script.entries()
+    if not finalize_scripts:
+        return connector_container
+
+    # We don't want finalize scripts to override the entrypoint so we keep it in memory to reset it after finalization
+    original_entrypoint = await connector_container.entrypoint()
+
+    has_finalize_bash_script = "finalize_build.sh" in finalize_scripts
+    has_finalize_python_script = "finalize_build.py" in finalize_scripts
+    if has_finalize_python_script and has_finalize_bash_script:
+        raise Exception("Connector has both finalize_build.sh and finalize_build.py, please remove one of them")
+
+    if has_finalize_python_script:
+        context.logger.info(f"{context.connector.technical_name} has a finalize_build.py script, running it to finalize build...")
+        module_path = context.connector.code_directory / "finalize_build.py"
+        connector_finalize_module_spec = importlib.util.spec_from_file_location(
+            f"{context.connector.code_directory.name}_finalize", module_path
+        )
+        connector_finalize_module = importlib.util.module_from_spec(connector_finalize_module_spec)
+        connector_finalize_module_spec.loader.exec_module(connector_finalize_module)
+        try:
+            connector_container = await connector_finalize_module.finalize_build(context, connector_container)
+        except AttributeError:
+            raise Exception("Connector has a finalize_build.py script but it doesn't have a finalize_build function.")
+
+    if has_finalize_bash_script:
+        context.logger.info(f"{context.connector.technical_name} has finalize_build.sh script, running it to finalize build...")
+        connector_container = (
+            connector_container.with_file("/tmp/finalize_build.sh", connector_dir_with_finalize_script.file("finalize_build.sh"))
+            .with_entrypoint("sh")
+            .with_exec(["/tmp/finalize_build.sh"])
+        )
+
+    return connector_container.with_entrypoint(original_entrypoint)
+
+
+# This function is not used at the moment as we decided to use Python connectors dockerfile instead of building it with dagger.
+# Some python connectors use alpine base image, other use debian... We should unify this.
+def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_platform: Platform) -> Container:
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
     base = context.dagger_client.container(platform=build_platform).from_("python:3.9.11-alpine3.15")
     snake_case_name = context.connector.technical_name.replace("-", "_")
