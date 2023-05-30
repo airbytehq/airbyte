@@ -38,12 +38,13 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     log.info("destination class: {}", getClass());
-    // detect if running on internal staging for snowflake, if so run consumer2.
-    // final boolean useAsyncSnowflake = false;
-    final boolean useAsyncSnowflake = config.has("loading_method")
-        && config.get("loading_method").has("method")
-        && config.get("loading_method").get("method").asText().equals("Internal Staging");
+    // this is how we toggle async snowflake on.
+    final boolean useAsyncSnowflake = false;
+    // final boolean useAsyncSnowflake = config.has("loading_method")
+    // && config.get("loading_method").has("method")
+    // && config.get("loading_method").get("method").asText().equals("Internal Staging");
 
+    log.info("using async snowflake: {}", useAsyncSnowflake);
     if (useAsyncSnowflake) {
       return new SnowflakeInternalStagingDestination(airbyteEnvironment).getSerializedMessageConsumer(config, catalog, outputRecordCollector);
     } else {
