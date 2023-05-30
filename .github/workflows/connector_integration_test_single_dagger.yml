@@ -1,15 +1,23 @@
 name: POC Connectors CI - test pipeline
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   workflow_dispatch:
     inputs:
       test-connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors test' command"
         default: "--modified"
-  # pull_request:
-  #   paths:
-  #     - "airbyte-integrations/connectors/**"
-  #     - ".github/workflows/connector_integration_test_single_dagger.yml"
+  pull_request:
+    paths:
+      - "airbyte-integrations/connectors/**"
+      #- ".github/workflows/connector_integration_test_single_dagger.yml"
+    types:
+      - opened
+      - synchronize
+      - ready_for_review
 jobs:
   connectors_ci:
     name: Connectors CI
@@ -89,3 +97,4 @@ jobs:
           CI_GIT_REVISION: ${{ github.event.pull_request.head.sha }}
           CI_CONTEXT: "pull_request"
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
+          PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}

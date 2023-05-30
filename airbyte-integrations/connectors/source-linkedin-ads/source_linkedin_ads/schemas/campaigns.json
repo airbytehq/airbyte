@@ -1,5 +1,8 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
+  "title": "Campaigns",
+  "additionalProperties": true,
   "properties": {
     "targetingCriteria": {
       "type": ["null", "object"],
@@ -146,6 +149,9 @@
     "audienceExpansionEnabled": {
       "type": ["null", "boolean"]
     },
+    "test": {
+      "type": ["null", "boolean"]
+    },
     "account": {
       "type": ["null", "string"]
     },
@@ -163,6 +169,30 @@
     },
     "objectiveType": {
       "type": ["null", "string"]
+    },
+    "offsitePreferences": {
+      "type": ["null", "object"],
+      "properties": {
+        "iabCategories": {
+          "type": ["null", "object"],
+          "properties": {
+            "exclude": {
+              "type": ["null", "array"]
+            }
+          }
+        },
+        "publisherRestrictionFiles": {
+          "type": ["null", "object"],
+          "properties": {
+            "include": {
+              "type": ["null", "array"]
+            },
+            "exclude": {
+              "type": ["null", "array"]
+            }
+          }
+        }
+      }
     }
   }
 }
