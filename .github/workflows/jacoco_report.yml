@@ -3,7 +3,7 @@ name: Measure coverage
 on:
   pull_request:
     branches:
-      - duy/main
+      - master
 
 jobs:
   build:
@@ -25,5 +25,5 @@ jobs:
         with:
           paths: ${{ github.workspace }}/airbyte-integrations/connectors/source-postgres/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 40
-          min-coverage-changed-files: 60
+          min-coverage-overall: 64
+          update-comment: true
