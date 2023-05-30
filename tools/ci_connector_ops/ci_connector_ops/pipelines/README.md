@@ -134,14 +134,13 @@ Test connectors changed on the current branch:
 ```mermaid
 flowchart TD
     entrypoint[[For each selected connector]]
-    subgraph version ["Connector version checks"]
-        sem["Check version follows semantic versionning"]
-        incr["Check version is incremented"]
-        sem --> incr
-    end
     subgraph static ["Static code analysis"]
       qa[Run QA checks]
       fmt[Run code format checks]
+      sem["Check version follows semantic versionning"]
+      incr["Check version is incremented"]
+      metadata_validation["Run metadata validation on metadata.yaml"]
+      sem --> incr
     end
     subgraph tests ["Tests"]
         build[Build connector docker image]
@@ -157,9 +156,8 @@ flowchart TD
         build-->integration
         build-->cat
     end
-    entrypoint-->version
-    version-->static
-    version-->tests
+    entrypoint-->static
+    entrypoint-->tests
     report["Build test report"]
     tests-->report
     static-->report
