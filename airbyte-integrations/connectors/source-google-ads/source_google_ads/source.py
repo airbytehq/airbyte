@@ -37,7 +37,7 @@ from .streams import (
 )
 from .utils import GAQL
 
-FULL_REFRESH_CUSTOM_TABLE = ["geo_target_constant", "custom_audience"]
+FULL_REFRESH_CUSTOM_TABLE = ["asset", "custom_audience", "geo_target_constant"]
 
 
 class SourceGoogleAds(AbstractSource):
