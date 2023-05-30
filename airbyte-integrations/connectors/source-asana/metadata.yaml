@@ -1,4 +1,7 @@
 data:
+  allowedHosts:
+    hosts:
+      - app.asana.com
   connectorSubtype: api
   connectorType: source
   definitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
