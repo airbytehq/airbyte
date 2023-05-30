@@ -14,5 +14,7 @@ data:
   license: MIT
   name: ElasticSearch
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/elasticsearch
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/elasticsearch
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"
