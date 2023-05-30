@@ -22,6 +22,7 @@ from ci_connector_ops.pipelines.slack import send_message_to_webhook
 from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, sanitize_gcs_credentials
 from ci_connector_ops.utils import Connector
 from dagger import Client, Directory, Secret
+from github import PullRequest
 
 
 class ContextState(Enum):
@@ -36,6 +37,8 @@ class ContextState(Enum):
 
 class PipelineContext:
     """The pipeline context is used to store configuration for a specific pipeline run."""
+
+    PRODUCTION = bool(os.environ.get("PRODUCTION", False))  # Set this to True to enable production mode (e.g. to send PR comments)
 
     DEFAULT_EXCLUDED_FILES = (
         [".git"]
@@ -63,6 +66,7 @@ class PipelineContext:
         is_ci_optional: bool = False,
         slack_webhook: Optional[str] = None,
         reporting_slack_channel: Optional[str] = None,
+        pull_request: PullRequest = None,
     ):
         """Initialize a pipeline context.
 
@@ -77,6 +81,7 @@ class PipelineContext:
             is_ci_optional (bool, optional): Whether the CI is optional. Defaults to False.
             slack_webhook (Optional[str], optional): Slack webhook to send messages to. Defaults to None.
             reporting_slack_channel (Optional[str], optional): Slack channel to send messages to. Defaults to None.
+            pull_request (PullRequest, optional): The pull request object if the pipeline was triggered by a pull request. Defaults to None.
         """
         self.pipeline_name = pipeline_name
         self.is_local = is_local
@@ -90,6 +95,7 @@ class PipelineContext:
         self.is_ci_optional = is_ci_optional
         self.slack_webhook = slack_webhook
         self.reporting_slack_channel = reporting_slack_channel
+        self.pull_request = pull_request
         self.logger = logging.getLogger(self.pipeline_name)
         self.dagger_client = None
         self._report = None
@@ -268,6 +274,7 @@ class ConnectorContext(PipelineContext):
         ci_context: Optional[str] = None,
         slack_webhook: Optional[str] = None,
         reporting_slack_channel: Optional[str] = None,
+        pull_request: PullRequest = None,
     ):
         """Initialize a connector context.
 
@@ -285,6 +292,7 @@ class ConnectorContext(PipelineContext):
             ci_context (Optional[str], optional): Pull requests, workflow dispatch or nightly build. Defaults to None.
             slack_webhook (Optional[str], optional): The slack webhook to send messages to. Defaults to None.
             reporting_slack_channel (Optional[str], optional): The slack channel to send messages to. Defaults to None.
+            pull_request (PullRequest, optional): The pull request object if the pipeline was triggered by a pull request. Defaults to None.
         """
 
         self.pipeline_name = pipeline_name
@@ -306,6 +314,7 @@ class ConnectorContext(PipelineContext):
             ci_context=ci_context,
             slack_webhook=slack_webhook,
             reporting_slack_channel=reporting_slack_channel,
+            pull_request=pull_request,
         )
 
     @property
@@ -406,6 +415,8 @@ class ConnectorContext(PipelineContext):
             )
             if report_upload_exit_code != 0:
                 self.logger.error("Uploading the report to S3 failed.")
+        if self.report.should_be_commented_on_pr:
+            self.report.post_comment_on_pr()
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         if self.should_send_slack_message:
             await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)
@@ -436,6 +447,7 @@ class PublishConnectorContext(ConnectorContext):
         gha_workflow_run_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
+        pull_request: PullRequest = None,
     ):
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name

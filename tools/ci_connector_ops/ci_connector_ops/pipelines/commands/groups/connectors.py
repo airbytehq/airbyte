@@ -6,6 +6,7 @@
 
 import logging
 import os
+import sys
 from pathlib import Path
 from typing import Any, Dict, Tuple
 
@@ -144,6 +145,10 @@ def test(
     Args:
         ctx (click.Context): The click context.
     """
+    if ctx.obj["is_ci"] and ctx.obj["pull_request"] and ctx.obj["pull_request"].draft:
+        click.echo("Skipping connectors tests for draft pull request.")
+        sys.exit(0)
+
     click.secho(f"Will run the test pipeline for the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
     if ctx.obj["selected_connectors_and_files"]:
         update_global_commit_status_check_for_tests(ctx.obj, "pending")
@@ -165,6 +170,7 @@ def test(
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
+            pull_request=ctx.obj.get("pull_request"),
         )
         for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
     ]
@@ -327,6 +333,7 @@ def publish(
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
+            pull_request=ctx.obj.get("pull_request"),
         )
         for connector, modified_files in selected_connectors_and_files.items()
     ]
