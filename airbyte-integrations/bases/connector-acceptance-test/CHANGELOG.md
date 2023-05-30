@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.10.1
+## 0.10.2
 Fixing bug: test_catalog_has_supported_data_types was failing when a connector stream property is named 'type'.
 
 ## 0.10.1
