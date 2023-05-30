@@ -57,6 +57,9 @@ public interface Destination extends Integration {
     System.out.println(Jsons.serialize(message));
   }
 
+  /**
+   * Backwards-compatibility wrapper for an AirbyteMessageConsumer. Strips the sizeInBytes argument away from the .accept call.
+   */
   @Slf4j
   class ShimToSerializedAirbyteMessageConsumer implements SerializedAirbyteMessageConsumer {
 
