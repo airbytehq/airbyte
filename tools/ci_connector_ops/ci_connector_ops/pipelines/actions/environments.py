@@ -770,9 +770,18 @@ def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_p
     )
 
 
-def with_crane(context: PipelineContext) -> Container:
+def with_crane(
+        context: PipelineContext,
+        docker_hub_username_secret: Optional[Secret] = None,
+        docker_hub_password_secret: Optional[Secret] = None,
+    ) -> Container:
     """Crane is a tool to analyze and manipulate container images.
     We can use it to extract the image manifest and the list of layers or list the existing tags on an image repository.
     https://github.com/google/go-containerregistry/tree/main/cmd/crane
     """
-    return context.dagger_client.container().from_("gcr.io/go-containerregistry/crane:v0.15.1")
+
+    base_container = context.dagger_client.container().from_("gcr.io/go-containerregistry/crane:v0.15.1")
+    if docker_hub_username_secret and docker_hub_password_secret:
+        base_container.with_exec(["crane", "auth", "login", "index.docker.io", "-u", docker_hub_username_secret, "-p", docker_hub_username_secret])
+
+    return base_container
