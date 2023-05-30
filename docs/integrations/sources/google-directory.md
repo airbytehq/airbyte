@@ -68,7 +68,7 @@ You should now be ready to use the Google Directory connector in Airbyte.
 
 | Version | Date       | Pull Request                                             | Subject                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------|
-| 0.1.10  | 2023-05-30 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Remove `authSpecification` from spec           |
+| 0.1.10  | 2023-05-30 | [26775](https://github.com/airbytehq/airbyte/pull/26775) | Remove `authSpecification` from spec           |
 | 0.1.9   | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524)   | Update connector fields title/description      |
 | 0.1.8   | 2021-11-02 | [7409](https://github.com/airbytehq/airbyte/pull/7409)   | Support oauth (update publish)                 |
 | 0.1.7   | 2021-11-02 | [7409](https://github.com/airbytehq/airbyte/pull/7409)   | Support oauth                                  |
