@@ -140,6 +140,19 @@ NOW = 1234567
         ),
         pytest.param(
             [
+                {"stream": "my_stream", "data": {"field_A": "abc", "nested": None}},
+                {"stream": "my_stream", "data": {"field_A": "abc", "nested": [{"field_B": None, "field_C": "abc"}]}},
+            ],
+            {
+                "my_stream": {
+                    "field_A": {"type": "string"},
+                    "nested": {"type": ["array", "null"], "items": {"type": "object", "properties": {"field_C": {"type": "string"}}}},
+                }
+            },
+            id="test_array_top_level_null",
+        ),
+        pytest.param(
+            [
                 {"stream": "my_stream", "data": {"field_A": None}},
                 {"stream": "my_stream", "data": {"field_A": "abc"}},
             ],

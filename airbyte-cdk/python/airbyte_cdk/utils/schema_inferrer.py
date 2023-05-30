@@ -8,8 +8,7 @@ from typing import Any, Dict, List, Optional, Union
 from airbyte_cdk.models import AirbyteRecordMessage
 from genson import SchemaBuilder
 from genson.schema.strategies.object import Object
-from genson.schema.strategies.scalar import Number, String, Boolean
-from genson.schema.strategies.array import List as StrategyList, Tuple as StrategyTuple
+from genson.schema.strategies.scalar import Number
 
 
 class NoRequiredObj(Object):
@@ -23,6 +22,7 @@ class NoRequiredObj(Object):
         schema.pop("required", None)
         return schema
 
+
 class IntegerToNumber(Number):
     """
     This class has the regular Number behaviour, but it will never emit an integer type.
@@ -30,17 +30,18 @@ class IntegerToNumber(Number):
 
     def __init__(self, node_class):
         super(IntegerToNumber, self).__init__(node_class)
-        self._type = 'number'
+        self._type = "number"
 
 
 class NoRequiredSchemaBuilder(SchemaBuilder):
-    EXTRA_STRATEGIES = (NoRequiredObj,IntegerToNumber)
+    EXTRA_STRATEGIES = (NoRequiredObj, IntegerToNumber)
 
 
 # This type is inferred from the genson lib, but there is no alias provided for it - creating it here for type safety
 InferredSchema = Dict[str, Union[str, Any, List, List[Dict[str, Union[Any, List]]]]]
 
 SchemaNode = Union[dict, dict[str, str, Any, list, list[dict[str, Any, list]]]]
+
 
 class SchemaInferrer:
     """
@@ -93,7 +94,6 @@ class SchemaInferrer:
             if "items" in node:
                 self._clean(node["items"])
         return node
-
 
     def get_stream_schema(self, stream_name: str) -> Optional[InferredSchema]:
         """
