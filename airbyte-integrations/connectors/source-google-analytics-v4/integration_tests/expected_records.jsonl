@@ -11,7 +11,7 @@
 {"stream": "four_weekly_active_users", "data": {"ga_date": "2023-05-24", "ga_28dayUsers": 30, "view_id": "211669975", "isDataGolden": true}, "emitted_at": 1685023975150}
 {"stream": "four_weekly_active_users", "data": {"ga_date": "2023-05-25", "ga_28dayUsers": 28, "view_id": "211669975", "isDataGolden": true}, "emitted_at": 1685023976478}
 {"stream": "two_weekly_active_users", "data": {"ga_date": "2023-05-24", "ga_14dayUsers": 17, "view_id": "211669975", "isDataGolden": true}, "emitted_at": 1685023983198}
-{"stream": "two_weekly_active_users", "data": {"ga_date": "2023-05-25", "ga_14dayUsers": 15, "view_id": "211669975", "isDataGolden": true}, "emitted_at": 1685023983753}
+{"stream": "two_weekly_active_users", "data": {"ga_date": "2023-05-25", "ga_14dayUsers": 16, "view_id": "211669975", "isDataGolden": true}, "emitted_at": 1685023983753}
 {"stream": "weekly_active_users", "data": {"ga_date": "2023-05-24", "ga_7dayUsers": 10, "view_id": "211669975", "isDataGolden": true}, "emitted_at": 1685023990571}
 {"stream": "weekly_active_users", "data": {"ga_date": "2023-05-25", "ga_7dayUsers": 9, "view_id": "211669975", "isDataGolden": true}, "emitted_at": 1685023991040}
 {"stream": "daily_active_users", "data": {"ga_date": "2023-05-23", "ga_1dayUsers": 1, "view_id": "211669975", "isDataGolden": true}, "emitted_at": 1685023998149}
