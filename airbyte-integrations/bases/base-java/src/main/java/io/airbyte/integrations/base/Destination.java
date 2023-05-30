@@ -58,7 +58,8 @@ public interface Destination extends Integration {
   }
 
   /**
-   * Backwards-compatibility wrapper for an AirbyteMessageConsumer. Strips the sizeInBytes argument away from the .accept call.
+   * Backwards-compatibility wrapper for an AirbyteMessageConsumer. Strips the sizeInBytes argument
+   * away from the .accept call.
    */
   @Slf4j
   class ShimToSerializedAirbyteMessageConsumer implements SerializedAirbyteMessageConsumer {
