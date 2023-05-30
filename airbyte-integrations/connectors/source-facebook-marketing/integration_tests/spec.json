@@ -283,13 +283,8 @@
               "title": "Action Report Time",
               "description": "Determines the report time of action stats. For example, if a person saw the ad on Jan 1st but converted on Jan 2nd, when you query the API with action_report_time=impression, you see a conversion on Jan 1st. When you query the API with action_report_time=conversion, you see a conversion on Jan 2nd.",
               "default": "mixed",
-              "allOf": [
-                {
-                  "title": "ValidActionReportTimes",
-                  "description": "Generic enumeration.\n\nDerive from this class to define new enumerations.",
-                  "enum": ["conversion", "impression", "mixed"]
-                }
-              ]
+              "enum": ["conversion", "impression", "mixed"],
+              "type": "string"
             },
             "time_increment": {
               "title": "Time Increment",
