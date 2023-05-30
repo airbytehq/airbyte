@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-class PostgresCdcCatalogHelperTest {
+class PostgresCatalogHelperTest {
 
   @Test
   public void testRemoveIncrementalWithoutPk() {
@@ -30,9 +30,9 @@ class PostgresCdcCatalogHelperTest {
         .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
 
     assertEquals(noPrimaryKeyNoIncremental,
-        PostgresCdcCatalogHelper.removeIncrementalWithoutPk(Jsons.clone(noPrimaryKeyWithIncremental)));
+        PostgresCatalogHelper.removeIncrementalWithoutPk(Jsons.clone(noPrimaryKeyWithIncremental)));
     assertEquals(noPrimaryKeyNoIncremental,
-        PostgresCdcCatalogHelper.removeIncrementalWithoutPk(Jsons.clone(noPrimaryKeyNoIncremental)));
+        PostgresCatalogHelper.removeIncrementalWithoutPk(Jsons.clone(noPrimaryKeyNoIncremental)));
 
     // with primary key
     final AirbyteStream withPrimaryKeyNoIncremental = new AirbyteStream()
@@ -43,9 +43,9 @@ class PostgresCdcCatalogHelperTest {
         .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
 
     assertEquals(withPrimaryKeyWithIncremental,
-        PostgresCdcCatalogHelper.removeIncrementalWithoutPk(Jsons.clone(withPrimaryKeyWithIncremental)));
+        PostgresCatalogHelper.removeIncrementalWithoutPk(Jsons.clone(withPrimaryKeyWithIncremental)));
     assertEquals(withPrimaryKeyNoIncremental,
-        PostgresCdcCatalogHelper.removeIncrementalWithoutPk(Jsons.clone(withPrimaryKeyNoIncremental)));
+        PostgresCatalogHelper.removeIncrementalWithoutPk(Jsons.clone(withPrimaryKeyNoIncremental)));
   }
 
   @Test
@@ -53,14 +53,14 @@ class PostgresCdcCatalogHelperTest {
     final AirbyteStream withIncremental = new AirbyteStream()
         .withSourceDefinedCursor(false)
         .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
-    assertTrue(PostgresCdcCatalogHelper
+    assertTrue(PostgresCatalogHelper
         .setIncrementalToSourceDefined(withIncremental)
         .getSourceDefinedCursor());
 
     final AirbyteStream noIncremental = new AirbyteStream()
         .withSourceDefinedCursor(false)
         .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));
-    assertFalse(PostgresCdcCatalogHelper
+    assertFalse(PostgresCatalogHelper
         .setIncrementalToSourceDefined(noIncremental)
         .getSourceDefinedCursor());
   }
@@ -77,7 +77,7 @@ class PostgresCdcCatalogHelperTest {
     final AirbyteStream after = new AirbyteStream()
         .withJsonSchema(Jsons.jsonNode(Map.of("properties", properties)));
 
-    assertEquals(after, PostgresCdcCatalogHelper.addCdcMetadataColumns(before));
+    assertEquals(after, PostgresCatalogHelper.addCdcMetadataColumns(before));
   }
 
 }
