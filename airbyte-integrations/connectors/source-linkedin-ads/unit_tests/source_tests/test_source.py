@@ -206,7 +206,7 @@ class TestLinkedInAdsStreamSlicing:
             (
                     Creatives,
                     {"campaign_id": 123},
-                    "count=500&q=criteria",
+                    "count=100&q=criteria",
             )
         ],
         ids=["AccountUsers", "CampaignGroups", "Campaigns", "Creatives"],
