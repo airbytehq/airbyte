@@ -23,7 +23,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "lastModified": "2050-01-01" },
+      "stream_state": { "lastModifiedAt": 2524608000000 },
       "stream_descriptor": { "name": "creatives" }
     }
   },
