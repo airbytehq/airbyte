@@ -27,4 +27,5 @@ jobs:
           paths: ${{ github.workspace }}/airbyte-integrations/connectors/source-postgres/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 64
+          title: Coverage report for source-postgres
           update-comment: true
