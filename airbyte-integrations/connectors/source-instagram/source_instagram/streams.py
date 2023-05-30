@@ -375,6 +375,9 @@ class MediaInsights(Media):
                 # We receive all Media starting from the last one, and if on the next Media we get an Insight error,
                 # then no reason to make inquiries for each Media further, since they were published even earlier.
                 return None
+            elif error.api_error_code() == 100 and error.api_error_subcode() == 33:
+                self.logger.error(f"Check provided permissions for {account_id}: {error.api_error_message()}")
+                return None
             raise error
 
 
