@@ -10,9 +10,11 @@ data:
   name: Amazon Seller Partner
   registries:
     cloud:
-      enabled: true
+      enabled: false
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
+  documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-seller-partner
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

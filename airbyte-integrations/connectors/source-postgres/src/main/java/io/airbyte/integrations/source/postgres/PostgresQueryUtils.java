@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.sql.SQLException;
 import java.util.List;
@@ -79,14 +80,16 @@ public class PostgresQueryUtils {
    * value of the xmin snapshot (which is a combination of 1 and 2). If no wraparound has occurred,
    * this should be the same as 2.
    */
-  public static void logXminStatus(final JdbcDatabase database) throws SQLException {
+  public static XminStatus getXminStatus(final JdbcDatabase database) throws SQLException {
     LOGGER.debug("xmin status query: {}", XMIN_STATUS_QUERY);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(XMIN_STATUS_QUERY).executeQuery(),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);
     final JsonNode result = jsonNodes.get(0);
-    LOGGER.info(String.format("Xmin Status : {Number of wraparounds: %s, Xmin Transaction Value: %s, Xmin Raw Value: %s",
-        result.get(NUM_WRAPAROUND_COL), result.get(XMIN_XID_VALUE_COL), result.get(XMIN_RAW_VALUE_COL)));
+    return new XminStatus()
+        .withNumWraparound(result.get(NUM_WRAPAROUND_COL).asLong())
+        .withXminXidValue(result.get(XMIN_XID_VALUE_COL).asLong())
+        .withXminRawValue(result.get(XMIN_RAW_VALUE_COL).asLong());
   }
 
   public static void logFullVacuumStatus(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final String quoteString) {
