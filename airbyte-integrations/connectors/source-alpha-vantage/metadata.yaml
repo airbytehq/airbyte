@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: db385323-9333-4fec-bec3-9e0ca9326c90
@@ -13,6 +8,14 @@ data:
   icon: alpha-vantage.svg
   license: MIT
   name: Alpha Vantage
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/alpha-vantage
+  documentationUrl: https://docs.airbyte.com/integrations/sources/alpha-vantage
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: source
   definitionId: d917a47b-8537-4d0d-8c10-36a9928d4265
@@ -13,6 +8,14 @@ data:
   icon: kafka.svg
   license: MIT
   name: Kafka
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/kafka
+  documentationUrl: https://docs.airbyte.com/integrations/sources/kafka
+  tags:
+    - language:java
+    - language:python
 metadataSpecVersion: "1.0"

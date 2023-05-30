@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: be9ee02f-6efe-4970-979b-95f797a37188
@@ -13,6 +8,14 @@ data:
   icon: convertkit.svg
   license: MIT
   name: ConvertKit
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/convertkit
+  documentationUrl: https://docs.airbyte.com/integrations/sources/convertkit
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

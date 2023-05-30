@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: bc617b5f-1b9e-4a2d-bebe-782fd454a771
@@ -13,6 +8,13 @@ data:
   icon: timely.svg
   license: MIT
   name: Timely
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/timely
+  documentationUrl: https://docs.airbyte.com/integrations/sources/timely
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

@@ -159,7 +159,7 @@ class DatetimeBasedCursor(StreamSlicer):
         return comparator(cursor_date, default_date)
 
     def parse_date(self, date: str) -> datetime.datetime:
-        return self._parser.parse(date, self.datetime_format, self._timezone)
+        return self._parser.parse(date, self.datetime_format)
 
     @classmethod
     def _parse_timedelta(cls, time_str) -> Union[datetime.timedelta, Duration]:

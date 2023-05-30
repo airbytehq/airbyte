@@ -1,18 +1,18 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: file
   connectorType: destination
   definitionId: ca8f6566-e555-4b40-943a-545bf123117a
-  dockerImageTag: 0.2.16
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/destination-gcs
   githubIssueLabel: destination-gcs
   icon: googlecloudstorage.svg
   license: MIT
   name: Google Cloud Storage (GCS)
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
   resourceRequirements:
     jobSpecific:
@@ -20,5 +20,7 @@ data:
         resourceRequirements:
           memory_limit: 1Gi
           memory_request: 1Gi
-  supportUrl: https://docs.airbyte.com/integrations/destinations/gcs
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/gcs
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

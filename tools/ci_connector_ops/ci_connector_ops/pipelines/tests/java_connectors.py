@@ -8,11 +8,12 @@ from typing import List, Optional
 
 import anyio
 from ci_connector_ops.pipelines.actions import environments, run_steps, secrets
-from ci_connector_ops.pipelines.bases import GradleTask, StepResult, StepStatus
+from ci_connector_ops.pipelines.bases import StepResult, StepStatus
 from ci_connector_ops.pipelines.builds import LOCAL_BUILD_PLATFORM
-from ci_connector_ops.pipelines.builds.java_connectors import BuildConnectorImage
+from ci_connector_ops.pipelines.builds.java_connectors import BuildConnectorDistributionTar, BuildConnectorImage
 from ci_connector_ops.pipelines.builds.normalization import BuildOrPullNormalization
 from ci_connector_ops.pipelines.contexts import ConnectorContext
+from ci_connector_ops.pipelines.gradle import GradleTask
 from ci_connector_ops.pipelines.tests.common import AcceptanceTests
 from ci_connector_ops.pipelines.utils import export_container_to_tarball
 from dagger import File, QueryError
@@ -71,8 +72,23 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         List[StepResult]: The results of all the tests steps.
     """
     context.secrets_dir = await secrets.get_connector_secret_dir(context)
+    step_results = []
+    build_distribution_tar_results = await BuildConnectorDistributionTar(context).run()
+    step_results.append(build_distribution_tar_results)
+    if build_distribution_tar_results.status is StepStatus.FAILURE:
+        return step_results
 
-    step_results = await run_steps([BuildConnectorImage(context, LOCAL_BUILD_PLATFORM), UnitTests(context)])
+    build_connector_image_results = await BuildConnectorImage(context, LOCAL_BUILD_PLATFORM).run(
+        build_distribution_tar_results.output_artifact
+    )
+    step_results.append(build_connector_image_results)
+    if build_connector_image_results.status is StepStatus.FAILURE:
+        return step_results
+
+    unit_tests_results = await UnitTests(context).run()
+    step_results.append(unit_tests_results)
+    if unit_tests_results.status is StepStatus.FAILURE:
+        return step_results
 
     if context.connector.supports_normalization:
         normalization_image = f"{context.connector.normalization_repository}:dev"
@@ -86,8 +102,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     else:
         normalization_tar_file = None
 
-    connector_container = step_results[0].output_artifact
-    connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
+    connector_image_tar_file, _ = await export_container_to_tarball(context, build_connector_image_results.output_artifact)
 
     return await run_steps(
         [

@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - api.everhour.com
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 6babfc42-c734-4ef6-a817-6eca15f0f9b7
@@ -16,6 +11,13 @@ data:
   icon: everhour.svg
   license: MIT
   name: Everhour
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/everhour
+  documentationUrl: https://docs.airbyte.com/integrations/sources/everhour
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

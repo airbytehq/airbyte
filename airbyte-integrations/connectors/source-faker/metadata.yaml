@@ -1,20 +1,20 @@
 data:
   allowedHosts:
     hosts: []
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
-  dockerImageTag: 2.0.3
+  dockerImageTag: 2.1.0
   dockerRepository: airbyte/source-faker
   githubIssueLabel: source-faker
   icon: faker.svg
   license: MIT
   name: Sample Data (Faker)
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
   resourceRequirements:
     jobSpecific:
@@ -27,5 +27,7 @@ data:
       - users
       - products
       - purchases
-  supportUrl: https://docs.airbyte.com/integrations/sources/faker
+  documentationUrl: https://docs.airbyte.com/integrations/sources/faker
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

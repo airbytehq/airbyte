@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 7c37685e-8512-4901-addf-9afbef6c0de9
@@ -13,6 +8,14 @@ data:
   icon: breezometer.svg
   license: MIT
   name: Breezometer
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/breezometer
+  documentationUrl: https://docs.airbyte.com/integrations/sources/breezometer
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

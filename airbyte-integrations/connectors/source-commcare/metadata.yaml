@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: f39208dc-7e1c-48b8-919b-5006360cc27f
@@ -12,6 +7,13 @@ data:
   githubIssueLabel: source-commcare
   license: MIT
   name: Commcare
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/commcare
+  documentationUrl: https://docs.airbyte.com/integrations/sources/commcare
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

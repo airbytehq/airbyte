@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 4942d392-c7b5-4271-91f9-3b4f4e51eb3e
@@ -13,6 +8,13 @@ data:
   icon: zohocrm.svg
   license: MIT
   name: ZohoCRM
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/zoho-crm
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-crm
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

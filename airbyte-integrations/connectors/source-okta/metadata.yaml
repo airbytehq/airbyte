@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
@@ -13,6 +8,13 @@ data:
   icon: okta.svg
   license: MIT
   name: Okta
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/okta
+  documentationUrl: https://docs.airbyte.com/integrations/sources/okta
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

@@ -11,12 +11,14 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
-  dockerImageTag: 2.0.17
+  dockerImageTag: 2.0.28
   dockerRepository: airbyte/source-alloydb-strict-encrypt
   githubIssueLabel: source-alloydb
   icon: alloydb.svg
   license: MIT
   name: AlloyDB for PostgreSQL
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/alloydb
+  documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

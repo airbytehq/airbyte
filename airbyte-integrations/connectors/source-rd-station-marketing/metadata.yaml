@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: fb141f29-be2a-450b-a4f2-2cd203a00f84
@@ -13,6 +8,13 @@ data:
   icon: rdstation.svg
   license: MIT
   name: RD Station Marketing
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/rd-station-marketing
+  documentationUrl: https://docs.airbyte.com/integrations/sources/rd-station-marketing
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

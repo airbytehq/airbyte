@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 2fed2292-5586-480c-af92-9944e39fe12d
@@ -13,6 +8,13 @@ data:
   icon: short.svg
   license: MIT
   name: Short.io
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/shortio
+  documentationUrl: https://docs.airbyte.com/integrations/sources/shortio
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

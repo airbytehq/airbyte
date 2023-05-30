@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 6c6d8b0c-db35-4cd1-a7de-0ca8b080f5ac
@@ -13,6 +8,14 @@ data:
   icon: vitally.svg
   license: MIT
   name: Vitally
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/vitally
+  documentationUrl: https://docs.airbyte.com/integrations/sources/vitally
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

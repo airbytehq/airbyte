@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 781f8b1d-4e20-4842-a2c3-cd9b119d65fa
@@ -13,6 +8,14 @@ data:
   icon: smaily.svg
   license: MIT
   name: Smaily
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/smaily
+  documentationUrl: https://docs.airbyte.com/integrations/sources/smaily
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

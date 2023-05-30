@@ -58,6 +58,8 @@ Either way, your connector will automatically increment the `offset` for subsequ
 
 So for the example API and dataset above, you could apply the following Pagination configurations in the Connector Builder:
 
+<iframe width="640" height="548" src="https://www.loom.com/embed/ec18b3c4e6db4007b4ef10ee808ab873" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
 - Mode: `Offset Increment`
 - Limit: `2`
 - Inject limit into outgoing HTTP request:
@@ -153,6 +155,8 @@ Either way, your connector will automatically increment the page number by 1 for
 
 So for the example API and dataset above, you could apply the following configurations in the Connector Builder:
 
+<iframe width="640" height="554" src="https://www.loom.com/embed/c6187b4e21534b9a825e93a002c33d06" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
 - Mode: `Page Increment`
 - Page size: `3`
 - Start from page: `1`
@@ -235,6 +239,8 @@ The `meta.next_token` value of that response can then be set as the `pagination_
 To integrate with such an API in the Connector Builder, you must configure how this "Next page cursor" is obtained for each request. In most cases, the next page cursor is either part of the response body or part of the HTTP headers. Select the respective type and define the property (or nested property) that holds the cursor value, for example "`meta`, `next_token`" for the twitter API.
 
 You can also configure how the cursor value is injected into the API Requests. In the above example, this would be set as a `request_parameter` with the field name `pagination_token`, but this is dependent on the API - check the docs to see if they describe how to set the cursor/token for subsequent requests. For cursor pagination, if `path` is selected as the `Inject into` option, then the entire request URL for the subsequent request will be replaced by the cursor value. This can be useful for APIs that return a full URL that should be requested for the next page of results, such as the [GitHub API](https://docs.github.com/en/rest/guides/using-pagination-in-the-rest-api?apiVersion=2022-11-28).
+
+<iframe width="640" height="563" src="https://www.loom.com/embed/c4f657153baa407b993bfadf6ea51532" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 The "Page size" can optionally be specified as well; if so, how this page size gets injected into the HTTP requests can be configured similar to the above pagination methods.
 

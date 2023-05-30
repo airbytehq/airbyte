@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 03a53b13-794a-4d6b-8544-3b36ed8f3ce4
@@ -13,6 +8,14 @@ data:
   icon: waiteraid.svg
   license: MIT
   name: Waiteraid
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/waiteraid
+  documentationUrl: https://docs.airbyte.com/integrations/sources/waiteraid
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"
