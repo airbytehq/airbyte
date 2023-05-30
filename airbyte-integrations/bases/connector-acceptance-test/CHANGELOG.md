@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.10.1
-Fixing bug introduced in 0.10.0.
+Fixing bug: test_catalog_has_supported_data_types was failing when a connector stream property is named 'type'.
 
 ## 0.10.1
 Reverting to 0.9.0 as the latest version. 0.10.0 was released with a bug failing CAT on a couple of connectors.
