@@ -1,6 +1,9 @@
 # Changelog
 
 ## 0.10.1
+Fixing bug introduced in 0.10.0.
+
+## 0.10.1
 Reverting to 0.9.0 as the latest version. 0.10.0 was released with a bug failing CAT on a couple of connectors.
 
 ## 0.10.0
