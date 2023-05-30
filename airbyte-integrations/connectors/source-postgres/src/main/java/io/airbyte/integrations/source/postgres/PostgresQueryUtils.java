@@ -111,7 +111,7 @@ public class PostgresQueryUtils {
           LOGGER.info("Full Vacuum currently in progress in {} phase", jsonNodes.get(0).get("phase"));
         }
       } catch (SQLException e) {
-        LOGGER.warn("Failed to check for full vacuum in progress", e);
+        LOGGER.warn("Failed to log full vacuum in progress. This warning shouldn't affect the sync and can be ignored", e);
       }
     });
   }
