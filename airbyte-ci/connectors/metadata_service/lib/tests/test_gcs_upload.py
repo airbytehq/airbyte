@@ -104,29 +104,35 @@ def test_upload_metadata_to_gcs_valid_metadata(
     assert blob_id == mocks["mock_version_blob"].id
 
     if not version_blob_exists:
-        mocks["mock_version_blob"].upload_from_filename.assert_called_with(str(metadata_file_path))
+        mocks["mock_version_blob"].upload_from_filename.assert_called_with(metadata_file_path)
         assert uploaded
 
     if not latest_blob_exists:
-        mocks["mock_latest_blob"].upload_from_filename.assert_called_with(str(metadata_file_path))
+        mocks["mock_latest_blob"].upload_from_filename.assert_called_with(metadata_file_path)
         assert uploaded
 
     if version_blob_md5_hash != local_file_md5_hash:
-        mocks["mock_version_blob"].upload_from_filename.assert_called_with(str(metadata_file_path))
+        mocks["mock_version_blob"].upload_from_filename.assert_called_with(metadata_file_path)
         assert uploaded
 
     if latest_blob_md5_hash != local_file_md5_hash:
-        mocks["mock_latest_blob"].upload_from_filename.assert_called_with(str(metadata_file_path))
+        mocks["mock_latest_blob"].upload_from_filename.assert_called_with(metadata_file_path)
         assert uploaded
 
 
 def test_upload_metadata_to_gcs_invalid_metadata(invalid_metadata_yaml_files):
-    metadata_file_path = pathlib.Path(invalid_metadata_yaml_files[0])
-    with pytest.raises(ValidationError):
-        gcs_upload.upload_metadata_to_gcs(
-            "my_bucket",
-            metadata_file_path,
-        )
+    for invalid_metadata_file in invalid_metadata_yaml_files:
+        metadata_file_path = pathlib.Path(invalid_metadata_file)
+        try:
+            gcs_upload.upload_metadata_to_gcs(
+                "my_bucket",
+                metadata_file_path,
+            )
+            assert False, f"Expected ValueError for invalid metadata file: {metadata_file_path}"
+        except (ValueError, StopIteration):
+            continue
+        except Exception as e:
+            assert False, f"Expected ValueError for invalid metadata file: {metadata_file_path}. Got this instead: {e}"
 
 
 def test_upload_metadata_to_gcs_non_existent_metadata_file():

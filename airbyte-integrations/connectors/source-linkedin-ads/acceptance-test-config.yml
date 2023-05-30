@@ -16,12 +16,14 @@ acceptance_tests:
   discovery:
     tests:
     - config_path: "secrets/config_oauth.json"
+      backward_compatibility_tests_config:
+        disable_for_version: 0.1.16 # migration to May 2023 Api Version; schema changes; stream removed
       timeout_seconds: 60
   basic_read:
     tests:
     - config_path: "secrets/config_oauth.json"
       expect_records:
-        path: "integration_tests/expected_records.txt"
+        path: "integration_tests/expected_records.jsonl"
       fail_on_extra_columns: false
   incremental:
     tests:

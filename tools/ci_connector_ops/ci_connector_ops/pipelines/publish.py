@@ -7,7 +7,7 @@ from typing import List, Tuple
 
 import anyio
 from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification
-from ci_connector_ops.pipelines import builds
+from ci_connector_ops.pipelines import builds, consts
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.actions.remote_storage import upload_to_gcs
 from ci_connector_ops.pipelines.bases import ConnectorReport, Step, StepResult, StepStatus
@@ -40,19 +40,6 @@ class CheckConnectorImageDoesNotExist(Step):
             if docker_tag_already_exists:
                 return StepResult(self, status=StepStatus.SKIPPED, stderr=f"{self.context.docker_image_name} already exists.")
             return StepResult(self, status=StepStatus.SUCCESS, stdout=f"No manifest found for {self.context.docker_image_name}.")
-
-
-class BuildConnectorForPublish(Step):
-    title = "Build connector for publish"
-
-    async def _run(self) -> StepResult:
-        build_connectors_results = (await builds.run_connector_build(self.context)).values()
-        for build_result in build_connectors_results:
-            if build_result.status is not StepStatus.SUCCESS:
-                return build_result
-        built_connectors_platform_variants = [step_result.output_artifact for step_result in build_connectors_results]
-
-        return StepResult(self, status=StepStatus.SUCCESS, output_artifact=built_connectors_platform_variants)
 
 
 class PushConnectorImageToRegistry(Step):
@@ -95,7 +82,7 @@ class PullConnectorImageFromRegistry(Step):
         We want to make sure that the image we are about to release is compatible with all docker versions.
         We use crane to inspect the manifest of the image and check if it only has gzip layers.
         """
-        for platform in builds.BUILD_PLATFORMS:
+        for platform in consts.BUILD_PLATFORMS:
 
             inspect = environments.with_crane(self.context).with_exec(
                 ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image_name}"]
@@ -230,6 +217,18 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
         ConnectorReport: The reports holding publish results.
     """
 
+    if not context.pre_release:
+        metadata_upload_step = metadata.MetadataUpload(
+            context=context,
+            metadata_service_gcs_credentials_secret=context.metadata_service_gcs_credentials_secret,
+            docker_hub_username_secret=context.docker_hub_username_secret,
+            docker_hub_password_secret=context.docker_hub_password_secret,
+            metadata_bucket_name=context.metadata_bucket_name,
+            metadata_path=context.metadata_path,
+        )
+    else:
+        metadata_upload_step = None
+
     def create_connector_report(results: List[StepResult]) -> ConnectorReport:
         report = ConnectorReport(context, results, name="PUBLISH RESULTS")
         context.report = report
@@ -237,33 +236,51 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
     async with semaphore:
         async with context:
+            # TODO add a strucutre to hold the results of each step. and perform skips and failures.
+
             results = []
+
             metadata_validation_results = await metadata.MetadataValidation(context, context.metadata_path).run()
             results.append(metadata_validation_results)
+
+            # Exit early if the metadata file is invalid.
             if metadata_validation_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
             check_connector_image_results = await CheckConnectorImageDoesNotExist(context).run()
             results.append(check_connector_image_results)
+
+            # If the connector image already exists, we don't need to build it, but we still need to upload the metadata file.
+            # We also need to upload the spec to the spec cache bucket.
             if check_connector_image_results.status is StepStatus.SKIPPED and not context.pre_release:
                 context.logger.info(
-                    "The connector version is already published. Let's upload metadata.yaml to GCS even if no version bump happened."
+                    "The connector version is already published. Let's upload metadata.yaml and spec to GCS even if no version bump happened."
                 )
-                metadata_upload_results = await metadata.MetadataUpload(context).run()
+                already_published_connector = context.dagger_client.container().from_(context.docker_image_from_metadata)
+                upload_to_spec_cache_results = await UploadSpecToCache(context).run(already_published_connector)
+                results.append(upload_to_spec_cache_results)
+                if upload_to_spec_cache_results.status is not StepStatus.SUCCESS:
+                    return create_connector_report(results)
+                metadata_upload_results = await metadata_upload_step.run()
                 results.append(metadata_upload_results)
 
+
+            # Exit early if the connector image already exists or has failed to build
             if check_connector_image_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
-            build_connector_results = await BuildConnectorForPublish(context).run()
+            build_connector_results = await builds.run_connector_build(context)
             results.append(build_connector_results)
+
+            # Exit early if the connector image failed to build
             if build_connector_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
-            built_connector_platform_variants = build_connector_results.output_artifact
-
+            built_connector_platform_variants = list(build_connector_results.output_artifact.values())
             push_connector_image_results = await PushConnectorImageToRegistry(context).run(built_connector_platform_variants)
             results.append(push_connector_image_results)
+
+            # Exit early if the connector image failed to push
             if push_connector_image_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
@@ -271,18 +288,19 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             # See https://github.com/airbytehq/airbyte/issues/26085
             pull_connector_image_results = await PullConnectorImageFromRegistry(context).run()
             results.append(pull_connector_image_results)
+
+            # Exit early if the connector image failed to pull
             if pull_connector_image_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
-            if not context.pre_release:
-                # Only upload to spec cache bucket if the connector is not a pre-release.
-                upload_to_spec_cache_results = await UploadSpecToCache(context).run(built_connector_platform_variants[0])
-                results.append(upload_to_spec_cache_results)
-                if upload_to_spec_cache_results.status is not StepStatus.SUCCESS:
-                    return create_connector_report(results)
+            upload_to_spec_cache_results = await UploadSpecToCache(context).run(built_connector_platform_variants[0])
+            results.append(upload_to_spec_cache_results)
+            if upload_to_spec_cache_results.status is not StepStatus.SUCCESS:
+                return create_connector_report(results)
 
+            if not context.pre_release:
                 # Only upload to metadata service bucket if the connector is not a pre-release.
-                metadata_upload_results = await metadata.MetadataUpload(context).run()
+                metadata_upload_results = await metadata_upload_step.run()
                 results.append(metadata_upload_results)
 
             return create_connector_report(results)
