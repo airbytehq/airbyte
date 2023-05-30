@@ -28,6 +28,6 @@ async def run_connectors_pipelines(
     async with dagger.Connection(Config(log_output=sys.stderr, execute_timeout=execute_timeout)) as dagger_client:
         async with anyio.create_task_group() as tg:
             for context in contexts:
-                context.dagger_client = dagger_client.pipeline(f"{context.connector.technical_name} - {pipeline_name}")
+                context.dagger_client = dagger_client.pipeline(pipeline_name)
                 tg.start_soon(connector_pipeline, context, semaphore, *args)
     return contexts
