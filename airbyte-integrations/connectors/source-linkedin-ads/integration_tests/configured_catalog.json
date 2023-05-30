@@ -54,22 +54,10 @@
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["lastModified"]
+        "default_cursor_field": ["lastModifiedAt"]
       },
       "sync_mode": "incremental",
-      "cursor_field": ["lastModified"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "ad_direct_sponsored_contents",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["lastModified"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["lastModified"],
+      "cursor_field": ["lastModifiedAt"],
       "destination_sync_mode": "append"
     },
     {
