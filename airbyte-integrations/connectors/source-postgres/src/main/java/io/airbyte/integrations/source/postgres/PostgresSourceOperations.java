@@ -224,6 +224,78 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     }
   }
 
+  public void copyToJsonFieldTest(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+    final PgResultSetMetaData metadata = (PgResultSetMetaData) resultSet.getMetaData();
+    final String columnName = metadata.getColumnName(colIndex);
+    final ColumnInfo columnInfo = getColumnInfo(colIndex, metadata, columnName);
+    final String value = resultSet.getString(colIndex);
+    if (value == null) {
+      json.putNull(columnName);
+    } else {
+      switch (columnInfo.columnTypeName) {
+        case "bool", "boolean" -> putBoolean(json, columnName, resultSet, colIndex);
+        case "bytea" -> json.put(columnName, value);
+        case TIMETZ -> putTimeWithTimezone(json, columnName, resultSet, colIndex);
+        case TIMESTAMPTZ -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
+        case "hstore" -> putHstoreAsJson(json, columnName, resultSet, colIndex);
+        case "circle" -> putObject(json, columnName, resultSet, colIndex, PGcircle.class);
+        case "box" -> putObject(json, columnName, resultSet, colIndex, PGbox.class);
+        case "double precision", "float", "float8" -> putDouble(json, columnName, resultSet, colIndex);
+        case "line" -> putObject(json, columnName, resultSet, colIndex, PGline.class);
+        case "lseg" -> putObject(json, columnName, resultSet, colIndex, PGlseg.class);
+        case "path" -> putObject(json, columnName, resultSet, colIndex, PGpath.class);
+        case "point" -> putObject(json, columnName, resultSet, colIndex, PGpoint.class);
+        case "polygon" -> putObject(json, columnName, resultSet, colIndex, PGpolygon.class);
+        case "_varchar", "_char", "_bpchar", "_text", "_name" -> putArray(json, columnName, resultSet, colIndex);
+        case "_int2", "_int4", "_int8", "_oid" -> putLongArray(json, columnName, resultSet, colIndex);
+        case "_numeric", "_decimal" -> {
+          // If a numeric_array column precision is not 0 AND scale is 0,
+          // then we know the precision and scale are purposefully chosen
+          if (metadata.getPrecision(colIndex) != 0 && metadata.getScale(colIndex) == 0) {
+            putBigIntArray(json, columnName, resultSet, colIndex);
+          } else {
+            putBigDecimalArray(json, columnName, resultSet, colIndex);
+          }
+        }
+        case "_money" -> putMoneyArray(json, columnName, resultSet, colIndex);
+        case "_float4", "_float8" -> putDoubleArray(json, columnName, resultSet, colIndex);
+        case "_bool" -> putBooleanArray(json, columnName, resultSet, colIndex);
+        case "_bit" -> putBitArray(json, columnName, resultSet, colIndex);
+        case "_bytea" -> putByteaArray(json, columnName, resultSet, colIndex);
+        case "_date" -> putDateArray(json, columnName, resultSet, colIndex);
+        case "_timestamptz" -> putTimestampTzArray(json, columnName, resultSet, colIndex);
+        case "_timestamp" -> putTimestampArray(json, columnName, resultSet, colIndex);
+        case "_timetz" -> putTimeTzArray(json, columnName, resultSet, colIndex);
+        case "_time" -> putTimeArray(json, columnName, resultSet, colIndex);
+        default -> {
+          switch (columnInfo.columnType) {
+            case BOOLEAN -> json.put(columnName, value.equalsIgnoreCase("t"));
+            case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
+            case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
+            case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
+            case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
+            case REAL -> putFloat(json, columnName, resultSet, colIndex);
+            case NUMERIC, DECIMAL -> {
+              if (metadata.getPrecision(colIndex) != 0 && metadata.getScale(colIndex) == 0) {
+                putBigInt(json, columnName, resultSet, colIndex);
+              } else {
+                putBigDecimal(json, columnName, resultSet, colIndex);
+              }
+            }
+            // BIT is a bit string in Postgres, e.g. '0100'
+            case BIT, CHAR, VARCHAR, LONGVARCHAR -> json.put(columnName, value);
+            case DATE -> putDate(json, columnName, resultSet, colIndex);
+            case TIME -> putTime(json, columnName, resultSet, colIndex);
+            case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
+            case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
+            case ARRAY -> putArray(json, columnName, resultSet, colIndex);
+            default -> json.put(columnName, value);
+          }
+        }
+      }
+    }
+  }
+
   private void putTimeArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int colIndex) throws SQLException {
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
