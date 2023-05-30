@@ -19,7 +19,7 @@ import asyncer
 import click
 import git
 from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
-from dagger import Config, Connection, Container, DaggerError, File, QueryError
+from dagger import Config, Connection, Container, DaggerError, File, ImageLayerCompression, QueryError
 from more_itertools import chunked
 
 if TYPE_CHECKING:
@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
 METADATA_FILE_NAME = "metadata.yaml"
+METADATA_ICON_FILE_NAME = "icon.svg"
 
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
@@ -346,7 +347,7 @@ async def export_container_to_tarball(
         tar_file_name = f"{context.connector.technical_name}_{context.git_revision}.tar"
     tar_file_name = slugify(tar_file_name)
     local_path = Path(f"{context.host_image_export_dir_path}/{tar_file_name}")
-    export_success = await container.export(str(local_path))
+    export_success = await container.export(str(local_path), forced_compression=ImageLayerCompression.Gzip)
     if export_success:
         exported_file = (
             context.dagger_client.host().directory(context.host_image_export_dir_path, include=[tar_file_name]).file(tar_file_name)
