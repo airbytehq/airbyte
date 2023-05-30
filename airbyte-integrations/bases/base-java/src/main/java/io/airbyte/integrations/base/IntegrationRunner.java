@@ -247,7 +247,6 @@ public class IntegrationRunner {
     if (baos.size() > 0) {
       consumer.accept(baos.toString(StandardCharsets.UTF_8), byteCount);
     }
-    // }
   }
 
   /**
