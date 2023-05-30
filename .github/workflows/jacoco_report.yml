@@ -29,4 +29,5 @@ jobs:
           min-coverage-overall: 64
           min-coverage-changed-files: 60
           title: Coverage report for source-postgres
+          update-comment: true
           
