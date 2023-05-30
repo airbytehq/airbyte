@@ -6,7 +6,7 @@
 
 import click
 from ci_connector_ops.pipelines import github
-from ci_connector_ops.pipelines.contexts import CIContext
+from ci_connector_ops.pipelines.bases import CIContext
 from ci_connector_ops.pipelines.utils import (
     get_current_epoch_time,
     get_current_git_branch,
