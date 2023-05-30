@@ -11,10 +11,9 @@ import static io.airbyte.integrations.destination.iceberg.IcebergConstants.REST_
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.google.common.base.Preconditions;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -76,6 +75,7 @@ public class RESTCatalogConfig
     if (isNotBlank(this.token)) {
       properties.put(OAuth2Properties.TOKEN, this.token);
     }
+    properties.put(CatalogProperties.WAREHOUSE_LOCATION, this.storageConfig.getWarehouseUri());
     catalog.initialize(CATALOG_NAME, properties);
     return catalog;
   }
