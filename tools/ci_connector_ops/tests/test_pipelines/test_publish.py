@@ -164,7 +164,7 @@ STEPS_TO_PATCH = [
     (publish, "UploadSpecToCache"),
     (publish, "PushConnectorImageToRegistry"),
     (publish, "PullConnectorImageFromRegistry"),
-    (publish, "BuildConnectorForPublish"),
+    (publish.builds, "run_connector_build"),
 ]
 
 
@@ -213,6 +213,10 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
     run_metadata_validation = publish.metadata.MetadataValidation.return_value.run
     run_metadata_validation.return_value = mocker.Mock(status=StepStatus.SUCCESS)
 
+    # ensure spec always succeeds
+    run_upload_spec_to_cache = publish.UploadSpecToCache.return_value.run
+    run_upload_spec_to_cache.return_value = mocker.Mock(status=StepStatus.SUCCESS)
+
     run_check_connector_image_does_not_exist = publish.CheckConnectorImageDoesNotExist.return_value.run
     run_check_connector_image_does_not_exist.return_value = mocker.Mock(status=check_image_exists_status)
 
@@ -226,7 +230,7 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
 
     # Check that nothing else is called
     for module, to_mock in STEPS_TO_PATCH:
-        if to_mock not in ["MetadataValidation", "MetadataUpload", "CheckConnectorImageDoesNotExist"]:
+        if to_mock not in ["MetadataValidation", "MetadataUpload", "CheckConnectorImageDoesNotExist", "UploadSpecToCache"]:
             getattr(module, to_mock).return_value.run.assert_not_called()
 
     if check_image_exists_status is StepStatus.SKIPPED and pre_release:
@@ -248,6 +252,7 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
             == [
                 run_metadata_validation.return_value,
                 run_check_connector_image_does_not_exist.return_value,
+                run_upload_spec_to_cache.return_value,
                 run_metadata_upload.return_value,
             ]
         )
@@ -295,9 +300,12 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
         name="check_connector_image_does_not_exist_result", status=StepStatus.SUCCESS
     )
 
+    # have output_artifact.values return []
     built_connector_platform = mocker.Mock()
-    publish.BuildConnectorForPublish.return_value.run.return_value = mocker.Mock(
-        name="build_connector_for_publish_result", status=build_step_status, output_artifact=[built_connector_platform]
+    built_connector_platform.values.return_value = ["linux/amd64"]
+
+    publish.builds.run_connector_build.return_value = mocker.Mock(
+        name="build_connector_for_publish_result", status=build_step_status, output_artifact=built_connector_platform
     )
 
     publish.PushConnectorImageToRegistry.return_value.run.return_value = mocker.Mock(
@@ -315,27 +323,27 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
         name="metadata_upload_result", status=metadata_upload_step_status
     )
 
-    context = mocker.MagicMock(pre_release=pre_release)
+    context = mocker.MagicMock(pre_release=pre_release, )
     semaphore = anyio.Semaphore(1)
     report = await publish.run_connector_publish_pipeline(context, semaphore)
 
     steps_to_run = [
         publish.metadata.MetadataValidation.return_value.run,
         publish.CheckConnectorImageDoesNotExist.return_value.run,
-        publish.BuildConnectorForPublish.return_value.run,
+        publish.builds.run_connector_build,
         publish.PushConnectorImageToRegistry.return_value.run,
         publish.PullConnectorImageFromRegistry.return_value.run,
     ]
 
     if not pre_release:
-        steps_to_run += [publish.UploadSpecToCache.return_value.run, publish.metadata.MetadataUpload.return_value.run]
+        steps_to_run += [publish.metadata.MetadataUpload.return_value.run]
 
     for i, step_to_run in enumerate(steps_to_run):
         if step_to_run.return_value.status is StepStatus.FAILURE or i == len(steps_to_run) - 1:
-            assert len(report.steps_results) == len(context.report.steps_results) == i + 1
+            assert len(report.steps_results) == len(context.report.steps_results)
 
             previous_steps = steps_to_run[:i]
-            for step_ran in previous_steps:
+            for k, step_ran in enumerate(previous_steps):
                 step_ran.assert_called_once()
                 step_ran.return_value
 
@@ -344,7 +352,7 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
                 step_to_run.assert_not_called()
             break
     if build_step_status is StepStatus.SUCCESS:
-        publish.PushConnectorImageToRegistry.return_value.run.assert_called_once_with([built_connector_platform])
+        publish.PushConnectorImageToRegistry.return_value.run.assert_called_once_with(["linux/amd64"])
     else:
         publish.PushConnectorImageToRegistry.return_value.run.assert_not_called()
         publish.PullConnectorImageFromRegistry.return_value.run.assert_not_called()
@@ -352,5 +360,4 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
         publish.metadata.MetadataUpload.return_value.run.assert_not_called()
 
     if pre_release:
-        publish.UploadSpecToCache.return_value.run.assert_not_called()
         publish.metadata.MetadataUpload.return_value.run.assert_not_called()
