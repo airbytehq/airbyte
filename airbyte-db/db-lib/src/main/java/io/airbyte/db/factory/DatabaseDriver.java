@@ -17,6 +17,7 @@ public enum DatabaseDriver {
   MSSQLSERVER("com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://%s:%d/%s"),
   MYSQL("com.mysql.cj.jdbc.Driver", "jdbc:mysql://%s:%d/%s"),
   ORACLE("oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@%s:%d/%s"),
+  VERTICA("com.vertica.jdbc.Driver", "jdbc:vertica://%s:%d/%s"),
   POSTGRESQL("org.postgresql.Driver", "jdbc:postgresql://%s:%d/%s"),
   REDSHIFT("com.amazon.redshift.jdbc.Driver", "jdbc:redshift://%s:%d/%s"),
   SNOWFLAKE("net.snowflake.client.jdbc.SnowflakeDriver", "jdbc:snowflake://%s/"),
