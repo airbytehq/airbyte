@@ -70,8 +70,12 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
         try:
             self.s3_client.head_bucket(Bucket=bucket_name)
         except ClientError:
-            acl = "private" if private else "public-read"
-            self.s3_client.create_bucket(ACL=acl, Bucket=bucket_name, CreateBucketConfiguration=location)
+            if private:
+                self.s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration=location)
+            else:
+                self.s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration=location, ObjectOwnership='ObjectWriter')
+                self.s3_client.delete_public_access_block(Bucket=bucket_name)
+                self.s3_client.put_bucket_acl(Bucket=bucket_name, ACL='public-read')
 
         # wait here until the bucket is ready
         ready = False

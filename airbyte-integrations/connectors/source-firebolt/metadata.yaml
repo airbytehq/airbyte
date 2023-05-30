@@ -1,18 +1,20 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: source
   definitionId: 6f2ac653-8623-43c4-8950-19218c7caf3d
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/source-firebolt
   githubIssueLabel: source-firebolt
   icon: firebolt.svg
   license: MIT
   name: Firebolt
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/firebolt
+  documentationUrl: https://docs.airbyte.com/integrations/sources/firebolt
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

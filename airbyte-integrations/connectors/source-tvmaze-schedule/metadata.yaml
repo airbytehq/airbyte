@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: bd14b08f-9f43-400f-b2b6-7248b5c72561
@@ -13,6 +8,14 @@ data:
   icon: tvmazeschedule.svg
   license: MIT
   name: TVMaze Schedule
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/tvmaze-schedule
+  documentationUrl: https://docs.airbyte.com/integrations/sources/tvmaze-schedule
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - api-metrica.yandex.net
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 7865dce4-2211-4f6a-88e5-9d0fe161afe7
@@ -16,6 +11,13 @@ data:
   icon: yandexmetrica.svg
   license: MIT
   name: Yandex Metrica
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/yandex-metrica
+  documentationUrl: https://docs.airbyte.com/integrations/sources/yandex-metrica
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

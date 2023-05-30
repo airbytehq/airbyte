@@ -1,14 +1,14 @@
 name: POC Connectors CI - nightly builds
 
 on:
-  schedule:
-    # 11AM UTC is 12AM CET, 4AM PST.
-    - cron: "0 11 * * *"
+  # schedule:
+  #   # 11AM UTC is 12AM CET, 4AM PST.
+  #   - cron: "0 8 * * *"
   workflow_dispatch:
     inputs:
       runs-on:
         type: string
-        default: large-runner
+        default: dev-large-runner
         required: true
       test-connectors-options:
         default: --concurrency=5 --release-stage=generally_available --release-stage=beta
@@ -20,7 +20,7 @@ jobs:
   test_connectors:
     name: Test connectors ${{ inputs.test-connectors-options || 'Nightly builds GA and Beta connectors' }}
     timeout-minutes: 360 # 6 hours
-    runs-on: ${{ inputs.runs-on || 'large-runner' }}
+    runs-on: ${{ inputs.runs-on || 'dev-large-runner' }}
     steps:
       - name: Get start timestamp
         id: get-start-timestamp
@@ -44,12 +44,13 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
       - name: Install ci-connector-ops package
         run: pip install ./tools/ci_connector_ops\[pipelines]\
       - name: Test connectors
         run: |
           export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-          DAGGER_CLI_COMMIT="9155662d51313ae5b6761e681a306dee8f1736f2"
+          DAGGER_CLI_COMMIT="2370d5eb65e511cf7f1611aebaacc6d48cf0907a"
           DAGGER_TMP_BINDIR="/tmp/dagger_${DAGGER_CLI_COMMIT}"
           export _EXPERIMENTAL_DAGGER_CLI_BIN="$DAGGER_TMP_BINDIR/dagger"
           if [ ! -f  "$_EXPERIMENTAL_DAGGER_CLI_BIN" ]; then
@@ -66,6 +67,5 @@ jobs:
           TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
           CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
-          CI_GIT_REVISION: ${{ github.sha }}
           CI_CONTEXT: "nightly_builds"
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}

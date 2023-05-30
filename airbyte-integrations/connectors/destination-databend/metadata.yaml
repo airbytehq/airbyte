@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 302e4d8e-08d3-4098-acd4-ac67ca365b88
@@ -13,6 +8,13 @@ data:
   icon: databend.svg
   license: MIT
   name: Databend
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/databend
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/databend
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

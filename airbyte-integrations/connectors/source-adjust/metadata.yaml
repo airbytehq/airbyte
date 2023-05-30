@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: d3b7fa46-111b-419a-998a-d7f046f6d66d
@@ -13,6 +8,13 @@ data:
   icon: adjust.svg
   license: MIT
   name: Adjust
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/adjust
+  documentationUrl: https://docs.airbyte.com/integrations/sources/adjust
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

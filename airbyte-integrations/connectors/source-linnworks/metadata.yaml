@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 7b86879e-26c5-4ef6-a5ce-2be5c7b46d1e
@@ -13,6 +8,13 @@ data:
   icon: linnworks.svg
   license: MIT
   name: Linnworks
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/linnworks
+  documentationUrl: https://docs.airbyte.com/integrations/sources/linnworks
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

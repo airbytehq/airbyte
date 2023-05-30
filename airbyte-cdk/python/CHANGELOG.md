@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.38.0
+Allow nested objects in request_body_json
+
+## 0.37.0
+low-code: Make refresh token in oauth authenticator optional
+
+## 0.36.5
+Unfreeze requests version and test new pipeline
+
+## 0.36.4
+low-code: use jinja sandbox and restrict some methods
+
+## 0.36.3
+pin the version of the requests library
+
+## 0.36.2
+Support parsing non UTC dates and Connector Builder set slice descriptor
+
 ## 0.36.1
 low-code: fix add field transformation when running from the connector builder
 

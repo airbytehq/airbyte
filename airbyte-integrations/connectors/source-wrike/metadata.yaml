@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 9c13f986-a13b-4988-b808-4705badf71c2
@@ -13,6 +8,13 @@ data:
   icon: wrike.svg
   license: MIT
   name: Wrike
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/wrike
+  documentationUrl: https://docs.airbyte.com/integrations/sources/wrike
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

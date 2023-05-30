@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: d78e5de0-aa44-4744-aa4f-74c818ccfe19
@@ -13,6 +8,13 @@ data:
   icon: rki.svg
   license: MIT
   name: RKI Covid
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/rki-covid
+  documentationUrl: https://docs.airbyte.com/integrations/sources/rki-covid
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

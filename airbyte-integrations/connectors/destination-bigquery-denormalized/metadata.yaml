@@ -1,18 +1,18 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 079d5540-f236-4294-ba7c-ade8fd918496
-  dockerImageTag: 1.2.19
+  dockerImageTag: 1.4.1
   dockerRepository: airbyte/destination-bigquery-denormalized
   githubIssueLabel: destination-bigquery-denormalized
   icon: bigquery.svg
   license: MIT
   name: BigQuery (denormalized typed struct)
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
   resourceRequirements:
     jobSpecific:
@@ -20,5 +20,7 @@ data:
         resourceRequirements:
           memory_limit: 1Gi
           memory_request: 1Gi
-  supportUrl: https://docs.airbyte.com/integrations/destinations/bigquery
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

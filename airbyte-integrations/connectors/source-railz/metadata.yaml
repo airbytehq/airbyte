@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 9b6cc0c0-da81-4103-bbfd-5279e18a849a
@@ -13,6 +8,14 @@ data:
   icon: railz.svg
   license: MIT
   name: Railz
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/railz
+  documentationUrl: https://docs.airbyte.com/integrations/sources/railz
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

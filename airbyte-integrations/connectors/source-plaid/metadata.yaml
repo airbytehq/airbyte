@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: ed799e2b-2158-4c66-8da4-b40fe63bc72a
@@ -13,6 +8,13 @@ data:
   icon: plaid.svg
   license: MIT
   name: Plaid
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/plaid
+  documentationUrl: https://docs.airbyte.com/integrations/sources/plaid
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

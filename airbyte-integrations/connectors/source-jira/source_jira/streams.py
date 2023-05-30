@@ -28,6 +28,7 @@ class JiraStream(HttpStream, ABC):
     extract_field: Optional[str] = None
     api_v1 = False
     skip_http_status_codes = []
+    raise_on_http_errors = True
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
         super().__init__(**kwargs)
@@ -91,6 +92,19 @@ class JiraStream(HttpStream, ABC):
         except HTTPError as e:
             if not (self.skip_http_status_codes and e.response.status_code in self.skip_http_status_codes):
                 raise e
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == requests.codes.bad_request:
+            # Refernce issue: https://github.com/airbytehq/oncall/issues/2133
+            # we should skip the slice with `board id` which doesn't support `sprints`
+            # it's generally applied to all streams that might have the same error hit in the future.
+            errors = response.json().get("errorMessages")
+            self.logger.error(f"Stream `{self.name}`. An error occured, details: {errors}. Skipping.")
+            setattr(self, "raise_on_http_errors", False)
+            return False
+        else:
+            # for all other HTTP errors the defaul handling is applied
+            return super().should_retry(response)
 
 
 class StartDateJiraStream(JiraStream, ABC):
@@ -1016,7 +1030,16 @@ class ScreenTabs(JiraStream):
 
     def read_tab_records(self, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping[str, Any]]:
         screen_id = stream_slice["screen_id"]
-        yield from super().read_records(stream_slice={"screen_id": screen_id}, **kwargs)
+        for screen_tab in super().read_records(stream_slice={"screen_id": screen_id}, **kwargs):
+            """
+            For some projects jira creates screens automatically, which does not present in UI, but exist in screens stream.
+            We receive 400 error "Screen with id {screen_id} does not exist" for tabs by these screens.
+            """
+            bad_request_reached = re.match(r"Screen with id \d* does not exist", screen_tab.get("errorMessages", [""])[0])
+            if bad_request_reached:
+                self.logger.info("Could not get screen tab for %s screen id. Reason: %s", screen_id, screen_tab["errorMessages"][0])
+                return
+            yield screen_tab
 
 
 class ScreenTabFields(JiraStream):
@@ -1071,8 +1094,11 @@ class Sprints(JiraStream):
         return f"board/{stream_slice['board_id']}/sprint"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        available_board_types = ["scrum", "simple"]
         for board in read_full_refresh(self.boards_stream):
-            if board["type"] == "scrum":
+            if board["type"] in available_board_types:
+                board_details = {"name": board["name"], "id": board["id"]}
+                self.logger.info(f"Fetching sprints for board: {board_details}")
                 yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
 
 

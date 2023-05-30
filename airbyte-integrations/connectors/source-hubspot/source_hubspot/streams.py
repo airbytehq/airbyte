@@ -22,7 +22,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenti
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
-from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
+from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
 
 # we got this when provided API Token has incorrect format
@@ -110,6 +110,7 @@ class API:
 
     BASE_URL = "https://api.hubapi.com"
     USER_AGENT = "Airbyte"
+    logger = logger
 
     def is_oauth2(self) -> bool:
         credentials_title = self.credentials.get("credentials_title")
@@ -188,6 +189,55 @@ class API:
         response = self._session.post(self.BASE_URL + url, params=params, json=data)
         return self._parse_and_handle_errors(response), response
 
+    def get_custom_object_schemas(self) -> Mapping[str, Any]:
+        data, response = self.get("/crm/v3/schemas", {})
+        schemas = {}
+        if response.ok and "results" in data:
+            for raw_schema in data["results"]:
+                schema = self.generate_schema(raw_schema=raw_schema)
+                schemas[raw_schema["name"]] = schema
+        else:
+            self.logger.warn(self._parse_and_handle_errors(response))
+
+        return schemas
+
+    def generate_schema(self, raw_schema: Mapping[str, Any]) -> Mapping[str, Any]:
+        properties = {}
+        for field in raw_schema["properties"]:
+            properties[field["name"]] = self._field_to_property_schema(field)
+
+        schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["null", "object"],
+            "additionalProperties": True,
+            "properties": {
+                "id": {"type": ["null", "string"]},
+                "createdAt": {"type": ["null", "string"], "format": "date-time"},
+                "updatedAt": {"type": ["null", "string"], "format": "date-time"},
+                "archived": {"type": ["null", "boolean"]},
+                "properties": {"type": ["null", "object"], "properties": properties},
+            },
+        }
+
+        return schema
+
+    def _field_to_property_schema(self, field: Dict[str, Any]) -> Mapping[str, Any]:
+        field_type = field["type"]
+        property_schema = {}
+        if field_type == "enumeration" or field_type == "string":
+            property_schema = {"type": ["null", "string"]}
+        elif field_type == "datetime" or field_type == "date":
+            property_schema = {"type": ["null", "string"], "format": "date-time"}
+        elif field_type == "number":
+            property_schema = {"type": ["null", "number"]}
+        elif field_type == "boolean" or field_type == "bool":
+            property_schema = {"type": ["null", "boolean"]}
+        else:
+            self.logger.warn(f"Field {field['name']} has unrecognized type: {field['type']} casting to string.")
+            property_schema = {"type": ["null", "string"]}
+
+        return property_schema
+
 
 class Stream(HttpStream, ABC):
     """Base class for all streams. Responsible for data fetching and pagination"""
@@ -254,7 +304,10 @@ class Stream(HttpStream, ABC):
 
         self._start_date = start_date
         if isinstance(self._start_date, str):
-            self._start_date = pendulum.parse(self._start_date)
+            try:
+                self._start_date = pendulum.parse(self._start_date)
+            except pendulum.parsing.exceptions.ParserError as e:
+                raise InvalidStartDateConfigError(self._start_date, e)
         creds_title = self._credentials["credentials_title"]
         if creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
             self._authenticator = api.get_authenticator()
@@ -317,7 +370,6 @@ class Stream(HttpStream, ABC):
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Tuple[List, Any]:
-
         #  TODO: Additional processing was added due to the fact that users receive 414 errors while syncing their streams
         #  (issues #3977 and #5835). We will need to fix this code when the HubSpot developers add the ability to use a special parameter
         #  to get all properties for an entity. According to HubSpot Community
@@ -351,7 +403,6 @@ class Stream(HttpStream, ABC):
         next_page_token = None
         try:
             while not pagination_complete:
-
                 properties = self._property_wrapper
                 if properties and properties.too_many_properties:
                     records, response = self._read_stream_records(
@@ -475,7 +526,6 @@ class Stream(HttpStream, ABC):
         return casted_value
 
     def _cast_record_fields_if_needed(self, record: Mapping, properties: Mapping[str, Any] = None) -> Mapping:
-
         if not self.entity or not record.get("properties"):
             return record
 
@@ -602,7 +652,6 @@ class Stream(HttpStream, ABC):
 
     @staticmethod
     def _get_field_props(field_type: str) -> Mapping[str, List[str]]:
-
         if field_type in VALID_JSON_SCHEMA_TYPES:
             return {
                 "type": ["null", field_type],
@@ -704,18 +753,22 @@ class ClientSideIncrementalStream(Stream, IncrementalMixin):
             if isinstance(record.get(self.cursor_field), str)
             else pendulum.from_format(str(record.get(self.cursor_field)), self.cursor_field_datetime_format)
         )
-        start_date = (
-            pendulum.from_format(str(stream_state.get(self.cursor_field)), self.cursor_field_datetime_format)
-            if stream_state
-            else self._start_date
-        )
-        cursor_value = max(start_date, record_value)
+        # default state value before all futher checks
+        state_value = self._start_date
+        # we should check the presence of `stream_state` to overcome `availability strategy` check issues
+        if stream_state:
+            state_value = stream_state.get(self.cursor_field)
+            # sometimes the state is saved as `EMPTY STRING` explicitly
+            state_value = (
+                self._start_date if str(state_value) == "" else pendulum.from_format(str(state_value), self.cursor_field_datetime_format)
+            )
+        # compare the state with record values and get the max value between of two
+        cursor_value = max(state_value, record_value)
         max_state = max(str(self.state.get(self.cursor_field)), cursor_value.format(self.cursor_field_datetime_format))
+        # save the state
         self.state = {self.cursor_field: int(max_state) if int_field_type else max_state}
-        return (
-            not stream_state
-            or pendulum.from_format(str(stream_state.get(self.cursor_field)), self.cursor_field_datetime_format) < record_value
-        )
+        # emmit record if it has bigger cursor value compare to the state (`True` only)
+        return record_value > state_value
 
     def read_records(
         self,
@@ -1645,6 +1698,13 @@ class FeedbackSubmissions(CRMObjectIncrementalStream):
     scopes = {"crm.objects.feedback_submissions.read"}
 
 
+class Goals(CRMObjectIncrementalStream):
+    entity = "goal_targets"
+    last_modified_field = "hs_lastmodifieddate"
+    primary_key = "id"
+    scopes = {"crm.objects.goals.read"}
+
+
 class LineItems(CRMObjectIncrementalStream):
     entity = "line_item"
     primary_key = "id"
@@ -1663,6 +1723,27 @@ class Tickets(CRMSearchStream):
     primary_key = "id"
     scopes = {"tickets"}
     last_modified_field = "hs_lastmodifieddate"
+
+
+class CustomObject(CRMSearchStream, ABC):
+    last_modified_field = "hs_lastmodifieddate"
+    associations = []
+    primary_key = "id"
+    scopes = {"crm.schemas.custom.read", "crm.objects.custom.read"}
+
+    def __init__(self, entity: str, schema: Mapping[str, Any], **kwargs):
+        super().__init__(**kwargs)
+        self.entity = entity
+        self.schema = schema
+
+    @property
+    def name(self) -> str:
+        return self.entity
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        if not self.schema:
+            self.schema = self._api.get_custom_object_schemas()[self.entity]
+        return self.schema
 
 
 class EmailSubscriptions(Stream):

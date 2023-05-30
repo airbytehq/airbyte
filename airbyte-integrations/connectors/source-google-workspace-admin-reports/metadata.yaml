@@ -1,10 +1,4 @@
 data:
-  registries:
-    cloud:
-      dockerImageTag: 0.1.4
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: ed9dfefa-1bbc-419d-8c5e-4d78f0ef6734
@@ -14,6 +8,14 @@ data:
   icon: googleworkpace.svg
   license: MIT
   name: Google Workspace Admin Reports
+  registries:
+    cloud:
+      dockerImageTag: 0.1.4
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/google-workspace-admin-reports
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-workspace-admin-reports
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 2af123bf-0aaf-4e0d-9784-cb497f23741a
@@ -13,6 +8,13 @@ data:
   icon: appstore.svg
   license: MIT
   name: Appstore
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/appstore
+  documentationUrl: https://docs.airbyte.com/integrations/sources/appstore
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

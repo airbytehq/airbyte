@@ -134,7 +134,14 @@ Now that you have set up the BigQuery destination connector, check out the follo
 ### bigquery
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                  |
-| :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------|
+| 1.4.4   | 2023-05-25 | [\#26585](https://github.com/airbytehq/airbyte/pull/26585) | Small tweak in logs for clarity                                                                                          |
+| 1.4.3   | 2023-05-17 | [\#26213](https://github.com/airbytehq/airbyte/pull/26213) | Fix bug in parsing file buffer config count                                                                              |
+| 1.4.2   | 2023-05-10 | [\#25925](https://github.com/airbytehq/airbyte/pull/25925) | Testing update. Normalization tests are now done in the destination container.                                           |
+| 1.4.1   | 2023-05-11 | [\#25993](https://github.com/airbytehq/airbyte/pull/25993) | Internal library update                                                                                                  |
+| 1.4.0   | 2023-04-29 | [\#25570](https://github.com/airbytehq/airbyte/pull/25570) | Internal library update. Bumping version to stay in sync with BigQuery-denormalized.                                     |
+| 1.3.4   | 2023-04-28 | [\#25588](https://github.com/airbytehq/airbyte/pull/25588) | Internal scaffolding change for future development                                                                       |
+| 1.3.3   | 2023-04-27 | [\#25346](https://github.com/airbytehq/airbyte/pull/25346) | Internal code cleanup                                                                                                    |
 | 1.3.1   | 2023-04-20 | [\#25097](https://github.com/airbytehq/airbyte/pull/25097) | Internal scaffolding change for future development                                                                       |
 | 1.3.0   | 2023-04-19 | [\#25287](https://github.com/airbytehq/airbyte/pull/25287) | Add parameter to configure the number of file buffers when GCS is used as the loading method                             |
 | 1.2.20  | 2023-04-12 | [\#25122](https://github.com/airbytehq/airbyte/pull/25122) | Add additional data centers                                                                                              |
