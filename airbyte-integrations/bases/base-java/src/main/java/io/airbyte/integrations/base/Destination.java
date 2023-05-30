@@ -137,8 +137,8 @@ public interface Destination extends Integration {
     }
 
     /**
-     * Custom class that can be used to parse a JSON message to determine the type of the represented
-     * {@link AirbyteMessage}.
+     * Custom class for parsing a JSON message to determine the type of the represented
+     * {@link AirbyteMessage}. Do the bare minimum deserialisation by reading only the type field.
      */
     private static class AirbyteTypeMessage {
 
