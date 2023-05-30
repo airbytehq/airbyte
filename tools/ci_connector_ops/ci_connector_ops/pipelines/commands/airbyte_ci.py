@@ -5,7 +5,8 @@
 """This module is the CLI entrypoint to the airbyte-ci commands."""
 
 import click
-from ci_connector_ops.pipelines.contexts import CIContext
+from ci_connector_ops.pipelines import github
+from ci_connector_ops.pipelines.bases import CIContext
 from ci_connector_ops.pipelines.utils import (
     get_current_epoch_time,
     get_current_git_branch,
@@ -31,6 +32,8 @@ from .groups.metadata import metadata
 @click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)
 @click.option("--ci-context", default=CIContext.MANUAL, envvar="CI_CONTEXT", type=click.Choice(CIContext))
 @click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
+@click.option("--pull-request-number", envvar="PULL_REQUEST_NUMBER", type=int)
+@click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str)
 @click.pass_context
 def airbyte_ci(
     ctx: click.Context,
@@ -41,9 +44,12 @@ def airbyte_ci(
     gha_workflow_run_id: str,
     ci_context: str,
     pipeline_start_timestamp: int,
+    pull_request_number: int,
+    ci_github_access_token: str,
 ):  # noqa D103
     ctx.ensure_object(dict)
     ctx.obj["is_local"] = is_local
+    ctx.obj["is_ci"] = not is_local
     ctx.obj["git_branch"] = git_branch
     ctx.obj["git_revision"] = git_revision
     ctx.obj["gha_workflow_run_id"] = gha_workflow_run_id
@@ -55,6 +61,20 @@ def airbyte_ci(
     ctx.obj["modified_files_in_branch"] = get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
     ctx.obj["modified_files_in_commit"] = get_modified_files_in_commit(git_branch, git_revision, is_local)
     ctx.obj["modified_files"] = ctx.obj["modified_files_in_commit"] if git_branch == "master" else ctx.obj["modified_files_in_branch"]
+
+    if pull_request_number and ci_github_access_token:
+        ctx.obj["pull_request"] = github.get_pull_request(pull_request_number, ci_github_access_token)
+    else:
+        ctx.obj["pull_request"] = None
+    if not is_local:
+        click.echo("Running airbyte-ci in CI mode.")
+        click.echo(f"CI Context: {ci_context}")
+        click.echo(f"Git Branch: {git_branch}")
+        click.echo(f"Git Revision: {git_revision}")
+        click.echo(f"GitHub Workflow Run ID: {gha_workflow_run_id}")
+        click.echo(f"GitHub Workflow Run URL: {ctx.obj['gha_workflow_run_url']}")
+        click.echo(f"Pull Request Number: {pull_request_number}")
+        click.echo(f"Pipeline Start Timestamp: {pipeline_start_timestamp}")
 
 
 airbyte_ci.add_command(connectors)

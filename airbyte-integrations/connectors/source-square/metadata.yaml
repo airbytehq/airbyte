@@ -6,7 +6,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 77225a51-cd15-4a13-af02-65816bd0ecf4
-  dockerImageTag: 1.0.1
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-square
   githubIssueLabel: source-square
   icon: square.svg
@@ -18,5 +18,8 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/square
+  documentationUrl: https://docs.airbyte.com/integrations/sources/square
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"
