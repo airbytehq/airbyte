@@ -27,7 +27,6 @@ test_input_record: Dict = {
     "lastModified": "2021-08-06 06:09:04",
 }
 
-
 """
 This is the expected output from the `make_analytics_slices` method.
 VALID PARAMETERS FOR THE OUTPUT ARE:
@@ -41,7 +40,7 @@ Make sure for valid KEY_VALUE_MAP references inside of the `test_input_record`
 test_output_slices: List = [
     {
         "camp_id": 123,
-        "fields": "actionClicks,adUnitClicks,approximateUniqueImpressions,cardClicks,cardImpressions,clicks,commentLikes,comments,companyPageClicks,conversionValueInLocalCurrency,costInLocalCurrency,costInUsd,dateRange,externalWebsiteConversions,externalWebsitePostClickConversions,externalWebsitePostViewConversions,follows,pivot,pivotValue",
+        "fields": "actionClicks,adUnitClicks,approximateUniqueImpressions,cardClicks,cardImpressions,clicks,commentLikes,comments,companyPageClicks,conversionValueInLocalCurrency,costInLocalCurrency,costInUsd,dateRange,documentCompletions,documentFirstQuartileCompletions,documentMidpointCompletions,documentThirdQuartileCompletions,downloadClicks,externalWebsiteConversions",
         "dateRange": {
             "start.day": 1,
             "start.month": 8,
@@ -53,90 +52,111 @@ test_output_slices: List = [
     },
     {
         "camp_id": 123,
-        "fields": "actionClicks,adUnitClicks,approximateUniqueImpressions,cardClicks,cardImpressions,clicks,commentLikes,comments,companyPageClicks,conversionValueInLocalCurrency,costInLocalCurrency,costInUsd,dateRange,externalWebsiteConversions,externalWebsitePostClickConversions,externalWebsitePostViewConversions,follows,pivot,pivotValue",
+        "fields": "actionClicks,adUnitClicks,approximateUniqueImpressions,cardClicks,cardImpressions,clicks,commentLikes,comments,companyPageClicks,conversionValueInLocalCurrency,costInLocalCurrency,costInUsd,dateRange,documentCompletions,documentFirstQuartileCompletions,documentMidpointCompletions,documentThirdQuartileCompletions,downloadClicks,externalWebsiteConversions",
         "dateRange": {
             "start.day": 31,
             "start.month": 8,
             "start.year": 2021,
             "end.day": 30,
             "end.month": 9,
-            "end.year": 2021,
-        },
+            "end.year": 2021
+        }
     },
+    {"camp_id": 123,
+     "fields": "externalWebsitePostClickConversions,externalWebsitePostViewConversions,follows,fullScreenPlays,impressions,jobApplications,jobApplyClicks,landingPageClicks,leadGenerationMailContactInfoShares,leadGenerationMailInterestedClicks,likes,oneClickLeadFormOpens,oneClickLeads,opens,otherEngagements,pivotValues,postClickJobApplications,postClickJobApplyClicks,postClickRegistrations,dateRange",
+     "dateRange": {
+         "start.day": 1,
+         "start.month": 8,
+         "start.year": 2021,
+         "end.day": 31,
+         "end.month": 8,
+         "end.year": 2021
+     }
+     },
+    {"camp_id": 123,
+     "fields": "externalWebsitePostClickConversions,externalWebsitePostViewConversions,follows,fullScreenPlays,impressions,jobApplications,jobApplyClicks,landingPageClicks,leadGenerationMailContactInfoShares,leadGenerationMailInterestedClicks,likes,oneClickLeadFormOpens,oneClickLeads,opens,otherEngagements,pivotValues,postClickJobApplications,postClickJobApplyClicks,postClickRegistrations,dateRange",
+     "dateRange": {
+         "start.day": 31,
+         "start.month": 8,
+         "start.year": 2021,
+         "end.day": 30,
+         "end.month": 9,
+         "end.year": 2021
+     }
+     },
     {
         "camp_id": 123,
-        "fields": "fullScreenPlays,impressions,landingPageClicks,leadGenerationMailContactInfoShares,leadGenerationMailInterestedClicks,likes,oneClickLeadFormOpens,oneClickLeads,opens,otherEngagements,pivot,pivotValue,pivotValues,reactions,sends,shares,textUrlClicks,dateRange",
+        "fields": "postViewJobApplications,postViewJobApplyClicks,postViewRegistrations,reactions,registrations,sends,shares,talentLeads,textUrlClicks,totalEngagements,validWorkEmailLeads,videoCompletions,videoFirstQuartileCompletions,videoMidpointCompletions,videoStarts,videoThirdQuartileCompletions,videoViews,viralCardClicks,viralCardImpressions,dateRange",
         "dateRange": {
             "start.day": 1,
             "start.month": 8,
             "start.year": 2021,
             "end.day": 31,
             "end.month": 8,
-            "end.year": 2021,
-        },
+            "end.year": 2021
+        }
     },
     {
         "camp_id": 123,
-        "fields": "fullScreenPlays,impressions,landingPageClicks,leadGenerationMailContactInfoShares,leadGenerationMailInterestedClicks,likes,oneClickLeadFormOpens,oneClickLeads,opens,otherEngagements,pivot,pivotValue,pivotValues,reactions,sends,shares,textUrlClicks,dateRange",
+        "fields": "postViewJobApplications,postViewJobApplyClicks,postViewRegistrations,reactions,registrations,sends,shares,talentLeads,textUrlClicks,totalEngagements,validWorkEmailLeads,videoCompletions,videoFirstQuartileCompletions,videoMidpointCompletions,videoStarts,videoThirdQuartileCompletions,videoViews,viralCardClicks,viralCardImpressions,dateRange",
         "dateRange": {
             "start.day": 31,
             "start.month": 8,
             "start.year": 2021,
             "end.day": 30,
             "end.month": 9,
-            "end.year": 2021,
-        },
+            "end.year": 2021
+        }
     },
     {
         "camp_id": 123,
-        "fields": "totalEngagements,videoCompletions,videoFirstQuartileCompletions,videoMidpointCompletions,videoStarts,videoThirdQuartileCompletions,videoViews,viralCardClicks,viralCardImpressions,viralClicks,viralCommentLikes,viralComments,viralCompanyPageClicks,viralExternalWebsiteConversions,viralExternalWebsitePostClickConversions,viralExternalWebsitePostViewConversions,viralFollows,dateRange,pivot,pivotValue",
+        "fields": "viralClicks,viralCommentLikes,viralComments,viralCompanyPageClicks,viralDocumentCompletions,viralDocumentFirstQuartileCompletions,viralDocumentMidpointCompletions,viralDocumentThirdQuartileCompletions,viralDownloadClicks,viralExternalWebsiteConversions,viralExternalWebsitePostClickConversions,viralExternalWebsitePostViewConversions,viralFollows,viralFullScreenPlays,viralImpressions,viralJobApplications,viralJobApplyClicks,viralLandingPageClicks,viralLikes,dateRange",
         "dateRange": {
             "start.day": 1,
             "start.month": 8,
             "start.year": 2021,
             "end.day": 31,
             "end.month": 8,
-            "end.year": 2021,
-        },
+            "end.year": 2021
+        }
     },
     {
         "camp_id": 123,
-        "fields": "totalEngagements,videoCompletions,videoFirstQuartileCompletions,videoMidpointCompletions,videoStarts,videoThirdQuartileCompletions,videoViews,viralCardClicks,viralCardImpressions,viralClicks,viralCommentLikes,viralComments,viralCompanyPageClicks,viralExternalWebsiteConversions,viralExternalWebsitePostClickConversions,viralExternalWebsitePostViewConversions,viralFollows,dateRange,pivot,pivotValue",
+        "fields": "viralClicks,viralCommentLikes,viralComments,viralCompanyPageClicks,viralDocumentCompletions,viralDocumentFirstQuartileCompletions,viralDocumentMidpointCompletions,viralDocumentThirdQuartileCompletions,viralDownloadClicks,viralExternalWebsiteConversions,viralExternalWebsitePostClickConversions,viralExternalWebsitePostViewConversions,viralFollows,viralFullScreenPlays,viralImpressions,viralJobApplications,viralJobApplyClicks,viralLandingPageClicks,viralLikes,dateRange",
         "dateRange": {
             "start.day": 31,
             "start.month": 8,
             "start.year": 2021,
             "end.day": 30,
             "end.month": 9,
-            "end.year": 2021,
-        },
+            "end.year": 2021
+        }
     },
     {
         "camp_id": 123,
-        "fields": "viralFullScreenPlays,viralImpressions,viralLandingPageClicks,viralLikes,viralOneClickLeadFormOpens,viralOneClickLeads,viralOtherEngagements,viralReactions,viralShares,viralTotalEngagements,viralVideoCompletions,viralVideoFirstQuartileCompletions,viralVideoMidpointCompletions,viralVideoStarts,viralVideoThirdQuartileCompletions,viralVideoViews,dateRange,pivot,pivotValue",
+        "fields": "viralOneClickLeadFormOpens,viralOneClickLeads,viralOtherEngagements,viralPostClickJobApplications,viralPostClickJobApplyClicks,viralPostClickRegistrations,viralPostViewJobApplications,viralPostViewJobApplyClicks,viralPostViewRegistrations,viralReactions,viralRegistrations,viralShares,viralTotalEngagements,viralVideoCompletions,viralVideoFirstQuartileCompletions,viralVideoMidpointCompletions,viralVideoStarts,viralVideoThirdQuartileCompletions,viralVideoViews,dateRange",
         "dateRange": {
             "start.day": 1,
             "start.month": 8,
             "start.year": 2021,
             "end.day": 31,
             "end.month": 8,
-            "end.year": 2021,
-        },
+            "end.year": 2021
+        }
     },
     {
         "camp_id": 123,
-        "fields": "viralFullScreenPlays,viralImpressions,viralLandingPageClicks,viralLikes,viralOneClickLeadFormOpens,viralOneClickLeads,viralOtherEngagements,viralReactions,viralShares,viralTotalEngagements,viralVideoCompletions,viralVideoFirstQuartileCompletions,viralVideoMidpointCompletions,viralVideoStarts,viralVideoThirdQuartileCompletions,viralVideoViews,dateRange,pivot,pivotValue",
+        "fields": "viralOneClickLeadFormOpens,viralOneClickLeads,viralOtherEngagements,viralPostClickJobApplications,viralPostClickJobApplyClicks,viralPostClickRegistrations,viralPostViewJobApplications,viralPostViewJobApplyClicks,viralPostViewRegistrations,viralReactions,viralRegistrations,viralShares,viralTotalEngagements,viralVideoCompletions,viralVideoFirstQuartileCompletions,viralVideoMidpointCompletions,viralVideoStarts,viralVideoThirdQuartileCompletions,viralVideoViews,dateRange",
         "dateRange": {
             "start.day": 31,
             "start.month": 8,
             "start.year": 2021,
             "end.day": 30,
             "end.month": 9,
-            "end.year": 2021,
-        },
-    },
+            "end.year": 2021
+        }
+    }
 ]
-
 
 """ This is the example of the input chunks for the `test_merge_chunks` """
 test_input_result_record_chunks = [
