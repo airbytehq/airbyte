@@ -1,0 +1,462 @@
+{
+	"$defs": {
+		"user.json": {
+		  "$schema": "http://json-schema.org/draft-07/schema#",
+		  "type": "object",
+		  "additionalProperties": true,
+		  "properties": {
+		    "object": {
+		      "enum": ["user"]
+		    },
+		    "id": {
+		      "type": "string"
+		    },
+		    "name": {
+		      "type": "string"
+		    },
+		    "avatar_url": {
+		      "type": ["null", "string"]
+		    },
+		    "type": {
+		      "enum": ["person", "bot"]
+		    },
+		    "person": {
+		      "type": ["null", "object"],
+		      "additionalProperties": true,
+		      "properties": {
+		        "email": {
+		          "type": "string"
+		        }
+		      }
+		    },
+		    "bot": {
+		      "type": ["null", "object"],
+		      "additionalProperties": true,
+		      "properties": {
+		        "owner": {
+		          "type": "object",
+		          "properties": {
+		            "type": {
+		              "type": "string"
+		            },
+		            "workspace": {
+		              "type": ["null", "boolean"]
+		            }
+		          }
+		        }
+		      }
+		    }
+		  }
+		},
+		"title.json": {
+		  "type": ["null", "array"],
+		  "items": {
+		    "type": ["null", "object"],
+		    "additionalProperties": true,
+		    "properties": {
+		      "type": {
+		        "type": ["null", "string"]
+		      },
+		      "text": {
+		        "type": ["null", "object"],
+		        "properties": {
+		          "content": {
+		            "type": ["null", "string"]
+		          },
+		          "link": {
+		            "type": ["null", "object"],
+		            "additionalProperties": true,
+		            "properties": {
+		              "type": {
+		                "enum": ["url"]
+		              },
+		              "url": {
+		                "type": ["null", "string"]
+		              }
+		            }
+		          }
+		        }
+		      },
+		      "annotations": {
+		        "type": ["null", "object"],
+		        "additionalProperties": true,
+		        "properties": {
+		          "bold": {
+		            "type": ["null", "boolean"]
+		          },
+		          "italic": {
+		            "type": ["null", "boolean"]
+		          },
+		          "strikethrough": {
+		            "type": ["null", "boolean"]
+		          },
+		          "underline": {
+		            "type": ["null", "boolean"]
+		          },
+		          "code": {
+		            "type": ["null", "boolean"]
+		          },
+		          "color": {
+		            "type": ["null", "string"]
+		          }
+		        }
+		      },
+		      "plain_text": {
+		        "type": ["null", "string"]
+		      },
+		      "href": {
+		        "type": ["null", "string"]
+		      }
+		    }
+		  }
+		},
+		"rich_text.json": {
+		  "$schema": "http://json-schema.org/draft-07/schema#",
+		  "type": "object",
+		  "properties": {
+		    "type": {
+		      "type": ["null", "string"]
+		    },
+		    "text": {
+		      "type": ["null", "object"],
+		      "additionalProperties": true,
+		      "properties": {
+		        "content": {
+		          "type": ["null", "string"]
+		        },
+		        "link": {
+		          "type": ["null", "object"],
+		          "additionalProperties": true,
+		          "properties": {
+		            "type": {
+		              "enum": ["url"]
+		            },
+		            "url": {
+		              "type": ["null", "string"]
+		            }
+		          }
+		        }
+		      }
+		    },
+		    "rich_text": {
+		      "type": ["null", "object"],
+		      "additionalProperties": true,
+		      "properties": {
+		        "content": {
+		          "type": ["null", "string"]
+		        },
+		        "link": {
+		          "type": ["null", "object"],
+		          "additionalProperties": true,
+		          "properties": {
+		            "type": {
+		              "enum": ["url"]
+		            },
+		            "url": {
+		              "type": ["null", "string"]
+		            }
+		          }
+		        }
+		      }
+		    },
+		    "annotations": {
+		      "type": ["null", "object"],
+		      "additionalProperties": true,
+		      "properties": {
+		        "bold": {
+		          "type": ["null", "boolean"]
+		        },
+		        "italic": {
+		          "type": ["null", "boolean"]
+		        },
+		        "strikethrough": {
+		          "type": ["null", "boolean"]
+		        },
+		        "underline": {
+		          "type": ["null", "boolean"]
+		        },
+		        "code": {
+		          "type": ["null", "boolean"]
+		        },
+		        "color": {
+		          "type": ["null", "string"]
+		        }
+		      }
+		    },
+		    "plain_text": {
+		      "type": ["null", "string"]
+		    },
+		    "href": {
+		      "type": ["null", "string"]
+		    }
+		  }
+		},
+		"options.json": {
+		  "$schema": "http://json-schema.org/draft-07/schema#",
+		  "type": ["null", "object"],
+		  "additionalProperties": true,
+		  "properties": {
+		    "id": {
+		      "type": "string"
+		    },
+		    "name": {
+		      "type": "string"
+		    },
+		    "color": {
+		      "enum": [
+		        "default",
+		        "gray",
+		        "brown",
+		        "orange",
+		        "yellow",
+		        "green",
+		        "blue",
+		        "purple",
+		        "pink",
+		        "red"
+		      ]
+		    }
+		  }
+		},
+		"date.json": {
+		  "$schema": "http://json-schema.org/draft-07/schema#",
+		  "type": ["null", "object"],
+		  "additionalProperties": true,
+		  "properties": {
+		    "start": { "type": ["null", "string"] },
+		    "end": { "type": ["null", "string"] },
+		    "time_zone": { "type": ["null", "string"] }
+		  }
+		}
+	},
+  "properties": {
+    "properties": {
+      "items": {
+        "properties": {
+          "value": {
+						"oneOf": null,
+            "anyOf": [
+              {
+								"type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": { "type": "string" }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["title"]
+                  },
+                  "title": { "$ref": "#/$defs/title.json" }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["rich_text"]
+                  },
+                  "rich_text": { "$ref": "#/$defs/rich_text.json" }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["select"] },
+                  "select": { "$ref": "#/$defs/options.json" }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["multi_select"] },
+                  "multi_select": {
+                    "type": ["null", "array"],
+                    "items": { "$ref": "#/$defs/options.json" }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["date"] },
+                  "date": { "$ref": "#/$defs/date.json" }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["formula"] },
+                  "formula": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "type": {
+                        "enum": ["string", "number", "boolean", "date"]
+                      },
+                      "string": { "type": ["null", "string"] },
+                      "number": { "type": ["null", "number"] },
+                      "boolean": { "type": ["null", "boolean"] },
+                      "date": { "$ref": "#/$defs/date.json" }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["relation"] },
+                  "relation": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["rollup"] },
+                  "rollup": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "type": { "enum": ["number", "date", "array"] },
+                      "number": { "type": ["null", "number"] },
+                      "date": { "$ref": "#/$defs/date.json" },
+                      "array": {
+                        "type": ["null", "array"],
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "type": { "type": "string" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["people"] },
+                  "people": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "$ref": "#/$defs/user.json"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["files"] },
+                  "files": {
+                    "type": ["null", "array"],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "type": { "enum": ["external", "file"] },
+                        "url": { "type": "string" },
+                        "expiry_time": { "type": ["null", "string"] },
+                        "name": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["checkbox"] },
+                  "checkout": {
+                    "type": ["null", "boolean"]
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["url"] },
+                  "url": { "type": "string" }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["email"] },
+                  "email": { "type": "string" }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["phone_number"] },
+                  "phone_number": { "type": "string" }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["created_time"] },
+                  "created_time": { "type": "string" }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["created_by"] },
+                  "created_by": { "$ref": "#/$defs/user.json" }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["last_edited_time"] },
+                  "last_edited_time": { "type": "string" }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["last_edited_by"] },
+                  "last_edited_by": { "$ref": "#/$defs/user.json" }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
