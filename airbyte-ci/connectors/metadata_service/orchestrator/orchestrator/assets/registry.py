@@ -81,12 +81,6 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, connector_ty
         overrode_metadata_data["sourceType"] = overrode_metadata_data["connectorSubtype"]
         del overrode_metadata_data["connectorSubtype"]
 
-    # rename supportUrl to documentationUrl
-    support_url = overrode_metadata_data.get("supportUrl")
-    if support_url:
-        overrode_metadata_data["documentationUrl"] = overrode_metadata_data["supportUrl"]
-        del overrode_metadata_data["supportUrl"]
-
     # rename definitionId field to sourceDefinitionId or destinationDefinitionId
     id_field = "sourceDefinitionId" if connector_type == "source" else "destinationDefinitionId"
     overrode_metadata_data[id_field] = overrode_metadata_data["definitionId"]

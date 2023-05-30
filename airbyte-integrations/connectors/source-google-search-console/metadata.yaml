@@ -17,5 +17,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/google-search-console
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-search-console
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

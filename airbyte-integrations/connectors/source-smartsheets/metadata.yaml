@@ -18,5 +18,7 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/smartsheets
+  documentationUrl: https://docs.airbyte.com/integrations/sources/smartsheets
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"
