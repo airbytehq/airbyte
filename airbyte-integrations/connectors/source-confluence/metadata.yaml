@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - ${subdomain}.atlassian.net
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: cf40a7f8-71f8-45ce-a7fa-fca053e4028c
@@ -16,6 +11,13 @@ data:
   icon: confluence.svg
   license: MIT
   name: Confluence
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/confluence
+  documentationUrl: https://docs.airbyte.com/integrations/sources/confluence
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

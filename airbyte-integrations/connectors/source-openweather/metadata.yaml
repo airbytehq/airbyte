@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: d8540a80-6120-485d-b7d6-272bca477d9b
@@ -13,6 +8,13 @@ data:
   icon: openweather.svg
   license: MIT
   name: OpenWeather
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/openweather
+  documentationUrl: https://docs.airbyte.com/integrations/sources/openweather
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

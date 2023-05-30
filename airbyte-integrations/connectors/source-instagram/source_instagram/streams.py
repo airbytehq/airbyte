@@ -344,7 +344,7 @@ class MediaInsights(Media):
             account_id = ig_account.get("id")
             insights = self._get_insights(ig_media, account_id)
             if insights is None:
-                break
+                continue
 
             insights["id"] = ig_media["id"]
             insights["page_id"] = account["page_id"]
@@ -374,6 +374,9 @@ class MediaInsights(Media):
                 self.logger.error(f"Insights error for business_account_id {account_id}: {details}")
                 # We receive all Media starting from the last one, and if on the next Media we get an Insight error,
                 # then no reason to make inquiries for each Media further, since they were published even earlier.
+                return None
+            elif error.api_error_code() == 100 and error.api_error_subcode() == 33:
+                self.logger.error(f"Check provided permissions for {account_id}: {error.api_error_message()}")
                 return None
             raise error
 

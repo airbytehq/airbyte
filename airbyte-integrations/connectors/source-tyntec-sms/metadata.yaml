@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 3c0c3cd1-b3e0-464a-9090-d3ceb5f92346
@@ -13,6 +8,14 @@ data:
   icon: tyntec.svg
   license: MIT
   name: Tyntec SMS
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/tyntec-sms
+  documentationUrl: https://docs.airbyte.com/integrations/sources/tyntec-sms
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

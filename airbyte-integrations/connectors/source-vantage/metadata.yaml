@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 28ce1fbd-1e15-453f-aa9f-da6c4d928e92
@@ -13,6 +8,14 @@ data:
   icon: vantage.svg
   license: MIT
   name: Vantage
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/vantage
+  documentationUrl: https://docs.airbyte.com/integrations/sources/vantage
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

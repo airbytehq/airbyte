@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - ${host}
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: source
   definitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
@@ -16,6 +11,14 @@ data:
   icon: snowflake.svg
   license: MIT
   name: Snowflake
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/snowflake
+  documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
+  tags:
+    - language:java
+    - language:python
 metadataSpecVersion: "1.0"

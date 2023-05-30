@@ -34,14 +34,14 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 /**
- * This class tests the {@link PostgresCdcCatalogHelper#getPublicizedTables} method.
+ * This class tests the {@link PostgresCatalogHelper#getPublicizedTables} method.
  */
 class PostgresCdcGetPublicizedTablesTest {
 
   private static final String SCHEMA_NAME = "public";
   private static final String PUBLICATION = "publication_test_12";
   private static final String REPLICATION_SLOT = "replication_slot_test_12";
-  protected static final int INITIAL_WAITING_SECONDS = 5;
+  protected static final int INITIAL_WAITING_SECONDS = 30;
   private static PostgreSQLContainer<?> container;
   private JsonNode config;
 
@@ -116,11 +116,11 @@ class PostgresCdcGetPublicizedTablesTest {
     try (final DSLContext dslContext = getDslContext(config)) {
       final JdbcDatabase database = new DefaultJdbcDatabase(dslContext.diagnosticsDataSource());
       // when source config does not exist
-      assertEquals(0, PostgresCdcCatalogHelper.getPublicizedTables(database).size());
+      assertEquals(0, PostgresCatalogHelper.getPublicizedTables(database).size());
 
       // when config is not cdc
       database.setSourceConfig(config);
-      assertEquals(0, PostgresCdcCatalogHelper.getPublicizedTables(database).size());
+      assertEquals(0, PostgresCatalogHelper.getPublicizedTables(database).size());
 
       // when config is cdc
       ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
@@ -132,7 +132,7 @@ class PostgresCdcGetPublicizedTablesTest {
           new AirbyteStreamNameNamespacePair("table_1", SCHEMA_NAME),
           new AirbyteStreamNameNamespacePair("table_2", SCHEMA_NAME));
       // table_irrelevant is not included because it is not part of the publication
-      assertEquals(expectedTables, PostgresCdcCatalogHelper.getPublicizedTables(database));
+      assertEquals(expectedTables, PostgresCatalogHelper.getPublicizedTables(database));
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }

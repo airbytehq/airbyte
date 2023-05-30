@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: dc98a6ad-2dd1-47b6-9529-2ec35820f9c6
@@ -13,6 +8,14 @@ data:
   icon: callrail.svg
   license: MIT
   name: CallRail
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/callrail
+  documentationUrl: https://docs.airbyte.com/integrations/sources/callrail
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

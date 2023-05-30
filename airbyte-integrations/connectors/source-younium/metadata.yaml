@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
@@ -13,6 +8,13 @@ data:
   icon: younium.svg
   license: MIT
   name: Younium
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/younium
+  documentationUrl: https://docs.airbyte.com/integrations/sources/younium
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

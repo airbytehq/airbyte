@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: f77914a1-442b-4195-9355-8810a1f4ed3f
@@ -13,6 +8,13 @@ data:
   icon: unleash.svg
   license: MIT
   name: Unleash
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/unleash
+  documentationUrl: https://docs.airbyte.com/integrations/sources/unleash
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

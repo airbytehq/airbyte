@@ -17,6 +17,9 @@
   "engagements": {
     "lastUpdated": 1614038400000
   },
+  "goals": {
+    "updatedAt": "2021-02-23T00:00:00Z"
+  },
   "line_items": {
     "updatedAt": "2021-02-23T00:00:00Z"
   },
@@ -28,5 +31,8 @@
   },
   "tickets": {
     "updatedAt": "2021-02-23T00:00:00Z"
+  },
+  "forms": {
+    "updatedAt": ""
   }
 }

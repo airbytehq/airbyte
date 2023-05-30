@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: dbe9b7ae-7b46-4e44-a507-02a343cf7230
@@ -13,6 +8,14 @@ data:
   icon: punkapi.svg
   license: MIT
   name: Punk API
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/punk-api
+  documentationUrl: https://docs.airbyte.com/integrations/sources/punk-api
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

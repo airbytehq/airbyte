@@ -2,20 +2,22 @@ data:
   allowedHosts:
     hosts:
       - api.surveymonkey.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: badc5925-0485-42be-8caa-b34096cb71b5
-  dockerImageTag: 0.1.15
+  dockerImageTag: 0.2.2
   dockerRepository: airbyte/source-surveymonkey
   githubIssueLabel: source-surveymonkey
   icon: surveymonkey.svg
   license: MIT
   name: SurveyMonkey
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/surveymonkey
+  documentationUrl: https://docs.airbyte.com/integrations/sources/surveymonkey
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

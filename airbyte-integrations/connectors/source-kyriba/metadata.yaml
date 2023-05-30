@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 547dc08e-ab51-421d-953b-8f3745201a8c
@@ -13,6 +8,13 @@ data:
   icon: kyriba.svg
   license: MIT
   name: Kyriba
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/kyriba
+  documentationUrl: https://docs.airbyte.com/integrations/sources/kyriba
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

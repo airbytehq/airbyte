@@ -8,6 +8,8 @@ In the "Authentication" section on the "Global Configuration" page in the connec
 
 If your API doesn't need authentication, leave it set at "No auth". This means the connector will be able to make requests to the API without providing any credentials which might be the case for some public open APIs or private APIs only available in local networks.
 
+<iframe width="640" height="430" src="https://www.loom.com/embed/4e65a2090134478d920764b43d1eaef4" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
 ## Authentication methods
 
 Check the documentation of the API you want to integrate for the used authentication method. The following ones are supported in the connector builder:
@@ -24,7 +26,6 @@ If requests are authenticated using the Basic HTTP authentication method, the do
 - "Basic Auth"
 - "Basic HTTP"
 - "Authorization: Basic"
-- "Base64"
 
 The Basic HTTP authentication method is a standard and doesn't require any further configuration. Username and password are set via "Testing values" in the connector builder and by the end user when configuring this connector as a Source.
 
@@ -79,19 +80,20 @@ curl -X GET \
 
 ### OAuth
 
-The OAuth authentication method implements authentication using an [OAuth2.0 flow with a refresh token grant type](https://oauth.net/2/grant-types/refresh-token/).
+The OAuth authentication method implements authentication using an OAuth2.0 flow with a [refresh token grant type](https://oauth.net/2/grant-types/refresh-token/) and [client credentiuals grant type](https://oauth.net/2/grant-types/client-credentials/).
 
-In this scheme, the OAuth endpoint of an API is called with a long-lived refresh token that's provided by the end user when configuring this connector as a Source. The refresh token is used to obtain a short-lived access token that's used to make requests actually extracting records. If the access token expires, the connection will automatically request a new one.
+In this scheme, the OAuth endpoint of an API is called with client id and client secret and/or a long-lived refresh token that's provided by the end user when configuring this connector as a Source. These credentials are used to obtain a short-lived access token that's used to make requests actually extracting records. If the access token expires, the connection will automatically request a new one.
 
-The connector needs to be configured with the endpoint to call to obtain access tokens with the refresh token. OAuth client id/secret and the refresh token are provided via "Testing values" in the connector builder as well as when configuring this connector as a Source.
+The connector needs to be configured with the endpoint to call to obtain access tokens with the client id/secret and/or the refresh token. OAuth client id/secret and the refresh token are provided via "Testing values" in the connector builder as well as when configuring this connector as a Source.
 
 Depending on how the refresh endpoint is implemented exactly, additional configuration might be necessary to specify how to request an access token with the right permissions (configuring OAuth scopes and grant type) and how to extract the access token and the expiry date out of the response (configuring expiry date format and property name as well as the access key property name):
 * **Scopes** - the [OAuth scopes](https://oauth.net/2/scope/) the access token will have access to. if not specified, no scopes are sent along with the refresh token request
+* **Grant type** - the used OAuth grant type (either refresh token or client credentials). In case of refresh_token, a refresh token has to be provided by the end user when configuring the connector as a Source.
 * **Token expiry property name** - the name of the property in the response that contains token expiry information. If not specified, it's set to `expires_in`
 * **Token expire property date format** - if not specified, the expiry property is interpreted as the number of seconds the access token will be valid
 * **Access token property name** - the name of the property in the response that contains the access token to do requests. If not specified, it's set to `access_token`
 
-If the API uses a short-lived refresh token that expires after a short amount of time and needs to be refreshed as well or if other grant types like PKCE are required, it's not possible to use the connector builder with OAuth authentication - check out the [compatibility guide](/connector-development/config-based/connector-builder-compatibility#oauth) for more information.
+If the API uses a short-lived refresh token that expires after a short amount of time and needs to be refreshed as well or if other grant types like PKCE are required, it's not possible to use the connector builder with OAuth authentication - check out the [compatibility guide](/connector-development/connector-builder-ui/connector-builder-compatibility#oauth) for more information.
 
 Keep in mind that the OAuth authentication method does not implement a single-click authentication experience for the end user configuring the connector - it will still be necessary to obtain client id, client secret and refresh token from the API and manually enter them into the configuration form.
 
@@ -136,7 +138,9 @@ Some APIs require to include the access token in different parts of the request 
 * Add a user input as secret field on the "User inputs" page (e.g. named `api_key`)
 * On the stream page, add a new "Request parameter"
 * As key, configure the name of the query parameter the API requires (e.g. named `key`)
-* As value, configure a placeholder for the created user input (e.g. `{{ config['api_key'] }}`)
+* As value, configure a [placeholder](/connector-development/config-based/understanding-the-yaml-file/reference#variables) for the created user input (e.g. `{{ config['api_key'] }}`)
+
+<iframe width="640" height="396" src="https://www.loom.com/embed/1d62a8cce4304ee7ac45e748bd9c29be" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 The same approach can be used to add the token to the request body.
 

@@ -7,7 +7,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
-  dockerImageTag: 0.1.20
+  dockerImageTag: 0.1.21
   dockerRepository: airbyte/destination-mysql-strict-encrypt
   githubIssueLabel: destination-mysql
   icon: mysql.svg
@@ -16,8 +16,10 @@ data:
   normalizationConfig:
     normalizationIntegrationType: mysql
     normalizationRepository: airbyte/normalization-mysql
-    normalizationTag: 0.4.0
+    normalizationTag: 0.4.1
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/mysql
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/mysql
   supportsDbt: true
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

@@ -2,20 +2,23 @@ data:
   allowedHosts:
     hosts:
       - api.sendgrid.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/source-sendgrid
   githubIssueLabel: source-sendgrid
   icon: sendgrid.svg
   license: MIT
   name: Sendgrid
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/sendgrid
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sendgrid
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

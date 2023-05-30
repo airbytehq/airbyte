@@ -277,8 +277,8 @@ class OAuthAuthenticator(BaseModel):
         ],
         title="Client Secret",
     )
-    refresh_token: str = Field(
-        ...,
+    refresh_token: Optional[str] = Field(
+        None,
         description="Credential artifact used to get a new access token.",
         examples=[
             "{{ config['refresh_token'] }}",
@@ -306,8 +306,8 @@ class OAuthAuthenticator(BaseModel):
     )
     grant_type: Optional[str] = Field(
         "refresh_token",
-        description="How the access token is granted.",
-        examples=["refresh_token"],
+        description="Specifies the OAuth2 grant type. If set to refresh_token, the refresh_token needs to be provided as well. For client_credentials, only client id and secret are required. Other grant types are not officially supported.",
+        examples=["refresh_token", "client_credentials"],
         title="Grant Type",
     )
     refresh_request_body: Optional[Dict[str, Any]] = Field(
@@ -400,8 +400,8 @@ class SingleUseRefreshTokenOAuthAuthenticator(BaseModel):
     )
     grant_type: Optional[str] = Field(
         "refresh_token",
-        description="How the access token is granted.",
-        examples=["refresh_token"],
+        description="Specifies the OAuth2 grant type. If set to refresh_token, the refresh_token needs to be provided as well. For client_credentials, only client id and secret are required. Other grant types are not officially supported.",
+        examples=["refresh_token", "client_credentials"],
         title="Grant Type",
     )
     refresh_request_body: Optional[Dict[str, Any]] = Field(
@@ -520,7 +520,7 @@ class MinMaxDatetime(BaseModel):
     )
     datetime_format: Optional[str] = Field(
         "",
-        description='Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty.',
+        description='Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use %s if the datetime value is in epoch time (Unix timestamp).',
         examples=["%Y-%m-%dT%H:%M:%S.%f%", "%Y-%m-%d", "%s"],
         title="Datetime Format",
     )
@@ -606,8 +606,8 @@ class OAuthConfigSpecification(BaseModel):
 
 class OffsetIncrement(BaseModel):
     type: Literal["OffsetIncrement"]
-    page_size: Union[int, str] = Field(
-        ...,
+    page_size: Optional[Union[int, str]] = Field(
+        None,
         description="The number of records to include in each pages.",
         examples=[100, "{{ config['page_size'] }}"],
         title="Limit",
@@ -617,8 +617,8 @@ class OffsetIncrement(BaseModel):
 
 class PageIncrement(BaseModel):
     type: Literal["PageIncrement"]
-    page_size: int = Field(
-        ...,
+    page_size: Optional[int] = Field(
+        None,
         description="The number of records to include in each pages.",
         examples=[100, "100"],
         title="Page Size",
@@ -841,7 +841,7 @@ class DatetimeBasedCursor(BaseModel):
     type: Literal["DatetimeBasedCursor"]
     cursor_field: str = Field(
         ...,
-        description="The location of the value on a record that will be used as a bookmark during sync.",
+        description="The location of the value on a record that will be used as a bookmark during sync. To ensure no data loss, the API must return records in ascending order based on the cursor field. Nested fields are not supported, so the field must be at the top level of the record. You can use a combination of Add Field and Remove Field transformations to move the nested field to the top.",
         examples=["created_at", "{{ config['record_cursor'] }}"],
         title="Cursor Field",
     )
@@ -860,7 +860,7 @@ class DatetimeBasedCursor(BaseModel):
     end_datetime: Union[str, MinMaxDatetime] = Field(
         ...,
         description="The datetime that determines the last record that should be synced.",
-        examples=["2021-01-1T00:00:00Z", "{{ now_utc() }}", "{{ now_local() }}"],
+        examples=["2021-01-1T00:00:00Z", "{{ now_utc() }}", "{{ day_delta(-1) }}"],
         title="End Datetime",
     )
     start_datetime: Union[str, MinMaxDatetime] = Field(
@@ -1094,12 +1094,13 @@ class HttpRequester(BaseModel):
         ],
         title="Request Body Payload (Non-JSON)",
     )
-    request_body_json: Optional[Union[str, Dict[str, str]]] = Field(
+    request_body_json: Optional[Union[str, Dict[str, Any]]] = Field(
         None,
-        description="Specifies how to populate the body of the request with a JSON payload.",
+        description="Specifies how to populate the body of the request with a JSON payload. Can contain nested objects.",
         examples=[
             {"sort_order": "ASC", "sort_field": "CREATED_AT"},
             {"key": "{{ config['value'] }}"},
+            {"sort": {"field": "updated_at", "order": "ascending"}},
         ],
         title="Request Body JSON Payload",
     )

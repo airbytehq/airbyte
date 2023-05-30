@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 008b2e26-11a3-11ec-82a8-0242ac130003
@@ -13,6 +8,13 @@ data:
   icon: commercetools.svg
   license: MIT
   name: Commercetools
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/commercetools
+  documentationUrl: https://docs.airbyte.com/integrations/sources/commercetools
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

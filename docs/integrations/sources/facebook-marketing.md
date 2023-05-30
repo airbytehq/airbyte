@@ -43,27 +43,27 @@ This page guides you through the process of setting up the Facebook Marketing so
 8. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
 9. (Optional) In the Custom Insights section. A list which contains ad statistics entries, each entry must have a name and can contain fields, breakdowns or action_breakdowns. Click on "add" to fill this field.
     To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync.
+    We recommend following the Facebook Marketing [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns) to understand the breakdown limitations. Some fields can not be requested and many others only work when combined with specific fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field.
+
+    To configure Custom Insights:
+
+       1. For **Name**, enter a name for the insight. This will be used as the Airbyte stream name 
+       2. For **Level**, enter the level of the fields you want to pull from the Facebook Marketing API. By default, 'ad'. You can specify also account, campaign or adset. 
+       3. For **Fields**, enter a list of the fields you want to pull from the Facebook Marketing API.
+       4. For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
+       5. For **Breakdowns**, enter a list of the breakdowns you want to configure.
+       6. For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+       7. For **Action Breakdown**, enter a list of the action breakdowns you want to configure.
+       8. For **Custom Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
+       9. Click **Done**.
+      10.  For **Page Size of Requests**, fill in the page size in case pagination kicks in. Feel free to ignore it, the default value should work in most cases. 
+      12.  For **Insights Lookback Window**, fill in the appropriate value. Facebook freezes insight data 28 days after it was generated, which means that all data from the past 28 days may have changed since we last emitted it, so you can retrieve refreshed insights from the past by setting this parameter. If you set a custom lookback window value in Facebook account, please provide the same value here. See [more](#facebook-marketing-attribution-reporting) on this parameter. 
+      13.  Click **Set up source**.
 
     :::warning
     Additional streams for Facebook Marketing are dynamically created based on the specified Custom Insights. For an existing Facebook Marketing source, when you are updating or removing Custom Insights, you should also ensure that any connections syncing to these streams are either disabled or have had their source schema refreshed.
     :::
 
-    We recommend following the Facebook Marketing [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns) to understand the breakdown limitations. Some fields can not be requested and many others only work when combined with specific fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field.
-
-    To configure Custom Insights:
-
-    1. For **Name**, enter a name for the insight. This will be used as the Airbyte stream name 
-    2. For **Level**, enter the level of the fields you want to pull from the Facebook Marketing API. By default, 'ad'. You can specify also account, campaign or adset. 
-    3. For **Fields**, enter a list of the fields you want to pull from the Facebook Marketing API.
-    4. For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
-    5. For **Breakdowns**, enter a list of the breakdowns you want to configure.
-    6. For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-    7. For **Action Breakdown**, enter a list of the action breakdowns you want to configure.
-    8. For **Custom Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
-    9. Click **Done**.
-   10. For **Page Size of Requests**, fill in the page size in case pagination kicks in. Feel free to ignore it, the default value should work in most cases. 
-   11. For **Insights Lookback Window**, fill in the appropriate value. Facebook freezes insight data 28 days after it was generated, which means that all data from the past 28 days may have changed since we last emitted it, so you can retrieve refreshed insights from the past by setting this parameter. If you set a custom lookback window value in Facebook account, please provide the same value here. See [more](#facebook-marketing-attribution-reporting) on this parameter. 
-   12. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -93,9 +93,7 @@ The Facebook Marketing source connector supports the following sync modes:
 * [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (except for the AdCreatives and AdAccount tables)
 * [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history) (except for the AdCreatives and AdAccount tables)
 
-## Supported tables
-
-You can replicate the following tables using the Facebook Marketing connector:
+## Supported Streams
 
 * [Activities](https://developers.facebook.com/docs/marketing-api/reference/ad-activity)
 * [AdAccount](https://developers.facebook.com/docs/marketing-api/business-asset-management/guides/ad-accounts)
@@ -108,6 +106,32 @@ You can replicate the following tables using the Facebook Marketing connector:
 * [Images](https://developers.facebook.com/docs/marketing-api/reference/ad-image)
 * [Videos](https://developers.facebook.com/docs/marketing-api/reference/video)
 
+Airbyte also supports the following Prebuilt Facebook AdInsights Reports:
+
+| Stream                                            |                           Breakdowns                           |                    Action Breakdowns                    |
+|:--------------------------------------------------|:--------------------------------------------------------------:|:-------------------------------------------------------:|
+| Ad Insights Action Carousel Card                  |                              ---                               | `action_carousel_card_id`, `action_carousel_card_name`  |
+| Ad Insights Action Conversion Device              |                       `device_platform`                        |                      `action_type`                      |
+| Ad Insights Action Product ID                     |                          `product_id`                          |                           ---                           |
+| Ad Insights Action Reaction                       |                              ---                               |                    `action_reaction`                    |
+| Ad Insights Action Video Sound                    |                              ---                               |                  `action_video_sound`                   |
+| Ad Insights Action Video Type                     |                              ---                               |                   `action_video_type`                   |
+| Ad Insights Action Type                           |                              ---                               |                      `action_type`                      |
+| Ad Insights Age And Gender                        |                        `age`, `gender`                         | `action_type`, `action_target_id`, `action_destination` |
+| Ad Insights Delivery Device                       |                       `device_platform`                        |                      `action_type`                      |
+| Ad Insights Delivery Platform                     |                      `publisher_platform`                      |                      `action_type`                      |
+| Ad Insights Delivery Platform And Device Platform |            `publisher_platform`, `device_platform`             |                      `action_type`                      |
+| Ad Insights Demographics Age                      |                             `age`                              |                      `action_type`                      |
+| Ad Insights Demographics Country                  |                           `country`                            |                      `action_type`                      |
+| Ad Insights Demographics DMA Region               |                             `dma`                              |                      `action_type`                      |
+| Ad Insights Demographics Gender                   |                            `gender`                            |                      `action_type`                      |
+| Ad Insights DMA                                   |                             `dma`                              | `action_type`, `action_target_id`, `action_destination` |
+| Ad Insights Country                               |                           `country`                            | `action_type`, `action_target_id`, `action_destination` |
+| Ad Insights Platform And Device                   | `publisher_platform`, `platform_position`, `impression_device` |                      `action_type`                      |
+| Ad Insights Region                                |                            `region`                            | `action_type`, `action_target_id`, `action_destination` |
+
+
+
 You can segment the AdInsights table into parts based on the following information. Each part will be synced as a separate table if normalization is enabled:
 
 * Country
@@ -117,8 +141,13 @@ You can segment the AdInsights table into parts based on the following informati
 * Region
 
 For more information, see the [Facebook Insights API documentation.](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
+
+:::note
+
 Pay attention, that not all fields (e.g. conversions, conversion_values) will be returned for AdInsights, see [docs](https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/).
 To get all fields You should use custom insights with **breakdowns**.
+
+:::
 
 ## Facebook Marketing Attribution Reporting
 Please be informed that the connector uses the `lookback_window` parameter to perform the repetitive read of the last `<lookback_window>` days in the Incremental sync mode. This means some data will be synced twice (or possibly more often) despite the cursor value being up-to-date. You can change this date window by modifying the `lookback_window` parameter when setting up the source. The smaller the value - the fewer duplicates you will have. The greater the value - the more precise results you will get. More details on what the attribution window is and what purpose it serves can be found in this [Facebook Article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
@@ -126,7 +155,7 @@ Please be informed that the connector uses the `lookback_window` parameter to pe
 ## Data type mapping
 
 | Integration Type | Airbyte Type |
-| :--------------: | :----------: |
+|:----------------:|:------------:|
 |      string      |    string    |
 |      number      |    number    |
 |      array       |    array     |
@@ -136,6 +165,10 @@ Please be informed that the connector uses the `lookback_window` parameter to pe
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.0   | 2023-05-29 | [26720](https://github.com/airbytehq/airbyte/pull/26720) | Add Prebuilt Ad Insights reports                                                                                                                                                                                                                                                                  |
+| 0.3.7   | 2023-05-12 | [26000](https://github.com/airbytehq/airbyte/pull/26000) | Handle config errors                                                                                                                                                                                                                                                                              |
+| 0.3.6   | 2023-04-27 | [22999](https://github.com/airbytehq/airbyte/pull/22999) | Specified date formatting in specification                                                                                                                                                                                                                                                        |
+| 0.3.5   | 2023-04-26 | [24994](https://github.com/airbytehq/airbyte/pull/24994) | Emit stream status messages                                                                                                                                                                                                                                                                       |
 | 0.3.4   | 2023-04-18 | [22990](https://github.com/airbytehq/airbyte/pull/22990) | Increase pause interval                                                                                                                                                                                                                                                                           |
 | 0.3.3   | 2023-04-14 | [25204](https://github.com/airbytehq/airbyte/pull/25204) | Fix data retention period validation                                                                                                                                                                                                                                                              |
 | 0.3.2   | 2023-04-08 | [25003](https://github.com/airbytehq/airbyte/pull/25003) | Don't fetch `thumbnail_data_url` if it's None                                                                                                                                                                                                                                                     |

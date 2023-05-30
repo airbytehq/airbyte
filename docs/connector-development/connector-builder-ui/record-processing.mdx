@@ -9,6 +9,8 @@ Connectors built with the connector builder always make HTTP requests, receive t
 
 ## Record selection
 
+<iframe width="640" height="393" src="https://www.loom.com/embed/06d0fe35d79b40c5b1aea29a7fa7f113" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
 When doing HTTP requests, the connector expects the records to be part of the response JSON body. The "Record selector" field of the stream needs to be set to the property of the response object that holds the records.
 
 Very often, the response body contains an array of records along with some suplementary information (for example meta data for pagination).
@@ -101,9 +103,45 @@ Sometimes, there is only one record returned per request from the API. In this c
 
 In this case, a record selector of `rates` will yield a single record which contains all the exchange rates in a single object.
 
+### Fields nested in arrays
+
+In some cases, records are selected in multiple branches of the response object (for example within each item of an array):
+
+```
+
+{
+  "data": [
+    {
+      "record": {
+        "id": "1"
+      }
+    },
+    {
+      "record": {
+        "id": "2"
+      }
+    }
+  ]
+}
+
+```
+
+In this case a record selector with a placeholder `*` selects all children at the current position in the path, in this case **`data`, `*`, `record`** will return the following records:
+
+```
+[
+  {
+    "id": 1
+  },
+  {
+    "id": 2
+  }
+]
+```
+
 ## Transformations
 
-It is recommended to not change records during the extraction process the connector is performing, but instead load them into the downstream warehouse unchanged and perform necessery transformations there in order to stay flexible in what data is required. However there are some reasons that require the modifying the fields of records before they are sent to the warehouse:
+It is recommended to not change records during the extraction process the connector is performing, but instead load them into the downstream warehouse unchanged and perform necessary transformations there in order to stay flexible in what data is required. However there are some reasons that require the modifying the fields of records before they are sent to the warehouse:
 * Remove personally identifiable information (PII) to ensure compliance with local legislation
 * Pseudonymise sensitive fields
 * Remove large fields that don't contain interesting information and significantly increase load on the system
@@ -111,6 +149,8 @@ It is recommended to not change records during the extraction process the connec
 The "transformations" feature can be used for these purposes.
 
 ### Removing fields
+
+<iframe width="640" height="538" src="https://www.loom.com/embed/8dca8feaa54f49848667d3fd5b945372" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 To remove a field from a record, add a new transformation in the "Transformations" section of type "remove" and enter the field path. For example in case of the [EmailOctopus API](https://emailoctopus.com/api-documentation/campaigns/get-all), the campaigns records also include the html content of the mailing which takes up a lot of space:
 ```
@@ -184,6 +224,8 @@ The `*` character can also be used as a placeholder to filter for all fields tha
 
 
 ### Adding fields
+
+<iframe width="640" height="409" src="https://www.loom.com/embed/ab3b72cafb734112b645607ab6d1ab1f" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 Adding fields can be used to apply a hashing function to an existing field to pseudonymize it. To do this, add a new transformation in the "Transformations" section of type "add" and enter the field path and the new value. For example in case of the [EmailOctopus API](https://emailoctopus.com/api-documentation/campaigns/get-all), the campaigns records include the name of the sender:
 ```
