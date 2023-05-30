@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 32382e40-3b49-4b99-9c5c-4076501914e7
@@ -13,6 +8,14 @@ data:
   icon: gong.svg
   license: MIT
   name: Gong
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/gong
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gong
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

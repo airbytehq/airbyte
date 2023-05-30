@@ -373,58 +373,6 @@
                 "order": 3
               }
             }
-          },
-          {
-            "title": "Azure Blob Storage Staging",
-            "description": "Recommended for large production workloads for better speed and scalability.",
-            "required": [
-              "method",
-              "azure_blob_storage_account_name",
-              "azure_blob_storage_container_name",
-              "azure_blob_storage_sas_token"
-            ],
-            "properties": {
-              "method": {
-                "title": "",
-                "description": "",
-                "type": "string",
-                "enum": ["Azure Blob Staging"],
-                "default": "Azure Blob Staging",
-                "order": 0
-              },
-              "azure_blob_storage_endpoint_domain_name": {
-                "title": "Azure Blob Storage Endpoint",
-                "type": "string",
-                "default": "blob.core.windows.net",
-                "description": "Enter the Azure Blob Storage <a href=\"https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#storage-account-endpoints\">endpoint domain name</a>",
-                "examples": ["blob.core.windows.net"],
-                "order": 1
-              },
-              "azure_blob_storage_account_name": {
-                "title": "Azure Blob Storage <a href=\"https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview#storage-account-endpoints\">account name</a>",
-                "type": "string",
-                "description": "Enter your Azure Blob Storage account name",
-                "examples": ["airbyte5storage"],
-                "order": 2
-              },
-              "azure_blob_storage_container_name": {
-                "title": "Azure Blob Storage Container Name",
-                "type": "string",
-                "description": "Enter your Azure Blob Storage <a href=\"https://docs.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata#container-names\">container name</a>",
-                "examples": ["airbytetestcontainername"],
-                "order": 3
-              },
-              "azure_blob_storage_sas_token": {
-                "title": "SAS Token",
-                "type": "string",
-                "airbyte_secret": true,
-                "description": "Enter the <a href=\"https://docs.snowflake.com/en/user-guide/data-load-azure-config.html#option-2-generating-a-sas-token\">Shared access signature</a> (SAS) token to grant Snowflake limited access to objects in your Azure Blob Storage account",
-                "examples": [
-                  "?sv=2016-05-31&ss=b&srt=sco&sp=rwdl&se=2018-06-27T10:05:50Z&st=2017-06-27T02:05:50Z&spr=https,http&sig=bgqQwoXwxzuD2GJfagRg7VOS8hzNr3QLT7rhS8OFRLQ%3D"
-                ],
-                "order": 4
-              }
-            }
           }
         ]
       },

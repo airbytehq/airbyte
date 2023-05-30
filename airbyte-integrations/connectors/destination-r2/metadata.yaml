@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: file
   connectorType: destination
   definitionId: 0fb07be9-7c3b-4336-850d-5efc006152ee
@@ -13,6 +8,13 @@ data:
   icon: cloudflare-r2.svg
   license: MIT
   name: Cloudflare R2
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/r2
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/r2
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

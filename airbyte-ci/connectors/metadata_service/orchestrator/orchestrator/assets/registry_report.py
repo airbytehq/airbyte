@@ -10,6 +10,9 @@ from orchestrator.templates.render import (
     ColumnInfo,
 )
 from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTORS_TEST_RESULT_BUCKET_URL
+from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
+from orchestrator.utils.object_helpers import to_json_sanitized_dict
+from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 
 GROUP_NAME = "registry_reports"
 
@@ -108,7 +111,6 @@ def augment_and_normalize_connector_dataframes(
 
     total_registry["issue_url"] = total_registry.apply(issue_url, axis=1)
     total_registry["test_summary_url"] = total_registry.apply(test_summary_url, axis=1)
-    total_registry["icon_url"] = total_registry.apply(icon_url, axis=1)
 
     # Merge docker repo and version into separate columns
     total_registry["docker_image_oss"] = total_registry.apply(lambda x: merge_docker_repo_and_version(x, OSS_SUFFIX), axis=1)
@@ -123,18 +125,44 @@ def augment_and_normalize_connector_dataframes(
 
 # ASSETS
 
-# TODO (ben): Update these assets to reference the new registry once deployed
+
+@asset(group_name=GROUP_NAME)
+def cloud_sources_dataframe(latest_cloud_registry: ConnectorRegistryV0) -> OutputDataFrame:
+    latest_cloud_registry_dict = to_json_sanitized_dict(latest_cloud_registry)
+    sources = latest_cloud_registry_dict["sources"]
+    return output_dataframe(pd.DataFrame(sources))
 
 
 @asset(group_name=GROUP_NAME)
-def all_sources_dataframe(legacy_cloud_sources_dataframe, legacy_oss_sources_dataframe, github_connector_folders) -> pd.DataFrame:
+def oss_sources_dataframe(latest_oss_registry: ConnectorRegistryV0) -> OutputDataFrame:
+    latest_oss_registry_dict = to_json_sanitized_dict(latest_oss_registry)
+    sources = latest_oss_registry_dict["sources"]
+    return output_dataframe(pd.DataFrame(sources))
+
+
+@asset(group_name=GROUP_NAME)
+def cloud_destinations_dataframe(latest_cloud_registry: ConnectorRegistryV0) -> OutputDataFrame:
+    latest_cloud_registry_dict = to_json_sanitized_dict(latest_cloud_registry)
+    destinations = latest_cloud_registry_dict["destinations"]
+    return output_dataframe(pd.DataFrame(destinations))
+
+
+@asset(group_name=GROUP_NAME)
+def oss_destinations_dataframe(latest_oss_registry: ConnectorRegistryV0) -> OutputDataFrame:
+    latest_oss_registry_dict = to_json_sanitized_dict(latest_oss_registry)
+    destinations = latest_oss_registry_dict["destinations"]
+    return output_dataframe(pd.DataFrame(destinations))
+
+
+@asset(group_name=GROUP_NAME)
+def all_sources_dataframe(cloud_sources_dataframe, oss_sources_dataframe, github_connector_folders) -> pd.DataFrame:
     """
     Merge the cloud and oss sources registries into a single dataframe.
     """
 
     return augment_and_normalize_connector_dataframes(
-        cloud_df=legacy_cloud_sources_dataframe,
-        oss_df=legacy_oss_sources_dataframe,
+        cloud_df=cloud_sources_dataframe,
+        oss_df=oss_sources_dataframe,
         primary_key="sourceDefinitionId",
         connector_type="source",
         github_connector_folders=github_connector_folders,
@@ -142,16 +170,14 @@ def all_sources_dataframe(legacy_cloud_sources_dataframe, legacy_oss_sources_dat
 
 
 @asset(group_name=GROUP_NAME)
-def all_destinations_dataframe(
-    legacy_cloud_destinations_dataframe, legacy_oss_destinations_dataframe, github_connector_folders
-) -> pd.DataFrame:
+def all_destinations_dataframe(cloud_destinations_dataframe, oss_destinations_dataframe, github_connector_folders) -> pd.DataFrame:
     """
     Merge the cloud and oss destinations registries into a single dataframe.
     """
 
     return augment_and_normalize_connector_dataframes(
-        cloud_df=legacy_cloud_destinations_dataframe,
-        oss_df=legacy_oss_destinations_dataframe,
+        cloud_df=cloud_destinations_dataframe,
+        oss_df=oss_destinations_dataframe,
         primary_key="destinationDefinitionId",
         connector_type="destination",
         github_connector_folders=github_connector_folders,
@@ -178,7 +204,7 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
             "title": "Definition Id",
         },
         {
-            "column": "icon_url",
+            "column": "iconUrl_oss",
             "title": "Icon",
             "formatter": icon_image_html,
         },

@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 982eaa4c-bba1-4cce-a971-06a41f700b8c
@@ -13,6 +8,13 @@ data:
   icon: zendesk.svg
   license: MIT
   name: Zendesk Sell
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/zendesk-sell
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-sell
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

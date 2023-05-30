@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 6ec2acea-7fd1-4378-b403-41a666e0c028
@@ -13,6 +8,14 @@ data:
   icon: mailjetsms.svg
   license: MIT
   name: Mailjet SMS
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/mailjet-sms
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mailjet-sms
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

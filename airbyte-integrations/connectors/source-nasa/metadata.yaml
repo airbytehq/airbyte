@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - api.nasa.gov
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 1a8667d7-7978-43cd-ba4d-d32cbd478971
@@ -16,6 +11,13 @@ data:
   icon: nasa.svg
   license: MIT
   name: NASA
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/nasa
+  documentationUrl: https://docs.airbyte.com/integrations/sources/nasa
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

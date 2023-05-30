@@ -1,6 +1,6 @@
 name: Add Connector Merge Checklist
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, reopened]
     paths:
       - "airbyte-integrations/connectors/source-**"

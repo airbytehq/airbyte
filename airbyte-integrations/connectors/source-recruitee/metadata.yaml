@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 3b046ac7-d8d3-4eb3-b122-f96b2a16d8a8
@@ -13,6 +8,14 @@ data:
   icon: recruitee.svg
   license: MIT
   name: Recruitee
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/recruitee
+  documentationUrl: https://docs.airbyte.com/integrations/sources/recruitee
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

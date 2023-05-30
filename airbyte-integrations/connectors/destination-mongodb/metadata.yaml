@@ -1,10 +1,4 @@
 data:
-  registries:
-    cloud:
-      dockerRepository: airbyte/destination-mongodb-strict-encrypt
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 8b746512-8c2e-6ac1-4adc-b59faafd473c
@@ -14,6 +8,14 @@ data:
   icon: mongodb.svg
   license: MIT
   name: MongoDB
+  registries:
+    cloud:
+      dockerRepository: airbyte/destination-mongodb-strict-encrypt
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/mongodb
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/mongodb
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

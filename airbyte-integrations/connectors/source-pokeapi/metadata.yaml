@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 6371b14b-bc68-4236-bfbd-468e8df8e968
@@ -13,6 +8,13 @@ data:
   icon: pokeapi.svg
   license: MIT
   name: PokeAPI
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/pokeapi
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pokeapi
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

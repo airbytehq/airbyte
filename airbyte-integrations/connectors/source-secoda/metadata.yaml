@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: da9fc6b9-8059-4be0-b204-f56e22e4d52d
@@ -13,6 +8,14 @@ data:
   icon: secoda.svg
   license: MIT
   name: Secoda
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/secoda
+  documentationUrl: https://docs.airbyte.com/integrations/sources/secoda
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

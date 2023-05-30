@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: d4d3fef9-e319-45c2-881a-bd02ce44cc9f
@@ -13,6 +8,13 @@ data:
   icon: redis.svg
   license: MIT
   name: Redis
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/redis
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/redis
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

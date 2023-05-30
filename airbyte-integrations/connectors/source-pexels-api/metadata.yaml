@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 69d9eb65-8026-47dc-baf1-e4bf67901fd6
@@ -13,6 +8,14 @@ data:
   icon: pexels.svg
   license: MIT
   name: Pexels API
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/pexels-api
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pexels-api
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

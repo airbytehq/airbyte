@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 60bd11d8-2632-4daa-a688-b47336d32093
@@ -12,6 +7,14 @@ data:
   githubIssueLabel: source-newsdata
   license: MIT
   name: Newsdata
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/newsdata
+  documentationUrl: https://docs.airbyte.com/integrations/sources/newsdata
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"
