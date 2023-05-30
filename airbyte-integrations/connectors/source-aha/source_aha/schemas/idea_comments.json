@@ -14,7 +14,13 @@
     "created_at": {
       "type": ["null", "string"]
     },
-    "idea_comment_user": {
+    "visibility": {
+      "type": ["null", "string"]
+    },
+    "parent_idea_comment_id": {
+      "type": ["null", "string"]
+    },
+    "idea_commenter_user": {
       "type" : "object",
       "properties" : {
         "id": {
@@ -99,6 +105,9 @@
       "attachments": {
         "type": ["null", "array"]
       }
+    },
+    "attachments": {
+      "type": ["null", "array"]
     }
   }
 }

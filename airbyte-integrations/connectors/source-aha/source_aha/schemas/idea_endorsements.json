@@ -76,6 +76,26 @@
           "type" : ["null", "string"]
         }
       }
+    },
+    "endorsed_by_user": {
+      "type": "object",
+      "properties": {
+        "id" : {
+          "type" : ["null", "string"]
+        },
+        "name" : {
+          "type" : ["null", "string"]
+        },
+        "email" : {
+          "type" : ["null", "string"]
+        },
+        "created_at" : {
+          "type" : ["null", "string"]
+        },
+        "updated_at": {
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }
