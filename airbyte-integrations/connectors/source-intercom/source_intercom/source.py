@@ -4,7 +4,9 @@
 
 
 import logging
+from typing import Any, Iterator, List, Mapping, MutableMapping, Union
 
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 
 """
@@ -20,8 +22,12 @@ class SourceIntercom(YamlDeclarativeSource):
     def __init__(self):
         super().__init__(**{"path_to_yaml": "manifest.yaml"})
 
-    def _configure_logger_level(self, logger: logging.Logger):
-        """
-        Set the log level to logging.DEBUG if debug mode
-        """
-        logger.setLevel(logging.DEBUG)
+    def read(
+        self,
+        logger: logging.Logger,
+        config: Mapping[str, Any],
+        catalog: ConfiguredAirbyteCatalog,
+        state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
+    ) -> Iterator[AirbyteMessage]:
+        self._debug = True
+        yield from super().read(logger, config, catalog, state)
