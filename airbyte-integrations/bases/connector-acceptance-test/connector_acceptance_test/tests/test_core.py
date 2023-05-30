@@ -699,6 +699,9 @@ class TestDiscovery(BaseTest):
             for type_path, type_value in dpath.util.search(stream_data.json_schema, "**/type", yielded=True):
                 parent_path = schema_helper.get_parent_path(type_path)
                 parent = schema_helper.get_parent(type_path)
+                if not isinstance(type_value, list) and not isinstance(type_value, str):
+                    # Skip when type is the name of a property.
+                    continue
                 type_values = set(type_value) if isinstance(type_value, list) else {type_value}
 
                 # Check unsupported type
