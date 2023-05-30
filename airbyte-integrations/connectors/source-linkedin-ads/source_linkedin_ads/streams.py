@@ -294,7 +294,8 @@ class Creatives(LinkedInAdsStreamSlicing):
     endpoint = "creatives"
     parent_stream = Accounts
     cursor_field = "lastModifiedAt"
-    records_limit = 100 # q=500 return error 400: Request would return too many entities; see
+    # standard records_limit=500 returns error 400: Request would return too many entities;  https://github.com/airbytehq/oncall/issues/2159
+    records_limit = 100
 
     def path(
         self,
