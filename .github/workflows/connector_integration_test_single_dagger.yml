@@ -1,5 +1,9 @@
 name: POC Connectors CI - test pipeline
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   workflow_dispatch:
     inputs:
@@ -8,7 +12,7 @@ on:
         default: "--modified"
   pull_request:
     paths:
-      #- "airbyte-integrations/connectors/**"
+      - "airbyte-integrations/connectors/**"
       #- ".github/workflows/connector_integration_test_single_dagger.yml"
     types:
       - opened
