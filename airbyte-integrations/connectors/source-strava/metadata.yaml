@@ -17,5 +17,7 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/strava
+  documentationUrl: https://docs.airbyte.com/integrations/sources/strava
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

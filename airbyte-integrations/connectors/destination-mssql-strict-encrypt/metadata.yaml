@@ -18,6 +18,8 @@ data:
     normalizationRepository: airbyte/normalization-mssql
     normalizationTag: 0.4.1
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/mssql
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/mssql
   supportsDbt: true
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

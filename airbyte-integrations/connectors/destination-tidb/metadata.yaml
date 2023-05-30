@@ -18,6 +18,8 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/tidb
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/tidb
   supportsDbt: true
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"
