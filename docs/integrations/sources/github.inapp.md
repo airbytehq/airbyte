@@ -30,7 +30,7 @@ Example of an organization to receive data from all of its repositories:
 ```
 airbytehq/*
 ```
-Repositories with the wrong name, do not exist, or have the wrong name format will return an error.
+Repositories which have a misspelled name, do not exist, or have the wrong name format will return an error.
 
 5. (Optional) **Branch** - Enter a space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
 6. (Optional) **Max requests per hour** - The GitHub API allows for a maximum of 5000 requests per hour (15,000 for Github Enterprise). You can specify a lower value to limit your use of the API quota.
