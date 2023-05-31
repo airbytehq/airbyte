@@ -66,6 +66,7 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
 
   @Override
   protected void flushWriter() throws IOException {
+    // in an async world, it is possible that flush writer gets called even if no records were accepted.
     if (csvPrinter != null) {
       csvPrinter.flush();
     } else {
@@ -75,6 +76,7 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
 
   @Override
   protected void closeWriter() throws IOException {
+    // in an async world, it is possible that flush writer gets called even if no records were accepted.
     if (csvPrinter != null) {
       csvPrinter.close();
     } else {
