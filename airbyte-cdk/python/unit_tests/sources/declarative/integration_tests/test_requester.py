@@ -70,12 +70,17 @@ class TestRequester:
 
         pages = (_create_page({"data": [{"id": 0, "field": "valueA"}, {"id": 1, "field": "valueB"}],"_metadata": {"next": "next"}}), )
 
+        expected_calls = [
+            call({}, {}, None),
+        ]
+
         with patch.object(HttpStream, "_fetch_next_page", side_effect=pages) as mock_http_stream:
             output_records_and_messages = stream.read_records(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field)
                 
             output_records = [ message for message in output_records_and_messages if isinstance(message, dict) ]
 
             assert expected_records == output_records
+            mock_http_stream.assert_has_calls(expected_calls)
 
 def _create_page(response_body):
     return _create_request(), _create_response(response_body)
