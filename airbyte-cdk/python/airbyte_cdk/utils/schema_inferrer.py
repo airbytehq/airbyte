@@ -29,7 +29,7 @@ class IntegerToNumber(Number):
     """
 
     def __init__(self, node_class):
-        super(IntegerToNumber, self).__init__(node_class)
+        super().__init__(node_class)
         self._type = "number"
 
 
@@ -39,9 +39,6 @@ class NoRequiredSchemaBuilder(SchemaBuilder):
 
 # This type is inferred from the genson lib, but there is no alias provided for it - creating it here for type safety
 InferredSchema = Dict[str, Union[str, Any, List, List[Dict[str, Union[Any, List]]]]]
-
-SchemaNode = Union[dict, dict[str, str, Any, list, list[dict[str, Any, list]]]]
-
 
 class SchemaInferrer:
     """
@@ -72,7 +69,7 @@ class SchemaInferrer:
             schemas[stream_name] = self._clean(builder.to_schema())
         return schemas
 
-    def _clean(self, node: SchemaNode):
+    def _clean(self, node: InferredSchema):
         """
         Recursively cleans up a produced schema:
         - remove anyOf if one of them is just a null value
