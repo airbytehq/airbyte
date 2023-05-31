@@ -65,8 +65,7 @@ jobs:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
             connectors:
-              - 'airbyte-integrations/bases/**'
-              - 'airbyte-integrations/connectors-templates/**'
+              - 'airbyte-integrations/**'
               - 'airbyte-connector-test-harnesses/acceptance-test-harness/**'
             db:
               - 'airbyte-db/**'
