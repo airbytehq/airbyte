@@ -18,7 +18,7 @@ import anyio
 import asyncer
 import click
 import git
-from ci_connector_ops.utils import DESTINATION_CONNECTOR_PATH_PREFIX, SOURCE_CONNECTOR_PATH_PREFIX, Connector, get_connector_name_from_path
+from ci_connector_ops.utils import get_all_released_connectors
 from dagger import Config, Connection, Container, DaggerError, File, ImageLayerCompression, QueryError
 from more_itertools import chunked
 
@@ -29,6 +29,7 @@ DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
 METADATA_FILE_NAME = "metadata.yaml"
 METADATA_ICON_FILE_NAME = "icon.svg"
+DIFF_FILTER = "MADRT"  # Modified, Added, Deleted, Renamed, Type changed
 
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
@@ -156,7 +157,7 @@ async def get_modified_files_in_branch_remote(
                 ]
             )
             .with_exec(["checkout", "-t", f"origin/{current_git_branch}"])
-            .with_exec(["diff", "--diff-filter=MA", "--name-only", f"{diffed_branch}...{current_git_revision}"])
+            .with_exec(["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_revision}"])
             .stdout()
         )
     return set(modified_files.split("\n"))
@@ -165,7 +166,9 @@ async def get_modified_files_in_branch_remote(
 def get_modified_files_in_branch_local(current_git_revision: str, diffed_branch: str = "master") -> Set[str]:
     """Use git diff and git status to spot the modified files on the local branch."""
     airbyte_repo = git.Repo()
-    modified_files = airbyte_repo.git.diff("--diff-filter=MA", "--name-only", f"{diffed_branch}...{current_git_revision}").split("\n")
+    modified_files = airbyte_repo.git.diff(
+        f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_revision}"
+    ).split("\n")
     status_output = airbyte_repo.git.status("--porcelain")
     for not_committed_change in status_output.split("\n"):
         file_path = not_committed_change.strip().split(" ")[-1]
@@ -221,16 +224,24 @@ def get_modified_files_in_commit(current_git_branch: str, current_git_revision: 
         return anyio.run(get_modified_files_in_commit_remote, current_git_branch, current_git_revision)
 
 
-def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict[Connector, List[str]]:
-    """Create a mapping of modified connectors (key) and modified files (value)."""
+def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
+    """Create a mapping of modified connectors (key) and modified files (value).
+    As we call connector.get_local_dependencies_paths() any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
+    The get_local_dependencies_paths function currently computes dependencies for Java connectors only.
+    It's especially useful to trigger tests of strict-encrypt variant when a change is made to the base connector.
+    Or to tests all jdbc connectors when a change is made to source-jdbc or base-java.
+    We'll consider extending the dependency resolution to Python connectors once we confirm that it's needed and feasible in term of scale.
+    """
     modified_connectors = {}
-    for file_path in modified_files:
-        if str(file_path).startswith(SOURCE_CONNECTOR_PATH_PREFIX) or str(file_path).startswith(DESTINATION_CONNECTOR_PATH_PREFIX):
-            modified_connector = Connector(get_connector_name_from_path(str(file_path)))
-            if modified_connector in modified_connectors:
-                modified_connectors[modified_connector].append(file_path)
-            else:
-                modified_connectors[modified_connector] = [file_path]
+    all_connector_dependencies = [(connector, connector.get_local_dependencies_paths()) for connector in get_all_released_connectors()]
+    for modified_file in modified_files:
+        for connector, connector_dependencies in all_connector_dependencies:
+            for connector_dependency in connector_dependencies:
+                connector_dependency_parts = connector_dependency.parts
+                modified_file_parts = Path(modified_file).parts
+                # The modified file is a dependency of the connector if the modified file path starts with the connector dependency path.
+                if modified_file_parts[: len(connector_dependency_parts)] == connector_dependency_parts:
+                    modified_connectors.setdefault(connector, []).append(modified_file)
     return modified_connectors
 
 

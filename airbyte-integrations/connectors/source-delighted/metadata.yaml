@@ -17,5 +17,8 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/delighted
+  documentationUrl: https://docs.airbyte.com/integrations/sources/delighted
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"
