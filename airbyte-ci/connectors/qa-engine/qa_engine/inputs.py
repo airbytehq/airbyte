@@ -82,7 +82,7 @@ def fetch_adoption_metrics_per_connector_version() -> pd.DataFrame:
     Returns:
         pd.DataFrame: A dataframe with adoption metrics per connector version.
     """
-    connector_adoption_sql = files("ci_connector_ops.qa_engine").joinpath("connector_adoption.sql").read_text()
+    connector_adoption_sql = files("qa_engine").joinpath("connector_adoption.sql").read_text()
     adoption_metrics = pd.read_gbq(connector_adoption_sql, project_id="airbyte-data-prod")
     return adoption_metrics[
         [

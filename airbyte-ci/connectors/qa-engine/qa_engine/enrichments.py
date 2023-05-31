@@ -49,6 +49,7 @@ def get_enriched_catalog(
     enriched_catalog = enriched_catalog.merge(
         adoption_metrics_per_connector_version, how="left", on=["connector_definition_id", "connector_version"]
     )
+    enriched_catalog = enriched_catalog.drop_duplicates(subset=["connector_definition_id", "connector_version"])
     enriched_catalog[adoption_metrics_per_connector_version.columns] = enriched_catalog[
         adoption_metrics_per_connector_version.columns
     ].fillna(0)
