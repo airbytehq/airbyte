@@ -12,23 +12,17 @@ from typing import Any, Dict, Tuple
 
 import anyio
 import click
-import dagger
 from ci_connector_ops.pipelines.builds import run_connector_build_pipeline
-from ci_connector_ops.pipelines.contexts import CIContext, ConnectorContext, ContextState, PublishConnectorContext
-from ci_connector_ops.pipelines.github import update_commit_status_check
+from ci_connector_ops.pipelines.contexts import ConnectorContext, ContextState, PublishConnectorContext
+from ci_connector_ops.pipelines.github import update_global_commit_status_check_for_tests
 from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_pipelines
-from ci_connector_ops.pipelines.publish import run_connector_publish_pipeline
+from ci_connector_ops.pipelines.publish import reorder_contexts, run_connector_publish_pipeline
 from ci_connector_ops.pipelines.tests import run_connector_test_pipeline
 from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors, get_modified_metadata_files
 from ci_connector_ops.utils import ConnectorLanguage, console, get_all_released_connectors
 from rich.logging import RichHandler
 from rich.table import Table
 from rich.text import Text
-
-# CONSTANTS
-
-GITHUB_GLOBAL_CONTEXT = "[POC please ignore] Connectors CI"
-GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
 
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
 
@@ -107,15 +101,6 @@ def connectors(
     ctx.obj["modified"] = modified
     ctx.obj["concurrency"] = concurrency
     ctx.obj["execute_timeout"] = execute_timeout
-    update_commit_status_check(
-        ctx.obj["git_revision"],
-        "pending",
-        ctx.obj["gha_workflow_run_url"],
-        GITHUB_GLOBAL_DESCRIPTION,
-        GITHUB_GLOBAL_CONTEXT,
-        should_send=ctx.obj["ci_context"] == CIContext.PULL_REQUEST,
-        logger=logger,
-    )
 
     all_connectors = get_all_released_connectors()
 
@@ -145,9 +130,6 @@ def connectors(
         selected_connectors_and_files = {
             connector: modified_files for connector, modified_files in selected_connectors_and_files.items() if modified_files
         }
-    if not selected_connectors_and_files:
-        click.secho("No connector were selected according to your inputs. Please double check your filters.", fg="yellow")
-        sys.exit(0)
 
     ctx.obj["selected_connectors_and_files"] = selected_connectors_and_files
     ctx.obj["selected_connectors_names"] = [c.technical_name for c in selected_connectors_and_files.keys()]
@@ -163,11 +145,21 @@ def test(
     Args:
         ctx (click.Context): The click context.
     """
+    if ctx.obj["is_ci"] and ctx.obj["pull_request"] and ctx.obj["pull_request"].draft:
+        click.echo("Skipping connectors tests for draft pull request.")
+        sys.exit(0)
+
     click.secho(f"Will run the test pipeline for the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
+    if ctx.obj["selected_connectors_and_files"]:
+        update_global_commit_status_check_for_tests(ctx.obj, "pending")
+    else:
+        click.secho("No connector were selected for testing.", fg="yellow")
+        update_global_commit_status_check_for_tests(ctx.obj, "success")
+        return True
 
     connectors_tests_contexts = [
         ConnectorContext(
-            pipeline_name="Test",
+            pipeline_name=f"Testing connector {connector.technical_name}",
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
@@ -178,6 +170,7 @@ def test(
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
+            pull_request=ctx.obj.get("pull_request"),
         )
         for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
     ]
@@ -190,27 +183,13 @@ def test(
             ctx.obj["concurrency"],
             ctx.obj["execute_timeout"],
         )
-        update_commit_status_check(
-            ctx.obj["git_revision"],
-            "success",
-            ctx.obj["gha_workflow_run_url"],
-            GITHUB_GLOBAL_DESCRIPTION,
-            GITHUB_GLOBAL_CONTEXT,
-            should_send=ctx.obj.get("ci_context") == CIContext.PULL_REQUEST,
-            logger=logger,
-        )
-    except dagger.DaggerError as e:
+    except Exception as e:
         click.secho(str(e), err=True, fg="red")
-        update_commit_status_check(
-            ctx.obj["git_revision"],
-            "error",
-            ctx.obj["gha_workflow_run_url"],
-            GITHUB_GLOBAL_DESCRIPTION,
-            GITHUB_GLOBAL_CONTEXT,
-            should_send=ctx.obj.get("ci_context") == CIContext.PULL_REQUEST,
-            logger=logger,
-        )
+        update_global_commit_status_check_for_tests(ctx.obj, "failure")
         return False
+    global_success = all(connector_context.state is ContextState.SUCCESSFUL for connector_context in connectors_tests_contexts)
+    update_global_commit_status_check_for_tests(ctx.obj, "success" if global_success else "failure")
+    # If we reach this point, it means that all the connectors have been tested so the pipeline did its job and can exit with success.
     return True
 
 
@@ -220,7 +199,7 @@ def build(ctx: click.Context) -> bool:
     click.secho(f"Will build the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
     connectors_contexts = [
         ConnectorContext(
-            pipeline_name="Build",
+            pipeline_name="Build connector {connector.technical_name}",
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],
@@ -335,7 +314,7 @@ def publish(
 
     click.secho(f"Will publish the following connectors: {', '.join(selected_connectors_names)}.", fg="green")
 
-    publish_connector_contexts = [
+    publish_connector_contexts = reorder_contexts([
         PublishConnectorContext(
             connector,
             pre_release,
@@ -354,9 +333,10 @@ def publish(
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
+            pull_request=ctx.obj.get("pull_request"),
         )
         for connector, modified_files in selected_connectors_and_files.items()
-    ]
+    ])
 
     click.secho("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.", fg="yellow")
     ctx.obj["concurrency"] = 1

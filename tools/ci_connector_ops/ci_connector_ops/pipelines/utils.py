@@ -29,6 +29,7 @@ DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
 METADATA_FILE_NAME = "metadata.yaml"
 METADATA_ICON_FILE_NAME = "icon.svg"
+DIFF_FILTER = "MADRT"  # Modified, Added, Deleted, Renamed, Type changed
 
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
@@ -156,7 +157,7 @@ async def get_modified_files_in_branch_remote(
                 ]
             )
             .with_exec(["checkout", "-t", f"origin/{current_git_branch}"])
-            .with_exec(["diff", "--diff-filter=MA", "--name-only", f"{diffed_branch}...{current_git_revision}"])
+            .with_exec(["diff", f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_revision}"])
             .stdout()
         )
     return set(modified_files.split("\n"))
@@ -165,7 +166,9 @@ async def get_modified_files_in_branch_remote(
 def get_modified_files_in_branch_local(current_git_revision: str, diffed_branch: str = "master") -> Set[str]:
     """Use git diff and git status to spot the modified files on the local branch."""
     airbyte_repo = git.Repo()
-    modified_files = airbyte_repo.git.diff("--diff-filter=MA", "--name-only", f"{diffed_branch}...{current_git_revision}").split("\n")
+    modified_files = airbyte_repo.git.diff(
+        f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed_branch}...{current_git_revision}"
+    ).split("\n")
     status_output = airbyte_repo.git.status("--porcelain")
     for not_committed_change in status_output.split("\n"):
         file_path = not_committed_change.strip().split(" ")[-1]

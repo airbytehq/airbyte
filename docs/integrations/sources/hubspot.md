@@ -146,6 +146,7 @@ Now that you have set up the Hubspot source connector, check out the following H
 ## Changelog
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.8.1   | 2023-05-29 | [26719](https://github.com/airbytehq/airbyte/pull/26719) | Handle issue when `state` value is literaly `"" (empty str)` 
 | 0.8.1   | 2023-05-16 | [26418](https://github.com/airbytehq/airbyte/pull/26418) | Added custom availability strategy which catches permission errors from parent streams                                                                     |
 | 0.8.0   | 2023-04-10 | [16032](https://github.com/airbytehq/airbyte/pull/16032) | Add new stream `Custom Object`                                                                                                                             |
 | 0.7.0   | 2023-04-10 | [24450](https://github.com/airbytehq/airbyte/pull/24450) | Add new stream `Goals`                                                                                                                                     |
