@@ -137,6 +137,68 @@ class TestRequester:
 
         self._test(components, config, expected_requests, response, expected_records)
 
+    def test_request_body_json_is_nested_dict(self):
+
+        config = {}
+        parameters = {}
+        stream_name = "stream_name"
+        field_path = ["data"]
+        api_key = "api_key"
+        url_base = "https://api.airbyte.io"
+        path = "v1/endpoint"
+        api_key_header = "api_key"
+        request_body_json = {"key": {"nested_key": "value"}, "another_key": "another_value"}
+        request_headers = {}
+        expected_request_headers = {"User-Agent": "python-requests/2.28.2",
+                           "Accept-Encoding": "gzip, deflate",
+                            "Accept": "*/*",
+                                    "Connection": "keep-alive",
+                           "api_key": "api_key"}
+        request_parameters = {}
+        authenticator = ApiKeyAuthenticator(
+            type="ApiKeyAuthenticator",
+            api_token=api_key,
+            header=api_key_header
+        )
+
+        expected_requests = [
+            _create_request("https://api.airbyte.io/v1/endpoint", expected_request_headers, {"key": {"nested_key": "value"},"another_key": "another_value"})
+        ]
+        expected_records = [{"id": 0, "field": "valueA"}, {"id": 1, "field": "valueB"}]
+
+        components = DeclarativeStream(
+            type="DeclarativeStream",
+            name=stream_name,
+            config=config,
+            parameters=parameters,
+            retriever=SimpleRetriever(
+                type="SimpleRetriever",
+                parameters=parameters,
+                config=config,
+                record_selector=RecordSelector(
+                    type="RecordSelector",
+                    extractor=DpathExtractor(
+                        type="DpathExtractor",
+                        field_path=field_path,
+                        config=config,
+                        parameters=parameters,
+                    )
+                ),
+                requester=HttpRequester(
+                    type="HttpRequester",
+                    url_base=url_base,
+                    path=path,
+                    authenticator=authenticator,
+                    request_body_json=request_body_json,
+                    request_headers=request_headers,
+                    request_parameters=request_parameters
+                )
+            ),
+        ).dict()
+
+        response = (_create_response({"data": [{"id": 0, "field": "valueA"}, {"id": 1, "field": "valueB"}],"_metadata": {"next": "next"}}), )
+
+        self._test(components, config, expected_requests, response, expected_records)
 
     def _test(self, components, config, expected_requests, response, expected_records):
         requests.PreparedRequest.__repr__ = (
