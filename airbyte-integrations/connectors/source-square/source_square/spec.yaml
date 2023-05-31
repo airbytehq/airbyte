@@ -75,17 +75,6 @@ connectionSpecification:
       title: Include Deleted Objects
       default: false
       order: 3
-authSpecification:
-  auth_type: oauth2.0
-  oauth2Specification:
-    rootObject:
-    - credentials
-    - "0"
-    oauthFlowInitParameters:
-    - ["client_id"]
-    - ["client_secret"]
-    oauthFlowOutputParameters:
-    - ["refresh_token"]
 advanced_auth:
   auth_flow_type: oauth2.0
   predicate_key:
