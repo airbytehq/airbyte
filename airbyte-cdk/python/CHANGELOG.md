@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.39.1
+Improve connector builder error messages
+
 ## 0.39.0
 Align schema generation in SchemaInferrer with Airbyte platform capabilities
 
