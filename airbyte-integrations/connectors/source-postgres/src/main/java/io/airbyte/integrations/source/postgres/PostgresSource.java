@@ -110,8 +110,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final String SSL_PASSWORD = "sslpassword";
   public static final String MODE = "mode";
 
-  public static final String PREPARE_THRESHOLD = "prepareThreshold";
-
   private List<String> schemas;
 
   private Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc;
@@ -133,6 +131,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
+    //Initialize parameters with prepareThreshold=0
+    additionalParameters.add("prepareThreshold=0");
 
     final String encodedDatabaseName = HostPortResolver.encodeValue(config.get(JdbcUtils.DATABASE_KEY).asText());
 
@@ -165,7 +165,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
-    jdbcUrl.append(PREPARE_THRESHOLD).append(EQUALS).append("0").append(AMPERSAND);
     jdbcUrl.append(toJDBCQueryParams(sslParameters));
     LOGGER.debug("jdbc url: {}", jdbcUrl.toString());
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
@@ -177,7 +176,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
 
     configBuilder.putAll(sslParameters);
-
     return Jsons.jsonNode(configBuilder.build());
   }
 
