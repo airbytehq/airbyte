@@ -13,6 +13,7 @@ from hypothesis_jsonschema import from_schema
 
 from airbyte_cdk.models import ConnectorSpecification
 from connector_acceptance_test.utils import SecretDict
+from typing import Dict, Any, Tuple
 
 
 class BackwardIncompatibilityContext(Enum):
@@ -182,13 +183,34 @@ class SpecDiffChecker(BaseDiffChecker):
             self._raise_error("An 'enum' field was declared on an existing property", diff)
 
 
-# Custom strategy for generating ISO 8601 datetime values with three-digit milliseconds
-# This is because by default hypothesis generates all valid RFC 3339 datetime values
-# Many of which we dont currently support
-iso8601_datetime_strategy = st.datetimes(
-    min_value=datetime.datetime(1900, 1, 1),
-    max_value=datetime.datetime(9999, 12, 31, 23, 59, 59, 999999),
-).map(lambda dt: dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:23] + "Z")
+def remove_date_time_pattern_format(schema: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    This function traverses a JSON schema and removes the 'format' field for properties
+    that are of 'date-time' format and have a 'pattern' field.
+
+    The 'pattern' is often more restrictive than the 'date-time' format, and Hypothesis can't natively generate
+    date-times that match a specific pattern. Therefore, in this case, we've opted to
+    remove the 'date-time' format since the 'pattern' is more restrictive and more likely
+    to cause a breaking change if not adhered to.
+
+    On the otherside we also validate the output of hypothesis against the new schema to ensure
+    that the generated data matches the new schema. In this case we will catch whether or not the
+    date-time format is still being adhered to.
+
+    Args:
+        schema (Dict[str, Any]): The JSON schema to be processed.
+
+    Returns:
+        Dict[str, Any]: The processed JSON schema where 'date-time' format has been removed
+                        for properties that have a 'pattern'.
+    """
+    if isinstance(schema, dict):
+        for key, value in schema.items():
+            if isinstance(value, dict):
+                if value.get('format') == 'date-time' and 'pattern' in value:
+                    del value['format']
+                remove_date_time_pattern_format(value)
+    return schema
 
 
 def validate_previous_configs(
@@ -197,8 +219,8 @@ def validate_previous_configs(
     """Use hypothesis and hypothesis-jsonschema to run property based testing:
     1. Generate fake previous config with the previous connector specification json schema.
     2. Validate a fake previous config against the actual connector specification json schema."""
-
-    @given(from_schema(previous_connector_spec.dict()["connectionSpecification"], custom_formats={"date-time": iso8601_datetime_strategy}))
+    prev_con_spec = previous_connector_spec.dict()["connectionSpecification"]
+    @given(from_schema(remove_date_time_pattern_format(prev_con_spec)))
     @settings(
         max_examples=number_of_configs_to_generate,
         verbosity=Verbosity.verbose,
