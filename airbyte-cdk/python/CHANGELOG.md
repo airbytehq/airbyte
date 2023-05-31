@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.39.0
+Align schema generation in SchemaInferrer with Airbyte platform capabilities
+
 ## 0.38.0
 Allow nested objects in request_body_json
 
