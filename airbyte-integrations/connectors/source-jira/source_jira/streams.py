@@ -75,14 +75,17 @@ class JiraStream(HttpStream, ABC):
         return {"Accept": "application/json"}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        records = response.json()
-        if self.extract_field:
-            records = records.get(self.extract_field, [])
-        if isinstance(records, list):
-            for record in records:
-                yield self.transform(record=record, **kwargs)
-        elif isinstance(records, dict):
-            yield self.transform(record=records, **kwargs)
+        for record in self.iterate_response(response):
+            yield self.transform(record=record, **kwargs)
+
+    @staticmethod
+    def iterate_response(response):
+        data = response.json()
+        if isinstance(data, list):
+            for record in data:
+                yield record
+        elif isinstance(data, dict):
+            yield data
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         return record
