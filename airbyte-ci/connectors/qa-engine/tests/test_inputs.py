@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, call
 import pandas as pd
 import pytest
 import requests
-from ci_connector_ops.qa_engine import constants, inputs
+from qa_engine import constants, inputs
 
 
 @pytest.mark.parametrize("catalog_url", [constants.OSS_CATALOG_URL, constants.CLOUD_CATALOG_URL])
@@ -48,7 +48,7 @@ def test_fetch_adoption_metrics_per_connector_version(mocker):
         "total_syncs_count",
         "sync_success_rate",
     }
-    expected_sql_query = files("ci_connector_ops.qa_engine").joinpath("connector_adoption.sql").read_text()
+    expected_sql_query = files("qa_engine").joinpath("connector_adoption.sql").read_text()
     expected_project_id = "airbyte-data-prod"
     adoption_metrics_per_connector_version = inputs.fetch_adoption_metrics_per_connector_version()
     assert isinstance(adoption_metrics_per_connector_version, pd.DataFrame)
