@@ -7,7 +7,7 @@ import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Iterable, List, Optional
-import yaml
+from ruamel.yaml import YAML
 import git
 import requests
 import tempfile
@@ -32,6 +32,10 @@ from .models import ConnectorQAReport
 
 logger = logging.getLogger(__name__)
 
+# Initialize the ruamel.yaml object
+yaml = YAML()
+yaml.indent(mapping=2, sequence=4, offset=2)
+yaml.preserve_quotes = True
 
 def set_git_identity(repo: git.repo) -> git.repo:
     repo.git.config("--global", "user.email", GIT_USER_EMAIL)
