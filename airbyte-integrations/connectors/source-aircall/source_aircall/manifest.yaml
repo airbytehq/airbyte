@@ -43,7 +43,7 @@ definitions:
     end_datetime:
       datetime: "{{ today_utc() }}"
       datetime_format: "%Y-%m-%d"
-    step: "P1D"
+    step: "P0.0416D"
 
   incremental_sync: 
     type: DatetimeBasedCursor
