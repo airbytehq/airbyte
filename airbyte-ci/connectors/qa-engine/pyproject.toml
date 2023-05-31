@@ -25,6 +25,7 @@ fsspec = "~2023.1.0"
 gcsfs = "~2023.1.0"
 pytablewriter = "~0.64.2"
 pydash = "^6.0.2"
+ruamel-yaml = "^0.17.30"
 
 [tool.poetry.group.dev.dependencies]
 pyinstrument = "*"
