@@ -58,7 +58,13 @@ public class GlobalAsyncStateManager {
   private static final StreamDescriptor SENTINEL_GLOBAL_DESC = new StreamDescriptor().withName(UUID.randomUUID().toString());
   private final GlobalMemoryManager memoryManager;
 
+  /**
+   * Memory that the manager has allocated to it to use. It can ask for more memory as needed.
+   */
   private final AtomicLong memoryAllocated;
+  /**
+   * Memory that the manager is currently using.
+   */
   private final AtomicLong memoryUsed;
 
   boolean preState = true;
