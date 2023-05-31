@@ -23,8 +23,13 @@ class TestRequester:
         path = "v1/endpoint"
         cursor_field = None
         api_key_header = "api_key"
-        request_body_json = {"key": "value"}
+        request_body_json = {}
         request_headers = {}
+        expected_request_headers = {"User-Agent": "python-requests/2.28.2",
+                           "Accept-Encoding": "gzip, deflate",
+                            "Accept": "*/*",
+                                    "Connection": "keep-alive",
+                           "api_key": "api_key"}
         request_parameters = {}
         authenticator = ApiKeyAuthenticator(
             type="ApiKeyAuthenticator",
@@ -66,15 +71,29 @@ class TestRequester:
             ),
         ).dict()
 
+        requests.PreparedRequest.__repr__ = (
+            lambda self: (
+            json.dumps({"url": self.url,"headers":{**self.headers},"body":self.body}))
+        )
+        
+        requests.PreparedRequest.__eq__ = lambda self, other: self.__repr__() == other.__repr__()
+
+        requests.PreparedRequest.__hash__ = lambda self: hash(self.__repr__())
+
         stream = ModelToComponentFactory().create_component(DeclarativeStream, components, config)
 
-        pages = (_create_page({"data": [{"id": 0, "field": "valueA"}, {"id": 1, "field": "valueB"}],"_metadata": {"next": "next"}}), )
+        pages = (_create_page("https://api.airbyte.io/v1/endpoint",
+                              request_headers,
+                              request_body_json==request_body_json,
+                              response_body={"data": [{"id": 0, "field": "valueA"}, {"id": 1, "field": "valueB"}],"_metadata": {"next": "next"}}), )
+
+        response = (_create_response({"data": [{"id": 0, "field": "valueA"}, {"id": 1, "field": "valueB"}],"_metadata": {"next": "next"}}), )
 
         expected_calls = [
-            call({}, {}, None),
+            call(_create_request("https://api.airbyte.io/v1/endpoint", expected_request_headers, request_body_json))
         ]
 
-        with patch.object(HttpStream, "_fetch_next_page", side_effect=pages) as mock_http_stream:
+        with patch.object(HttpStream, "_actually_send_request", side_effect=response) as mock_http_stream:
             output_records_and_messages = stream.read_records(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field)
                 
             output_records = [ message for message in output_records_and_messages if isinstance(message, dict) ]
@@ -82,18 +101,18 @@ class TestRequester:
             assert expected_records == output_records
             mock_http_stream.assert_has_calls(expected_calls)
 
-def _create_page(response_body):
-    return _create_request(), _create_response(response_body)
+def _create_page(full_url, headers, request_body_json, response_body):
+    return (_create_request(full_url, headers, request_body_json),
+            _create_response(response_body))
 
-def _create_request():
-    url = "https://example.com/api"
-    headers = {'Content-Type': 'application/json'}
-    return requests.Request('POST', url, headers=headers, json={"key": "value"}).prepare()
+def _create_request(full_url, headers, json_body):
+    return requests.Request('GET', full_url, headers=headers, json=json_body if json_body else None).prepare()
 
 
 def _create_response(body):
     response = requests.Response()
     response.status_code = 200
-    response._content = bytes(json.dumps(body), "utf-8")
+    response._content = json.dumps(body).encode("utf-8")
     response.headers["Content-Type"] = "application/json"
+    response.iter_content = lambda: response._content
     return response

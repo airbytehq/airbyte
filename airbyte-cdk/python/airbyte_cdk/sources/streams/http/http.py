@@ -282,6 +282,9 @@ class HttpStream(Stream, ABC):
     @classmethod
     def _join_url(cls, url_base: str, path: str):
         return urljoin(url_base, path)
+    
+    def _actually_send_request(self, request: requests.PreparedRequest, **request_kwargs: Mapping[str, Any]) -> requests.Response:
+        return self._session.send(request, **request_kwargs)
 
     def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         """
@@ -305,7 +308,8 @@ class HttpStream(Stream, ABC):
         self.logger.debug(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
-        response: requests.Response = self._session.send(request, **request_kwargs)
+        #raise ValueError(request)
+        response: requests.Response = self._actually_send_request(request, **request_kwargs)
 
         # Evaluation of response.text can be heavy, for example, if streaming a large response
         # Do it only in debug mode
