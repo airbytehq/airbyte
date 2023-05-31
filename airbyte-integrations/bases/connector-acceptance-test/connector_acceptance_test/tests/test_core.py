@@ -700,9 +700,9 @@ class TestDiscovery(BaseTest):
         for stream_name, stream_data in discovered_catalog.items():
             schema_helper = JsonSchemaHelper(stream_data.json_schema)
 
-            for type_path, type_value in dpath.util.search(stream_data.json_schema, "**/type", yielded=True):
+            for type_path, type_value in dpath.util.search(stream_data.json_schema, "**^^type", yielded=True, separator="^^"):
                 parent_path = schema_helper.get_parent_path(type_path)
-                parent = schema_helper.get_parent(type_path)
+                parent = schema_helper.get_parent(type_path, separator="^^")
                 if not isinstance(type_value, list) and not isinstance(type_value, str):
                     # Skip when type is the name of a property.
                     continue
