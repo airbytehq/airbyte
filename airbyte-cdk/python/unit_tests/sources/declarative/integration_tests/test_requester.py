@@ -4,7 +4,7 @@ import requests
 
 from unittest.mock import call, patch
 
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator, DeclarativeStream, DpathExtractor, HttpRequester, RecordSelector, SimpleRetriever
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator, DeclarativeStream, DefaultPaginator, DpathExtractor, HttpRequester, PageIncrement, RecordSelector, RequestOption, SimpleRetriever
 from airbyte_cdk.models import AirbyteMessage, SyncMode
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.sources.streams.http.http import HttpStream
@@ -86,6 +86,44 @@ class TestRequester:
 
         self._test(stream, expected_requests, responses, expected_records)
 
+    def test_page_count_pagination(self):
+        page_size = 2
+        paginator = DefaultPaginator(
+            type="DefaultPaginator",
+            pagination_strategy=PageIncrement(
+                type="PageIncrement",
+                page_size=page_size,
+                start_from_page=1,
+            ),
+            page_size_option=RequestOption(type="RequestOption", field_name="page_size", inject_into="request_parameter"),
+            page_token_option=RequestOption(type="RequestOption", field_name="page", inject_into="request_parameter")
+        )
+
+        expected_requests = [
+            _create_request(f"https://api.airbyte.io/v1/endpoint?page_size={page_size}",
+                            {},
+                            {}),
+            _create_request(f"https://api.airbyte.io/v1/endpoint?page=2&page_size={page_size}",
+                            {},
+                            {}),
+        ]
+        responses = (
+            _create_response({
+                "data": [{"id": 0, "field": "valueA"},
+                     {"id": 1, "field": "valueB"}],
+                "_metadata": {"next": "next"}}),
+            _create_response({
+                "data": [{"id": 2, "field": "valueC"}],
+                "_metadata": {"next": "next"}}),
+            )
+        expected_records = [{"id": 0, "field": "valueA"},
+                            {"id": 1, "field": "valueB"},
+                            {"id": 2, "field": "valueC"}]
+
+        stream = self._build(paginator=paginator)
+
+        self._test(stream, expected_requests, responses, expected_records)
+
     def _build(self,
                *, 
                stream_name: str = "stream_name",
@@ -93,6 +131,7 @@ class TestRequester:
                url_base = "https://api.airbyte.io",
                path = "v1/endpoint",
                authenticator = None,
+               paginator = None,
                request_headers = {},
                request_parameters = {},
                request_body_json = {},
@@ -106,6 +145,7 @@ class TestRequester:
                 type="SimpleRetriever",
                 parameters={},
                 config=config,
+                paginator=paginator,
                 record_selector=RecordSelector(
                     type="RecordSelector",
                     extractor=DpathExtractor(
@@ -139,8 +179,6 @@ class TestRequester:
 
         requests.PreparedRequest.__hash__ = lambda self: hash(json.loads(self.__repr__()))
 
-        
-
         expected_calls = [
             call(request) for request in expected_requests
         ]
@@ -168,5 +206,5 @@ def _create_response(body):
     response.status_code = 200
     response._content = json.dumps(body).encode("utf-8")
     response.headers["Content-Type"] = "application/json"
-    response.iter_content = lambda: response._content
+    #response.iter_content = lambda: response._content
     return response
