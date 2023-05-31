@@ -8,6 +8,7 @@ connectionSpecification:
     - client_id
     - client_secret
     - authorization_endpoint
+  additionalProperties: true
   properties:
     account_id:
       type: string
