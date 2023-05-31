@@ -222,7 +222,6 @@ public class IntegrationRunner {
 
     final byte[] buffer = new byte[8192]; // 8K buffer
     int bytesRead;
-    int byteCount = 0;
     boolean lastWasNewLine = false;
 
     while ((bytesRead = bis.read(buffer)) != -1) {
@@ -230,14 +229,12 @@ public class IntegrationRunner {
         final byte b = buffer[i];
         if (b == '\n' || b == '\r') {
           if (!lastWasNewLine && baos.size() > 0) {
-            consumer.accept(baos.toString(StandardCharsets.UTF_8), byteCount);
+            consumer.accept(baos.toString(StandardCharsets.UTF_8), baos.size());
             baos.reset();
-            byteCount = 0;
           }
           lastWasNewLine = true;
         } else {
           baos.write(b);
-          byteCount++;
           lastWasNewLine = false;
         }
       }
@@ -245,7 +242,7 @@ public class IntegrationRunner {
 
     // Handle last line if there's one
     if (baos.size() > 0) {
-      consumer.accept(baos.toString(StandardCharsets.UTF_8), byteCount);
+      consumer.accept(baos.toString(StandardCharsets.UTF_8), baos.size());
     }
   }
 
