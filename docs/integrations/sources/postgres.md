@@ -371,6 +371,7 @@ Caused by: org.postgresql.util.PSQLException: FATAL: terminating connection due 
     Hint: In a moment you should be able to reconnect to the database and repeat your command.
 ```
 
+
 Possible solutions include:
 
 - [Recommended] Set [`hot_standby_feedback`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-HOT-STANDBY-FEEDBACK) to `true` on the replica server. This parameter will prevent the primary server from deleting the write-ahead logs when the replica is busy serving user queries. However, the downside is that the write-ahead log will increase in size.
