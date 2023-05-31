@@ -4,8 +4,8 @@ import requests
 
 from unittest.mock import call, patch
 
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator, DeclarativeStream, DefaultPaginator, DpathExtractor, HttpRequester, PageIncrement, RecordSelector, RequestOption, SimpleRetriever, CursorPagination
-from airbyte_cdk.models import AirbyteMessage, SyncMode
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator, BearerAuthenticator, DeclarativeStream, DefaultPaginator, DpathExtractor, HttpRequester, PageIncrement, RecordSelector, RequestOption, SimpleRetriever, CursorPagination
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.sources.streams.http.http import HttpStream
 
@@ -82,6 +82,54 @@ class TestRequester:
         expected_requests = [
             _create_request(f"{self.base_url}/{self.path}",
                             {"my_token": "api_key"},
+                            {})
+        ]
+        responses = (_create_response({
+            "data": [{"id": 0, "field": "valueA"},
+                     {"id": 1, "field": "valueB"}]}),
+                )
+        expected_records = [{"id": 0, "field": "valueA"},
+                            {"id": 1, "field": "valueB"}]
+
+        stream = self._build(authenticator=authenticator)
+
+        self._test(stream, expected_requests, responses, expected_records)
+
+    # This test isn't implemented because the authenticator hasn't been updated yet
+    #def test_api_authenticator_adds_api_key_as_header(self):
+    #    authenticator = ApiKeyAuthenticator(
+    #        type="ApiKeyAuthenticator",
+    #        api_token="my_token",
+    #        inject_into="request_parameter"
+    #        field_value="api_key",
+    #    )
+    #
+    #    expected_requests = [
+    #        _create_request(f"{self.base_url}/{self.path}",
+    #                        {}, #headers
+    #                        {"my_token": "api_key"}, #query params
+    #                        {})
+    #    ]
+    #    responses = (_create_response({
+    #        "data": [{"id": 0, "field": "valueA"},
+    #                 {"id": 1, "field": "valueB"}]}),
+    #            )
+    #    expected_records = [{"id": 0, "field": "valueA"},
+    #                        {"id": 1, "field": "valueB"}]
+    #
+    #    stream = self._build(authenticator=authenticator)
+    #
+    #    self._test(stream, expected_requests, responses, expected_records)
+
+    def test_bearer_authenticator_adds_token_as_header(self):
+        authenticator = BearerAuthenticator(
+            type="BearerAuthenticator",
+            api_token="my_token",
+        )
+
+        expected_requests = [
+            _create_request(f"{self.base_url}/{self.path}",
+                            {"Authorization": "Bearer api_key"},
                             {})
         ]
         responses = (_create_response({
@@ -313,7 +361,7 @@ class TestRequester:
             json.dumps({"url": self.url})
         ))
         
-        requests.PreparedRequest.__eq__ = lambda self, other: self.url == other.url#json.loads(self.__repr__()) == json.loads(other.__repr__())
+        requests.PreparedRequest.__eq__ = lambda self, other: self.url == other.url
 
         requests.PreparedRequest.__hash__ = lambda self: hash(json.loads(self.__repr__()))
 
