@@ -112,7 +112,8 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
   }
 
   /**
-   * Deserializes to a {@link PartialAirbyteMessage} which can represent both a Record or a State Message
+   * Deserializes to a {@link PartialAirbyteMessage} which can represent both a Record or a State
+   * Message
    *
    * @param messageString the string to deserialize
    * @return PartialAirbyteMessage if the message is valid, empty otherwise
