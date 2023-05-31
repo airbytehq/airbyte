@@ -29,6 +29,9 @@ from .utils import authenticator_class_map, get_dimensions_type, get_metrics_typ
 # the initial values should be saved once and tracked for each stream, inclusivelly.
 GoogleAnalyticsQuotaHandler: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
+CONFIG_CUSTOM_REPORT_ERROR_MESSAGE = "The custom report is not valid. Validate your custom query with the GA 4 Query Explorer: " \
+                                     "https://ga-dev-tools.google/ga4/query-explorer/"
+
 
 class ConfigurationError(Exception):
     pass
@@ -297,23 +300,14 @@ class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream)
 
 class SourceGoogleAnalyticsDataApi(AbstractSource):
     def _validate_and_transform(self, config: Mapping[str, Any], report_names: Set[str]):
-        if "custom_reports" in config:
-            if isinstance(config["custom_reports"], str):
-                try:
-                    config["custom_reports"] = json.loads(config["custom_reports"])
-                except ValueError:
-                    raise ConfigurationError("custom_reports is not valid JSON")
-        else:
-            config["custom_reports"] = []
-
-        schema = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/custom_reports_schema.json"))
         try:
+            config["custom_reports"] = (
+                json.loads(config["custom_reports"]) if "custom_reports" in config and isinstance(config["custom_reports"], str) else []
+            )
+            schema = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/custom_reports_schema.json"))
             jsonschema.validate(instance=config["custom_reports"], schema=schema)
-        except jsonschema.ValidationError as e:
-            key_path = "custom_reports"
-            if e.path:
-                key_path += "." + ".".join(map(str, e.path))
-            raise ConfigurationError(f"{key_path}: {e.message}")
+        except (ValueError, jsonschema.ValidationError):
+            raise ConfigurationError(CONFIG_CUSTOM_REPORT_ERROR_MESSAGE)
 
         existing_names = {r["name"] for r in config["custom_reports"]} & report_names
         if existing_names:
@@ -375,13 +369,9 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
 
         for report in config["custom_reports"]:
             invalid_dimensions = set(report["dimensions"]) - dimensions
-            if invalid_dimensions:
-                invalid_dimensions = ", ".join(invalid_dimensions)
-                return False, f"custom_reports: invalid dimension(s): {invalid_dimensions} for the custom report: {report['name']}"
             invalid_metrics = set(report["metrics"]) - metrics
-            if invalid_metrics:
-                invalid_metrics = ", ".join(invalid_metrics)
-                return False, f"custom_reports: invalid metric(s): {invalid_metrics} for the custom report: {report['name']}"
+            if any((invalid_dimensions, invalid_metrics)):
+                return False, CONFIG_CUSTOM_REPORT_ERROR_MESSAGE
             report_stream = self.instantiate_report_class(report, config)
             # check if custom_report dimensions + metrics can be combined and report generated
             stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
