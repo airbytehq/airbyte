@@ -42,7 +42,8 @@ public class XminStateManager {
     final Map<AirbyteStreamNameNamespacePair, XminStatus> localMap = new HashMap<>();
     if (stateMessages != null) {
       for (final AirbyteStateMessage stateMessage : stateMessages) {
-        // A reset causes the default state to be an empty legacy state, so we have to ignore those messages.
+        // A reset causes the default state to be an empty legacy state, so we have to ignore those
+        // messages.
         if (stateMessage.getType() == AirbyteStateType.STREAM && !stateMessage.equals(EMPTY_STATE)) {
           LOGGER.info("State message: " + stateMessage);
           final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
@@ -51,8 +52,9 @@ public class XminStateManager {
           try {
             xminStatus = Jsons.object(stateMessage.getStream().getStreamState(), XminStatus.class);
           } catch (final IllegalArgumentException e) {
-            throw new ConfigErrorException("Invalid per-stream state. If this connection was migrated to a Xmin incremental mode from a cursor-based or CDC incremental mode, "
-                + "please reset your connection and re-sync.");
+            throw new ConfigErrorException(
+                "Invalid per-stream state. If this connection was migrated to a Xmin incremental mode from a cursor-based or CDC incremental mode, "
+                    + "please reset your connection and re-sync.");
           }
           localMap.put(pair, xminStatus);
         }
@@ -89,4 +91,5 @@ public class XminStateManager {
         .withType(Type.STATE)
         .withState(stateMessage);
   }
+
 }
