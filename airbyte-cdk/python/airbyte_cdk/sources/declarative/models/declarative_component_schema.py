@@ -847,9 +847,9 @@ class DatetimeBasedCursor(BaseModel):
     )
     datetime_format: str = Field(
         ...,
-        description="The format of the datetime value.",
+        description="The format of the cursor field which is present on every record.",
         examples=["%Y-%m-%dT%H:%M:%S.%f%z"],
-        title="Datetime Format",
+        title="Cursor Field Datetime Format",
     )
     cursor_granularity: str = Field(
         ...,
