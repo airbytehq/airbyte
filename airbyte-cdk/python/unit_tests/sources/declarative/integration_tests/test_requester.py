@@ -16,12 +16,10 @@ class TestRequester:
         config = {}
         parameters = {}
         stream_name = "stream_name"
-        primary_key = "id"
         field_path = ["data"]
         api_key = "api_key"
         url_base = "https://api.airbyte.io"
         path = "v1/endpoint"
-        cursor_field = None
         api_key_header = "api_key"
         request_body_json = {}
         request_headers = {}
@@ -38,6 +36,7 @@ class TestRequester:
         )
 
         expected_requests = [
+            _create_request("https://api.airbyte.io/v1/endpoint", expected_request_headers, request_body_json)
         ]
         expected_records = [{"id": 0, "field": "valueA"}, {"id": 1, "field": "valueB"}]
 
@@ -71,6 +70,12 @@ class TestRequester:
             ),
         ).dict()
 
+        response = (_create_response({"data": [{"id": 0, "field": "valueA"}, {"id": 1, "field": "valueB"}],"_metadata": {"next": "next"}}), )
+
+        self._test(components, config, expected_requests, response, expected_records)
+
+
+    def _test(self, components, config, expected_requests, response, expected_records):
         requests.PreparedRequest.__repr__ = (
             lambda self: (
             json.dumps({"url": self.url,"headers":{**self.headers},"body":self.body}))
@@ -82,19 +87,12 @@ class TestRequester:
 
         stream = ModelToComponentFactory().create_component(DeclarativeStream, components, config)
 
-        pages = (_create_page("https://api.airbyte.io/v1/endpoint",
-                              request_headers,
-                              request_body_json==request_body_json,
-                              response_body={"data": [{"id": 0, "field": "valueA"}, {"id": 1, "field": "valueB"}],"_metadata": {"next": "next"}}), )
-
-        response = (_create_response({"data": [{"id": 0, "field": "valueA"}, {"id": 1, "field": "valueB"}],"_metadata": {"next": "next"}}), )
-
         expected_calls = [
-            call(_create_request("https://api.airbyte.io/v1/endpoint", expected_request_headers, request_body_json))
+            call(request) for request in expected_requests
         ]
 
         with patch.object(HttpStream, "_actually_send_request", side_effect=response) as mock_http_stream:
-            output_records_and_messages = stream.read_records(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field)
+            output_records_and_messages = stream.read_records(sync_mode=SyncMode.full_refresh, cursor_field=None)
                 
             output_records = [ message for message in output_records_and_messages if isinstance(message, dict) ]
 
