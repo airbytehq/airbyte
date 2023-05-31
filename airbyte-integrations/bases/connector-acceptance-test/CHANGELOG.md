@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.10.4
+Fixing bug: test_catalog_has_supported_data_types should support stream properties having `/` in it.
+
 ## 0.10.3
 Fixing bug: test_catalog_has_supported_data_types , integer is a supported airbyte type.
 
