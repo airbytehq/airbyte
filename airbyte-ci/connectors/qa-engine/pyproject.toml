@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "qa-engine"
-version = "0.2.1"
+version = "0.2.2"
 description = "Connector QA Engine for Airbyte"
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
