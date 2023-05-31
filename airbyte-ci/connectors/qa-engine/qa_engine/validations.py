@@ -78,10 +78,13 @@ def get_qa_report(enriched_catalog: pd.DataFrame, oss_catalog_length: int) -> pd
 
     # Only select dataframe columns defined in the ConnectorQAReport model.
     qa_report = qa_report[[field.name for field in ConnectorQAReport.__fields__.values()]]
+
     # Validate the report structure with pydantic QAReport model.
     QAReport(connectors_qa_report=qa_report.to_dict(orient="records"))
     if len(qa_report) != oss_catalog_length:
-        raise QAReportGenerationError("The QA report does not contain all the connectors defined in the OSS catalog.")
+        raise QAReportGenerationError(
+            f"The QA report ({len(qa_report)}) does not contain all the connectors defined in the OSS catalog ({oss_catalog_length})."
+        )
     return qa_report
 
 
