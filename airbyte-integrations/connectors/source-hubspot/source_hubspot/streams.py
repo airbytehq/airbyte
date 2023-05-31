@@ -1377,7 +1377,7 @@ class ContactsListMemberships(Stream):
     data_field = "contacts"
     page_filter = "vidOffset"
     page_field = "vid-offset"
-    primary_key = "canonical-vid"
+    identity_key = "canonical-vid"
     scopes = {"crm.objects.contacts.read"}
     properties_scopes = {"crm.schemas.contacts.read"}
 
@@ -1390,7 +1390,11 @@ class ContactsListMemberships(Stream):
         for record in super()._transform(records):
             canonical_vid = record.get("canonical-vid")
             for item in record.get("list-memberships", []):
-                yield {"canonical-vid": canonical_vid, **item}
+                if item.get("internal-list-id"):
+                    del item["internal-list-id"]
+                if item.get("vid"):
+                    del item["vid"]
+                yield {"contact-id": canonical_vid, **item}
 
     def request_params(
         self,
