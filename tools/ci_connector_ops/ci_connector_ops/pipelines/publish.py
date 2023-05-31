@@ -24,7 +24,11 @@ class CheckConnectorImageDoesNotExist(Step):
     async def _run(self) -> StepResult:
         docker_repository, docker_tag = self.context.docker_image_name.split(":")
         crane_ls = (
-            environments.with_crane(self.context).with_env_variable("CACHEBUSTER", str(uuid.uuid4())).with_exec(["ls", docker_repository])
+            environments.with_crane(
+                self.context,
+            )
+            .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
+            .with_exec(["ls", docker_repository])
         )
         crane_ls_exit_code = await with_exit_code(crane_ls)
         crane_ls_stderr = await with_stderr(crane_ls)
@@ -83,7 +87,6 @@ class PullConnectorImageFromRegistry(Step):
         We use crane to inspect the manifest of the image and check if it only has gzip layers.
         """
         for platform in consts.BUILD_PLATFORMS:
-
             inspect = environments.with_crane(self.context).with_exec(
                 ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image_name}"]
             )
@@ -263,7 +266,6 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
                     return create_connector_report(results)
                 metadata_upload_results = await metadata_upload_step.run()
                 results.append(metadata_upload_results)
-
 
             # Exit early if the connector image already exists or has failed to build
             if check_connector_image_results.status is not StepStatus.SUCCESS:
