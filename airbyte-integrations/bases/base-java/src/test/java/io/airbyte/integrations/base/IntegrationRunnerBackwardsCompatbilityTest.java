@@ -6,18 +6,17 @@ package io.airbyte.integrations.base;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import org.apache.commons.io.input.CountingInputStream;
 import org.junit.jupiter.api.Test;
 
-public class IntegrationRunnerBackwardsCompatibilityTest {
+public class IntegrationRunnerBackwardsCompatbilityTest {
 
   @Test
   void testByteArrayInputStreamVersusScanner() throws Exception {
@@ -37,9 +36,9 @@ public class IntegrationRunnerBackwardsCompatibilityTest {
       // get new output
       final InputStream stream1 = new ByteArrayInputStream(testInput.getBytes(StandardCharsets.UTF_8));
       final MockConsumer consumer2 = new MockConsumer();
-      try (final CountingInputStream counter = new CountingInputStream(stream1);
-          final BufferedReader reader = new BufferedReader(new InputStreamReader(counter, StandardCharsets.UTF_8))) {
-        IntegrationRunner.consumeWriteStream(consumer2, counter, reader);
+      try (final BufferedInputStream bis = new BufferedInputStream(stream1);
+          final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        IntegrationRunner.consumeWriteStream(consumer2, bis, baos);
       }
       final List<String> newOutput = consumer2.getOutput();
 

@@ -20,8 +20,8 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
@@ -31,7 +31,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.lang3.ThreadUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
@@ -208,28 +207,45 @@ public class IntegrationRunner {
 
   @VisibleForTesting
   static void consumeWriteStream(final SerializedAirbyteMessageConsumer consumer) throws Exception {
-    try (final CountingInputStream counter = new CountingInputStream(System.in);
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(counter, StandardCharsets.UTF_8))) {
-      consumeWriteStream(consumer, counter, reader);
+    try (final BufferedInputStream bis = new BufferedInputStream(System.in);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+      consumeWriteStream(consumer, bis, baos);
     }
   }
 
   @VisibleForTesting
   static void consumeWriteStream(final SerializedAirbyteMessageConsumer consumer,
-                                 final CountingInputStream counter,
-                                 final BufferedReader reader)
+                                 final BufferedInputStream bis,
+                                 final ByteArrayOutputStream baos)
       throws Exception {
     consumer.start();
 
-    while (true) {
-      final String line = reader.readLine();
-      if (line == null) {
-        break;
+    final byte[] buffer = new byte[8192]; // 8K buffer
+    int bytesRead;
+    int byteCount = 0;
+    boolean lastWasNewLine = false;
+
+    while ((bytesRead = bis.read(buffer)) != -1) {
+      for (int i = 0; i < bytesRead; i++) {
+        final byte b = buffer[i];
+        if (b == '\n' || b == '\r') {
+          if (!lastWasNewLine && baos.size() > 0) {
+            consumer.accept(baos.toString(StandardCharsets.UTF_8), byteCount);
+            baos.reset();
+            byteCount = 0;
+          }
+          lastWasNewLine = true;
+        } else {
+          baos.write(b);
+          byteCount++;
+          lastWasNewLine = false;
+        }
       }
-      if (line.equals("")) {
-        continue;
-      }
-      consumer.accept(line, counter.resetCount());
+    }
+
+    // Handle last line if there's one
+    if (baos.size() > 0) {
+      consumer.accept(baos.toString(StandardCharsets.UTF_8), byteCount);
     }
   }
 
