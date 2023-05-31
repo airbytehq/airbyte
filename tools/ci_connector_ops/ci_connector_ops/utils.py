@@ -88,7 +88,6 @@ def get_gradle_project_dependencies(gradle_file_path: Path, with_test_dependenci
     dependencies = []
     visited_files = []
     visited_files.append(gradle_file_path)
-    print(gradle_file_path)
     in_dependencies_block = False
     gradle_file = gradle_file_path.read_text().split("\n")
     for line in gradle_file:
