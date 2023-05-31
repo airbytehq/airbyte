@@ -396,6 +396,18 @@ def test_additional_properties_is_true(discovered_catalog, expectation):
             },
             does_not_raise(),
         ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"created_(w/o_time)": {"type": ["string"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            does_not_raise(),
+        ),
     ],
 )
 def test_catalog_has_supported_data_types(discovered_catalog, expectation):
