@@ -166,35 +166,35 @@
     },
     "includeInGlobalAddressList": {
       "type": ["null", "boolean"]
-    }
-  },
-  "etag": {
-    "type": ["null", "string"]
-  },
-  "languages": {
-    "type": ["null", "array"],
-    "items": {
-      "type": ["null", "object"],
-      "properties": {
-        "languageCode": {
-          "type": ["null", "string"]
-        },
-        "preference": {
-          "type": ["null", "string"]
+    },
+    "etag": {
+      "type": ["null", "string"]
+    },
+    "languages": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "languageCode": {
+            "type": ["null", "string"]
+          },
+          "preference": {
+            "type": ["null", "string"]
+          }
         }
       }
+    },
+    "isEnforcedIn2Sv": {
+      "type": ["null", "boolean"]
+    },
+    "isEnrolledIn2Sv": {
+      "type": ["null", "boolean"]
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "primaryEmail": {
+      "type": ["null", "string"]
     }
-  },
-  "isEnforcedIn2Sv": {
-    "type": ["null", "boolean"]
-  },
-  "isEnrolledIn2Sv": {
-    "type": ["null", "boolean"]
-  },
-  "archived": {
-    "type": ["null", "boolean"]
-  },
-  "primaryEmail": {
-    "type": ["null", "string"]
   }
 }
