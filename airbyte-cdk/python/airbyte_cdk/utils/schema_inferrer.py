@@ -40,6 +40,7 @@ class NoRequiredSchemaBuilder(SchemaBuilder):
 # This type is inferred from the genson lib, but there is no alias provided for it - creating it here for type safety
 InferredSchema = Dict[str, Union[str, Any, List, List[Dict[str, Union[Any, List]]]]]
 
+
 class SchemaInferrer:
     """
     This class is used to infer a JSON schema which fits all the records passed into it
