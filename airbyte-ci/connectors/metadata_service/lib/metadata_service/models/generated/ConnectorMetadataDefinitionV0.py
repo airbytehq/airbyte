@@ -131,7 +131,7 @@ class Data(BaseModel):
     supportsDbt: Optional[bool] = None
     supportsNormalization: Optional[bool] = None
     license: str
-    documentationUrl: Optional[AnyUrl] = None
+    documentationUrl: AnyUrl
     githubIssueLabel: str
     maxSecondsBetweenMessages: Optional[int] = Field(
         None,

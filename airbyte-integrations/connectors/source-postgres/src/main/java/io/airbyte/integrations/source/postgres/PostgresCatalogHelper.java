@@ -23,11 +23,11 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class PostgresCdcCatalogHelper {
+public final class PostgresCatalogHelper {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcCatalogHelper.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCatalogHelper.class);
 
-  private PostgresCdcCatalogHelper() {}
+  private PostgresCatalogHelper() {}
 
   /*
    * It isn't possible to recreate the state of the original database unless we include extra
