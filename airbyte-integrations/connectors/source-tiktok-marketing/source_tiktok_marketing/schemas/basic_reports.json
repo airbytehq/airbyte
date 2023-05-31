@@ -1,14 +1,16 @@
 {
-  "type": ["null", "object"],
+  "type": "object",
   "additionalProperties": true,
   "properties": {
     "stat_time_day": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "stat_time_hour": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "campaign_id": {
       "type": ["null", "integer"]
@@ -34,7 +36,7 @@
         "adgroup_name": {
           "type": ["null", "string"]
         },
-        "placement": {
+        "placement_type": {
           "type": ["null", "string"]
         },
         "adgroup_id": {

@@ -5,7 +5,7 @@
 from multiprocessing import current_process
 
 from airbyte_cdk.models import AirbyteRecordMessage, Type
-from mimesis import Datetime, Person
+from mimesis import Address, Datetime, Person
 from mimesis.locales import Locale
 
 from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
@@ -30,9 +30,11 @@ class UserGenerator:
             seed_with_offset = self.seed + current_process()._identity[0]
 
         global person
+        global address
         global dt
 
         person = Person(locale=Locale.EN, seed=seed_with_offset)
+        address = Address(locale=Locale.EN, seed=seed_with_offset)
         dt = Datetime(seed=seed_with_offset)
 
     def generate(self, user_id: int):
@@ -60,6 +62,15 @@ class UserGenerator:
             "height": person.height(),
             "blood_type": person.blood_type(),
             "weight": person.weight(),
+            "address": {
+                "street_number": address.street_number(),
+                "street_name": address.street_name(),
+                "city": address.city(),
+                "state": address.state(),
+                "province": address.province(),
+                "postal_code": address.postal_code(),
+                "country_code": address.country_code(),
+            },
         }
 
         while not profile["created_at"]:

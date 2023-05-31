@@ -17,11 +17,14 @@ import static java.sql.JDBCType.REAL;
 import static java.sql.JDBCType.SMALLINT;
 import static java.sql.JDBCType.TIME;
 import static java.sql.JDBCType.TIMESTAMP;
+import static java.sql.JDBCType.TIMESTAMP_WITH_TIMEZONE;
+import static java.sql.JDBCType.TIME_WITH_TIMEZONE;
 import static java.sql.JDBCType.TINYINT;
 import static java.sql.JDBCType.VARCHAR;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Maps;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import java.sql.JDBCType;
 import java.util.HashMap;
 import java.util.List;
@@ -61,8 +64,9 @@ public class JdbcUtils {
   // Currently, this is used in the logic for emitting
   // estimate trace messages.
   public static final int PLATFORM_DATA_INCREASE_FACTOR = 2;
-  public static final Set<JDBCType> ALLOWED_CURSOR_TYPES = Set.of(TIMESTAMP, TIME, DATE, TINYINT, SMALLINT, INTEGER,
-      BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, NVARCHAR, VARCHAR, LONGVARCHAR);
+  public static final Set<JDBCType> ALLOWED_CURSOR_TYPES =
+      Set.of(TIMESTAMP_WITH_TIMEZONE, TIMESTAMP, TIME_WITH_TIMEZONE, TIME, DATE, TINYINT, SMALLINT, INTEGER,
+          BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, NVARCHAR, VARCHAR, LONGVARCHAR);
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
 
   private static final JSONFormat defaultJSONFormat = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
@@ -105,7 +109,7 @@ public class JdbcUtils {
         if (split.length == 2) {
           parameters.put(split[0], split[1]);
         } else {
-          throw new IllegalArgumentException(
+          throw new ConfigErrorException(
               "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got "
                   + jdbcPropertiesString);
         }

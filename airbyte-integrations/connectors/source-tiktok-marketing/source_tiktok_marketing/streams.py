@@ -60,21 +60,29 @@ T = TypeVar("T")
 # TiktokStream
 # ├─AdvertiserIds AdvertiserIds
 # └─FullRefreshTiktokStream
-#   ├─Advertisers                             (1 advertisers)
+#   ├─Advertisers                               (1 advertisers)
 #   └─IncrementalTiktokStream
-#     ├─AdGroups                              (2 ad_groups)
-#     ├─Ads                                   (3 ads)
-#     ├─Campaigns                             (4 campaigns)
+#     ├─AdGroups                                (2 ad_groups)
+#     ├─Ads                                     (3 ads)
+#     ├─Campaigns                               (4 campaigns)
 #     └─BasicReports
-#       ├─AdsReports                          (5 ads_reports)
-#       ├─AdvertisersReports                  (6 advertisers_reports)
-#       ├─CampaignsReports                    (7 campaigns_reports)
-#       ├─AdGroupsReports                     (8 ad_groups_reports)
+#       ├─AdsReports                            (5 ads_reports)
+#       ├─AdvertisersReports                    (6 advertisers_reports)
+#       ├─CampaignsReports                      (7 campaigns_reports)
+#       ├─AdGroupsReports                       (8 ad_groups_reports)
 #       └─AudienceReport
-#         ├─AdGroupAudienceReports            (9 ad_group_audience_reports)
-#         ├─AdsAudienceReports                (10 ads_audience_reports)
-#         ├─AdvertisersAudienceReports        (11 advertisers_audience_reports)
-#         └─CampaignsAudienceReportsByCountry (12 campaigns_audience_reports_by_country)
+#         ├─AdGroupAudienceReports                 (9  ad_group_audience_reports)
+#         | ├─AdGroupAudienceReportsByCountry      (10 ad_group_audience_reports_by_country)
+#         | └─AdGroupAudienceReportsByPlatform     (11 ad_group_audience_reports_by_platform)
+#         ├─AdsAudienceReports                     (12 ads_audience_reports)
+#         | ├─AdsAudienceReportsByCountry          (13 ads_audience_reports_by_country)
+#         | └─AdsAudienceReportsByPlatform         (14 ads_audience_reports_by_platform)
+#         ├─AdvertisersAudienceReports             (15 advertisers_audience_reports)
+#         | ├─AdvertisersAudienceReportsByCountry  (16 advertisers_audience_reports_by_country)
+#         | └─AdvertisersAudienceReportsByPlatform (17 advertisers_audience_reports_by_platform)
+#         └─CampaignsAudienceReports               (18 campaigns_audience_reports)
+#           ├─CampaignsAudienceReportsByCountry    (19 campaigns_audience_reports_by_country)
+#           └─CampaignsAudienceReportsByPlatform   (20 campaigns_audience_reports_by_platform)
 
 
 @total_ordering
@@ -150,9 +158,7 @@ class TiktokStream(HttpStream, ABC):
         super().__init__(authenticator=kwargs.get("authenticator"))
 
         self._advertiser_id = kwargs.get("advertiser_id")
-
-        # only sandbox has non-empty self._advertiser_id
-        self.is_sandbox = bool(self._advertiser_id)
+        self.is_sandbox = kwargs.get("is_sandbox")
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
@@ -192,8 +198,8 @@ class TiktokStream(HttpStream, ABC):
         Docs: https://business-api.tiktok.com/marketing_api/docs?id=1701890920013825
         """
         if self.is_sandbox:
-            return "https://sandbox-ads.tiktok.com/open_api/v1.2/"
-        return "https://business-api.tiktok.com/open_api/v1.2/"
+            return "https://sandbox-ads.tiktok.com/open_api/v1.3/"
+        return "https://business-api.tiktok.com/open_api/v1.3/"
 
     def next_page_token(self, *args, **kwargs) -> Optional[Mapping[str, Any]]:
         # this data without listing
@@ -204,10 +210,14 @@ class TiktokStream(HttpStream, ABC):
         Once the rate limit is met, the server returns "code": 40100
         Docs: https://business-api.tiktok.com/marketing_api/docs?id=1701890997610497
         Retry 50002 as well - it's a server error.
+        Retry when 504 error: response doesn't consist json, so we need to handle response status code to retry.
         """
         try:
             data = response.json()
         except Exception:
+            if response.status_code == 504:
+                self.logger.error("Gateway Timeout: The proxy server did not receive a timely response from the upstream server.")
+                return super().should_retry(response)
             self.logger.error(f"Incorrect JSON response: {response.text}")
             raise
         if data["code"] in (40100, 50002):
@@ -232,16 +242,17 @@ class AdvertiserIds(TiktokStream):
     primary_key = "advertiser_id"
     use_cache = True  # it is used in all streams
 
-    def __init__(self, app_id: int, secret: str, access_token: str, **kwargs):
-        super().__init__(advertiser_id=0, authenticator=None)
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
+    def __init__(self, authenticator, app_id: int, secret: str, **kwargs):
+        super().__init__(authenticator=authenticator, advertiser_id=0)
 
         # for Production env
         self._secret = secret
         self._app_id = app_id
-        self._access_token = access_token
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        return {"access_token": self._access_token, "secret": self._secret, "app_id": self._app_id}
+        return {"secret": self._secret, "app_id": self._app_id}
 
     def path(self, *args, **kwargs) -> str:
         return "oauth2/advertiser/get/"
@@ -279,11 +290,13 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
         return json.dumps(arr)
 
     def get_advertiser_ids(self) -> List[int]:
-        if self.is_sandbox:
+        if self._advertiser_id:
             # for sandbox: just return advertiser_id provided in spec
+            # for production: it will filter only the advertiser id provied in spec
             ids = [self._advertiser_id]
         else:
-            # for prod: return list of all available ids from AdvertiserIds stream:
+            # for prod: return list of all available ids from AdvertiserIds stream if the field is empty
+            # in the connector configuration
             advertiser_ids = AdvertiserIds(**self.kwargs).read_records(sync_mode=SyncMode.full_refresh)
             ids = [advertiser["advertiser_id"] for advertiser in advertiser_ids]
 
@@ -361,16 +374,22 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
             result = result.get(key)
         return result
 
-    @staticmethod
-    def unnest_field(record: Mapping[str, Any], unnest_from: str, fields: Iterable[str]):
+    def unnest_cursor_and_pk(self, record: Mapping[str, Any]):
         """
-        Unnest cursor_field to the root level of the record.
+        unnest nested cursor_field and primary_key from nested `dimensions` object to root-level for *_reports streams
         """
-        if unnest_from in record:
-            prop = record.get(unnest_from, {})
-            for field in fields:
-                if field in prop:
-                    record[field] = prop.get(field)
+
+        def to_list(s):
+            if not isinstance(s, list):
+                s = [s]
+            return s
+
+        dimensions = record.get("dimensions", {})
+        fields = to_list(self.cursor_field) + to_list(self.primary_key)
+        for field in fields:
+            if field in dimensions:
+                record[field] = dimensions.get(field)
+        return record
 
     def parse_response(
         self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
@@ -378,8 +397,7 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
         """Additional data filtering"""
         state = self.select_cursor_field_value(stream_state) or self._start_time
         for record in super().parse_response(response=response, stream_state=stream_state, **kwargs):
-            # unnest nested cursor_field and primary_key from nested `dimensions` object to root-level for *_reports streams
-            self.unnest_field(record, "dimensions", [self.cursor_field, self.primary_key])
+            record = self.unnest_cursor_and_pk(record)
             updated = self.select_cursor_field_value(record, stream_slice)
             if updated is None:
                 yield record
@@ -409,7 +427,9 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
 
 
 class Advertisers(FullRefreshTiktokStream):
-    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1708503202263042"""
+    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1739593083610113"""
+
+    primary_key = "advertiser_id"
 
     def request_params(
         self,
@@ -427,11 +447,11 @@ class Advertisers(FullRefreshTiktokStream):
         ids = self.get_advertiser_ids()
         start, end, step = 0, len(ids), 100
         for i in range(start, end, step):
-            yield {"advertiser_ids": ids[i: min(end, i + step)]}
+            yield {"advertiser_ids": ids[i : min(end, i + step)]}
 
 
 class Campaigns(IncrementalTiktokStream):
-    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1708582970809346"""
+    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1739315828649986"""
 
     primary_key = "campaign_id"
 
@@ -440,7 +460,7 @@ class Campaigns(IncrementalTiktokStream):
 
 
 class AdGroups(IncrementalTiktokStream):
-    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1708503489590273"""
+    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1739314558673922"""
 
     primary_key = "adgroup_id"
 
@@ -449,7 +469,7 @@ class AdGroups(IncrementalTiktokStream):
 
 
 class Ads(IncrementalTiktokStream):
-    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1708572923161602"""
+    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1735735588640770"""
 
     primary_key = "ad_id"
 
@@ -458,14 +478,30 @@ class Ads(IncrementalTiktokStream):
 
 
 class BasicReports(IncrementalTiktokStream, ABC):
-    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1707957200780290"""
+    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1738864915188737"""
 
-    primary_key = "ad_id"
     schema_name = "basic_reports"
     report_granularity = None
 
+    spec_id_dimensions = {
+        ReportLevel.ADVERTISER: "advertiser_id",
+        ReportLevel.CAMPAIGN: "campaign_id",
+        ReportLevel.ADGROUP: "adgroup_id",
+        ReportLevel.AD: "ad_id",
+    }
+
+    spec_time_dimensions = {
+        ReportGranularity.DAY: "stat_time_day",
+        ReportGranularity.HOUR: "stat_time_hour",
+    }
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        return self._get_reporting_dimensions()
+
     def __init__(self, **kwargs):
         report_granularity = kwargs.pop("report_granularity", None)
+        self.attribution_window = kwargs.get("attribution_window") or 0
         super().__init__(**kwargs)
 
         # Important:
@@ -492,26 +528,28 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     @property
     def cursor_field(self):
-        if self.report_granularity == ReportGranularity.DAY:
-            return "stat_time_day"
-        if self.report_granularity == ReportGranularity.HOUR:
-            return "stat_time_hour"
-        if self.report_granularity == ReportGranularity.LIFETIME:
-            return "stat_time_day"
+        return self.spec_time_dimensions.get(self.report_granularity, [])
 
     @staticmethod
     def _get_time_interval(
-        start_date: Union[datetime, str], ending_date: Union[datetime, str], granularity: ReportGranularity
+        start_date: Union[datetime, str],
+        ending_date: Union[datetime, str],
+        granularity: ReportGranularity,
+        attr_window: int = 0,
     ) -> Iterable[Tuple[datetime, datetime]]:
         """Due to time range restrictions based on the level of granularity of reports, we have to chunk API calls in order
         to get the desired time range.
         Docs: https://ads.tiktok.com/marketing_api/docs?id=1714590313280513
         :param start_date - Timestamp from which we should start the report
         :param granularity - Level of granularity of the report; one of [HOUR, DAY, LIFETIME]
+        :param atttr_window - The attribution window in days
         :return Iterator for pair of start_date and end_date that can be used as request parameters
         """
         if isinstance(start_date, str):
-            start_date = pendulum.parse(start_date)
+            start_date = pendulum.parse(start_date).subtract(days=attr_window)
+        elif isinstance(start_date, datetime):
+            start_date = start_date.subtract(days=attr_window)
+
         end_date = pendulum.parse(ending_date) if ending_date else pendulum.now()
 
         # TikTok API only allows certain amount of days of data based on the reporting granularity
@@ -539,23 +577,9 @@ class BasicReports(IncrementalTiktokStream, ABC):
             yield chunk_start, chunk_end
 
     def _get_reporting_dimensions(self):
-        result = []
-        spec_id_dimensions = {
-            ReportLevel.ADVERTISER: "advertiser_id",
-            ReportLevel.CAMPAIGN: "campaign_id",
-            ReportLevel.ADGROUP: "adgroup_id",
-            ReportLevel.AD: "ad_id",
-        }
-        if self.report_level and self.report_level in spec_id_dimensions:
-            result.append(spec_id_dimensions[self.report_level])
-
-        spec_time_dimensions = {
-            ReportGranularity.DAY: "stat_time_day",
-            ReportGranularity.HOUR: "stat_time_hour",
-        }
-        if self.report_granularity and self.report_granularity in spec_time_dimensions:
-            result.append(spec_time_dimensions[self.report_granularity])
-
+        result = [self.spec_id_dimensions[self.report_level]]
+        if self.report_granularity in self.spec_time_dimensions:
+            result.append(self.spec_time_dimensions[self.report_granularity])
         return result
 
     def _get_metrics(self):
@@ -602,7 +626,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
                 [
                     "campaign_id",
                     "adgroup_name",
-                    "placement",
+                    "placement_type",
                     "tt_app_id",
                     "tt_app_name",
                     "mobile_app_id",
@@ -641,7 +665,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
         stream_end = self._end_time
 
         for slice_adv_id in super().stream_slices(**kwargs):
-            for start_date, end_date in self._get_time_interval(stream_start, stream_end, self.report_granularity):
+            for start_date, end_date in self._get_time_interval(stream_start, stream_end, self.report_granularity, self.attribution_window):
                 slice = {
                     "advertiser_id": slice_adv_id["advertiser_id"],
                     "start_date": start_date.strftime("%Y-%m-%d"),
@@ -653,7 +677,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
                 yield slice
 
     def path(self, *args, **kwargs) -> str:
-        return "reports/integrated/get/"
+        return "report/integrated/get/"
 
     def request_params(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
@@ -687,35 +711,33 @@ class BasicReports(IncrementalTiktokStream, ABC):
 class AdsReports(BasicReports):
     """Custom reports for ads"""
 
+    ref_pk = "ad_id"
     report_level = ReportLevel.AD
 
 
 class AdvertisersReports(BasicReports):
     """Custom reports for advertiser"""
 
-    primary_key = "advertiser_id"
-
+    ref_pk = "advertiser_id"
     report_level = ReportLevel.ADVERTISER
 
 
 class CampaignsReports(BasicReports):
     """Custom reports for campaigns"""
 
-    primary_key = "campaign_id"
-
+    ref_pk = "campaign_id"
     report_level = ReportLevel.CAMPAIGN
 
 
 class AdGroupsReports(BasicReports):
     """Custom reports for adgroups"""
 
-    primary_key = "adgroup_id"
-
+    ref_pk = "adgroup_id"
     report_level = ReportLevel.ADGROUP
 
 
-class AudienceReport(BasicReports):
-    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1707957217727489"""
+class AudienceReport(BasicReports, ABC):
+    """Docs: https://ads.tiktok.com/marketing_api/docs?id=1738864928947201"""
 
     audience_dimensions: List = ["gender", "age"]
     schema_name = "audience_reports"
@@ -725,42 +747,86 @@ class AudienceReport(BasicReports):
         result = [e for e in result if e not in NOT_AUDIENCE_METRICS]
         return result
 
+    def _get_reporting_dimensions(self):
+        result = super()._get_reporting_dimensions()
+        result += self.audience_dimensions
+        return result
+
     def request_params(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-
-        dimensions = self._get_reporting_dimensions()
-        dimensions += self.audience_dimensions
-        params["dimensions"] = json.dumps(dimensions)
         params["report_type"] = "AUDIENCE"
-
         return params
+
+
+class CampaignsAudienceReports(AudienceReport):
+
+    ref_pk = "campaign_id"
+    report_level = ReportLevel.CAMPAIGN
 
 
 class AdGroupAudienceReports(AudienceReport):
 
-    primary_key = "adgroup_id"
-
+    ref_pk = "adgroup_id"
     report_level = ReportLevel.ADGROUP
 
 
 class AdsAudienceReports(AudienceReport):
 
+    ref_pk = "ad_id"
     report_level = ReportLevel.AD
 
 
 class AdvertisersAudienceReports(AudienceReport):
 
-    primary_key = "advertiser_id"
-
+    ref_pk = "advertiser_id"
     report_level = ReportLevel.ADVERTISER
 
 
-class CampaignsAudienceReportsByCountry(AudienceReport):
+class CampaignsAudienceReportsByCountry(CampaignsAudienceReports):
     """Custom reports for campaigns by country"""
 
-    primary_key = "campaign_id"
-
-    report_level = ReportLevel.CAMPAIGN
     audience_dimensions = ["country_code"]
+
+
+class AdGroupAudienceReportsByCountry(AdGroupAudienceReports):
+    """Custom reports for adgroups by country"""
+
+    audience_dimensions = ["country_code"]
+
+
+class AdsAudienceReportsByCountry(AdsAudienceReports):
+    """Custom reports for ads by country"""
+
+    audience_dimensions = ["country_code"]
+
+
+class AdvertisersAudienceReportsByCountry(AdvertisersAudienceReports):
+    """Custom reports for advertisers by country"""
+
+    audience_dimensions = ["country_code"]
+
+
+class CampaignsAudienceReportsByPlatform(CampaignsAudienceReports):
+    """Custom reports for campaigns by platform"""
+
+    audience_dimensions = ["platform"]
+
+
+class AdGroupAudienceReportsByPlatform(AdGroupAudienceReports):
+    """Custom reports for adgroups by platform"""
+
+    audience_dimensions = ["platform"]
+
+
+class AdsAudienceReportsByPlatform(AdsAudienceReports):
+    """Custom reports for ads by platform"""
+
+    audience_dimensions = ["platform"]
+
+
+class AdvertisersAudienceReportsByPlatform(AdvertisersAudienceReports):
+    """Custom reports for advertisers by platform"""
+
+    audience_dimensions = ["platform"]

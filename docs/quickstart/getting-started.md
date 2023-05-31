@@ -11,7 +11,7 @@ First of all, make sure you have Docker and Docker Compose installed. Then run t
 ```text
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
-docker compose -f docker-compose.yaml up
+./run-ab-platform.sh
 ```
 
 Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000/](http://localhost:8000/).

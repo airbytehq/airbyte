@@ -1,0 +1,192 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/sources/teradata",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Teradata Source Spec",
+    "type" : "object",
+    "required" : [
+      "host",
+      "database",
+      "username"
+    ],
+    "properties" : {
+      "host" : {
+        "title" : "Host",
+        "description" : "Hostname of the database.",
+        "type" : "string",
+        "order" : 0
+      },
+      "port" : {
+        "title" : "Port",
+        "description" : "Port of the database.",
+        "type" : "integer",
+        "minimum" : 0,
+        "maximum" : 65536,
+        "default" : 3306,
+        "examples" : [
+          "3306"
+        ],
+        "order" : 1
+      },
+      "database" : {
+        "title" : "Database",
+        "description" : "Name of the database.",
+        "type" : "string",
+        "order" : 2
+      },
+      "username" : {
+        "title" : "Username",
+        "description" : "Username to use to access the database.",
+        "type" : "string",
+        "order" : 3
+      },
+      "password" : {
+        "title" : "Password",
+        "description" : "Password associated with the username.",
+        "type" : "string",
+        "airbyte_secret" : true,
+        "order" : 4
+      },
+      "jdbc_url_params" : {
+        "title" : "JDBC URL params",
+        "description" : "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)",
+        "type" : "string",
+        "order" : 5
+      },
+      "replication_method" : {
+        "title" : "Replication method",
+        "description" : "Replication method to use for extracting data from the database. STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally. CDC uses the Binlog to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
+        "type" : "string",
+        "order" : 6,
+        "default" : "STANDARD",
+        "enum" : [
+          "STANDARD",
+          "CDC"
+        ]
+      },
+      "ssl" : {
+        "title" : "SSL Connection",
+        "description" : "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
+        "type" : "boolean",
+        "default" : false,
+        "order" : 7
+      },
+      "ssl_mode" : {
+        "title" : "SSL Modes",
+        "description" : "SSL connection modes. \n <b>disable</b> - Chose this mode to disable encryption of communication between Airbyte and destination database\n <b>allow</b> - Chose this mode to enable encryption only when required by the destination database\n <b>prefer</b> - Chose this mode to allow unencrypted connection only if the destination database does not support encryption\n <b>require</b> - Chose this mode to always require encryption. If the destination database server does not support encryption, connection will fail\n  <b>verify-ca</b> - Chose this mode to always require encryption and to verify that the destination database server has a valid SSL certificate\n  <b>verify-full</b> - This is the most secure mode. Chose this mode to always require encryption and to verify the identity of the destination database server\n See more information - <a href=\"https://teradata-docs.s3.amazonaws.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#URL_SSLMODE\"> in the docs</a>.",
+        "type" : "object",
+        "order" : 8,
+        "oneOf" : [
+          {
+            "title" : "disable",
+            "additionalProperties" : true,
+            "description" : "Disable SSL.",
+            "required" : [
+              "mode"
+            ],
+            "properties" : {
+              "mode" : {
+                "type" : "string",
+                "const" : "disable",
+                "order" : 0
+              }
+            }
+          },
+          {
+            "title" : "allow",
+            "additionalProperties" : true,
+            "description" : "Allow SSL mode.",
+            "required" : [
+              "mode"
+            ],
+            "properties" : {
+              "mode" : {
+                "type" : "string",
+                "const" : "allow",
+                "order" : 0
+              }
+            }
+          },
+          {
+            "title" : "prefer",
+            "additionalProperties" : true,
+            "description" : "Prefer SSL mode.",
+            "required" : [
+              "mode"
+            ],
+            "properties" : {
+              "mode" : {
+                "type" : "string",
+                "const" : "prefer",
+                "order" : 0
+              }
+            }
+          },
+          {
+            "title" : "require",
+            "additionalProperties" : true,
+            "description" : "Require SSL mode.",
+            "required" : [
+              "mode"
+            ],
+            "properties" : {
+              "mode" : {
+                "type" : "string",
+                "const" : "require",
+                "order" : 0
+              }
+            }
+          },
+          {
+            "title" : "verify-ca",
+            "additionalProperties" : true,
+            "description" : "Verify-ca SSL mode.",
+            "required" : [
+              "mode",
+              "ssl_ca_certificate"
+            ],
+            "properties" : {
+              "mode" : {
+                "type" : "string",
+                "const" : "verify-ca",
+                "order" : 0
+              },
+              "ssl_ca_certificate" : {
+                "type" : "string",
+                "title" : "CA certificate",
+                "description" : "Specifies the file name of a PEM file that contains Certificate Authority (CA) certificates for use with SSLMODE=verify-ca.\n See more information - <a href=\"https://teradata-docs.s3.amazonaws.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#URL_SSLCA\"> in the docs</a>.",
+                "airbyte_secret" : true,
+                "multiline" : true,
+                "order" : 1
+              }
+            }
+          },
+          {
+            "title" : "verify-full",
+            "additionalProperties" : true,
+            "description" : "Verify-full SSL mode.",
+            "required" : [
+              "mode",
+              "ssl_ca_certificate"
+            ],
+            "properties" : {
+              "mode" : {
+                "type" : "string",
+                "const" : "verify-full",
+                "order" : 0
+              },
+              "ssl_ca_certificate" : {
+                "type" : "string",
+                "title" : "CA certificate",
+                "description" : "Specifies the file name of a PEM file that contains Certificate Authority (CA) certificates for use with SSLMODE=verify-full.\n See more information - <a href=\"https://teradata-docs.s3.amazonaws.com/doc/connectivity/jdbc/reference/current/jdbcug_chapter_2.html#URL_SSLCA\"> in the docs</a>.",
+                "airbyte_secret" : true,
+                "multiline" : true,
+                "order" : 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

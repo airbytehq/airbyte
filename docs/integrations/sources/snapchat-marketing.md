@@ -57,7 +57,7 @@ The useful link to Authentication process is [here](https://marketingapi.snapcha
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Snapchat Marketing** from the Source type dropdown and enter a name for this connector.
 4. lick `Authenticate your account`.
@@ -113,6 +113,9 @@ Snapchat Marketing API has limitations to 1000 items per page.
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| 0.2.0   | 2023-05-10 | [25948](https://github.com/airbytehq/airbyte/pull/25948) | Introduce new field in the `Campaigns` stream schema        |
+| 0.1.16  | 2023-04-20 | [20897](https://github.com/airbytehq/airbyte/pull/20897) | Add missing fields to Basic Stats schema                    |    
+| 0.1.15  | 2023-03-02 | [22869](https://github.com/airbytehq/airbyte/pull/22869) | Specified date formatting in specification                  |                                        
 | 0.1.14  | 2023-02-10 | [22808](https://github.com/airbytehq/airbyte/pull/22808) | Enable default `AvailabilityStrategy`                       |
 | 0.1.13  | 2023-01-27 | [22023](https://github.com/airbytehq/airbyte/pull/22023) | Set `AvailabilityStrategy` for streams explicitly to `None` |
 | 0.1.12  | 2023-01-11 | [21267](https://github.com/airbytehq/airbyte/pull/21267) | Fix parse empty error response                              |

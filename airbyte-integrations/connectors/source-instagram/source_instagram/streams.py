@@ -3,6 +3,7 @@
 #
 
 import copy
+import json
 from abc import ABC
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -165,6 +166,7 @@ class UserInsights(InstagramIncrementalStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._end_date = pendulum.now()
+        self.should_exit_gracefully = False
 
     def read_records(
         self,
@@ -203,7 +205,20 @@ class UserInsights(InstagramIncrementalStream):
             if not insight_record.get(self.cursor_field):
                 insight_record[self.cursor_field] = insight.get("values")[0]["end_time"]
 
-        yield insight_record
+        complete_records = [insight_record]
+        # if insight_list is empty, we don't want to yield an incomplete record and want to stop syncing this stream gracefully
+        if not insight_list:
+            complete_records = []
+            # https://developers.facebook.com/docs/instagram-api/guides/insights/
+            # If insights data you are requesting does not exist or is currently unavailable
+            # the API will return an empty data set instead of 0 for individual metrics.
+            self.logger.warning(
+                f"No data received for base params {json.dumps(base_params)}. "
+                f"Since we can't know whether there is no data or the data is temporarily unavailable, stop syncing so as not to miss "
+                f"temporarily unavailable data."
+            )
+            self.should_exit_gracefully = True
+        yield from complete_records
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -222,6 +237,9 @@ class UserInsights(InstagramIncrementalStream):
                 continue
             for since in pendulum.period(start_date, self._end_date).range("days", self.days_increment):
                 until = since.add(days=self.days_increment)
+                if self.should_exit_gracefully:
+                    self.logger.info(f"Stopping syncing stream '{self.name}'")
+                    return
                 self.logger.info(f"Reading insights between {since.date()} and {until.date()}")
                 yield {
                     **stream_slice,
@@ -326,7 +344,7 @@ class MediaInsights(Media):
             account_id = ig_account.get("id")
             insights = self._get_insights(ig_media, account_id)
             if insights is None:
-                break
+                continue
 
             insights["id"] = ig_media["id"]
             insights["page_id"] = account["page_id"]
@@ -356,6 +374,9 @@ class MediaInsights(Media):
                 self.logger.error(f"Insights error for business_account_id {account_id}: {details}")
                 # We receive all Media starting from the last one, and if on the next Media we get an Insight error,
                 # then no reason to make inquiries for each Media further, since they were published even earlier.
+                return None
+            elif error.api_error_code() == 100 and error.api_error_subcode() == 33:
+                self.logger.error(f"Check provided permissions for {account_id}: {error.api_error_message()}")
                 return None
             raise error
 

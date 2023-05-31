@@ -12,7 +12,7 @@ An API key is required as well as an API application key. See the [Datadog API a
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Datadog connector and select **Datadog** from the Source type dropdown.
 4. Enter your `api_key` - Datadog API key.
@@ -62,4 +62,5 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 
 | Version | Date       | Pull Request                                              | Subject             |
 |:--------|:-----------|:----------------------------------------------------------|:--------------------|
+| 0.1.1   | 2023-04-27 | [25562](https://github.com/airbytehq/airbyte/pull/25562)  | Update testing dependencies|
 | 0.1.0   | 2022-10-18 | [18150](https://github.com/airbytehq/airbyte/pull/18150)  | New Source: Datadog |

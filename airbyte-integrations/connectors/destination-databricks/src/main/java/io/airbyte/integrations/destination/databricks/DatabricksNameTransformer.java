@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.databricks;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 
-public class DatabricksNameTransformer extends ExtendedNameTransformer {
+public class DatabricksNameTransformer extends StandardNameTransformer {
 
   @Override
   public String convertStreamName(final String input) {

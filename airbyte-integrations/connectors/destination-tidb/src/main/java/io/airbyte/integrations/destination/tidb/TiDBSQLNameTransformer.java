@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.tidb;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 
 /**
  * TiDB has some limitations on identifier length.
@@ -16,7 +16,7 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
  * TiDBSQLNameTransformer is reference to
  * io.airbyte.integrations.destination.mysql.MySQLNameTransformer.
  */
-public class TiDBSQLNameTransformer extends ExtendedNameTransformer {
+public class TiDBSQLNameTransformer extends StandardNameTransformer {
 
   @Override
   public String applyDefaultCase(final String input) {

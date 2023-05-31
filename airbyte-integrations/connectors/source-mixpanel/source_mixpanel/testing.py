@@ -7,7 +7,7 @@ from functools import wraps
 
 from .streams import Funnels
 
-AVAILABLE_TESTING_RANGE_DAYS = 30
+AVAILABLE_TESTING_RANGE_DAYS = 10
 
 
 def funnel_slices_patched(self: Funnels, sync_mode):

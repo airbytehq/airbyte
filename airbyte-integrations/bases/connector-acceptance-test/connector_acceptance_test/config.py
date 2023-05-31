@@ -110,6 +110,16 @@ class EmptyStreamConfiguration(BaseConfig):
         return hash((type(self),) + tuple(self.__dict__.values()))
 
 
+class IgnoredFieldsConfiguration(BaseConfig):
+    name: str
+    bypass_reason: Optional[str] = Field(default=None, description="Reason why this field is considered ignored.")
+
+
+ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = Field(
+    description="For each stream, list of fields path ignoring in sequential reads test"
+)
+
+
 class BasicReadTestConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
@@ -118,12 +128,14 @@ class BasicReadTestConfig(BaseConfig):
     )
     expect_records: Optional[ExpectedRecordsConfig] = Field(description="Expected records from the read")
     validate_schema: bool = Field(True, description="Ensure that records match the schema of the corresponding stream")
+    fail_on_extra_columns: bool = Field(True, description="Fail if extra top-level properties (i.e. columns) are detected in records.")
     # TODO: remove this field after https://github.com/airbytehq/airbyte/issues/8312 is done
     validate_data_points: bool = Field(
         False, description="Set whether we need to validate that all fields in all streams contained at least one data point"
     )
     expect_trace_message_on_failure: bool = Field(True, description="Ensure that a trace message is emitted when the connector crashes")
     timeout_seconds: int = timeout_seconds
+    ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = ignored_fields
 
 
 class FullRefreshConfig(BaseConfig):
@@ -136,9 +148,7 @@ class FullRefreshConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
     timeout_seconds: int = timeout_seconds
-    ignored_fields: Optional[Mapping[str, List[str]]] = Field(
-        description="For each stream, list of fields path ignoring in sequential reads test"
-    )
+    ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = ignored_fields
 
 
 class FutureStateConfig(BaseConfig):
@@ -242,6 +252,17 @@ class Config(BaseConfig):
                 basic_read_tests["empty_streams"] = [
                     {"name": empty_stream_name} for empty_stream_name in basic_read_tests.get("empty_streams", [])
                 ]
+            if "ignored_fields" in basic_read_tests:
+                basic_read_tests["ignored_fields"] = {
+                    stream: [{"name": field_name} for field_name in ignore_fields]
+                    for stream, ignore_fields in basic_read_tests["ignored_fields"].items()
+                }
+        for full_refresh_test in migrated_config["acceptance_tests"].get("full_refresh", {}).get("tests", []):
+            if "ignored_fields" in full_refresh_test:
+                full_refresh_test["ignored_fields"] = {
+                    stream: [{"name": field_name} for field_name in ignore_fields]
+                    for stream, ignore_fields in full_refresh_test["ignored_fields"].items()
+                }
         for incremental_test in migrated_config["acceptance_tests"].get("incremental", {}).get("tests", []):
             if "future_state_path" in incremental_test:
                 incremental_test["future_state"] = {"future_state_path": incremental_test.pop("future_state_path")}

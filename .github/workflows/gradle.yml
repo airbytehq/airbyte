@@ -28,17 +28,6 @@ on:
 permissions: write-all
 
 jobs:
-  # COMMON TASKS
-  ensure-images-exist:
-    name: "Ensure all required Docker images exist on Dockerhub"
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-
-      - name: Check images exist
-        run: ./tools/bin/check_images_exist.sh all
   # The output of this job is used to trigger the following builds.
   changes:
     name: "Detect Modified Files"
@@ -50,6 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       build: ${{ steps.filter.outputs.build }}
+      cdk: ${{ steps.filter.outputs.cdk }}
       cli: ${{ steps.filter.outputs.cli }}
       connectors: ${{ steps.filter.outputs.connectors }}
       db: ${{ steps.filter.outputs.db }}
@@ -68,14 +58,16 @@ jobs:
               - 'tools/**'
               - '*.gradle'
               - 'deps.toml'
-              - 'airbyte-config/**'
+              - 'airbyte-config-oss/**'
+            cdk:
+              - 'airbyte-cdk/**'
             cli:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
             connectors:
-              - 'airbyte-cdk/**'
-              - 'airbyte-integrations/**'
-              - 'airbyte-commons-worker/**'
+              - 'airbyte-integrations/bases/**'
+              - 'airbyte-integrations/connectors-templates/**'
+              - 'airbyte-connector-test-harnesses/acceptance-test-harness/**'
             db:
               - 'airbyte-db/**'
 
@@ -117,6 +109,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
 
       - name: Set up CI Gradle Properties
         run: |
@@ -153,6 +146,66 @@ jobs:
         uses: Wandalen/wretry.action@master
         with:
           command: ./tools/bin/integration_tests_octavia.sh
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+
+  cdk-build:
+    needs: changes
+    runs-on: ubuntu-latest
+    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
+    if: needs.changes.outputs.cdk == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
+    name: "Airbyte CDK: Build"
+    timeout-minutes: 90
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+
+      - name: Cache Build Artifacts
+        uses: ./.github/actions/cache-build-artifacts
+        with:
+          cache-key: ${{ secrets.CACHE_VERSION }}-cdk
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m \
+            --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
+
+      - name: Format
+        uses: Wandalen/wretry.action@master
+        with:
+          command: SUB_BUILD=CDK ./gradlew format --scan --info --stacktrace
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+
+      - name: Commit Formatting Changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Automated Commit - Formatting Changes
+          commit_user_name: Octavia Squidington III
+          commit_user_email: octavia-squidington-iii@users.noreply.github.com
+
+      - name: Build
+        uses: Wandalen/wretry.action@master
+        with:
+          command: SUB_BUILD=CDK ./gradlew build --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
@@ -201,7 +254,7 @@ jobs:
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
         with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
+          cache-key: ${{ secrets.CACHE_VERSION }}-connectors
 
       - uses: actions/setup-java@v3
         with:
@@ -220,7 +273,7 @@ jobs:
         run: python3 -m pip install virtualenv==16.7.9 --user
 
       - name: Install automake
-        run: apt-get install -y automake build-essential libtool libtool-bin autoconf
+        run: apt-get update && apt-get install -y automake build-essential libtool libtool-bin autoconf
 
       - name: Set up CI Gradle Properties
         run: |
@@ -264,7 +317,7 @@ jobs:
       - name: Process Resources
         uses: Wandalen/wretry.action@master
         with:
-          command: SUB_BUILD=CONNECTORS_BASE ./gradlew :airbyte-config:init:processResources --scan
+          command: SUB_BUILD=CONNECTORS_BASE ./gradlew :airbyte-config-oss:init-oss:processResources --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 

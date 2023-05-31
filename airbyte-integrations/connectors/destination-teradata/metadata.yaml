@@ -1,0 +1,20 @@
+data:
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 58e6f9da-904e-11ed-a1eb-0242ac120002
+  dockerImageTag: 0.1.1
+  dockerRepository: airbyte/destination-teradata
+  githubIssueLabel: destination-teradata
+  icon: teradata.svg
+  license: MIT
+  name: Teradata Vantage
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/teradata
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"

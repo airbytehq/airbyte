@@ -11,8 +11,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.configoss.StandardCheckConnectionOutput;
+import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +34,7 @@ public class SnowflakeS3CopyEncryptedDestinationAcceptanceTest extends Snowflake
     final JsonNode config = Jsons.deserialize(IOs.readFile(
         Path.of("secrets/copy_s3_wrong_location_config.json")));
 
-    StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
+    final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
 
     assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
     assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_S3_PRIVILEGES_ERR_MSG);
