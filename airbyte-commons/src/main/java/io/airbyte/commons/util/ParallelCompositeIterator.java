@@ -7,8 +7,8 @@ package io.airbyte.commons.util;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
+import io.airbyte.commons.stream.StreamStatusUtils;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
  * @param <T> The type of data returned by a call to {@link #next()} on the iterator and all
  *        underlying iterators.
  */
-public final class ParallelCompositeIterator<T> extends AbstractIterator<T> implements AutoCloseableIterator<T>, AirbyteStreamAware {
+public final class ParallelCompositeIterator<T> extends AbstractIterator<T> implements AutoCloseableIterator<T> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ParallelCompositeIterator.class);
   private static final Integer MAX_CAPACITY = 1000;
@@ -61,6 +61,7 @@ public final class ParallelCompositeIterator<T> extends AbstractIterator<T> impl
   private final Set<AutoCloseableIterator<T>> iterators;
   private boolean started = false;
   private int closedCount = 0;
+  private final List<Exception> exceptions;
 
   ParallelCompositeIterator(final Collection<AutoCloseableIterator<T>> iterators,
                             final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer) {
@@ -83,6 +84,7 @@ public final class ParallelCompositeIterator<T> extends AbstractIterator<T> impl
      */
     internalQueue = new LinkedBlockingQueue<>(MAX_CAPACITY);
     this.hasClosed = false;
+    exceptions = new ArrayList<>();
   }
 
   /**
@@ -131,7 +133,6 @@ public final class ParallelCompositeIterator<T> extends AbstractIterator<T> impl
   public void close() throws Exception {
     hasClosed = true;
 
-    final List<Exception> exceptions = new ArrayList<>();
     for (final AutoCloseableIterator<T> iterator : iterators) {
       try {
         iterator.close();
@@ -152,7 +153,7 @@ public final class ParallelCompositeIterator<T> extends AbstractIterator<T> impl
 
   @Override
   public Optional<AirbyteStreamNameNamespacePair> getAirbyteStream() {
-    return AirbyteStreamAware.super.getAirbyteStream();
+    return AutoCloseableIterator.super.getAirbyteStream();
   }
 
   private void assertHasNotClosed() {
@@ -168,7 +169,7 @@ public final class ParallelCompositeIterator<T> extends AbstractIterator<T> impl
   private void consumeFromStream(final AutoCloseableIterator<T> iterator) {
     boolean firstRead = true;
     final Optional<AirbyteStreamNameNamespacePair> stream = getStream(iterator);
-    emitStartStreamStatus(stream);
+    StreamStatusUtils.emitStartStreamStatus(stream, airbyteStreamStatusConsumer);
 
     try (iterator) {
       while (iterator.hasNext()) {
@@ -176,15 +177,16 @@ public final class ParallelCompositeIterator<T> extends AbstractIterator<T> impl
         LOGGER.debug("Writing data '{}' for stream {}...", next, stream.orElse(null));
         internalQueue.put(new InternalMessage(next));
         if (firstRead) {
-          emitRunningStreamStatus(stream);
+          StreamStatusUtils.emitRunningStreamStatus(stream, airbyteStreamStatusConsumer);
           firstRead = false;
         }
       }
 
-      emitCompleteStreamStatus(stream);
+      StreamStatusUtils.emitCompleteStreamStatus(stream, airbyteStreamStatusConsumer);
     } catch (final Exception e) {
       LOGGER.error("Unable to read data from stream {}.", stream.orElse(null), e);
-      emitIncompleteStreamStatus(stream);
+      StreamStatusUtils.emitIncompleteStreamStatus(stream, airbyteStreamStatusConsumer);
+      exceptions.add(e);
     } finally {
       // Mark the stream as done
       onEndOfStream(stream);
@@ -204,6 +206,14 @@ public final class ParallelCompositeIterator<T> extends AbstractIterator<T> impl
     return Math.min(MAX_THREADS, (iterators.isEmpty() ? MIN_THREADS : iterators.size()));
   }
 
+  private Optional<AirbyteStreamNameNamespacePair> getStream(final AutoCloseableIterator<T> iterator) {
+    if (iterator instanceof AirbyteStreamAware) {
+      return AirbyteStreamAware.class.cast(iterator).getAirbyteStream();
+    } else {
+      return Optional.empty();
+    }
+  }
+
   /**
    * Callback method that handles the end of each stream processed in parallel by this iterator.
    * <p>
@@ -219,47 +229,6 @@ public final class ParallelCompositeIterator<T> extends AbstractIterator<T> impl
     if (closedCount == iterators.size()) {
       // Send a poison pill message to end the iterator
       internalQueue.offer(new InternalMessage<>(null));
-    }
-  }
-
-  private void emitRunningStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream) {
-    airbyteStream.ifPresent(s -> {
-      LOGGER.debug("RUNNING -> {}", s);
-      emitStreamStatus(s, AirbyteStreamStatus.RUNNING);
-    });
-  }
-
-  private void emitStartStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream) {
-    airbyteStream.ifPresent(s -> {
-      LOGGER.debug("STARTING -> {}", s);
-      emitStreamStatus(s, AirbyteStreamStatus.STARTED);
-    });
-  }
-
-  private void emitCompleteStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream) {
-    airbyteStream.ifPresent(s -> {
-      LOGGER.debug("COMPLETE -> {}", s);
-      emitStreamStatus(s, AirbyteStreamStatus.COMPLETE);
-    });
-  }
-
-  private void emitIncompleteStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream) {
-    airbyteStream.ifPresent(s -> {
-      LOGGER.debug("COMPLETE -> {}", s);
-      emitStreamStatus(s, AirbyteStreamStatus.INCOMPLETE);
-    });
-  }
-
-  private void emitStreamStatus(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
-                                final AirbyteStreamStatus airbyteStreamStatus) {
-    airbyteStreamStatusConsumer.ifPresent(c -> c.accept(new AirbyteStreamStatusHolder(airbyteStreamNameNamespacePair, airbyteStreamStatus)));
-  }
-
-  private Optional<AirbyteStreamNameNamespacePair> getStream(final AutoCloseableIterator<T> iterator) {
-    if (iterator instanceof AirbyteStreamAware) {
-      return AirbyteStreamAware.class.cast(iterator).getAirbyteStream();
-    } else {
-      return Optional.empty();
     }
   }
 

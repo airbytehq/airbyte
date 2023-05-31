@@ -20,13 +20,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mysql.cj.MysqlType;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
-import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -47,9 +45,12 @@ import io.airbyte.integrations.source.jdbc.JdbcDataSourceUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
+import io.airbyte.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -63,6 +64,7 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -71,9 +73,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -185,6 +188,46 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     }
 
     return catalog;
+  }
+
+  @Override
+  public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(final JsonNode config,
+      final ConfiguredAirbyteCatalog catalog,
+      final JsonNode state)
+      throws Exception {
+    final AirbyteStateType supportedStateType = getSupportedStateType(config);
+    final StateManager stateManager =
+        StateManagerFactory.createStateManager(supportedStateType,
+            StateGeneratorUtils.deserializeInitialState(state, featureFlags.useStreamCapableState(), supportedStateType), catalog);
+    final Instant emittedAt = Instant.now();
+
+    final JdbcDatabase database = createDatabase(config);
+
+    logPreSyncDebugData(database, catalog);
+
+    final Map<String, TableInfo<CommonField<MysqlType>>> fullyQualifiedTableNameToInfo =
+        discoverWithoutSystemTables(database)
+            .stream()
+            .collect(Collectors.toMap(t -> String.format("%s.%s", t.getNameSpace(), t.getName()),
+                Function
+                    .identity()));
+
+    validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog, database);
+
+    DbSourceDiscoverUtil.logSourceSchemaChange(fullyQualifiedTableNameToInfo, catalog, this::getAirbyteType);
+
+    final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
+        getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
+            emittedAt);
+    final List<AutoCloseableIterator<AirbyteMessage>> fullRefreshIterators =
+        getFullRefreshIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
+            emittedAt);
+    final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = Stream
+        .of(incrementalIterators, fullRefreshIterators)
+        .flatMap(Collection::stream)
+        .collect(Collectors.toList());
+
+    return iteratorList;
   }
 
   @Override
@@ -460,17 +503,5 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public enum ReplicationMethod {
     STANDARD,
     CDC
-  }
-
-  @Override
-  protected AutoCloseableIterator<AirbyteMessage> createIterator(final List<AutoCloseableIterator<AirbyteMessage>> iteratorList,
-      final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer, final VoidCallable voidCallable, final JsonNode config) {
-    if (isCdc(config)) {
-      return super.createIterator(iteratorList, airbyteStreamStatusConsumer, voidCallable, config);
-    } else {
-      return AutoCloseableIterators
-          .appendOnClose(AutoCloseableIterators.concatWithEagerClose(iteratorList, airbyteStreamStatusConsumer,
-              AutoCloseableIterators.IterationMode.PARALLEL), voidCallable);
-    }
   }
 }

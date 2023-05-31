@@ -20,7 +20,7 @@ import java.util.function.Supplier;
  *
  * @param <T> type
  */
-class LazyAutoCloseableIterator<T> extends AbstractIterator<T> implements AutoCloseableIterator<T>, AirbyteStreamAware {
+class LazyAutoCloseableIterator<T> extends AbstractIterator<T> implements AutoCloseableIterator<T> {
 
   private final Supplier<AutoCloseableIterator<T>> iteratorSupplier;
 

@@ -7,8 +7,8 @@ package io.airbyte.commons.util;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
+import io.airbyte.commons.stream.StreamStatusUtils;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
  *
  * @param <T> type
  */
-public final class CompositeIterator<T> extends AbstractIterator<T> implements AutoCloseableIterator<T>, AirbyteStreamAware {
+public final class CompositeIterator<T> extends AbstractIterator<T> implements AutoCloseableIterator<T> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CompositeIterator.class);
 
@@ -72,15 +72,15 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
     while (!currentIterator().hasNext()) {
       try {
         currentIterator().close();
-        emitCompleteStreamStatus(getAirbyteStream());
+        StreamStatusUtils.emitCompleteStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
       } catch (final Exception e) {
-        emitIncompleteStreamStatus(getAirbyteStream());
+        StreamStatusUtils.emitIncompleteStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
         throw new RuntimeException(e);
       }
 
       if (i + 1 < iterators.size()) {
         i++;
-        emitStartStreamStatus(getAirbyteStream());
+        StreamStatusUtils.emitStartStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
         firstRead = true;
       } else {
         return endOfData();
@@ -89,15 +89,15 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
 
     try {
       if (isFirstStream()) {
-        emitStartStreamStatus(getAirbyteStream());
+        StreamStatusUtils.emitStartStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
       }
       return currentIterator().next();
     } catch (final RuntimeException e) {
-      emitIncompleteStreamStatus(getAirbyteStream());
+      StreamStatusUtils.emitIncompleteStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
       throw e;
     } finally {
       if (firstRead) {
-        emitRunningStreamStatus(getAirbyteStream());
+        StreamStatusUtils.emitRunningStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
         firstRead = false;
       }
     }
@@ -141,39 +141,6 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
 
   private void assertHasNotClosed() {
     Preconditions.checkState(!hasClosed);
-  }
-
-  private void emitRunningStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream) {
-    airbyteStream.ifPresent(s -> {
-      LOGGER.info("RUNNING -> {}", s);
-      emitStreamStatus(s, AirbyteStreamStatus.RUNNING);
-    });
-  }
-
-  private void emitStartStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream) {
-    airbyteStream.ifPresent(s -> {
-      LOGGER.info("STARTING -> {}", s);
-      emitStreamStatus(s, AirbyteStreamStatus.STARTED);
-    });
-  }
-
-  private void emitCompleteStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream) {
-    airbyteStream.ifPresent(s -> {
-      LOGGER.info("COMPLETE -> {}", s);
-      emitStreamStatus(s, AirbyteStreamStatus.COMPLETE);
-    });
-  }
-
-  private void emitIncompleteStreamStatus(final Optional<AirbyteStreamNameNamespacePair> airbyteStream) {
-    airbyteStream.ifPresent(s -> {
-      LOGGER.info("COMPLETE -> {}", s);
-      emitStreamStatus(s, AirbyteStreamStatus.INCOMPLETE);
-    });
-  }
-
-  private void emitStreamStatus(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
-                                final AirbyteStreamStatus airbyteStreamStatus) {
-    airbyteStreamStatusConsumer.ifPresent(c -> c.accept(new AirbyteStreamStatusHolder(airbyteStreamNameNamespacePair, airbyteStreamStatus)));
   }
 
 }

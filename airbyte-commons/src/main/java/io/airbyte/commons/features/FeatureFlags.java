@@ -10,17 +10,13 @@ package io.airbyte.commons.features;
  */
 public interface FeatureFlags {
 
-  boolean autoDisablesFailingConnections();
-
-  boolean forceSecretMigration();
-
   boolean useStreamCapableState();
 
   boolean autoDetectSchema();
 
   boolean logConnectorMessages();
 
-  boolean needStateValidation();
+  boolean concurrentSourceStreamRead();
 
   /**
    * Return true if field selection should be applied. See also fieldSelectionWorkspaces.
@@ -36,21 +32,5 @@ public interface FeatureFlags {
    * @return a comma-separated list of workspace ids where field selection should be enabled.
    */
   String fieldSelectionWorkspaces();
-
-  /**
-   * Get the workspaces allow-listed for strict incremental comparison in normalization. This takes
-   * precedence over the normalization version in oss_registry.json .
-   *
-   * @return a comma-separated list of workspace ids where strict incremental comparison should be
-   *         enabled in normalization.
-   */
-  String strictComparisonNormalizationWorkspaces();
-
-  /**
-   * Get the Docker image tag representing the normalization version with strict-comparison.
-   *
-   * @return The Docker image tag representing the normalization version with strict-comparison
-   */
-  String strictComparisonNormalizationTag();
 
 }

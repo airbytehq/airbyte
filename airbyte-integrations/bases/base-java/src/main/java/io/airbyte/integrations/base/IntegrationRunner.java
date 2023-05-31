@@ -10,13 +10,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import datadog.trace.api.Trace;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions.Procedure;
+import io.airbyte.commons.stream.StreamStatusUtils;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.util.ApmTraceUtils;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
+import io.airbyte.integrations.util.concurrent.ConcurrentStreamConsumer;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -24,6 +28,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
@@ -71,6 +76,7 @@ public class IntegrationRunner {
   private final Integration integration;
   private final Destination destination;
   private final Source source;
+  private final FeatureFlags featureFlags;
   private static JsonSchemaValidator validator;
 
   public IntegrationRunner(final Destination destination) {
@@ -93,6 +99,7 @@ public class IntegrationRunner {
     this.integration = source != null ? source : destination;
     this.source = source;
     this.destination = destination;
+    this.featureFlags = new EnvVariableFeatureFlags();
     validator = new JsonSchemaValidator();
 
     Thread.setDefaultUncaughtExceptionHandler(new AirbyteExceptionHandler());
@@ -152,12 +159,10 @@ public class IntegrationRunner {
           validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
           final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
-          try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
-            produceMessages(messageIterator);
-          } finally {
-            if (source instanceof AutoCloseable) {
-              AutoCloseable.class.cast(source).close();
-            }
+          if (featureFlags.concurrentSourceStreamRead()) {
+            readConcurrent(config, catalog, stateOptional);
+          } else {
+            readSerial(config, catalog, stateOptional);
           }
         }
         // destination only
@@ -204,14 +209,45 @@ public class IntegrationRunner {
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
   }
 
-  private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator) throws Exception {
+  private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator, final Consumer<AirbyteMessage> recordCollector)
+      throws Exception {
     watchForOrphanThreads(
-        () -> messageIterator.forEachRemaining(outputRecordCollector),
+        () -> messageIterator.forEachRemaining(recordCollector),
         () -> System.exit(FORCED_EXIT_CODE),
         INTERRUPT_THREAD_DELAY_MINUTES,
         TimeUnit.MINUTES,
         EXIT_THREAD_DELAY_MINUTES,
         TimeUnit.MINUTES);
+  }
+
+  private void readConcurrent(final JsonNode config, ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
+    final Collection<AutoCloseableIterator<AirbyteMessage>> streams = source.readStreams(config, catalog, stateOptional.orElse(null));
+
+    final ConcurrentStreamConsumer streamConsumer = new ConcurrentStreamConsumer((stream) -> {
+      try {
+        final Consumer<AirbyteMessage> streamStatusTrackingRecordConsumer = StreamStatusUtils.statusTrackingRecordCollector(stream,
+            outputRecordCollector, Optional.of(AirbyteTraceMessageUtility::emitStreamStatusTrace));
+        produceMessages(stream, streamStatusTrackingRecordConsumer);
+      } catch (final Exception e) {
+        throw new RuntimeException(e);
+      }
+    }, streams.size());
+
+    streams.forEach(streamConsumer);
+
+    if (streamConsumer.getException().isPresent()) {
+      throw streamConsumer.getException().get();
+    }
+  }
+
+  private void readSerial(final JsonNode config, ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
+    try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
+      produceMessages(messageIterator, outputRecordCollector);
+    } finally {
+      if (source instanceof AutoCloseable) {
+        AutoCloseable.class.cast(source).close();
+      }
+    }
   }
 
   @VisibleForTesting
