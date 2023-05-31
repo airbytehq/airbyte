@@ -97,7 +97,7 @@ class TestSourceFacebookMarketing:
     def test_streams(self, config, api):
         streams = SourceFacebookMarketing().streams(config)
 
-        assert len(streams) == 16
+        assert len(streams) == 29
 
     def test_spec(self):
         spec = SourceFacebookMarketing().spec()
