@@ -69,9 +69,9 @@
     "auth_flow_type": "oauth2.0",
     "predicate_key": [
       "credentials",
-      "auth_type"
+      "option_title"
     ],
-    "predicate_value": "oauth2.0",
+    "predicate_value": "OAuth Credentials",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
         "type": "object",
@@ -79,7 +79,7 @@
           "refresh_token": {
             "type": "string",
             "path_in_connector_config": [
-              "refresh_token"
+              "credentials", "refresh_token"
             ]
           }
         }
@@ -101,13 +101,13 @@
           "client_id": {
             "type": "string",
             "path_in_connector_config": [
-              "client_id"
+              "credentials", "client_id"
             ]
           },
           "client_secret": {
             "type": "string",
             "path_in_connector_config": [
-              "client_secret"
+              "credentials","client_secret"
             ]
           }
         }
