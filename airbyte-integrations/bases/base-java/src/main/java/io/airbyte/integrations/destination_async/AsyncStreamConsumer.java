@@ -4,9 +4,7 @@
 
 package io.airbyte.integrations.destination_async;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
@@ -42,13 +40,10 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
   private final OnStartFunction onStart;
   private final OnCloseFunction onClose;
   private final ConfiguredAirbyteCatalog catalog;
-  private final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord;
-
   private final BufferManager bufferManager;
   private final BufferEnqueue bufferEnqueue;
   private final FlushWorkers flushWorkers;
   private final Set<StreamDescriptor> streamNames;
-  private final IgnoredRecordsTracker ignoredRecordsTracker;
 
   private boolean hasStarted;
   private boolean hasClosed;
@@ -58,7 +53,6 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
                              final OnCloseFunction onClose,
                              final DestinationFlushFunction flusher,
                              final ConfiguredAirbyteCatalog catalog,
-                             final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
                              final BufferManager bufferManager) {
     hasStarted = false;
     hasClosed = false;
@@ -67,12 +61,10 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     this.onStart = onStart;
     this.onClose = onClose;
     this.catalog = catalog;
-    this.isValidRecord = isValidRecord;
     this.bufferManager = bufferManager;
-    this.bufferEnqueue = bufferManager.getBufferEnqueue();
-    this.flushWorkers = new FlushWorkers(this.bufferManager.getBufferDequeue(), flusher);
-    this.streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
-    this.ignoredRecordsTracker = new IgnoredRecordsTracker();
+    bufferEnqueue = bufferManager.getBufferEnqueue();
+    flushWorkers = new FlushWorkers(this.bufferManager.getBufferDequeue(), flusher);
+    streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
   }
 
   @Override
@@ -109,7 +101,6 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     // or we risk in-memory data.
     flushWorkers.close();
     bufferManager.close();
-    ignoredRecordsTracker.report();
     onClose.call();
     LOGGER.info("{} closed.", AsyncStreamConsumer.class);
   }
@@ -147,21 +138,6 @@ public class AsyncStreamConsumer implements AirbyteMessageConsumer {
     // if stream is not part of list of streams to sync to then throw invalid stream exception
     if (!streamNames.contains(streamDescriptor)) {
       throwUnrecognizedStream(catalog, message);
-    }
-
-    trackerIsValidRecord(message, streamDescriptor);
-  }
-
-  private void trackerIsValidRecord(final AirbyteMessage message, final StreamDescriptor streamDescriptor) {
-    // todo (cgardens) - is valid should also move inside the tracker, but don't want to blow up more
-    // constructors right now.
-    try {
-
-      if (!isValidRecord.apply(message.getRecord().getData())) {
-        ignoredRecordsTracker.addRecord(streamDescriptor, message);
-      }
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
     }
   }
 
