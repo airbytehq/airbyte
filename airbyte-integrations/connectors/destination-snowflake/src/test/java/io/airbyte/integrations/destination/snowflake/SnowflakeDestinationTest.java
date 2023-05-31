@@ -14,9 +14,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDestination.DestinationType;
-import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.regex.Matcher;
@@ -131,7 +131,7 @@ public class SnowflakeDestinationTest {
     final JsonNode config = Jsons.deserialize(MoreResources.readResource("internal_staging_config.json"), JsonNode.class);
     final SerializedAirbyteMessageConsumer consumer = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS)
         .getSerializedMessageConsumer(config, new ConfiguredAirbyteCatalog(), null);
-    assertEquals(AsyncStreamConsumer.class, consumer.getClass());
+    assertEquals(Destination.ShimToSerializedAirbyteMessageConsumer.class, consumer.getClass());
   }
 
 }
