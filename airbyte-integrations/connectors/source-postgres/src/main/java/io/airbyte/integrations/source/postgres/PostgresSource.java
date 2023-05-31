@@ -99,7 +99,7 @@ import org.slf4j.LoggerFactory;
 public class PostgresSource extends AbstractJdbcSource<PostgresType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
-  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 0;
   public static final String PARAM_SSLMODE = "sslmode";
   public static final String SSL_MODE = "ssl_mode";
   public static final String SSL_ROOT_CERT = "sslrootcert";
