@@ -27,6 +27,7 @@ SOURCE_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/source-"
 DESTINATION_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/destination-"
 ACCEPTANCE_TEST_CONFIG_FILE_NAME = "acceptance-test-config.yml"
 AIRBYTE_DOCKER_REPO = "airbyte"
+AIRBYTE_REPO_DIRECTORY_NAME = "airbyte"
 GRADLE_PROJECT_RE_PATTERN = r"project\((['\"])(.+?)\1\)"
 TEST_GRADLE_DEPENDENCIES = ["testImplementation", "integrationTestJavaImplementation", "performanceTestJavaImplementation"]
 
@@ -77,40 +78,88 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_acceptance_test_config_paths}
 
 
-def get_gradle_project_dependencies(gradle_file_path: Path, with_test_dependencies: bool = True) -> list[dict]:
-    """Retrieve the list of local gradle dependencies from a gradle file.
-    This functions parses the build.gradle file of a connector and returns the list of local dependencies declared in the dependencies block.
-    We parse the file manually instead of using gradle because it's faster than running the a gradle command within a Dagger container.
-    We iterate over the lines of the file and we keep track of whether we are in the dependencies block or not.
-    If we are in the dependencies block we parse the line to extract the project name and we add it to the list of dependencies.
-    We distinguish between test dependencies and regular dependencies by checking if the line contains one of the test dependency keywords.
+def get_gradle_dependencies_block(build_file: Path) -> str:
+    """Get the dependencies block of a Gradle file.
+
+    Args:
+        build_file (Path): Path to the build.gradle file of the project.
+
+    Returns:
+        str: The dependencies block of the Gradle file.
     """
-    dependencies = []
-    visited_files = []
-    visited_files.append(gradle_file_path)
+    contents = build_file.read_text().split("\n")
+    dependency_block = []
     in_dependencies_block = False
-    gradle_file = gradle_file_path.read_text().split("\n")
-    for line in gradle_file:
-        if "dependencies" in line:
+    for line in contents:
+        if line.strip().startswith("dependencies"):
             in_dependencies_block = True
-        if "}" in line and in_dependencies_block:
-            break
-        if in_dependencies_block and "project(" in line:
-            match = re.search(GRADLE_PROJECT_RE_PATTERN, line)
-            if match:
-                project_name = match.group(2)
-                without_project = line.replace(match.group(0), "")
-                is_test_dependency = any(test_dependency in without_project for test_dependency in TEST_GRADLE_DEPENDENCIES)
-                if project_name.startswith(":"):
-                    project_path = project_name[1:].replace(":", "/")
-                    dependency = {"path": Path(project_path), "is_test_dependency": is_test_dependency, "name": project_name}
-                    if with_test_dependencies is False and is_test_dependency:
-                        continue
-                    dependencies.append(dependency)
-                    dependency_gradle_file = Path(f"{project_path}/build.gradle")
-                    if dependency_gradle_file.exists() and dependency_gradle_file not in visited_files:
-                        dependencies += get_gradle_project_dependencies(dependency_gradle_file, with_test_dependencies)
-    return dependencies
+            continue
+        if in_dependencies_block:
+            if line.startswith("}"):
+                in_dependencies_block = False
+                break
+            else:
+                dependency_block.append(line)
+    dependencies_block = "\n".join(dependency_block)
+    return dependencies_block
+
+
+def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]:
+    """Parse the dependencies block of a Gradle file and return the list of project dependencies and test dependencies.
+
+    Args:
+        build_file (Path): _description_
+
+    Returns:
+        Tuple[List[Tuple[str, Path]], List[Tuple[str, Path]]]: _description_
+    """
+
+    dependencies_block = get_gradle_dependencies_block(build_file)
+
+    project_dependencies: List[Tuple[str, Path]] = []
+    test_dependencies: List[Tuple[str, Path]] = []
+
+    # Find all matches for test dependencies and regular dependencies
+    matches = re.findall(
+        r"(testImplementation|integrationTestJavaImplementation|performanceTestJavaImplementation|implementation).*?project\(['\"](.*?)['\"]\)",
+        dependencies_block,
+    )
+    if matches:
+        # Iterate through each match
+        for match in matches:
+            dependency_type, project_path = match
+            path_parts = project_path.split(":")
+            path = Path(*path_parts)
+
+            if dependency_type in TEST_GRADLE_DEPENDENCIES:
+                test_dependencies.append(path)
+            else:
+                project_dependencies.append(path)
+    return project_dependencies, test_dependencies
+
+
+def get_all_gradle_dependencies(
+    build_file: Path, with_test_dependencies: bool = True, found_dependencies: Optional[List[Path]] = None
+) -> List[Path]:
+    """Recursively retrieve all transitive dependencies of a Gradle project.
+
+    Args:
+        build_file (Path): Path to the build.gradle file of the project.
+        found_dependencies (List[Path]): List of dependencies that have already been found. Defaults to None.
+
+    Returns:
+        List[Path]: All dependencies of the project.
+    """
+    if found_dependencies is None:
+        found_dependencies = []
+    project_dependencies, test_dependencies = parse_gradle_dependencies(build_file)
+    all_dependencies = project_dependencies + test_dependencies if with_test_dependencies else project_dependencies
+    for dependency_path in all_dependencies:
+        if dependency_path not in found_dependencies and Path(dependency_path / "build.gradle").exists():
+            found_dependencies.append(dependency_path)
+            get_all_gradle_dependencies(dependency_path / "build.gradle", with_test_dependencies, found_dependencies)
+
+    return found_dependencies
 
 
 class ConnectorLanguage(str, Enum):
@@ -247,12 +296,9 @@ class Connector:
     def get_local_dependencies_paths(self, with_test_dependencies: bool = True) -> Set[Path]:
         dependencies_paths = [self.code_directory]
         if self.language == ConnectorLanguage.JAVA:
-            dependencies_paths += [
-                dependency["path"]
-                for dependency in get_gradle_project_dependencies(
-                    self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies
-                )
-            ]
+            dependencies_paths += get_all_gradle_dependencies(
+                self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies
+            )
         return set(dependencies_paths)
 
 
