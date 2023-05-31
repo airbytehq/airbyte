@@ -82,8 +82,7 @@ class JiraStream(HttpStream, ABC):
     def iterate_response(response):
         data = response.json()
         if isinstance(data, list):
-            for record in data:
-                yield record
+            yield from data
         elif isinstance(data, dict):
             yield data
 
