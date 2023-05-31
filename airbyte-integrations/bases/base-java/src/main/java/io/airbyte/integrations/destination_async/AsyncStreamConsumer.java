@@ -111,6 +111,12 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
         });
   }
 
+  /**
+   * Deserializes to a {@link PartialAirbyteMessage} which can represent both a Record or a State Message
+   *
+   * @param messageString the string to deserialize
+   * @return PartialAirbyteMessage if the message is valid, empty otherwise
+   */
   private Optional<PartialAirbyteMessage> deserializeAirbyteMessage(final String messageString) {
     final Optional<PartialAirbyteMessage> messageOptional = Jsons.tryDeserialize(messageString, PartialAirbyteMessage.class)
         .map(partial -> partial.withSerialized(messageString));
@@ -134,11 +140,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
    */
   private static boolean isStateMessage(final String input) {
     final Optional<AirbyteTypeMessage> deserialized = Jsons.tryDeserialize(input, AirbyteTypeMessage.class);
-    if (deserialized.isPresent()) {
-      return deserialized.get().getType() == Type.STATE;
-    } else {
-      return false;
-    }
+    return deserialized.filter(airbyteTypeMessage -> airbyteTypeMessage.getType() == Type.STATE).isPresent();
   }
 
   /**
