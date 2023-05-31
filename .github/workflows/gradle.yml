@@ -65,8 +65,9 @@ jobs:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
             connectors:
-              - 'airbyte-integrations/**'
               - 'airbyte-connector-test-harnesses/acceptance-test-harness/**'
+              - 'airbyte-integrations/bases/**'
+              - 'airbyte-integrations/connectors-templates/**'
             db:
               - 'airbyte-db/**'
 
@@ -147,6 +148,13 @@ jobs:
           command: ./tools/bin/integration_tests_octavia.sh
           attempt_limit: 3
           attempt_delay: 5000 # in ms
+
+  skip-octavia-cli-build:
+    needs: changes
+    runs-on: ubuntu-latest
+    if: needs.changes.outputs.cli == 'false' && github.ref != 'refs/heads/master'
+    steps:
+      - run: 'echo "No connectors base build required"'
 
   cdk-build:
     needs: changes
@@ -237,6 +245,13 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ env.PAT }}
+
+  skip-connectors-base:
+    name: "Connectors Base: Build"
+    runs-on: ubuntu-latest
+    if: needs.changes.outputs.connectors == 'false' && github.ref != 'refs/heads/master'
+    steps:
+      - run: 'echo "No connectors base build required"'
 
   build-connectors-base:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
