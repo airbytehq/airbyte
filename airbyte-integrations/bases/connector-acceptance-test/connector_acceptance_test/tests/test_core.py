@@ -568,7 +568,7 @@ class TestConnection(BaseTest):
 class TestDiscovery(BaseTest):
 
     VALID_TYPES = {"null", "string", "number", "integer", "boolean", "object", "array"}
-    VALID_AIRBYTE_TYPES = {"timestamp_with_timezone", "timestamp_without_timezone"}
+    VALID_AIRBYTE_TYPES = {"timestamp_with_timezone", "timestamp_without_timezone", "integer"}
     VALID_FORMATS = {"date-time", "date"}
     VALID_TYPE_FORMAT_COMBINATIONS = [
         ({"string"}, "date"),
@@ -580,6 +580,10 @@ class TestDiscovery(BaseTest):
         ({"string"}, "timestamp_with_timezone"),
         ({"string"}, "timestamp_without_timezone"),
         ({"string", "null"}, "timestamp_with_timezone"),
+        ({"integer"}, "integer"),
+        ({"integer", "null"}, "integer"),
+        ({"number"}, "integer"),
+        ({"number", "null"}, "integer"),
     ]
 
     @pytest.fixture(name="skip_backward_compatibility_tests")
