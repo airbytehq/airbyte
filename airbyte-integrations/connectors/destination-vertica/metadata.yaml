@@ -14,7 +14,7 @@ data:
   license: MIT
   name: Vertica
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/vertica
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/vertica
   tags:
     - language:java
 metadataSpecVersion: "1.0"
