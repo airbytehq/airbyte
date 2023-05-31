@@ -13,7 +13,7 @@ data:
   name: IBM Db2
   registries:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
