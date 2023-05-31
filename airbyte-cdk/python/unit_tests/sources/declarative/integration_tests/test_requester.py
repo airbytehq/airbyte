@@ -4,24 +4,29 @@ import requests
 
 from unittest.mock import call, patch
 
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator, DeclarativeStream, DefaultPaginator, DpathExtractor, HttpRequester, PageIncrement, RecordSelector, RequestOption, SimpleRetriever
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator, DeclarativeStream, DefaultPaginator, DpathExtractor, HttpRequester, PageIncrement, RecordSelector, RequestOption, SimpleRetriever, CursorPagination
 from airbyte_cdk.models import AirbyteMessage, SyncMode
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
 from airbyte_cdk.sources.streams.http.http import HttpStream
 
 class TestRequester:
+
+    base_url = "https://api.airbyte.io"
+    path = "v1/endpoint"
+
     def test_request_body_json_is_simple_dict(self):
         request_body_json = {"key": "value"}
 
         expected_requests = [
-            _create_request("https://api.airbyte.io/v1/endpoint",
+            _create_request(f"{self.base_url}/{self.path}",
                             {},
                             {"key": "value"})
         ]
         responses = (_create_response({
             "data": [{"id": 0, "field": "valueA"},
-                     {"id": 1, "field": "valueB"}],
-            "_metadata": {"next": "next"}}), )
+                     {"id": 1, "field": "valueB"}]}
+                    ),
+                )
         expected_records = [{"id": 0, "field": "valueA"},
                             {"id": 1, "field": "valueB"}]
 
@@ -33,14 +38,14 @@ class TestRequester:
         request_body_json = {"key": {"nested_key": "value"}, "another_key": "another_value"}
 
         expected_requests = [
-            _create_request("https://api.airbyte.io/v1/endpoint",
+            _create_request(f"{self.base_url}/{self.path}",
                             {},
                             {"key": {"nested_key": "value"},"another_key": "another_value"})
         ]
         responses = (_create_response({
             "data": [{"id": 0, "field": "valueA"},
-                     {"id": 1, "field": "valueB"}],
-            "_metadata": {"next": "next"}}), )
+                     {"id": 1, "field": "valueB"}],}), 
+            )
         expected_records = [{"id": 0, "field": "valueA"},
                             {"id": 1, "field": "valueB"}]
 
@@ -52,14 +57,14 @@ class TestRequester:
         request_headers = {"header_key": "header_value"}
 
         expected_requests = [
-            _create_request("https://api.airbyte.io/v1/endpoint",
+            _create_request(f"{self.base_url}/{self.path}",
                             {"header_key": "header_value"},
                             {})
         ]
         responses = (_create_response({
             "data": [{"id": 0, "field": "valueA"},
-                     {"id": 1, "field": "valueB"}],
-            "_metadata": {"next": "next"}}), )
+                     {"id": 1, "field": "valueB"}]}),
+                )
         expected_records = [{"id": 0, "field": "valueA"},
                             {"id": 1, "field": "valueB"}]
 
@@ -71,7 +76,7 @@ class TestRequester:
         request_parameters = {"key": "value"}
 
         expected_requests = [
-            _create_request("https://api.airbyte.io/v1/endpoint?key=value",
+            _create_request(f"{self.base_url}/{self.path}?key=value",
                             {},
                             {})
         ]
@@ -124,12 +129,121 @@ class TestRequester:
 
         self._test(stream, expected_requests, responses, expected_records)
 
+    def test_cursor_pagination_no_page_size_no_stop_condition(self):
+        paginator = DefaultPaginator(
+            type="DefaultPaginator",
+            pagination_strategy=CursorPagination(
+                type="CursorPagination",
+                cursor_value="{{ response['_metadata']['next'] }}",
+            ),
+            page_token_option=RequestOption(type="RequestOption", field_name="cursor", inject_into="request_parameter")
+        )
+
+        expected_requests = [
+            _create_request(f"{self.base_url}/{self.path}",
+                            {},
+                            {}),
+            _create_request(f"{self.base_url}/{self.path}?cursor=nextIsC",
+                            {},
+                            {}),
+        ]
+        responses = (
+            _create_response({
+                "data": [{"id": 0, "field": "valueA"},
+                     {"id": 1, "field": "valueB"}],
+                "_metadata": {"next": "nextIsC"}}),
+            _create_response({
+                "data": [{"id": 2, "field": "valueC"}],
+                "_metadata": {}}),
+            )
+        expected_records = [{"id": 0, "field": "valueA"},
+                            {"id": 1, "field": "valueB"},
+                            {"id": 2, "field": "valueC"}]
+
+        stream = self._build(paginator=paginator)
+
+        self._test(stream, expected_requests, responses, expected_records)
+
+    def test_cursor_pagination_no_page_size_and_stop_condition(self):
+        paginator = DefaultPaginator(
+            type="DefaultPaginator",
+            pagination_strategy=CursorPagination(
+                type="CursorPagination",
+                cursor_value="{{ response['_metadata']['next'] }}",
+                stop_condition="{{ response['_metadata']['next'] == 'stop' }}"
+            ),
+            page_token_option=RequestOption(type="RequestOption", field_name="cursor", inject_into="request_parameter")
+        )
+
+        expected_requests = [
+            _create_request(f"{self.base_url}/{self.path}",
+                            {},
+                            {}),
+            _create_request(f"{self.base_url}/{self.path}?cursor=nextIsC",
+                            {},
+                            {}),
+        ]
+        responses = (
+            _create_response({
+                "data": [{"id": 0, "field": "valueA"},
+                     {"id": 1, "field": "valueB"}],
+                "_metadata": {"next": "nextIsC"}}),
+            _create_response({
+                "data": [{"id": 2, "field": "valueC"}],
+                "_metadata": {"next": "stop"}}),
+            )
+        expected_records = [{"id": 0, "field": "valueA"},
+                            {"id": 1, "field": "valueB"},
+                            {"id": 2, "field": "valueC"}]
+
+        stream = self._build(paginator=paginator)
+
+        self._test(stream, expected_requests, responses, expected_records)
+
+    def test_page_count_pagination(self):
+        page_size = 2
+        paginator = DefaultPaginator(
+            type="DefaultPaginator",
+            pagination_strategy=PageIncrement(
+                type="PageIncrement",
+                page_size=page_size,
+                start_from_page=1,
+            ),
+            page_size_option=RequestOption(type="RequestOption", field_name="page_size", inject_into="request_parameter"),
+            page_token_option=RequestOption(type="RequestOption", field_name="page", inject_into="request_parameter")
+        )
+
+        expected_requests = [
+            _create_request(f"https://api.airbyte.io/v1/endpoint?page_size={page_size}",
+                            {},
+                            {}),
+            _create_request(f"https://api.airbyte.io/v1/endpoint?page=2&page_size={page_size}",
+                            {},
+                            {}),
+        ]
+        responses = (
+            _create_response({
+                "data": [{"id": 0, "field": "valueA"},
+                     {"id": 1, "field": "valueB"}],
+                "_metadata": {"next": "nextIsC"}}),
+            _create_response({
+                "data": [{"id": 2, "field": "valueC"}],
+                "_metadata": {"next": "next"}}),
+            )
+        expected_records = [{"id": 0, "field": "valueA"},
+                            {"id": 1, "field": "valueB"},
+                            {"id": 2, "field": "valueC"}]
+
+        stream = self._build(paginator=paginator)
+
+        self._test(stream, expected_requests, responses, expected_records)
+
     def _build(self,
                *, 
                stream_name: str = "stream_name",
                field_path = ["data"],
-               url_base = "https://api.airbyte.io",
-               path = "v1/endpoint",
+               url_base = None,
+               path = None,
                authenticator = None,
                paginator = None,
                request_headers = {},
@@ -157,8 +271,8 @@ class TestRequester:
                 ),
                 requester=HttpRequester(
                     type="HttpRequester",
-                    url_base=url_base,
-                    path=path,
+                    url_base=url_base or self.base_url,
+                    path=path or self.path,
                     authenticator=authenticator,
                     request_body_json=request_body_json,
                     request_headers=request_headers,
@@ -169,13 +283,14 @@ class TestRequester:
         return ModelToComponentFactory().create_component(DeclarativeStream, components, config)
 
     def _test(self, stream, expected_requests, responses, expected_records):
+        responses = [*responses, ValueError]
         requests.PreparedRequest.__repr__ = (
             # FIXME: need to check the headers and body!
             lambda self: (
             json.dumps({"url": self.url})
         ))
         
-        requests.PreparedRequest.__eq__ = lambda self, other: json.loads(self.__repr__()) == json.loads(other.__repr__())
+        requests.PreparedRequest.__eq__ = lambda self, other: self.url == other.url#json.loads(self.__repr__()) == json.loads(other.__repr__())
 
         requests.PreparedRequest.__hash__ = lambda self: hash(json.loads(self.__repr__()))
 
@@ -189,6 +304,7 @@ class TestRequester:
             output_records = [ message for message in output_records_and_messages if isinstance(message, dict) ]
 
             assert expected_records == output_records
+            assert mock_http_stream.call_count == len(expected_calls)
             mock_http_stream.assert_has_calls(expected_calls)
 
 def _create_request(full_url, additional_headers, json_body):
