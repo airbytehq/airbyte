@@ -78,7 +78,7 @@ advanced_auth:
   predicate_key:
     - credentials
     - auth_type
-  predicate_value: OAuth
+  predicate_value: Client
   oauth_config_specification:
     complete_oauth_output_specification:
       type: object
