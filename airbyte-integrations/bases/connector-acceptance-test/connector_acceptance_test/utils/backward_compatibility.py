@@ -5,15 +5,14 @@
 from abc import ABC, abstractmethod
 from deepdiff import DeepDiff
 from enum import Enum
-import datetime
 import jsonschema
 
-from hypothesis import HealthCheck, Verbosity, given, settings, strategies as st
+from hypothesis import HealthCheck, Verbosity, given, settings
 from hypothesis_jsonschema import from_schema
 
 from airbyte_cdk.models import ConnectorSpecification
 from connector_acceptance_test.utils import SecretDict
-from typing import Dict, Any, Tuple
+from typing import Dict, Any
 
 
 class BackwardIncompatibilityContext(Enum):
