@@ -26,8 +26,6 @@ class CheckConnectorImageDoesNotExist(Step):
         crane_ls = (
             environments.with_crane(
                 self.context,
-                self.context.docker_hub_username_secret,
-                self.context.docker_hub_password_secret,
             )
             .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
             .with_exec(["ls", docker_repository])
