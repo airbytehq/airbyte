@@ -5,7 +5,7 @@
 
 import pandas as pd
 import pytest
-from ci_connector_ops.qa_engine import outputs
+from qa_engine import outputs
 
 
 @pytest.mark.parametrize("public_fields_only", [True, False])
