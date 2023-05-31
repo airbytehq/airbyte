@@ -327,9 +327,13 @@ class Issues(IncrementalJiraStream):
         super().__init__(**kwargs)
         self._expand_changelog = expand_changelog
         self._render_fields = render_fields
-        self._project_ids = []
-        self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-        self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        self._project_ids = None
+
+    @property
+    def project_ids(self):
+        if self._project_ids is None:
+            self._project_ids = self.get_project_ids()
+        return self._project_ids
 
     def path(self, **kwargs) -> str:
         return "search"
@@ -343,8 +347,8 @@ class Issues(IncrementalJiraStream):
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["fields"] = "*all"
         jql_parts = [self.jql_compare_date(stream_state)]
-        if self._project_ids:
-            project_ids = ", ".join([f"'{project_id}'" for project_id in self._project_ids])
+        if self.project_ids:
+            project_ids = ", ".join([f"'{project_id}'" for project_id in self.project_ids])
             jql_parts.append(f"project in ({project_ids})")
         params["jql"] = " and ".join([p for p in jql_parts if p])
         expand = []
@@ -372,8 +376,11 @@ class Issues(IncrementalJiraStream):
         return record
 
     def get_project_ids(self):
-        return [project["id"] for project in read_full_refresh(self.projects_stream)]
-
+        project_ids = []
+        if self._projects:
+            projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+            project_ids = [project["id"] for project in read_full_refresh(projects_stream)]
+        return project_ids
 
 class IssueComments(IncrementalJiraStream):
     """
