@@ -180,6 +180,55 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return Jsons.jsonNode(configBuilder.build());
   }
 
+  public JsonNode toDatabaseConfigTest(final JsonNode config) {
+    final List<String> additionalParameters = new ArrayList<>();
+
+    final String encodedDatabaseName = HostPortResolver.encodeValue(config.get(JdbcUtils.DATABASE_KEY).asText());
+
+    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
+                                                                  config.get(JdbcUtils.HOST_KEY).asText(),
+                                                                  config.get(JdbcUtils.PORT_KEY).asText(),
+                                                                  encodedDatabaseName));
+
+    if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
+      jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append(AMPERSAND);
+    }
+
+    final Map<String, String> sslParameters = parseSSLConfig(config);
+    if (config.has(PARAM_SSL_MODE) && config.get(PARAM_SSL_MODE).has(PARAM_CA_CERTIFICATE)) {
+      sslParameters.put(CA_CERTIFICATE_PATH,
+                        JdbcSSLConnectionUtils.fileFromCertPem(config.get(PARAM_SSL_MODE).get(PARAM_CA_CERTIFICATE).asText()).toString());
+      LOGGER.debug("root ssl ca crt file: {}", sslParameters.get(CA_CERTIFICATE_PATH));
+    }
+
+    if (config.has(JdbcUtils.SCHEMAS_KEY) && config.get(JdbcUtils.SCHEMAS_KEY).isArray()) {
+      schemas = new ArrayList<>();
+      for (final JsonNode schema : config.get(JdbcUtils.SCHEMAS_KEY)) {
+        schemas.add(schema.asText());
+      }
+    }
+
+    if (schemas != null && !schemas.isEmpty()) {
+      additionalParameters.add("currentSchema=" + String.join(",", schemas));
+    }
+
+    additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
+
+    jdbcUrl.append(toJDBCQueryParams(sslParameters));
+    LOGGER.debug("jdbc url: {}", jdbcUrl.toString());
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
+
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+    }
+
+    configBuilder.putAll(sslParameters);
+
+    return Jsons.jsonNode(configBuilder.build());
+  }
+
   public String toJDBCQueryParams(final Map<String, String> sslParams) {
     return Objects.isNull(sslParams) ? ""
         : sslParams.entrySet()
