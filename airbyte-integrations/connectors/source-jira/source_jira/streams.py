@@ -344,32 +344,29 @@ class Issues(IncrementalJiraStream):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any],
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params["fields"] = "*all"
+        params = {
+            "fields": "*all",
+            "jql": self.construct_jql(stream_state),
+            "expand": self.construct_expand()
+        }
+        return params
+
+    def construct_jql(self, stream_state):
         jql_parts = [self.jql_compare_date(stream_state)]
         if self.project_ids:
             project_ids = ", ".join([f"'{project_id}'" for project_id in self.project_ids])
             jql_parts.append(f"project in ({project_ids})")
-        params["jql"] = " and ".join([p for p in jql_parts if p])
+        return " and ".join([p for p in jql_parts if p])
+
+    def construct_expand(self):
         expand = []
         if self._expand_changelog:
             expand.append("changelog")
         if self._render_fields:
             expand.append("renderedFields")
-        if expand:
-            params["expand"] = ",".join(expand)
-        return params
-
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        self._project_ids = []
-        if self._projects:
-            self._project_ids = self.get_project_ids()
-            if not self._project_ids:
-                return
-        yield from super().read_records(**kwargs)
+        return ",".join(expand) if expand else None
 
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["projectId"] = record["fields"]["project"]["id"]
