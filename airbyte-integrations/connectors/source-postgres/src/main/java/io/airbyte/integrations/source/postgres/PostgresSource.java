@@ -232,7 +232,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       }
       indexInfo.close();
     }
-    
+
     // Log and save the xmin status
     this.xminStatus = PostgresQueryUtils.getXminStatus(database);
     LOGGER.info(String.format("Xmin Status : {Number of wraparounds: %s, Xmin Transaction Value: %s, Xmin Raw Value: %s",
@@ -258,7 +258,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       catalog.setStreams(streams);
     } else if (PostgresUtils.isXmin(config)) {
-      // Xmin replication has a source-defined cursor (the xmin column). This is done to prevent the user from being able to pick their own cursor.
+      // Xmin replication has a source-defined cursor (the xmin column). This is done to prevent the user
+      // from being able to pick their own cursor.
       final List<AirbyteStream> streams = catalog.getStreams().stream()
           .map(PostgresCatalogHelper::setIncrementalToSourceDefined)
           .collect(toList());

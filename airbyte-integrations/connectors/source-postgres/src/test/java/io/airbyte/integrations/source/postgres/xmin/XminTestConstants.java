@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.xmin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,6 +18,7 @@ import io.airbyte.protocol.models.v0.StreamDescriptor;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 public class XminTestConstants {
+
   public static final String NAMESPACE = "public";
   public static final String STREAM_NAME1 = "cars";
   public static final AirbyteStreamNameNamespacePair PAIR1 = new AirbyteStreamNameNamespacePair(STREAM_NAME1, NAMESPACE);
@@ -66,4 +71,5 @@ public class XminTestConstants {
         .withRecord(new AirbyteRecordMessage()
             .withData(Jsons.jsonNode(ImmutableMap.of(UUID_FIELD_NAME, recordValue))));
   }
+
 }
