@@ -70,7 +70,7 @@ def checkout_new_branch(airbyte_repo: git.Repo, new_branch_name: str) -> git.Hea
 
 def enable_in_cloud(connector: ConnectorQAReport, metadata_file_path: Path) -> Optional[Path]:
     with open(metadata_file_path, "r") as f:
-        metadata = yaml.safe_load(f)
+        metadata = yaml.load(f)
         connector_already_enabled_in_cloud = get(metadata, "data.registries.cloud.enabled", False)
 
     if connector_already_enabled_in_cloud:
