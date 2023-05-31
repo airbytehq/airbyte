@@ -55,8 +55,8 @@ class SimpleRetriever(Retriever, HttpStream):
     requester: Requester
     record_selector: HttpSelector
     config: Config
-    parameters: InitVar[Mapping[str, Any]]
     name: str
+    parameters: InitVar[Mapping[str, Any]] = None
     _name: Union[InterpolatedString, str] = field(init=False, repr=False, default="")
     primary_key: Optional[Union[str, List[str], List[List[str]]]]
     _primary_key: str = field(init=False, repr=False, default="")
@@ -66,6 +66,7 @@ class SimpleRetriever(Retriever, HttpStream):
     disable_retries: bool = False
 
     def __post_init__(self, parameters: Mapping[str, Any]):
+        parameters = parameters or {}
         self.paginator = self.paginator or NoPagination(parameters=parameters)
         HttpStream.__init__(self, self.requester.get_authenticator())
         self._last_response = None

@@ -33,8 +33,8 @@ class DeclarativeStream(Stream):
 
     retriever: Retriever
     config: Config
-    parameters: InitVar[Mapping[str, Any]]
     name: str
+    parameters: InitVar[Mapping[str, Any]] = None
     primary_key: Optional[Union[str, List[str], List[List[str]]]]
     schema_loader: Optional[SchemaLoader] = None
     _name: str = field(init=False, repr=False, default="")
@@ -44,6 +44,7 @@ class DeclarativeStream(Stream):
     transformations: List[RecordTransformation] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
+        parameters = parameters or {}
         self.stream_cursor_field = InterpolatedString.create(self.stream_cursor_field, parameters=parameters)
         self.transformations = self.transformations or []
         self._schema_loader = self.schema_loader if self.schema_loader else DefaultSchemaLoader(config=self.config, parameters=parameters)
