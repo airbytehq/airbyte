@@ -232,17 +232,16 @@ def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
     Or to tests all jdbc connectors when a change is made to source-jdbc or base-java.
     We'll consider extending the dependency resolution to Python connectors once we confirm that it's needed and feasible in term of scale.
     """
-    all_connectors = get_all_released_connectors()
     modified_connectors = {}
-    for connector in all_connectors:
-        connector_dependencies = connector.get_local_dependencies_paths()
-        matching_files = [
-            str(modified_file)
-            for modified_file in modified_files
-            if any(str(modified_file).startswith(str(connector_dependency)) for connector_dependency in connector_dependencies)
-        ]
-        if matching_files:
-            modified_connectors[connector] = matching_files
+    all_connector_dependencies = [(connector, connector.get_local_dependencies_paths()) for connector in get_all_released_connectors()]
+    for modified_file in modified_files:
+        for connector, connector_dependencies in all_connector_dependencies:
+            for connector_dependency in connector_dependencies:
+                connector_dependency_parts = connector_dependency.parts
+                modified_file_parts = Path(modified_file).parts
+                # The modified file is a dependency of the connector if the modified file path starts with the connector dependency path.
+                if modified_file_parts[: len(connector_dependency_parts)] == connector_dependency_parts:
+                    modified_connectors.setdefault(connector, []).append(modified_file)
     return modified_connectors
 
 
