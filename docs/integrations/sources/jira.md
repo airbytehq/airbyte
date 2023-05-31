@@ -126,6 +126,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.3.11  | 2023-05-31 | [\#26652](https://github.com/airbytehq/airbyte/pull/26816) | Improve memory handling in issues stream                                                                        |
 | 0.3.10  | 2023-05-26 | [\#26652](https://github.com/airbytehq/airbyte/pull/26652) | Fixed bug when `board` doesn't support `sprints`                                                                        |
 | 0.3.9   | 2023-05-16 | [\#26114](https://github.com/airbytehq/airbyte/pull/26114) | Update fields info in docs and spec, update to latest airbyte-cdk                                                       |
 | 0.3.8   | 2023-05-04 | [\#25798](https://github.com/airbytehq/airbyte/pull/25798) | Add sprint info to `sprint_issues` and `sprints` streams for team-managed projects                                      |
