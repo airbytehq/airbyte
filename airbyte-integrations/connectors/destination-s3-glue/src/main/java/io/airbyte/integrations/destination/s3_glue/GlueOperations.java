@@ -18,7 +18,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
-import io.airbyte.integrations.destination.s3.util.NumericType;
 import io.airbyte.integrations.destination.s3.util.Stringify;
 
 import java.util.Collection;

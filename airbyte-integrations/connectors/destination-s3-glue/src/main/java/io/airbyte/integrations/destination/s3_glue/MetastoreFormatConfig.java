@@ -18,8 +18,6 @@ public interface MetastoreFormatConfig extends S3FormatConfig {
 
   Stringify getStringifyType();
 
-  // TODO (quazi-h) Is this the correct place to put these methods?
-  //  This requires me to add overrides in MetastoreJsonlFormatConfig
   String getNumericType();
 
   NumericType getDecimalScale();

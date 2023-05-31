@@ -148,7 +148,8 @@
       "numeric": {
         "title": "Numeric Type",
         "type": "object",
-        "description": "Hive compatible type to map fractional numeric values. See <a href=\"https://cwiki.apache.org/confluence/display/hive/languagemanual+types#LanguageManualTypes-NumericTypes\">here</a> for more details",
+        "description": "Hive compatible type to map fractional numeric values. See <a href=\"https://cwiki.apache.org/confluence/display/hive/languagemanual+types#LanguageManualTypes-NumericTypes\">here</a> for more details.",
+        "default": "Double",
         "oneOf": [
           {
             "title": "Double",
@@ -176,7 +177,7 @@
               },
               "scale": {
                 "title": "Scale",
-                "description": "Scale of the decimal value being passed in to prevent fraction truncation",
+                "description": "Scale of the decimal value being passed in to prevent fraction truncation.",
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 38,
