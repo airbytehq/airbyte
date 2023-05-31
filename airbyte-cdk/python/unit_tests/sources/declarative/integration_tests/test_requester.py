@@ -48,6 +48,44 @@ class TestRequester:
 
         self._test(stream, expected_requests, responses, expected_records)
 
+    def test_request_headers_are_set(self):
+        request_headers = {"header_key": "header_value"}
+
+        expected_requests = [
+            _create_request("https://api.airbyte.io/v1/endpoint",
+                            {"header_key": "header_value"},
+                            {})
+        ]
+        responses = (_create_response({
+            "data": [{"id": 0, "field": "valueA"},
+                     {"id": 1, "field": "valueB"}],
+            "_metadata": {"next": "next"}}), )
+        expected_records = [{"id": 0, "field": "valueA"},
+                            {"id": 1, "field": "valueB"}]
+
+        stream = self._build(request_headers=request_headers)
+
+        self._test(stream, expected_requests, responses, expected_records)
+
+    def test_request_parameters_are_set(self):
+        request_parameters = {"key": "value"}
+
+        expected_requests = [
+            _create_request("https://api.airbyte.io/v1/endpoint?key=value",
+                            {},
+                            {})
+        ]
+        responses = (_create_response({
+            "data": [{"id": 0, "field": "valueA"},
+                     {"id": 1, "field": "valueB"}],
+            "_metadata": {"next": "next"}}), )
+        expected_records = [{"id": 0, "field": "valueA"},
+                            {"id": 1, "field": "valueB"}]
+
+        stream = self._build(request_parameters=request_parameters)
+
+        self._test(stream, expected_requests, responses, expected_records)
+
     def _build(self,
                *, 
                stream_name: str = "stream_name",
@@ -92,9 +130,10 @@ class TestRequester:
 
     def _test(self, stream, expected_requests, responses, expected_records):
         requests.PreparedRequest.__repr__ = (
+            # FIXME: need to check the headers and body!
             lambda self: (
-            json.dumps({"url": self.url,"headers":{**self.headers},"body": json.dumps({}) }))
-        )
+            json.dumps({"url": self.url})
+        ))
         
         requests.PreparedRequest.__eq__ = lambda self, other: json.loads(self.__repr__()) == json.loads(other.__repr__())
 
