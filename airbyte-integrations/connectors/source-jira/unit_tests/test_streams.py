@@ -3,6 +3,7 @@
 #
 
 import pytest
+import requests
 import responses
 from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
@@ -477,6 +478,19 @@ def test_sprints_stream(config, sprints_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 3
     assert len(responses.calls) == 3
+
+
+@responses.activate
+def test_board_does_not_support_sprints(config):
+    url = f"https://{config['domain']}/rest/agile/1.0/board/4/sprint?maxResults=50"
+    error = {'errorMessages': ['The board does not support sprints'], 'errors': {}}
+    responses.add(responses.GET, url, json=error,status=400)
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+    stream = Sprints(**args)
+    response = requests.get(url)
+    actual = stream.should_retry(response)
+    assert actual is False
 
 
 @responses.activate

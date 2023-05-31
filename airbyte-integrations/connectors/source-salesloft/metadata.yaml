@@ -17,5 +17,7 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/salesloft
+  documentationUrl: https://docs.airbyte.com/integrations/sources/salesloft
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

@@ -111,7 +111,6 @@ def augment_and_normalize_connector_dataframes(
 
     total_registry["issue_url"] = total_registry.apply(issue_url, axis=1)
     total_registry["test_summary_url"] = total_registry.apply(test_summary_url, axis=1)
-    total_registry["icon_url"] = total_registry.apply(icon_url, axis=1)
 
     # Merge docker repo and version into separate columns
     total_registry["docker_image_oss"] = total_registry.apply(lambda x: merge_docker_repo_and_version(x, OSS_SUFFIX), axis=1)
@@ -205,7 +204,7 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
             "title": "Definition Id",
         },
         {
-            "column": "icon_url",
+            "column": "iconUrl_oss",
             "title": "Icon",
             "formatter": icon_image_html,
         },

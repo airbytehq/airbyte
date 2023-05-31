@@ -17,5 +17,7 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/pipedrive
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

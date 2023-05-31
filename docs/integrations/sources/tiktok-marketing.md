@@ -561,6 +561,7 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| 3.2.1   | 2023-05-26 | [26569](https://github.com/airbytehq/airbyte/pull/26569) | Fixed syncs with `advertiser_id` provided in input configuration                              |
 | 3.2.0   | 2023-05-25 | [26565](https://github.com/airbytehq/airbyte/pull/26565) | Change default value for `attribution window` to 3 days; add min/max validation               |
 | 3.1.0   | 2023-05-12 | [26024](https://github.com/airbytehq/airbyte/pull/26024) | Updated the  `Ads` stream schema                                                              |
 | 3.0.1   | 2023-04-07 | [24712](https://github.com/airbytehq/airbyte/pull/24712) | Added `attribution window` for *-reports streams                                              |

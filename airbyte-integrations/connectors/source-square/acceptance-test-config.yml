@@ -42,6 +42,11 @@ acceptance_tests:
             bypass_reason: "Floating data"
           - name: updated_at
             bypass_reason: "Floating data"
+        categories:
+          - name: version
+            bypass_reason: "Floating data"
+          - name: updated_at
+            bypass_reason: "Floating data"
       fail_on_extra_columns: false
   incremental:
     tests:
