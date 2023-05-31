@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - airbyte-integrations/connectors/source-postgres/**
+      - "airbyte-integrations/connectors/source-postgres/**"
 
 jobs:
   build:
