@@ -19,5 +19,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/file
+  documentationUrl: https://docs.airbyte.com/integrations/sources/file
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

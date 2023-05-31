@@ -121,12 +121,18 @@ def test_upload_metadata_to_gcs_valid_metadata(
 
 
 def test_upload_metadata_to_gcs_invalid_metadata(invalid_metadata_yaml_files):
-    metadata_file_path = pathlib.Path(invalid_metadata_yaml_files[0])
-    with pytest.raises(ValidationError):
-        gcs_upload.upload_metadata_to_gcs(
-            "my_bucket",
-            metadata_file_path,
-        )
+    for invalid_metadata_file in invalid_metadata_yaml_files:
+        metadata_file_path = pathlib.Path(invalid_metadata_file)
+        try:
+            gcs_upload.upload_metadata_to_gcs(
+                "my_bucket",
+                metadata_file_path,
+            )
+            assert False, f"Expected ValueError for invalid metadata file: {metadata_file_path}"
+        except (ValueError, StopIteration):
+            continue
+        except Exception as e:
+            assert False, f"Expected ValueError for invalid metadata file: {metadata_file_path}. Got this instead: {e}"
 
 
 def test_upload_metadata_to_gcs_non_existent_metadata_file():
