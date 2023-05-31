@@ -13,8 +13,7 @@ import requests
 import semver
 import yaml
 from ci_connector_ops.pipelines.actions import environments
-from ci_connector_ops.pipelines.bases import PytestStep, Step, StepResult, StepStatus
-from ci_connector_ops.pipelines.contexts import CIContext
+from ci_connector_ops.pipelines.bases import CIContext, PytestStep, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.utils import METADATA_FILE_NAME
 from ci_connector_ops.utils import Connector
 from dagger import File

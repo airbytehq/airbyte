@@ -56,3 +56,4 @@ jobs:
         with:
           subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
           context: "manual"
+          github-token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}

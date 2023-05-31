@@ -1127,12 +1127,11 @@ definitions:
               }, "orderBy": 1, "columnName": "Timestamp"}]/
       request_body_json:
         title: Request Body JSON Payload
-        description: Specifies how to populate the body of the request with a JSON payload.
+        description: Specifies how to populate the body of the request with a JSON payload. Can contain nested objects.
         anyOf:
           - type: string
           - type: object
-            additionalProperties:
-              type: string
+            additionalProperties: true
         interpolation_context:
           - next_page_token
           - stream_interval
@@ -1143,6 +1142,9 @@ definitions:
           - sort_order: "ASC"
             sort_field: "CREATED_AT"
           - key: "{{ config['value'] }}"
+          - sort:
+              field: "updated_at"
+              order: "ascending"
       request_headers:
         title: Request Headers
         description: Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
