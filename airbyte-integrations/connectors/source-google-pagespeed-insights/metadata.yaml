@@ -10,7 +10,7 @@ data:
   name: Google PageSpeed Insights
   registries:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
