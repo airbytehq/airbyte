@@ -96,7 +96,6 @@ public class StagingConsumerFactory {
         () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData).accept(false),
         flusher,
         catalog,
-        stagingOperations::isValidData,
         new BufferManager());
   }
 

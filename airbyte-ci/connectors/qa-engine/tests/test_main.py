@@ -4,7 +4,7 @@
 
 
 import pytest
-from ci_connector_ops.qa_engine import main
+from qa_engine import main
 from click.testing import CliRunner
 
 
