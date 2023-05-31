@@ -72,6 +72,29 @@ class TestRequester:
 
         self._test(stream, expected_requests, responses, expected_records)
 
+    def test_api_authenticator_adds_api_key_as_header(self):
+        authenticator = ApiKeyAuthenticator(
+            type="ApiKeyAuthenticator",
+            api_token="my_token",
+            header="api_key",
+        )
+
+        expected_requests = [
+            _create_request(f"{self.base_url}/{self.path}",
+                            {"my_token": "api_key"},
+                            {})
+        ]
+        responses = (_create_response({
+            "data": [{"id": 0, "field": "valueA"},
+                     {"id": 1, "field": "valueB"}]}),
+                )
+        expected_records = [{"id": 0, "field": "valueA"},
+                            {"id": 1, "field": "valueB"}]
+
+        stream = self._build(authenticator=authenticator)
+
+        self._test(stream, expected_requests, responses, expected_records)
+
     def test_request_parameters_are_set(self):
         request_parameters = {"key": "value"}
 
