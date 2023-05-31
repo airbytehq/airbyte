@@ -13,25 +13,6 @@
         "oneOf": [
           {
             "type": "object",
-            "title": "Authenticate with Personal Access Token",
-            "required": ["personal_access_token"],
-            "properties": {
-              "option_title": {
-                "type": "string",
-                "title": "Credentials title",
-                "description": "PAT Credentials",
-                "const": "PAT Credentials"
-              },
-              "personal_access_token": {
-                "type": "string",
-                "title": "Personal Access Token",
-                "description": "Asana Personal Access Token (generate yours <a href=\"https://app.asana.com/0/developer-console\">here</a>).",
-                "airbyte_secret": true
-              }
-            }
-          },
-          {
-            "type": "object",
             "title": "Authenticate via Asana (Oauth)",
             "required": ["client_id", "client_secret", "refresh_token"],
             "properties": {
@@ -60,6 +41,25 @@
                 "airbyte_secret": true
               }
             }
+          },
+          {
+            "type": "object",
+            "title": "Authenticate with Personal Access Token",
+            "required": ["personal_access_token"],
+            "properties": {
+              "option_title": {
+                "type": "string",
+                "title": "Credentials title",
+                "description": "PAT Credentials",
+                "const": "PAT Credentials"
+              },
+              "personal_access_token": {
+                "type": "string",
+                "title": "Personal Access Token",
+                "description": "Asana Personal Access Token (generate yours <a href=\"https://app.asana.com/0/developer-console\">here</a>).",
+                "airbyte_secret": true
+              }
+            }
           }
         ]
       }
@@ -68,7 +68,7 @@
   "authSpecification": {
     "auth_type": "oauth2.0",
     "oauth2Specification": {
-      "rootObject": ["credentials", 1],
+      "rootObject": ["credentials", 0],
       "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
       "oauthFlowOutputParameters": [["refresh_token"]]
     }
