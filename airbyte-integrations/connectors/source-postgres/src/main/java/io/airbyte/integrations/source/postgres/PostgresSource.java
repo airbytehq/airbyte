@@ -110,6 +110,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final String SSL_PASSWORD = "sslpassword";
   public static final String MODE = "mode";
 
+  public static final String PREPARE_THRESHOLD = "prepareThreshold";
+
   private List<String> schemas;
 
   private Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc;
@@ -163,6 +165,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
+    jdbcUrl.append(PREPARE_THRESHOLD).append(EQUALS).append("0").append(AMPERSAND);
     jdbcUrl.append(toJDBCQueryParams(sslParameters));
     LOGGER.debug("jdbc url: {}", jdbcUrl.toString());
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
