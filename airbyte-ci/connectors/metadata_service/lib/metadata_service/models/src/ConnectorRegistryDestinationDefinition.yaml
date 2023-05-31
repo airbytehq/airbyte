@@ -49,6 +49,11 @@ properties:
     description: The date when this connector was first released, in yyyy-mm-dd format.
     type: string
     format: date
+  tags:
+    type: array
+    description: "An array of tags that describe the connector. E.g: language:python, keyword:rds, etc."
+    items:
+      type: string
   resourceRequirements:
     "$ref": ActorDefinitionResourceRequirements.yaml
   protocolVersion:
