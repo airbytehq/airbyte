@@ -50,7 +50,10 @@ class GradleTask(Step, ABC):
         Returns:
             List[str]: List of directories or files to be mounted to the container to run a Java connector Gradle task.
         """
-        return [str(dependency_directory) for dependency_directory in self.context.connector.get_local_dependencies_paths()]
+        return [
+            str(dependency_directory)
+            for dependency_directory in self.context.connector.get_local_dependencies_paths(with_test_dependencies=True)
+        ]
 
     async def _get_patched_connector_dir(self) -> Directory:
         """Patch the build.gradle file of the connector under test by removing the lines declared in LINES_TO_REMOVE_FROM_GRADLE_FILE.
