@@ -328,7 +328,7 @@ jobs:
       - name: Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: Automated Commit: Format and Process Resources Changes
+          commit_message: Automated Commit - Format and Process Resources Changes
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
 
