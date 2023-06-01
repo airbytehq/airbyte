@@ -5,7 +5,6 @@
     "self": {
       "type": "string",
       "description": "The URL of the Workload Scheme",
-      "format": "uri",
       "readOnly": true
     },
     "id": {
