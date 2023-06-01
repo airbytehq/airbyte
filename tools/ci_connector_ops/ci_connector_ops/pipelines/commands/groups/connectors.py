@@ -23,7 +23,7 @@ from ci_connector_ops.utils import ConnectorLanguage, console, get_all_released_
 from rich.logging import RichHandler
 from rich.table import Table
 from rich.text import Text
-
+from typing import Optional
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
 
 logger = logging.getLogger(__name__)
@@ -102,6 +102,8 @@ def connectors(
     ctx.obj["concurrency"] = concurrency
     ctx.obj["execute_timeout"] = execute_timeout
 
+    ctx.obj["report_output_prefix"] = render_report_output_prefix(ctx)
+
     all_connectors = get_all_released_connectors()
 
     modified_connectors_and_files = get_modified_connectors(ctx.obj["modified_files"])
@@ -134,6 +136,46 @@ def connectors(
     ctx.obj["selected_connectors_and_files"] = selected_connectors_and_files
     ctx.obj["selected_connectors_names"] = [c.technical_name for c in selected_connectors_and_files.keys()]
 
+def render_report_output_prefix(ctx: click.Context) -> str:
+    """Render the report output prefix for a connector."""
+
+
+    git_branch = ctx.obj["git_branch"]
+    git_revision = ctx.obj["git_revision"]
+    pipeline_start_timestamp = ctx.obj["pipeline_start_timestamp"]
+    ci_context = ctx.obj["ci_context"]
+    sanitized_branch = git_branch.replace("/", "_")
+
+    # get the command name for the current context
+    cmd = ctx.command.name
+    
+    path_values = [
+        cmd,
+        ci_context,
+        sanitized_branch,
+        pipeline_start_timestamp,
+        git_revision,
+    ]
+
+    # Log
+    click.echo(f"Report output prefix inputs: {path_values}")
+
+    # check all values are defined
+    if None in path_values:
+        raise ValueError(f"Missing value required to render the report output prefix: {path_values}")
+    
+    # join all values with a slash, and convert all values to string
+    return "/".join(map(str, path_values))
+
+
+@connectors.command(cls=DaggerPipelineCommand, help="Test all the selected connectors.")
+@click.pass_context
+def debug_report_path(
+    ctx: click.Context,
+) -> bool:
+    report_output_prefix = ctx.obj["report_output_prefix"]
+    click.echo(f"report_output_prefix: {report_output_prefix}")
+    return True
 
 @connectors.command(cls=DaggerPipelineCommand, help="Test all the selected connectors.")
 @click.pass_context
@@ -165,7 +207,7 @@ def test(
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
             modified_files=modified_files,
-            s3_report_key="python-poc/tests/history/",
+            report_output_prefix=report_output_prefix,
             use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
@@ -205,7 +247,7 @@ def build(ctx: click.Context) -> bool:
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
             modified_files=modified_files,
-            s3_report_key="python-poc/build/history/",
+            report_output_prefix="python-poc/build/history/",
             use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
