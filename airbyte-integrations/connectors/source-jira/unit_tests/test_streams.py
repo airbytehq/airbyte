@@ -374,7 +374,7 @@ def test_filter_sharing_stream(config, filter_sharing_response):
 def test_projects_stream(config, projects_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description",
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead",
         json=projects_response,
     )
 
