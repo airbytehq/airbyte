@@ -389,7 +389,47 @@ def test_additional_properties_is_true(discovered_catalog, expectation):
                 "test_stream_1": AirbyteStream.parse_obj(
                     {
                         "name": "test_stream_1",
+                        "json_schema": {
+                            "properties": {
+                                "user": {"type": "object", "properties": {"name with space": {"type": "string", "format": "unsupported"}}}
+                            }
+                        },
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            pytest.raises(AssertionError),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
                         "json_schema": {"properties": {"type": {"type": ["string"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"with/slash": {"type": ["string"]}}},
+                        "supported_sync_modes": ["full_refresh"],
+                    }
+                )
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "test_stream_1": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_1",
+                        "json_schema": {"properties": {"with space": {"type": ["string"]}}},
                         "supported_sync_modes": ["full_refresh"],
                     }
                 )

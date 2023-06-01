@@ -4,16 +4,17 @@
 
 
 import logging
+import shutil
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import Iterable, List, Optional
-from ruamel.yaml import YAML
+
 import git
 import requests
-import tempfile
-import shutil
-from pytablewriter import MarkdownTableWriter
 from pydash.objects import get, set_
+from pytablewriter import MarkdownTableWriter
+from ruamel.yaml import YAML
 
 from .constants import (
     AIRBYTE_GITHUB_REPO_URL,
@@ -36,6 +37,7 @@ logger = logging.getLogger(__name__)
 yaml = YAML()
 yaml.indent(mapping=2, sequence=4, offset=2)
 yaml.preserve_quotes = True
+
 
 def set_git_identity(repo: git.repo) -> git.repo:
     repo.git.config("--global", "user.email", GIT_USER_EMAIL)
@@ -140,7 +142,7 @@ def get_pr_body(eligible_connectors: List[ConnectorQAReport], excluded_connector
         f"The Cloud Availability Updater decided that it's the right time to make the following {len(eligible_connectors)} connectors available on Cloud!"
         + "\n\n"
     )
-    headers = ["connector_technical_name", "connector_version", "connector_definition_id", "sync_success_rate", "number_of_connections"]
+    headers = ["connector_technical_name", "connector_version", "connector_definition_id"]
 
     writer = MarkdownTableWriter(
         max_precision=2,
