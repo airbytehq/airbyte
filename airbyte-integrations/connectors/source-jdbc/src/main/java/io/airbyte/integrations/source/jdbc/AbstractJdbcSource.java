@@ -316,8 +316,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
               final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
               final String quotedCursorField = enquoteIdentifier(cursorInfo.getCursorField(), getQuoteString());
 
-              final String operator;
-              if (cursorInfo.getCursorRecordCount() <= 10L) {
+              final String operator = ">";
+              /*if (cursorInfo.getCursorRecordCount() <= 10L) {
                 operator = ">";
               } else {
                 final long actualRecordCount = getActualCursorRecordCount(
@@ -328,7 +328,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                 } else {
                   operator = ">=";
                 }
-              }
+              }*/
 
               final String wrappedColumnNames = getWrappedColumnNames(database, connection, columnNames, schemaName, tableName);
               final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE %s %s ?",
