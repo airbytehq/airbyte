@@ -10,13 +10,13 @@ import pytest
 from airbyte_cdk.connector_builder.message_grouper import MessageGrouper
 from airbyte_cdk.connector_builder.models import HttpRequest, HttpResponse, LogMessage, StreamRead, StreamReadPages
 from airbyte_cdk.models import (
-    AirbyteControlMessage,
     AirbyteControlConnectorConfigMessage,
+    AirbyteControlMessage,
     AirbyteLogMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
     Level,
-    OrchestratorType
+    OrchestratorType,
 )
 from airbyte_cdk.models import Type as MessageType
 from unit_tests.connector_builder.utils import create_configured_catalog
