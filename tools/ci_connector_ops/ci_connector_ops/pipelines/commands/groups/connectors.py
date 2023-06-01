@@ -55,6 +55,36 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
         )
 
 
+def render_report_output_prefix(ctx: click.Context) -> str:
+    """Render the report output prefix for a connector."""
+
+    git_branch = ctx.obj["git_branch"]
+    git_revision = ctx.obj["git_revision"]
+    pipeline_start_timestamp = ctx.obj["pipeline_start_timestamp"]
+    ci_context = ctx.obj["ci_context"]
+    sanitized_branch = git_branch.replace("/", "_")
+
+    # get the command name for the current context, if a group then get the final command
+    cmd = ctx.invoked_subcommand
+    
+    path_values = [
+        cmd,
+        ci_context,
+        sanitized_branch,
+        pipeline_start_timestamp,
+        git_revision,
+    ]
+
+    # Log
+    click.echo(f"Report output prefix inputs: {path_values}")
+
+    # check all values are defined
+    if None in path_values:
+        raise ValueError(f"Missing value required to render the report output prefix: {path_values}")
+    
+    # join all values with a slash, and convert all values to string
+    return "/".join(map(str, path_values))
+
 # COMMANDS
 
 
@@ -133,39 +163,13 @@ def connectors(
             connector: modified_files for connector, modified_files in selected_connectors_and_files.items() if modified_files
         }
 
+    # TODO DEV REMOVE
+    # limit to 5 connectors for now
+    # import pdb; pdb.set_trace()
+    selected_connectors_and_files = dict(islice(selected_connectors_and_files.items(), 2))
+
     ctx.obj["selected_connectors_and_files"] = selected_connectors_and_files
     ctx.obj["selected_connectors_names"] = [c.technical_name for c in selected_connectors_and_files.keys()]
-
-def render_report_output_prefix(ctx: click.Context) -> str:
-    """Render the report output prefix for a connector."""
-
-
-    git_branch = ctx.obj["git_branch"]
-    git_revision = ctx.obj["git_revision"]
-    pipeline_start_timestamp = ctx.obj["pipeline_start_timestamp"]
-    ci_context = ctx.obj["ci_context"]
-    sanitized_branch = git_branch.replace("/", "_")
-
-    # get the command name for the current context
-    cmd = ctx.command.name
-    
-    path_values = [
-        cmd,
-        ci_context,
-        sanitized_branch,
-        pipeline_start_timestamp,
-        git_revision,
-    ]
-
-    # Log
-    click.echo(f"Report output prefix inputs: {path_values}")
-
-    # check all values are defined
-    if None in path_values:
-        raise ValueError(f"Missing value required to render the report output prefix: {path_values}")
-    
-    # join all values with a slash, and convert all values to string
-    return "/".join(map(str, path_values))
 
 
 @connectors.command(cls=DaggerPipelineCommand, help="Test all the selected connectors.")
