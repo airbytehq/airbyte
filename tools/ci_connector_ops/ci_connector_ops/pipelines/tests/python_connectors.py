@@ -56,7 +56,7 @@ class ConnectorPackageInstall(Step):
     """A step to install the Python connector package in a container."""
 
     title = "Connector package install"
-    retry = True
+    max_retries = 3
 
     async def _run(self) -> StepResult:
         """Install the connector under test package in a Python container.
