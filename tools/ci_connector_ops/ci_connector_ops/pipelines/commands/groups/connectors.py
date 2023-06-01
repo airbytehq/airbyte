@@ -75,9 +75,6 @@ def render_report_output_prefix(ctx: click.Context) -> str:
         git_revision,
     ]
 
-    # Log
-    click.echo(f"Report output prefix inputs: {path_values}")
-
     # check all values are defined
     if None in path_values:
         raise ValueError(f"Missing value required to render the report output prefix: {path_values}")
@@ -135,7 +132,6 @@ def connectors(
     ctx.ensure_object(dict)
     ctx.obj["use_remote_secrets"] = use_remote_secrets
     ctx.obj["ci_gcs_credentials"] = ci_gcs_credentials
-
     ctx.obj["connector_names"] = names
     ctx.obj["connector_languages"] = languages
     ctx.obj["release_states"] = release_stages
