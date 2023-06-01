@@ -14,7 +14,9 @@
     },
     "default_settings": {
       "properties": {
-        "invoice_settings": ["object", "null"]
+        "invoice_settings": {
+          "type": ["object", "null"]
+        }
       }
     },
     "phases": {
@@ -37,7 +39,9 @@
               }
             }
           },
-          "trial_end": ["integer", "null"]
+          "trial_end": {
+            "type": ["integer", "null"]
+          }
         }
       }
     }
