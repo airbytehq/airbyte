@@ -72,6 +72,26 @@
         "examples": [3, 10],
         "order": 8,
         "type": "integer"
+      },
+      "report_record_types": {
+        "title": "Report Record Types",
+        "description": "Optional configuration which accepts an array of string of record types. Leave blank for default behaviour to pull all report types. Use this config option only if you want to pull specific report type(s). See <a href=\"https://advertising.amazon.com/API/docs/en-us/reporting/v2/report-types\">docs</a> for more details",
+        "items": {
+          "type": "string",
+          "enum": [
+            "adGroups",
+            "asins",
+            "asins_keywords",
+            "asins_targets",
+            "campaigns",
+            "keywords",
+            "productAds",
+            "targets"
+          ]
+        },
+        "type": "array",
+        "uniqueItems": true,
+        "order": 9
       }
     },
     "required": ["client_id", "client_secret", "refresh_token"],

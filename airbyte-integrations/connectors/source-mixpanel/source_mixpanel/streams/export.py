@@ -9,6 +9,7 @@ from typing import Any, Iterable, Mapping, MutableMapping
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from ..property_transformation import transform_property_names
 from .base import DateSlicesMixin, IncrementalMixpanelStream, MixpanelStream
@@ -77,6 +78,8 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
     primary_key: str = None
     cursor_field: str = "time"
 
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
     @property
     def url_base(self):
         prefix = "-eu" if self.region == "EU" else ""
@@ -84,6 +87,14 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
 
     def path(self, **kwargs) -> str:
         return "export"
+
+    def should_retry(self, response: requests.Response) -> bool:
+        try:
+            # trying to parse response to avoid ConnectionResetError and retry if it occurs
+            self.iter_dicts(response.iter_lines(decode_unicode=True))
+        except ConnectionResetError:
+            return True
+        return super().should_retry(response)
 
     def iter_dicts(self, lines):
         """

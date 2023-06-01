@@ -159,7 +159,7 @@
         "default_cursor_field": []
       },
       "sync_mode": "incremental",
-      "cursor_field": ["_ab_cdc_lsn"],
+      "cursor_field": [],
       "destination_sync_mode": "append_dedup",
       "primary_key": [["id"]]
     },

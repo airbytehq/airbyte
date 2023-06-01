@@ -167,7 +167,7 @@ class TestJdbcUtils {
       sourceOperations.setCursorField(ps, 12, JDBCType.VARCHAR, "a");
       sourceOperations.setCursorField(ps, 13, JDBCType.DATE, "2020-11-01");
       sourceOperations.setCursorField(ps, 14, JDBCType.TIME, "05:00:00.000");
-      sourceOperations.setCursorField(ps, 15, JDBCType.TIMESTAMP, "2001-09-29T03:00:00.000Z");
+      sourceOperations.setCursorField(ps, 15, JDBCType.TIMESTAMP, "2001-09-29T03:00:00.000");
       sourceOperations.setCursorField(ps, 16, JDBCType.BINARY, "61616161");
 
       ps.execute();
@@ -395,7 +395,7 @@ class TestJdbcUtils {
     expected.put("varchar", "a");
     expected.put("date", "2020-11-01");
     expected.put("time", "05:00:00.000000");
-    expected.put("timestamp", "2001-09-29T03:00:00.000000Z");
+    expected.put("timestamp", "2001-09-29T03:00:00.000000");
     expected.put("binary1", "aaaa".getBytes(Charsets.UTF_8));
     return expected;
   }

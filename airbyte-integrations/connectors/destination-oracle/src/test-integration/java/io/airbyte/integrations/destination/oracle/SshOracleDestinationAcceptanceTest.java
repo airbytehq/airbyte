@@ -48,7 +48,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   @Override
   protected JsonNode getConfig() throws IOException, InterruptedException {
     return sshBastionContainer.getTunnelConfig(getTunnelMethod(),
-        getBasicOracleDbConfigBuilder(db).put(JdbcUtils.SCHEMA_KEY, schemaName));
+        getBasicOracleDbConfigBuilder(db).put(JdbcUtils.SCHEMA_KEY, schemaName), false);
   }
 
   public ImmutableMap.Builder<Object, Object> getBasicOracleDbConfigBuilder(final OracleContainer db) {

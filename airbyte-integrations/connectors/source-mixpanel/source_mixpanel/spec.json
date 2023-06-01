@@ -84,14 +84,16 @@
         "type": "string",
         "description": "If not set, data from up to one year ago will replicated by default.",
         "examples": ["2021-11-16"],
-        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
+        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$",
+        "format": "date-time"
       },
       "end_date": {
         "order": 6,
         "title": "End Date",
         "type": "string",
         "examples": ["2021-11-16"],
-        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$"
+        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?$",
+        "format": "date-time"
       },
       "region": {
         "order": 7,

@@ -17,8 +17,8 @@ import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.config.OperatorDbt;
-import io.airbyte.config.ResourceRequirements;
+import io.airbyte.configoss.OperatorDbt;
+import io.airbyte.configoss.ResourceRequirements;
 import io.airbyte.workers.TestHarnessUtils;
 import io.airbyte.workers.exception.TestHarnessException;
 import io.airbyte.workers.normalization.NormalizationRunner;
@@ -109,6 +109,7 @@ public class DbtTransformationRunner implements AutoCloseable {
               resourceRequirements,
               null,
               Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, CUSTOM_STEP),
+              Collections.emptyMap(),
               Collections.emptyMap(),
               Collections.emptyMap(),
               dbtArguments.toArray(new String[0]));

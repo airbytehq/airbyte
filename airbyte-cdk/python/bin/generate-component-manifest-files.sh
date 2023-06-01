@@ -18,7 +18,6 @@ function main() {
     docker run --user "$(id -u):$(id -g)" -v "$ROOT_DIR":/airbyte airbyte/code-generator:dev \
       --input "/airbyte/$YAML_DIR/$filename_wo_ext.yaml" \
       --output "/airbyte/$OUTPUT_DIR/$filename_wo_ext.py" \
-      --use-title-as-name \
       --disable-timestamp \
       --enum-field-as-literal one
 

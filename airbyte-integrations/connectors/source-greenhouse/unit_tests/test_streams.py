@@ -154,6 +154,12 @@ def test_parse_response_empty_content(applications_stream):
     assert records == []
 
 
+def test_number_of_streams():
+    source = SourceGreenhouse()
+    streams = source.streams({})
+    assert len(streams) == 36
+
+
 def test_ignore_403(applications_stream):
     response = requests.Response()
     response.status_code = 403

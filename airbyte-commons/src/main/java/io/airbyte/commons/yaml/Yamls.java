@@ -110,7 +110,7 @@ public class Yamls {
 
       };
 
-      return AutoCloseableIterators.fromIterator(iterator, parser::close);
+      return AutoCloseableIterators.fromIterator(iterator, parser::close, null);
 
     } catch (final IOException e) {
       throw new RuntimeException(e);

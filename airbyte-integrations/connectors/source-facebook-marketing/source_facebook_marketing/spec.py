@@ -5,7 +5,7 @@
 import logging
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional, Type
+from typing import List, Optional
 
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
@@ -30,6 +30,8 @@ class InsightConfig(BaseModel):
     name: str = Field(
         title="Name",
     )
+
+    level: str = Field(title="Level", description="Chosen level for API", default="ad", enum=["ad", "adset", "campaign", "account"])
 
     fields: Optional[List[ValidFields]] = Field(
         title="Fields",

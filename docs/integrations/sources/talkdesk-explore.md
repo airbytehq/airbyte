@@ -20,7 +20,7 @@ The connector supports both Full Refresh and Incremental on the following stream
 
 To request data from one of the endpoints, first you need to generate a report. This is done by a POST request where the payload is the report specifications. Then, the response will be a report ID that you need to use in a GET request to obtain the report's data.
 
-This process is further explained here: [Executing a Report](https://docs.talkdesk.com/docs/executing-report)
+This process is further explained here: [Executing a Report](https://docs.talkdesk.com/docs/executing-a-report)
 
 ### Features
 

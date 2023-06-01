@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "repository": {
-      "type": ["string"]
+      "type": "string"
     },
     "id": {
       "type": ["null", "integer"]
@@ -27,11 +27,11 @@
       "type": ["null", "integer"]
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "issue_url": {
@@ -39,6 +39,66 @@
     },
     "author_association": {
       "type": ["null", "string"]
+    },
+    "reactions": {
+      "$ref": "reactions.json"
+    },
+    "performed_via_github_app": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "slug": {
+          "type": ["null", "string"]
+        },
+        "node_id": {
+          "type": ["null", "string"]
+        },
+        "owner": {
+          "$ref": "user.json"
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "external_url": {
+          "type": ["null", "string"]
+        },
+        "html_url": {
+          "type": ["null", "string"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "permissions": {
+          "type": "object",
+          "properties": {
+            "issues": {
+              "type": ["null", "string"]
+            },
+            "metadata": {
+              "type": ["null", "string"]
+            },
+            "pull_requests": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     }
   }
 }

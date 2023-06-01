@@ -1,0 +1,62 @@
+{
+  "type": "object",
+  "properties": {
+    "string_type": {
+      "type": "string"
+    },
+    "number_integer_type": {
+      "type": "number",
+      "airbyte_type" : "integer"
+    },
+    "string_big_integer_type": {
+      "type": "string",
+      "airbyte_type" : "big_integer"
+    },
+    "number_float_type": {
+      "type": "number",
+      "airbyte_type" : "float"
+    },
+    "number_type": {
+      "type": "number"
+    },
+    "integer_type": {
+      "type": "integer"
+    },
+    "boolean_type": {
+      "type": "boolean"
+    },
+    "date_time_with_tz_type": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "date_time_without_tz_type": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "date_type": {
+      "type": "string",
+      "format": "date"
+    },
+    "time_type": {
+      "type": "string",
+      "format": "time"
+    },
+    "array_type": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "row_type": {
+      "type": ["object"],
+      "properties": {
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

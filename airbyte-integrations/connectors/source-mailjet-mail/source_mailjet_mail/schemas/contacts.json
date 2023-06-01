@@ -37,6 +37,9 @@
     },
     "IsExcludedFromCampaigns": {
       "type": "boolean"
+    },
+    "ExclusionFromCampaignsUpdatedAt": {
+      "type": "string"
     }
   }
 }

@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Application Fees Schema",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "account": {
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "type": ["null", "number"]
+    },
+    "amount_refunded": {
+      "type": ["null", "number"]
+    },
+    "application": {
+      "type": ["null", "string"]
+    },
+    "balance_transaction": {
+      "type": ["null", "string"]
+    },
+    "charge": {
+      "type": ["null", "string"]
+    },
+    "created": {
+      "type": ["null", "number"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "livemode": {
+      "type": "boolean"
+    },
+    "originating_transaction": {
+      "type": ["null", "string"]
+    },
+    "refunded": {
+      "type": "boolean"
+    },
+    "refunds": {
+      "type": ["null", "object"],
+      "properties": {
+        "object": {
+          "type": ["null", "string"]
+        },
+        "data": {
+          "type": "array",
+          "items": {}
+        },
+        "has_more": {
+          "type": "boolean"
+        },
+        "url": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "source": {
+      "type": ["null", "object"],
+      "properties": {
+        "fee_type": {
+          "type": ["null", "string"]
+        },
+        "resource": {
+          "type": ["null", "object"],
+          "properties": {
+            "charge": {
+              "type": ["null", "string"]
+            },
+            "type": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

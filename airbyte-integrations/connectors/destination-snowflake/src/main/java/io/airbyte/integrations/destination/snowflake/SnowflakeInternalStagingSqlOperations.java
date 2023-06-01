@@ -9,7 +9,6 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
-import io.airbyte.integrations.destination.staging.StagingOperations;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -20,7 +19,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperations implements StagingOperations {
+public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOperations {
 
   public static final int UPLOAD_RETRY_LIMIT = 3;
 
