@@ -41,8 +41,8 @@ definitions:
       datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d %H:%M:%S') }}"
       datetime_format: "%Y-%m-%d %H:%M:%S"
     end_datetime:
-      datetime: "{{ today_utc() }}"
-      datetime_format: "%Y-%m-%d"
+      datetime: "{{ format_datetime(now_utc(), '%Y-%m-%d %H:%M:%S') }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
     step: "P0.0416D"
 
   incremental_sync: 
@@ -54,8 +54,8 @@ definitions:
       datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d %H:%M:%S') }}"
       datetime_format: "%Y-%m-%d %H:%M:%S"
     end_datetime:
-      datetime: "{{ today_utc() }}"
-      datetime_format: "%Y-%m-%d"
+      datetime: "{{format_datetime(now_utc(), '%Y-%m-%d %H:%M:%S')}}"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
     step: "P1M"
     
   cursor_based_record_retriever:
