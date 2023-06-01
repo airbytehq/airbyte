@@ -317,7 +317,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
               final String quotedCursorField = enquoteIdentifier(cursorInfo.getCursorField(), getQuoteString());
 
               final String operator;
-              if (cursorInfo.getCursorRecordCount() <= 0L) {
+              if (cursorInfo.getCursorRecordCount() <= 10L) {
                 operator = ">";
               } else {
                 final long actualRecordCount = getActualCursorRecordCount(
@@ -393,6 +393,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
       cursorRecordStatement = connection.prepareStatement(cursorRecordQuery);;
       sourceOperations.setCursorField(cursorRecordStatement, 1, cursorFieldType, cursor);
     }
+    LOGGER.info("Executing query for table {}: {}", fullTableName, cursorRecordStatement);
     final ResultSet resultSet = cursorRecordStatement.executeQuery();
     if (resultSet.next()) {
       return resultSet.getLong(columnName);
