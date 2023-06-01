@@ -27,9 +27,13 @@ def get_modified_files(
     git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext, pull_request: PullRequest
 ) -> List[str]:
     """Get the list of modified files in the current git branch.
-    If the current branch is master, it will return the list of modified files in the current commit.
-    If the current branch is not master, it will return the list of modified files in the current branch.
+    If the current branch is master, it will return the list of modified files in the head commit.
+    The head commit on master should be the merge commit of the latest merged pull request as we squash commits on merge.
+    Pipelines like "publish on merge" are triggered on each new commit on master.
+
     If the CI context is a pull request, it will return the list of modified files in the pull request, without using git diff.
+    If the current branch is not master, it will return the list of modified files in the current branch.
+    This latest case is the one we encounter when running the pipeline locally, on a local branch, or manually on GHA with a workflow dispatch event.
     """
     if ci_context is CIContext.MASTER or ci_context is CIContext.NIGHTLY_BUILDS:
         return get_modified_files_in_commit(git_branch, git_revision, is_local)
