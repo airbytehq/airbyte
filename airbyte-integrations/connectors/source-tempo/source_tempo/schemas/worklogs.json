@@ -4,8 +4,7 @@
   "properties": {
     "self": {
       "type": "string",
-      "description": "The URL of the worklog",
-      "format": "uri",
+      "description": "The URL of the worklog"
       "readOnly": true
     },
     "tempoWorklogId": {
