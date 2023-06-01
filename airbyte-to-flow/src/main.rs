@@ -1,5 +1,6 @@
 use anyhow::Context;
 use clap::{Parser, ValueEnum};
+use errors::Error;
 use flow_cli_common::{init_logging, LogArgs, LogLevel};
 
 pub mod apis;
@@ -61,6 +62,9 @@ fn main() -> anyhow::Result<()> {
     runtime.shutdown_background();
 
     match result {
+        Err(Error::ExitCode(code)) => {
+            std::process::exit(code);
+        }
         Err(err) => {
             Err(err.into())
         }

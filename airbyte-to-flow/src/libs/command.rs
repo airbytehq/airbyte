@@ -15,10 +15,7 @@ pub fn check_exit_status(message: &str, result: std::io::Result<ExitStatus>) -> 
                 Ok(())
             } else {
                 match status.code() {
-                    Some(code) => Err(Error::CommandExecutionError(format!(
-                        "{} failed with code {}.",
-                        message, code
-                    ))),
+                    Some(code) => Err(Error::ExitCode(code)),
                     None => Err(Error::CommandExecutionError(format!(
                         "{} process terminated by signal",
                         message

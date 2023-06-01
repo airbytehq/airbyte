@@ -11,6 +11,9 @@ pub enum Error {
     #[error("Failed to execute command: {0}")]
     CommandExecutionError(String),
 
+    #[error("Connector exit with code {0}")]
+    ExitCode(i32),
+
     #[error("Unable to create an IO pipe to the connector")]
     MissingIOPipe,
 
