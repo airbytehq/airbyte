@@ -6,6 +6,7 @@ import datetime
 import json
 import logging
 import pkgutil
+import uuid
 from abc import ABC
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple
@@ -22,7 +23,7 @@ from source_google_analytics_data_api import utils
 from source_google_analytics_data_api.utils import DATE_FORMAT
 
 from .api_quota import GoogleAnalyticsApiQuota
-from .utils import authenticator_class_map, get_dimensions_type, get_metrics_type, metrics_type_to_python
+from .utils import authenticator_class_map, get_dimensions_type, get_metrics_type, get_source_defined_primary_key, metrics_type_to_python
 
 # set the quota handler globaly since limitations are the same for all streams
 # the initial values should be saved once and tracked for each stream, inclusivelly.
@@ -64,6 +65,7 @@ class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
     def __init__(self, *, config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
         self._config = config
+        self._source_defined_primary_key = get_source_defined_primary_key(self.name)
 
     @property
     def config(self):
@@ -205,6 +207,14 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
                 **self.add_metrics(metrics, metrics_type_map, row),
             }
 
+            # https://github.com/airbytehq/airbyte/pull/26283
+            # We pass the uuid field for synchronizations which still have the old
+            # configured_catalog with the old primary key. We need it to avoid of removal of rows
+            # in the deduplication process. As soon as the customer press "refresh source schema"
+            # this part is no longer needed.
+            if self._source_defined_primary_key == [["uuid"]]:
+                record["uuid"] = str(uuid.uuid4())
+
             if "cohort_spec" not in self.config and "date" not in record:
                 record["startDate"] = stream_slice["startDate"]
                 record["endDate"] = stream_slice["endDate"]
@@ -232,7 +242,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "dateRanges": [stream_slice],
             "returnPropertyQuota": True,
             "offset": str(0),
-            "limit": str(PAGE_SIZE)
+            "limit": str(PAGE_SIZE),
         }
         if next_page_token and next_page_token.get("offset") is not None:
             payload.update({"offset": str(next_page_token["offset"])})
@@ -437,7 +447,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         stream_config = {
             "metrics": report["metrics"],
             "dimensions": report["dimensions"],
-            **config
+            **config,
         }
         report_class_tuple = (GoogleAnalyticsDataApiBaseStream,)
         if pivots:
