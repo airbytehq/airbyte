@@ -71,7 +71,7 @@ class SourceFacebookMarketing(AbstractSource):
             return False, e
 
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
-        for stream in self.get_custom_insights_streams(api, config):
+        for stream in self.get_custom_insights_streams(api, [api.account], config):
             try:
                 stream.check_breakdowns()
             except facebook_business.exceptions.FacebookRequestError as e:
@@ -89,14 +89,16 @@ class SourceFacebookMarketing(AbstractSource):
         config.end_date = validate_end_date(config.start_date, config.end_date)
 
         api = API(account_id=config.account_id, access_token=config.access_token)
+        accounts = [api._find_account(account_id) for account_id in config.account_ids.split(",")]
 
         insights_args = dict(
-            api=api, start_date=config.start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
+            api=api, accounts=accounts, start_date=config.start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
         )
         streams = [
-            AdAccount(api=api),
+            AdAccount(api=api, accounts=accounts),
             AdSets(
                 api=api,
+                accounts=accounts,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -105,6 +107,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
             Ads(
                 api=api,
+                accounts=accounts,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -113,6 +116,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
             AdCreatives(
                 api=api,
+                accounts=accounts,
                 fetch_thumbnail_images=config.fetch_thumbnail_images,
                 page_size=config.page_size,
                 max_batch_size=config.max_batch_size,
@@ -126,6 +130,7 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsActionType(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
             Campaigns(
                 api=api,
+                accounts=accounts,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -134,12 +139,14 @@ class SourceFacebookMarketing(AbstractSource):
             ),
             CustomConversions(
                 api=api,
+                accounts=accounts,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
                 max_batch_size=config.max_batch_size,
             ),
             Images(
                 api=api,
+                accounts=accounts,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -148,6 +155,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
             Videos(
                 api=api,
+                accounts=accounts,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -156,6 +164,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
             Activities(
                 api=api,
+                accounts=accounts,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -164,7 +173,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
         ]
 
-        return streams + self.get_custom_insights_streams(api, config)
+        return streams + self.get_custom_insights_streams(api, accounts, config)
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
         """Returns the spec for this integration.
@@ -185,7 +194,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
         )
 
-    def get_custom_insights_streams(self, api: API, config: ConnectorConfig) -> List[Type[Stream]]:
+    def get_custom_insights_streams(self, api: API, accounts, config: ConnectorConfig) -> List[Type[Stream]]:
         """return custom insights streams"""
         streams = []
         for insight in config.custom_insights or []:
@@ -202,6 +211,7 @@ class SourceFacebookMarketing(AbstractSource):
                 )
             stream = AdsInsights(
                 api=api,
+                accounts=accounts,
                 name=f"Custom{insight.name}",
                 fields=list(insight_fields),
                 breakdowns=list(set(insight.breakdowns)),

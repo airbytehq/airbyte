@@ -107,6 +107,19 @@ class ConnectorConfig(BaseConfig):
         examples=["111111111111111"],
     )
 
+    account_ids: str = Field(
+        title="Account IDs",
+        order=0,
+        description=(
+            "The Facebook Ad account IDs to use when pulling data from the Facebook Marketing API."
+            " Open your Meta Ads Manager. The Ad account ID number is in the account dropdown menu or in your browser's address bar. "
+            'See the <a href="https://www.facebook.com/business/help/1492627900875762">docs</a> for more information.'
+        ),
+        pattern="^[\w-]+(,[\w-]+)*$",
+        pattern_descriptor="1234567890,1234567890",
+        examples=["111111111111111,222222222222222"],
+    )
+
     start_date: datetime = Field(
         title="Start Date",
         order=1,

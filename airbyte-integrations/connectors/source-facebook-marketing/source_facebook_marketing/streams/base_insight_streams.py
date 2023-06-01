@@ -198,12 +198,13 @@ class AdsInsights(FBMarketingIncrementalStream):
         """
 
         self._next_cursor_value = self._get_start_date()
-        for ts_start in self._date_intervals():
-            if ts_start in self._completed_slices:
-                continue
-            ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
-            interval = pendulum.Period(ts_start, ts_end)
-            yield InsightAsyncJob(api=self._api.api, edge_object=self._api.account, interval=interval, params=params)
+        for account in self._accounts:
+            for ts_start in self._date_intervals():
+                if ts_start in self._completed_slices:
+                    continue
+                ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
+                interval = pendulum.Period(ts_start, ts_end)
+                yield InsightAsyncJob(api=self._api, edge_object=account, interval=interval, params=params)
 
     def check_breakdowns(self):
         """

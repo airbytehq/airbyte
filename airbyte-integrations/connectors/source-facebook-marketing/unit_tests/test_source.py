@@ -18,6 +18,7 @@ from .utils import command_check
 def config_fixture():
     config = {
         "account_id": "123",
+        "account_ids": "123",
         "access_token": "TOKEN",
         "start_date": "2019-10-10T00:00:00Z",
         "end_date": "2020-10-10T00:00:00Z",
@@ -104,26 +105,26 @@ class TestSourceFacebookMarketing:
 
         assert isinstance(spec, ConnectorSpecification)
 
-    def test_get_custom_insights_streams(self, api, config):
+    def test_get_custom_insights_streams(self, api, accounts, config):
         config["custom_insights"] = [
             {"name": "test", "fields": ["account_id"], "breakdowns": ["ad_format_asset"], "action_breakdowns": ["action_device"]},
         ]
         config = ConnectorConfig.parse_obj(config)
-        assert SourceFacebookMarketing().get_custom_insights_streams(api, config)
+        assert SourceFacebookMarketing().get_custom_insights_streams(api, accounts, config)
 
-    def test_get_custom_insights_action_breakdowns_allow_empty(self, api, config):
+    def test_get_custom_insights_action_breakdowns_allow_empty(self, api, accounts, config):
         config["custom_insights"] = [
             {"name": "test", "fields": ["account_id"], "breakdowns": ["ad_format_asset"], "action_breakdowns": []},
         ]
 
         config["action_breakdowns_allow_empty"] = False
-        streams = SourceFacebookMarketing().get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
+        streams = SourceFacebookMarketing().get_custom_insights_streams(api, accounts, ConnectorConfig.parse_obj(config))
         assert len(streams) == 1
         assert streams[0].breakdowns == ["ad_format_asset"]
         assert streams[0].action_breakdowns == ["action_type", "action_target_id", "action_destination"]
 
         config["action_breakdowns_allow_empty"] = True
-        streams = SourceFacebookMarketing().get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
+        streams = SourceFacebookMarketing().get_custom_insights_streams(api, accounts, ConnectorConfig.parse_obj(config))
         assert len(streams) == 1
         assert streams[0].breakdowns == ["ad_format_asset"]
         assert streams[0].action_breakdowns == []

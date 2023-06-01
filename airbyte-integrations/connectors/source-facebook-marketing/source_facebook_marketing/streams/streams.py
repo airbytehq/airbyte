@@ -4,6 +4,7 @@
 
 import base64
 import logging
+import itertools
 from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import pendulum
@@ -69,7 +70,8 @@ class AdCreatives(FBMarketingStream):
             yield record
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ad_creatives(params=params)
+        ad_sets = [account.get_ad_creatives(params=params) for account in self._accounts]
+        return list(itertools.chain(*ad_sets))
 
 
 class CustomConversions(FBMarketingStream):
@@ -79,7 +81,8 @@ class CustomConversions(FBMarketingStream):
     enable_deleted = False
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_custom_conversions(params=params)
+        ad_sets = [account.get_custom_conversions(params=params) for account in self._accounts]
+        return list(itertools.chain(*ad_sets))
 
 
 class Ads(FBMarketingIncrementalStream):
@@ -88,7 +91,8 @@ class Ads(FBMarketingIncrementalStream):
     entity_prefix = "ad"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ads(params=params)
+        ad_sets = [account.get_ads(params=params) for account in self._accounts]
+        return list(itertools.chain(*ad_sets))
 
 
 class AdSets(FBMarketingIncrementalStream):
@@ -97,7 +101,8 @@ class AdSets(FBMarketingIncrementalStream):
     entity_prefix = "adset"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ad_sets(params=params)
+        ad_sets = [account.get_ad_sets(params=params) for account in self._accounts]
+        return list(itertools.chain(*ad_sets))
 
 
 class Campaigns(FBMarketingIncrementalStream):
@@ -106,7 +111,8 @@ class Campaigns(FBMarketingIncrementalStream):
     entity_prefix = "campaign"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_campaigns(params=params)
+        ad_sets = [account.get_campaigns(params=params) for account in self._accounts]
+        return list(itertools.chain(*ad_sets))
 
 
 class Activities(FBMarketingIncrementalStream):
@@ -117,7 +123,8 @@ class Activities(FBMarketingIncrementalStream):
     primary_key = None
 
     def list_objects(self, fields: List[str], params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_activities(fields=fields, params=params)
+        ad_sets = [account.get_activities(params=params, fields=fields) for account in self._accounts]
+        return list(itertools.chain(*ad_sets))
 
     def read_records(
         self,
@@ -155,7 +162,8 @@ class Videos(FBMarketingReversedIncrementalStream):
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         # Remove filtering as it is not working for this stream since 2023-01-13
-        return self._api.account.get_ad_videos(params=params, fields=self.fields)
+        ad_sets = [account.get_ad_videos(params=params, fields=self.fields) for account in self._accounts]
+        return list(itertools.chain(*ad_sets))
 
 
 class AdAccount(FBMarketingStream):
@@ -167,12 +175,13 @@ class AdAccount(FBMarketingStream):
     def get_task_permissions(self) -> Set[str]:
         """https://developers.facebook.com/docs/marketing-api/reference/ad-account/assigned_users/"""
         res = set()
-        me = User(fbid="me", api=self._api.api)
-        for business_user in me.get_business_users():
-            assigned_users = self._api.account.get_assigned_users(params={"business": business_user["business"].get_id()})
-            for assigned_user in assigned_users:
-                if business_user.get_id() == assigned_user.get_id():
-                    res.update(set(assigned_user["tasks"]))
+        for account in self._accounts:
+            me = User(fbid="me", api=self._api)
+            for business_user in me.get_business_users():
+                assigned_users = account.get_assigned_users(params={"business": business_user["business"].get_id()})
+                for assigned_user in assigned_users:
+                    if business_user.get_id() == assigned_user.get_id():
+                        res.update(set(assigned_user["tasks"]))
         return res
 
     @cached_property
@@ -188,15 +197,15 @@ class AdAccount(FBMarketingStream):
         return properties
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        """noop in case of AdAccount"""
-        return [FBAdAccount(self._api.account.get_id())]
+        return [FBAdAccount(account.get_id()) for account in self._accounts]
 
 
 class Images(FBMarketingReversedIncrementalStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/ad-image"""
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ad_images(params=params, fields=self.fields)
+        ad_sets = [account.get_ad_images(params=params, fields=self.fields) for account in self._accounts]
+        return list(itertools.chain(*ad_sets))
 
     def get_record_deleted_status(self, record) -> bool:
         return record[AdImage.Field.status] == AdImage.Status.deleted

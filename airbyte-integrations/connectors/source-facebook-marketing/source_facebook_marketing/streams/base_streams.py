@@ -16,6 +16,7 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
+from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 
 from .common import deep_merge
@@ -45,9 +46,10 @@ class FBMarketingStream(Stream, ABC):
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
         return None
 
-    def __init__(self, api: "API", include_deleted: bool = False, page_size: int = 100, max_batch_size: int = 50, **kwargs):
+    def __init__(self, api: "API",  accounts: List[AdAccount], include_deleted: bool = False, page_size: int = 100, max_batch_size: int = 50, **kwargs):
         super().__init__(**kwargs)
         self._api = api
+        self._accounts = accounts
         self.page_size = page_size if page_size is not None else 100
         self._include_deleted = include_deleted if self.enable_deleted else False
         self.max_batch_size = max_batch_size if max_batch_size is not None else 50

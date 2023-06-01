@@ -28,35 +28,8 @@
         }
       }
     },
-    "business_city": {
-      "type": ["null", "string"]
-    },
-    "business_country_code": {
-      "type": ["null", "string"]
-    },
-    "business_name": {
-      "type": ["null", "string"]
-    },
     "business_state": {
       "type": ["null", "string"]
-    },
-    "business_street": {
-      "type": ["null", "string"]
-    },
-    "business_street2": {
-      "type": ["null", "string"]
-    },
-    "business_zip": {
-      "type": ["null", "string"]
-    },
-    "can_create_brand_lift_study": {
-      "type": ["null", "boolean"]
-    },
-    "capabilities": {
-      "type": ["null", "array"],
-      "items": {
-        "type": "string"
-      }
     },
     "created_time": {
       "type": "string",
@@ -74,101 +47,14 @@
     "end_advertiser_name": {
       "type": ["null", "string"]
     },
-    "extended_credit_invoice_group": {
-      "type": ["null", "object"],
-      "properties": {
-        "id": {
-          "type": ["null", "string"]
-        },
-        "auto_enroll": {
-          "type": ["null", "boolean"]
-        },
-        "customer_po_number": {
-          "type": ["null", "string"]
-        },
-        "email": {
-          "type": ["null", "string"]
-        },
-        "emails": {
-          "type": ["null", "array"],
-          "items": {
-            "type": ["null", "string"]
-          }
-        },
-        "name": {
-          "type": ["null", "string"]
-        }
-      }
-    },
-    "failed_delivery_checks": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "summary": {
-            "type": ["null", "string"]
-          },
-          "description": {
-            "type": ["null", "string"]
-          },
-          "check_name": {
-            "type": ["null", "string"]
-          }
-        }
-      }
-    },
     "fb_entity": {
       "type": ["null", "number"]
-    },
-    "funding_source": {
-      "type": ["null", "number"]
-    },
-    "funding_source_details": {
-      "type": ["null", "object"],
-      "properties": {
-        "display_string": {
-          "type": ["null", "string"]
-        },
-        "id": {
-          "type": ["null", "string"]
-        },
-        "type": {
-          "type": ["null", "integer"]
-        }
-      }
-    },
-    "has_advertiser_opted_in_odax": {
-      "type": ["null", "boolean"]
-    },
-    "has_migrated_permissions": {
-      "type": ["null", "boolean"]
     },
     "id": {
       "type": ["null", "string"]
     },
     "io_number": {
       "type": ["null", "number"]
-    },
-    "is_attribution_spec_system_default": {
-      "type": ["null", "boolean"]
-    },
-    "is_direct_deals_enabled": {
-      "type": ["null", "boolean"]
-    },
-    "is_in_3ds_authorization_enabled_market": {
-      "type": ["null", "boolean"]
-    },
-    "is_notifications_enabled": {
-      "type": ["null", "boolean"]
-    },
-    "is_personal": {
-      "type": ["null", "number"]
-    },
-    "is_prepay_account": {
-      "type": ["null", "boolean"]
-    },
-    "is_tax_id_required": {
-      "type": ["null", "boolean"]
     },
     "line_numbers": {
       "type": ["null", "number"]
@@ -184,9 +70,6 @@
     },
     "name": {
       "type": ["null", "string"]
-    },
-    "offsite_pixels_tos_accepted": {
-      "type": ["null", "boolean"]
     },
     "owner": {
       "type": ["null", "number"]
@@ -244,28 +127,6 @@
     },
     "timezone_offset_hours_utc": {
       "type": ["null", "number"]
-    },
-    "tos_accepted": {
-      "type": ["null", "object"],
-      "properties": {
-        "web_custom_audience_tos": {
-          "type": ["null", "integer"]
-        }
-      }
-    },
-    "user_tasks": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
-    },
-    "user_tos_accepted": {
-      "type": ["null", "object"],
-      "properties": {
-        "web_custom_audience_tos": {
-          "type": ["null", "integer"]
-        }
-      }
     }
   }
 }
