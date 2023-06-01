@@ -596,7 +596,6 @@ def test_given_multiple_control_messages_with_same_timestamp_then_stream_read_ha
     assert stream_read.latest_config_update == latest_config
 
 
-
 def make_mock_source(mock_entrypoint_read, return_value: Iterator) -> MagicMock:
     mock_source = MagicMock()
     mock_entrypoint_read.return_value = return_value
@@ -628,6 +627,7 @@ def connector_configuration_control_message(emitted_at: float, config: dict) -> 
             connectorConfig=AirbyteControlConnectorConfigMessage(config=config),
         )
     )
+
 
 def any_request_and_response_with_a_record():
     return [
