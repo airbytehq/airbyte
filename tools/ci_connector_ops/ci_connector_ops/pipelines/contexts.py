@@ -359,15 +359,15 @@ class ConnectorContext(PipelineContext):
     @property
     def docker_image_from_metadata(self) -> str:
         return f"{self.metadata['dockerRepository']}:{self.metadata['dockerImageTag']}"
-    
+
     @property
     def ci_gcs_credentials_secret(self) -> Secret:
         # TODO (ben): Update this to be in use ANYWHERE we use a service account.
         return self.dagger_client.set_secret("ci_gcs_credentials", self.ci_gcs_credentials)
-    
+
     @property
     def test_report_bucket(self) -> str:
-        bucket = os.environ.get("TEST_REPORTS_BUCKET_NAME") # TODO (ben): move to config
+        bucket = os.environ.get("TEST_REPORTS_BUCKET_NAME")  # TODO (ben): move to config
         if not bucket:
             raise Exception("TEST_REPORTS_BUCKET_NAME not set")
         return bucket
@@ -427,13 +427,15 @@ class ConnectorContext(PipelineContext):
         await local_report_path.write_text(self.report.to_json())
 
         if self.report.should_be_saved:
-            local_report_dagger_file = self.dagger_client.host().directory(".", include=[str(local_report_path)]).file(str(local_report_path))
+            local_report_dagger_file = (
+                self.dagger_client.host().directory(".", include=[str(local_report_path)]).file(str(local_report_path))
+            )
             report_upload_exit_code, _stdout, _stderr = await remote_storage.upload_to_gcs(
                 dagger_client=self.dagger_client,
                 file_to_upload=local_report_dagger_file,
                 key=file_path_key,
                 bucket=self.test_report_bucket,
-                gcs_credentials=self.ci_gcs_credentials_secret
+                gcs_credentials=self.ci_gcs_credentials_secret,
             )
             if report_upload_exit_code != 0:
                 self.logger.error(f"Uploading the report to GCS Bucket: {self.test_report_bucket} failed.")
