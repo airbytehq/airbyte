@@ -3,8 +3,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string",
-      "format": "uuid"
+      "type": "string"
     },
     "ab_phase": {
       "type": "string"
