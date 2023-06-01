@@ -115,7 +115,6 @@
       "type": ["null", "string"]
     },
     "permalink": {
-      "format": "uri",
       "type": ["null", "string"]
     },
     "pinned_to": {
