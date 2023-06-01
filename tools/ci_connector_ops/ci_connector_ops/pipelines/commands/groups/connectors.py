@@ -23,6 +23,7 @@ from ci_connector_ops.utils import ConnectorLanguage, console, get_all_released_
 from rich.logging import RichHandler
 from rich.table import Table
 from rich.text import Text
+
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
 
 logger = logging.getLogger(__name__)
@@ -65,7 +66,7 @@ def render_report_output_prefix(ctx: click.Context) -> str:
 
     # get the command name for the current context, if a group then get the final command
     cmd = ctx.invoked_subcommand
-    
+
     path_values = [
         cmd,
         ci_context,
@@ -80,11 +81,13 @@ def render_report_output_prefix(ctx: click.Context) -> str:
     # check all values are defined
     if None in path_values:
         raise ValueError(f"Missing value required to render the report output prefix: {path_values}")
-    
+
     # join all values with a slash, and convert all values to string
     return "/".join(map(str, path_values))
 
+
 # COMMANDS
+
 
 @click.group(help="Commands related to connectors and connector acceptance tests.")
 @click.option("--use-remote-secrets", default=True)  # specific to connectors
@@ -174,6 +177,7 @@ def connectors(
     ctx.obj["selected_connectors_and_files"] = selected_connectors_and_files
     ctx.obj["selected_connectors_names"] = [c.technical_name for c in selected_connectors_and_files.keys()]
 
+
 @connectors.command(cls=DaggerPipelineCommand, help="Test all the selected connectors.")
 @click.pass_context
 def test(
@@ -210,7 +214,7 @@ def test(
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
             pull_request=ctx.obj.get("pull_request"),
-            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"]
+            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
         )
         for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
     ]
@@ -250,7 +254,7 @@ def build(ctx: click.Context) -> bool:
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
-            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"]
+            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
         )
         for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
     ]
@@ -356,30 +360,31 @@ def publish(
 
     click.secho(f"Will publish the following connectors: {', '.join(selected_connectors_names)}.", fg="green")
 
-    publish_connector_contexts = reorder_contexts([
-        PublishConnectorContext(
-            connector=connector,
-            pre_release=pre_release,
-            modified_files=modified_files,
-            spec_cache_gcs_credentials=spec_cache_gcs_credentials,
-            spec_cache_bucket_name=spec_cache_bucket_name,
-            metadata_service_gcs_credentials=metadata_service_gcs_credentials,
-            metadata_bucket_name=metadata_service_bucket_name,
-            docker_hub_username=docker_hub_username,
-            docker_hub_password=docker_hub_password,
-            slack_webhook=slack_webhook,
-            reporting_slack_channel=slack_channel,
-            is_local = ctx.obj["is_local"],
-            git_branch = ctx.obj["git_branch"],
-            git_revision = ctx.obj["git_revision"],
-            gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
-            pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
-            ci_context=ctx.obj.get("ci_context"),
-            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"]
-
-        )
-        for connector, modified_files in selected_connectors_and_files.items()
-    ])
+    publish_connector_contexts = reorder_contexts(
+        [
+            PublishConnectorContext(
+                connector=connector,
+                pre_release=pre_release,
+                modified_files=modified_files,
+                spec_cache_gcs_credentials=spec_cache_gcs_credentials,
+                spec_cache_bucket_name=spec_cache_bucket_name,
+                metadata_service_gcs_credentials=metadata_service_gcs_credentials,
+                metadata_bucket_name=metadata_service_bucket_name,
+                docker_hub_username=docker_hub_username,
+                docker_hub_password=docker_hub_password,
+                slack_webhook=slack_webhook,
+                reporting_slack_channel=slack_channel,
+                is_local=ctx.obj["is_local"],
+                git_branch=ctx.obj["git_branch"],
+                git_revision=ctx.obj["git_revision"],
+                gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
+                pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
+                ci_context=ctx.obj.get("ci_context"),
+                ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+            )
+            for connector, modified_files in selected_connectors_and_files.items()
+        ]
+    )
 
     click.secho("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.", fg="yellow")
     ctx.obj["concurrency"] = 1
