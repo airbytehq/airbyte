@@ -7,6 +7,7 @@ import requests
 import responses
 from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
+from responses import matchers
 from source_jira.source import SourceJira
 from source_jira.streams import (
     ApplicationRoles,
@@ -645,13 +646,29 @@ def test_avatars_stream(config, avatars_response):
 
 
 @responses.activate
-def test_issues_stream(config, mock_projects_responses, mock_issues_responses, issues_response):
+def test_issues_stream(config, projects_response, mock_issues_responses, issues_response, caplog):
+    Projects.use_cache = False
+    projects_response['values'].append({"id": "3", "key": "Project1"})
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description",
+        json=projects_response,
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/search",
+        match=[matchers.query_param_matcher({"maxResults": 50, "fields": '*all', "jql": "project in (3)"})],
+        json={"errorMessages": ["The value '3' does not exist for the field 'project'."]},
+        status=400
+    )
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Issues(**args)
     records = list(read_full_refresh(stream))
     assert len(records) == 1
-    assert len(responses.calls) == 3
+    assert len(responses.calls) == 4
+    error_message = "Stream `issues`. An error occurred, details: [\"The value '3' does not exist for the field 'project'.\"].Check permissions for this project. Skipping for now."
+    assert error_message in caplog.messages
 
 
 @responses.activate
