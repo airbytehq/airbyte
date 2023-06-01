@@ -32,9 +32,9 @@ def check_documentation_follows_guidelines(connector: Connector) -> bool:
     if not doc_lines[0].startswith("# "):
         print("The connector name is not used as the main header in the documentation.")
         follows_guidelines = False
-    # We usually don't have a definition if the connector is not published.
-    if connector.definition:
-        if doc_lines[0].strip() != f"# {connector.definition['name'].lower()}":
+    # We usually don't have a metadata if the connector is not published.
+    if connector.metadata:
+        if doc_lines[0].strip() != f"# {connector.metadata['name'].lower()}":
             print("The connector name is not used as the main header in the documentation.")
             follows_guidelines = False
     elif not doc_lines[0].startswith("# "):
@@ -116,8 +116,11 @@ IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS = {
     ".hypothesis",
 }
 
-IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS = {"*Test.java", "*.pyc", "*.gz"}
-IGNORED_URLS_PREFIX = {"http://json-schema.org", "http://localhost"}
+IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS = {"*Test.java", "*.pyc", "*.gz", "*.svg"}
+IGNORED_URLS_PREFIX = {
+    "http://json-schema.org",
+    "http://localhost",
+}
 
 
 def is_comment(line: str, file_path: Path):

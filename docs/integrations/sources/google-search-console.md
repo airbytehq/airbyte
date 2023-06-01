@@ -11,13 +11,6 @@ This page contains the setup guide and reference information for the google sear
 * Enable Google Search Console API
 
 
-:::note
-
-Since Google has deprecated certain [OAuth workflows](https://developers.google.com/identity/protocols/oauth2/resources/oob-migration), OAuth isn't supported for this connector at this time.
-
-:::
-
-
 ## Setup guide
 ### Step 1: Set up google search console
 
@@ -78,6 +71,7 @@ At the end of this process, you should have JSON credentials to this Google Serv
 5. Fill in the `site_urls` field.
 6. Fill in the `start date` field.
 7. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}`
+8. Fill in the `data_state` (optionally) in case you want to sync fresher data use `all' value, otherwise use 'final'.
 8. You should be ready to sync data.
 <!-- /env:cloud -->
 
@@ -88,13 +82,15 @@ At the end of this process, you should have JSON credentials to this Google Serv
 2. Fill in the `site_urls` field.
 3. Fill in the `start date` field.
 4. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}`
-5. You should be ready to sync data.
+5. Fill in the `data_state` (optionally) in case you want to sync fresher data use `all' value, otherwise use 'final'. 
+6. You should be ready to sync data.
 <!-- /env:oss -->
 
 
 ## Supported sync modes
 
 The Google Search Console Source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
 
 * [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
@@ -103,6 +99,10 @@ The Google Search Console Source connector supports the following [ sync modes](
 
 :::note
    The granularity for the cursor is 1 day, so Incremental Sync in Append mode may result in duplicating the data.
+:::
+
+:::note
+    Parameter `data_state='all'` should not be used with Incremental Sync mode as it may cause data loss.
 :::
 
 ## Supported Streams
@@ -137,6 +137,7 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                     |
 |:---------| :--------- |:--------------------------------------------------------------------------------------------------------------| :---------------------------------------------------------- |
+| `1.0.0`  | 2023-05-24 | [26452](https://github.com/airbytehq/airbyte/pull/26452)                                                      | Add data_state parameter to specification |
 | `0.1.22` | 2023-03-20 | [22295](https://github.com/airbytehq/airbyte/pull/22295)                                                      | Update specification examples |
 | `0.1.21` | 2023-02-14 | [22984](https://github.com/airbytehq/airbyte/pull/22984)                                                      | Specified date formatting in specification                    |
 | `0.1.20` | 2023-02-02 | [22334](https://github.com/airbytehq/airbyte/pull/22334)                                                      | Turn on default HttpAvailabilityStrategy                    |

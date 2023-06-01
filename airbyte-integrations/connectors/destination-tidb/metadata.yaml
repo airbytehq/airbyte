@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 06ec60c7-7468-45c0-91ac-174f6e1a788b
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/destination-tidb
   githubIssueLabel: destination-tidb
   icon: tidb.svg
@@ -18,6 +18,8 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/tidb
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/tidb
   supportsDbt: true
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

@@ -20,6 +20,7 @@ import google
 import numpy as np
 import pandas as pd
 import smart_open
+import smart_open.ssh
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import AirbyteStream, FailureType, SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
@@ -29,6 +30,8 @@ from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
 from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
+from paramiko import SSHException
+from pandas.errors import ParserError
 from urllib3.exceptions import ProtocolError
 from yaml import safe_load
 
@@ -92,10 +95,21 @@ class URLFile:
             self._file.close()
             self._file = None
 
+    def backoff_giveup(self, error):
+        # https://github.com/airbytehq/oncall/issues/1954
+        if isinstance(error, SSHException) and str(error).startswith("Error reading SSH protocol banner"):
+            # We need to clear smart_open internal _SSH cache from the previous attempt, otherwise:
+            # SSHException('SSH session not active')
+            # will be raised
+            smart_open.ssh._SSH.clear()
+            return False
+        return True
+
     def open(self):
         self.close()
+        _open = backoff.on_exception(backoff.expo, Exception, max_tries=5, giveup=self.backoff_giveup)(self._open)
         try:
-            self._file = self._open()
+            self._file = _open()
         except google.api_core.exceptions.NotFound as err:
             raise FileNotFoundError(self.url) from err
         return self
@@ -411,6 +425,10 @@ class Client:
                 error_msg = (
                     f"File {fp} can not be opened due to connection issues on provider side. Please check provided links and options"
                 )
+                logger.error(f"{error_msg}\n{traceback.format_exc()}")
+                raise ConfigurationError(error_msg) from err
+            except ParserError as err:
+                error_msg = f"File {fp} can not be parsed. Please check your reader_options. https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html"
                 logger.error(f"{error_msg}\n{traceback.format_exc()}")
                 raise ConfigurationError(error_msg) from err
 

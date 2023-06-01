@@ -39,7 +39,7 @@ public interface FeatureFlags {
 
   /**
    * Get the workspaces allow-listed for strict incremental comparison in normalization. This takes
-   * precedence over the normalization version in destination_definitions.yaml.
+   * precedence over the normalization version in oss_registry.json .
    *
    * @return a comma-separated list of workspace ids where strict incremental comparison should be
    *         enabled in normalization.
