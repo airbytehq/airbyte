@@ -27,8 +27,7 @@
         },
         "self": {
           "type": "string",
-          "description": "The URL of the user.",
-          "format": "uri"
+          "description": "The URL of the user."
         },
         "name": {
           "type": "string",
