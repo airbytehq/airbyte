@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "order_info": {
+      "type": ["null", "object"]
+    },
+    "customer_info": {
+      "type": ["null", "object"]
+    },
+    "source_name": {
+      "type": ["null", "string"]
+    },
+    "orderNo": {
+      "type": ["null", "string"]
+    },
+    "orderStatus": {
+      "type": ["null", "string"]
+    },
+    "orderCreateTime": {
+      "type": ["null", "string"]
+    },
+    "orderUpdateTime": {
+      "type": ["null", "string"]
+    }
+
+  }
+}
