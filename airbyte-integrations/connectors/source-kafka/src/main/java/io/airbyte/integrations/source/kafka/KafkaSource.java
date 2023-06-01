@@ -9,7 +9,10 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.source.kafka.converter.AvroConverter;
 import io.airbyte.integrations.source.kafka.format.KafkaFormat;
+import io.airbyte.integrations.source.kafka.generator.AvroGenerator;
+import io.airbyte.integrations.source.kafka.mediator.AvroKafkaMediator;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -24,7 +27,8 @@ public class KafkaSource extends BaseConnector implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KafkaSource.class);
 
-  public KafkaSource() {}
+  public KafkaSource() {
+  }
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
@@ -51,8 +55,10 @@ public class KafkaSource extends BaseConnector implements Source {
     if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
       throw new RuntimeException("Unable establish a connection: " + check.getMessage());
     }
-    KafkaFormat kafkaFormat = KafkaFormatFactory.getFormat(config);
-    return kafkaFormat.read();
+    final var mediator = new AvroKafkaMediator(config);
+    final var converter = new AvroConverter();
+    final var generator = new AvroGenerator(mediator, converter);
+    return generator.read();
   }
 
   public static void main(final String[] args) throws Exception {
