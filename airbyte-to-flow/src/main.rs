@@ -65,9 +65,7 @@ fn main() -> anyhow::Result<()> {
         Err(Error::ExitCode(code)) => {
             std::process::exit(code);
         }
-        Err(err) => {
-            Err(err.into())
-        }
+        Err(err) => Err(err.into()),
         Ok(()) => {
             tracing::info!(message = "atf exiting");
             Ok(())

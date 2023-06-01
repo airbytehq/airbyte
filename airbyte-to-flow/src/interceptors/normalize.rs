@@ -1,11 +1,11 @@
+use crate::interceptors::fix_document_schema::traverse_jsonschema;
 use chrono::SecondsFormat;
+use dateparser::parse;
 use json::schema::formats::Format;
 use json::validator::ValidationResult;
 use regex::Regex;
 use serde::Deserialize;
-use crate::interceptors::fix_document_schema::traverse_jsonschema;
 use serde_json::Map;
-use dateparser::parse;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -22,7 +22,7 @@ pub enum Normalization {
 
 pub fn normalize_doc(
     doc: &mut serde_json::Value,
-    normalizations: &Option<Vec<NormalizationEntry>>
+    normalizations: &Option<Vec<NormalizationEntry>>,
 ) {
     normalizations.as_ref().map(|entries| {
         for entry in entries {
@@ -35,16 +35,17 @@ pub fn normalize_doc(
     });
 }
 
-pub fn automatic_normalizations(
-    doc: &mut serde_json::Value,
-    schema: &mut serde_json::Value,
-) {
-    traverse_jsonschema(schema, &mut |map: &mut Map<String, serde_json::Value>, ptr: &str| {
-        if map.get("format").and_then(|f| f.as_str()) == Some("date-time") {
-            let pointer = doc::Pointer::from_str(ptr);
-            normalize_to_rfc3339(doc, pointer);
-        }
-    }, "".to_string())
+pub fn automatic_normalizations(doc: &mut serde_json::Value, schema: &mut serde_json::Value) {
+    traverse_jsonschema(
+        schema,
+        &mut |map: &mut Map<String, serde_json::Value>, ptr: &str| {
+            if map.get("format").and_then(|f| f.as_str()) == Some("date-time") {
+                let pointer = doc::Pointer::from_str(ptr);
+                normalize_to_rfc3339(doc, pointer);
+            }
+        },
+        "".to_string(),
+    )
 }
 
 fn normalize_to_rfc3339(doc: &mut serde_json::Value, ptr: doc::Pointer) {
@@ -53,16 +54,22 @@ fn normalize_to_rfc3339(doc: &mut serde_json::Value, ptr: doc::Pointer) {
             match Format::DateTime.validate(v) {
                 ValidationResult::Valid => (), // Already a valid date
                 _ => {
-                    let parsed = parse(v).or_else(|_|
-                        chrono::DateTime::parse_from_str(v, "%Y-%m-%dT%H:%M:%S%.3f%z").map(|d| d.with_timezone(&chrono::Utc))
-                    ).or_else(|_|
-                        chrono::DateTime::parse_from_str(v, "%Y-%m-%dT%H:%M:%S%z").map(|d| d.with_timezone(&chrono::Utc))
-                    ).or_else(|_|
-                        chrono::NaiveDateTime::parse_from_str(v, "%Y-%m-%dT%H:%M:%S%.3f").map(|d| d.and_local_timezone(chrono::Utc).unwrap())
-                    );
+                    let parsed = parse(v)
+                        .or_else(|_| {
+                            chrono::DateTime::parse_from_str(v, "%Y-%m-%dT%H:%M:%S%.3f%z")
+                                .map(|d| d.with_timezone(&chrono::Utc))
+                        })
+                        .or_else(|_| {
+                            chrono::DateTime::parse_from_str(v, "%Y-%m-%dT%H:%M:%S%z")
+                                .map(|d| d.with_timezone(&chrono::Utc))
+                        })
+                        .or_else(|_| {
+                            chrono::NaiveDateTime::parse_from_str(v, "%Y-%m-%dT%H:%M:%S%.3f")
+                                .map(|d| d.and_local_timezone(chrono::Utc).unwrap())
+                        });
                     if let Ok(parsed) = parsed {
                         let formatted = parsed.to_rfc3339_opts(SecondsFormat::AutoSi, true);
-                            ptr.create_value(doc)
+                        ptr.create_value(doc)
                             .map(|v| *v = serde_json::json!(formatted.as_str()));
                     }
                 }
@@ -254,7 +261,7 @@ mod tests {
                         "x": "2021-03-02T23:00:00Z"
                     }
                 }),
-            )
+            ),
         ];
 
         for (mut schema, mut input, expected) in cases {

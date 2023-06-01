@@ -1,7 +1,7 @@
 use std::num::ParseIntError;
 
 use bytes::Bytes;
-use futures::{TryStream, Stream, TryStreamExt};
+use futures::{Stream, TryStream, TryStreamExt};
 use validator::ValidationErrors;
 
 use crate::apis::InterceptorStream;
@@ -63,7 +63,7 @@ pub enum Error {
     IdleConnector,
 
     #[error("Could not parse run interval")]
-    ParseIntError(#[from] ParseIntError)
+    ParseIntError(#[from] ParseIntError),
 }
 
 pub fn raise_err<T>(message: &str) -> Result<T, std::io::Error> {
@@ -74,10 +74,14 @@ pub fn create_custom_error(message: &str) -> std::io::Error {
     std::io::Error::new(std::io::ErrorKind::Other, message)
 }
 
-pub fn interceptor_stream_to_io_stream(stream: InterceptorStream) -> impl TryStream<Item = std::io::Result<Bytes>, Ok = Bytes, Error = std::io::Error> {
+pub fn interceptor_stream_to_io_stream(
+    stream: InterceptorStream,
+) -> impl TryStream<Item = std::io::Result<Bytes>, Ok = Bytes, Error = std::io::Error> {
     stream.map_err(|e| create_custom_error(&e.to_string()))
 }
 
-pub fn io_stream_to_interceptor_stream(stream: impl Stream<Item = std::io::Result<Bytes>> + Send + Sync + 'static) -> InterceptorStream {
+pub fn io_stream_to_interceptor_stream(
+    stream: impl Stream<Item = std::io::Result<Bytes>> + Send + Sync + 'static,
+) -> InterceptorStream {
     Box::pin(stream.map_err(|e| Error::IOError(e)))
 }

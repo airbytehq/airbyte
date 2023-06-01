@@ -1,21 +1,35 @@
-use std::{pin::Pin, sync::{Arc}, ops::DerefMut, time::Instant};
+use std::{ops::DerefMut, pin::Pin, sync::Arc, time::Instant};
 
 use flow_cli_common::LogArgs;
-use futures::{channel::{oneshot,mpsc}, stream, StreamExt, TryStreamExt};
-use tokio::{io::{AsyncWrite, copy}, process::{ChildStdout, ChildStdin, Child}, sync::Mutex};
+use futures::{
+    channel::{mpsc, oneshot},
+    stream, StreamExt, TryStreamExt,
+};
+use tokio::{
+    io::{copy, AsyncWrite},
+    process::{Child, ChildStdin, ChildStdout},
+    sync::Mutex,
+};
 use tokio_util::io::{ReaderStream, StreamReader};
 
-use proto_flow::capture::Response;
 use proto_flow::capture::response;
+use proto_flow::capture::Response;
 use proto_flow::flow::ConnectorState;
 
-use crate::{apis::InterceptorStream, interceptors::airbyte_source_interceptor::{AirbyteSourceInterceptor, Operation}, errors::{Error, io_stream_to_interceptor_stream, interceptor_stream_to_io_stream}, libs::{command::{invoke_connector_delayed, check_exit_status}}};
+use crate::{
+    apis::InterceptorStream,
+    errors::{interceptor_stream_to_io_stream, io_stream_to_interceptor_stream, Error},
+    interceptors::airbyte_source_interceptor::{AirbyteSourceInterceptor, Operation},
+    libs::command::{check_exit_status, invoke_connector_delayed},
+};
 
 const NEWLINE: u8 = 10;
 const RUN_INTERVAL_FILE_NAME: &str = "run_interval_minutes.json";
 
 async fn flow_read_stream() -> InterceptorStream {
-    Box::pin(io_stream_to_interceptor_stream(ReaderStream::new(tokio::io::stdin())))
+    Box::pin(io_stream_to_interceptor_stream(ReaderStream::new(
+        tokio::io::stdin(),
+    )))
 }
 
 fn flow_write_stream() -> Arc<Mutex<Pin<Box<dyn AsyncWrite + Send + Sync>>>> {
@@ -23,7 +37,9 @@ fn flow_write_stream() -> Arc<Mutex<Pin<Box<dyn AsyncWrite + Send + Sync>>>> {
 }
 
 fn airbyte_response_stream(child_stdout: ChildStdout) -> InterceptorStream {
-    Box::pin(io_stream_to_interceptor_stream(ReaderStream::new(child_stdout)))
+    Box::pin(io_stream_to_interceptor_stream(ReaderStream::new(
+        child_stdout,
+    )))
 }
 
 pub fn parse_child(mut child: Child) -> Result<(Child, ChildStdin, ChildStdout), Error> {
@@ -49,10 +65,7 @@ pub async fn run_airbyte_source_connector(
     let (child, child_stdin, child_stdout) =
         parse_child(invoke_connector_delayed(full_entrypoint, log_level)?)?;
 
-    let adapted_request_stream = airbyte_interceptor.adapt_request_stream(
-        &op,
-        first_request
-    )?;
+    let adapted_request_stream = airbyte_interceptor.adapt_request_stream(&op, first_request)?;
 
     let adapted_response_stream =
         airbyte_interceptor.adapt_response_stream(&op, airbyte_response_stream(child_stdout))?;
@@ -74,7 +87,9 @@ pub async fn run_airbyte_source_connector(
                         (msg, bytes)
                     }
                     None => {
-                        sender.send(transaction_pending).map_err(|_| Error::CheckpointPending)?;
+                        sender
+                            .send(transaction_pending)
+                            .map_err(|_| Error::CheckpointPending)?;
                         return Ok(None);
                     }
                 };
@@ -84,9 +99,8 @@ pub async fn run_airbyte_source_connector(
         ))
     } else {
         adapted_response_stream
-    }.map_ok(|bytes| {
-        bytes::Bytes::from([&bytes[..],&[NEWLINE]].concat())
-    });
+    }
+    .map_ok(|bytes| bytes::Bytes::from([&bytes[..], &[NEWLINE]].concat()));
 
     // A channel to ping whenever a response is received from the connector
     // this allows us to monitor connectors for long inactivity and restart the connector
@@ -133,7 +147,7 @@ pub async fn run_airbyte_source_connector(
     let child_arc = &Arc::new(Mutex::new(child));
     let exit_status_task = async move {
         let c = Arc::clone(child_arc);
-        
+
         let exit_status_result = check_exit_status("atf:", c.lock().await.wait().await);
 
         // There are some Airbyte connectors that write records, and exit successfully, without ever writing
@@ -152,7 +166,7 @@ pub async fn run_airbyte_source_connector(
                     state: Some(ConnectorState {
                         updated_json: "{}".to_string(),
                         merge_patch: true,
-                    })
+                    }),
                 });
                 let mut encoded_response = serde_json::to_vec(&response)?;
                 encoded_response.push(NEWLINE);
@@ -167,7 +181,7 @@ pub async fn run_airbyte_source_connector(
             return tokio::select! {
                 Ok(true) = response_finished_receiver => exit_status_result,
                 _ = tokio::time::sleep(tokio::time::Duration::from_secs(5)) => exit_status_result
-            }
+            };
         }
 
         exit_status_result
@@ -180,10 +194,13 @@ pub async fn run_airbyte_source_connector(
     // which specifies how frequently should the connector run
     let run_interval = async move {
         if *op_ref != Operation::Capture {
-            return Ok(())
+            return Ok(());
         };
 
-        let run_interval_minutes = std::fs::read_to_string(RUN_INTERVAL_FILE_NAME).ok().map(|f| f.parse::<u64>()).transpose()?;
+        let run_interval_minutes = std::fs::read_to_string(RUN_INTERVAL_FILE_NAME)
+            .ok()
+            .map(|f| f.parse::<u64>())
+            .transpose()?;
 
         // Make sure the process stays up for at least run_interval_minutes
         if let Some(interval_minutes) = run_interval_minutes {
@@ -193,10 +210,10 @@ pub async fn run_airbyte_source_connector(
             tokio::time::sleep(total_duration - elapsed).await;
         }
 
-        let r : Result<(), Error> = Ok(());
+        let r: Result<(), Error> = Ok(());
         r
     };
-    
+
     // If streaming_all_task errors out, we error out and don't wait for exit_status, on the other
     // hand once the connector has exit (exit_status_task completes), we don't wait for streaming
     // task anymore
@@ -231,8 +248,10 @@ async fn streaming_all(
     response_stream_writer: Arc<Mutex<Pin<Box<dyn AsyncWrite + Sync + Send>>>>,
     response_finished_sender: oneshot::Sender<bool>,
 ) -> Result<(), Error> {
-    let mut request_stream_reader = StreamReader::new(interceptor_stream_to_io_stream(request_stream));
-    let mut response_stream_reader = StreamReader::new(interceptor_stream_to_io_stream(response_stream));
+    let mut request_stream_reader =
+        StreamReader::new(interceptor_stream_to_io_stream(request_stream));
+    let mut response_stream_reader =
+        StreamReader::new(interceptor_stream_to_io_stream(response_stream));
 
     let request_stream_copy = async move {
         copy(&mut request_stream_reader, &mut request_stream_writer).await?;
@@ -243,15 +262,14 @@ async fn streaming_all(
     let response_stream_copy = async move {
         let mut writer = response_stream_writer.lock().await;
         copy(&mut response_stream_reader, writer.deref_mut()).await?;
-        response_finished_sender.send(true).expect("send write finished signal twice");
+        response_finished_sender
+            .send(true)
+            .expect("send write finished signal twice");
         tracing::debug!("atf: response_stream_copy done");
         Ok(())
     };
 
-    tokio::try_join!(
-        request_stream_copy,
-        response_stream_copy
-    )?;
+    tokio::try_join!(request_stream_copy, response_stream_copy)?;
 
     tracing::debug!("atf: streaming_all finished");
     Ok(())

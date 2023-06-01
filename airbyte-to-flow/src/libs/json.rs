@@ -1,5 +1,5 @@
 use doc::ptr::{Pointer, Token};
-use schemars::{JsonSchema, schema::RootSchema};
+use schemars::{schema::RootSchema, JsonSchema};
 
 // Create the RootSchema given datatype T.
 pub fn create_root_schema<T: JsonSchema>() -> RootSchema {

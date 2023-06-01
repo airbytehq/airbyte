@@ -1,7 +1,7 @@
 use crate::libs::airbyte_catalog::Message;
 use crate::{apis::InterceptorStream, errors::create_custom_error};
 
-use crate::errors::{Error, io_stream_to_interceptor_stream, interceptor_stream_to_io_stream};
+use crate::errors::{interceptor_stream_to_io_stream, io_stream_to_interceptor_stream, Error};
 use bytelines::AsyncByteLines;
 use bytes::Bytes;
 use futures::{StreamExt, TryStream, TryStreamExt};
@@ -16,9 +16,13 @@ use super::airbyte_catalog::{Log, LogLevel, MessageType};
 pub fn stream_lines(
     in_stream: InterceptorStream,
 ) -> impl TryStream<Item = Result<Bytes, Error>, Error = Error, Ok = bytes::Bytes> {
-    io_stream_to_interceptor_stream(AsyncByteLines::new(StreamReader::new(interceptor_stream_to_io_stream(in_stream)))
+    io_stream_to_interceptor_stream(
+        AsyncByteLines::new(StreamReader::new(interceptor_stream_to_io_stream(
+            in_stream,
+        )))
         .into_stream()
-        .map_ok(Bytes::from))
+        .map_ok(Bytes::from),
+    )
 }
 
 /// Given a stream of lines, try to deserialize them into Airbyte Messages.
@@ -85,7 +89,7 @@ where
 
         let message = match stream_head {
             Some(m) => m,
-            None => return Err(Error::EmptyStream)
+            None => return Err(Error::EmptyStream),
         }?;
 
         if predicate(&message) {
@@ -104,7 +108,10 @@ where
     T: prost::Message + std::default::Default + for<'a> serde::Deserialize<'a>,
 {
     async move {
-        let msg = stream_lines(in_stream).next().await.ok_or(Error::MessageNotFound(std::any::type_name::<T>()))??;
+        let msg = stream_lines(in_stream)
+            .next()
+            .await
+            .ok_or(Error::MessageNotFound(std::any::type_name::<T>()))??;
         let v = serde_json::from_slice(&msg)?;
         Ok(v)
     }
@@ -116,10 +123,7 @@ mod test {
 
     use bytes::BytesMut;
     use futures::stream;
-    use proto_flow::{
-        flow::materialization_spec::ConnectorType,
-        materialize::request,
-    };
+    use proto_flow::{flow::materialization_spec::ConnectorType, materialize::request};
     use tokio_util::io::ReaderStream;
 
     use crate::libs::airbyte_catalog::{ConnectionStatus, MessageType, Status};
@@ -255,7 +259,8 @@ mod test {
         };
 
         let msg_buf = serde_json::to_string(&msg).unwrap();
-        let read_stream = io_stream_to_interceptor_stream(ReaderStream::new(std::io::Cursor::new(msg_buf)));
+        let read_stream =
+            io_stream_to_interceptor_stream(ReaderStream::new(std::io::Cursor::new(msg_buf)));
 
         let stream: InterceptorStream = Box::pin(read_stream);
         let result = get_decoded_message::<request::Validate>(stream)
