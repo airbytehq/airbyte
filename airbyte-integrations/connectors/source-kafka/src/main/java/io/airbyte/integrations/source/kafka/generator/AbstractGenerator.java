@@ -10,7 +10,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
-public class AbstractGenerator<V> implements Generator {
+public abstract class AbstractGenerator<V> implements Generator {
 
   private final KafkaMediator<V> mediator;
   private final Converter<V> converter;

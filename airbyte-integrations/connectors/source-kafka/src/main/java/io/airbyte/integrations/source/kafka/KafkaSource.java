@@ -55,9 +55,13 @@ public class KafkaSource extends BaseConnector implements Source {
     if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
       throw new RuntimeException("Unable establish a connection: " + check.getMessage());
     }
-    final var mediator = new AvroKafkaMediator(config);
-    final var converter = new AvroConverter();
-    final var generator = new AvroGenerator(mediator, converter);
+
+    var dependencies = KafkaDependenciesInitializer.getDependencies(config, "AVRO");
+
+    final var mediator = dependencies.getLeft();
+    final var converter = dependencies.getMiddle();
+    final var generator = dependencies.getRight();
+
     return generator.read();
   }
 
