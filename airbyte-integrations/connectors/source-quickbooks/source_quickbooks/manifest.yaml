@@ -21,7 +21,7 @@ definitions:
       "Accept": "application/json"
       "User-Agent": "airbyte-connector"
     authenticator:
-      type: SingleUseRefreshTokenOAuthAuthenticator
+      class_name: source_quickbooks.components.SingleUseRefreshTokenOAuthAuthenticator
       token_refresh_endpoint: "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
   retriever:
     type: SimpleRetriever
