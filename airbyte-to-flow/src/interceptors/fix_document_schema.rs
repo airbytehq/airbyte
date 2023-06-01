@@ -147,8 +147,7 @@ where
                 }
                 _ => (),
             });
-            map.get_mut("items")
-                .map(|item| traverse_jsonschema(item, f, format!("{ptr}/-")));
+            map.get_mut("items").map(|item| traverse_jsonschema(item, f, format!("{ptr}/*")));
         }
         _ => (),
     }

@@ -1,13 +1,16 @@
 {
   "properties": {
     "cancelled_at": {
-      "type": ["integer", "null"]
+      "type": ["string", "null"],
+      "format": "date-time"
     },
     "completed_at": {
-      "type": ["integer", "null"]
+      "type": ["string", "null"],
+      "format": "date-time"
     },
     "released_at": {
-      "type": ["integer", "null"]
+      "type": ["string", "null"],
+      "format": "date-time"
     },
     "current_phase": {
       "type": ["object", "null"]
@@ -43,8 +46,17 @@
               }
             }
           },
+          "end_date": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "start_date": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
           "trial_end": {
-            "type": ["integer", "null"]
+            "type": ["string", "null"],
+            "format": "date-time"
           }
         }
       }
