@@ -413,7 +413,6 @@
         "feed_url": {
           "type": "string",
           "title": "Feed URL",
-          "format": "uri",
           "description": "The URL for the RSS feed."
         },
         "frequency": {
