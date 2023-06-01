@@ -29,6 +29,10 @@ from .utils import authenticator_class_map, get_dimensions_type, get_metrics_typ
 # the initial values should be saved once and tracked for each stream, inclusivelly.
 GoogleAnalyticsQuotaHandler: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 
+# set page_size to 100000 due to determination of maximum limit value in official documentation
+# https://developers.google.com/analytics/devguides/reporting/data/v1/basics#pagination
+PAGE_SIZE = 100000
+
 
 class ConfigurationError(Exception):
     pass
@@ -90,6 +94,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
     _record_date_format = "%Y%m%d"
     primary_key = "uuid"
+    offset = 0
 
     metadata = MetadataDescriptor()
 
@@ -154,13 +159,19 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         r = response.json()
 
-        if all(key in r for key in ["limit", "offset", "rowCount"]):
-            limit, offset, total_rows = r["limit"], r["offset"], r["rowCount"]
+        if "rowCount" in r:
+            total_rows = r["rowCount"]
 
-            if total_rows <= offset:
-                return None
+            if self.offset == 0:
+                self.offset = PAGE_SIZE
+            else:
+                self.offset += PAGE_SIZE
 
-            return {"limit": limit, "offset": offset + limit}
+            if total_rows <= self.offset:
+                self.offset = 0
+                return
+
+            return {"offset": self.offset}
 
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -201,12 +212,17 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
+
         payload = {
             "metrics": [{"name": m} for m in self.config["metrics"]],
             "dimensions": [{"name": d} for d in self.config["dimensions"]],
             "dateRanges": [stream_slice],
             "returnPropertyQuota": True,
+            "offset": str(0),
+            "limit": str(PAGE_SIZE)
         }
+        if next_page_token and next_page_token.get("offset") is not None:
+            payload.update({"offset": str(next_page_token["offset"])})
         return payload
 
     def stream_slices(
@@ -243,6 +259,11 @@ class PivotReport(GoogleAnalyticsDataApiBaseStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         payload = super().request_body_json(stream_state, stream_slice, next_page_token)
+
+        # remove offset and limit fields according to their absence in
+        # https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport
+        payload.pop("offset", None)
+        payload.pop("limit", None)
         payload["pivots"] = self.config["pivots"]
         return payload
 
@@ -398,7 +419,11 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
     def instantiate_report_class(report: dict, config: Mapping[str, Any]) -> GoogleAnalyticsDataApiBaseStream:
         cohort_spec = report.get("cohortSpec")
         pivots = report.get("pivots")
-        stream_config = {"metrics": report["metrics"], "dimensions": report["dimensions"], **config}
+        stream_config = {
+            "metrics": report["metrics"],
+            "dimensions": report["dimensions"],
+            **config
+        }
         report_class_tuple = (GoogleAnalyticsDataApiBaseStream,)
         if pivots:
             stream_config["pivots"] = pivots

@@ -16,7 +16,7 @@ from ci_connector_ops.pipelines.builds import run_connector_build_pipeline
 from ci_connector_ops.pipelines.contexts import ConnectorContext, ContextState, PublishConnectorContext
 from ci_connector_ops.pipelines.github import update_global_commit_status_check_for_tests
 from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_pipelines
-from ci_connector_ops.pipelines.publish import run_connector_publish_pipeline
+from ci_connector_ops.pipelines.publish import reorder_contexts, run_connector_publish_pipeline
 from ci_connector_ops.pipelines.tests import run_connector_test_pipeline
 from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors, get_modified_metadata_files
 from ci_connector_ops.utils import ConnectorLanguage, console, get_all_released_connectors
@@ -314,7 +314,7 @@ def publish(
 
     click.secho(f"Will publish the following connectors: {', '.join(selected_connectors_names)}.", fg="green")
 
-    publish_connector_contexts = [
+    publish_connector_contexts = reorder_contexts([
         PublishConnectorContext(
             connector,
             pre_release,
@@ -336,7 +336,7 @@ def publish(
             pull_request=ctx.obj.get("pull_request"),
         )
         for connector, modified_files in selected_connectors_and_files.items()
-    ]
+    ])
 
     click.secho("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.", fg="yellow")
     ctx.obj["concurrency"] = 1

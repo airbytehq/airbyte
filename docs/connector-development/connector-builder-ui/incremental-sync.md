@@ -94,7 +94,7 @@ The description above is sufficient for a lot of APIs. However there are some mo
 
 ### Step
 
-When incremental syncs are enabled, the connector is not fetching all records since the cutoff date at once - instead it's splitting up the time range between the cutoff date and the desired end date into intervals based on the "Step" configuration (by default it's set to one month) expressed as [ISO 8601 duration](https://en.wikipedia.org/wiki/ISO_8601#Durations).
+When incremental syncs are enabled and "Step" is set, the connector is not fetching all records since the cutoff date at once - instead it's splitting up the time range between the cutoff date and the desired end date into intervals based on the "Step" configuration expressed as [ISO 8601 duration](https://en.wikipedia.org/wiki/ISO_8601#Durations).
 
 For example if the "Step" is set to 10 days (`P10D`) for the Guardian articles stream described above and a longer time range, then the following requests will be performed:
 <pre>
@@ -106,7 +106,7 @@ curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-
 
 After an interval is processed, the cursor value of the last record will be saved as part of the connection as the new cutoff date.
 
-In most cases, the default step size is fine, but there are two reasons to change it:
+This value is optional and if left unset, the connector will not split up the time range at all but will instead just request all records for the entire target time range. This configuration works for all connectors, but there are two reasons to change it:
 * **To protect a connection against intermittent failures** - if the "Step" size is a day, the cutoff date is saved after all records associated with a day are proccessed. If a sync fails halfway through because the API, the Airbyte system, the destination or the network between these components has a failure, then at most one day worth of data needs to be resynced. However, a smaller step size might cause more requests to the API and more load on the system. It depends on the expected amount of data and load characteristics of an API what step size is optimal, but for a lot of applications the default of one month is a good starting point.
 * **The API requires the connector to fetch data in pre-specified chunks** - for example the [Exchange Rates API](https://exchangeratesapi.io/documentation/) makes the date to fetch data for part of the URL path and only allows to fetch data for a single day at a time
 
