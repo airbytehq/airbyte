@@ -91,6 +91,13 @@ def render_report_output_prefix(ctx: click.Context) -> str:
 @click.group(help="Commands related to connectors and connector acceptance tests.")
 @click.option("--use-remote-secrets", default=True)  # specific to connectors
 @click.option(
+    "--ci-gcs-credentials",
+    help="The service account to use during CI.",
+    type=click.STRING,
+    required=False,  # Not required for pre-release or local pipelines
+    envvar="GCP_GSM_CREDENTIALS",
+)
+@click.option(
     "--name", "names", multiple=True, help="Only test a specific connector. Use its technical name. e.g source-pokeapi.", type=str
 )
 @click.option("--language", "languages", multiple=True, help="Filter connectors to test by language.", type=click.Choice(ConnectorLanguage))
@@ -112,7 +119,8 @@ def render_report_output_prefix(ctx: click.Context) -> str:
 @click.pass_context
 def connectors(
     ctx: click.Context,
-    use_remote_secrets: str,
+    use_remote_secrets: bool,
+    ci_gcs_credentials: str,
     names: Tuple[str],
     languages: Tuple[ConnectorLanguage],
     release_stages: Tuple[str],
@@ -125,6 +133,8 @@ def connectors(
 
     ctx.ensure_object(dict)
     ctx.obj["use_remote_secrets"] = use_remote_secrets
+    ctx.obj["ci_gcs_credentials"] = ci_gcs_credentials
+
     ctx.obj["connector_names"] = names
     ctx.obj["connector_languages"] = languages
     ctx.obj["release_states"] = release_stages
@@ -171,16 +181,6 @@ def connectors(
     ctx.obj["selected_connectors_and_files"] = selected_connectors_and_files
     ctx.obj["selected_connectors_names"] = [c.technical_name for c in selected_connectors_and_files.keys()]
 
-
-@connectors.command(cls=DaggerPipelineCommand, help="Test all the selected connectors.")
-@click.pass_context
-def debug_report_path(
-    ctx: click.Context,
-) -> bool:
-    report_output_prefix = ctx.obj["report_output_prefix"]
-    click.echo(f"report_output_prefix: {report_output_prefix}")
-    return True
-
 @connectors.command(cls=DaggerPipelineCommand, help="Test all the selected connectors.")
 @click.pass_context
 def test(
@@ -211,12 +211,13 @@ def test(
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
             modified_files=modified_files,
-            report_output_prefix=report_output_prefix,
+            report_output_prefix=ctx.obj["report_output_prefix"],
             use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
             pull_request=ctx.obj.get("pull_request"),
+            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"]
         )
         for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
     ]
@@ -251,11 +252,12 @@ def build(ctx: click.Context) -> bool:
             git_branch=ctx.obj["git_branch"],
             git_revision=ctx.obj["git_revision"],
             modified_files=modified_files,
-            report_output_prefix="python-poc/build/history/",
+            report_output_prefix=ctx.obj["report_output_prefix"],
             use_remote_secrets=ctx.obj["use_remote_secrets"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
+            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"]
         )
         for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
     ]
@@ -345,6 +347,7 @@ def publish(
     ctx.obj["spec_cache_bucket_name"] = spec_cache_bucket_name
     ctx.obj["metadata_service_bucket_name"] = metadata_service_bucket_name
     ctx.obj["metadata_service_gcs_credentials"] = metadata_service_gcs_credentials
+
     validate_publish_options(pre_release, ctx.obj)
     if ctx.obj["is_local"]:
         click.confirm(
@@ -362,24 +365,25 @@ def publish(
 
     publish_connector_contexts = reorder_contexts([
         PublishConnectorContext(
-            connector,
-            pre_release,
-            modified_files,
-            spec_cache_gcs_credentials,
-            spec_cache_bucket_name,
-            metadata_service_gcs_credentials,
-            metadata_service_bucket_name,
-            docker_hub_username,
-            docker_hub_password,
-            slack_webhook,
-            slack_channel,
-            ctx.obj["is_local"],
-            ctx.obj["git_branch"],
-            ctx.obj["git_revision"],
+            connector=connector,
+            pre_release=pre_release,
+            modified_files=modified_files,
+            spec_cache_gcs_credentials=spec_cache_gcs_credentials,
+            spec_cache_bucket_name=spec_cache_bucket_name,
+            metadata_service_gcs_credentials=metadata_service_gcs_credentials,
+            metadata_bucket_name=metadata_service_bucket_name,
+            docker_hub_username=docker_hub_username,
+            docker_hub_password=docker_hub_password,
+            slack_webhook=slack_webhook,
+            reporting_slack_channel=slack_channel,
+            is_local = ctx.obj["is_local"],
+            git_branch = ctx.obj["git_branch"],
+            git_revision = ctx.obj["git_revision"],
             gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
-            pull_request=ctx.obj.get("pull_request"),
+            ci_gcs_credentials=ctx.obj["ci_gcs_credentials"]
+
         )
         for connector, modified_files in selected_connectors_and_files.items()
     ])
