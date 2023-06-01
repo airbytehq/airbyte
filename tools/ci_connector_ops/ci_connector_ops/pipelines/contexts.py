@@ -426,10 +426,8 @@ class ConnectorContext(PipelineContext):
         await local_report_path.parents[0].mkdir(parents=True, exist_ok=True)
         await local_report_path.write_text(self.report.to_json())
 
-        # Get local report as File
-        local_report_dagger_file = self.dagger_client.host().directory(".", include=[str(local_report_path)]).file(str(local_report_path))
-
         if self.report.should_be_saved:
+            local_report_dagger_file = self.dagger_client.host().directory(".", include=[str(local_report_path)]).file(str(local_report_path))
             report_upload_exit_code, _stdout, _stderr = await remote_storage.upload_to_gcs(
                 dagger_client=self.dagger_client,
                 file_to_upload=local_report_dagger_file,
@@ -439,11 +437,15 @@ class ConnectorContext(PipelineContext):
             )
             if report_upload_exit_code != 0:
                 self.logger.error(f"Uploading the report to GCS Bucket: {self.test_report_bucket} failed.")
+
         if self.report.should_be_commented_on_pr:
             self.report.post_comment_on_pr()
+
         await asyncify(update_commit_status_check)(**self.github_commit_status)
+
         if self.should_send_slack_message:
             await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)
+
         # Supress the exception if any
         return True
 

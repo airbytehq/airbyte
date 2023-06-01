@@ -23,7 +23,6 @@ from ci_connector_ops.utils import ConnectorLanguage, console, get_all_released_
 from rich.logging import RichHandler
 from rich.table import Table
 from rich.text import Text
-from typing import Optional
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
 
 logger = logging.getLogger(__name__)
@@ -86,7 +85,6 @@ def render_report_output_prefix(ctx: click.Context) -> str:
     return "/".join(map(str, path_values))
 
 # COMMANDS
-
 
 @click.group(help="Commands related to connectors and connector acceptance tests.")
 @click.option("--use-remote-secrets", default=True)  # specific to connectors
@@ -172,11 +170,6 @@ def connectors(
         selected_connectors_and_files = {
             connector: modified_files for connector, modified_files in selected_connectors_and_files.items() if modified_files
         }
-
-    # TODO DEV REMOVE
-    # limit to 5 connectors for now
-    # import pdb; pdb.set_trace()
-    selected_connectors_and_files = dict(islice(selected_connectors_and_files.items(), 2))
 
     ctx.obj["selected_connectors_and_files"] = selected_connectors_and_files
     ctx.obj["selected_connectors_names"] = [c.technical_name for c in selected_connectors_and_files.keys()]
