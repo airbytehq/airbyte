@@ -66,14 +66,6 @@ connectionSpecification:
               examples:
                 - refresh_token
               airbyte_secret: true
-            access_token:
-              title: Access Token
-              description: >-
-                Access token for making authenticated requests. See the <a
-                href="https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart">Hubspot docs</a>
-                if you need help finding this secret.
-              type: string
-              airbyte_secret: true
         - type: object
           title: Private App
           required:
@@ -105,11 +97,6 @@ advanced_auth:
       type: object
       additionalProperties: false
       properties:
-        access_token:
-          type: string
-          path_in_connector_config:
-            - credentials
-            - access_token
         refresh_token:
           type: string
           path_in_connector_config:
