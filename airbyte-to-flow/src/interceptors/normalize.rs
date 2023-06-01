@@ -1,6 +1,6 @@
 use crate::interceptors::fix_document_schema::traverse_jsonschema;
 use chrono::SecondsFormat;
-use dateparser::parse;
+use dateparser::parse_with_timezone;
 use json::schema::formats::Format;
 use json::validator::ValidationResult;
 use regex::Regex;
@@ -54,7 +54,7 @@ fn normalize_to_rfc3339(doc: &mut serde_json::Value, ptr: doc::Pointer) {
             match Format::DateTime.validate(v) {
                 ValidationResult::Valid => (), // Already a valid date
                 _ => {
-                    let parsed = parse(v)
+                    let parsed = parse_with_timezone(v, &chrono::offset::Utc)
                         .or_else(|_| {
                             chrono::DateTime::parse_from_str(v, "%Y-%m-%dT%H:%M:%S%.3f%z")
                                 .map(|d| d.with_timezone(&chrono::Utc))
