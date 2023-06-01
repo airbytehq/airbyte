@@ -190,10 +190,54 @@ pub fn remove_enums(schema: &mut serde_json::Value) {
     traverse_jsonschema(
         schema,
         &mut |map: &mut Map<String, serde_json::Value>, _| {
-            map.remove("enum");
+            if let Some(values) = map.remove("enum") {
+                // If the schema doesn't specify the type, then we'll add one to replace the enum we removed.
+                if !map.contains_key("type") {
+                    // Collect the json type of each enum value into a set.
+                    // Technically, one could have specified `enum: []`, in
+                    // which case we won't be able to set the type. Use of
+                    // `BTreeSet` here is an easy way to ensure consistent
+                    // ordering of types when there's multiple.
+                    let value_types = values.as_array().map(|vals| {
+                        vals.iter()
+                            .map(type_for)
+                            .collect::<std::collections::BTreeSet<_>>()
+                    });
+                    if let Some(new_types) = value_types {
+                        // Use a plain string value in the common case where all
+                        // enum values have the same type. Otherwise, type will
+                        // be an array.
+                        let type_value = if new_types.len() == 1 {
+                            serde_json::Value::String(
+                                new_types.into_iter().next().unwrap().to_owned(),
+                            )
+                        } else {
+                            serde_json::Value::Array(
+                                new_types
+                                    .into_iter()
+                                    .map(|ts| serde_json::Value::String(ts.to_owned()))
+                                    .collect::<Vec<_>>(),
+                            )
+                        };
+                        map.insert("type".to_owned(), type_value);
+                    }
+                }
+            }
         },
         "".to_string(),
     )
+}
+
+fn type_for(value: &serde_json::Value) -> &'static str {
+    match value {
+        serde_json::Value::Null => "null",
+        serde_json::Value::Bool(_) => "boolean",
+        serde_json::Value::Number(num) if num.is_i64() || num.is_u64() => "integer",
+        serde_json::Value::Number(_) => "number",
+        serde_json::Value::String(_) => "string",
+        serde_json::Value::Array(_) => "array",
+        serde_json::Value::Object(_) => "object",
+    }
 }
 
 #[cfg(test)]
@@ -544,17 +588,33 @@ mod test {
     }
 
     #[test]
-    #[allow(non_snake_case)]
     fn test_remove_enums() {
-        let doc_schema = r#"{
+        let doc_schema = json!({
             "type": ["object", "null"],
             "properties": {
-                "my_key": {
+                "preDefinedType": {
+                    // the existing type should be untouched, even if it's incorrect with respect to the enum values
                     "type": ["string"],
-                    "enum": ["a", "b", "c"]
+                    "enum": ["a", "b", "c", true]
+                },
+                "allStrings": {
+                    "enum": ["a", "b", "c" ]
+                },
+                "allIntegers": {
+                    "enum": [123, 456]
+                },
+                "mixedNumbers": {
+                    // This will come out as ["integer", "number"], even though a slightly improved implementation would be to output only "number".
+                    // I consider this enough of an edge case that it's not worth worrying about.
+                    "enum": [123, 4.56]
+                },
+                "grabBag": {
+                    // Just testing that we spit out a variety of types, and that we don't remove any other schema properties
+                    "enum": [123, "456", true, {"oh": "geez"}, []],
+                    "x-untouched-annotation": true
                 }
             }
-        }"#
+        })
         .to_string();
 
         let mut doc = serde_json::from_str(&doc_schema).unwrap();
@@ -564,9 +624,11 @@ mod test {
             json!({
                 "type": ["object", "null"],
                 "properties": {
-                    "my_key": {
-                        "type": ["string"]
-                    }
+                    "preDefinedType": { "type": ["string"] },
+                    "allStrings": { "type": "string" },
+                    "allIntegers": { "type": "integer" },
+                    "mixedNumbers": { "type": ["integer", "number"]},
+                    "grabBag": { "type": ["array", "boolean", "integer", "object", "string"], "x-untouched-annotation": true }
                 }
             })
         );
