@@ -28,14 +28,18 @@
           "add_invoice_items": {
             "items": {
               "properties": {
-                "quantity": ["integer", "null"]
+                "quantity": {
+                  "type": ["integer", "null"]
+                }
               }
             }
           },
           "items": {
             "items": {
               "properties": {
-                "quantity": ["integer", "null"]
+                "quantity": {
+                  "type": ["integer", "null"]
+                }
               }
             }
           },
