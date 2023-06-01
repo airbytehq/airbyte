@@ -469,6 +469,8 @@ class PublishConnectorContext(ConnectorContext):
         docker_hub_password: str,
         slack_webhook: str,
         reporting_slack_channel: str,
+        report_output_prefix: str,
+
         is_local: bool,
         git_branch: bool,
         git_revision: bool,
@@ -492,7 +494,7 @@ class PublishConnectorContext(ConnectorContext):
             pipeline_name=pipeline_name,
             connector=connector,
             modified_files=modified_files,
-            report_output_prefix="python-poc/publish/history/",
+            report_output_prefix=report_output_prefix,
             is_local=is_local,
             git_branch=git_branch,
             git_revision=git_revision,

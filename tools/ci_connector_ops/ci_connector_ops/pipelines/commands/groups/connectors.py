@@ -374,6 +374,8 @@ def publish(
                 docker_hub_password=docker_hub_password,
                 slack_webhook=slack_webhook,
                 reporting_slack_channel=slack_channel,
+                report_output_prefix=ctx.obj["report_output_prefix"],
+
                 is_local=ctx.obj["is_local"],
                 git_branch=ctx.obj["git_branch"],
                 git_revision=ctx.obj["git_revision"],
