@@ -86,7 +86,9 @@
       "metadata_fields": {
         "title": "Metadata Fields",
         "type": "array",
-        "examples": [
+        "items":{ 
+          "title": "Validenums",
+          "enum":[
           "sheetcreatedAt",
           "sheetid",
           "sheetmodifiedAt",
@@ -104,8 +106,8 @@
           "row_permalink",
           "row_number",
           "row_version"
-        ],
-        "description": "Columns which metadata should be pulled from.",
+          ]},
+        "description": "A List of available columns which metadata can be pulled from.",
         "order": 3
       }
     }
