@@ -30,6 +30,8 @@ yarn start # any changes will automatically be reflected in your browser!
 
 All the content for docs.airbute.com lives in the `/docs` directory in this repo. All files are markdown. Make changes or add new files, and you should see them in your browser!
 
+If you have created any new files, be sure to add them manually to the table of contents found here in this [file](https://github.com/airbytehq/airbyte/blob/master/docusaurus/sidebars.js)
+
 ## Plugin Client Redirects
 
 A silly name, but a useful plugin that adds redirect functionality to docusuaurs

@@ -4,6 +4,8 @@ on:
   pull_request:
     branches:
       - master
+    paths:
+      - "airbyte-integrations/connectors/source-postgres/**"
 
 jobs:
   build:
