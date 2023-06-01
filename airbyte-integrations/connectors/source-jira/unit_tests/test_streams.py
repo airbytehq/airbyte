@@ -56,6 +56,7 @@ from source_jira.streams import (
     WorkflowStatusCategories,
     WorkflowStatuses,
 )
+from source_jira.utils import read_full_refresh
 
 
 @responses.activate
@@ -484,7 +485,7 @@ def test_sprints_stream(config, sprints_response):
 def test_board_does_not_support_sprints(config):
     url = f"https://{config['domain']}/rest/agile/1.0/board/4/sprint?maxResults=50"
     error = {'errorMessages': ['The board does not support sprints'], 'errors': {}}
-    responses.add(responses.GET, url, json=error,status=400)
+    responses.add(responses.GET, url, json=error, status=400)
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Sprints(**args)
@@ -644,29 +645,17 @@ def test_avatars_stream(config, avatars_response):
 
 
 @responses.activate
-def test_issues_stream(config, issues_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/search?maxResults=50&fields=%2Aall&jql=project+in+%28%271%27%2C+%272%27%29",
-        json=issues_response,
-    )
-
+def test_issues_stream(config, mock_projects_responses, mock_issues_responses, issues_response):
     authenticator = SourceJira().get_authenticator(config=config)
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Issues(**args)
-    records = [r for r in
-               stream.read_records(sync_mode=SyncMode.full_refresh)]
+    records = list(read_full_refresh(stream))
     assert len(records) == 1
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 3
 
 
 @responses.activate
-def test_issue_comments_stream(config, issues_response, issue_comments_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/search?maxResults=50&fields=%2Aall&jql=project+in+%28%271%27%2C+%272%27%29",
-        json=issues_response,
-    )
+def test_issue_comments_stream(config, mock_projects_responses, mock_issues_responses, issue_comments_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/comment?maxResults=50",
@@ -679,7 +668,7 @@ def test_issue_comments_stream(config, issues_response, issue_comments_response)
     records = [r for r in
                stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 2
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 4
 
 
 @responses.activate
@@ -716,7 +705,7 @@ def test_issue_property_keys_stream(config, issue_property_keys_response):
 
 
 @responses.activate
-def test_project_permissions_stream(config, project_permissions_response):
+def test_project_permissions_stream(config, mock_projects_responses, project_permissions_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/Project1/securitylevel?maxResults=50",
@@ -732,7 +721,7 @@ def test_project_permissions_stream(config, project_permissions_response):
 
 
 @responses.activate
-def test_project_email_stream(config, project_email_response):
+def test_project_email_stream(config, mock_projects_responses, project_email_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/1/email?maxResults=50",
@@ -750,11 +739,11 @@ def test_project_email_stream(config, project_email_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh,
                                               stream_slice={"key": "TESTKEY13-1"})]
     assert len(records) == 4
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 3
 
 
 @responses.activate
-def test_project_components_stream(config, project_components_response):
+def test_project_components_stream(config, mock_projects_responses, project_components_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/Project1/component?maxResults=50",
@@ -767,7 +756,7 @@ def test_project_components_stream(config, project_components_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh,
                                               stream_slice={"key": "Project1"})]
     assert len(records) == 4
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 3
 
 
 @responses.activate
@@ -808,12 +797,7 @@ def test_labels_stream(config, labels_response):
 
 
 @responses.activate
-def test_issue_worklogs_stream(config, issues_response, issue_worklogs_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/search?maxResults=50&fields=%2Aall&jql=project+in+%28%271%27%2C+%272%27%29",
-        json=issues_response,
-    )
+def test_issue_worklogs_stream(config, mock_projects_responses, mock_issues_responses, issue_worklogs_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/worklog?maxResults=50",
@@ -825,16 +809,11 @@ def test_issue_worklogs_stream(config, issues_response, issue_worklogs_response)
     stream = IssueWorklogs(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 1
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 4
 
 
 @responses.activate
-def test_issue_watchers_stream(config, issues_response, issue_watchers_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/search?maxResults=50&fields=%2Aall&jql=project+in+%28%271%27%2C+%272%27%29",
-        json=issues_response,
-    )
+def test_issue_watchers_stream(config, mock_projects_responses, mock_issues_responses, issue_watchers_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/watchers?maxResults=50",
@@ -846,16 +825,11 @@ def test_issue_watchers_stream(config, issues_response, issue_watchers_response)
     stream = IssueWatchers(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 1
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 4
 
 
 @responses.activate
-def test_issue_votes_stream(config, issues_response, issue_votes_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/search?maxResults=50&fields=%2Aall&jql=project+in+%28%271%27%2C+%272%27%29",
-        json=issues_response,
-    )
+def test_issue_votes_stream(config, mock_projects_responses, mock_issues_responses, issue_votes_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/votes?maxResults=50",
@@ -868,16 +842,11 @@ def test_issue_votes_stream(config, issues_response, issue_votes_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
 
     assert len(records) == 1
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 4
 
 
 @responses.activate
-def test_issue_remote_links_stream(config, issues_response, issue_remote_links_response):
-    responses.add(
-        responses.GET,
-        f"https://{config['domain']}/rest/api/3/search?maxResults=50&fields=%2Aall&jql=project+in+%28%271%27%2C+%272%27%29",
-        json=issues_response,
-    )
+def test_issue_remote_links_stream(config, mock_projects_responses, mock_issues_responses, issue_remote_links_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/remotelink?maxResults=50",
@@ -890,11 +859,11 @@ def test_issue_remote_links_stream(config, issues_response, issue_remote_links_r
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
 
     assert len(records) == 2
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 4
 
 
 @responses.activate
-def test_project_versions_stream(config, projects_versions_response):
+def test_project_versions_stream(config, mock_projects_responses, projects_versions_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/Project1/version?maxResults=50",
@@ -907,4 +876,4 @@ def test_project_versions_stream(config, projects_versions_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
 
     assert len(records) == 4
-    assert len(responses.calls) == 2
+    assert len(responses.calls) == 3
