@@ -114,8 +114,8 @@ class Step(ABC):
             if self.retry and result.status is StepStatus.FAILURE and self.retry_count <= self.max_retries:
                 self.retry_count += 1
                 await anyio.sleep(10)
-                console.print(
-                    f"[bold]Retry[/bold] [dim]{self.retry_count}[/dim] [bold]{self.title}[/bold] step for connector [bold]{self.context.connector.technical_name}[/bold]"
+                self.context.logger.warn(
+                    f"Retry #{self.retry_count} for {self.title} step on connector {self.context.connector.technical_name}"
                 )
                 return await self.run(*args, **kwargs)
             return result
