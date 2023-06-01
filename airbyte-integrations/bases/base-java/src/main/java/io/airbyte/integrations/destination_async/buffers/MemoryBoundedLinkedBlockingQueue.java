@@ -4,12 +4,10 @@
 
 package io.airbyte.integrations.destination_async.buffers;
 
-import java.time.Instant;
-import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nonnull;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -17,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
  * bounded on number of items in the queue, it is bounded by the memory it is allowed to use. The
  * amount of memory it is allowed to use can be resized after it is instantiated.
  * <p>
- * This class intentaionally hides the underlying queue inside of it. For this class to work, it has
+ * This class intentionally hides the underlying queue inside of it. For this class to work, it has
  * to override each method on a queue that adds or removes records from the queue. The Queue
  * interface has a lot of methods to override, and we don't want to spend the time overriding a lot
  * of methods that won't be used. By hiding the queue, we avoid someone accidentally using a queue
@@ -41,11 +39,7 @@ class MemoryBoundedLinkedBlockingQueue<E> {
   }
 
   public void addMaxMemory(final long maxMemoryUsage) {
-    this.hiddenQueue.maxMemoryUsage.addAndGet(maxMemoryUsage);
-  }
-
-  public Optional<Instant> getTimeOfLastMessage() {
-    return Optional.ofNullable(hiddenQueue.timeOfLastMessage.get());
+    hiddenQueue.maxMemoryUsage.addAndGet(maxMemoryUsage);
   }
 
   public int size() {
@@ -54,6 +48,10 @@ class MemoryBoundedLinkedBlockingQueue<E> {
 
   public boolean offer(final E e, final long itemSizeInBytes) {
     return hiddenQueue.offer(e, itemSizeInBytes);
+  }
+
+  public MemoryBoundedLinkedBlockingQueue.MemoryItem<E> peek() {
+    return hiddenQueue.peek();
   }
 
   public MemoryBoundedLinkedBlockingQueue.MemoryItem<E> take() throws InterruptedException {
@@ -78,12 +76,10 @@ class MemoryBoundedLinkedBlockingQueue<E> {
 
     private final AtomicLong currentMemoryUsage;
     private final AtomicLong maxMemoryUsage;
-    private final AtomicReference<Instant> timeOfLastMessage;
 
     public HiddenQueue(final long maxMemoryUsage) {
       currentMemoryUsage = new AtomicLong(0);
       this.maxMemoryUsage = new AtomicLong(maxMemoryUsage);
-      timeOfLastMessage = new AtomicReference<>(null);
     }
 
     public boolean offer(final E e, final long itemSizeInBytes) {
@@ -92,9 +88,6 @@ class MemoryBoundedLinkedBlockingQueue<E> {
         final boolean success = super.offer(new MemoryItem<>(e, itemSizeInBytes));
         if (!success) {
           currentMemoryUsage.addAndGet(-itemSizeInBytes);
-        } else {
-          // it succeeded!
-          timeOfLastMessage.set(Instant.now());
         }
         log.debug("offer status: {}", success);
         return success;
@@ -105,6 +98,7 @@ class MemoryBoundedLinkedBlockingQueue<E> {
       }
     }
 
+    @Nonnull
     @Override
     public MemoryBoundedLinkedBlockingQueue.MemoryItem<E> take() throws InterruptedException {
       final MemoryItem<E> memoryItem = super.take();
