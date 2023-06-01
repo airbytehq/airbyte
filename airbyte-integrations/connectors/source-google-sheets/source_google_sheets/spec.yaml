@@ -89,11 +89,6 @@ advanced_auth:
           path_in_connector_config:
             - credentials
             - refresh_token
-        access_token:
-          type: string
-          path_in_connector_config:
-            - credentials
-            - access_token
     complete_oauth_server_input_specification:
       type: object
       additionalProperties: false
