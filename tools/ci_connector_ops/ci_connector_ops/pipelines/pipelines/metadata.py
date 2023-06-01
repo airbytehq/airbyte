@@ -10,7 +10,7 @@ from ci_connector_ops.pipelines.actions import run_steps
 from ci_connector_ops.pipelines.actions.environments import with_pip_packages, with_poetry_module, with_python_base
 from ci_connector_ops.pipelines.bases import Report, Step, StepResult
 from ci_connector_ops.pipelines.contexts import PipelineContext
-from ci_connector_ops.pipelines.utils import DAGGER_CONFIG, METADATA_FILE_NAME, execute_concurrently, METADATA_ICON_FILE_NAME
+from ci_connector_ops.pipelines.utils import DAGGER_CONFIG, METADATA_FILE_NAME, METADATA_ICON_FILE_NAME, execute_concurrently
 
 METADATA_DIR = "airbyte-ci/connectors/metadata_service"
 METADATA_LIB_MODULE_PATH = "lib"

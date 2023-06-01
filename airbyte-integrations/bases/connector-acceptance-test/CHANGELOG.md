@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.10.4
+Fixing bug: test_catalog_has_supported_data_types should support stream properties having `/` in it.
+
+## 0.10.3
+Fixing bug: test_catalog_has_supported_data_types , integer is a supported airbyte type.
+
+## 0.10.2
+Fixing bug: test_catalog_has_supported_data_types was failing when a connector stream property is named 'type'.
+
+## 0.10.1
+Reverting to 0.9.0 as the latest version. 0.10.0 was released with a bug failing CAT on a couple of connectors.
+
+## 0.10.0
+Discovery test: add validation that fails if the declared types/format/airbyte_types in the connector's streams properties are not [supported data types](https://docs.airbyte.com/understanding-airbyte/supported-data-types/) or if their combination is invalid.
+
 ## 0.9.0
 Basic read test: add validation that fails if undeclared columns are present in records. Add `fail_on_extra_fields` input parameter to ignore this failure if desired.
 

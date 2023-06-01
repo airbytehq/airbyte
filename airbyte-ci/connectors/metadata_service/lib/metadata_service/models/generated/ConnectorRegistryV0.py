@@ -171,6 +171,10 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
         None,
         description="The date when this connector was first released, in yyyy-mm-dd format.",
     )
+    tags: Optional[List[str]] = Field(
+        None,
+        description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc.",
+    )
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
     protocolVersion: Optional[str] = Field(
         None, description="the Airbyte Protocol version supported by the connector"

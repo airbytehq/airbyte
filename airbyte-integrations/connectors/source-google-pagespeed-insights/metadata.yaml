@@ -10,9 +10,12 @@ data:
   name: Google PageSpeed Insights
   registries:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/google-pagespeed-insights
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-pagespeed-insights
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

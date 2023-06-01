@@ -475,6 +475,7 @@ def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_p
         python_with_poetry.with_mounted_directory("/src", parent_dir)
         .with_workdir(f"/src/{module_path}")
         .with_exec(poetry_install_dependencies_cmd)
+        .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
     )
 
 
@@ -673,7 +674,6 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
 
 
 async def get_cdk_version_from_python_connector(python_connector: Container) -> Optional[str]:
-
     pip_freeze_stdout = await python_connector.with_entrypoint("pip").with_exec(["freeze"]).stdout()
     pip_dependencies = [dep.split("==") for dep in pip_freeze_stdout.split("\n")]
     for package_name, package_version in pip_dependencies:
@@ -769,9 +769,29 @@ def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_p
     )
 
 
-def with_crane(context: PipelineContext) -> Container:
+def with_crane(
+    context: PipelineContext,
+) -> Container:
     """Crane is a tool to analyze and manipulate container images.
     We can use it to extract the image manifest and the list of layers or list the existing tags on an image repository.
     https://github.com/google/go-containerregistry/tree/main/cmd/crane
     """
-    return context.dagger_client.container().from_("gcr.io/go-containerregistry/crane:v0.15.1")
+
+    # We use the debug image as it contains a shell which we need to properly use environment variables
+    # https://github.com/google/go-containerregistry/tree/main/cmd/crane#images
+    base_container = context.dagger_client.container().from_("gcr.io/go-containerregistry/crane/debug:v0.15.1")
+
+    if context.docker_hub_username_secret and context.docker_hub_password_secret:
+        base_container = (
+            base_container.with_secret_variable("DOCKER_HUB_USERNAME", context.docker_hub_username_secret).with_secret_variable(
+                "DOCKER_HUB_PASSWORD", context.docker_hub_password_secret
+            )
+            # We need to use skip_entrypoint=True to avoid the entrypoint to be overridden by the crane command
+            # We use sh -c to be able to use environment variables in the command
+            # This is a workaround as the default crane entrypoint doesn't support environment variables
+            .with_exec(
+                ["sh", "-c", "crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"], skip_entrypoint=True
+            )
+        )
+
+    return base_container

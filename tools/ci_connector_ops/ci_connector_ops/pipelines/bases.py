@@ -23,9 +23,19 @@ from rich.panel import Panel
 from rich.style import Style
 from rich.table import Table
 from rich.text import Text
+from tabulate import tabulate
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
+
+
+class CIContext(str, Enum):
+    """An enum for Ci context values which can be ["manual", "pull_request", "nightly_builds"]."""
+
+    MANUAL = "manual"
+    PULL_REQUEST = "pull_request"
+    NIGHTLY_BUILDS = "nightly_builds"
+    MASTER = "master"
 
 
 class StepStatus(Enum):
@@ -63,6 +73,15 @@ class StepStatus(Enum):
             return Style(color="red", bold=True)
         if self is StepStatus.SKIPPED:
             return Style(color="yellow")
+
+    def get_emoji(self) -> str:
+        """Match emoji used in the console output to the step status."""
+        if self is StepStatus.SUCCESS:
+            return "✅"
+        if self is StepStatus.FAILURE:
+            return "❌"
+        if self is StepStatus.SKIPPED:
+            return "🟡"
 
     def __str__(self) -> str:  # noqa D105
         return self.value
@@ -255,6 +274,7 @@ class Report:
                 "git_branch": self.pipeline_context.git_branch,
                 "git_revision": self.pipeline_context.git_revision,
                 "ci_context": self.pipeline_context.ci_context,
+                "pull_request_url": self.pipeline_context.pull_request.html_url if self.pipeline_context.pull_request else None,
             }
         )
 
@@ -305,6 +325,10 @@ class ConnectorReport(Report):
     def should_be_saved(self) -> bool:  # noqa D102
         return self.pipeline_context.is_ci
 
+    @property
+    def should_be_commented_on_pr(self) -> bool:  # noqa D102
+        return self.pipeline_context.is_ci and self.pipeline_context.pull_request and self.pipeline_context.PRODUCTION
+
     def to_json(self) -> str:
         """Create a JSON representation of the connector test report.
 
@@ -331,6 +355,24 @@ class ConnectorReport(Report):
                 "cdk_version": self.pipeline_context.cdk_version,
             }
         )
+
+    def post_comment_on_pr(self) -> None:
+        icon_url = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
+        global_status_emoji = "✅" if self.success else "❌"
+        commit_url = f"{self.pipeline_context.pull_request.html_url}/commits/{self.pipeline_context.git_revision}"
+        markdown_comment = f'## <img src="{icon_url}" width="40" height="40"> {self.pipeline_context.connector.technical_name} test report (commit [`{self.pipeline_context.git_revision[:10]}`]({commit_url})) - {global_status_emoji}\n\n'
+        markdown_comment += f"⏲️  Total pipeline duration: {round(self.run_duration)} seconds\n\n"
+        report_data = [
+            [step_result.step.title, step_result.status.get_emoji()]
+            for step_result in self.steps_results
+            if step_result.status is not StepStatus.SKIPPED
+        ]
+        markdown_comment += tabulate(report_data, headers=["Step", "Result"], tablefmt="pipe") + "\n\n"
+        markdown_comment += f"🔗 [View the logs here]({self.pipeline_context.gha_workflow_run_url})\n\n"
+        markdown_comment += "*Please note that tests are only run on PR ready for review. Please set your PR to draft mode to not flood the CI engine and upstream service on following commits.*\n"
+        markdown_comment += "**You can run the same pipeline locally on this branch with the [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/README.md) tool with the following command**\n"
+        markdown_comment += f"```bash\nairbyte-ci connectors --name={self.pipeline_context.connector.technical_name} test\n```\n\n"
+        self.pipeline_context.pull_request.create_issue_comment(markdown_comment)
 
     def print(self):
         """Print the test report to the console in a nice way."""

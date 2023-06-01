@@ -19,5 +19,8 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/mysql
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
+  tags:
+    - language:java
+    - language:python
 metadataSpecVersion: "1.0"
