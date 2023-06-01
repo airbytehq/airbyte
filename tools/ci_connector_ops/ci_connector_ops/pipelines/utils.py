@@ -24,7 +24,6 @@ from more_itertools import chunked
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext
-    from github import PullRequest
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
@@ -223,11 +222,6 @@ def get_modified_files_in_commit(current_git_branch: str, current_git_revision: 
         return get_modified_files_in_commit_local(current_git_revision)
     else:
         return anyio.run(get_modified_files_in_commit_remote, current_git_branch, current_git_revision)
-
-
-def get_modified_files_in_pull_request(pull_request: PullRequest) -> List[str]:
-    """Retrieve the list of modified files in a pull request."""
-    return [f.filename for f in pull_request.get_files()]
 
 
 def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
