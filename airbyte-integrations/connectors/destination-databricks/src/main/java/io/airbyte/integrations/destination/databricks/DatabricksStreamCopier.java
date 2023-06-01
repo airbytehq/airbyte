@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.databricks;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.destination.databricks.utils.DatabricksConstants;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants;
@@ -30,6 +31,7 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
   private static final Logger LOGGER = LoggerFactory.getLogger(DatabricksStreamCopier.class);
 
   protected final String schemaName;
+  protected final String catalogName;
   protected final String streamName;
   protected final DestinationSyncMode destinationSyncMode;
   private final boolean purgeStagingData;
@@ -44,6 +46,7 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
   protected final DatabricksDestinationConfig databricksConfig;
 
   public DatabricksStreamCopier(final String stagingFolder,
+                                final String catalog,
                                 final String schema,
                                 final ConfiguredAirbyteStream configuredStream,
                                 final JdbcDatabase database,
@@ -51,6 +54,7 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
                                 final StandardNameTransformer nameTransformer,
                                 final SqlOperations sqlOperations) {
     this.schemaName = schema;
+    this.catalogName = catalog;
     this.streamName = configuredStream.getStream().getName();
     this.destinationSyncMode = configuredStream.getDestinationSyncMode();
     this.purgeStagingData = databricksConfig.isPurgeStagingData();
@@ -109,7 +113,7 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
         : "CREATE TABLE IF NOT EXISTS";
 
     final String createTable = String.format(
-        "%s %s.%s " +
+        "%s %s.%s.%s " +
             "USING delta " +
             "LOCATION '%s' " +
             "COMMENT 'Created from stream %s' " +
@@ -117,7 +121,7 @@ public abstract class DatabricksStreamCopier implements StreamCopier {
             // create the table based on the schema of the tmp table
             "AS SELECT * FROM %s.%s LIMIT 0",
         createStatement,
-        schemaName, destTableName,
+        catalogName, schemaName, destTableName,
         getDestTableLocation(),
         streamName,
         destinationSyncMode.value(),

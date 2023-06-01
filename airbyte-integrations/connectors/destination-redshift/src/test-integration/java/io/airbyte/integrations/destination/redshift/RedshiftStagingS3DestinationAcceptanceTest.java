@@ -161,6 +161,11 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
   }
 
   @Override
+  protected boolean supportIncrementalSchemaChanges() {
+    return true;
+  }
+
+  @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
                                            final String streamName,
                                            final String namespace,

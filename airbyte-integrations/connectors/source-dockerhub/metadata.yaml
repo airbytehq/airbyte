@@ -1,0 +1,20 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 72d405a3-56d8-499f-a571-667c03406e43
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-dockerhub
+  githubIssueLabel: source-dockerhub
+  icon: dockerhub.svg
+  license: MIT
+  name: Dockerhub
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dockerhub
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

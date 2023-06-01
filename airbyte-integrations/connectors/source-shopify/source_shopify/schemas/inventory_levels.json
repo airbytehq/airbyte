@@ -5,6 +5,9 @@
     "id": {
       "type": ["null", "string"]
     },
+    "admin_graphql_api_id": {
+      "type": ["null", "string"]
+    },
     "available": {
       "type": ["null", "integer"]
     },

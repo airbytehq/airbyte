@@ -18,8 +18,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.logging.MdcScope.Builder;
-import io.airbyte.config.OperatorDbt;
-import io.airbyte.config.ResourceRequirements;
+import io.airbyte.configoss.OperatorDbt;
+import io.airbyte.configoss.ResourceRequirements;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage.FailureType;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -135,6 +135,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
           resourceRequirements,
           null,
           Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, NORMALIZE_STEP),
+          Collections.emptyMap(),
           Collections.emptyMap(),
           Collections.emptyMap(),
           args);

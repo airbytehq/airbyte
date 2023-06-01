@@ -54,6 +54,15 @@
         "default": "2020-01-01",
         "order": 5,
         "examples": ["2020-01-01"]
+      },
+      "lookback_window": {
+        "title": "Lookback window",
+        "description": "Also known as attribution or conversion window. How far into the past to look for records (in days). If your conversion window has an hours/minutes granularity, round it up to the number of days exceeding. Used only for performance report streams in incremental mode.",
+        "type": "integer",
+        "default": 0,
+        "minimum": 0,
+        "maximum": 90,
+        "order": 6
       }
     }
   },

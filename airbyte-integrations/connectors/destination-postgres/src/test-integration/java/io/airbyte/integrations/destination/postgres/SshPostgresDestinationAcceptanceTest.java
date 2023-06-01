@@ -49,7 +49,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db).put("schema", schemaName));
+    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db).put("schema", schemaName), false);
   }
 
   @Override

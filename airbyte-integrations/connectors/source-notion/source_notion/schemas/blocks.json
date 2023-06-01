@@ -6,6 +6,9 @@
     "object": {
       "enum": ["block"]
     },
+    "parent": {
+      "$ref": "parent.json"
+    },
     "id": {
       "type": "string"
     },

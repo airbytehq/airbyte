@@ -5,10 +5,10 @@
 package io.airbyte.workers.helper;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-import io.airbyte.config.FailureReason;
-import io.airbyte.config.FailureReason.FailureOrigin;
-import io.airbyte.config.FailureReason.FailureType;
-import io.airbyte.config.Metadata;
+import io.airbyte.configoss.FailureReason;
+import io.airbyte.configoss.FailureReason.FailureOrigin;
+import io.airbyte.configoss.FailureReason.FailureType;
+import io.airbyte.configoss.Metadata;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import java.util.Comparator;
 import java.util.List;

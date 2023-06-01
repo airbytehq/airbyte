@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.10.4
+Fixing bug: test_catalog_has_supported_data_types should support stream properties having `/` in it.
+
+## 0.10.3
+Fixing bug: test_catalog_has_supported_data_types , integer is a supported airbyte type.
+
+## 0.10.2
+Fixing bug: test_catalog_has_supported_data_types was failing when a connector stream property is named 'type'.
+
+## 0.10.1
+Reverting to 0.9.0 as the latest version. 0.10.0 was released with a bug failing CAT on a couple of connectors.
+
+## 0.10.0
+Discovery test: add validation that fails if the declared types/format/airbyte_types in the connector's streams properties are not [supported data types](https://docs.airbyte.com/understanding-airbyte/supported-data-types/) or if their combination is invalid.
+
+## 0.9.0
+Basic read test: add validation that fails if undeclared columns are present in records. Add `fail_on_extra_fields` input parameter to ignore this failure if desired.
+
+## 0.8.0
+Spec tests: Make sure grouping and ordering properties are used in a consistent way.
+
+## 0.7.2
+TestConnection: assert that a check with `exception` status emits a trace message.
+
 ## 0.7.1
 Discovery backward compatibility tests: handle errors on previous connectors catalog retrieval. Return None when the discovery failed. It should unblock the situation when tests fails even if you bypassed backward compatibility tests.
 

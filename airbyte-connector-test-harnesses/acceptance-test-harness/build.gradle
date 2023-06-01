@@ -21,7 +21,7 @@ dependencies {
 
     implementation project(':airbyte-api')
     implementation project(':airbyte-commons-protocol')
-    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config-oss:config-models-oss')
     implementation project(':airbyte-json-validation')
     implementation libs.airbyte.protocol
 

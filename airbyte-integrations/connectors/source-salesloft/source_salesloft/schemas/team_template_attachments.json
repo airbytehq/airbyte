@@ -13,7 +13,7 @@
       "additionalProperties": true,
       "properties": {
         "id": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "_href": {
           "type": ["null", "string"]

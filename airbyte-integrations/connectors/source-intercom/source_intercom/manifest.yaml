@@ -1,0 +1,306 @@
+version: "0.1.0"
+
+definitions:
+
+  ## bases
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_intercom/schemas/{{ parameters['name'] }}.json"
+  selector:
+    description: "Base records selector for Full Refresh streams"
+    extractor:
+      type: DpathExtractor
+      field_path: ["{{ parameters.get('data_field', 'data')}}"] 
+  requester:
+    description: "Base Requester for Full Refresh streams"
+    type: CustomRequester
+    class_name: source_intercom.components.HttpRequesterWithRateLimiter
+    url_base: "https://api.intercom.io/"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['access_token'] }}"
+    request_headers:
+      Intercom-Version: '2.5' # ATTENTION: API version change is possible here
+      Accept: 'application/json'
+  retriever:
+    description: "Base Retriever for Full Refresh streams"
+    record_selector:
+      $ref: "#/definitions/selector"
+    requester:
+      $ref: "#/definitions/requester"
+    paginator:
+      type: "DefaultPaginator"
+      url_base: "#/definitions/requester/url_base"
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.get('pages', {}).get('next') }}"
+        stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
+        page_size: 150
+      page_size_option:
+        inject_into: request_parameter
+        field_name: per_page
+      page_token_option:
+        type: RequestPath      
+  requester_incremental_search:
+    $ref: "#/definitions/requester"
+    http_method: "POST"
+    request_body_json:
+      query: "{
+          'operator': 'OR',
+          'value': [
+              {
+                  'field': 'updated_at',
+                  'operator': '>',
+                  'value': {{ stream_slice.get('prior_state', stream_state.get('prior_state', {})).get('updated_at') or format_datetime(config['start_date'], '%s') }}
+              },
+              {
+                  'field': 'updated_at',
+                  'operator': '=',
+                  'value': {{ stream_slice.get('prior_state', stream_state.get('prior_state', {})).get('updated_at') or format_datetime(config['start_date'], '%s') }}
+              },
+          ],
+      }"
+      sort: "{'field': 'updated_at', 'order': 'ascending'}"
+      pagination: "{
+        'per_page': {{ parameters.get('page_size') }},
+        'page': {{ next_page_token.get('next_page_token').get('page') }},
+        'starting_after': '{{ next_page_token.get('next_page_token').get('starting_after') }}'
+      }"
+  
+  ## streams
+  # full-refresh
+  stream_full_refresh:
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    retriever:
+      $ref: "#/definitions/retriever"
+  admins:
+    description: "https://developers.intercom.com/intercom-api-reference/reference#list-admins"
+    $ref: "#/definitions/stream_full_refresh"
+    $parameters:
+      name: "admins"
+      primary_key: "id"
+      path: "admins"
+      data_field: "admins"
+  tags:
+    description: "https://developers.intercom.com/intercom-api-reference/reference#list-tags-for-an-app"
+    $ref: "#/definitions/stream_full_refresh"
+    $parameters:
+      name: "tags"
+      primary_key: "name"
+      path: "tags"
+  teams:
+    description: "https://developers.intercom.com/intercom-api-reference/reference#list-teams"
+    $ref: "#/definitions/stream_full_refresh"
+    $parameters:
+      name: "teams"
+      primary_key: "name"
+      path: "teams"
+      data_field: "teams"
+  
+  stream_data_attributes:
+    description: "https://developers.intercom.com/intercom-api-reference/reference#list-data-attributes"
+    $ref: "#/definitions/stream_full_refresh"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          model: "{{ parameters.get('model') }}"
+  company_attributes:
+    description: "https://developers.intercom.com/intercom-api-reference/reference#list-data-attributes"
+    $ref: "#/definitions/stream_data_attributes"
+    $parameters:
+      name: "company_attributes"
+      primary_key: "name"
+      path: "data_attributes"
+      model: "company"
+  contact_attributes:
+    description: "https://developers.intercom.com/intercom-api-reference/reference#list-data-attributes"
+    $ref: "#/definitions/stream_data_attributes"
+    $parameters:
+      name: "contact_attributes"
+      primary_key: "name"
+      path: "data_attributes"
+      model: "contact"
+  
+  # semi-incremental 
+  # (full-refresh and emit records >= *prior state)
+  # (prior state - frozen state from previous sync, it automatically updates with next sync)
+  stream_semi_incremental:
+    $ref: "#/definitions/stream_full_refresh"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_intercom.components.IncrementalSingleSlice
+      cursor_field: "updated_at"
+    retriever:
+      $ref: "#/definitions/stream_full_refresh/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['updated_at'] >= ( stream_state.get('prior_state', {}).get('updated_at', 0) if stream_state else stream_slice.get('prior_state', {}).get('updated_at', 0) ) }}"
+  segments:
+    description: "https://developers.intercom.com/intercom-api-reference/reference#list-segments"
+    $ref: "#/definitions/stream_semi_incremental"
+    $parameters:
+      name: "segments"
+      primary_key: "id"
+      path: "segments"
+      data_field: "segments"
+  companies:
+    description: "https://developers.intercom.com/intercom-api-reference/reference/scroll-over-all-companies"
+    $ref: "#/definitions/stream_semi_incremental"
+    $parameters:
+      name: "companies"
+      primary_key: "id"
+      path: "companies/scroll"
+    retriever:
+      $ref: "#/definitions/stream_semi_incremental/retriever"
+      paginator:
+        type: "DefaultPaginator"
+        url_base: "#/definitions/requester/url_base"
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ response.get('scroll_param') }}"
+          stop_condition: "{{ not response.get('data') }}"
+          page_size: 150
+        page_size_option:
+          inject_into: request_parameter
+          field_name: per_page
+        page_token_option:
+          type: RequestOption
+          field_name: scroll_param
+          inject_into: request_parameter
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              description: "
+                400 - existing scroll_param, need to wait at least 60 sec to continue and retry
+                500 - server-side error, should retry after 60 sec.
+                "
+              response_filters:
+                - http_codes: [ 400, 500 ]
+                  action: RETRY
+              backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 60
+            - type: DefaultErrorHandler
+              description: "404 - scroll_param is expired or not found while requesting, ignore"
+              response_filters:
+                - http_codes: [ 404 ]
+                  action: IGNORE
+    
+  # semi-incremental substreams
+  substream_semi_incremental:
+    $ref: "#/definitions/stream_full_refresh"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_intercom.components.IncrementalSubstreamSlicer
+      cursor_field: "updated_at"
+    retriever:
+      $ref: "#/definitions/stream_full_refresh/retriever"
+      paginator:
+        type: "NoPagination"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          condition: "{{ record['updated_at'] >= stream_state.get('prior_state', {}).get('updated_at', 0) }}"
+  conversation_parts:
+    $ref: "#/definitions/substream_semi_incremental"
+    incremental_sync:
+      $ref: "#/definitions/substream_semi_incremental/incremental_sync"
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          stream: "#/definitions/conversations"
+          parent_key: "id"
+          partition_field: "id"
+    $parameters:
+      name: "conversation_parts"
+      primary_key: "id"
+      path: "/conversations/{{ stream_slice.id }}"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["conversation_id"]
+            value: "'{{ stream_slice.id }}'"
+    retriever:
+      $ref: "#/definitions/substream_semi_incremental/retriever"
+      record_selector:
+        $ref: "#/definitions/substream_semi_incremental/retriever/record_selector"
+        extractor:
+          field_path: ["conversation_parts", "conversation_parts"]
+  company_segments:
+    $ref: "#/definitions/substream_semi_incremental"
+    $parameters:
+      name: "company_segments"
+      primary_key: "id"
+      path: "/companies/{{ stream_slice.id }}/segments"
+    incremental_sync:
+      $ref: "#/definitions/substream_semi_incremental/incremental_sync"
+      parent_complete_fetch: true
+      parent_stream_configs:
+        - type: ParentStreamConfig
+          stream: "#/definitions/companies"
+          parent_key: "id"
+          partition_field: "id"
+    retriever:
+      $ref: "#/definitions/substream_semi_incremental/retriever"
+
+  # incremental search
+  stream_incremental_search:
+    description: "https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search"
+    $ref: "#/definitions/stream_full_refresh"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_intercom.components.IncrementalSingleSlice
+      cursor_field: "updated_at"
+    retriever:
+      $ref: "#/definitions/stream_full_refresh/retriever"
+      requester:
+        $ref: "#/definitions/requester_incremental_search"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          description: "https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search#pagination"
+          condition: "{{ record['updated_at'] >= ( stream_state.get('prior_state', {}).get('updated_at', 0) if stream_state else stream_slice.get('prior_state', {}).get('updated_at', 0) ) }}"
+      paginator:
+        type: "DefaultPaginator"
+        url_base: "#/definitions/requester/url_base"
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ response.get('pages', {}).get('next') }}"
+          stop_condition: "{{ 'next' not in response.get('pages', {}) }}"
+  contacts:
+    $ref: "#/definitions/stream_incremental_search"
+    $parameters:
+      name: "contacts"
+      path: "contacts/search"
+      page_size: 150
+  conversations:
+    $ref: "#/definitions/stream_incremental_search"
+    $parameters:
+      name: "conversations"
+      path: "conversations/search"
+      data_field: "conversations"
+      page_size: 150
+         
+streams:
+  - "#/definitions/admins"
+  - "#/definitions/tags"
+  - "#/definitions/teams"
+  - "#/definitions/segments"
+  - "#/definitions/companies"
+  - "#/definitions/company_attributes"
+  - "#/definitions/contact_attributes"
+  - "#/definitions/contacts"
+  - "#/definitions/conversations"
+  - "#/definitions/conversation_parts"
+  - "#/definitions/company_segments"
+
+check:
+  stream_names: 
+    - "tags"

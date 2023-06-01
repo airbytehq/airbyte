@@ -20,14 +20,16 @@
         "title": "Start Date",
         "examples": ["2021-01-01"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-        "order": 1
+        "order": 1,
+        "format": "date"
       },
       "end_date": {
         "type": "string",
         "title": "End Date",
         "examples": ["2021-12-12"],
         "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-        "order": 2
+        "order": 2,
+        "format": "date"
       },
       "authorization": {
         "type": "object",
@@ -105,7 +107,15 @@
       "custom_reports": {
         "order": 4,
         "type": "string",
-        "title": "Custom Reports"
+        "title": "Custom Reports",
+      },
+      "data_state": {
+        "type": "string",
+        "title": "Data State",
+        "enum": ["final", "all"],
+        "examples": ["final"],
+        "default": "final",
+        "order": 5
       }
     }
   },

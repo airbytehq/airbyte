@@ -49,7 +49,7 @@ See `sample_files/sample_config.json` for a sample config file.
 
 In order to run integrations tests in this connector, you need:
 1. Testing Google Cloud Service Storage
-    1. Download and store your Google [Service Account](https://console.cloud.google.com/iam-admin/serviceaccounts) JSON file in `secrets/gcs.json`, it should look something like this:   
+   1. Download and store your Google [Service Account](https://console.cloud.google.com/iam-admin/serviceaccounts) JSON file in `secrets/gcs.json`, it should look something like this:   
         ```
         {
             "type": "service_account",
@@ -64,9 +64,9 @@ In order to run integrations tests in this connector, you need:
             "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/XXXXXXX0XXXXXX.iam.gserviceaccount.com"
         }
         ```
-    1. Your Service Account should have [Storage Admin Rights](https://console.cloud.google.com/iam-admin/iam) (to create Buckets, read and store files in GCS)
+   2. Your Service Account should have [Storage Admin Rights](https://console.cloud.google.com/iam-admin/iam) (to create Buckets, read and store files in GCS)
 
-1. Testing Amazon S3 
+2. Testing Amazon S3 
     1. Create a file at `secrets/aws.json`   
        ```
         {
@@ -75,7 +75,7 @@ In order to run integrations tests in this connector, you need:
         }
        ```
 
-1. Testing Azure Blob Storage
+3. Testing Azure Blob Storage
    1. Create a file at `secrets/azblob.json`
         ```
         {
@@ -129,7 +129,7 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files 
 
 ### Integration Tests
 1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-file:integrationTest` to run the standard integration test suite.
-1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `python -m pytest -s integration_tests`.
+2. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `python -m pytest -s integration_tests`.
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 
 #### Acceptance Tests
