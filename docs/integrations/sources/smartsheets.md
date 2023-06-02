@@ -50,7 +50,7 @@ You'll also need the ID of the Spreadsheet you'd like to sync. Unlike Google She
 
 ## Supported sync modes
 
-The Smartsheets source connector supports the following[sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Smartsheets source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
  - Full Refresh | Overwrite
  - Full Refresh | Append
  - Incremental  | Append
@@ -110,6 +110,7 @@ The remaining column datatypes supported by Smartsheets are more complex types (
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 1.1.0   | 2023-06-02 | [22382](https://github.com/airbytehq/airbyte/pull/22382) | Add support for ingesting metadata fields |
 | 1.0.2   | 2023-05-12 | [26024](https://github.com/airbytehq/airbyte/pull/26024) | Fix dependencies conflict                                 |
 | 1.0.1   | 2023-04-27 | [25562](https://github.com/airbytehq/airbyte/pull/25562) | Update testing dependencies                               |
 | 1.0.0   | 2023-02-19 | [23237](https://github.com/airbytehq/airbyte/pull/23237) | Fix OAuth2.0 token refresh                                |
