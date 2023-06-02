@@ -657,8 +657,8 @@ class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
         """
         https://developer.zendesk.com/documentation/api-basics/pagination/paginating-through-lists-using-cursor-pagination/#when-to-stop-paginating
         """
-        meta = response.json().get("meta")
-        return meta.get("after_cursor") if meta.get("has_more") else None
+        meta = response.json().get("meta", {})
+        return meta.get("after_cursor") if meta.get("has_more", False) else None
 
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
