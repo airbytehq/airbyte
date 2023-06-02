@@ -227,18 +227,23 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             str: The current access_token, updated if it was previously expired.
         """
         if self.token_has_expired():
-            with open('/Users/joereuter/Clones/airbyte/debug.txt', 'a') as file: file.write('get a new refresh token\n')
+            with open("/Users/joereuter/Clones/airbyte/debug.txt", "a") as file:
+                file.write("get a new refresh token\n")
             new_access_token, access_token_expires_in, new_refresh_token = self.refresh_access_token()
             new_token_expiry_date = self.get_new_token_expiry_date(access_token_expires_in, self._token_expiry_date_format)
             self.access_token = new_access_token
             self.set_refresh_token(new_refresh_token)
             self.set_token_expiry_date(new_token_expiry_date)
-            with open('/Users/joereuter/Clones/airbyte/debug.txt', 'a') as file: file.write(f'new refresh token: {new_refresh_token}\n')
-            with open('/Users/joereuter/Clones/airbyte/debug.txt', 'a') as file: file.write(f'new access token: {new_access_token}\n')
-            with open('/Users/joereuter/Clones/airbyte/debug.txt', 'a') as file: file.write(f'new expiry date: {new_token_expiry_date}\n')
+            with open("/Users/joereuter/Clones/airbyte/debug.txt", "a") as file:
+                file.write(f"new refresh token: {new_refresh_token}\n")
+            with open("/Users/joereuter/Clones/airbyte/debug.txt", "a") as file:
+                file.write(f"new access token: {new_access_token}\n")
+            with open("/Users/joereuter/Clones/airbyte/debug.txt", "a") as file:
+                file.write(f"new expiry date: {new_token_expiry_date}\n")
             emit_configuration_as_airbyte_control_message(self._connector_config)
         else:
-            with open('/Users/joereuter/Clones/airbyte/debug.txt', 'a') as file: file.write('reuse access token\n')
+            with open("/Users/joereuter/Clones/airbyte/debug.txt", "a") as file:
+                file.write("reuse access token\n")
         return self.access_token
 
     def refresh_access_token(self) -> Tuple[str, str, str]:
