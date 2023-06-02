@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - sonarcloud.io
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 3ab1d7d0-1577-4ab9-bcc4-1ff6a4c2c9f2
@@ -16,6 +11,14 @@ data:
   icon: sonarcloud.svg
   license: MIT
   name: Sonar Cloud
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/sonar-cloud
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sonar-cloud
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

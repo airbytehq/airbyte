@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.39.1
+Improve connector builder error messages
+
+## 0.39.0
+Align schema generation in SchemaInferrer with Airbyte platform capabilities
+
+## 0.38.0
+Allow nested objects in request_body_json
+
+## 0.37.0
+low-code: Make refresh token in oauth authenticator optional
+
+## 0.36.5
+Unfreeze requests version and test new pipeline
+
+## 0.36.4
+low-code: use jinja sandbox and restrict some methods
+
+## 0.36.3
+pin the version of the requests library
+
 ## 0.36.2
 Support parsing non UTC dates and Connector Builder set slice descriptor
 

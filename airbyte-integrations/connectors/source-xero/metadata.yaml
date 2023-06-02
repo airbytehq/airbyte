@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - api.xero.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 6fd1e833-dd6e-45ec-a727-ab917c5be892
@@ -16,6 +11,13 @@ data:
   icon: xero.svg
   license: MIT
   name: Xero
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/xero
+  documentationUrl: https://docs.airbyte.com/integrations/sources/xero
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

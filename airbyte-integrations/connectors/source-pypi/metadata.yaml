@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 88ecd3a8-5f5b-11ed-9b6a-0242ac120002
@@ -13,6 +8,14 @@ data:
   icon: pypi.svg
   license: MIT
   name: PyPI
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/pypi
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pypi
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

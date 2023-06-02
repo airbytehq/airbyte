@@ -12,6 +12,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_stripe.availability_strategy import StripeSubStreamAvailabilityStrategy
 
 STRIPE_ERROR_CODES: List = [
@@ -26,6 +27,7 @@ class StripeStream(HttpStream, ABC):
     url_base = "https://api.stripe.com/v1/"
     primary_key = "id"
     DEFAULT_SLICE_RANGE = 365
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, start_date: int, account_id: str, slice_range: int = DEFAULT_SLICE_RANGE, **kwargs):
         super().__init__(**kwargs)
@@ -235,6 +237,25 @@ class Disputes(IncrementalStripeStream):
     def path(self, **kwargs):
         return "disputes"
 
+class EarlyFraudWarnings(StripeStream):
+    """
+    API docs: https://stripe.com/docs/api/radar/early_fraud_warnings/list
+    """
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {}
+
+        if next_page_token:
+            params.update(next_page_token)
+
+    def path(self, **kwargs):
+        return "radar/early_fraud_warnings"
+
 
 class Events(IncrementalStripeStream):
     """
@@ -359,6 +380,33 @@ class StripeSubStream(StripeStream, ABC):
                 # add reference to parent object when item doesn't have it already
                 item[self.parent_id] = parent_record["id"]
             yield item
+
+
+class ApplicationFees(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/application_fees
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "application_fees"
+
+
+class ApplicationFeesRefunds(StripeSubStream):
+    """
+    API docs: https://stripe.com/docs/api/fee_refunds/list
+    """
+
+    name = "application_fees_refunds"
+
+    parent = ApplicationFees
+    parent_id: str = "refund_id"
+    sub_items_attr = "refunds"
+    add_parent_id = True
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"application_fees/{stream_slice[self.parent_id]}/refunds"
 
 
 class Invoices(IncrementalStripeStream):

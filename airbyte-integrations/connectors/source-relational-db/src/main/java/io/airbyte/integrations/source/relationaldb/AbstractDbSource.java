@@ -250,19 +250,6 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     /* no-op */
   }
 
-  /**
-   * Estimates the total volume (rows and bytes) to sync and emits a
-   * {@link AirbyteEstimateTraceMessage} associated with an incremental stream.
-   *
-   * @param database database
-   */
-  protected void estimateIncrementalSyncSize(final Database database,
-                                             final ConfiguredAirbyteStream configuredAirbyteStream,
-                                             final CursorInfo cursorInfo,
-                                             final DataType dataType) {
-    /* no-op */
-  }
-
   private List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(
                                                                              final Database database)
       throws Exception {
@@ -466,7 +453,6 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         table.getFields().stream().anyMatch(f -> f.getName().equals(cursorField)),
         String.format("Could not find cursor field %s in table %s", cursorField, table.getName()));
 
-    estimateIncrementalSyncSize(database, airbyteStream, cursorInfo, cursorType);
     final AutoCloseableIterator<JsonNode> queryIterator = queryTableIncremental(
         database,
         selectedDatabaseFields,
@@ -556,8 +542,9 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   protected abstract Database createDatabase(JsonNode config) throws Exception;
 
   /**
-   * Gets and logs relevant and useful database metadata such as DB product/version, index names and definition. Called before syncing data.
-   * Any logged information should be scoped to the configured catalog and database.
+   * Gets and logs relevant and useful database metadata such as DB product/version, index names and
+   * definition. Called before syncing data. Any logged information should be scoped to the configured
+   * catalog and database.
    *
    * @param database given database instance.
    * @param catalog configured catalog.

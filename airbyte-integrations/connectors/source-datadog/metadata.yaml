@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 1cfc30c7-82db-43f4-9fd7-ac1b42312cda
@@ -13,6 +8,13 @@ data:
   icon: datadog.svg
   license: MIT
   name: Datadog
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/datadog
+  documentationUrl: https://docs.airbyte.com/integrations/sources/datadog
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

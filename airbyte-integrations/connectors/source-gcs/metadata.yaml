@@ -1,10 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
-  releaseStage: alpha
   connectorSubtype: file
   connectorType: source
   definitionId: 2a8c41ae-8c23-4be0-a73f-2ab10ca1a820
@@ -14,5 +8,13 @@ data:
   icon: gcs.svg
   license: MIT
   name: GCS
-  supportUrl: https://docs.airbyte.com/integrations/sources/gcs
+  releaseStage: alpha
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gcs
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

@@ -13,10 +13,9 @@ import requests
 import semver
 import yaml
 from ci_connector_ops.pipelines.actions import environments
-from ci_connector_ops.pipelines.bases import PytestStep, Step, StepResult, StepStatus
-from ci_connector_ops.pipelines.contexts import CIContext
+from ci_connector_ops.pipelines.bases import CIContext, PytestStep, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.utils import METADATA_FILE_NAME
-from ci_connector_ops.utils import DESTINATION_DEFINITIONS_FILE_PATH, SOURCE_DEFINITIONS_FILE_PATH
+from ci_connector_ops.utils import Connector
 from dagger import File
 
 
@@ -70,7 +69,6 @@ class VersionCheck(Step, ABC):
 
 
 class VersionIncrementCheck(VersionCheck):
-
     title = "Connector version increment check."
 
     BYPASS_CHECK_FOR = [
@@ -106,7 +104,6 @@ class VersionIncrementCheck(VersionCheck):
 
 
 class VersionFollowsSemverCheck(VersionCheck):
-
     title = "Connector version semver check."
 
     @property
@@ -139,15 +136,26 @@ class QaChecks(Step):
             StepResult: Failure or success of the QA checks with stdout and stderr.
         """
         ci_connector_ops = await environments.with_ci_connector_ops(self.context)
+        include = [
+            str(self.context.connector.code_directory),
+            str(self.context.connector.documentation_file_path),
+            str(self.context.connector.icon_path),
+        ]
+        if (
+            self.context.connector.technical_name.endswith("strict-encrypt")
+            or self.context.connector.technical_name == "source-file-secure"
+        ):
+            original_connector = Connector(self.context.connector.technical_name.replace("-strict-encrypt", "").replace("-secure", ""))
+            include += [
+                str(original_connector.code_directory),
+                str(original_connector.documentation_file_path),
+                str(original_connector.icon_path),
+            ]
+
         filtered_repo = self.context.get_repo_dir(
-            include=[
-                str(self.context.connector.code_directory),
-                str(self.context.connector.documentation_file_path),
-                str(self.context.connector.icon_path),
-                SOURCE_DEFINITIONS_FILE_PATH,
-                DESTINATION_DEFINITIONS_FILE_PATH,
-            ],
+            include=include,
         )
+
         qa_checks = (
             ci_connector_ops.with_mounted_directory("/airbyte", filtered_repo)
             .with_workdir("/airbyte")

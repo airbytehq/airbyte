@@ -10,6 +10,9 @@ inputs:
   context:
     description: "CI context (e.g., pull_request, manual)"
     required: true
+  github_token:
+    description: "GitHub token"
+    required: true
 runs:
   using: "composite"
   steps:
@@ -31,6 +34,7 @@ runs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.10"
+        token: ${{ inputs.github_token }}
     - name: Install ci-connector-ops package
       shell: bash
       run: pip install --quiet -e ./tools/ci_connector_ops\[pipelines]\
@@ -38,7 +42,7 @@ runs:
       shell: bash
       run: |
         export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-        DAGGER_CLI_COMMIT="9155662d51313ae5b6761e681a306dee8f1736f2"
+        DAGGER_CLI_COMMIT="2370d5eb65e511cf7f1611aebaacc6d48cf0907a"
         DAGGER_TMP_BINDIR="/tmp/dagger_${DAGGER_CLI_COMMIT}"
         export _EXPERIMENTAL_DAGGER_CLI_BIN="$DAGGER_TMP_BINDIR/dagger"
         if [ ! -f  "$_EXPERIMENTAL_DAGGER_CLI_BIN" ]; then

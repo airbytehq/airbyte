@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 1901024c-0249-45d0-bcac-31a954652927
@@ -13,6 +8,14 @@ data:
   icon: instatus.svg
   license: MIT
   name: Instatus
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/instatus
+  documentationUrl: https://docs.airbyte.com/integrations/sources/instatus
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

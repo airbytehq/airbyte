@@ -8,7 +8,8 @@ from copy import deepcopy
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.models import AirbyteConnectionStatus, Status
+from airbyte_cdk.models import AirbyteConnectionStatus, FailureType, Status
+from airbyte_cdk.utils import AirbyteTracedException
 from source_google_analytics_data_api import SourceGoogleAnalyticsDataApi
 
 json_credentials = """
@@ -59,40 +60,66 @@ def config_gen(config):
         # WARNING, no support deep dictionaries
         new_config.update(kwargs)
         return {k: v for k, v in new_config.items() if v is not ...}
+
     return inner
 
 
-def test_check(requests_mock, config_gen):
-    requests_mock.register_uri("POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"})
-    requests_mock.register_uri("GET", "https://analyticsdata.googleapis.com/v1beta/properties/108176369/metadata", json={
-        "dimensions": [{"apiName": "date"}, {"apiName": "country"}, {"apiName": "language"}, {"apiName": "browser"}],
-        "metrics": [{"apiName": "totalUsers"}, {"apiName": "screenPageViews"}, {"apiName": "sessions"}],
-    })
+@pytest.mark.parametrize(
+    "config_values, status, message",
+    [
+        ({}, Status.SUCCEEDED, None),
+        ({"custom_reports": ...}, Status.SUCCEEDED, None),
+        ({"custom_reports": "[]"}, Status.SUCCEEDED, None),
+        ({"custom_reports": "invalid"}, Status.FAILED, "'custom_reports is not valid JSON'"),
+        ({"custom_reports": "{}"}, Status.FAILED, '"custom_reports: {} is not of type \'array\'"'),
+        ({"custom_reports": "[{}]"}, Status.FAILED, '"custom_reports.0: \'name\' is a required property"'),
+        ({"custom_reports": "[{\"name\": \"name\"}]"}, Status.FAILED, '"custom_reports.0: \'dimensions\' is a required property"'),
+        ({"date_ranges_start_date": "2022-20-20"}, Status.FAILED, '"time data \'2022-20-20\' does not match format \'%Y-%m-%d\'"'),
+        ({"credentials": {"auth_type": "Service", "credentials_json": "invalid"}},
+         Status.FAILED, "'credentials.credentials_json is not valid JSON'"),
+        ({"custom_reports": "[{\"name\": \"name\", \"dimensions\": [], \"metrics\": []}]"},
+         Status.FAILED, "'custom_reports.0.dimensions: [] is too short'"),
+        ({"custom_reports": "[{\"name\": \"daily_active_users\", \"dimensions\": [\"date\"], \"metrics\": [\"totalUsers\"]}]"},
+         Status.FAILED, "'custom_reports: daily_active_users already exist as a default report(s).'"),
+        ({"custom_reports": "[{\"name\": \"name\", \"dimensions\": [\"unknown\"], \"metrics\": [\"totalUsers\"]}]"},
+         Status.FAILED, "'custom_reports: invalid dimension(s): unknown for the custom report: name'"),
+        ({"custom_reports": "[{\"name\": \"name\", \"dimensions\": [\"date\"], \"metrics\": [\"unknown\"]}]"},
+         Status.FAILED, "'custom_reports: invalid metric(s): unknown for the custom report: name'"),
+        ({"custom_reports": "[{\"name\": \"cohort_report\", \"dimensions\": [\"cohort\", \"cohortNthDay\"], \"metrics\": "
+                            "[\"cohortActiveUsers\"], \"cohortSpec\": {\"cohorts\": [{\"dimension\": \"firstSessionDate\", \"dateRange\": "
+                            "{\"startDate\": \"2023-01-01\", \"endDate\": \"2023-01-01\"}}], \"cohortsRange\": {\"endOffset\": 100}}}]"},
+         Status.FAILED, '"custom_reports.0.cohortSpec.cohortsRange: \'granularity\' is a required property"'),
+        ({"custom_reports": "[{\"name\": \"pivot_report\", \"dateRanges\": [{ \"startDate\": \"2020-09-01\", \"endDate\": "
+                            "\"2020-09-15\" }], \"dimensions\": [\"browser\", \"country\", \"language\"], \"metrics\": [\"sessions\"], "
+                            "\"pivots\": {}}]"},
+         Status.FAILED, '"custom_reports.0.pivots: {} is not of type \'null\', \'array\'"'),
+    ],
+)
+def test_check(requests_mock, config_gen, config_values, status, message):
+    requests_mock.register_uri("POST", "https://oauth2.googleapis.com/token",
+                               json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"})
+
+    requests_mock.register_uri("GET", "https://analyticsdata.googleapis.com/v1beta/properties/108176369/metadata",
+                               json={"dimensions": [{"apiName": "date"}, {"apiName": "country"},
+                                                    {"apiName": "language"}, {"apiName": "browser"}],
+                                     "metrics": [{"apiName": "totalUsers"}, {"apiName": "screenPageViews"}, {"apiName": "sessions"}]})
     requests_mock.register_uri("POST", "https://analyticsdata.googleapis.com/v1beta/properties/108176369:runReport",
                                json={"dimensionHeaders": [{"name": "date"}, {"name": "country"}],
                                      "metricHeaders": [{"name": "totalUsers", "type": "s"},
                                                        {"name": "screenPageViews", "type": "m"}],
                                      "rows": []
                                      })
+    requests_mock.register_uri("GET", "https://analyticsdata.googleapis.com/v1beta/properties/UA-11111111/metadata",
+                               json={}, status_code=403)
 
     source = SourceGoogleAnalyticsDataApi()
     logger = MagicMock()
 
-    assert source.check(logger, config_gen()) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    assert source.check(logger, config_gen(custom_reports=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    assert source.check(logger, config_gen(custom_reports="[]")) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    assert source.check(logger, config_gen(custom_reports="invalid")) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports is not valid JSON'")
-    assert source.check(logger, config_gen(custom_reports="{}")) == AirbyteConnectionStatus(status=Status.FAILED, message='"custom_reports: {} is not of type \'array\'"')
-    assert source.check(logger, config_gen(custom_reports="[{}]")) == AirbyteConnectionStatus(status=Status.FAILED, message='"custom_reports.0: \'name\' is a required property"')
-    assert source.check(logger, config_gen(custom_reports='[{"name": "name"}]')) == AirbyteConnectionStatus(status=Status.FAILED, message='"custom_reports.0: \'dimensions\' is a required property"')
-    assert source.check(logger, config_gen(custom_reports='[{"name": "name", "dimensions": [], "metrics": []}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports.0.dimensions: [] is too short'")
-    assert source.check(logger, config_gen(custom_reports='[{"name": "daily_active_users", "dimensions": ["date"], "metrics": ["totalUsers"]}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports: daily_active_users already exist as a default report(s).'")
-    assert source.check(logger, config_gen(custom_reports='[{"name": "name", "dimensions": ["unknown"], "metrics": ["totalUsers"]}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports: invalid dimension(s): unknown for the custom report: name'")
-    assert source.check(logger, config_gen(custom_reports='[{"name": "name", "dimensions": ["date"], "metrics": ["unknown"]}]')) == AirbyteConnectionStatus(status=Status.FAILED, message="'custom_reports: invalid metric(s): unknown for the custom report: name'")
-    assert source.check(logger, config_gen(custom_reports='[{"name": "cohort_report", "dimensions": ["cohort", "cohortNthDay"], "metrics": ["cohortActiveUsers"], "cohortSpec": {"cohorts": [{"dimension": "firstSessionDate", "dateRange": {"startDate": "2023-01-01", "endDate": "2023-01-01"}}], "cohortsRange": {"endOffset": 100}}}]')) == AirbyteConnectionStatus(status=Status.FAILED, message='"custom_reports.0.cohortSpec.cohortsRange: \'granularity\' is a required property"')
-    assert source.check(logger, config_gen(custom_reports='[{"name": "pivot_report", "dateRanges": [{ "startDate": "2020-09-01", "endDate": "2020-09-15" }], "dimensions": ["browser", "country", "language"], "metrics": ["sessions"], "pivots": {}}]')) == AirbyteConnectionStatus(status=Status.FAILED, message='"custom_reports.0.pivots: {} is not of type \'null\', \'array\'"')
-    assert source.check(logger, config_gen(credentials={"auth_type": "Service", "credentials_json": "invalid"})) == AirbyteConnectionStatus(status=Status.FAILED, message="'credentials.credentials_json is not valid JSON'")
-    assert source.check(logger, config_gen(date_ranges_start_date="2022-20-20")) == AirbyteConnectionStatus(status=Status.FAILED, message='"time data \'2022-20-20\' does not match format \'%Y-%m-%d\'"')
+    assert source.check(logger, config_gen(**config_values)) == AirbyteConnectionStatus(status=status, message=message)
+
+    with pytest.raises(AirbyteTracedException) as e:
+        source.check(logger, config_gen(property_id="UA-11111111"))
+    assert e.value.failure_type == FailureType.config_error
 
 
 def test_streams(mocker, patch_base_class):

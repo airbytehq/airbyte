@@ -2,20 +2,22 @@ data:
   allowedHosts:
     hosts:
       - api.stripe.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 3.0.5
+  dockerImageTag: 3.6.0
   dockerRepository: airbyte/source-stripe
   githubIssueLabel: source-stripe
   icon: stripe.svg
   license: MIT
   name: Stripe
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/stripe
+  documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

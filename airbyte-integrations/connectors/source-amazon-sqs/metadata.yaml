@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 983fd355-6bf3-4709-91b5-37afa391eeb6
@@ -13,6 +8,13 @@ data:
   icon: awssqs.svg
   license: MIT
   name: Amazon SQS
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/amazon-sqs
+  documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-sqs
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

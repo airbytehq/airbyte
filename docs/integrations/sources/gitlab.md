@@ -105,8 +105,11 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------|
-| 1.0.4   | 2023-04-20 | [21373](https://github.com/airbytehq/airbyte/pull/21373) | Accept api_url with or without scheme |
-| 1.0.3   | 2023-02-14 | [22992](https://github.com/airbytehq/airbyte/pull/22992) |Specified date formatting in specification                                |
+| 1.2.0   | 2023-05-17 | [22293](https://github.com/airbytehq/airbyte/pull/22293) | Preserve data in records with flattened keys |
+| 1.1.1   | 2023-05-23 | [26422](https://github.com/airbytehq/airbyte/pull/26422) | Fix error `404 Repository Not Found` when syncing project with Repository feature disabled |
+| 1.1.0   | 2023-05-10 | [25948](https://github.com/airbytehq/airbyte/pull/25948) | Introduce two new fields in the `Projects` stream schema                                   |
+| 1.0.4   | 2023-04-20 | [21373](https://github.com/airbytehq/airbyte/pull/21373) | Accept api_url with or without scheme                                                      |
+| 1.0.3   | 2023-02-14 | [22992](https://github.com/airbytehq/airbyte/pull/22992) | Specified date formatting in specification                                                 |
 | 1.0.2   | 2023-01-27 | [22001](https://github.com/airbytehq/airbyte/pull/22001) | Set `AvailabilityStrategy` for streams explicitly to `None`                                |
 | 1.0.1   | 2023-01-23 | [21713](https://github.com/airbytehq/airbyte/pull/21713) | Fix missing data issue                                                                     |
 | 1.0.0   | 2022-12-05 | [7506](https://github.com/airbytehq/airbyte/pull/7506)   | Add `OAuth2.0` authentication option                                                       |

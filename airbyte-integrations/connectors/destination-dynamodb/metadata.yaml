@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 8ccd8909-4e99-4141-b48d-4984b70b2d89
@@ -13,6 +8,13 @@ data:
   icon: dynamodb.svg
   license: MIT
   name: DynamoDB
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/dynamodb
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/dynamodb
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

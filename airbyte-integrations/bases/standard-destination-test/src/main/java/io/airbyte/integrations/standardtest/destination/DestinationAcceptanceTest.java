@@ -126,6 +126,17 @@ public abstract class DestinationAcceptanceTest {
    */
   protected abstract String getImageName();
 
+  protected boolean supportsInDestinationNormalization() {
+    return false;
+  }
+
+  protected Map<String, String> inDestinationNormalizationFlags(final boolean shouldNormalize) {
+    if (shouldNormalize && supportsInDestinationNormalization()) {
+      return Map.of("NORMALIZATION_TECHNIQUE", "LEGACY");
+    }
+    return Collections.emptyMap();
+  }
+
   private String getImageNameWithoutTag() {
     return getImageName().contains(":") ? getImageName().split(":")[0] : getImageName();
   }
@@ -1340,7 +1351,7 @@ public abstract class DestinationAcceptanceTest {
 
     final AirbyteDestination destination = getDestination();
 
-    destination.start(destinationConfig, jobRoot);
+    destination.start(destinationConfig, jobRoot, inDestinationNormalizationFlags(runNormalization));
     messages.forEach(
         message -> Exceptions.toRuntime(() -> destination.accept(convertProtocolObject(message, io.airbyte.protocol.models.AirbyteMessage.class))));
     destination.notifyEndOfInput();
@@ -1352,7 +1363,7 @@ public abstract class DestinationAcceptanceTest {
 
     destination.close();
 
-    if (!runNormalization) {
+    if (!runNormalization || (runNormalization && supportsInDestinationNormalization())) {
       return destinationOutput;
     }
 
@@ -1543,7 +1554,7 @@ public abstract class DestinationAcceptanceTest {
     final AirbyteDestination destination = getDestination();
 
     // Start destination
-    destination.start(destinationConfig, jobRoot);
+    destination.start(destinationConfig, jobRoot, Collections.emptyMap());
 
     final AtomicInteger currentStreamNumber = new AtomicInteger(0);
     final AtomicInteger currentRecordNumberForStream = new AtomicInteger(0);

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from datetime import date
 from typing import List, Optional
 from uuid import UUID
 
@@ -104,7 +105,7 @@ class RegistryOverrides(BaseModel):
     supportsDbt: Optional[bool] = None
     supportsNormalization: Optional[bool] = None
     license: Optional[str] = None
-    supportUrl: Optional[AnyUrl] = None
+    documentationUrl: Optional[AnyUrl] = None
     connectorSubtype: Optional[str] = None
     allowedHosts: Optional[AllowedHosts] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
@@ -130,12 +131,27 @@ class Data(BaseModel):
     supportsDbt: Optional[bool] = None
     supportsNormalization: Optional[bool] = None
     license: str
-    supportUrl: AnyUrl
+    documentationUrl: AnyUrl
     githubIssueLabel: str
+    maxSecondsBetweenMessages: Optional[int] = Field(
+        None,
+        description="Maximum delay between 2 airbyte protocol messages, in second. The source will timeout if this delay is reached",
+    )
+    releaseDate: Optional[date] = Field(
+        None,
+        description="The date when this connector was first released, in yyyy-mm-dd format.",
+    )
+    protocolVersion: Optional[str] = Field(
+        None, description="the Airbyte Protocol version supported by the connector"
+    )
     connectorSubtype: Literal[
         "api", "database", "file", "custom", "message_queue", "unknown"
     ]
     releaseStage: Literal["alpha", "beta", "generally_available", "source"]
+    tags: Optional[List[str]] = Field(
+        None,
+        description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc.",
+    )
     registries: Optional[Registry] = None
     allowedHosts: Optional[AllowedHosts] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None

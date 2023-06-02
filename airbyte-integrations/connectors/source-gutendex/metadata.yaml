@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: bff9a277-e01d-420d-81ee-80f28a307318
@@ -12,6 +7,14 @@ data:
   githubIssueLabel: source-gutendex
   license: MIT
   name: Gutendex
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/gutendex
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gutendex
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

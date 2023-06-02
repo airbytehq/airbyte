@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -104,7 +105,7 @@ public class AbstractJdbcDestinationTest {
   @Test
   void testInvalidExtraParam() {
     final String extraParam = "key1=value1&sdf&";
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(ConfigErrorException.class,
         () -> new TestJdbcDestination().getConnectionProperties(buildConfigWithExtraJdbcParameters(extraParam)));
   }
 

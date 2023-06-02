@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 921d9608-3915-450b-8078-0af18801ea1b
@@ -13,6 +8,14 @@ data:
   icon: rocket-chat.svg
   license: MIT
   name: Rocket.chat
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/rocket-chat
+  documentationUrl: https://docs.airbyte.com/integrations/sources/rocket-chat
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

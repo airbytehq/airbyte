@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: e65f84c0-7598-458a-bfac-f770c381ff5d
@@ -13,6 +8,14 @@ data:
   icon: whiskyhunter.svg
   license: MIT
   name: Whisky Hunter
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/whisky-hunter
+  documentationUrl: https://docs.airbyte.com/integrations/sources/whisky-hunter
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

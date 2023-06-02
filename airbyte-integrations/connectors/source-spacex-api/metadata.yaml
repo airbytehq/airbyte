@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 62235e65-af7a-4138-9130-0bda954eb6a8
@@ -13,6 +8,14 @@ data:
   icon: spacex.svg
   license: MIT
   name: SpaceX API
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/spacex-api
+  documentationUrl: https://docs.airbyte.com/integrations/sources/spacex-api
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 1356e1d9-977f-4057-ad4b-65f25329cf61
@@ -13,6 +8,13 @@ data:
   icon: dv360.svg
   license: MIT
   name: DV 360
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/dv-360
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dv-360
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

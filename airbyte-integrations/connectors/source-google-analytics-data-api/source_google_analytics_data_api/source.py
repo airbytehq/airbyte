@@ -8,14 +8,17 @@ import logging
 import pkgutil
 import uuid
 from abc import ABC
+from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple
 
 import jsonschema
 import requests
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.utils import AirbyteTracedException
+from requests import HTTPError
 from source_google_analytics_data_api import utils
 from source_google_analytics_data_api.utils import DATE_FORMAT
 
@@ -25,6 +28,10 @@ from .utils import authenticator_class_map, get_dimensions_type, get_metrics_typ
 # set the quota handler globaly since limitations are the same for all streams
 # the initial values should be saved once and tracked for each stream, inclusivelly.
 GoogleAnalyticsQuotaHandler: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
+
+# set page_size to 100000 due to determination of maximum limit value in official documentation
+# https://developers.google.com/analytics/devguides/reporting/data/v1/basics#pagination
+PAGE_SIZE = 100000
 
 
 class ConfigurationError(Exception):
@@ -87,6 +94,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
     _record_date_format = "%Y%m%d"
     primary_key = "uuid"
+    offset = 0
 
     metadata = MetadataDescriptor()
 
@@ -151,13 +159,19 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         r = response.json()
 
-        if all(key in r for key in ["limit", "offset", "rowCount"]):
-            limit, offset, total_rows = r["limit"], r["offset"], r["rowCount"]
+        if "rowCount" in r:
+            total_rows = r["rowCount"]
 
-            if total_rows <= offset:
-                return None
+            if self.offset == 0:
+                self.offset = PAGE_SIZE
+            else:
+                self.offset += PAGE_SIZE
 
-            return {"limit": limit, "offset": offset + limit}
+            if total_rows <= self.offset:
+                self.offset = 0
+                return
+
+            return {"offset": self.offset}
 
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -198,12 +212,17 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
+
         payload = {
             "metrics": [{"name": m} for m in self.config["metrics"]],
             "dimensions": [{"name": d} for d in self.config["dimensions"]],
             "dateRanges": [stream_slice],
             "returnPropertyQuota": True,
+            "offset": str(0),
+            "limit": str(PAGE_SIZE)
         }
+        if next_page_token and next_page_token.get("offset") is not None:
+            payload.update({"offset": str(next_page_token["offset"])})
         return payload
 
     def stream_slices(
@@ -240,6 +259,11 @@ class PivotReport(GoogleAnalyticsDataApiBaseStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         payload = super().request_body_json(stream_state, stream_slice, next_page_token)
+
+        # remove offset and limit fields according to their absence in
+        # https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport
+        payload.pop("offset", None)
+        payload.pop("limit", None)
         payload["pivots"] = self.config["pivots"]
         return payload
 
@@ -347,8 +371,23 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             return False, str(e)
         config["authenticator"] = self.get_authenticator(config)
 
-        stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"])
-        metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+        try:
+            stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"])
+            metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+        except HTTPError as e:
+            error_list = [HTTPStatus.BAD_REQUEST, HTTPStatus.FORBIDDEN]
+            if e.response.status_code in error_list:
+                internal_message = f"Incorrect Property ID: {config['property_id']}"
+                property_id_docs_url = (
+                    "https://developers.google.com/analytics/devguides/reporting/data/v1/property-id#what_is_my_property_id"
+                )
+                message = f"Access was denied to the property ID entered. Check your access to the Property ID or use Google Analytics {property_id_docs_url} to find your Property ID."
+
+                wrong_property_id_error = AirbyteTracedException(
+                    message=message, internal_message=internal_message, failure_type=FailureType.config_error
+                )
+                raise wrong_property_id_error
+
         if not metadata:
             return False, "failed to get metadata, over quota, try later"
 
@@ -380,7 +419,11 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
     def instantiate_report_class(report: dict, config: Mapping[str, Any]) -> GoogleAnalyticsDataApiBaseStream:
         cohort_spec = report.get("cohortSpec")
         pivots = report.get("pivots")
-        stream_config = {"metrics": report["metrics"], "dimensions": report["dimensions"], **config}
+        stream_config = {
+            "metrics": report["metrics"],
+            "dimensions": report["dimensions"],
+            **config
+        }
         report_class_tuple = (GoogleAnalyticsDataApiBaseStream,)
         if pivots:
             stream_config["pivots"] = pivots

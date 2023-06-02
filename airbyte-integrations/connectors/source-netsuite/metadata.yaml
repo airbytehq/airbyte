@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 4f2f093d-ce44-4121-8118-9d13b7bfccd0
@@ -13,6 +8,13 @@ data:
   icon: netsuite.svg
   license: MIT
   name: Netsuite
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/netsuite
+  documentationUrl: https://docs.airbyte.com/integrations/sources/netsuite
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

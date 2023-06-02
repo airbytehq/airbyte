@@ -1,19 +1,22 @@
 data:
   allowedHosts:
     hosts:
-      - "*" # Please change to the hostname of the source.
+      - TODO # Please change to the hostname of the source.
   registries:
     oss:
       enabled: false
   connectorSubtype: api
   connectorType: source
-  definitionId: 02277fdd-35e6-4eda-8302-1ea07f801007
+  definitionId: FAKE-UUID-0000-0000-000000000000
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-scaffold-source-http
   githubIssueLabel: source-scaffold-source-http
   icon: scaffold-source-http.svg
   license: MIT
-  name: Scaffold Source Http 
+  name: Scaffold Source Http
+  releaseDate: TODO
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/scaffold-source-http
+  documentationUrl: https://docs.airbyte.com/integrations/sources/scaffold-source-http
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

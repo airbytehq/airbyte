@@ -2,20 +2,21 @@ data:
   allowedHosts:
     hosts:
       - api.github.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
-  dockerImageTag: 0.4.7
+  dockerImageTag: 1.0.1
+  maxSecondsBetweenMessages: 5400
   dockerRepository: airbyte/source-github
   githubIssueLabel: source-github
   icon: github.svg
   license: MIT
   name: GitHub
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
   suggestedStreams:
     streams:
@@ -29,5 +30,7 @@ data:
       - tags
       - teams
       - users
-  supportUrl: https://docs.airbyte.com/integrations/sources/github
+  documentationUrl: https://docs.airbyte.com/integrations/sources/github
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

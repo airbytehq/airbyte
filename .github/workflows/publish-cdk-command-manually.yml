@@ -294,11 +294,11 @@ jobs:
         run: |
           PREVIOUS_VERSION=$(cat oss/airbyte-connector-builder-resources/CDK_VERSION)
           sed -i "s/${PREVIOUS_VERSION}/${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-atelier-server/Dockerfile
+          sed -i "s/airbyte-cdk==${PREVIOUS_VERSION}/airbyte-cdk==${{needs.bump-version.outputs.new_cdk_version}}/g" oss/airbyte-connector-atelier-server/requirements.in
           echo ${{needs.bump-version.outputs.new_cdk_version}} > oss/airbyte-connector-builder-resources/CDK_VERSION
-          cd oss/airbyte-connector-builder-server
+          cd oss/airbyte-connector-atelier-server
           pip install pip-tools
-          pip-compile
-          pip-compile --extra tests --output-file requirements-tests.txt
+          pip-compile --upgrade
       - name: Create Pull Request
         id: create-pull-request
         uses: peter-evans/create-pull-request@v4

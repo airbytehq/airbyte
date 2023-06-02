@@ -68,11 +68,11 @@ Set to empty values, e.g. "" to disable basic auth. **Be sure to change these va
 
 1. `DATABASE_USER` - Define the Jobs Database user.
 2. `DATABASE_PASSWORD` - Define the Jobs Database password.
-3. `DATABASE_URL` - Define the Jobs Database url in the form of `jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}`. Do not include username or password.
+3. `DATABASE_URL` - Define the Jobs Database url in the form of `jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_DB}`. Do not include username or password.
 4. `JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS` - Define the total time to wait for the Jobs Database to be initialized. This includes migrations.
 5. `CONFIG_DATABASE_USER` - Define the Configs Database user. Defaults to the Jobs Database user if empty.
 6. `CONFIG_DATABASE_PASSWORD` - Define the Configs Database password. Defaults to the Jobs Database password if empty.
-7. `CONFIG_DATABASE_URL` - Define the Configs Database url in the form of `jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}`. Defaults to the Jobs Database url if empty.
+7. `CONFIG_DATABASE_URL` - Define the Configs Database url in the form of `jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_DB}`. Defaults to the Jobs Database url if empty.
 8. `CONFIG_DATABASE_INITIALIZATION_TIMEOUT_MS` - Define the total time to wait for the Configs Database to be initialized. This includes migrations.
 9. `RUN_DATABASE_MIGRATION_ON_STARTUP` - Define if the Bootloader should run migrations on start up.
 

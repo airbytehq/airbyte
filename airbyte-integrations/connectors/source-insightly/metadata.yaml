@@ -1,18 +1,20 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 38f84314-fe6a-4257-97be-a8dcd942d693
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.3
   dockerRepository: airbyte/source-insightly
   githubIssueLabel: source-insightly
   icon: insightly.svg
   license: MIT
   name: Insightly
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/insightly
+  documentationUrl: https://docs.airbyte.com/integrations/sources/insightly
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

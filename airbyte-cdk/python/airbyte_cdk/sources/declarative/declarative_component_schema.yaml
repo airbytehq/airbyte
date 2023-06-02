@@ -570,8 +570,8 @@ definitions:
           - "created_at"
           - "{{ config['record_cursor'] }}"
       datetime_format:
-        title: Datetime Format
-        description: The format of the datetime value.
+        title: Cursor Field Datetime Format
+        description: The datetime format of the Cursor Field.
         type: string
         examples:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -647,7 +647,6 @@ definitions:
       - type
       - client_id
       - client_secret
-      - refresh_token
       - token_refresh_endpoint
     properties:
       type:
@@ -696,11 +695,12 @@ definitions:
           - expires_in
       grant_type:
         title: Grant Type
-        description: How the access token is granted.
+        description: Specifies the OAuth2 grant type. If set to refresh_token, the refresh_token needs to be provided as well. For client_credentials, only client id and secret are required. Other grant types are not officially supported.
         type: string
         default: "refresh_token"
         examples:
           - refresh_token
+          - client_credentials
       refresh_request_body:
         title: Refresh Request Body
         description: Body of the request sent to get a new access token.
@@ -826,11 +826,12 @@ definitions:
           - "expires_in"
       grant_type:
         title: Grant Type
-        description: How the access token is granted.
+        description: Specifies the OAuth2 grant type. If set to refresh_token, the refresh_token needs to be provided as well. For client_credentials, only client id and secret are required. Other grant types are not officially supported.
         type: string
         default: "refresh_token"
         examples:
           - refresh_token
+          - client_credentials
       refresh_request_body:
         title: Refresh Request Body
         description: Body of the request sent to get a new access token.
@@ -1126,12 +1127,11 @@ definitions:
               }, "orderBy": 1, "columnName": "Timestamp"}]/
       request_body_json:
         title: Request Body JSON Payload
-        description: Specifies how to populate the body of the request with a JSON payload.
+        description: Specifies how to populate the body of the request with a JSON payload. Can contain nested objects.
         anyOf:
           - type: string
           - type: object
-            additionalProperties:
-              type: string
+            additionalProperties: true
         interpolation_context:
           - next_page_token
           - stream_interval
@@ -1142,6 +1142,9 @@ definitions:
           - sort_order: "ASC"
             sort_field: "CREATED_AT"
           - key: "{{ config['value'] }}"
+          - sort:
+              field: "updated_at"
+              order: "ascending"
       request_headers:
         title: Request Headers
         description: Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
@@ -1350,7 +1353,7 @@ definitions:
           - "{{ config['start_time'] }}"
       datetime_format:
         title: Datetime Format
-        description: Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty.
+        description: Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use %s if the datetime value is in epoch time (Unix timestamp).
         type: string
         default: ""
         examples:
@@ -1519,7 +1522,6 @@ definitions:
     type: object
     required:
       - type
-      - page_size
     properties:
       type:
         type: string
@@ -1532,6 +1534,7 @@ definitions:
           - type: string
         interpolation_context:
           - config
+          - response
         examples:
           - 100
           - "{{ config['page_size'] }}"
@@ -1544,7 +1547,6 @@ definitions:
     type: object
     required:
       - type
-      - page_size
     properties:
       type:
         type: string

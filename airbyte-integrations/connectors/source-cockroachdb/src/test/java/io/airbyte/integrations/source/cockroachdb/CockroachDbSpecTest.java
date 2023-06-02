@@ -52,6 +52,41 @@ public class CockroachDbSpecTest {
   }
 
   @Test
+  void testHostMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("host");
+    assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testPortMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("port");
+    assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testUsernameMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("username");
+    assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testSchemaMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("schema");
+    assertTrue(validator.test(schema, config));
+  }
+
+  @Test
+  void testAdditionalJdbcParamMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("jdbc_url_params");
+    assertTrue(validator.test(schema, config));
+  }
+
+  @Test
   void testDatabaseMissing() {
     final JsonNode config = Jsons.deserialize(CONFIGURATION);
     ((ObjectNode) config).remove(JdbcUtils.DATABASE_KEY);

@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 0b5c867e-1b12-4d02-ab74-97b2184ff6d7
@@ -13,6 +8,13 @@ data:
   icon: dixa.svg
   license: MIT
   name: Dixa
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/dixa
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dixa
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

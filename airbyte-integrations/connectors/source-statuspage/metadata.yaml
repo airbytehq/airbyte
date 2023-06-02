@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 74cbd708-46c3-4512-9c93-abd5c3e9a94d
@@ -13,6 +8,14 @@ data:
   icon: statuspage.svg
   license: MIT
   name: Statuspage
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/statuspage
+  documentationUrl: https://docs.airbyte.com/integrations/sources/statuspage
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

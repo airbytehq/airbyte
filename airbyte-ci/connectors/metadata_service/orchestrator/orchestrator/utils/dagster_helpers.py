@@ -1,5 +1,6 @@
 from dagster import MetadataValue, Output
 import pandas as pd
+import hashlib
 from typing import Optional, List
 
 OutputDataFrame = Output[pd.DataFrame]
@@ -13,28 +14,15 @@ def output_dataframe(result_df: pd.DataFrame) -> Output[pd.DataFrame]:
     return Output(result_df, metadata={"count": len(result_df), "preview": MetadataValue.md(result_df.to_markdown())})
 
 
-def deserialize_composite_etags_cursor(etag_cursors: Optional[str]) -> List[str]:
-    """Deserialize a cursor string into a list of etags.
+def string_array_to_hash(strings: List[str]) -> str:
+    """Hash a list of strings into a cursor string.
 
     Args:
-        etag_cursors (Optional[str]): A cursor string
-
-    Returns:
-        List[str]: A list of etags
-    """
-    return etag_cursors.split(CURSOR_SEPARATOR) if etag_cursors else []
-
-
-def serialize_composite_etags_cursor(etags: List[str]) -> str:
-    """Serialize a list of etags into a cursor string.
-
-    Dagster cursors are strings, so we need to serialize the list of etags into a string.
-    https://docs.dagster.io/concepts/partitions-schedules-sensors/sensors#idempotence-and-cursors
-
-    Args:
-        etags (List[str]): unique etag ids from GCS
+        unique_strings (List[str]): unique strings
 
     Returns:
         str: A cursor string
     """
-    return CURSOR_SEPARATOR.join(etags)
+    unique_strings = list(set(strings))
+    unique_strings.sort()
+    return hashlib.md5(str(unique_strings).encode("utf-8")).hexdigest()

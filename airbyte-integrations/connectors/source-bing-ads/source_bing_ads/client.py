@@ -3,6 +3,7 @@
 #
 
 import socket
+import ssl
 import sys
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
@@ -27,7 +28,7 @@ class Client:
     # https://docs.microsoft.com/en-us/advertising/guides/services-protocol?view=bingads-13#throttling
     # https://docs.microsoft.com/en-us/advertising/guides/operation-error-codes?view=bingads-13
     retry_on_codes: Iterator[str] = ["117", "207", "4204", "109", "0"]
-    max_retries: int = 3
+    max_retries: int = 10
     # A backoff factor to apply between attempts after the second try
     # {retry_factor} * (2 ** ({number of total retries} - 1))
     retry_factor: int = 15
@@ -95,8 +96,8 @@ class Client:
         token_updated_expires_in: int = self.oauth.access_token_expires_in_seconds - token_total_lifetime.seconds
         return False if token_updated_expires_in > self.refresh_token_safe_delta else True
 
-    def should_retry(self, error: WebFault) -> bool:
-        if isinstance(error, URLError) and isinstance(error.reason, socket.timeout):
+    def should_give_up(self, error: WebFault) -> bool:
+        if isinstance(error, URLError) and (isinstance(error.reason, socket.timeout) or isinstance(error.reason, ssl.SSLError)):
             return False
 
         error_code = str(errorcode_of_exception(error))
@@ -122,7 +123,7 @@ class Client:
             factor=self.retry_factor,
             jitter=None,
             on_backoff=self.log_retry_attempt,
-            giveup=self.should_retry,
+            giveup=self.should_give_up,
         )(self._request)(**kwargs)
 
     def _request(
@@ -144,7 +145,6 @@ class Client:
             service = self._get_reporting_service(customer_id=customer_id, account_id=account_id)
         else:
             service = self.get_service(service_name=service_name, customer_id=customer_id, account_id=account_id)
-
         return getattr(service, operation_name)(**params)
 
     @lru_cache(maxsize=4)

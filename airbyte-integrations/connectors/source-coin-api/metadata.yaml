@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 919984ef-53a2-479b-8ffe-9c1ddb9fc3f3
@@ -13,6 +8,14 @@ data:
   icon: coinapi.svg
   license: MIT
   name: Coin API
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/coin-api
+  documentationUrl: https://docs.airbyte.com/integrations/sources/coin-api
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"
