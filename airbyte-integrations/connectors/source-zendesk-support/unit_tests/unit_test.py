@@ -587,14 +587,24 @@ class TestSourceZendeskSupportCursorPaginationStream:
         assert expected == result
 
     @pytest.mark.parametrize(
-        "stream_cls",
+        "stream_cls, response, expected",
         [
-            (GroupMemberships),
-            (TicketForms),
-            (TicketMetricEvents),
-            (TicketAudits),
-            (TicketMetrics),
-            (SatisfactionRatings),
+            (GroupMemberships, {}, None),
+            (TicketForms, {}, None),
+            (TicketMetricEvents, {}, None),
+            (TicketAudits, {}, None),
+            (
+                TicketMetrics,
+                {
+                    "meta": {"has_more": True, "after_cursor": "<after_cursor>", "before_cursor": "<before_cursor>"},
+                    "links": {
+                        "prev": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bbefore%5D=<before_cursor>%3D&page%5Bsize%5D=2",
+                        "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
+                    },
+                },
+                "<after_cursor>",
+            ),
+            (SatisfactionRatings, {}, None),
         ],
         ids=[
             "GroupMemberships",
@@ -605,13 +615,13 @@ class TestSourceZendeskSupportCursorPaginationStream:
             "SatisfactionRatings",
         ],
     )
-    def test_next_page_token(self, requests_mock, stream_cls):
+    def test_next_page_token(self, requests_mock, stream_cls, response, expected):
         stream = stream_cls(**STREAM_ARGS)
-        stream_name = snake_case(stream.__class__.__name__)
-        requests_mock.get(STREAM_URL, json={stream_name: {}})
+        # stream_name = snake_case(stream.__class__.__name__)
+        requests_mock.get(STREAM_URL, json=response)
         test_response = requests.get(STREAM_URL)
         output = stream.next_page_token(test_response)
-        assert output is None
+        assert output == expected
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
@@ -641,7 +651,7 @@ class TestSourceZendeskSupportCursorPaginationStream:
             (TicketMetricEvents, {"start_time": 1622505600}),
             (TicketAudits, {"sort_by": "created_at", "sort_order": "desc", "limit": 1000}),
             (SatisfactionRatings, {"page": 1, "per_page": 100, "sort_by": "asc", "start_time": 1622505600}),
-            (TicketMetrics, {"page": 1, "per_page": 100, "start_time": 1622505600}),
+            (TicketMetrics, {"page[size]": 100, "start_time": 1622505600}),
         ],
         ids=[
             "GroupMemberships",
