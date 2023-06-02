@@ -1,0 +1,76 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["records"]
+  cursor_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ response._links.next.href }}"
+      stop_condition: "{{ 'next' not in response._links }}"
+      page_size: 50
+    page_size_option:
+      field_name: "limit"
+      inject_into: "request_parameter"
+    page_token_option:
+      type: RequestPath
+  # incremental_sync:
+  #   type: "DatetimeBasedCursor"
+  #   start_datetime:
+  #     datetime: "{{ format_datetime(config['date_start'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+  #     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+  #   end_datetime:
+  #     datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+  #     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+  #   step: "P1D"
+  #   start_time_option:
+  #     field_name: "date_start"
+  #     inject_into: "request_parameter"
+  #   datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+  #   cursor_granularity: "PT0.000001S"
+  #   cursor_field: "date_received"
+  requester:
+    type: HttpRequester
+    url_base: "https://api.nexmo.com"
+    http_method: "GET"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['api_key'] }}"
+      password: "{{ config['api_secret'] }}"
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      $ref: "#/definitions/cursor_paginator"
+    requester:
+      $ref: "#/definitions/requester"
+    # incremental_sync:
+    #   $ref: "#/definitions/incremental_sync"
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+  reports_stream:
+    $ref: "#/definitions/base_stream"
+    name: "reports"
+    primary_key: "id"
+    $parameters:
+      path: "v2/reports/records"
+      request_parameters:
+        account_id: "{{ config['api_key'] }}"
+        product: "{{ config['product'] }}"
+        direction: "{{ config['direction'] }}"
+        date_start: "{{ config['date_start'] }}"
+
+streams:
+  - "#/definitions/reports_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "reports"

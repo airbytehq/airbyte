@@ -1,0 +1,61 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/vonage
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Vonage Spec
+  type: object
+  required:
+    - api_key
+    - api_secret
+    - date_start
+    - account_id
+    - product
+    - direction
+  additionalProperties: true
+  properties:
+    api_key:
+      type: string
+      title: API Key
+      description: Vonage API Key (see it on your dashboard).
+      airbyte_secret: true
+    api_secret:
+      type: string
+      title: API Secret
+      description: Vonage API Secret (see it on your dashboard).
+      airbyte_secret: true
+    account_id:
+      type: string
+      title: Account ID
+      description: The account ID (same as `API KEY`) for the account you want to generate reports, or retrieve records for.
+    product:
+      type: string
+      title: Product
+      description: Specifies the product for which reports and records are obtained.
+      enum:
+        - SMS
+        - VOICE-CALL
+        - WEBSOCKET-CALL
+        - VERIFY-API
+        - NUMBER-INSIGHT
+        - MESSAGES
+        - CONVERSATIONS
+        - ASR
+    direction:
+      type: string
+      title: Direction
+      description: >-
+        Direction of the communication, either inbound (received by our services), or outbound (originated from our services). Required for products `SMS` and `MESSAGES`. Optional for `VOICE-CALL`. Invalid for `IN-APP-VOICE`, `CONVERSATIONS`, `NUMBER-INSIGHT`, `VERIFY-API`.
+      enum:
+        - outbound
+        - inbound
+    date_start:
+      type: string
+      title: Start date
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{3})?Z$
+      description: The date from which to list records, in the ISO-8601 format.
+      examples:
+        - "2023-03-25T14:37:22.567Z"
+    show_concatenated:
+      type: boolean
+      title: Show Concatenated
+      description: Only for SMS. Indicates whether the SMS was split up into multiple parts (due to its length).
+      default: true

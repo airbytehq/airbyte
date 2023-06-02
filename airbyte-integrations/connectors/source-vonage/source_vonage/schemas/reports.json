@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "account_id": {
+      "type": ["string"]
+    },
+    "message_id": {
+      "type": ["string"]
+    },
+    "account_ref": {
+      "type": ["null", "string"]
+    },
+    "client_ref": {
+      "type": ["null", "string"]
+    },
+    "direction": {
+      "type": ["null", "string"]
+    },
+    "from": {
+      "type": ["null", "string"]
+    },
+    "forced_from": {
+      "type": ["null", "string"]
+    },
+    "concatenated": {
+      "type": ["boolean"]
+    },
+    "network": {
+      "type": ["null", "string"]
+    },
+    "network_name": {
+      "type": ["null", "string"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "country_name": {
+      "type": ["null", "string"]
+    },
+    "to": {
+      "type": ["null", "string"]
+    },
+    "date_received": {
+      "type": ["string"],
+      "format": "date-time"
+    },
+    "date_finalized": {
+      "type": ["null", "string"]
+    },
+    "latency": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "error_code": {
+      "type": ["null", "string"]
+    },
+    "error_code_description": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "total_price": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "dcs": {
+      "type": ["null", "string"]
+    },
+    "validity_period": {
+      "type": ["null", "string"]
+    },
+    "ip_address": {
+      "type": ["null", "string"]
+    },
+    "changed_from": {
+      "type": ["null", "string"]
+    }
+  }
+}
