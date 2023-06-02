@@ -27,6 +27,9 @@
     },
     "web_url": {
       "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
     }
   }
 }
