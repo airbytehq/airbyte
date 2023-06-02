@@ -12,7 +12,6 @@ from airbyte_cdk.sources.declarative.auth.declarative_authenticator import Decla
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.types import Config
-from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
 from cachetools import TTLCache, cached
 
 
@@ -48,7 +47,7 @@ class ApiKeyAuthenticator(DeclarativeAuthenticator):
     @property
     def auth_header(self) -> str:
         options = self._get_request_options(RequestOptionType.header)
-        return next(iter(options.keys()), '') 
+        return next(iter(options.keys()), "")
 
     @property
     def token(self) -> str:
@@ -68,6 +67,7 @@ class ApiKeyAuthenticator(DeclarativeAuthenticator):
 
     def get_request_body_json(self) -> Union[Mapping, None]:
         return self._get_request_options(RequestOptionType.body_json)
+
 
 @dataclass
 class BearerAuthenticator(DeclarativeAuthenticator):
