@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.10.5
+Skipping test_catalog_has_supported_data_types as it is failing on too many connectors. Will first address globally the type/format problems at scale and then re-enable it.
+
 ## 0.10.4
 Fixing bug: test_catalog_has_supported_data_types should support stream properties having `/` in it.
 
