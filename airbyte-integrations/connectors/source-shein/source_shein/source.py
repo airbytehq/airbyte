@@ -6,6 +6,7 @@
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
+import math
 import base64
 import random
 import string
@@ -119,8 +120,11 @@ class order_list(HttpStream):
         super().__init__(**kwargs)
         self.config_param = config
         self.page = 1
+        self.page_size = 30
         self.current_page = 1
         self.orderNo = None
+        self.start_time = None
+        self.end_time = None
 
     @property
     def http_method(self) -> str:
@@ -130,9 +134,11 @@ class order_list(HttpStream):
         return ORDER_LIST_PATH
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if self.page > self.current_page:
+        count = response.json().get("info").get("count")
+        total = math.ceil(count / self.page_size)
+        if total >= self.current_page:
             self.current_page += 1
-            return {"page": 1}
+            return {"page": self.current_page}
         return None
 
     def request_headers(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
@@ -147,26 +153,37 @@ class order_list(HttpStream):
     ) -> Optional[Mapping]:
         body = {
             "queryType": 2,
-            "startTime": "2023-05-08 16:20:33",
-            "endTime": "2023-05-29 10:23:50",
-            "page": 1,
-            "pageSize": 30
+            "page": self.current_page,
+            "pageSize": self.page_size
         }
-        if self.config_param["tunnel_method"]["tunnel_method"] == "PERIODIC":
-            days = self.config_param["tunnel_method"]["days"]
-            today = datetime.today()
-            end_time = today.strftime("%Y-%m-%d 00:00:00")
-            yesterday = today + relativedelta(days=-1 * days)
-            start_time = yesterday.strftime("%Y-%m-%d 00:00:00")
-            body["startTime"] = start_time
-            body["endTime"] = end_time
+
+        if self.start_time is None:
+            if self.config_param["tunnel_method"]["tunnel_method"] == "PERIODIC":
+                hours = self.config_param["tunnel_method"]["hours"]
+                today = datetime.today()
+                end_time = today.strftime("%Y-%m-%d %H:%M:%S")
+                hours_ago = today + relativedelta(hours=-1 * hours)
+                start_time = hours_ago.strftime("%Y-%m-%d %H:%M:%S")
+                body["startTime"] = start_time
+                body["endTime"] = end_time
+                self.start_time = start_time
+                self.end_time = end_time
+            else:
+                t_start_time = self.config_param["tunnel_method"]["start_time"]
+                t_end_time = self.config_param["tunnel_method"]["end_time"]
+                body["startTime"] = t_start_time
+                body["endTime"] = t_end_time
+                self.start_time = t_start_time
+                self.end_time = t_end_time
         else:
-            body["startTime"] = self.config_param["tunnel_method"]["start_time"]
-            body["endTime"] = self.config_param["tunnel_method"]["end_time"]
+            body["startTime"] = self.start_time
+            body["endTime"] = self.end_time
+        print(body)
         return body
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         respJson = response.json()
+
         if respJson.get("code") == "0":
             count = respJson.get("info").get("count")
             if count > (MAX_PAGE_SIZE * self.current_page):
@@ -180,7 +197,6 @@ class order_list(HttpStream):
                 orderCreateTime = item["orderCreateTime"]
                 orderUpdateTime = item["orderUpdateTime"]
                 item = order_detail(self.config_param, orderNo)
-                # item["order_info"] = order_detail(self.config_param, item["orderNo"])
                 addr = export_address(self.config_param, orderNo)
                 item["receiveMsgList"] = addr
                 item["source_name"] = self.config_param["source_name"]
@@ -202,8 +218,8 @@ class SourceShein(AbstractSource):
         headers = get_header(config["open_key_id"], config["secret_key"], ORDER_LIST_PATH)
         today = datetime.today()
         end_time = today.strftime("%Y-%m-%d %H:%M:%S")
-        yesterday = today + relativedelta(days=-1 * 5)
-        start_time = yesterday.strftime("%Y-%m-%d 00:00:00")
+        day_ago = today + relativedelta(days=-1 * 1)
+        start_time = day_ago.strftime("%Y-%m-%d %H:%M:%S")
         body = {
             "queryType": 2,
             "startTime": start_time,
@@ -211,9 +227,20 @@ class SourceShein(AbstractSource):
             "page": 1,
             "pageSize": 30
         }
+        if config["tunnel_method"]["tunnel_method"] == "PERIODIC":
+            hours = config["tunnel_method"]["hours"]
+            day_ago = today + relativedelta(hours=-1 * hours)
+            start_time = day_ago.strftime("%Y-%m-%d %H:%M:%S")
+            body["startTime"] = start_time
+            body["endTime"] = end_time
+        else:
+            body["startTime"] = config["tunnel_method"]["start_time"]
+            body["endTime"] = config["tunnel_method"]["end_time"]
+
         url = BASE_URL+ORDER_LIST_PATH
         resp = requests.post(url, headers=headers, json=body)
         resp_json = resp.json()
+        print(resp.text)
         if resp_json.get("code") == '0':
             return True, None
         else:
