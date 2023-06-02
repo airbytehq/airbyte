@@ -25,5 +25,19 @@ def github_connector_nightly_workflow_runs(context: OpExecutionContext) -> Outpu
     github_connector_nightly_workflow_runs = context.resources.github_connector_nightly_workflow_runs
 
     workflow_df = pd.DataFrame(github_connector_nightly_workflow_runs)
+    workflow_df = workflow_df[[
+        "id",
+        "name",
+        "head_branch",
+        "head_sha",
+        "run_number",
+        "status",
+        "conclusion",
+        "workflow_id",
+        "url",
+        "created_at",
+        "updated_at",
+        "run_started_at",
+    ]]
     return output_dataframe(workflow_df)
 
