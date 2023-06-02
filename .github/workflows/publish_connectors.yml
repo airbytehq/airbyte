@@ -49,6 +49,7 @@ jobs:
           # As speed is not a concern in this context I think not publishing connectors in parallel is fine.
           subcommand: "connectors --concurrency=1 --execute-timeout=3600 --modified publish --main-release"
           context: "master"
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
       - name: Publish connectors [manual]
         id: publish-connectors
         if: github.event_name == 'workflow_dispatch'
@@ -56,3 +57,4 @@ jobs:
         with:
           subcommand: "connectors ${{ github.event.inputs.connectors-options }} publish ${{ github.event.inputs.publish-options }}"
           context: "manual"
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}

@@ -19,3 +19,5 @@ data:
       enabled: true
     oss:
       enabled: true
+  tags:
+    - language:java
