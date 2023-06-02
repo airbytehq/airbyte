@@ -323,7 +323,7 @@ jobs:
 
       # This is helpful in the case that we change a previously commited generated file to be ignored by git.
       - name: Remove any files that have been gitignored
-        run: git ls-files -i -c --exclude-from=.gitignore | xargs git rm --cached
+        run: git ls-files -i -c --exclude-from=.gitignore | xargs -r git rm --cached
 
       - name: Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v4
