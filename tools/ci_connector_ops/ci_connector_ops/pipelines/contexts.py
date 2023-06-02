@@ -67,6 +67,7 @@ class PipelineContext:
         slack_webhook: Optional[str] = None,
         reporting_slack_channel: Optional[str] = None,
         pull_request: PullRequest = None,
+        ci_gcs_credentials: Optional[str] = None,
     ):
         """Initialize a pipeline context.
 
@@ -99,6 +100,8 @@ class PipelineContext:
         self.logger = logging.getLogger(self.pipeline_name)
         self.dagger_client = None
         self._report = None
+        self.ci_gcs_credentials = sanitize_gcs_credentials(ci_gcs_credentials) if ci_gcs_credentials else None
+
         update_commit_status_check(**self.github_commit_status)
 
     @property
@@ -120,6 +123,10 @@ class PipelineContext:
     @property
     def repo(self):  # noqa D102
         return self.dagger_client.git(AIRBYTE_REPO_URL, keep_git_dir=True)
+    
+    @property
+    def ci_gcs_credentials_secret(self) -> Secret:
+        return self.dagger_client.set_secret("ci_gcs_credentials", self.ci_gcs_credentials)
 
     @property
     def report(self) -> Report:  # noqa D102
@@ -305,7 +312,6 @@ class ConnectorContext(PipelineContext):
         self._secrets_dir = None
         self._updated_secrets_dir = None
         self.cdk_version = None
-        self.ci_gcs_credentials = sanitize_gcs_credentials(ci_gcs_credentials) if ci_gcs_credentials else None
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -318,6 +324,7 @@ class ConnectorContext(PipelineContext):
             slack_webhook=slack_webhook,
             reporting_slack_channel=reporting_slack_channel,
             pull_request=pull_request,
+            ci_gcs_credentials=ci_gcs_credentials,
         )
 
     @property
@@ -359,11 +366,6 @@ class ConnectorContext(PipelineContext):
     @property
     def docker_image_from_metadata(self) -> str:
         return f"{self.metadata['dockerRepository']}:{self.metadata['dockerImageTag']}"
-
-    @property
-    def ci_gcs_credentials_secret(self) -> Secret:
-        # TODO (ben): Update this to be in use ANYWHERE we use a service account.
-        return self.dagger_client.set_secret("ci_gcs_credentials", self.ci_gcs_credentials)
 
     @property
     def test_report_bucket(self) -> str:
@@ -463,7 +465,6 @@ class PublishConnectorContext(ConnectorContext):
         modified_files: List[str],
         spec_cache_gcs_credentials: str,
         spec_cache_bucket_name: str,
-        metadata_service_gcs_credentials: str,
         metadata_bucket_name: str,
         docker_hub_username: str,
         docker_hub_password: str,
@@ -475,13 +476,12 @@ class PublishConnectorContext(ConnectorContext):
         gha_workflow_run_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
-        ci_gcs_credentials: str = None,
+        ci_gcs_credentials: Optional[str] = None,
     ):
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
         self.metadata_bucket_name = metadata_bucket_name
         self.spec_cache_gcs_credentials = sanitize_gcs_credentials(spec_cache_gcs_credentials)
-        self.metadata_service_gcs_credentials = sanitize_gcs_credentials(metadata_service_gcs_credentials)
         self.docker_hub_username = docker_hub_username
         self.docker_hub_password = docker_hub_password
 
@@ -511,10 +511,6 @@ class PublishConnectorContext(ConnectorContext):
     @property
     def docker_hub_password_secret(self) -> Secret:
         return self.dagger_client.set_secret("docker_hub_password", self.docker_hub_password)
-
-    @property
-    def metadata_service_gcs_credentials_secret(self) -> Secret:
-        return self.dagger_client.set_secret("metadata_service_gcs_credentials", self.metadata_service_gcs_credentials)
 
     @property
     def spec_cache_gcs_credentials_secret(self) -> Secret:
