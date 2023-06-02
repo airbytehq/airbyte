@@ -5,7 +5,7 @@ import logging
 
 import anyio
 import click
-from ci_connector_ops.pipelines.contexts import CIContext
+from ci_connector_ops.pipelines.bases import CIContext
 from ci_connector_ops.pipelines.pipelines.metadata import (
     run_metadata_lib_test_pipeline,
     run_metadata_orchestrator_deploy_pipeline,

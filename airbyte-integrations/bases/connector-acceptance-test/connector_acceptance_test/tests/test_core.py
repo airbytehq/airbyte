@@ -566,6 +566,26 @@ class TestConnection(BaseTest):
 
 @pytest.mark.default_timeout(30)
 class TestDiscovery(BaseTest):
+
+    VALID_TYPES = {"null", "string", "number", "integer", "boolean", "object", "array"}
+    VALID_AIRBYTE_TYPES = {"timestamp_with_timezone", "timestamp_without_timezone", "integer"}
+    VALID_FORMATS = {"date-time", "date"}
+    VALID_TYPE_FORMAT_COMBINATIONS = [
+        ({"string"}, "date"),
+        ({"string"}, "date-time"),
+        ({"string", "null"}, "date"),
+        ({"string", "null"}, "date-time"),
+    ]
+    VALID_TYPE_AIRBYTE_TYPE_COMBINATIONS = [
+        ({"string"}, "timestamp_with_timezone"),
+        ({"string"}, "timestamp_without_timezone"),
+        ({"string", "null"}, "timestamp_with_timezone"),
+        ({"integer"}, "integer"),
+        ({"integer", "null"}, "integer"),
+        ({"number"}, "integer"),
+        ({"number", "null"}, "integer"),
+    ]
+
     @pytest.fixture(name="skip_backward_compatibility_tests")
     def skip_backward_compatibility_tests_fixture(
         self,
@@ -671,6 +691,52 @@ class TestDiscovery(BaseTest):
         assert isinstance(discovered_catalog, MutableMapping) and isinstance(previous_discovered_catalog, MutableMapping)
         checker = CatalogDiffChecker(previous_discovered_catalog, discovered_catalog)
         checker.assert_is_backward_compatible()
+
+    @pytest.mark.skip("This tests currently leads to too much failures. We need to fix the connectors at scale first.")
+    def test_catalog_has_supported_data_types(self, discovered_catalog: Mapping[str, Any]):
+        """Check that all streams have supported data types, format and airbyte_types.
+        Supported data types are listed there: https://docs.airbyte.com/understanding-airbyte/supported-data-types/
+        """
+        for stream_name, stream_data in discovered_catalog.items():
+            schema_helper = JsonSchemaHelper(stream_data.json_schema)
+
+            for type_path, type_value in dpath.util.search(stream_data.json_schema, "**^^type", yielded=True, separator="^^"):
+                parent_path = schema_helper.get_parent_path(type_path)
+                parent = schema_helper.get_parent(type_path, separator="^^")
+                if not isinstance(type_value, list) and not isinstance(type_value, str):
+                    # Skip when type is the name of a property.
+                    continue
+                type_values = set(type_value) if isinstance(type_value, list) else {type_value}
+
+                # Check unsupported type
+                has_unsupported_type = any(t not in self.VALID_TYPES for t in type_values)
+                if has_unsupported_type:
+                    raise AssertionError(f"Found unsupported type ({type_values}) in {stream_name} stream on property {parent_path}")
+
+                # Check unsupported format
+                property_format = parent.get("format")
+                if property_format and property_format not in self.VALID_FORMATS:
+                    raise AssertionError(f"Found unsupported format ({property_format}) in {stream_name} stream on property {parent_path}")
+
+                # Check unsupported airbyte_type and type/airbyte_type combination
+                airbyte_type = parent.get("airbyte_type")
+                if airbyte_type and airbyte_type not in self.VALID_AIRBYTE_TYPES:
+                    raise AssertionError(
+                        f"Found unsupported airbyte_type ({airbyte_type}) in {stream_name} stream on property {parent_path}"
+                    )
+                if airbyte_type:
+                    type_airbyte_type_combination = (type_values, airbyte_type)
+                    if type_airbyte_type_combination not in self.VALID_TYPE_AIRBYTE_TYPE_COMBINATIONS:
+                        raise AssertionError(
+                            f"Found unsupported type/airbyte_type combination {type_airbyte_type_combination} in {stream_name} stream on property {parent_path}"
+                        )
+                # Check unsupported type/format combination
+                if property_format:
+                    type_format_combination = (type_values, property_format)
+                    if type_format_combination not in self.VALID_TYPE_FORMAT_COMBINATIONS:
+                        raise AssertionError(
+                            f"Found unsupported type/format combination {type_format_combination} in {stream_name} stream on property {parent_path}"
+                        )
 
 
 def primary_keys_for_records(streams, records):
