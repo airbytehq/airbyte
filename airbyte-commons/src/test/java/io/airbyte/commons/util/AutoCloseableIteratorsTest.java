@@ -6,7 +6,6 @@ package io.airbyte.commons.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -15,12 +14,9 @@ import static org.mockito.Mockito.verify;
 
 import com.google.common.collect.Iterators;
 import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
-import io.airbyte.commons.util.AutoCloseableIterators.IterationMode;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
@@ -100,24 +96,6 @@ class AutoCloseableIteratorsTest {
 
     verify(onClose1, times(1)).call();
     verify(onClose2, times(1)).call();
-  }
-
-  @Test
-  void testConcatWithEagerCloseParallel() {
-    final VoidCallable onClose1 = mock(VoidCallable.class);
-    final VoidCallable onClose2 = mock(VoidCallable.class);
-    final List<AutoCloseableIterator<String>> iterators = List.of(
-        AutoCloseableIterators.fromIterator(MoreIterators.of("a", "b"), onClose1, null),
-        AutoCloseableIterators.fromIterator(MoreIterators.of("d"), onClose2, null));
-    final Consumer<AirbyteStreamStatusHolder> consumer = mock(Consumer.class);
-
-    final AutoCloseableIterator<String> parallelIterator = AutoCloseableIterators.concatWithEagerClose(iterators, consumer, IterationMode.PARALLEL);
-    assertNotNull(parallelIterator);
-    assertEquals(ParallelCompositeIterator.class, parallelIterator.getClass());
-
-    final AutoCloseableIterator<String> serialIterator = AutoCloseableIterators.concatWithEagerClose(iterators, consumer, IterationMode.SERIAL);
-    assertNotNull(serialIterator);
-    assertEquals(CompositeIterator.class, serialIterator.getClass());
   }
 
   private void assertOnCloseInvocations(final List<VoidCallable> haveClosed, final List<VoidCallable> haveNotClosed) throws Exception {
