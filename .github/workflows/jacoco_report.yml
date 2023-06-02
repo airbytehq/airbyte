@@ -20,14 +20,14 @@ jobs:
 
       - name: Run Coverage
         run: |
-          ./gradlew :airbyte-integrations:connectors:source-postgres:jacocoTestReport
+          ./gradlew ./gradlew testCodeCoverageReport
 
       - name: Add coverage to PR
         id: jacoco
         uses: madrapps/jacoco-report@v1.3
         with:
-          paths: ${{ github.workspace }}/airbyte-integrations/connectors/source-postgres/build/reports/jacoco/test/jacocoTestReport.xml
+          paths: ${{ github.workspace }}/build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 64
-          title: Coverage report for source-postgres
+          min-coverage-overall: 43
+          title: Coverage report for source-postgres and dependencies
           update-comment: true

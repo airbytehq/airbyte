@@ -37,6 +37,23 @@ plugins {
     id 'distribution'
     id 'version-catalog'
     id 'maven-publish'
+    id 'jacoco-report-aggregation'
+}
+
+dependencies {
+    jacocoAggregation project(':airbyte-integrations:connectors:source-postgres')
+}
+
+reporting {
+    reports {
+        testCodeCoverageReport(JacocoCoverageReport) {
+            testType = TestSuiteType.UNIT_TEST
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('testCodeCoverageReport', JacocoReport)
 }
 
 apply from: "$rootDir/publish-repositories.gradle"
