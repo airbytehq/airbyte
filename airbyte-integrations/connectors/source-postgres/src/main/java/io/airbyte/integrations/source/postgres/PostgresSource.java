@@ -165,8 +165,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
 
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
-
     jdbcUrl.append(toJDBCQueryParams(sslParameters));
+
     LOGGER.debug("jdbc url: {}", jdbcUrl.toString());
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
