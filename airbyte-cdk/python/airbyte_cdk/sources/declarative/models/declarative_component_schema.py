@@ -778,13 +778,13 @@ class ApiKeyAuthenticator(BaseModel):
     )
     header: Optional[str] = Field(
         None,
-        description="The name of the HTTP header that will be set to the API key. This setting is deprecated, use inject_into instead",
+        description="The name of the HTTP header that will be set to the API key. This setting is deprecated, use inject_into instead. If header and inject_into is defined at the same time, header will be ignored.",
         examples=["Authorization", "Api-Token", "X-Auth-Token"],
         title="Header Name",
     )
     inject_into: Optional[RequestOption] = Field(
         None,
-        description="Configure how the API Key will be sent in requests to the source API.",
+        description="Configure how the API Key will be sent in requests to the source API. Either inject_into or header has to be defined.",
         title="Inject API Key Into Outgoing HTTP Request",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")

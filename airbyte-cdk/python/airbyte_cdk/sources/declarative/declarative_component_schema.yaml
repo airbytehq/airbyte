@@ -109,7 +109,7 @@ definitions:
           - "Token token={{ config['api_key'] }}"
       header:
         title: Header Name
-        description: The name of the HTTP header that will be set to the API key. This setting is deprecated, use inject_into instead
+        description: The name of the HTTP header that will be set to the API key. This setting is deprecated, use inject_into instead. If header and inject_into is defined at the same time, header will be ignored.
         type: string
         interpolation_context:
           - config
@@ -119,7 +119,7 @@ definitions:
           - X-Auth-Token
       inject_into:
         title: Inject API Key Into Outgoing HTTP Request
-        description: Configure how the API Key will be sent in requests to the source API.
+        description: Configure how the API Key will be sent in requests to the source API. Either inject_into or header has to be defined.
         "$ref": "#/definitions/RequestOption"
       $parameters:
         type: object
