@@ -4,13 +4,11 @@
   "properties": {
     "id": {
       "type": "integer",
-      "description": "The ID of the link.",
-      "format": "int64"
+      "description": "The ID of the link."
     },
     "self": {
       "type": "string",
-      "description": "The URL of the link.",
-      "format": "uri"
+      "description": "The URL of the link."
     },
     "globalId": {
       "type": "string",

@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination_async;
 
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.stream.Stream;
@@ -35,7 +36,7 @@ public interface DestinationFlushFunction {
    *        {@link #getOptimalBatchSizeBytes()} size
    * @throws Exception
    */
-  void flush(StreamDescriptor decs, Stream<AirbyteMessage> stream) throws Exception;
+  void flush(StreamDescriptor decs, Stream<PartialAirbyteMessage> stream) throws Exception;
 
   /**
    * When invoking {@link #flush(StreamDescriptor, Stream)}, best effort attempt to invoke flush with

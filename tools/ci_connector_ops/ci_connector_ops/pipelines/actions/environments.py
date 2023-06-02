@@ -519,60 +519,70 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dbt_adapter": "dbt-bigquery==1.0.0",
         "integration_name": "bigquery",
         "supports_in_connector_normalization": True,
+        "yum_packages": [],
     },
     "destination-clickhouse": {
         "dockerfile": "clickhouse.Dockerfile",
         "dbt_adapter": "dbt-clickhouse>=1.4.0",
         "integration_name": "clickhouse",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-duckdb": {
         "dockerfile": "duckdb.Dockerfile",
         "dbt_adapter": "dbt-duckdb==1.0.1",
         "integration_name": "duckdb",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-mssql": {
         "dockerfile": "mssql.Dockerfile",
         "dbt_adapter": "dbt-sqlserver==1.0.0",
         "integration_name": "mssql",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-mysql": {
         "dockerfile": "mysql.Dockerfile",
         "dbt_adapter": "dbt-mysql==1.0.0",
         "integration_name": "mysql",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-oracle": {
         "dockerfile": "oracle.Dockerfile",
         "dbt_adapter": "dbt-oracle==0.4.3",
         "integration_name": "oracle",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-postgres": {
         "dockerfile": "Dockerfile",
         "dbt_adapter": "dbt-postgres==1.0.0",
         "integration_name": "postgres",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-redshift": {
         "dockerfile": "redshift.Dockerfile",
         "dbt_adapter": "dbt-redshift==1.0.0",
         "integration_name": "redshift",
         "supports_in_connector_normalization": True,
+        "yum_packages": [],
     },
     "destination-snowflake": {
         "dockerfile": "snowflake.Dockerfile",
         "dbt_adapter": "dbt-snowflake==1.0.0",
         "integration_name": "snowflake",
-        "supports_in_connector_normalization": False,
+        "supports_in_connector_normalization": True,
+        "yum_packages": ["gcc-c++"],
     },
     "destination-tidb": {
         "dockerfile": "tidb.Dockerfile",
         "dbt_adapter": "dbt-tidb==1.0.1",
         "integration_name": "tidb",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
 }
 
@@ -601,6 +611,9 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         "sshpass",
         "git",
     ]
+
+    additional_yum_packages = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["yum_packages"]
+    yum_packages_to_install += additional_yum_packages
 
     dbt_adapter_package = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dbt_adapter"]
     normalization_integration_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["integration_name"]
@@ -674,7 +687,6 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
 
 
 async def get_cdk_version_from_python_connector(python_connector: Container) -> Optional[str]:
-
     pip_freeze_stdout = await python_connector.with_entrypoint("pip").with_exec(["freeze"]).stdout()
     pip_dependencies = [dep.split("==") for dep in pip_freeze_stdout.split("\n")]
     for package_name, package_version in pip_dependencies:
@@ -770,9 +782,29 @@ def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_p
     )
 
 
-def with_crane(context: PipelineContext) -> Container:
+def with_crane(
+    context: PipelineContext,
+) -> Container:
     """Crane is a tool to analyze and manipulate container images.
     We can use it to extract the image manifest and the list of layers or list the existing tags on an image repository.
     https://github.com/google/go-containerregistry/tree/main/cmd/crane
     """
-    return context.dagger_client.container().from_("gcr.io/go-containerregistry/crane:v0.15.1")
+
+    # We use the debug image as it contains a shell which we need to properly use environment variables
+    # https://github.com/google/go-containerregistry/tree/main/cmd/crane#images
+    base_container = context.dagger_client.container().from_("gcr.io/go-containerregistry/crane/debug:v0.15.1")
+
+    if context.docker_hub_username_secret and context.docker_hub_password_secret:
+        base_container = (
+            base_container.with_secret_variable("DOCKER_HUB_USERNAME", context.docker_hub_username_secret).with_secret_variable(
+                "DOCKER_HUB_PASSWORD", context.docker_hub_password_secret
+            )
+            # We need to use skip_entrypoint=True to avoid the entrypoint to be overridden by the crane command
+            # We use sh -c to be able to use environment variables in the command
+            # This is a workaround as the default crane entrypoint doesn't support environment variables
+            .with_exec(
+                ["sh", "-c", "crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"], skip_entrypoint=True
+            )
+        )
+
+    return base_container

@@ -90,37 +90,19 @@ class SourceInstagram(AbstractSource):
                 oauth_config_specification=OAuthConfigSpecification(
                     complete_oauth_output_specification={
                         "type": "object",
-                        "properties": {
-                            "access_token": {
-                                "type": "string",
-                                "path_in_connector_config": ["access_token"]
-                            }
-                        }
+                        "properties": {"access_token": {"type": "string", "path_in_connector_config": ["access_token"]}},
                     },
                     complete_oauth_server_input_specification={
                         "type": "object",
-                        "properties": {
-                            "client_id": {
-                                "type": "string"
-                            },
-                            "client_secret": {
-                                "type": "string"
-                            }
-                        }
+                        "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
                     },
                     complete_oauth_server_output_specification={
                         "type": "object",
                         "properties": {
-                            "client_id": {
-                                "type": "string",
-                                "path_in_connector_config": ["client_id"]
-                            },
-                            "client_secret": {
-                                "type": "string",
-                                "path_in_connector_config": ["client_secret"]
-                            }
-                        }
-                    }
+                            "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
+                            "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
+                        },
+                    },
                 ),
             ),
         )
