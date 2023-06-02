@@ -10,20 +10,25 @@ import java.util.LinkedList;
 import java.util.Queue;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
-public abstract class AbstractGenerator<V> implements Generator {
+public class GeneratorImpl<V> implements Generator {
 
   private final KafkaMediator<V> mediator;
   private final Converter<V> converter;
+  private final int maxRecords;
 
-  public AbstractGenerator(KafkaMediator<V> mediator, Converter<V> converter) {
+
+  public GeneratorImpl(KafkaMediator<V> mediator, Converter<V> converter, int maxRecords) {
     this.mediator = mediator;
     this.converter = converter;
+    this.maxRecords = maxRecords;
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read() {
+  final public AutoCloseableIterator<AirbyteMessage> read() {
 
     return AutoCloseableIterators.fromIterator(new AbstractIterator<>() {
+
+      private int totalEmitted = 0;
 
       final Queue<ConsumerRecord<String, V>> buffer = new LinkedList<>();
 
@@ -32,7 +37,14 @@ public abstract class AbstractGenerator<V> implements Generator {
 
         // Try to load a new batch if buffer is empty
         if (buffer.isEmpty()) {
-          buffer.addAll(mediator.poll());
+          // Only load a new batch if we haven't reached max_records
+          if (this.totalEmitted < GeneratorImpl.this.maxRecords) {
+            var batch = mediator.poll();
+            totalEmitted += batch.size();
+            buffer.addAll(mediator.poll());
+          } else {
+            return endOfData();
+          }
         }
 
         // If it's still empty, no more data to consume
@@ -43,7 +55,6 @@ public abstract class AbstractGenerator<V> implements Generator {
           return converter.convertToAirbyteRecord(message.topic(), message.value());
         }
       }
-
     });
   }
 }

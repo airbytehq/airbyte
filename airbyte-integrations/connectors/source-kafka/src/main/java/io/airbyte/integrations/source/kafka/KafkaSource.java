@@ -9,10 +9,8 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.kafka.converter.AvroConverter;
 import io.airbyte.integrations.source.kafka.format.KafkaFormat;
-import io.airbyte.integrations.source.kafka.generator.AvroGenerator;
-import io.airbyte.integrations.source.kafka.mediator.AvroKafkaMediator;
+import io.airbyte.integrations.source.kafka.generator.GeneratorFactory;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -56,11 +54,7 @@ public class KafkaSource extends BaseConnector implements Source {
       throw new RuntimeException("Unable establish a connection: " + check.getMessage());
     }
 
-    var dependencies = KafkaDependenciesInitializer.getDependencies(config, "AVRO");
-
-    final var mediator = dependencies.getLeft();
-    final var converter = dependencies.getMiddle();
-    final var generator = dependencies.getRight();
+    final var generator = GeneratorFactory.forMessageFormat(config);
 
     return generator.read();
   }
