@@ -106,7 +106,7 @@ class CustomAuthenticator(BaseModel):
     type: Literal["CustomAuthenticator"]
     class_name: str = Field(
         ...,
-        description="Fully-qualified name of the class that will be implementing the custom authentication strategy. The format is `source_<name>.<package>.<class_name>`.",
+        description="Fully-qualified name of the class that will be implementing the custom authentication strategy. Has to be a sub class of DeclarativeAuthenticator. The format is `source_<name>.<package>.<class_name>`.",
         examples=["source_railz.components.ShortLivedTokenAuthenticator"],
         title="Class Name",
     )
