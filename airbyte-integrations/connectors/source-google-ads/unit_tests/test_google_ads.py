@@ -64,7 +64,8 @@ def test_google_ads_wrong_permissions(mocker):
     mocker.patch("source_google_ads.google_ads.GoogleAdsClient.load_from_dict", side_effect=exceptions.RefreshError("invalid_grant"))
     with pytest.raises(AirbyteTracedException) as e:
         GoogleAds(**SAMPLE_CONFIG)
-    assert e.value.message == "Config Error, Please Check permissions: invalid_grant"
+    expected_message = "The authentication to Google Ads has expired. Re-authenticate to restore access to Google Ads."
+    assert e.value.message == expected_message
 
 
 def test_send_request(mocker, customers):

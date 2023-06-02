@@ -450,7 +450,7 @@ class BulkSalesforceStream(SalesforceStream):
         """
         try:
             with open(path, "r", encoding=file_encoding) as data:
-                chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix")
+                chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix", dtype=object)
                 for chunk in chunks:
                     chunk = chunk.replace({nan: None}).to_dict(orient="records")
                     for row in chunk:
