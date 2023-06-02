@@ -28,6 +28,6 @@ jobs:
         with:
           paths: ${{ github.workspace }}/build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
-          min-coverage-overall: 43
+          min-coverage-overall: 45
           title: Coverage report for source-postgres and dependencies
           update-comment: true
