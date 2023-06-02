@@ -1,0 +1,92 @@
+{
+  "$schema":"http://json-schema.org/schema#",
+  "type": "object",
+  "properties":{
+    "id":{
+      "type":["string", "null"]
+    },
+    "name":{
+      "type":["string", "null"]
+    },
+    "enabled":{
+      "type":["boolean", "null"]
+    },
+    "currency":{
+      "type":["string", "null"]
+    },
+    "creationTime":{
+      "type":["string", "null"]
+    },
+    "lastModified":{
+      "type":["string", "null"]
+    },
+    "blockedSites":{
+      "type":"object",
+      "properties":{
+        "blockedPublishers":{
+          "type": "array",
+          "items":{
+            "type":"object",
+            "properties":{
+              "id":{
+                "type":["string", "null"]
+              },
+              "name":{
+                "type":["string", "null"]
+              },
+              "creationTime":{
+                "type":["string", "null"]
+              },
+              "modifiedBy":{
+                "type":["string", "null"]
+              }
+            }
+          }
+        },
+        "blockedSections":{
+          "type": "array",
+          "items":{
+            "type":"object",
+            "properties":{
+              "id":{
+                "type":["string", "null"]
+              },
+              "name":{
+                "type":["string", "null"]
+              },
+              "publisher":{
+                "type":"object",
+                "properties":{
+                  "id":{
+                    "type":["string", "null"]
+                  },
+                  "name":{
+                    "type":["string", "null"]
+                  }
+                }
+              },
+              "creationTime":{
+                "type":["string", "null"]
+              },
+              "modifiedBy":{
+                "type":["string", "null"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "useFirstPartyCookie":{
+      "type":["boolean", "null"]
+    },
+    "role":{
+      "type":["string", "null"]
+    },
+    "permissions":{
+      "type": "array",
+      "items":{
+        "type":["string", "null"]
+      }
+    }
+  }
+}

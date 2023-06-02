@@ -1,0 +1,20 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 4fe962d0-a70e-4516-aa99-c551abf46352
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-outbrain-amplify
+  githubIssueLabel: source-outbrain-amplify
+  icon: outbrain-amplify.svg
+  license: MIT
+  name: Outbrain Amplify
+  releaseDate: TODO
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/outbrain-amplify
+metadataSpecVersion: "1.0"
