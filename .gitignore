@@ -5,7 +5,6 @@
 build
 out
 .DS_Store
-data
 .dockerversions
 .classpath
 .project
@@ -87,11 +86,11 @@ charts/**/charts
 dd-java-agent.jar
 
 # Files needed to run airbyte-platform that are downloaded on-the-fly via run-ab-platform.sh
-docker-compose.yaml
-docker-compose.debug.yaml
-.env
-.env.dev
-flags.yml
+/docker-compose.yaml
+/docker-compose.debug.yaml
+/.env
+/.env.dev
+/flags.yml
 
 # Ignore generated credentials from google-github-actions/auth
 gha-creds-*.json
