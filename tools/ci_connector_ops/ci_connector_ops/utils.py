@@ -54,27 +54,27 @@ def get_connector_name_from_path(path):
     return path.split("/")[2]
 
 
-def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[str]:
+def get_changed_acceptance_test_config(keyword: str) -> Set[str]:
     """Retrieve the set of connectors for which the acceptance_test_config file was changed in the current branch (compared to master).
-
+    Only the connectors that have a change in their acceptance_test_config file that matches the regex will be returned.
+    We only track addition of the diff regex to the file
     Args:
-        diff_regex (str): Find the edited files that contain the following regex in their change.
+        keyword (str): Find the edited files that contain the following keyword in their change.
 
     Returns:
         Set[Connector]: Set of connectors that were changed
     """
     airbyte_repo = git.Repo(search_parent_directories=True)
+    changed_acceptance_test_config_paths = []
+    word_diff_command_args = ("--word-diff", "--unified=0", f"-G{keyword}", DIFFED_BRANCH)
+    word_diff = airbyte_repo.git.diff(*word_diff_command_args)
+    current_file = None
+    for diff_line in word_diff.split("\n"):
+        if diff_line.startswith("+++ b/") and ACCEPTANCE_TEST_CONFIG_FILE_NAME in diff_line:
+            current_file = diff_line.replace("+++ b/", "")
+        if diff_line.startswith("{+") and keyword in diff_line and current_file:
+            changed_acceptance_test_config_paths.append(current_file)
 
-    if diff_regex is None:
-        diff_command_args = ("--name-only", DIFFED_BRANCH)
-    else:
-        diff_command_args = ("--name-only", f"-G{diff_regex}", DIFFED_BRANCH)
-
-    changed_acceptance_test_config_paths = {
-        file_path
-        for file_path in airbyte_repo.git.diff(*diff_command_args).split("\n")
-        if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) and file_path.endswith(ACCEPTANCE_TEST_CONFIG_FILE_NAME)
-    }
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_acceptance_test_config_paths}
 
 
