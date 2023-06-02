@@ -7,6 +7,7 @@ import logging
 import pytest
 import requests
 from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator, BasicHttpAuthenticator, BearerAuthenticator
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from requests import Response
 
 LOGGER = logging.getLogger(__name__)
@@ -78,7 +79,16 @@ def test_api_key_authenticator(test_name, header, token, expected_header, expect
     """
     Should match passed in token, no matter how many times token is retrieved.
     """
-    token_auth = ApiKeyAuthenticator(header=header, api_token=token, config=config, parameters=parameters)
+    token_auth = ApiKeyAuthenticator(
+        request_option=RequestOption(
+            inject_into=RequestOptionType.header,
+            field_name=header,
+            parameters={}
+        ),
+        api_token=token,
+        config=config,
+        parameters=parameters
+    )
     header1 = token_auth.get_auth_header()
     header2 = token_auth.get_auth_header()
 
