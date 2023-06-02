@@ -20,7 +20,7 @@ jobs:
 
       - name: Run Coverage
         run: |
-          ./gradlew ./gradlew testCodeCoverageReport
+          ./gradlew testCodeCoverageReport
 
       - name: Add coverage to PR
         id: jacoco
