@@ -219,7 +219,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "dateRanges": [stream_slice],
             "returnPropertyQuota": True,
             "offset": str(0),
-            "limit": str(PAGE_SIZE)
+            "limit": str(PAGE_SIZE),
         }
         if next_page_token and next_page_token.get("offset") is not None:
             payload.update({"offset": str(next_page_token["offset"])})
@@ -419,11 +419,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
     def instantiate_report_class(report: dict, config: Mapping[str, Any]) -> GoogleAnalyticsDataApiBaseStream:
         cohort_spec = report.get("cohortSpec")
         pivots = report.get("pivots")
-        stream_config = {
-            "metrics": report["metrics"],
-            "dimensions": report["dimensions"],
-            **config
-        }
+        stream_config = {"metrics": report["metrics"], "dimensions": report["dimensions"], **config}
         report_class_tuple = (GoogleAnalyticsDataApiBaseStream,)
         if pivots:
             stream_config["pivots"] = pivots

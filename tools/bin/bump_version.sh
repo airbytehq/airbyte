@@ -12,7 +12,7 @@ set -o xtrace
 REPO=$(git ls-remote --get-url | xargs basename -s .git)
 echo $REPO
 if [ "$REPO" == "airbyte" ]; then
-  PREV_VERSION=$(grep -w VERSION run-ab-platform.sh | cut -d"=" -f2)
+  PREV_VERSION=$(grep -w 'VERSION=[0-9]\+\(\.[0-9]\+\)\+' run-ab-platform.sh | cut -d"=" -f2)
   echo "Bumping version for Airbyte"
 else
   PREV_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)

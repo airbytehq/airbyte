@@ -4,6 +4,8 @@
 
 """This module is the CLI entrypoint to the airbyte-ci commands."""
 
+from typing import List
+
 import click
 from ci_connector_ops.pipelines import github
 from ci_connector_ops.pipelines.bases import CIContext
@@ -13,10 +15,36 @@ from ci_connector_ops.pipelines.utils import (
     get_current_git_revision,
     get_modified_files_in_branch,
     get_modified_files_in_commit,
+    get_modified_files_in_pull_request,
 )
+from github import PullRequest
 
 from .groups.connectors import connectors
 from .groups.metadata import metadata
+
+
+def get_modified_files(
+    git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext, pull_request: PullRequest
+) -> List[str]:
+    """Get the list of modified files in the current git branch.
+    If the current branch is master, it will return the list of modified files in the head commit.
+    The head commit on master should be the merge commit of the latest merged pull request as we squash commits on merge.
+    Pipelines like "publish on merge" are triggered on each new commit on master.
+
+    If the CI context is a pull request, it will return the list of modified files in the pull request, without using git diff.
+    If the current branch is not master, it will return the list of modified files in the current branch.
+    This latest case is the one we encounter when running the pipeline locally, on a local branch, or manually on GHA with a workflow dispatch event.
+    """
+    if ci_context is CIContext.MASTER or ci_context is CIContext.NIGHTLY_BUILDS:
+        return get_modified_files_in_commit(git_branch, git_revision, is_local)
+    if ci_context is CIContext.PULL_REQUEST and pull_request is not None:
+        return get_modified_files_in_pull_request(pull_request)
+    if ci_context is CIContext.MANUAL:
+        if git_branch == "master":
+            return get_modified_files_in_commit(git_branch, git_revision, is_local)
+        else:
+            return get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
+    return get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
 
 
 @click.group(help="Airbyte CI top-level command group.")
@@ -58,14 +86,14 @@ def airbyte_ci(
     )
     ctx.obj["ci_context"] = ci_context
     ctx.obj["pipeline_start_timestamp"] = pipeline_start_timestamp
-    ctx.obj["modified_files_in_branch"] = get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
-    ctx.obj["modified_files_in_commit"] = get_modified_files_in_commit(git_branch, git_revision, is_local)
-    ctx.obj["modified_files"] = ctx.obj["modified_files_in_commit"] if git_branch == "master" else ctx.obj["modified_files_in_branch"]
 
     if pull_request_number and ci_github_access_token:
         ctx.obj["pull_request"] = github.get_pull_request(pull_request_number, ci_github_access_token)
     else:
         ctx.obj["pull_request"] = None
+
+    ctx.obj["modified_files"] = get_modified_files(git_branch, git_revision, diffed_branch, is_local, ci_context, ctx.obj["pull_request"])
+
     if not is_local:
         click.echo("Running airbyte-ci in CI mode.")
         click.echo(f"CI Context: {ci_context}")
@@ -75,6 +103,7 @@ def airbyte_ci(
         click.echo(f"GitHub Workflow Run URL: {ctx.obj['gha_workflow_run_url']}")
         click.echo(f"Pull Request Number: {pull_request_number}")
         click.echo(f"Pipeline Start Timestamp: {pipeline_start_timestamp}")
+        click.echo(f"Modified Files: {ctx.obj['modified_files']}")
 
 
 airbyte_ci.add_command(connectors)
