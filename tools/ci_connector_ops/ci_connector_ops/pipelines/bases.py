@@ -13,6 +13,7 @@ from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 
+import anyio
 import asyncer
 from ci_connector_ops.pipelines.consts import PYPROJECT_TOML_FILE_PATH
 from ci_connector_ops.pipelines.utils import check_path_in_workdir, with_exit_code, with_stderr, with_stdout
@@ -92,9 +93,12 @@ class Step(ABC):
 
     title: ClassVar[str]
     started_at: ClassVar[datetime]
+    retry: ClassVar[bool] = False
+    max_retries: ClassVar[int] = 0
 
     def __init__(self, context: ConnectorContext) -> None:  # noqa D107
         self.context = context
+        self.retry_count = 0
 
     async def run(self, *args, **kwargs) -> StepResult:
         """Public method to run the step. It output a step result.
@@ -106,7 +110,15 @@ class Step(ABC):
         """
         self.started_at = datetime.utcnow()
         try:
-            return await self._run(*args, **kwargs)
+            result = await self._run(*args, **kwargs)
+            if result.status is StepStatus.FAILURE and self.retry_count <= self.max_retries:
+                self.retry_count += 1
+                await anyio.sleep(10)
+                self.context.logger.warn(
+                    f"Retry #{self.retry_count} for {self.title} step on connector {self.context.connector.technical_name}"
+                )
+                return await self.run(*args, **kwargs)
+            return result
         except QueryError as e:
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
