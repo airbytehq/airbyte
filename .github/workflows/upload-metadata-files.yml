@@ -28,7 +28,7 @@ jobs:
         env:
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
         run: |
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             metadata_service upload $file prod-airbyte-cloud-connector-metadata-service

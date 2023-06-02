@@ -62,6 +62,13 @@ def get_modified_files(
 @click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
 @click.option("--pull-request-number", envvar="PULL_REQUEST_NUMBER", type=int)
 @click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str)
+@click.option(
+    "--ci-gcs-credentials",
+    help="The service account to use during CI.",
+    type=click.STRING,
+    required=False,  # Not required for pre-release or local pipelines
+    envvar="GCP_GSM_CREDENTIALS",
+)
 @click.pass_context
 def airbyte_ci(
     ctx: click.Context,
@@ -74,6 +81,7 @@ def airbyte_ci(
     pipeline_start_timestamp: int,
     pull_request_number: int,
     ci_github_access_token: str,
+    ci_gcs_credentials: str,
 ):  # noqa D103
     ctx.ensure_object(dict)
     ctx.obj["is_local"] = is_local
@@ -93,6 +101,7 @@ def airbyte_ci(
         ctx.obj["pull_request"] = None
 
     ctx.obj["modified_files"] = get_modified_files(git_branch, git_revision, diffed_branch, is_local, ci_context, ctx.obj["pull_request"])
+    ctx.obj["ci_gcs_credentials"] = ci_gcs_credentials
 
     if not is_local:
         click.echo("Running airbyte-ci in CI mode.")

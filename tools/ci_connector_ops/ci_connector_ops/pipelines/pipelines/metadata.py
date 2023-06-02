@@ -260,6 +260,7 @@ async def run_metadata_upload_pipeline(
     ci_context: Optional[str],
     metadata_to_upload: Set[Path],
     gcs_bucket_name: str,
+    ci_gcs_credentials: str,
 ) -> bool:
     pipeline_context = PipelineContext(
         pipeline_name="Metadata Upload Pipeline",
@@ -269,12 +270,12 @@ async def run_metadata_upload_pipeline(
         gha_workflow_run_url=gha_workflow_run_url,
         pipeline_start_timestamp=pipeline_start_timestamp,
         ci_context=ci_context,
+        ci_gcs_credentials=ci_gcs_credentials,
     )
 
     async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
         pipeline_context.dagger_client = dagger_client.pipeline(pipeline_context.pipeline_name)
         async with pipeline_context:
-            gcs_credentials_secret: dagger.Secret = pipeline_context.dagger_client.host().env_variable("GCS_CREDENTIALS").secret()
             docker_hub_username_secret: dagger.Secret = pipeline_context.dagger_client.host().env_variable("DOCKER_HUB_USERNAME").secret()
             docker_hub_password_secret: dagger.Secret = pipeline_context.dagger_client.host().env_variable("DOCKER_HUB_PASSWORD").secret()
 
@@ -282,7 +283,7 @@ async def run_metadata_upload_pipeline(
                 [
                     MetadataUpload(
                         context=pipeline_context,
-                        metadata_service_gcs_credentials_secret=gcs_credentials_secret,
+                        metadata_service_gcs_credentials_secret=pipeline_context.ci_gcs_credentials_secret,
                         docker_hub_username_secret=docker_hub_username_secret,
                         docker_hub_password_secret=docker_hub_password_secret,
                         metadata_bucket_name=gcs_bucket_name,

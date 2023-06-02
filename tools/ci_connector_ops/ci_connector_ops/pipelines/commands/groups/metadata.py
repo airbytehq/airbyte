@@ -87,6 +87,7 @@ def upload(ctx: click.Context, gcs_bucket_name: str, modified_only: bool) -> boo
         ctx.obj.get("ci_context"),
         metadata_to_upload,
         gcs_bucket_name,
+        ctx.obj["ci_gcs_credentials"],
     )
 
 

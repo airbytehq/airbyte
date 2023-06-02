@@ -89,13 +89,6 @@ def render_report_output_prefix(ctx: click.Context) -> str:
 @click.group(help="Commands related to connectors and connector acceptance tests.")
 @click.option("--use-remote-secrets", default=True)  # specific to connectors
 @click.option(
-    "--ci-gcs-credentials",
-    help="The service account to use during CI.",
-    type=click.STRING,
-    required=False,  # Not required for pre-release or local pipelines
-    envvar="GCP_GSM_CREDENTIALS",
-)
-@click.option(
     "--name", "names", multiple=True, help="Only test a specific connector. Use its technical name. e.g source-pokeapi.", type=str
 )
 @click.option("--language", "languages", multiple=True, help="Filter connectors to test by language.", type=click.Choice(ConnectorLanguage))
@@ -118,7 +111,6 @@ def render_report_output_prefix(ctx: click.Context) -> str:
 def connectors(
     ctx: click.Context,
     use_remote_secrets: bool,
-    ci_gcs_credentials: str,
     names: Tuple[str],
     languages: Tuple[ConnectorLanguage],
     release_stages: Tuple[str],
@@ -131,7 +123,6 @@ def connectors(
 
     ctx.ensure_object(dict)
     ctx.obj["use_remote_secrets"] = use_remote_secrets
-    ctx.obj["ci_gcs_credentials"] = ci_gcs_credentials
     ctx.obj["connector_names"] = names
     ctx.obj["connector_languages"] = languages
     ctx.obj["release_states"] = release_stages
