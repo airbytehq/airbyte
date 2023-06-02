@@ -237,7 +237,7 @@
             "type": ["null", "string"]
           },
           "format": {
-            "type": ["null", "string"]
+            "type": ["null", "boolean"]
           },
           "excerpt": {
             "type": ["null", "string"]
