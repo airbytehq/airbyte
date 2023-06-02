@@ -5,9 +5,17 @@
 import logging
 from typing import Any, List, Mapping, Optional, Tuple, Type
 
+import facebook_business
 import pendulum
 import requests
-from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConnectorSpecification, DestinationSyncMode, OAuthConfigSpecification
+from airbyte_cdk.models import (
+    AdvancedAuth,
+    AuthFlowType,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    FailureType,
+    OAuthConfigSpecification,
+)
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
@@ -21,18 +29,15 @@ from source_facebook_marketing.streams import (
     Ads,
     AdSets,
     AdsInsights,
-    AdsInsightsActionType,
-    AdsInsightsAgeAndGender,
-    AdsInsightsCountry,
-    AdsInsightsDma,
-    AdsInsightsPlatformAndDevice,
-    AdsInsightsRegion,
     AdsInsightsActionCarouselCard,
     AdsInsightsActionConversionDevice,
     AdsInsightsActionProductID,
     AdsInsightsActionReaction,
+    AdsInsightsActionType,
     AdsInsightsActionVideoSound,
     AdsInsightsActionVideoType,
+    AdsInsightsAgeAndGender,
+    AdsInsightsCountry,
     AdsInsightsDeliveryDevice,
     AdsInsightsDeliveryPlatform,
     AdsInsightsDeliveryPlatformAndDevicePlatform,
@@ -40,6 +45,9 @@ from source_facebook_marketing.streams import (
     AdsInsightsDemographicsCountry,
     AdsInsightsDemographicsDMARegion,
     AdsInsightsDemographicsGender,
+    AdsInsightsDma,
+    AdsInsightsPlatformAndDevice,
+    AdsInsightsRegion,
     Campaigns,
     CustomConversions,
     Images,
@@ -203,22 +211,24 @@ class SourceFacebookMarketing(AbstractSource):
             supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),
             advanced_auth=AdvancedAuth(
-            auth_flow_type=AuthFlowType.oauth2_0,
-            oauth_config_specification=OAuthConfigSpecification(
-                complete_oauth_output_specification={
-                    "type": "object",
-                    "properties": {
-                        "access_token": {
-                            "type": "string",
-                            "path_in_connector_config": ["access_token"],
-                        }
-                    }
-                },
-                complete_oauth_server_input_specification={
-                    "type": "object",
-                    "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
-                })),
-            authSpecification=None
+                auth_flow_type=AuthFlowType.oauth2_0,
+                oauth_config_specification=OAuthConfigSpecification(
+                    complete_oauth_output_specification={
+                        "type": "object",
+                        "properties": {
+                            "access_token": {
+                                "type": "string",
+                                "path_in_connector_config": ["access_token"],
+                            }
+                        },
+                    },
+                    complete_oauth_server_input_specification={
+                        "type": "object",
+                        "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+                    },
+                ),
+            ),
+            authSpecification=None,
         )
 
     def get_custom_insights_streams(self, api: API, config: ConnectorConfig) -> List[Type[Stream]]:
