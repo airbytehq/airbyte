@@ -198,7 +198,7 @@ METRICS_MAP = {
         "adGroupId",
         "asin",
         "otherAsin",
-        "sku", # Available for seller accounts only.
+        "sku",  # Available for seller accounts only.
         "currency",
         "attributedUnitsOrdered1dOtherSKU",
         "attributedUnitsOrdered7dOtherSKU",

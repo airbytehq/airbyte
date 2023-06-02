@@ -131,6 +131,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
+    // Initialize parameters with prepareThreshold=0 to mitigate pgbouncer errors
+    // https://github.com/airbytehq/airbyte/issues/24796
+    additionalParameters.add("prepareThreshold=0");
 
     final String encodedDatabaseName = HostPortResolver.encodeValue(config.get(JdbcUtils.DATABASE_KEY).asText());
 
@@ -174,7 +177,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
 
     configBuilder.putAll(sslParameters);
-
     return Jsons.jsonNode(configBuilder.build());
   }
 

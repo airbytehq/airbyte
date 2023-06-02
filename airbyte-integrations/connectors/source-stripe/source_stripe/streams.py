@@ -237,6 +237,7 @@ class Disputes(IncrementalStripeStream):
     def path(self, **kwargs):
         return "disputes"
 
+
 class EarlyFraudWarnings(StripeStream):
     """
     API docs: https://stripe.com/docs/api/radar/early_fraud_warnings/list
