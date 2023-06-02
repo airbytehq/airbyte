@@ -43,7 +43,7 @@ definitions:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "activity"
-      path: "activity"
+      path: "activity/recent_views"
   cards_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
