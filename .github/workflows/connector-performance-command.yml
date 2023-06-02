@@ -146,6 +146,7 @@ jobs:
         with:
           config: "./tools/bin/${{ steps.which-harness.outputs.harness_type }}-kind-cluster-config.yaml"
       - name: Run harness
+        timeout-minutes: 2400
         id: run-harness
         shell: bash
         env:
