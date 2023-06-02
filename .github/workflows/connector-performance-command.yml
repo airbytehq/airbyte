@@ -171,8 +171,9 @@ jobs:
           envsubst < ./tools/bin/run-harness-process.yaml | kubectl create -f -
           echo "harness is ${{ steps.which-harness.outputs.harness_type }}"
           POD=$(kubectl get pod -l app=performance-harness -o jsonpath="{.items[0].metadata.name}")
-          kubectl wait --for=condition=Ready --timeout=20s "pod/$POD"
+          kubectl wait --for=condition=Ready "pod/$POD"
           kubectl logs --follow $POD
+          kubectl describe pods
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "RUN_RESULT<<$EOF" >> $GITHUB_OUTPUT
           kubectl logs --tail=1 $POD | while read line ; do line=${line#"$PREFIX"}; line=${line%"$SUFFIX"}; echo $line >> $GITHUB_OUTPUT ; done 
