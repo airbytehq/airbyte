@@ -1,6 +1,106 @@
 {
   "properties": {
     "object": { "type": "string"},
-    "type": { "type": "string" }
+    "type": { "type": "string" },
+    "callout": {
+        "type": "object",
+        "properties": {
+          "color": { "type": "string" },
+          "rich_text": { "type": "array", "items": { "$ref": "text.json" } },
+          "icon": { "$ref": "icon.json" },
+          "children": { "type": "array", "items": { "type": "object" } }
+        }
+      },
+    "to_do": {
+        "type": "object",
+        "properties": {
+          "rich_text": { "type": "array", "items": { "$ref": "text.json" } },
+          "checked": { "type": ["null", "boolean"] },
+          "children": { "type": "array", "items": { "type": "object" } }
+        }
+      },
+    "code": {
+        "type": "object",
+        "properties": {
+          "color": { "type": "string" },
+          "rich_text": { "type": "array", "items": { "$ref": "text.json" } },
+          "language": {
+            "enum": [
+              "abap",
+              "arduino",
+              "bash",
+              "basic",
+              "c",
+              "clojure",
+              "coffeescript",
+              "c++",
+              "c#",
+              "css",
+              "dart",
+              "diff",
+              "docker",
+              "elixir",
+              "elm",
+              "erlang",
+              "flow",
+              "fortran",
+              "f#",
+              "gherkin",
+              "glsl",
+              "go",
+              "graphql",
+              "groovy",
+              "haskell",
+              "html",
+              "java",
+              "javascript",
+              "json",
+              "julia",
+              "kotlin",
+              "latex",
+              "less",
+              "lisp",
+              "livescript",
+              "lua",
+              "makefile",
+              "markdown",
+              "markup",
+              "matlab",
+              "mermaid",
+              "nix",
+              "objective-c",
+              "ocaml",
+              "pascal",
+              "perl",
+              "php",
+              "plain text",
+              "powershell",
+              "prolog",
+              "protobuf",
+              "python",
+              "r",
+              "reason",
+              "ruby",
+              "rust",
+              "sass",
+              "scala",
+              "scheme",
+              "scss",
+              "shell",
+              "sql",
+              "swift",
+              "typescript",
+              "vb.net",
+              "verilog",
+              "vhdl",
+              "visual basic",
+              "webassembly",
+              "xml",
+              "yaml",
+              "java/c/c++/c#"
+            ]
+          }
+        }
+      }
   }
 }
