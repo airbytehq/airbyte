@@ -82,7 +82,7 @@ See Facebook's [documentation on rate limiting](https://developers.facebook.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
-| 0.2.5   | 2023-04-13 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add advancedAuth to the connector spec                                    |
+| 0.2.5   | 2023-04-13 | [26939](https://github.com/airbytehq/airbyte/pull/26939) | Add advancedAuth to the connector spec                                    |
 | 0.2.4   | 2023-04-13 | [25143](https://github.com/airbytehq/airbyte/pull/25143) | Update insight metrics request params                                     |
 | 0.2.3   | 2023-02-23 | [23395](https://github.com/airbytehq/airbyte/pull/23395) | Parse datetime to rfc3339                                                 |
 | 0.2.2   | 2023-02-10 | [22804](https://github.com/airbytehq/airbyte/pull/22804) | Retry 500 errors                                                          |
