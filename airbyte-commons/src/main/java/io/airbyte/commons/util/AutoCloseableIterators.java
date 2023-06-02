@@ -198,4 +198,5 @@ public class AutoCloseableIterators {
                                                               final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer) {
     return new CompositeIterator<>(iterators, airbyteStreamStatusConsumer);
   }
+
 }
