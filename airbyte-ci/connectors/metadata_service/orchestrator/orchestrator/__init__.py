@@ -4,7 +4,7 @@
 from dagster import Definitions, load_assets_from_modules
 
 from orchestrator.resources.gcp import gcp_gcs_client, gcs_bucket_manager, gcs_directory_blobs, gcs_file_blob, gcs_file_manager
-from orchestrator.resources.github import github_client, github_connector_repo, github_connectors_directory
+from orchestrator.resources.github import github_client, github_connector_repo, github_connectors_directory, github_workflow_runs
 
 from orchestrator.assets import (
     github,
@@ -38,6 +38,13 @@ RESOURCES = {
     "github_client": github_client.configured({"github_token": {"env": "GITHUB_METADATA_SERVICE_TOKEN"}}),
     "github_connector_repo": github_connector_repo.configured({"connector_repo_name": CONNECTOR_REPO_NAME}),
     "github_connectors_directory": github_connectors_directory.configured({"connectors_path": CONNECTORS_PATH}),
+    "github_connector_nightly_workflow_runs": github_workflow_runs.configured(
+        {
+            "workflow_id": "connector_nightly_builds_dagger.yml",
+            "branch": "master",
+            "status": "success",
+        }
+    ),
     "gcp_gcs_client": gcp_gcs_client.configured(
         {
             "gcp_gcs_cred_string": {"env": "GCS_CREDENTIALS"},
