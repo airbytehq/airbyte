@@ -654,21 +654,28 @@ class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if self._ignore_pagination:
-            return None
-        next_page = self._parse_next_page_number(response)
-        return next_page if next_page else None
+        """
+        https://developer.zendesk.com/documentation/api-basics/pagination/paginating-through-lists-using-cursor-pagination/#when-to-stop-paginating
+        """
+        meta = response.json().get("meta", {})
+        return meta.get("after_cursor") if meta.get("has_more", False) else None
 
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
+        """
+        To make the Cursor Pagination to return `after_cursor` we should follow these instructions:
+        https://developer.zendesk.com/documentation/api-basics/pagination/paginating-through-lists-using-cursor-pagination/#enabling-cursor-pagination
+        """
         params = {
             "start_time": self.check_stream_state(stream_state),
-            "page": 1,
-            "per_page": self.page_size,
+            "page[size]": self.page_size,
         }
         if next_page_token:
-            params["page"] = next_page_token
+            # when cursor pagination is used, we can pass only `after` and `page size` params,
+            # other params should be omitted.
+            params.pop("start_time", None)
+            params["page[after]"] = next_page_token
         return params
 
 

@@ -570,8 +570,8 @@ definitions:
           - "created_at"
           - "{{ config['record_cursor'] }}"
       datetime_format:
-        title: Datetime Format
-        description: The format of the datetime value.
+        title: Cursor Field Datetime Format
+        description: The datetime format of the Cursor Field.
         type: string
         examples:
           - "%Y-%m-%dT%H:%M:%S.%f%z"

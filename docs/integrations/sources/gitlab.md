@@ -105,7 +105,8 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------|
-| 1.2.0   | 2023-05-17 | [22293](https://github.com/airbytehq/airbyte/pull/22293) | Preserve data in records with flattened keys |
+| 1.2.1   | 2023-06-02 | [26947](https://github.com/airbytehq/airbyte/pull/26947) | New field `name` added to `Pipelines` and `PipelinesExtended` stream schema                |
+| 1.2.0   | 2023-05-17 | [22293](https://github.com/airbytehq/airbyte/pull/22293) | Preserve data in records with flattened keys                                               |
 | 1.1.1   | 2023-05-23 | [26422](https://github.com/airbytehq/airbyte/pull/26422) | Fix error `404 Repository Not Found` when syncing project with Repository feature disabled |
 | 1.1.0   | 2023-05-10 | [25948](https://github.com/airbytehq/airbyte/pull/25948) | Introduce two new fields in the `Projects` stream schema                                   |
 | 1.0.4   | 2023-04-20 | [21373](https://github.com/airbytehq/airbyte/pull/21373) | Accept api_url with or without scheme                                                      |
