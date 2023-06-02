@@ -131,8 +131,8 @@ class GoogleAdsStream(Stream, ABC):
             return []
 
         customer_id = stream_slice["customer_id"]
-        response_records = self.google_ads_client.send_request(self.get_query(stream_slice), customer_id=customer_id)
         try:
+            response_records = self.google_ads_client.send_request(self.get_query(stream_slice), customer_id=customer_id)
             for response in response_records:
                 yield from self.parse_response(response)
         except GoogleAdsException as exc:
