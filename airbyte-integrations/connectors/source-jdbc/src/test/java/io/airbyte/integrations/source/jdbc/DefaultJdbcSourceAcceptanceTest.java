@@ -163,7 +163,6 @@ class DefaultJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
     // state
-    @Override
     protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
       if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
         final AirbyteGlobalState globalState = new AirbyteGlobalState()
