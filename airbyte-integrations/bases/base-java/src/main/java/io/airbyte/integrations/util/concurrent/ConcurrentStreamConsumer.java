@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
@@ -30,9 +31,9 @@ import java.util.function.Consumer;
  * <p>
  * </p>
  * This consumer will capture any raised exceptions during execution of each stream. Anu exceptions
- * are stored and made availble by calling the {@link #getException()} method.
+ * are stored and made available by calling the {@link #getException()} method.
  */
-public class ConcurrentStreamConsumer implements Consumer<AutoCloseableIterator<AirbyteMessage>> {
+public class ConcurrentStreamConsumer implements Consumer<AutoCloseableIterator<AirbyteMessage>>, AutoCloseable {
 
   private final ExecutorService executorService;
   private final List<Exception> exceptions;
@@ -104,4 +105,10 @@ public class ConcurrentStreamConsumer implements Consumer<AutoCloseableIterator<
     return Math.min(10, requestedParallelism > 0 ? requestedParallelism : 1);
   }
 
+  @Override
+  public void close() throws Exception {
+    // Block waiting for the executor service to close
+    executorService.shutdownNow();
+    executorService.awaitTermination(30, TimeUnit.SECONDS);
+  }
 }

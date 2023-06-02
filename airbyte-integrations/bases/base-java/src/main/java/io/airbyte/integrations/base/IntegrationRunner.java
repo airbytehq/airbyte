@@ -159,10 +159,16 @@ public class IntegrationRunner {
           validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
           final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
           final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
-          if (featureFlags.concurrentSourceStreamRead()) {
-            readConcurrent(config, catalog, stateOptional);
-          } else {
-            readSerial(config, catalog, stateOptional);
+          try {
+            if (featureFlags.concurrentSourceStreamRead()) {
+              readConcurrent(config, catalog, stateOptional);
+            } else {
+              readSerial(config, catalog, stateOptional);
+            }
+          } finally {
+            if (source instanceof AutoCloseable) {
+              AutoCloseable.class.cast(source).close();
+            }
           }
         }
         // destination only
@@ -222,8 +228,7 @@ public class IntegrationRunner {
 
   private void readConcurrent(final JsonNode config, ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
     final Collection<AutoCloseableIterator<AirbyteMessage>> streams = source.readStreams(config, catalog, stateOptional.orElse(null));
-
-    final ConcurrentStreamConsumer streamConsumer = new ConcurrentStreamConsumer((stream) -> {
+    final Consumer<AutoCloseableIterator<AirbyteMessage>> outputConsumer = (stream) -> {
       try {
         final Consumer<AirbyteMessage> streamStatusTrackingRecordConsumer = StreamStatusUtils.statusTrackingRecordCollector(stream,
             outputRecordCollector, Optional.of(AirbyteTraceMessageUtility::emitStreamStatusTrace));
@@ -231,22 +236,20 @@ public class IntegrationRunner {
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
-    }, streams.size());
+    };
 
-    streams.forEach(streamConsumer);
+    try (final ConcurrentStreamConsumer streamConsumer = new ConcurrentStreamConsumer(outputConsumer, streams.size())) {
+      streams.forEach(streamConsumer);
 
-    if (streamConsumer.getException().isPresent()) {
-      throw streamConsumer.getException().get();
+      if (streamConsumer.getException().isPresent()) {
+        throw streamConsumer.getException().get();
+      }
     }
   }
 
   private void readSerial(final JsonNode config, ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
     try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
       produceMessages(messageIterator, outputRecordCollector);
-    } finally {
-      if (source instanceof AutoCloseable) {
-        AutoCloseable.class.cast(source).close();
-      }
     }
   }
 
