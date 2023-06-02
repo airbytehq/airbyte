@@ -24,7 +24,11 @@ class CheckConnectorImageDoesNotExist(Step):
     async def _run(self) -> StepResult:
         docker_repository, docker_tag = self.context.docker_image_name.split(":")
         crane_ls = (
-            environments.with_crane(self.context).with_env_variable("CACHEBUSTER", str(uuid.uuid4())).with_exec(["ls", docker_repository])
+            environments.with_crane(
+                self.context,
+            )
+            .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
+            .with_exec(["ls", docker_repository])
         )
         crane_ls_exit_code = await with_exit_code(crane_ls)
         crane_ls_stderr = await with_stderr(crane_ls)
@@ -83,7 +87,6 @@ class PullConnectorImageFromRegistry(Step):
         We use crane to inspect the manifest of the image and check if it only has gzip layers.
         """
         for platform in consts.BUILD_PLATFORMS:
-
             inspect = environments.with_crane(self.context).with_exec(
                 ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image_name}"]
             )
@@ -236,14 +239,22 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
     async with semaphore:
         async with context:
+            # TODO add a strucutre to hold the results of each step. and perform skips and failures.
+
             results = []
+
             metadata_validation_results = await metadata.MetadataValidation(context, context.metadata_path).run()
             results.append(metadata_validation_results)
+
+            # Exit early if the metadata file is invalid.
             if metadata_validation_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
             check_connector_image_results = await CheckConnectorImageDoesNotExist(context).run()
             results.append(check_connector_image_results)
+
+            # If the connector image already exists, we don't need to build it, but we still need to upload the metadata file.
+            # We also need to upload the spec to the spec cache bucket.
             if check_connector_image_results.status is StepStatus.SKIPPED and not context.pre_release:
                 context.logger.info(
                     "The connector version is already published. Let's upload metadata.yaml and spec to GCS even if no version bump happened."
@@ -256,17 +267,22 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
                 metadata_upload_results = await metadata_upload_step.run()
                 results.append(metadata_upload_results)
 
+            # Exit early if the connector image already exists or has failed to build
             if check_connector_image_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
             build_connector_results = await builds.run_connector_build(context)
             results.append(build_connector_results)
+
+            # Exit early if the connector image failed to build
             if build_connector_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
             built_connector_platform_variants = list(build_connector_results.output_artifact.values())
             push_connector_image_results = await PushConnectorImageToRegistry(context).run(built_connector_platform_variants)
             results.append(push_connector_image_results)
+
+            # Exit early if the connector image failed to push
             if push_connector_image_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
@@ -274,18 +290,32 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
             # See https://github.com/airbytehq/airbyte/issues/26085
             pull_connector_image_results = await PullConnectorImageFromRegistry(context).run()
             results.append(pull_connector_image_results)
+
+            # Exit early if the connector image failed to pull
             if pull_connector_image_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
 
-            if not context.pre_release:
-                # Only upload to spec cache bucket if the connector is not a pre-release.
-                upload_to_spec_cache_results = await UploadSpecToCache(context).run(built_connector_platform_variants[0])
-                results.append(upload_to_spec_cache_results)
-                if upload_to_spec_cache_results.status is not StepStatus.SUCCESS:
-                    return create_connector_report(results)
+            upload_to_spec_cache_results = await UploadSpecToCache(context).run(built_connector_platform_variants[0])
+            results.append(upload_to_spec_cache_results)
+            if upload_to_spec_cache_results.status is not StepStatus.SUCCESS:
+                return create_connector_report(results)
 
+            if not context.pre_release:
                 # Only upload to metadata service bucket if the connector is not a pre-release.
                 metadata_upload_results = await metadata_upload_step.run()
                 results.append(metadata_upload_results)
 
             return create_connector_report(results)
+
+
+def reorder_contexts(contexts: List[PublishConnectorContext]) -> List[PublishConnectorContext]:
+    """Reorder contexts so that the ones that are for strict-encrypt/secure connectors come first.
+    The metadata upload on publish checks if the the connectors referenced in the metadata file are already published to DockerHub.
+    Non strict-encrypt variant reference the strict-encrypt variant in their metadata file for cloud.
+    So if we publish the non strict-encrypt variant first, the metadata upload will fail if the strict-encrypt variant is not published yet.
+    As strict-encrypt variant are often modified in the same PR as the non strict-encrypt variant, we want to publish them first.
+    This is an hacky approach: as connector names with -strict-encrypt/secure prefix are longer,
+    they will be sorted first with our reverse sort below.
+    """
+
+    return sorted(contexts, key=lambda context: context.connector.technical_name, reverse=True)
