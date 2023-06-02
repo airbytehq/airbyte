@@ -310,9 +310,7 @@ class Connector:
         return set(dependencies_paths)
 
 
-def get_changed_connectors(
-        source: bool = True, destination: bool = True, third_party: bool = True
-) -> Set[Connector]:
+def get_changed_connectors(source: bool = True, destination: bool = True, third_party: bool = True) -> Set[Connector]:
     """Retrieve a set of Connectors that were changed in the current branch (compared to master)."""
     prefix_to_check = []
     if source:

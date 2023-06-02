@@ -258,12 +258,11 @@ def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Pa
         if str(f).endswith(METADATA_FILE_NAME) and str(f).startswith("airbyte-integrations/connectors") and "-scaffold-" not in str(f)
     }
 
+
 def get_expected_metadata_files() -> Set[Path]:
     changed_connectors = get_changed_connectors()
-    return {
-        changed_connector.metadata_file_path
-        for changed_connector in changed_connectors
-    }
+    return {changed_connector.metadata_file_path for changed_connector in changed_connectors}
+
 
 def get_all_metadata_files() -> Set[Path]:
     return {

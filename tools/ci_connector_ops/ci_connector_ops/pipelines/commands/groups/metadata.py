@@ -13,7 +13,12 @@ from ci_connector_ops.pipelines.pipelines.metadata import (
     run_metadata_upload_pipeline,
     run_metadata_validation_pipeline,
 )
-from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_all_metadata_files, get_modified_metadata_files, get_expected_metadata_files
+from ci_connector_ops.pipelines.utils import (
+    DaggerPipelineCommand,
+    get_all_metadata_files,
+    get_modified_metadata_files,
+    get_expected_metadata_files,
+)
 from rich.logging import RichHandler
 
 logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
