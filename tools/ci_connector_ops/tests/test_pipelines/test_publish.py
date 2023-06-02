@@ -109,7 +109,7 @@ class TestUploadSpecToCache:
                 mocker.ANY,
                 f"specs/{image_name.replace(':', '/')}/spec.json",
                 context.spec_cache_bucket_name,
-                context.spec_cache_gcs_credentials_secret,
+                context.ci_gcs_credentials_secret,
                 flags=['--cache-control="no-cache"'],
             )
 

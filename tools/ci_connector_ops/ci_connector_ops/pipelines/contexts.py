@@ -463,7 +463,6 @@ class PublishConnectorContext(ConnectorContext):
         connector: Connector,
         pre_release: bool,
         modified_files: List[str],
-        spec_cache_gcs_credentials: str,
         spec_cache_bucket_name: str,
         metadata_bucket_name: str,
         docker_hub_username: str,
@@ -481,7 +480,6 @@ class PublishConnectorContext(ConnectorContext):
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
         self.metadata_bucket_name = metadata_bucket_name
-        self.spec_cache_gcs_credentials = sanitize_gcs_credentials(spec_cache_gcs_credentials)
         self.docker_hub_username = docker_hub_username
         self.docker_hub_password = docker_hub_password
 
@@ -511,10 +509,6 @@ class PublishConnectorContext(ConnectorContext):
     @property
     def docker_hub_password_secret(self) -> Secret:
         return self.dagger_client.set_secret("docker_hub_password", self.docker_hub_password)
-
-    @property
-    def spec_cache_gcs_credentials_secret(self) -> Secret:
-        return self.dagger_client.set_secret("spec_cache_gcs_credentials", self.spec_cache_gcs_credentials)
 
     @property
     def docker_image_name(self):

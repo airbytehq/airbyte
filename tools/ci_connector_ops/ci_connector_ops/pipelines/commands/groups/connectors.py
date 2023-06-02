@@ -269,13 +269,6 @@ def build(ctx: click.Context) -> bool:
 @connectors.command(cls=DaggerPipelineCommand, help="Publish all images for the selected connectors.")
 @click.option("--pre-release/--main-release", help="Use this flag if you want to publish pre-release images.", default=True, type=bool)
 @click.option(
-    "--spec-cache-gcs-credentials",
-    help="The service account key to upload files to the GCS bucket hosting spec cache.",
-    type=click.STRING,
-    required=False,  # Not required for pre-release pipelines, downstream validation happens for main release pipelines
-    envvar="SPEC_CACHE_GCS_CREDENTIALS",
-)
-@click.option(
     "--spec-cache-bucket-name",
     help="The name of the GCS bucket where specs will be cached.",
     type=click.STRING,
@@ -320,7 +313,6 @@ def build(ctx: click.Context) -> bool:
 def publish(
     ctx: click.Context,
     pre_release: bool,
-    spec_cache_gcs_credentials: str,
     spec_cache_bucket_name: str,
     metadata_service_bucket_name: str,
     docker_hub_username: str,
@@ -328,7 +320,6 @@ def publish(
     slack_webhook: str,
     slack_channel: str,
 ):
-    ctx.obj["spec_cache_gcs_credentials"] = spec_cache_gcs_credentials
     ctx.obj["spec_cache_bucket_name"] = spec_cache_bucket_name
     ctx.obj["metadata_service_bucket_name"] = metadata_service_bucket_name
 
@@ -353,7 +344,6 @@ def publish(
                 connector=connector,
                 pre_release=pre_release,
                 modified_files=modified_files,
-                spec_cache_gcs_credentials=spec_cache_gcs_credentials,
                 spec_cache_bucket_name=spec_cache_bucket_name,
                 metadata_bucket_name=metadata_service_bucket_name,
                 docker_hub_username=docker_hub_username,
@@ -387,7 +377,7 @@ def publish(
 
 def validate_publish_options(pre_release: bool, context_object: Dict[str, Any]):
     """Validate that the publish options are set correctly."""
-    for k in ["spec_cache_bucket_name", "spec_cache_gcs_credentials", "metadata_service_bucket_name"]:
+    for k in ["spec_cache_bucket_name", "ci_gcs_credentials", "metadata_service_bucket_name"]:
         if not pre_release and context_object.get(k) is None:
             click.Abort(f'The --{k.replace("_", "-")} option is required when running a main release publish pipeline.')
 
