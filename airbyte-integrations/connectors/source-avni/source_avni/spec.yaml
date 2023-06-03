@@ -4,9 +4,13 @@ connectionSpecification:
   title: Avni Spec
   type: object
   required:
-    - TODO
+    - AUTH_TOKEN
+    - lastdateandtimemodify
   properties:
     # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    AUTH_TOKEN:
       type: string
-      description: describe me
+      description: Authorization tokento verify user
+    lastdateandtimemodify:
+      type: string
+      description: From which date and time you want the data
