@@ -6,6 +6,8 @@ import csv
 import json as json_lib
 import time
 import zlib
+import pendulum
+from enum import Enum
 from abc import ABC, abstractmethod
 from io import StringIO
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -32,6 +34,12 @@ FINANCES_API_VERSION = "v0"
 
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
+class ReportStatus(Enum):
+    IN_QUEUE = "IN_QUEUE"
+    IN_PROGRESS = "IN_PROGRESS"
+    DONE = "DONE"
+    CANCELLED = "CANCELLED"
+    FATAL = "FATAL"
 
 class AmazonSPStream(HttpStream, ABC):
     data_field = "payload"
@@ -345,25 +353,19 @@ class ReportsAmazonSPStream(Stream, ABC):
         Create and retrieve the report.
         Decrypt and parse the report is its fully proceed, then yield the report document records.
         """
-        report_payload = {}
-        is_processed = False
-        is_done = False
         start_time = pendulum.now("utc")
-        seconds_waited = 0
         report_id = self._create_report(sync_mode, cursor_field, stream_slice, stream_state)["reportId"]
+        status = ReportStatus.IN_QUEUE
 
-        # create and retrieve the report
-        while not is_processed and seconds_waited < self.max_wait_seconds:
+        while status not in [ReportStatus.DONE, ReportStatus.CANCELLED, ReportStatus.FATAL]:
             report_payload = self._retrieve_report(report_id=report_id)
-            seconds_waited = (pendulum.now("utc") - start_time).seconds
-            is_processed = report_payload.get("processingStatus") not in ["IN_QUEUE", "IN_PROGRESS"]
-            is_done = report_payload.get("processingStatus") == "DONE"
-            is_cancelled = report_payload.get("processingStatus") == "CANCELLED"
-            is_fatal = report_payload.get("processingStatus") == "FATAL"
+            status = ReportStatus(report_payload.get("processingStatus"))
+            if (pendulum.now("utc") - start_time).seconds >= self.max_wait_seconds:
+                logger.error(f"Timeout reached while waiting for report {report_id} to process. Current status is {status.value}.")
+                break
             time.sleep(self.sleep_seconds)
 
-        if is_done:
-            # retrieve and decrypt the report document
+        if status == ReportStatus.DONE:
             document_id = report_payload["reportDocumentId"]
             request_headers = self.request_headers()
             request = self._create_prepared_request(
@@ -373,13 +375,12 @@ class ReportsAmazonSPStream(Stream, ABC):
             )
             response = self._send_request(request)
             yield from self.parse_response(response, stream_state, stream_slice)
-        elif is_fatal:
+        elif status == ReportStatus.FATAL:
             raise Exception(f"The report for stream '{self.name}' was aborted due to a fatal error")
-        elif is_cancelled:
+        elif status == ReportStatus.CANCELLED:
             logger.warn(f"The report for stream '{self.name}' was cancelled or there is no data to return")
         else:
-            raise Exception(f"Unknown response for stream `{self.name}`. Response body {report_payload}")
-
+            raise Exception(f"Report processing ended with unknown status for stream `{self.name}`. Response body {report_payload}")
 
 class MerchantListingsReports(ReportsAmazonSPStream):
     name = "GET_MERCHANT_LISTINGS_ALL_DATA"
