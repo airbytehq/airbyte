@@ -14,7 +14,7 @@ from airbyte_cdk.sources.utils.schema_helpers import split_config
 
 from .auth import AirtableAuth
 from .schema_helpers import SchemaHelpers
-from .streams import AirtableBases, AirtableStream, AirtableTables
+from .streams import AirtableBases, AirtableStream, AirtableTables, AirtableViews
 
 
 class SourceAirtable(AbstractSource):
@@ -88,6 +88,17 @@ class SourceAirtable(AbstractSource):
                         ),
                     }
                 )
+            self.streams_catalog.append(
+                {
+                    "stream_path": f"{base_id}/views",
+                    "stream": SchemaHelpers.get_airbyte_stream(
+                        f"{base_name}/views",
+                        SchemaHelpers.get_json_schema({ 
+                            "views": []
+                        }),
+                    ),
+                }
+            )
         return AirbyteCatalog(streams=[stream["stream"] for stream in self.streams_catalog])
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -97,9 +108,18 @@ class SourceAirtable(AbstractSource):
             self.discover(None, config)
         # build the stream class from prepared streams_catalog
         for stream in self.streams_catalog:
-            yield AirtableStream(
-                stream_path=stream["stream_path"],
-                stream_name=stream["stream"].name,
-                stream_schema=stream["stream"].json_schema,
-                authenticator=self._auth,
-            )
+            stream_name = stream["stream"].name
+            if stream_name == "views":
+                yield AirtableViews(
+                    stream_path=stream["stream_path"],
+                    stream_name=stream_name,
+                    stream_schema=stream["stream"].json_schema,
+                    authenticator=self._auth,
+                )
+            else:
+                yield AirtableStream(
+                    stream_path=stream["stream_path"],
+                    stream_name=stream["stream"].name,
+                    stream_schema=stream["stream"].json_schema,
+                    authenticator=self._auth,
+                )

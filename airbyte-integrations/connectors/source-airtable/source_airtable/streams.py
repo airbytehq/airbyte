@@ -88,6 +88,32 @@ class AirtableTables(AirtableBases):
         return f"{super().path()}/{self.base_id}/tables"
 
 
+class AirtableViews(AirtableBases):
+    def __init__(self, base_id: list, **kwargs):
+        super().__init__(**kwargs)
+        self.base_id = base_id
+
+    name = "views"
+
+    def path(self, **kwargs) -> str:
+        """
+        Documentation: https://airtable.com/developers/web/api/list-views
+        """
+        return f"{super().path()}/{self.base_id}/views"
+
+    def process_records(self, records) -> Iterable[Mapping[str, Any]]:
+        for record in records:
+            yield {
+                "_airtable_id": record.get("id"),
+                "name": record.get("name"),
+                "type": record.get("type"),
+            }
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        records = response.json().get("views", [])
+        yield from self.process_records(records)
+
+
 class AirtableStream(HttpStream, ABC):
     def __init__(self, stream_path: str, stream_name: str, stream_schema, **kwargs):
         super().__init__(**kwargs)
@@ -155,3 +181,11 @@ class AirtableStream(HttpStream, ABC):
 
     def path(self, **kwargs) -> str:
         return self.stream_path
+
+class AirtableStreamFactory:
+    @staticmethod
+    def get_stream(stream_path: str, stream_name: str, stream_schema, authenticator) -> AirtableStream:
+        if stream_name == "views":
+            return AirtableViews(stream_path=stream_path, stream_name=stream_name, stream_schema=stream_schema, authenticator=authenticator)
+        else:
+            return AirtableStream(stream_path=stream_path, stream_name=stream_name, stream_schema=stream_schema, authenticator=authenticator)
