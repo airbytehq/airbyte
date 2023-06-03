@@ -126,6 +126,7 @@ So, for any value that exceeds the limit, the `period_in_days` will be automatic
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                                                                             |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `1.2.1`  | 2023-06-03 | [\#26993](https://github.com/airbytehq/airbyte/pull/26993) | Refactor Amazon Seller Partner read record function                      |
 | `1.2.0`  | 2023-05-23 | [\#22503](https://github.com/airbytehq/airbyte/pull/22503) | Enabled stream attribute customization from Source configuration                      |
 | `1.1.0`  | 2023-04-21 | [\#23605](https://github.com/airbytehq/airbyte/pull/23605) | Add FBA Reimbursement Report stream                                    |
 | `1.0.1`  | 2023-03-15 | [\#24098](https://github.com/airbytehq/airbyte/pull/24098) | Add Belgium Marketplace                                                                                                                                                             |
