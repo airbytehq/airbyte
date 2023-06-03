@@ -17,27 +17,28 @@ def github_connector_folders(context):
     return Output(folder_names, metadata={"preview": folder_names})
 
 
-@asset(required_resource_keys={"github_connector_nightly_workflow_runs"}, group_name=GROUP_NAME)
-def github_connector_nightly_workflow_runs(context: OpExecutionContext) -> OutputDataFrame:
+@asset(required_resource_keys={"github_connector_nightly_workflow_successes"}, group_name=GROUP_NAME)
+def github_connector_nightly_workflow_successes(context: OpExecutionContext) -> OutputDataFrame:
     """
     Return a list of all the latest nightly workflow runs for the connectors repo.
     """
-    github_connector_nightly_workflow_runs = context.resources.github_connector_nightly_workflow_runs
+    github_connector_nightly_workflow_successes = context.resources.github_connector_nightly_workflow_successes
 
-    workflow_df = pd.DataFrame(github_connector_nightly_workflow_runs)
-    workflow_df = workflow_df[[
-        "id",
-        "name",
-        "head_branch",
-        "head_sha",
-        "run_number",
-        "status",
-        "conclusion",
-        "workflow_id",
-        "url",
-        "created_at",
-        "updated_at",
-        "run_started_at",
-    ]]
+    workflow_df = pd.DataFrame(github_connector_nightly_workflow_successes)
+    workflow_df = workflow_df[
+        [
+            "id",
+            "name",
+            "head_branch",
+            "head_sha",
+            "run_number",
+            "status",
+            "conclusion",
+            "workflow_id",
+            "url",
+            "created_at",
+            "updated_at",
+            "run_started_at",
+        ]
+    ]
     return output_dataframe(workflow_df)
-
