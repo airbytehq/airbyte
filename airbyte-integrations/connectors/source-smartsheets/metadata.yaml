@@ -14,6 +14,7 @@ data:
   name: Smartsheets
   registries:
     cloud:
+      dockerImageTag: 1.0.2 # pinned due to https://github.com/airbytehq/alpha-beta-issues/issues/1400
       enabled: true
     oss:
       enabled: true
