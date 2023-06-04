@@ -17,7 +17,8 @@
       "type": ["null", "string"]
     },
     "created": {
-      "type": ["null", "number"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "currency": {
       "type": ["null", "string"]
