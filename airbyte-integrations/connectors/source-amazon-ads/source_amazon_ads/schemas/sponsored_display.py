@@ -51,3 +51,4 @@ class DisplayCreatives(CatalogModel):
     name: str
     adGroupId: Decimal
     creativeId: Decimal
+     
