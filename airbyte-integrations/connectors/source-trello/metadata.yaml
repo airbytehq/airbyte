@@ -17,5 +17,7 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/trello
+  documentationUrl: https://docs.airbyte.com/integrations/sources/trello
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

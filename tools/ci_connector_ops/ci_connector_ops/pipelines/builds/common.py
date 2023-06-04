@@ -6,6 +6,7 @@ from typing import Tuple
 
 import docker
 from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
+from ci_connector_ops.pipelines.consts import BUILD_PLATFORMS
 from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.utils import export_container_to_tarball
 from dagger import Container, Platform
@@ -19,6 +20,21 @@ class BuildConnectorImageBase(Step, ABC):
     def __init__(self, context: ConnectorContext, build_platform: Platform) -> None:
         self.build_platform = build_platform
         super().__init__(context)
+
+
+class BuildConnectorImageForAllPlatformsBase(Step, ABC):
+
+    ALL_PLATFORMS = BUILD_PLATFORMS
+
+    title = f"Build connector image for {BUILD_PLATFORMS}"
+
+    def get_success_result(self, build_results_per_platform: dict[Platform, Container]) -> StepResult:
+        return StepResult(
+            self,
+            StepStatus.SUCCESS,
+            stdout="The connector image was successfully built for all platforms.",
+            output_artifact=build_results_per_platform,
+        )
 
 
 class LoadContainerToLocalDockerHost(Step):

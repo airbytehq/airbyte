@@ -606,8 +606,8 @@ class OAuthConfigSpecification(BaseModel):
 
 class OffsetIncrement(BaseModel):
     type: Literal["OffsetIncrement"]
-    page_size: Union[int, str] = Field(
-        ...,
+    page_size: Optional[Union[int, str]] = Field(
+        None,
         description="The number of records to include in each pages.",
         examples=[100, "{{ config['page_size'] }}"],
         title="Limit",
@@ -617,8 +617,8 @@ class OffsetIncrement(BaseModel):
 
 class PageIncrement(BaseModel):
     type: Literal["PageIncrement"]
-    page_size: int = Field(
-        ...,
+    page_size: Optional[int] = Field(
+        None,
         description="The number of records to include in each pages.",
         examples=[100, "100"],
         title="Page Size",
@@ -847,9 +847,9 @@ class DatetimeBasedCursor(BaseModel):
     )
     datetime_format: str = Field(
         ...,
-        description="The format of the datetime value.",
+        description="The datetime format of the Cursor Field.",
         examples=["%Y-%m-%dT%H:%M:%S.%f%z"],
-        title="Datetime Format",
+        title="Cursor Field Datetime Format",
     )
     cursor_granularity: str = Field(
         ...,
@@ -1094,12 +1094,13 @@ class HttpRequester(BaseModel):
         ],
         title="Request Body Payload (Non-JSON)",
     )
-    request_body_json: Optional[Union[str, Dict[str, str]]] = Field(
+    request_body_json: Optional[Union[str, Dict[str, Any]]] = Field(
         None,
-        description="Specifies how to populate the body of the request with a JSON payload.",
+        description="Specifies how to populate the body of the request with a JSON payload. Can contain nested objects.",
         examples=[
             {"sort_order": "ASC", "sort_field": "CREATED_AT"},
             {"key": "{{ config['value'] }}"},
+            {"sort": {"field": "updated_at", "order": "ascending"}},
         ],
         title="Request Body JSON Payload",
     )

@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c332628c-f55c-4017-8222-378cfafda9b2
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   dockerRepository: airbyte/source-convex
   githubIssueLabel: source-convex
   icon: convex.svg
@@ -14,5 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/convex
+  documentationUrl: https://docs.airbyte.com/integrations/sources/convex
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

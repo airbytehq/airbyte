@@ -195,10 +195,10 @@ public class MySqlSourceTests {
 
   }
 
-
   @Test
   void testParseJdbcParameters() {
-    Map<String, String> parameters = MySqlSource.parseJdbcParameters("theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar", "&");
+    Map<String, String> parameters =
+        MySqlSource.parseJdbcParameters("theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar", "&");
     assertEquals("max_execution_time=10000", parameters.get("sessionVariables"));
     assertEquals("42", parameters.get("theAnswerToLiveAndEverything"));
     assertEquals("bar", parameters.get("foo"));
@@ -229,4 +229,5 @@ public class MySqlSourceTests {
       assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
     }
   }
+
 }
