@@ -7,7 +7,6 @@
         "properties": {
           "color": { "type": "string" },
           "rich_text": { "type": "array", "items": { "$ref": "text.json" } },
-          "icon": { "$ref": "icon.json" },
           "children": { "type": "array", "items": { "type": "object" } }
         }
       },
