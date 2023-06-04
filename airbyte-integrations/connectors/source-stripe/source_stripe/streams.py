@@ -711,7 +711,8 @@ class Persons(IncrementalStripeStream):
     API docs: https://stripe.com/docs/api/persons/list
     """
     name = "persons"
-
+    cursor_field = "created"
+    
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         return f"accounts/{stream_slice['id']}/persons"
 
