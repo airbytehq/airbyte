@@ -25,12 +25,27 @@ public class Main {
     log.info("args: {}", Arrays.toString(args));
     String image = null;
     String dataset = "1m";
+    // TODO: (ryankfu) add function parity with destination_performance
+    int numOfParallelStreams = 1;
+    String syncMode = "full_refresh";
 
+    // TODO: (ryankfu) Integrated something akin to {@link Clis} for parsing arguments.
     switch (args.length) {
       case 1 -> image = args[0];
       case 2 -> {
         image = args[0];
         dataset = args[1];
+      }
+      case 3 -> {
+        image = args[0];
+        dataset = args[1];
+        numOfParallelStreams = Integer.parseInt(args[2]);
+      }
+      case 4 -> {
+        image = args[0];
+        dataset = args[1];
+        numOfParallelStreams = Integer.parseInt(args[2]);
+        syncMode = args[3];
       }
       default -> {
         log.info("unexpected arguments");
@@ -65,24 +80,6 @@ public class Main {
           image,
           config.toString(),
           catalog.toString());
-
-      // final ExecutorService executors = Executors.newFixedThreadPool(2);
-      // final CompletableFuture<Void> readSrcAndWriteDstThread = CompletableFuture.runAsync(() -> {
-      // try {
-      // test.runTest();
-      // } catch (final Exception e) {
-      // throw new RuntimeException(e);
-      // }
-      // }, executors);
-
-      // Uncomment to add destination
-      /*
-       * final CompletableFuture<Void> readFromDstThread = CompletableFuture.runAsync(() -> { try {
-       * Thread.sleep(20_000); test.readFromDst(); } catch (final InterruptedException e) { throw new
-       * RuntimeException(e); } }, executors);
-       */
-
-      // CompletableFuture.anyOf(readSrcAndWriteDstThread/* , readFromDstThread */).get();
       test.runTest();
     } catch (final Exception e) {
       log.error("Test failed", e);

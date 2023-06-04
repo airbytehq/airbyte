@@ -24,6 +24,7 @@ import static java.sql.JDBCType.VARCHAR;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Maps;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import java.sql.JDBCType;
 import java.util.HashMap;
 import java.util.List;
@@ -108,7 +109,7 @@ public class JdbcUtils {
         if (split.length == 2) {
           parameters.put(split[0], split[1]);
         } else {
-          throw new IllegalArgumentException(
+          throw new ConfigErrorException(
               "jdbc_url_params must be formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). Got "
                   + jdbcPropertiesString);
         }

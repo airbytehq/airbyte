@@ -112,6 +112,7 @@ class ConnectorRegistrySourceDefinition(BaseModel):
     dockerImageTag: str
     documentationUrl: str
     icon: Optional[str] = None
+    iconUrl: Optional[str] = None
     sourceType: Optional[Literal["api", "file", "database", "custom"]] = None
     spec: Dict[str, Any]
     tombstone: Optional[bool] = Field(
@@ -152,6 +153,7 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     dockerImageTag: str
     documentationUrl: str
     icon: Optional[str] = None
+    iconUrl: Optional[str] = None
     spec: Dict[str, Any]
     tombstone: Optional[bool] = Field(
         False,
@@ -168,6 +170,10 @@ class ConnectorRegistryDestinationDefinition(BaseModel):
     releaseDate: Optional[date] = Field(
         None,
         description="The date when this connector was first released, in yyyy-mm-dd format.",
+    )
+    tags: Optional[List[str]] = Field(
+        None,
+        description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc.",
     )
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
     protocolVersion: Optional[str] = Field(

@@ -14,5 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/klarna
+  documentationUrl: https://docs.airbyte.com/integrations/sources/klarna
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"
