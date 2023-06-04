@@ -19,7 +19,7 @@ run-name: Test connectors ${{ inputs.test-connectors-options || 'Nightly builds 
 jobs:
   test_connectors:
     name: Test connectors ${{ inputs.test-connectors-options || 'Nightly builds GA and Beta connectors' }}
-    timeout-minutes: 360 # 6 hours
+    timeout-minutes: 600 # 10 hours
     runs-on: ${{ inputs.runs-on || 'dev-large-runner' }}
     steps:
       - name: Get start timestamp
