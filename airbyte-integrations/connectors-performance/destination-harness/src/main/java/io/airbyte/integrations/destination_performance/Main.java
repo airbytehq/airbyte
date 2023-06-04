@@ -6,6 +6,9 @@ package io.airbyte.integrations.destination_performance;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import java.io.BufferedReader;
@@ -26,15 +29,22 @@ public class Main {
   private static final String CREDENTIALS_PATH = "secrets/%s_%s_credentials.json";
 
   public static void main(final String[] args) {
+    // If updating args for Github Actions, also update the run-performance-test.yml file
     log.info("args: {}", Arrays.toString(args));
     String image = null;
     String dataset = "1m";
+    int numOfParallelStreams = 1;
 
     switch (args.length) {
       case 1 -> image = args[0];
       case 2 -> {
         image = args[0];
         dataset = args[1];
+      }
+      case 3 -> {
+        image = args[0];
+        dataset = args[1];
+        numOfParallelStreams = Integer.parseInt(args[2]);
       }
       default -> {
         log.info("unexpected arguments");
@@ -55,6 +65,7 @@ public class Main {
     final JsonNode catalog;
     try {
       catalog = getCatalog(dataset, connector);
+      duplicateStreams(catalog, numOfParallelStreams);
     } catch (final IOException ex) {
       throw new IllegalStateException("Failed to read catalog", ex);
     }
@@ -72,7 +83,7 @@ public class Main {
 
     log.info("Starting performance harness for {} ({})", image, dataset);
     try {
-      final PerformanceTest test = new PerformanceTest(
+      final PerformanceHarness test = new PerformanceHarness(
           image,
           config.toString(),
           catalog.toString(),
@@ -86,13 +97,38 @@ public class Main {
     System.exit(0);
   }
 
-  static JsonNode getCatalog(final String dataset, final String connector) throws IOException {
-    final ObjectMapper objectMapper = new ObjectMapper();
-    final String catalogFilename = "catalogs/%s/%s_catalog.json".formatted(connector, dataset);
-    final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(catalogFilename);
-    return objectMapper.readTree(is);
+  /**
+   * Duplicate the streams in the catalog to emulate parallel streams
+   *
+   * @param root the catalog
+   * @param duplicateFactor the number of times to duplicate each stream
+   */
+  @VisibleForTesting
+  static void duplicateStreams(final JsonNode root, final int duplicateFactor) {
+    try {
+      final ObjectNode streamObject = (ObjectNode) root.path("streams").get(0);
+      // Since we already have one stream, we only need to duplicate the remaining streams
+      for (int i = 1; i < duplicateFactor; i++) {
+        final ObjectNode newStream = streamObject.deepCopy();
+        final String streamName = newStream.path("stream").path("name").asText();
+        ((ObjectNode) newStream.get("stream")).put("name", streamName + i);
+        ((ArrayNode) root.path("streams")).add(newStream);
+      }
+    } catch (final Exception e) {
+      log.error("Failed to duplicate streams", e);
+    }
   }
 
+  /**
+   * Read the datasource file for the given dataset and connector.
+   * <p>
+   * Example: catalogs/destination_snowflake/1m_datasource.txt
+   *
+   * @param dataset the dataset to read
+   * @param connector the connector to read
+   * @return the datasource
+   * @throws IOException if the datasource file cannot be read
+   */
   static String getDatasource(final String dataset, final String connector) throws IOException {
     final String datasourceFilename = "catalogs/%s/%s_datasource.txt".formatted(connector, dataset);
     log.info("datasourceFilename {}", datasourceFilename);
@@ -101,6 +137,23 @@ public class Main {
             Thread.currentThread().getContextClassLoader().getResourceAsStream(datasourceFilename)), StandardCharsets.UTF_8))) {
       return reader.readLine();
     }
+  }
+
+  /**
+   * Read the catalog file for the given dataset and connector.
+   * <p>
+   * Example: catalogs/destination_snowflake/1m_catalog.json
+   *
+   * @param dataset the dataset to read
+   * @param connector the connector to read
+   * @return the catalog
+   * @throws IOException if the catalog file cannot be read
+   */
+  static JsonNode getCatalog(final String dataset, final String connector) throws IOException {
+    final ObjectMapper objectMapper = new ObjectMapper();
+    final String catalogFilename = "catalogs/%s/%s_catalog.json".formatted(connector, dataset);
+    final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(catalogFilename);
+    return objectMapper.readTree(is);
   }
 
 }

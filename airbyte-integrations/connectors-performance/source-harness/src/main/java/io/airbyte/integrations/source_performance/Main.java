@@ -65,24 +65,6 @@ public class Main {
           image,
           config.toString(),
           catalog.toString());
-
-      // final ExecutorService executors = Executors.newFixedThreadPool(2);
-      // final CompletableFuture<Void> readSrcAndWriteDstThread = CompletableFuture.runAsync(() -> {
-      // try {
-      // test.runTest();
-      // } catch (final Exception e) {
-      // throw new RuntimeException(e);
-      // }
-      // }, executors);
-
-      // Uncomment to add destination
-      /*
-       * final CompletableFuture<Void> readFromDstThread = CompletableFuture.runAsync(() -> { try {
-       * Thread.sleep(20_000); test.readFromDst(); } catch (final InterruptedException e) { throw new
-       * RuntimeException(e); } }, executors);
-       */
-
-      // CompletableFuture.anyOf(readSrcAndWriteDstThread/* , readFromDstThread */).get();
       test.runTest();
     } catch (final Exception e) {
       log.error("Test failed", e);

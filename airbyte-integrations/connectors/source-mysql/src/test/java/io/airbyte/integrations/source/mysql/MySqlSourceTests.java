@@ -31,6 +31,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -194,4 +195,38 @@ public class MySqlSourceTests {
 
   }
 
+
+  @Test
+  void testParseJdbcParameters() {
+    Map<String, String> parameters = MySqlSource.parseJdbcParameters("theAnswerToLiveAndEverything=42&sessionVariables=max_execution_time=10000&foo=bar", "&");
+    assertEquals("max_execution_time=10000", parameters.get("sessionVariables"));
+    assertEquals("42", parameters.get("theAnswerToLiveAndEverything"));
+    assertEquals("bar", parameters.get("foo"));
+  }
+
+  @Test
+  public void testJDBCSessionVariable() throws Exception {
+    // start DB
+    try (final MySQLContainer<?> container = new MySQLContainer<>("mysql:8.0")
+        .withUsername(TEST_USER)
+        .withPassword(TEST_PASSWORD)
+        .withEnv("MYSQL_ROOT_HOST", "%")
+        .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD)
+        .withLogConsumer(new Slf4jLogConsumer(LOGGER))) {
+
+      container.start();
+      final Properties properties = new Properties();
+      properties.putAll(ImmutableMap.of("user", "root", JdbcUtils.PASSWORD_KEY, TEST_PASSWORD));
+      DriverManager.getConnection(container.getJdbcUrl(), properties);
+      final String dbName = Strings.addRandomSuffix("db", "_", 10);
+      final JsonNode config = getConfig(container, dbName, "sessionVariables=MAX_EXECUTION_TIME=28800000");
+
+      try (final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), properties)) {
+        connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
+        connection.createStatement().execute("CREATE DATABASE " + config.get(JdbcUtils.DATABASE_KEY).asText());
+      }
+      final AirbyteConnectionStatus check = new MySqlSource().check(config);
+      assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
+    }
+  }
 }
