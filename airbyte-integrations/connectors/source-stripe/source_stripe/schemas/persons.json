@@ -10,6 +10,42 @@
     "object": {
       "type": ["null", "string"]
     },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "address_kana": {
+      "type": ["null", "string"]
+    },
+    "address_kanji": {
+      "type": ["null", "string"]
+    },
+    "first_name_kana": {
+      "type": ["null", "string"]
+    },
+    "gender": {
+      "type": ["null", "string"]
+    },
+    "full_name_aliases": {
+      "type": ["null", "string"]
+    },
+    "id_number_secondary_provided": {
+      "type": ["null", "string"]
+    },
+    "first_name_kanji": {
+      "type": ["null", "string"]
+    },
+    "nationality": {
+      "type": ["null", "string"]
+    },
+    "political_exposure": {
+      "type": ["null", "string"]
+    },
+    "registered_address": {
+      "type": ["null", "string"]
+    },
     "account": {
       "type": ["null", "string"]
     },
@@ -37,7 +73,7 @@
       }
     },
     "created": {
-      "type": "number"
+      "type": ["null", "integer"]
     },
     "dob": {
       "type": ["null", "object"],
