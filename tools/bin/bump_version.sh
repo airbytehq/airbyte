@@ -25,7 +25,7 @@ pip install bumpversion
 bumpversion "$PART_TO_BUMP" # PART_TO_BUMP comes from the Github action (patch,major,minor)
 
 if [ "$REPO" == "airbyte" ]; then
-  NEW_VERSION=$(grep -w VERSION run-ab-platform.sh | cut -d"=" -f2)
+  NEW_VERSION=$(grep -w 'VERSION=[0-9]\+\(\.[0-9]\+\)\+' run-ab-platform.sh | cut -d"=" -f2)
   echo "Bumping version for Airbyte"
 else
   NEW_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
