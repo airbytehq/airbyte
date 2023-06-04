@@ -34,8 +34,8 @@ public class RecordSizeEstimator {
    * determined by {@code sampleBatchSize}.
    */
   public RecordSizeEstimator(final int sampleBatchSize) {
-    this.streamRecordSizeEstimation = new HashMap<>();
-    this.streamSampleCountdown = new HashMap<>();
+    streamRecordSizeEstimation = new HashMap<>();
+    streamSampleCountdown = new HashMap<>();
     this.sampleBatchSize = sampleBatchSize;
   }
 
@@ -71,7 +71,7 @@ public class RecordSizeEstimator {
   }
 
   @VisibleForTesting
-  static long getStringByteSize(final JsonNode data) {
+  public static long getStringByteSize(final JsonNode data) {
     // assume UTF-8 encoding, and each char is 4 bytes long
     return Jsons.serialize(data).length() * 4L;
   }

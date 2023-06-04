@@ -17,7 +17,7 @@ Using the following tools:
 3. isort
 4. mypy
 
-Airbyte CI/CD workflows use them during "test/publish" commands obligatorily. 
+Airbyte CI/CD workflows use them during "test" commands obligatorily. 
 All their settings are aggregated into the single file `pyproject.toml` into Airbyte project root.
 Locally all these tools can be launched by the following gradle command:
 ```
@@ -53,18 +53,8 @@ Once the integration test workflow launches, it will append a link to the workfl
 
 Integration tests can also be manually requested by clicking "[Run workflow](https://github.com/airbytehq/airbyte/actions?query=workflow%3Aintegration-test)" and specifying the connector and GitHub ref.
 
-### 4. Requesting GitHub PR publishing Docker Images
 
-In order for users to reference the new versions of a connector, it needs to be published and available in the [dockerhub](https://hub.docker.com/r/airbyte/source-sendgrid/tags?page=1&ordering=last_updated) with the latest tag updated.
-
-As seen previously, GitHub workflow can be triggered by comment submission. Publishing docker images to the dockerhub repository can also be submitted likewise:
-
-Note that integration tests can be triggered with a slightly different syntax for arguments. This second set is required to distinguish between `connectors` and `bases` folders. Thus, it is also easier to switch between the `/test` and `/publish` commands:
-
-* `/test connector=connectors/source-sendgrid` - Runs integration tests for a single connector on the latest PR commit.
-* `/publish connector=connectors/source-sendgrid` - Publish the docker image if it doesn't exist for a single connector on the latest PR commit.
-
-### 5. Automatically Run From `master`
+### 4. Automatically Run From `master`
 
 Commits to `master` attempt to launch integration tests. Two workflows launch for each commit: one is a launcher for integration tests, the other is the core build \(the same as the default for PR and branch builds\).
 

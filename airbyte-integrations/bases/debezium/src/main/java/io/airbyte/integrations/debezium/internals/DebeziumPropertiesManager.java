@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 public class DebeziumPropertiesManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumPropertiesManager.class);
+  private static final String BYTE_VALUE_256_MB = Integer.toString(256 * 1024 * 1024);
   private final JsonNode config;
   private final AirbyteFileOffsetBackingStore offsetManager;
   private final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager;
@@ -46,7 +47,7 @@ public class DebeziumPropertiesManager {
     props.putAll(properties);
 
     // debezium engine configuration
-    // https://debezium.io/documentation/reference/2.1/development/engine.html#engine-properties
+    // https://debezium.io/documentation/reference/2.2/development/engine.html#engine-properties
     props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
     props.setProperty("offset.storage.file.filename", offsetManager.getOffsetFilePath().toString());
     props.setProperty("offset.flush.interval.ms", "1000"); // todo: make this longer
@@ -54,14 +55,17 @@ public class DebeziumPropertiesManager {
     props.setProperty("max.batch.size", "2048");
     props.setProperty("max.queue.size", "8192");
 
-    props.setProperty("errors.max.retries", "10");
+    // Disabling retries because debezium startup time might exceed our 60-second wait limit
+    // The maximum number of retries on connection errors before failing (-1 = no limit, 0 = disabled, >
+    // 0 = num of retries).
+    props.setProperty("errors.max.retries", "0");
     // This property must be strictly less than errors.retry.delay.max.ms
     // (https://github.com/debezium/debezium/blob/bcc7d49519a4f07d123c616cfa45cd6268def0b9/debezium-core/src/main/java/io/debezium/util/DelayStrategy.java#L135)
     props.setProperty("errors.retry.delay.initial.ms", "299");
     props.setProperty("errors.retry.delay.max.ms", "300");
 
     if (schemaHistoryManager.isPresent()) {
-      // https://debezium.io/documentation/reference/2.1/operations/debezium-server.html#debezium-source-database-history-class
+      // https://debezium.io/documentation/reference/2.2/operations/debezium-server.html#debezium-source-database-history-class
       // https://debezium.io/documentation/reference/development/engine.html#_in_the_code
       // As mentioned in the documents above, debezium connector for MySQL needs to track the schema
       // changes. If we don't do this, we can't fetch records for the table.
@@ -69,7 +73,7 @@ public class DebeziumPropertiesManager {
       props.setProperty("schema.history.internal.file.filename", schemaHistoryManager.get().getPath().toString());
     }
 
-    // https://debezium.io/documentation/reference/2.1/configuration/avro.html
+    // https://debezium.io/documentation/reference/2.2/configuration/avro.html
     props.setProperty("key.converter.schemas.enable", "false");
     props.setProperty("value.converter.schemas.enable", "false");
 
@@ -89,9 +93,12 @@ public class DebeziumPropertiesManager {
     // By default "decimal.handing.mode=precise" which's caused returning this value as a binary.
     // The "double" type may cause a loss of precision, so set Debezium's config to store it as a String
     // explicitly in its Kafka messages for more details see:
-    // https://debezium.io/documentation/reference/2.1/connectors/postgresql.html#postgresql-decimal-types
+    // https://debezium.io/documentation/reference/2.2/connectors/postgresql.html#postgresql-decimal-types
     // https://debezium.io/documentation/faq/#how_to_retrieve_decimal_field_from_binary_representation
     props.setProperty("decimal.handling.mode", "string");
+
+    // https://debezium.io/documentation/reference/2.2/connectors/postgresql.html#postgresql-property-max-queue-size-in-bytes
+    props.setProperty("max.queue.size.in.bytes", BYTE_VALUE_256_MB);
 
     // WARNING : Never change the value of this otherwise all the connectors would start syncing from
     // scratch
