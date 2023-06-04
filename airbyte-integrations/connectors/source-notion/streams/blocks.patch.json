@@ -6,14 +6,14 @@
         "type": "object",
         "properties": {
           "color": { "type": "string" },
-          "rich_text": { "type": "array", "items": { "$ref": "text.json" } },
+          "rich_text": { "type": "array", "items": { "$ref": "rich_text.json" } },
           "children": { "type": "array", "items": { "type": "object" } }
         }
       },
     "to_do": {
         "type": "object",
         "properties": {
-          "rich_text": { "type": "array", "items": { "$ref": "text.json" } },
+          "rich_text": { "type": "array", "items": { "$ref": "rich_text.json" } },
           "checked": { "type": ["null", "boolean"] },
           "children": { "type": "array", "items": { "type": "object" } }
         }
@@ -22,7 +22,7 @@
         "type": "object",
         "properties": {
           "color": { "type": "string" },
-          "rich_text": { "type": "array", "items": { "$ref": "text.json" } },
+          "rich_text": { "type": "array", "items": { "$ref": "rich_text.json" } },
           "language": {
             "enum": [
               "abap",
