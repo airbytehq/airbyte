@@ -7,6 +7,34 @@
       "active": {
         "type": ["null", "boolean"]
       },
+      "custom_field_options": {
+        "type": ["null", "array"],
+        "items": {
+          "relationship_target": {
+            "type": ["null", "string"]
+          },
+          "raw_title": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "relationship_filter": {
+        "type": ["null", "object"],
+        "properties": {
+          "relationship_target_type": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "relationship_target_type": {
+        "type": ["null", "string"]
+      },
+      "system": {
+        "type": ["null", "boolean"]
+      },
+      "tag": {
+        "type": ["null", "string"]
+      },
       "created_at": {
         "type": ["null", "string"],
         "format": "date-time"
