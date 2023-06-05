@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the Asana sourc
 
 ## Prerequisites
 
-* OAuth access or a Personal Access Token
+Please follow these [steps](https://developers.asana.com/docs/personal-access-token) to obtain Personal Access Token for your account.
 
 ## Setup guide
 
@@ -15,9 +15,9 @@ This page contains the setup guide and reference information for the Asana sourc
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. Set the name for your source
-4. Authenticate using OAuth (recommended) or enter your `personal_access_token`. Please follow these [steps](https://developers.asana.com/docs/personal-access-token) to obtain Personal Access Token for your account.
+4. Enter your `personal_access_token`
 5. Click **Set up source**
-<!-- env:oss -->
+
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard
@@ -25,7 +25,7 @@ This page contains the setup guide and reference information for the Asana sourc
 3. Set the name for your source
 4. Enter your `personal_access_token`
 5. Click **Set up source**
-<!-- /env:oss -->
+
 ## Supported sync modes
 
 The Asana source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
@@ -63,15 +63,16 @@ The connector is restricted by normal Asana [requests limitation](https://develo
 | `datetime`               | `datetime`   |
 | `array`                  | `array`      |
 | `object`                 | `object`     |
-<!-- env:oss -->
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+| 0.1.7   | 2023-05-29 | [26716](https://github.com/airbytehq/airbyte/pull/26716) | Remove authSpecification from spec.json, use advancedAuth instead         |
+| 0.1.6   | 2023-05-26 | [26653](https://github.com/airbytehq/airbyte/pull/26653) | Fix order of authentication methods                        |
 | 0.1.5   | 2022-11-16 | [19561](https://github.com/airbytehq/airbyte/pull/19561) | Added errors handling, updated SAT with new format         |
 | 0.1.4   | 2022-08-18 | [15749](https://github.com/airbytehq/airbyte/pull/15749) | Add cache to project stream                                |
 | 0.1.3   | 2021-10-06 | [6832](https://github.com/airbytehq/airbyte/pull/6832)   | Add oauth init flow parameters support                     |
 | 0.1.2   | 2021-09-24 | [6402](https://github.com/airbytehq/airbyte/pull/6402)   | Fix SAT tests: update schemas and invalid_config.json file |
 | 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add entrypoint and bump version for connector              |
 | 0.1.0   | 2021-05-25 | [3510](https://github.com/airbytehq/airbyte/pull/3510)   | New Source: Asana                                          |
-<!-- /env:oss -->
