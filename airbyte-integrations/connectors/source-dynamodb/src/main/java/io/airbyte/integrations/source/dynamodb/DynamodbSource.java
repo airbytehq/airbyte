@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.BaseConnector;
@@ -29,6 +30,7 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +38,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
 public class DynamodbSource extends BaseConnector implements Source {
 
@@ -73,23 +76,39 @@ public class DynamodbSource extends BaseConnector implements Source {
   public AirbyteCatalog discover(final JsonNode config) {
 
     final var dynamodbConfig = DynamodbConfig.createDynamodbConfig(config);
+    List<AirbyteStream> airbyteStreams = new ArrayList<>();
 
     try (final var dynamodbOperations = new DynamodbOperations(dynamodbConfig)) {
 
-      final var airbyteStreams = dynamodbOperations.listTables().stream()
-          .map(tb -> new AirbyteStream()
-              .withName(tb)
-              .withJsonSchema(Jsons.jsonNode(ImmutableMap.builder()
-                  .put("type", "object")
-                  .put("properties", dynamodbOperations.inferSchema(tb, 1000))
-                  .build()))
-              .withSourceDefinedPrimaryKey(Collections.singletonList(dynamodbOperations.primaryKey(tb)))
-              .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))
-          .toList();
-
-      return new AirbyteCatalog().withStreams(airbyteStreams);
+      dynamodbOperations.listTables().forEach(table -> {
+          try {
+            airbyteStreams.add(
+                new AirbyteStream()
+                    .withName(table)
+                    .withJsonSchema(Jsons.jsonNode(ImmutableMap.builder()
+                        .put("type", "object")
+                        // will throw DynamoDbException if it can't scan the table from missing read permissions
+                        .put("properties", dynamodbOperations.inferSchema(table, 1000))
+                        .build()))
+                    .withSourceDefinedPrimaryKey(Collections.singletonList(dynamodbOperations.primaryKey(table)))
+                    .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            );
+          } catch (DynamoDbException e) {
+              if (dynamodbConfig.ignoreMissingPermissions()) {
+                // fragile way to check for missing read access but there is no dedicated exception for missing permissions.
+                if (e.getMessage().contains("not authorized")) {
+                  LOGGER.warn("Connector doesn't have READ access for the table {}", table);
+                } else {
+                  throw e;
+                }
+              } else {
+                throw e;
+              }
+          }
+      });
     }
 
+    return new AirbyteCatalog().withStreams(airbyteStreams);
   }
 
   @Override
@@ -173,7 +192,9 @@ public class DynamodbSource extends BaseConnector implements Source {
         JsonSchemaPrimitive.valueOf(cursorType.toUpperCase()),
         // emit state after full stream has been processed
         0),
-        AutoCloseableIterators.fromStream(messageStream));
+        AutoCloseableIterators.fromStream(messageStream, AirbyteStreamUtils.convertFromNameAndNamespace(
+            streamPair.getName(), streamPair.getNamespace())),
+        AirbyteStreamUtils.convertFromNameAndNamespace(streamPair.getName(), streamPair.getNamespace()));
 
   }
 
@@ -187,7 +208,8 @@ public class DynamodbSource extends BaseConnector implements Source {
         .stream()
         .map(jn -> DynamodbUtils.mapAirbyteMessage(airbyteStream.getName(), jn));
 
-    return AutoCloseableIterators.fromStream(messageStream);
+    return AutoCloseableIterators.fromStream(messageStream,
+        AirbyteStreamUtils.convertFromNameAndNamespace(airbyteStream.getName(), airbyteStream.getNamespace()));
   }
 
 }
