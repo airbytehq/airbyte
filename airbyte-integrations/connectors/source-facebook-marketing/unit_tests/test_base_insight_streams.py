@@ -166,9 +166,11 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date - start_date).days + 1
+        assert len(generated_jobs) == ((end_date - start_date).days + 1) * 2
         assert generated_jobs[0].interval.start == start_date.date()
         assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
+        assert generated_jobs[15].interval.start == start_date.date()
+        assert generated_jobs[16].interval.start == start_date.date() + duration(days=1)
 
     def test_stream_slices_no_state_close_to_now(self, api, accounts, async_manager_mock, recent_start_date):
         """Stream will use start_date when there is not state and start_date within 28d from now"""
@@ -183,9 +185,11 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date - start_date).days + 1
+        assert len(generated_jobs) == ((end_date - start_date).days + 1) * 2
         assert generated_jobs[0].interval.start == start_date.date()
         assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
+        assert generated_jobs[11].interval.start == start_date.date()
+        assert generated_jobs[12].interval.start == start_date.date() + duration(days=1)
 
     def test_stream_slices_with_state(self, api, accounts, async_manager_mock, start_date):
         """Stream will use cursor_value from state when there is state"""
@@ -201,9 +205,11 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date - cursor_value).days
+        assert len(generated_jobs) == (end_date - cursor_value).days * 2
         assert generated_jobs[0].interval.start == cursor_value.date() + duration(days=1)
         assert generated_jobs[1].interval.start == cursor_value.date() + duration(days=2)
+        assert generated_jobs[5].interval.start == cursor_value.date() + duration(days=1)
+        assert generated_jobs[6].interval.start == cursor_value.date() + duration(days=2)
 
     def test_stream_slices_with_state_close_to_now(self, api, accounts, async_manager_mock, recent_start_date):
         """Stream will use start_date when close to now and start_date close to now"""
@@ -220,9 +226,11 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date - start_date).days + 1
+        assert len(generated_jobs) == ((end_date - start_date).days + 1) * 2
         assert generated_jobs[0].interval.start == start_date.date()
         assert generated_jobs[1].interval.start == start_date.date() + duration(days=1)
+        assert generated_jobs[11].interval.start == start_date.date()
+        assert generated_jobs[12].interval.start == start_date.date() + duration(days=1)
 
     def test_stream_slices_with_state_and_slices(self, api, accounts, async_manager_mock, start_date):
         """Stream will use cursor_value from state, but will skip saved slices"""
@@ -241,9 +249,11 @@ class TestBaseInsightsStream:
         async_manager_mock.assert_called_once()
         args, kwargs = async_manager_mock.call_args
         generated_jobs = list(kwargs["jobs"])
-        assert len(generated_jobs) == (end_date - cursor_value).days - 2, "should be 2 slices short because of state"
+        assert len(generated_jobs) == ((end_date - cursor_value).days - 2) * 2, "should be 2 slices short because of state"
         assert generated_jobs[0].interval.start == cursor_value.date() + duration(days=2)
         assert generated_jobs[1].interval.start == cursor_value.date() + duration(days=4)
+        assert generated_jobs[3].interval.start == cursor_value.date() + duration(days=2)
+        assert generated_jobs[4].interval.start == cursor_value.date() + duration(days=4)
 
     def test_get_json_schema(self, api, accounts):
         stream = AdsInsights(api=api, accounts=accounts, start_date=datetime(2010, 1, 1), end_date=datetime(2011, 1, 1), insights_lookback_window=28)
