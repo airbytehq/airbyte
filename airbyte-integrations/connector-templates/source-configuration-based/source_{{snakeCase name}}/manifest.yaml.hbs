@@ -1,11 +1,11 @@
-version: "0.1.0"
+version: "0.29.0"
 
 definitions:
   selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer: []
+      field_path: []
   requester:
     type: HttpRequester
     url_base: "https://example.com"
@@ -16,30 +16,32 @@ definitions:
   retriever:
     type: SimpleRetriever
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   base_stream:
     type: DeclarativeStream
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   customers_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
-      name: "customers"
-      primary_key: "id"
+    $ref: "#/definitions/base_stream"
+    name: "customers"
+    primary_key: "id"
+    $parameters:
       path: "/example"
 
 streams:
-  - "*ref(definitions.customers_stream)"
+  - "#/definitions/customers_stream"
 
 check:
+  type: CheckStream
   stream_names:
     - "customers"
 
 spec:
+  type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/{{dashCase name}}
   connection_specification:
     title: {{capitalCase name}} Spec

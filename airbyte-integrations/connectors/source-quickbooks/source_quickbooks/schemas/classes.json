@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": [
+    "null",
+    "object"
+  ],
+  "properties": {
+    "ParentRef": {
+      "properties": {
+        "name": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "value": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "SyncToken": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "domain": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "MetaData": {
+      "properties": {
+        "CreateTime": {
+          "format": "date-time",
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "LastUpdatedTime": {
+          "format": "date-time",
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "Id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "SubClass": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "Active": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "FullyQualifiedName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "airbyte_cursor": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -43,28 +43,28 @@ public class SshPasswordMySqlSourceAcceptanceTest extends AbstractSshMySqlSource
 
   @Test
   public void sshTimeoutExceptionMarkAsConfigErrorTest() throws Exception {
-    SshBastionContainer bastion = new SshBastionContainer();
+    final SshBastionContainer bastion = new SshBastionContainer();
     final Network network = Network.newNetwork();
     // set up env
-    MySQLContainer<?> db = startTestContainers(bastion, network);
-    config = bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, bastion.getBasicDbConfigBuider(db, List.of("public")));
+    final MySQLContainer<?> db = startTestContainers(bastion, network);
+    config = bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, bastion.getBasicDbConfigBuider(db, List.of("public")), true);
     bastion.stopAndClose();
-    Source sshWrappedSource = MySqlSource.sshWrappedSource();
-    Exception exception = assertThrows(ConfigErrorException.class, () -> sshWrappedSource.discover(config));
+    final Source sshWrappedSource = MySqlSource.sshWrappedSource();
+    final Exception exception = assertThrows(ConfigErrorException.class, () -> sshWrappedSource.discover(config));
 
-    String expectedMessage = "Timed out while opening a SSH Tunnel. Please double check the given SSH configurations and try again.";
-    String actualMessage = exception.getMessage();
+    final String expectedMessage = "Timed out while opening a SSH Tunnel. Please double check the given SSH configurations and try again.";
+    final String actualMessage = exception.getMessage();
 
     assertTrue(actualMessage.contains(expectedMessage));
   }
 
-  private MySQLContainer startTestContainers(SshBastionContainer bastion, Network network) {
+  private MySQLContainer startTestContainers(final SshBastionContainer bastion, final Network network) {
     bastion.initAndStartBastion(network);
     return initAndStartJdbcContainer(network);
   }
 
-  private MySQLContainer initAndStartJdbcContainer(Network network) {
-    MySQLContainer<?> db = new MySQLContainer<>("mysql:8.0").withNetwork(network);
+  private MySQLContainer initAndStartJdbcContainer(final Network network) {
+    final MySQLContainer<?> db = new MySQLContainer<>("mysql:8.0").withNetwork(network);
     db.start();
     return db;
   }

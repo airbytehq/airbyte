@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -11,7 +11,7 @@ TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "pytest-mock~=3.7.0",
     "jsonschema~=3.2.0",
-    "responses~=0.13.3",
+    "responses~=0.23.1",
     "freezegun~=1.2.0",
 ]
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import random
@@ -209,13 +209,3 @@ def test_full_refresh_discussion_comments(requests_mock, authenticator, config):
     records = _read_full_refresh(stream)
 
     assert len(records) == 120
-
-
-def test_403_skipped(requests_mock, authenticator, config):
-    # this case should neither raise an error nor retry
-    requests_mock.register_uri("GET", "/api/v2/tickets", json=[{"id": 1705, "updated_at": "2022-05-05T00:00:00Z"}])
-    requests_mock.register_uri("GET", "/api/v2/tickets/1705/conversations", status_code=403)
-    stream = Conversations(authenticator=authenticator, config=config)
-    records = _read_full_refresh(stream)
-    assert records == []
-    assert len(requests_mock.request_history) == 2

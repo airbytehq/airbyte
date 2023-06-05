@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.uploader;
@@ -134,8 +134,8 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
    * <p>
    * Note: this logic is deprecated since it was used for the functionality of migrating unpartitioned
    * tables to partitioned tables for performance. Since this change was introduced in Oct 2021 there
-   * is a well founded belief that any customer's that would have ran a sync in between end of 2022 and
-   * Oct 2021 would have migrated to a partition table
+   * is a well founded belief that any customer's that would have ran a sync in between end of 2022
+   * and Oct 2021 would have migrated to a partition table
    * </p>
    *
    * @param bigQuery BigQuery interface

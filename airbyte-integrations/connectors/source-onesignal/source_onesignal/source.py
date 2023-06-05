@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -31,7 +31,8 @@ class SourceOnesignal(AbstractSource):
 
         authenticator = TokenAuthenticator(config["user_auth_key"], "Basic")
         args = {"authenticator": authenticator, "config": config}
-        apps = Apps(**args)
-        args = {"parent": apps, **args}
+        streams = [Apps(**args)]
+        if config.get("applications"):
+            streams += Devices(**args), Notifications(**args), Outcomes(**args)
 
-        return [apps, Devices(**args), Notifications(**args), Outcomes(**args)]
+        return streams

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -7,13 +7,14 @@ import logging
 import traceback
 from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.errors import GoogleAdsException
 from pendulum import parse, today
 
-from .custom_query_stream import CustomQuery
+from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
 from .models import Customer
 from .streams import (
@@ -35,6 +36,9 @@ from .streams import (
     ShoppingPerformanceReport,
     UserLocationReport,
 )
+from .utils import GAQL
+
+FULL_REFRESH_CUSTOM_TABLE = ["asset", "asset_group_listing_group_filter", "custom_audience", "geo_target_constant"]
 
 
 class SourceGoogleAds(AbstractSource):
@@ -42,6 +46,12 @@ class SourceGoogleAds(AbstractSource):
     def _validate_and_transform(config: Mapping[str, Any]):
         if config.get("end_date") == "":
             config.pop("end_date")
+        for query in config.get("custom_queries", []):
+            try:
+                query["query"] = GAQL.parse(query["query"])
+            except ValueError:
+                message = f"The custom GAQL query {query['table_name']} failed. Validate your GAQL query with the Google Ads query validator. https://developers.google.com/google-ads/api/fields/v13/query_validator"
+                raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
         return config
 
     @staticmethod
@@ -77,10 +87,9 @@ class SourceGoogleAds(AbstractSource):
             yield accounts_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_)
 
     @staticmethod
-    def is_metrics_in_custom_query(query: str) -> bool:
-        fields = CustomQuery.get_query_fields(query)
-        for field in fields:
-            if field.startswith("metrics"):
+    def is_metrics_in_custom_query(query: GAQL) -> bool:
+        for field in query.fields:
+            if field.split(".")[0] == "metrics":
                 return True
         return False
 
@@ -95,16 +104,18 @@ class SourceGoogleAds(AbstractSource):
             # Check custom query request validity by sending metric request with non-existant time window
             for customer in customers:
                 for query in config.get("custom_queries", []):
-                    query = query.get("query")
+                    query = query["query"]
                     if customer.is_manager_account and self.is_metrics_in_custom_query(query):
                         logger.warning(
                             f"Metrics are not available for manager account {customer.id}. "
                             f"Please remove metrics fields in your custom query: {query}."
                         )
-                    if CustomQuery.cursor_field in query:
-                        return False, f"Custom query should not contain {CustomQuery.cursor_field}"
-                    req_q = CustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
-                    response = google_api.send_request(req_q, customer_id=customer.id)
+                    if query.resource_name not in FULL_REFRESH_CUSTOM_TABLE:
+                        if IncrementalCustomQuery.cursor_field in query.fields:
+                            return False, f"Custom query should not contain {IncrementalCustomQuery.cursor_field}"
+                        query = IncrementalCustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
+                    query = query.set_limit(1)
+                    response = google_api.send_request(str(query), customer_id=customer.id)
                     # iterate over the response otherwise exceptions will not be raised!
                     for _ in response:
                         pass
@@ -147,10 +158,16 @@ class SourceGoogleAds(AbstractSource):
                 ]
             )
         for single_query_config in config.get("custom_queries", []):
-            query = single_query_config.get("query")
+            query = single_query_config["query"]
             if self.is_metrics_in_custom_query(query):
                 if non_manager_accounts:
-                    streams.append(CustomQuery(custom_query_config=single_query_config, **non_manager_incremental_config))
+                    if query.resource_name in FULL_REFRESH_CUSTOM_TABLE:
+                        streams.append(CustomQuery(config=single_query_config, api=google_api, customers=non_manager_accounts))
+                    else:
+                        streams.append(IncrementalCustomQuery(config=single_query_config, **non_manager_incremental_config))
                 continue
-            streams.append(CustomQuery(custom_query_config=single_query_config, **incremental_config))
+            if query.resource_name in FULL_REFRESH_CUSTOM_TABLE:
+                streams.append(CustomQuery(config=single_query_config, api=google_api, customers=customers))
+            else:
+                streams.append(IncrementalCustomQuery(config=single_query_config, **incremental_config))
         return streams

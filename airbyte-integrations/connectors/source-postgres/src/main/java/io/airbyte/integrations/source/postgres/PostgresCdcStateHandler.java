@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -24,6 +24,11 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
 
   public PostgresCdcStateHandler(final StateManager stateManager) {
     this.stateManager = stateManager;
+  }
+
+  @Override
+  public boolean isCdcCheckpointEnabled() {
+    return true;
   }
 
   @Override

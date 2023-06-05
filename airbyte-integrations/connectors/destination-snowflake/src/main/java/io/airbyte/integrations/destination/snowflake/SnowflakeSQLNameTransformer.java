@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 
-public class SnowflakeSQLNameTransformer extends ExtendedNameTransformer {
+public class SnowflakeSQLNameTransformer extends StandardNameTransformer {
 
   @Override
   public String applyDefaultCase(final String input) {

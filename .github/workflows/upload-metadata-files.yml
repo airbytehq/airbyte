@@ -1,0 +1,46 @@
+name: "Upload any Changed Metadata Files [Exceptional Use!]"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-catalog-to-stage:
+    name: "Upload Metadata Files to Metadata Service"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte Cloud
+        uses: actions/checkout@v2
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v35
+        with:
+          files: "airbyte-integrations/connectors/**/metadata.yaml"
+      - name: Setup Python 3.10
+        if: steps.changed-files.outputs.any_changed == 'true'
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install metadata_service
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: pip install airbyte-ci/connectors/metadata_service/lib
+      - name: Upload All Changed Metadata Files
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            metadata_service upload $file prod-airbyte-cloud-connector-metadata-service
+          done
+      - name: Slack Notification - Failure
+        if: failure()
+        uses: rtCamp/action-slack-notify@master
+        env:
+          SLACK_WEBHOOK: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          SLACK_USERNAME: Metadata Service
+          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: "Failed to upload metadata file"
+          SLACK_MESSAGE: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          MSG_MINIMAL: True

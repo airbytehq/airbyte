@@ -62,7 +62,7 @@ Also, create a file called `incremental_configured_catalog.json` with the follow
                     }
                 }
             },
-            "sync_mode": "full_refresh",
+            "sync_mode": "incremental",
             "destination_sync_mode": "overwrite"
         }
     ]
@@ -213,7 +213,7 @@ To enable these tests, modify the existing `acceptance-test-config.yml` by addin
 Your full `acceptance-test-config.yml` should look something like this:
 
 ```yaml
-# See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-stock-ticker-api:dev
 tests:

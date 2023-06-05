@@ -1,0 +1,9 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "remote_created_at": "2022-04-12T18:13:36.000Z" },
+      "stream_descriptor": { "name": "users" }
+    }
+  }
+]

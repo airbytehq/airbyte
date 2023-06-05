@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC, abstractmethod
@@ -7,7 +7,7 @@ from traceback import format_exc
 from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import ConnectorSpecification
+from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -58,20 +58,21 @@ class SourceFilesAbstract(AbstractSource, ABC):
         The error object will be cast to string to display the problem to the user.
         """
         try:
-            stream = self.stream_class(**config)
+            stream = self.stream_class.with_minimal_block_size(config)
             stream.fileformatparser_class(stream._format)._validate_config(config)
             for file_info in stream.filepath_iterator():
                 # TODO: will need to split config.get("path_pattern") up by stream once supporting multiple streams
                 # test that matching on the pattern doesn't error
                 globmatch(file_info.key, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)
                 # just need first file here to test connection and valid patterns
-                return True, None
-
+                break
+            slice_ = next(stream.stream_slices(sync_mode=SyncMode.full_refresh), None)
+            if slice_:
+                next(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_), None)
         except Exception as e:
             logger.error(format_exc())
             return False, e
 
-        logger.warn("Found 0 files (but connection is valid).")
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

@@ -11,7 +11,7 @@
       "redirect_uri",
       "start_date"
     ],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "client_id": {
         "type": "string",

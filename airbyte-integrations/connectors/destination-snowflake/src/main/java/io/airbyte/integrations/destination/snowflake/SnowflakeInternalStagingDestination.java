@@ -1,8 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
+
+import static io.airbyte.integrations.destination.snowflake.SnowflakeDestinationResolver.getNumberOfFileBuffers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
@@ -10,6 +12,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
@@ -29,7 +32,7 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeInternalStagingDestination.class);
-  private String airbyteEnvironment;
+  private final String airbyteEnvironment;
 
   public SnowflakeInternalStagingDestination(final String airbyteEnvironment) {
     this(new SnowflakeSQLNameTransformer(), airbyteEnvironment);
@@ -76,7 +79,14 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     final String outputTableName = namingResolver.getIdentifier("_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", ""));
     final String stageName = sqlOperations.getStageName(outputSchema, outputTableName);
     sqlOperations.createStageIfNotExists(database, stageName);
-    sqlOperations.dropStageIfExists(database, stageName);
+
+    // try to make test write to make sure we have required role
+    try {
+      sqlOperations.attemptWriteToStage(outputSchema, stageName, database);
+    } finally {
+      // drop created tmp stage
+      sqlOperations.dropStageIfExists(database, stageName);
+    }
   }
 
   @Override
@@ -109,7 +119,22 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         getDatabase(getDataSource(config)),
         new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
         getNamingResolver(),
-        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX)),
+        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
+        config,
+        catalog,
+        true);
+  }
+
+  @Override
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final Consumer<AirbyteMessage> outputRecordCollector) {
+    return new StagingConsumerFactory().createAsync(
+        outputRecordCollector,
+        getDatabase(getDataSource(config)),
+        new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
+        getNamingResolver(),
+        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, getNumberOfFileBuffers(config))),
         config,
         catalog,
         true);

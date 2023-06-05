@@ -33,7 +33,7 @@
     },
     "person": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "integer"]
@@ -45,7 +45,7 @@
     },
     "user": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "integer"]

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from enum import Enum
@@ -37,6 +37,20 @@ METRICS_MAP = {
         "attributedOrdersNewToBrand14d",
         "attributedSalesNewToBrand14d",
         "attributedUnitsOrderedNewToBrand14d",
+        "costType",
+        "campaignBudget",
+        "campaignStatus",
+        "attributedBrandedSearches14d",
+        "attributedDetailPageView14d",
+        "viewAttributedBrandedSearches14d",
+        "viewAttributedConversions14d",
+        "viewAttributedDetailPageView14d",
+        "viewAttributedOrdersNewToBrand14d",
+        "viewAttributedSales14d",
+        "viewAttributedSalesNewToBrand14d",
+        "viewAttributedUnitsOrdered14d",
+        "viewAttributedUnitsOrderedNewToBrand14d",
+        "viewImpressions",
     ],
     "adGroups": [
         "campaignName",
@@ -68,8 +82,19 @@ METRICS_MAP = {
         "attributedSales14dSameSKU",
         "attributedSales30dSameSKU",
         "attributedOrdersNewToBrand14d",
-        "attributedSalesNewToBrand14d",
         "attributedUnitsOrderedNewToBrand14d",
+        "attributedBrandedSearches14d",
+        "attributedDetailPageView14d",
+        "bidOptimization",
+        "viewAttributedBrandedSearches14d",
+        "viewAttributedConversions14d",
+        "viewAttributedDetailPageView14d",
+        "viewAttributedOrdersNewToBrand14d",
+        "viewAttributedSales14d",
+        "viewAttributedSalesNewToBrand14d",
+        "viewAttributedUnitsOrdered14d",
+        "viewAttributedUnitsOrderedNewToBrand14d",
+        "viewImpressions",
     ],
     "productAds": [
         "campaignName",
@@ -77,7 +102,7 @@ METRICS_MAP = {
         "adGroupName",
         "adGroupId",
         "asin",
-        "sku",
+        "sku",  # Available for seller accounts only.
         "adId",
         "impressions",
         "clicks",
@@ -106,6 +131,17 @@ METRICS_MAP = {
         "attributedOrdersNewToBrand14d",
         "attributedSalesNewToBrand14d",
         "attributedUnitsOrderedNewToBrand14d",
+        "attributedBrandedSearches14d",
+        "attributedDetailPageView14d",
+        "viewAttributedBrandedSearches14d",
+        "viewAttributedConversions14d",
+        "viewAttributedDetailPageView14d",
+        "viewAttributedOrdersNewToBrand14d",
+        "viewAttributedSales14d",
+        "viewAttributedSalesNewToBrand14d",
+        "viewAttributedUnitsOrdered14d",
+        "viewAttributedUnitsOrderedNewToBrand14d",
+        "viewImpressions",
     ],
     "targets": [
         "campaignName",
@@ -143,6 +179,17 @@ METRICS_MAP = {
         "attributedOrdersNewToBrand14d",
         "attributedSalesNewToBrand14d",
         "attributedUnitsOrderedNewToBrand14d",
+        "attributedBrandedSearches14d",
+        "attributedDetailPageView14d",
+        "viewAttributedBrandedSearches14d",
+        "viewAttributedConversions14d",
+        "viewAttributedDetailPageView14d",
+        "viewAttributedOrdersNewToBrand14d",
+        "viewAttributedSales14d",
+        "viewAttributedSalesNewToBrand14d",
+        "viewAttributedUnitsOrdered14d",
+        "viewAttributedUnitsOrderedNewToBrand14d",
+        "viewImpressions",
     ],
     "asins": [
         "campaignName",
@@ -151,7 +198,7 @@ METRICS_MAP = {
         "adGroupId",
         "asin",
         "otherAsin",
-        "sku",
+        "sku",  # Available for seller accounts only.
         "currency",
         "attributedUnitsOrdered1dOtherSKU",
         "attributedUnitsOrdered7dOtherSKU",
@@ -163,6 +210,9 @@ METRICS_MAP = {
         "attributedSales30dOtherSKU",
     ],
 }
+
+
+METRICS_TYPE_TO_ID_MAP = {"campaigns": "campaignId", "adGroups": "adGroupId", "productAds": "adId", "targets": "targetId", "asins": "asin"}
 
 
 class Tactics(str, Enum):
@@ -181,13 +231,18 @@ class SponsoredDisplayReportStream(ReportStream):
         return f"/sd/{record_type}/report"
 
     metrics_map = METRICS_MAP
+    metrics_type_to_id_map = METRICS_TYPE_TO_ID_MAP
 
     def _get_init_report_body(self, report_date: str, record_type: str, profile):
+        metrics_list = self.metrics_map[record_type]
         if record_type == RecordType.ASINS and profile.accountInfo.type == "vendor":
             return None
+        elif record_type == RecordType.PRODUCTADS and profile.accountInfo.type != "seller":
+            # Remove SKU from metrics since it is only available for seller accounts in Product Ad report
+            metrics_list = [m for m in metrics_list if m != "sku"]
         return {
             "reportDate": report_date,
             # Only for most common T00020 tactic for now
             "tactic": Tactics.T00020,
-            "metrics": ",".join(self.metrics_map[record_type]),
+            "metrics": ",".join(metrics_list),
         }

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import math
@@ -415,3 +415,8 @@ class SpamReports(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin
 
     def path(self, **kwargs) -> str:
         return "suppression/spam_reports"
+
+
+class UnsubscribeGroups(SendgridStream):
+    def path(self, **kwargs) -> str:
+        return "asm/groups"

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from decimal import Decimal
@@ -27,6 +27,7 @@ class ProductCampaign(CatalogModel):
     targetingType: str
     state: str
     dailyBudget: Decimal
+    ruleBasedBudget: Dict[str, str]
     startDate: str
     endDate: str = None
     premiumBidAdjustment: bool
@@ -52,3 +53,5 @@ class ProductAd(CatalogModel):
 
 class ProductTargeting(Targeting):
     campaignId: Decimal
+    expression: List[Dict[str, str]]
+    resolvedExpression: List[Dict[str, str]]

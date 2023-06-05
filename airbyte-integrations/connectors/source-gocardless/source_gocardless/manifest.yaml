@@ -1,35 +1,31 @@
-version: "0.1.0"
+version: "0.29.0"
 
 definitions:
   schema_loader:
     type: JsonFileSchemaLoader
-    file_path: "./source_gocardless/schemas/{{ options['name'] }}.json"
+    file_path: "./source_gocardless/schemas/{{ parameters['name'] }}.json"
   selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer:
-        - "{{ options['name'] }}"
+      field_path:
+        - "{{ parameters['name'] }}"
   requester:
     type: HttpRequester
-    name: "{{ options['name'] }}"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['access_token'] }}"
-    request_options_provider:
-      request_headers:
-        GoCardless-Version: "{{ config['gocardless_version'] }}"
-      request_parameters:
-        created_at[gte]: "{{ config['start_date'] }}"
+    request_headers:
+      GoCardless-Version: "{{ config['gocardless_version'] }}"
+    request_parameters:
+      created_at[gte]: "{{ config['start_date'] }}"
   retriever:
     type: SimpleRetriever
-    $options:
+    $parameters:
       url_base: "{{ 'https://api.gocardless.com' if config['gocardless_environment'] == 'live' else 'https://api-sandbox.gocardless.com' }}"
-    name: "{{ options['name'] }}"
-    primary_key: "{{ options['primary_key'] }}"
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: "DefaultPaginator"
       pagination_strategy:
@@ -40,6 +36,7 @@ definitions:
         inject_into: request_parameter
         field_name: limit
       page_token_option:
+        type: RequestOption
         field_name: "after"
         inject_into: "request_parameter"
       page_size_option:
@@ -48,52 +45,48 @@ definitions:
 
 streams:
   - type: DeclarativeStream
-    $options:
+    $parameters:
       name: "payments"
-      stream_cursor_field: "created_at"
     primary_key: "id"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/payments"
   - type: DeclarativeStream
-    $options:
+    $parameters:
       name: "refunds"
-      stream_cursor_field: "created_at"
     primary_key: "id"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/refunds"
   - type: DeclarativeStream
-    $options:
+    $parameters:
       name: "mandates"
-      stream_cursor_field: "created_at"
     primary_key: "id"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/mandates"
   - type: DeclarativeStream
-    $options:
+    $parameters:
       name: "payouts"
-      stream_cursor_field: "created_at"
     primary_key: "id"
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
+      $ref: "#/definitions/schema_loader"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/payouts"
 check:
   type: CheckStream

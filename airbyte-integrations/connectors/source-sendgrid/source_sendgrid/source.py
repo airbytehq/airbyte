@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -27,6 +27,7 @@ from .streams import (
     SuppressionGroupMembers,
     SuppressionGroups,
     Templates,
+    UnsubscribeGroups,
 )
 
 
@@ -64,6 +65,7 @@ class SourceSendgrid(AbstractSource):
             Bounces(authenticator=authenticator, start_time=start_time),
             InvalidEmails(authenticator=authenticator, start_time=start_time),
             SpamReports(authenticator=authenticator, start_time=start_time),
+            UnsubscribeGroups(authenticator=authenticator),
         ]
 
         return streams

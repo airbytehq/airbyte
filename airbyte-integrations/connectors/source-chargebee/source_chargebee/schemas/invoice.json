@@ -23,16 +23,14 @@
       "type": ["boolean", "null"]
     },
     "status": {
-      "type": ["string", "null"],
-      "enum": ["paid", "posted", "payment_due", "not_paid", "void", "pending"]
+      "type": ["string", "null"]
     },
     "vat_number": {
       "type": ["string", "null"],
       "maxLength": 20
     },
     "price_type": {
-      "type": ["string", "null"],
-      "enum": ["tax_exclusive", "tax_inclusive"]
+      "type": ["string", "null"]
     },
     "date": {
       "type": ["integer", "null"]
@@ -44,9 +42,7 @@
       "type": ["integer", "null"]
     },
     "exchange_rate": {
-      "type": ["number", "null"],
-      "minimum": 0.000000001,
-      "maximum": 999999999.999999999
+      "type": ["number", "null"]
     },
     "currency_code": {
       "type": ["string", "null"],
@@ -80,8 +76,7 @@
       "type": ["integer", "null"]
     },
     "dunning_status": {
-      "type": ["string", "null"],
-      "enum": ["in_progress", "exhausted", "stopped", "success"]
+      "type": ["string", "null"]
     },
     "next_retry_at": {
       "type": ["integer", "null"]
@@ -188,8 +183,7 @@
             "type": ["integer", "null"]
           },
           "pricing_model": {
-            "type": ["string", "null"],
-            "enum": ["flat_fee", "per_unit", "tiered", "volume", "stairstep"]
+            "type": ["string", "null"]
           },
           "is_taxed": {
             "type": ["boolean", "null"]
@@ -232,31 +226,10 @@
             "maxLength": 500
           },
           "entity_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "adhoc",
-
-              "plan_setup",
-              "plan",
-              "addon",
-
-              "plan_item_price",
-              "addon_item_price",
-              "charge_item_price"
-            ]
+            "type": ["string", "null"]
           },
           "tax_exempt_reason": {
-            "type": ["string", "null"],
-            "enum": [
-              "tax_not_configured",
-              "region_non_taxable",
-              "export",
-              "customer_exempt",
-              "product_exempt",
-              "zero_rated",
-              "reverse_charge",
-              "high_value_physical_goods"
-            ]
+            "type": ["string", "null"]
           },
           "entity_id": {
             "type": ["string", "null"],
@@ -283,13 +256,7 @@
             "maxLength": 250
           },
           "entity_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "item_level_coupon",
-              "document_level_coupon",
-              "promotional_credits",
-              "prorated_credits"
-            ]
+            "type": ["string", "null"]
           },
           "entity_id": {
             "type": ["string", "null"],
@@ -308,13 +275,7 @@
             "maxLength": 50
           },
           "discount_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "item_level_coupon",
-              "document_level_coupon",
-              "promotional_credits",
-              "prorated_credits"
-            ]
+            "type": ["string", "null"]
           },
           "discount_amount": {
             "type": ["integer", "null"],
@@ -362,9 +323,7 @@
             "maxLength": 100
           },
           "tax_rate": {
-            "type": ["number", "null"],
-            "minimum": 0.0,
-            "maximum": 100.0
+            "type": ["number", "null"]
           },
           "is_partial_tax_applied": {
             "type": ["boolean", "null"]
@@ -381,17 +340,7 @@
             "minimum": 0
           },
           "tax_juris_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "country",
-              "federal",
-              "state",
-              "county",
-              "city",
-              "special",
-              "unincorporated",
-              "other"
-            ]
+            "type": ["string", "null"]
           },
           "tax_juris_name": {
             "type": ["string", "null"],
@@ -471,15 +420,7 @@
             "type": ["integer", "null"]
           },
           "txn_status": {
-            "type": ["string", "null"],
-            "enum": [
-              "in_progress",
-              "success",
-              "voided",
-              "failure",
-              "timeout",
-              "needs_attention"
-            ]
+            "type": ["string", "null"]
           },
           "txn_date": {
             "type": ["integer", "null"]
@@ -504,22 +445,13 @@
             "maxLength": 40
           },
           "dunning_type": {
-            "type": ["string", "null"],
-            "enum": ["auto_collect", "offline", "direct_debit"]
+            "type": ["string", "null"]
           },
           "created_at": {
             "type": ["integer", "null"]
           },
           "txn_status": {
-            "type": ["string", "null"],
-            "enum": [
-              "in_progress",
-              "success",
-              "voided",
-              "failure",
-              "timeout",
-              "needs_attention"
-            ]
+            "type": ["string", "null"]
           },
           "txn_amount": {
             "type": ["integer", "null"],
@@ -545,21 +477,7 @@
             "type": ["integer", "null"]
           },
           "cn_reason_code": {
-            "type": ["string", "null"],
-            "enum": [
-              "write_off",
-              "subscription_change",
-              "subscription_cancellation",
-              "subscription_pause",
-              "chargeback",
-              "product_unsatisfactory",
-              "service_unsatisfactory",
-              "order_change",
-              "order_cancellation",
-              "waiver",
-              "other",
-              "fraudulent"
-            ]
+            "type": ["string", "null"]
           },
           "cn_create_reason_code": {
             "type": ["string", "null"],
@@ -569,8 +487,7 @@
             "type": ["integer", "null"]
           },
           "cn_status": {
-            "type": ["string", "null"],
-            "enum": ["adjusted", "refunded", "refund_due", "voided"]
+            "type": ["string", "null"]
           }
         }
       }
@@ -585,21 +502,7 @@
             "maxLength": 50
           },
           "cn_reason_code": {
-            "type": ["string", "null"],
-            "enum": [
-              "write_off",
-              "subscription_change",
-              "subscription_cancellation",
-              "subscription_pause",
-              "chargeback",
-              "product_unsatisfactory",
-              "service_unsatisfactory",
-              "order_change",
-              "order_cancellation",
-              "waiver",
-              "other",
-              "fraudulent"
-            ]
+            "type": ["string", "null"]
           },
           "cn_create_reason_code": {
             "type": ["string", "null"],
@@ -613,8 +516,7 @@
             "minimum": 0
           },
           "cn_status": {
-            "type": ["string", "null"],
-            "enum": ["adjusted", "refunded", "refund_due", "voided"]
+            "type": ["string", "null"]
           }
         }
       }
@@ -629,21 +531,7 @@
             "maxLength": 50
           },
           "cn_reason_code": {
-            "type": ["string", "null"],
-            "enum": [
-              "write_off",
-              "subscription_change",
-              "subscription_cancellation",
-              "subscription_pause",
-              "chargeback",
-              "product_unsatisfactory",
-              "service_unsatisfactory",
-              "order_change",
-              "order_cancellation",
-              "waiver",
-              "other",
-              "fraudulent"
-            ]
+            "type": ["string", "null"]
           },
           "cn_create_reason_code": {
             "type": ["string", "null"],
@@ -657,8 +545,7 @@
             "minimum": 0
           },
           "cn_status": {
-            "type": ["string", "null"],
-            "enum": ["adjusted", "refunded", "refund_due", "voided"]
+            "type": ["string", "null"]
           }
         }
       }
@@ -677,25 +564,10 @@
             "maxLength": 50
           },
           "status": {
-            "type": ["string", "null"],
-            "enum": [
-              "new",
-              "processing",
-              "complete",
-              "cancelled",
-              "voided",
-              "queued",
-              "awaiting_shipment",
-              "on_hold",
-              "delivered",
-              "shipped",
-              "partially_delivered",
-              "returned"
-            ]
+            "type": ["string", "null"]
           },
           "order_type": {
-            "type": ["string", "null"],
-            "enum": ["manual", "system_generated"]
+            "type": ["string", "null"]
           },
           "reference_id": {
             "type": ["string", "null"],
@@ -721,19 +593,7 @@
         "type": ["object", "null"],
         "properties": {
           "entity_type": {
-            "type": ["string", "null"],
-            "enum": [
-              "coupon",
-              "subscription",
-              "customer",
-
-              "plan",
-              "addon",
-
-              "plan_item_price",
-              "addon_item_price",
-              "charge_item_price"
-            ]
+            "type": ["string", "null"]
           },
           "note": {
             "type": ["string", "null"],
@@ -802,8 +662,7 @@
           "maxLength": 20
         },
         "validation_status": {
-          "type": ["string", "null"],
-          "enum": ["not_validated", "valid", "partially_valid", "invalid"]
+          "type": ["string", "null"]
         }
       }
     },
@@ -863,8 +722,7 @@
           "maxLength": 20
         },
         "validation_status": {
-          "type": ["string", "null"],
-          "enum": ["not_validated", "valid", "partially_valid", "invalid"]
+          "type": ["string", "null"]
         }
       }
     },

@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the Zenloop sou
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces).
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces).
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Zenloop** from the Source type dropdown.
 4. Enter the name for the Zenloop connector.
@@ -69,10 +69,12 @@ The Zenloop connector should not run into Zenloop API limitations under normal u
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                       |
-| :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
-| 0.1.4   | 2022-11-18 | [19624](https://github.com/airbytehq/airbyte/pull/19624) | Migrate to low code           |
-| 0.1.3   | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream states |
-| 0.1.2   | 2022-08-22 | [15843](https://github.com/airbytehq/airbyte/pull/15843) | Adds Properties stream        |
-| 0.1.1   | 2021-10-26 | [8299](https://github.com/airbytehq/airbyte/pull/8299)   | Fix missing seed files        |
-| 0.1.0   | 2021-10-26 | [7380](https://github.com/airbytehq/airbyte/pull/7380)   | Initial Release               |
+| Version | Date       | Pull Request                                             | Subject                                                 |
+|:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------------------|
+| 0.1.6   | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version                 |
+| 0.1.5   | 2023-02-08 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Fix unhashable type in ZenloopSubstreamSlicer component |
+| 0.1.4   | 2022-11-18 | [19624](https://github.com/airbytehq/airbyte/pull/19624) | Migrate to low code                                     |
+| 0.1.3   | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream states                            |
+| 0.1.2   | 2022-08-22 | [15843](https://github.com/airbytehq/airbyte/pull/15843) | Adds Properties stream                                  |
+| 0.1.1   | 2021-10-26 | [8299](https://github.com/airbytehq/airbyte/pull/8299)   | Fix missing seed files                                  |
+| 0.1.0   | 2021-10-26 | [7380](https://github.com/airbytehq/airbyte/pull/7380)   | Initial Release                                         |

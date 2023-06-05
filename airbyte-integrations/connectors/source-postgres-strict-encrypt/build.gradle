@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.postgres.PostgresSourceStrictEncrypt'
+    mainClass = 'io.airbyte.integrations.source.postgres_strict_encrypt.PostgresSourceStrictEncrypt'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
@@ -14,15 +14,19 @@ dependencies {
 
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:source-postgres')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     // todo (cgardens): why are these needed?
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
+    implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation libs.postgresql
 
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation project(':airbyte-test-utils')
+    testImplementation libs.junit.jupiter.system.stubs
 
+    testImplementation libs.connectors.testcontainers.jdbc
     testImplementation libs.connectors.testcontainers.postgresql
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')

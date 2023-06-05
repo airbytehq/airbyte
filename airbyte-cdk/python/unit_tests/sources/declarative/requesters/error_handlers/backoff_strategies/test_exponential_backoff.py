@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock
@@ -9,7 +9,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     ExponentialBackoffStrategy,
 )
 
-options = {"backoff": 5}
+parameters = {"backoff": 5}
 config = {"backoff": 5}
 
 
@@ -18,19 +18,19 @@ config = {"backoff": 5}
     [
         ("test_exponential_backoff_first_attempt", 1, 5, 10),
         ("test_exponential_backoff_second_attempt", 2, 5, 20),
-        ("test_exponential_backoff_from_options", 2, "{{options['backoff']}}", 20),
+        ("test_exponential_backoff_from_parameters", 2, "{{parameters['backoff']}}", 20),
         ("test_exponential_backoff_from_config", 2, "{{config['backoff']}}", 20),
     ],
 )
 def test_exponential_backoff(test_name, attempt_count, factor, expected_backoff_time):
     response_mock = MagicMock()
-    backoff_strategy = ExponentialBackoffStrategy(factor=factor, options=options, config=config)
+    backoff_strategy = ExponentialBackoffStrategy(factor=factor, parameters=parameters, config=config)
     backoff = backoff_strategy.backoff(response_mock, attempt_count)
     assert backoff == expected_backoff_time
 
 
 def test_exponential_backoff_default():
     response_mock = MagicMock()
-    backoff_strategy = ExponentialBackoffStrategy(options=options, config=config)
+    backoff_strategy = ExponentialBackoffStrategy(parameters=parameters, config=config)
     backoff = backoff_strategy.backoff(response_mock, 3)
     assert backoff == 40

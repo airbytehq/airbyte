@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": [
+    "null",
+    "object"
+  ],
+  "properties": {
+    "PrivateNote": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "MetaData": {
+      "properties": {
+        "LastUpdatedTime": {
+          "type": [
+            "null",
+            "string"
+          ],
+          "format": "date-time"
+        },
+        "CreateTime": {
+          "type": [
+            "null",
+            "string"
+          ],
+          "format": "date-time"
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "TxnDate": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date"
+    },
+    "Id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "domain": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ExchangeRate": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "Amount": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "SyncToken": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ToAccountRef": {
+      "properties": {
+        "value": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "name": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "CurrencyRef": {
+      "properties": {
+        "value": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "name": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "FromAccountRef": {
+      "properties": {
+        "value": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "name": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "airbyte_cursor": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

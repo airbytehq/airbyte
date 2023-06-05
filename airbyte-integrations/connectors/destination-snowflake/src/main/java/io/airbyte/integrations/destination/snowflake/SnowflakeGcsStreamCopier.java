@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -10,7 +10,7 @@ import com.google.cloud.storage.Storage;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
@@ -33,7 +33,7 @@ public class SnowflakeGcsStreamCopier extends GcsStreamCopier implements Snowfla
                                   final Storage storageClient,
                                   final JdbcDatabase db,
                                   final GcsConfig gcsConfig,
-                                  final ExtendedNameTransformer nameTransformer,
+                                  final StandardNameTransformer nameTransformer,
                                   final SqlOperations sqlOperations,
                                   final StagingFilenameGenerator stagingFilenameGenerator) {
     super(stagingFolder, destSyncMode, schema, streamName, storageClient, db, gcsConfig, nameTransformer, sqlOperations);

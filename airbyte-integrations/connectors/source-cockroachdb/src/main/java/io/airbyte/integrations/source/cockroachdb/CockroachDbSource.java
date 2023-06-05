@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.cockroachdb;
@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
@@ -22,9 +21,6 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
-import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -95,20 +91,6 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
-                                                    final ConfiguredAirbyteCatalog catalog,
-                                                    final JsonNode state)
-      throws Exception {
-    final AirbyteConnectionStatus check = check(config);
-
-    if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
-      throw new RuntimeException("Unable establish a connection: " + check.getMessage());
-    }
-
-    return super.read(config, catalog, state);
-  }
-
-  @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database, final String schema) throws SQLException {
     try (final Stream<JsonNode> stream = database.unsafeQuery(getPrivileges(database), sourceOperations::rowToJson)) {
       return stream.map(this::getPrivilegeDto).collect(Collectors.toSet());
@@ -121,9 +103,10 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
-  protected DataSource createDataSource(final JsonNode config) {
-    final JsonNode jdbcConfig = toDatabaseConfig(config);
+  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
+    final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
 
+    // Create the JDBC data source
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
@@ -131,15 +114,13 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY));
     dataSources.add(dataSource);
-    return dataSource;
-  }
 
-  @Override
-  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
-    final DataSource dataSource = createDataSource(config);
     final JdbcDatabase database = new DefaultJdbcDatabase(dataSource, sourceOperations);
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
-    return new CockroachJdbcDatabase(database, sourceOperations);
+    final CockroachJdbcDatabase cockroachJdbcDatabase = new CockroachJdbcDatabase(database, sourceOperations);
+    cockroachJdbcDatabase.setSourceConfig(sourceConfig);
+    cockroachJdbcDatabase.setDatabaseConfig(toDatabaseConfig(sourceConfig));
+    return cockroachJdbcDatabase;
   }
 
   @Override

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from airbyte_cdk.models import AdvancedAuth, AuthFlowType, OAuthConfigSpecification
@@ -13,7 +13,6 @@ class AmazonSellerPartnerConfig(BaseModel):
         schema_extra = {"additionalProperties": True}
 
     app_id: str = Field(
-        None,
         description="Your Amazon App ID",
         title="App Id",
         airbyte_secret=True,
@@ -47,6 +46,7 @@ class AmazonSellerPartnerConfig(BaseModel):
     )
 
     aws_access_key: str = Field(
+        None,
         description="Specifies the AWS access key used as part of the credentials to authenticate the user.",
         title="AWS Access Key",
         airbyte_secret=True,
@@ -54,6 +54,7 @@ class AmazonSellerPartnerConfig(BaseModel):
     )
 
     aws_secret_key: str = Field(
+        None,
         description="Specifies the AWS secret key used as part of the credentials to authenticate the user.",
         title="AWS Secret Access Key",
         airbyte_secret=True,
@@ -61,6 +62,7 @@ class AmazonSellerPartnerConfig(BaseModel):
     )
 
     role_arn: str = Field(
+        None,
         description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).",
         title="Role ARN",
         airbyte_secret=True,
@@ -104,6 +106,16 @@ class AmazonSellerPartnerConfig(BaseModel):
         "to wait for a successful report.",
         examples=["500", "1980"],
         order=12,
+    )
+
+    # This field has been introduced because some users experienced a delay on report data update,
+    # for certain reports the data availability SLA is not explicited this field allows to customize this value. Using this sort of
+    # options make possible to extend the usage adding more customization per stream.
+    advanced_stream_options: str = Field(
+        None,
+        description="Additional information to configure report options. This varies by report type, not every report implement this kind of feature. Must be a valid json string.",
+        examples=['{"GET_SALES_AND_TRAFFIC_REPORT": {"availability_sla_days": 3}}', '{"GET_SOME_REPORT": {"custom": "true"}}'],
+        order=13,
     )
 
     aws_environment: AWSEnvironment = Field(

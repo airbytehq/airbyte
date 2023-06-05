@@ -1,4 +1,4 @@
-version: "0.1.0"
+version: "0.29.0"
 
 definitions:
   selector:
@@ -7,19 +7,18 @@ definitions:
   requester:
     url_base: "https://getpocket.com/v3"
     http_method: "POST"
-    request_options_provider:
-      request_parameters:
-        consumer_key: "{{ config['consumer_key'] }}"
-        access_token: "{{ config['access_token'] }}"
-        state: "{{ config['state'] }}"
-        favorite: "{% if config['favorite'] %}{{ 1 }}{% else %}{{ 0 }}{% endif %}"
-        tag: "{{ config['tag'] }}"
-        contentType: "{{ config['content_type'] }}"
-        sort: "{{ config['sort'] }}"
-        detailType: "{{ config['detail_type'] }}"
-        search: "{{ config['search'] }}"
-        domain: "{{ config['domain'] }}"
-        since: "{{ timestamp(config['since']) }}"
+    request_parameters:
+      consumer_key: "{{ config['consumer_key'] }}"
+      access_token: "{{ config['access_token'] }}"
+      state: "{{ config['state'] }}"
+      favorite: "{% if config['favorite'] %}{{ 1 }}{% else %}{{ 0 }}{% endif %}"
+      tag: "{{ config['tag'] }}"
+      contentType: "{{ config['content_type'] }}"
+      sort: "{{ config['sort'] }}"
+      detailType: "{{ config['detail_type'] }}"
+      search: "{{ config['search'] }}"
+      domain: "{{ config['domain'] }}"
+      since: "{{ timestamp(config['since']) }}"
     error_handler:
       type: "DefaultErrorHandler"
       error_handlers:
@@ -33,10 +32,9 @@ definitions:
               header: "X-Limit-User-Reset"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: "DefaultPaginator"
-      url_base: "*ref(definitions.requester.url_base)"
       page_size_option:
         inject_into: "request_parameter"
         field_name: "count"
@@ -44,24 +42,25 @@ definitions:
         type: "OffsetIncrement"
         page_size: 10
       page_token_option:
+        type: RequestOption
         inject_into: "request_parameter"
         field_name: "offset"
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
     schema_loader:
-      type: "JsonSchema"
+      type: "JsonFileSchemaLoader"
   retrieve_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "retrieve"
       primary_key: "item_id"
       path: "/get"
 
 streams:
-  - "*ref(definitions.retrieve_stream)"
+  - "#/definitions/retrieve_stream"
 
 check:
   stream_names:

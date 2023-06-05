@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.record_buffer;
@@ -32,10 +32,10 @@ public interface SerializableBuffer extends AutoCloseable {
   /**
    * Adds a {@link AirbyteRecordMessage} to the buffer and returns the size of the message in bytes
    *
-   * @param recordMessage {@link AirbyteRecordMessage} to be added to buffer
+   * @param record {@link AirbyteRecordMessage} to be added to buffer
    * @return number of bytes written to the buffer
    */
-  long accept(AirbyteRecordMessage recordMessage) throws Exception;
+  long accept(AirbyteRecordMessage record) throws Exception;
 
   /**
    * Flush a buffer implementation.

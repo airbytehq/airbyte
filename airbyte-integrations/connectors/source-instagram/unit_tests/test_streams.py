@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from datetime import datetime
@@ -70,6 +70,73 @@ def test_media_insights_read(api, user_stories_data, user_media_insights_data, r
 
     records = read_full_refresh(stream)
     assert records == [{"business_account_id": "test_id", "id": "test_id", "impressions": 264, "page_id": "act_unknown_account"}]
+
+
+def test_media_insights_read_error(api, requests_mock):
+    test_id = "test_id"
+    stream = MediaInsights(api=api)
+    media_response = [{"id": "test_id"}, {"id": "test_id_2"}, {"id": "test_id_3"}, {"id": "test_id_4"}]
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/media", json={"data": media_response})
+
+    media_insights_response_test_id = {
+        "name": "impressions",
+        "period": "lifetime",
+        "values": [{"value": 264}],
+        "title": "Impressions",
+        "description": "Total number of times the media object has been seen",
+        "id": "test_id/insights/impressions/lifetime",
+    }
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", json=media_insights_response_test_id)
+
+    error_response_oauth = {
+        "error": {
+            "message": "Invalid parameter",
+            "type": "OAuthException",
+            "code": 100,
+            "error_data": {},
+            "error_subcode": 2108006,
+            "is_transient": False,
+            "error_user_title": "Media posted before business account conversion",
+            "error_user_msg": "The media was posted before the most recent time that the user's account was converted to a business account from a personal account.",
+            "fbtrace_id": "fake_trace_id"
+        }
+    }
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/test_id_2/insights",  json=error_response_oauth, status_code=400)
+
+    error_response_wrong_permissions = {
+        "error": {
+            "message": "Invalid parameter",
+            "type": "OAuthException",
+            "code": 100,
+            "error_data": {},
+            "error_subcode": 33,
+            "is_transient": False,
+            "error_user_msg": "Unsupported get request. Object with ID 'test_id_3' does not exist, cannot be loaded due to missing permissions, or does not support this operation.",
+            "fbtrace_id": "fake_trace_id"
+        }
+    }
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/test_id_3/insights", json=error_response_wrong_permissions, status_code=400)
+
+    media_insights_response_test_id_4 = {
+        "name": "impressions",
+        "period": "lifetime",
+        "values": [{"value": 300}],
+        "title": "Impressions",
+        "description": "Total number of times the media object has been seen",
+        "id": "test_id_3/insights/impressions/lifetime",
+    }
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/test_id_4/insights", json=media_insights_response_test_id_4)
+
+    records = read_full_refresh(stream)
+    expected_records = [{"business_account_id": "test_id",
+                         "id": "test_id",
+                         "impressions": 264,
+                         "page_id": "act_unknown_account"},
+                        {"business_account_id": "test_id",
+                         "id": "test_id_4",
+                         "impressions": 300,
+                         "page_id": "act_unknown_account"}]
+    assert records == expected_records
 
 
 def test_user_read(api, user_data, requests_mock):
@@ -179,3 +246,13 @@ def test_common_error_retry(error_response, requests_mock, api, account_id):
     records = read_full_refresh(stream)
 
     assert [response] == records
+
+
+def test_exit_gracefully(api, config, requests_mock, caplog):
+    test_id = "test_id"
+    stream = UserInsights(api=api, start_date=datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%S"))
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/insights", json={"data": []})
+    records = read_incremental(stream, {})
+    assert not records
+    assert requests_mock.call_count == 6  # 4 * 1 per `metric_to_period` map + 1 `summary` request + 1 `business_account_id` request
+    assert "Stopping syncing stream 'user_insights'" in caplog.text

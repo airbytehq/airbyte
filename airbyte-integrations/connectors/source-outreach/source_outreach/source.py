@@ -1,10 +1,10 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib import parse
 
 import requests
@@ -20,9 +20,9 @@ _URL_BASE = "https://api.outreach.io/api/v2/"
 
 # Basic full refresh stream
 class OutreachStream(HttpStream, ABC):
-
     url_base = _URL_BASE
     primary_key = "id"
+    page_size = 1000
 
     def __init__(
         self,
@@ -50,7 +50,7 @@ class OutreachStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {"page[size]": 100, "count": "false"}
+        params = {"page[size]": self.page_size, "count": "false", "sort": "updatedAt"}
         if next_page_token and "after" in next_page_token:
             params["page[after]"] = next_page_token["after"]
         return params
@@ -60,7 +60,19 @@ class OutreachStream(HttpStream, ABC):
         if not data:
             return
         for element in data:
-            yield {**element.get("attributes"), **{self.primary_key: element[self.primary_key]}}
+            relationships: Dict[str, List[int]] = dict()
+            for r_type, relations in element.get("relationships").items():
+                relationships[f"{r_type}"] = []
+                if relations.get("data"):  # Manage None and pass empty data. Some relationships only have links we do not handle these.
+                    data = relations.get("data", [])
+
+                    if isinstance(data, dict):  # Manage some relationships that only have one element and are set as dict.
+                        # instead of having [{'type': 'sequenceState', 'id': 1}] we have {'type': 'sequenceState', 'id': 1}
+                        data = [data]
+
+                    relationships[f"{r_type}"] = [e.get("id") for e in data]
+
+            yield {**element.get("attributes"), **{self.primary_key: element[self.primary_key], **relationships}}
 
 
 # Basic incremental stream
@@ -108,12 +120,92 @@ class Sequences(IncrementalOutreachStream):
 
 class SequenceStates(IncrementalOutreachStream):
     """
-    Sequence stream. Yields data from the GET /sequences endpoint.
+    Sequence stream. Yields data from the GET /sequenceStates endpoint.
     See https://api.outreach.io/api/v2/docs#sequenceState
     """
 
     def path(self, **kwargs) -> str:
         return "sequenceStates"
+
+
+class SequenceSteps(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /sequenceSteps endpoint.
+    See https://api.outreach.io/api/v2/docs#sequenceStep
+    """
+
+    def path(self, **kwargs) -> str:
+        return "sequenceStates"
+
+
+class Accounts(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /accounts endpoint.
+    See https://api.outreach.io/api/v2/docs#account
+    """
+
+    def path(self, **kwargs) -> str:
+        return "accounts"
+
+
+class Opportunities(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /opportunities endpoint.
+    See https://api.outreach.io/api/v2/docs#opportunity
+    """
+
+    def path(self, **kwargs) -> str:
+        return "opportunities"
+
+
+class Personas(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /personas endpoint.
+    See https://api.outreach.io/api/v2/docs#persona
+    """
+
+    def path(self, **kwargs) -> str:
+        return "personas"
+
+
+class Mailings(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /mailings endpoint.
+    See https://api.outreach.io/api/v2/docs#mailing
+    """
+
+    def path(self, **kwargs) -> str:
+        return "mailings"
+
+
+class Mailboxes(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /mailboxes endpoint.
+    See https://api.outreach.io/api/v2/docs#mailbox
+    """
+
+    def path(self, **kwargs) -> str:
+        return "mailboxes"
+
+
+class Stages(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /stages endpoint.
+    See https://api.outreach.io/api/v2/docs#stage
+    """
+
+    def path(self, **kwargs) -> str:
+        return "stages"
+
+
+class Calls(IncrementalOutreachStream):
+    """
+    Sequence stream. Yields data from the GET /calls endpoint.
+    See https://api.outreach.io/api/v2/docs#call
+    """
+
+    def path(self, **kwargs) -> str:
+        return "calls"
 
 
 class OutreachAuthenticator(Oauth2Authenticator):
@@ -156,4 +248,12 @@ class SourceOutreach(AbstractSource):
             Prospects(authenticator=auth, **config),
             Sequences(authenticator=auth, **config),
             SequenceStates(authenticator=auth, **config),
+            SequenceSteps(authenticator=auth, **config),
+            Accounts(authenticator=auth, **config),
+            Opportunities(authenticator=auth, **config),
+            Personas(authenticator=auth, **config),
+            Mailings(authenticator=auth, **config),
+            Mailboxes(authenticator=auth, **config),
+            Stages(authenticator=auth, **config),
+            Calls(authenticator=auth, **config),
         ]

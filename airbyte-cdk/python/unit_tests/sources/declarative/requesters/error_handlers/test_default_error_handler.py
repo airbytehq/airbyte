@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from http import HTTPStatus
@@ -30,7 +30,7 @@ SOME_BACKOFF_TIME = 60
             None,
             {},
             ResponseStatus.retry(SOME_BACKOFF_TIME),
-            [ConstantBackoffStrategy(options={}, backoff_time_in_seconds=SOME_BACKOFF_TIME, config={})],
+            [ConstantBackoffStrategy(parameters={}, backoff_time_in_seconds=SOME_BACKOFF_TIME, config={})],
         ),
         ("test_exponential_backoff", HTTPStatus.BAD_GATEWAY, None, None, {}, ResponseStatus.retry(10), None),
         (
@@ -40,7 +40,7 @@ SOME_BACKOFF_TIME = 60
             None,
             {},
             ResponseStatus.retry(10),
-            [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY(options={}, config={})],
+            [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY(parameters={}, config={})],
         ),
         ("test_chain_backoff_strategy", HTTPStatus.BAD_GATEWAY, None, None, {}, ResponseStatus.retry(10), None),
         (
@@ -51,8 +51,8 @@ SOME_BACKOFF_TIME = 60
             {},
             ResponseStatus.retry(10),
             [
-                DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY(options={}, config={}),
-                ConstantBackoffStrategy(options={}, backoff_time_in_seconds=SOME_BACKOFF_TIME, config={}),
+                DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY(parameters={}, config={}),
+                ConstantBackoffStrategy(parameters={}, backoff_time_in_seconds=SOME_BACKOFF_TIME, config={}),
             ],
         ),
         ("test_200", HTTPStatus.OK, None, None, {}, response_status.SUCCESS, None),
@@ -62,7 +62,7 @@ SOME_BACKOFF_TIME = 60
             "test_403_ignore_error_message",
             HTTPStatus.FORBIDDEN,
             None,
-            HttpResponseFilter(action=ResponseAction.IGNORE, error_message_contains="found", config={}, options={}),
+            HttpResponseFilter(action=ResponseAction.IGNORE, error_message_contains="found", config={}, parameters={}),
             {},
             response_status.IGNORE,
             None,
@@ -71,7 +71,7 @@ SOME_BACKOFF_TIME = 60
             "test_403_dont_ignore_error_message",
             HTTPStatus.FORBIDDEN,
             None,
-            HttpResponseFilter(action=ResponseAction.IGNORE, error_message_contains="not_found", config={}, options={}),
+            HttpResponseFilter(action=ResponseAction.IGNORE, error_message_contains="not_found", config={}, parameters={}),
             {},
             response_status.FAIL,
             None,
@@ -81,7 +81,7 @@ SOME_BACKOFF_TIME = 60
             "test_ignore_403",
             HTTPStatus.FORBIDDEN,
             None,
-            HttpResponseFilter(action=ResponseAction.IGNORE, http_codes={HTTPStatus.FORBIDDEN}, config={}, options={}),
+            HttpResponseFilter(action=ResponseAction.IGNORE, http_codes={HTTPStatus.FORBIDDEN}, config={}, parameters={}),
             {},
             response_status.IGNORE,
             None,
@@ -89,7 +89,7 @@ SOME_BACKOFF_TIME = 60
         (
             "test_403_with_predicate",
             HTTPStatus.FORBIDDEN,
-            HttpResponseFilter(action=ResponseAction.RETRY, predicate="{{ 'code' in response }}", config={}, options={}),
+            HttpResponseFilter(action=ResponseAction.RETRY, predicate="{{ 'code' in response }}", config={}, parameters={}),
             None,
             {},
             ResponseStatus.retry(10),
@@ -98,7 +98,7 @@ SOME_BACKOFF_TIME = 60
         (
             "test_403_with_predicate",
             HTTPStatus.FORBIDDEN,
-            HttpResponseFilter(action=ResponseAction.RETRY, predicate="{{ 'some_absent_field' in response }}", config={}, options={}),
+            HttpResponseFilter(action=ResponseAction.RETRY, predicate="{{ 'some_absent_field' in response }}", config={}, parameters={}),
             None,
             {},
             response_status.FAIL,
@@ -107,7 +107,7 @@ SOME_BACKOFF_TIME = 60
         (
             "test_200_fail_with_predicate",
             HTTPStatus.OK,
-            HttpResponseFilter(action=ResponseAction.FAIL, error_message_contains="found", config={}, options={}),
+            HttpResponseFilter(action=ResponseAction.FAIL, error_message_contains="found", config={}, parameters={}),
             None,
             {},
             response_status.FAIL,
@@ -116,7 +116,7 @@ SOME_BACKOFF_TIME = 60
         (
             "test_retry_403",
             HTTPStatus.FORBIDDEN,
-            HttpResponseFilter(action=ResponseAction.RETRY, http_codes={HTTPStatus.FORBIDDEN}, config={}, options={}),
+            HttpResponseFilter(action=ResponseAction.RETRY, http_codes={HTTPStatus.FORBIDDEN}, config={}, parameters={}),
             None,
             {},
             ResponseStatus.retry(10),
@@ -125,7 +125,7 @@ SOME_BACKOFF_TIME = 60
         (
             "test_200_fail_with_predicate_from_header",
             HTTPStatus.OK,
-            HttpResponseFilter(action=ResponseAction.FAIL, predicate="{{ headers['fail'] }}", config={}, options={}),
+            HttpResponseFilter(action=ResponseAction.FAIL, predicate="{{ headers['fail'] }}", config={}, parameters={}),
             None,
             {"fail": True},
             response_status.FAIL,
@@ -139,7 +139,7 @@ def test_default_error_handler(
     response_mock = create_response(http_code, headers=response_headers, json_body={"code": "1000", "error": "found"})
     response_mock.ok = http_code < 400
     response_filters = [f for f in [retry_response_filter, ignore_response_filter] if f]
-    error_handler = DefaultErrorHandler(response_filters=response_filters, backoff_strategies=backoff_strategy, config={}, options={})
+    error_handler = DefaultErrorHandler(response_filters=response_filters, backoff_strategies=backoff_strategy, config={}, parameters={})
     actual_should_retry = error_handler.interpret_response(response_mock)
     assert actual_should_retry == should_retry
     if should_retry.action == ResponseAction.RETRY:
@@ -149,7 +149,7 @@ def test_default_error_handler(
 def test_default_error_handler_attempt_count_increases():
     status_code = 500
     response_mock = create_response(status_code)
-    error_handler = DefaultErrorHandler(config={}, options={})
+    error_handler = DefaultErrorHandler(config={}, parameters={})
     actual_should_retry = error_handler.interpret_response(response_mock)
     assert actual_should_retry == ResponseStatus.retry(10)
     assert actual_should_retry.retry_in == 10

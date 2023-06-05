@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -8,8 +8,8 @@ from setuptools import find_packages, setup
 MAIN_REQUIREMENTS = ["airbyte-cdk", "sgqlc~=16.0"]
 
 TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "pytest-mock~=3.10.0",
+    "pytest",
+    "pytest-mock",
     "requests-mock",
     "connector-acceptance-test",
 ]

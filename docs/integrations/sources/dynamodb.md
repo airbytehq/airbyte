@@ -51,14 +51,18 @@ This guide describes in details how you can configure the connector to connect w
 
 ### Сonfiguration Parameters
 
-* endpoint: aws endpoint of the dynamodb instance
-* region: the region code of the dynamodb instance
-* access_key_id: the access key for the IAM user with the required permissions
-* secret_access_key: the secret key for the IAM user with the required permissions
-
+* **_endpoint_**: aws endpoint of the dynamodb instance
+* **_region_**: the region code of the dynamodb instance
+* **_access_key_id_**: the access key for the IAM user with the required permissions
+* **_secret_access_key_**: the secret key for the IAM user with the required permissions
+* **_reserved_attribute_names_**: comma separated list of attribute names present in the replication tables which contain reserved words or special characters. https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Expressions.ExpressionAttributeNames.html
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject         |
-|:--------|:-----------|:-------------|:----------------|
-| 0.1.0   | 11-14-2022 | https://github.com/airbytehq/airbyte/pull/18750             | Initial version |
+
+| Version | Date       | Pull Request                                    | Subject                                                              |
+|:--------|:-----------|:------------------------------------------------|:---------------------------------------------------------------------|
+| 0.1.2   | 01-19-2023 | https://github.com/airbytehq/airbyte/pull/20172 | Fix reserved words in projection expression & make them configurable |
+| 0.1.1   | 02-09-2023 | https://github.com/airbytehq/airbyte/pull/22682 | Fix build                                                            |
+| 0.1.0   | 11-14-2022 | https://github.com/airbytehq/airbyte/pull/18750 | Initial version                                                      |
+

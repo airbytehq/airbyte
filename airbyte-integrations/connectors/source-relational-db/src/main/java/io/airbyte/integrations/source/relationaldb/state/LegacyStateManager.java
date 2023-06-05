@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb.state;
@@ -88,6 +88,11 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
   @Override
   public CdcStateManager getCdcStateManager() {
     return cdcStateManager;
+  }
+
+  @Override
+  public List<AirbyteStateMessage> getRawStateMessages() {
+    throw new UnsupportedOperationException("Raw state retrieval not supported by global state manager.");
   }
 
   @Override

@@ -1,24 +1,36 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.SqlDatabase;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for methods to query a relational db.
  */
 public class RelationalDbQueryUtils {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(RelationalDbQueryUtils.class);
+
   public static String getIdentifierWithQuoting(final String identifier, final String quoteString) {
-    return quoteString + identifier + quoteString;
+    // double-quoted values within a database name or column name should be wrapped with extra
+    // quoteString
+    if (identifier.startsWith(quoteString) && identifier.endsWith(quoteString)) {
+      return quoteString + quoteString + identifier + quoteString + quoteString;
+    } else {
+      return quoteString + identifier + quoteString;
+    }
   }
 
   public static String enquoteIdentifierList(final List<String> identifiers, final String quoteString) {
@@ -51,15 +63,20 @@ public class RelationalDbQueryUtils {
     return quoteString + identifier + quoteString;
   }
 
-  public static <Database extends SqlDatabase> AutoCloseableIterator<JsonNode> queryTable(final Database database, final String sqlQuery) {
+  public static <Database extends SqlDatabase> AutoCloseableIterator<JsonNode> queryTable(final Database database,
+                                                                                          final String sqlQuery,
+                                                                                          final String tableName,
+                                                                                          final String schemaName) {
+    final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
+        LOGGER.info("Queueing query: {}", sqlQuery);
         final Stream<JsonNode> stream = database.unsafeQuery(sqlQuery);
-        return AutoCloseableIterators.fromStream(stream);
+        return AutoCloseableIterators.fromStream(stream, airbyteStreamNameNamespacePair);
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
-    });
+    }, airbyteStreamNameNamespacePair);
   }
 
 }

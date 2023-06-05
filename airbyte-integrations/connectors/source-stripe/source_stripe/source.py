@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -12,6 +12,9 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_stripe.streams import (
+    Accounts,
+    ApplicationFees,
+    ApplicationFeesRefunds,
     BalanceTransactions,
     BankAccounts,
     Charges,
@@ -21,6 +24,7 @@ from source_stripe.streams import (
     CustomerBalanceTransactions,
     Customers,
     Disputes,
+    EarlyFraudWarnings,
     Events,
     ExternalAccountBankAccounts,
     ExternalAccountCards,
@@ -33,8 +37,10 @@ from source_stripe.streams import (
     Products,
     PromotionCodes,
     Refunds,
+    SetupIntents,
     SubscriptionItems,
     Subscriptions,
+    SubscriptionSchedule,
     Transfers,
 )
 
@@ -59,6 +65,9 @@ class SourceStripe(AbstractSource):
         }
         incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days")}
         return [
+            Accounts(**args),
+            ApplicationFees(**incremental_args),
+            ApplicationFeesRefunds(**args),
             BalanceTransactions(**incremental_args),
             BankAccounts(**args),
             Charges(**incremental_args),
@@ -69,6 +78,7 @@ class SourceStripe(AbstractSource):
             Customers(**incremental_args),
             Disputes(**incremental_args),
             Events(**incremental_args),
+            EarlyFraudWarnings(**args),
             InvoiceItems(**incremental_args),
             InvoiceLineItems(**args),
             Invoices(**incremental_args),
@@ -80,7 +90,9 @@ class SourceStripe(AbstractSource):
             Refunds(**incremental_args),
             SubscriptionItems(**args),
             Subscriptions(**incremental_args),
+            SubscriptionSchedule(**incremental_args),
             Transfers(**incremental_args),
             ExternalAccountBankAccounts(**args),
             ExternalAccountCards(**args),
+            SetupIntents(**incremental_args),
         ]

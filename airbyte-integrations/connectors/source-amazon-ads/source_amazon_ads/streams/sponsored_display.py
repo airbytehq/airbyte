@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from source_amazon_ads.schemas import DisplayAdGroup, DisplayCampaign, DisplayProductAds, DisplayTargeting

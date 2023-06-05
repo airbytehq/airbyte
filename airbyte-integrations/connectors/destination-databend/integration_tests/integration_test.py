@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -23,7 +23,7 @@ from destination_databend import DestinationDatabend
 from destination_databend.client import DatabendClient
 
 
-@pytest.fixture(name="config")
+@pytest.fixture(name="databendConfig")
 def config_fixture() -> Mapping[str, Any]:
     with open("secrets/config.json", "r") as f:
         return json.loads(f.read())
@@ -49,20 +49,20 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
 
 
 @pytest.fixture(autouse=True)
-def teardown(config: Mapping):
+def teardown(databendConfig: Mapping):
     yield
-    client = DatabendClient(**config)
+    client = DatabendClient(**databendConfig)
     cursor = client.open()
     cursor.close()
 
 
 @pytest.fixture(name="client")
-def client_fixture(config) -> DatabendClient:
-    return DatabendClient(**config)
+def client_fixture(databendConfig) -> DatabendClient:
+    return DatabendClient(**databendConfig)
 
 
-def test_check_valid_config(config: Mapping):
-    outcome = DestinationDatabend().check(logging.getLogger('airbyte'), config)
+def test_check_valid_config(databendConfig: Mapping):
+    outcome = DestinationDatabend().check(logging.getLogger('airbyte'), databendConfig)
     assert outcome.status == Status.SUCCEEDED
 
 
@@ -103,7 +103,7 @@ def retrieve_all_records(client: DatabendClient) -> List[AirbyteRecordMessage]:
     return overwrite_out + append_out
 
 
-def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: DatabendClient):
+def test_write(databendConfig: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: DatabendClient):
     """
     This test verifies that:
         1. writing a stream in "overwrite" mode overwrites any existing data for that stream
@@ -124,7 +124,7 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, cl
     expected_states = [first_state_message, second_state_message]
     output_states = list(
         destination.write(
-            config, configured_catalog, [*first_record_chunk, first_state_message, *second_record_chunk, second_state_message]
+            databendConfig, configured_catalog, [*first_record_chunk, first_state_message, *second_record_chunk, second_state_message]
         )
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
@@ -139,7 +139,7 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, cl
         _record(overwrite_stream, str(i), i) for i in range(10, 15)
     ]
 
-    output_states = list(destination.write(config, configured_catalog, [*third_record_chunk, third_state_message]))
+    output_states = list(destination.write(databendConfig, configured_catalog, [*third_record_chunk, third_state_message]))
     assert [third_state_message] == output_states
 
     records_in_destination = retrieve_all_records(client)

@@ -7,7 +7,7 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": ["null", "string"]
             }
           }
         },
@@ -27,7 +27,7 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": ["null", "string"]
             }
           }
         },
@@ -46,7 +46,7 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": ["null", "string"]
             }
           }
         },

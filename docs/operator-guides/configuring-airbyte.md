@@ -54,13 +54,13 @@ Set to empty values, e.g. "" to disable basic auth. **Be sure to change these va
 
 #### Secrets
 
-1. `SECRET_STORE_GCP_PROJECT_ID` - Defines the GCP Project to store secrets in. Alpha support.
-2. `SECRET_STORE_GCP_CREDENTIALS` - Define the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager. These credentials must have Secret Manager Read/Write access. Alpha support.
-3. `VAULT_ADDRESS` - Define the vault address to read/write Airbyte Configuration to Hashicorp Vault. Alpha Support.
-4. `VAULT_PREFIX` - Define the vault path prefix. Empty by default. Alpha Support.
-5. `VAULT_AUTH_TOKEN` - The token used for vault authentication. Alpha Support.
-6. `VAULT_AUTH_METHOD` - How vault will preform authentication. Currently, only supports Token auth. Defaults to token. Alpha Support.
-7. `SECRET_PERSISTENCE` - Defines the Secret Persistence type. Defaults to NONE. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Set to VAULT to use Hashicorp Vault, currently only the token based authentication is supported. Alpha support. Undefined behavior will result if this is turned on and then off.
+1. `SECRET_PERSISTENCE` - Defines the Secret Persistence type. Defaults to NONE. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to AWS_SECRET_MANAGER to use AWS Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Set to VAULT to use Hashicorp Vault, currently only the token based authentication is supported. Alpha support. Undefined behavior will result if this is turned on and then off.
+2. `SECRET_STORE_GCP_PROJECT_ID` - Defines the GCP Project to store secrets in. Alpha support.
+3. `SECRET_STORE_GCP_CREDENTIALS` - Define the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager. These credentials must have Secret Manager Read/Write access. Alpha support.
+4. `VAULT_ADDRESS` - Define the vault address to read/write Airbyte Configuration to Hashicorp Vault. Alpha Support.
+5. `VAULT_PREFIX` - Define the vault path prefix. Empty by default. Alpha Support.
+6. `VAULT_AUTH_TOKEN` - The token used for vault authentication. Alpha Support.
+7. `VAULT_AUTH_METHOD` - How vault will preform authentication. Currently, only supports Token auth. Defaults to token. Alpha Support.
 8. `AWS_ACCESS_KEY` - Defines the aws_access_key_id from the AWS credentials to use for AWS Secret Manager.
 9. `AWS_SECRET_ACCESS_KEY`- Defines aws_secret_access_key to use for the AWS Secret Manager.
 
@@ -68,11 +68,11 @@ Set to empty values, e.g. "" to disable basic auth. **Be sure to change these va
 
 1. `DATABASE_USER` - Define the Jobs Database user.
 2. `DATABASE_PASSWORD` - Define the Jobs Database password.
-3. `DATABASE_URL` - Define the Jobs Database url in the form of `jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}`. Do not include username or password.
+3. `DATABASE_URL` - Define the Jobs Database url in the form of `jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_DB}`. Do not include username or password.
 4. `JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS` - Define the total time to wait for the Jobs Database to be initialized. This includes migrations.
 5. `CONFIG_DATABASE_USER` - Define the Configs Database user. Defaults to the Jobs Database user if empty.
 6. `CONFIG_DATABASE_PASSWORD` - Define the Configs Database password. Defaults to the Jobs Database password if empty.
-7. `CONFIG_DATABASE_URL` - Define the Configs Database url in the form of `jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}`. Defaults to the Jobs Database url if empty.
+7. `CONFIG_DATABASE_URL` - Define the Configs Database url in the form of `jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_DB}`. Defaults to the Jobs Database url if empty.
 8. `CONFIG_DATABASE_INITIALIZATION_TIMEOUT_MS` - Define the total time to wait for the Configs Database to be initialized. This includes migrations.
 9. `RUN_DATABASE_MIGRATION_ON_STARTUP` - Define if the Bootloader should run migrations on start up.
 
@@ -110,6 +110,11 @@ Set to empty values, e.g. "" to disable basic auth. **Be sure to change these va
 3. `MAX_SYNC_WORKERS` - Define the maximum number of Sync workers each Airbyte Worker container can support. Defaults to 5.
 4. `MAX_DISCOVER_WORKERS` - Define the maximum number of Discover workers each Airbyte Worker container can support. Defaults to 5.
 5. `SENTRY_DSN` - Define the [DSN](https://docs.sentry.io/product/sentry-basics/dsn-explainer/) of necessary Sentry instance. Defaults to empty. Integration with Sentry is explained [here](./sentry-integration.md)
+
+#### Data Retention
+
+1. `TEMPORAL_HISTORY_RETENTION_IN_DAYS` - Define the retention period of the job history in Temporal, defaults to 30 days. When running in docker, 
+   this same value is applied to the log retention.
 
 ### Docker-Only
 
@@ -151,7 +156,7 @@ A job specific variable overwrites the default sync job variable defined above.
 
 Note that Airbyte does not support logging to separate Cloud Storage providers.
 
-Please see [here](https://docs.airbyte.com/deploying-airbyte/on-kubernetes#configure-logs) for more information on configuring Kuberentes logging.
+Please see [here](https://docs.airbyte.com/deploying-airbyte/on-kubernetes#configure-logs) for more information on configuring Kubernetes logging.
 
 1. `GCS_LOG_BUCKET` - Define the GCS bucket to store logs.
 2. `S3_BUCKET` - Define the S3 bucket to store logs.

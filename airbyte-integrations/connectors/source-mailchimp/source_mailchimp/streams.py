@@ -1,8 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
+import logging
 import math
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -10,7 +10,10 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
+
+logger = logging.getLogger("airbyte")
 
 
 class MailChimpStream(HttpStream, ABC):
@@ -55,7 +58,6 @@ class MailChimpStream(HttpStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        self.logger.info(f"Parsing response for stream {self.name}")
         response_json = response.json()
         yield from response_json[self.data_field]
 
@@ -64,6 +66,20 @@ class MailChimpStream(HttpStream, ABC):
     def data_field(self) -> str:
         """The responce entry that contains useful data"""
         pass
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[StreamData]:
+        try:
+            yield from super().read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+        except requests.exceptions.JSONDecodeError:
+            logger.error(f"Unknown error while reading stream {self.name}. Response cannot be read properly. ")
 
 
 class IncrementalMailChimpStream(MailChimpStream, ABC):
@@ -98,13 +114,11 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        self.logger.info(f"Slicing stream: {self.name}")
         slice_ = {}
         stream_state = stream_state or {}
         cursor_value = stream_state.get(self.cursor_field)
         if cursor_value:
             slice_[self.filter_field] = cursor_value
-        self.logger.info(f"Yielding slice {slice_}")
         yield slice_
 
     def request_params(self, stream_state=None, stream_slice=None, **kwargs):
@@ -113,7 +127,6 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
         default_params = {"sort_field": self.sort_field, "sort_dir": "ASC", **stream_slice}
         params.update(default_params)
-        self.logger.info(f"Request params are {params}")
         return params
 
 
@@ -133,6 +146,16 @@ class Campaigns(IncrementalMailChimpStream):
         return "campaigns"
 
 
+class Automations(IncrementalMailChimpStream):
+    """Doc Link: https://mailchimp.com/developer/marketing/api/automation/get-automation-info/"""
+
+    cursor_field = "create_time"
+    data_field = "automations"
+
+    def path(self, **kwargs) -> str:
+        return "automations"
+
+
 class EmailActivity(IncrementalMailChimpStream):
     cursor_field = "timestamp"
     filter_field = "since"
@@ -148,20 +171,16 @@ class EmailActivity(IncrementalMailChimpStream):
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
-        self.logger.info(f"Slicing the stream: {self.name}")
         if self.campaign_id:
             # this is a workaround to speed up SATs and enable incremental tests
             campaigns = [{"id": self.campaign_id}]
         else:
-            self.logger.info("Reading campaigns")
             campaigns = Campaigns(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
-        self.logger.info("Starting for loop to slice the stream")
         for campaign in campaigns:
             slice_ = {"campaign_id": campaign["id"]}
             cursor_value = stream_state.get(campaign["id"], {}).get(self.cursor_field)
             if cursor_value:
                 slice_[self.filter_field] = cursor_value
-            self.logger.info(f"Yielding slice {slice_}")
             yield slice_
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -187,13 +206,23 @@ class EmailActivity(IncrementalMailChimpStream):
         return current_stream_state
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        self.logger.info(f"Parsing response for stream {self.name}")
-        response_json = response.json()
+        try:
+            response_json = response.json()
+        except requests.exceptions.JSONDecodeError:
+            logger.error(f"Response returned with {response.status_code=}, {response.content=}")
+            response_json = {}
         # transform before save
         # [{'campaign_id', 'list_id', 'list_is_active', 'email_id', 'email_address', 'activity[array[object]]', '_links'}] ->
         # -> [[{'campaign_id', 'list_id', 'list_is_active', 'email_id', 'email_address', '**activity[i]', '_links'}, ...]]
-        data = response_json[self.data_field]
+        data = response_json.get(self.data_field, [])
         for item in data:
             for activity_item in item.pop("activity", []):
                 yield {**item, **activity_item}
-        self.logger.info("Parsed response")
+
+
+class Reports(IncrementalMailChimpStream):
+    cursor_field = "send_time"
+    data_field = "reports"
+
+    def path(self, **kwargs) -> str:
+        return "reports"

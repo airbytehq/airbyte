@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from itertools import groupby
@@ -13,11 +13,10 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import SurveyPages, SurveyQuestions, SurveyResponses, Surveys
+from .streams import Collectors, SurveyCollectors, SurveyPages, SurveyQuestions, SurveyResponses, Surveys
 
 
 class SourceSurveymonkey(AbstractSource):
-
     SCOPES = {"responses_read_detail", "surveys_read", "users_read"}
 
     @classmethod
@@ -34,11 +33,6 @@ class SourceSurveymonkey(AbstractSource):
                 if not credentials.get("access_token"):
                     return False, "access_token in credentials is not provided"
 
-                if not credentials.get("client_id"):
-                    return False, "client_id in credentials is not provided"
-
-                if not credentials.get("client_secret"):
-                    return False, "client_secret in credentials is not provided"
         return True, None
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
@@ -80,7 +74,14 @@ class SourceSurveymonkey(AbstractSource):
         start_date = pendulum.parse(config["start_date"])
         survey_ids = config.get("survey_ids", [])
         args = {"authenticator": authenticator, "start_date": start_date, "survey_ids": survey_ids}
-        return [Surveys(**args), SurveyPages(**args), SurveyQuestions(**args), SurveyResponses(**args)]
+        return [
+            Collectors(**args),
+            Surveys(**args),
+            SurveyCollectors(**args),
+            SurveyPages(**args),
+            SurveyQuestions(**args),
+            SurveyResponses(**args),
+        ]
 
     @staticmethod
     def get_authenticator(config: Mapping[str, Any]):

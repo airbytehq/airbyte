@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from .report_streams import ReportStream
@@ -19,11 +19,7 @@ METRICS_MAP = {
         "keywordText",
         "keywordBid",
         "keywordStatus",
-        "targetId",
         "searchTermImpressionRank",
-        "targetingExpression",
-        "targetingText",
-        "targetingType",
         "matchType",
         "impressions",
         "clicks",
@@ -42,6 +38,9 @@ METRICS_MAP = {
         "attributedUnitsOrderedNewToBrandPercentage14d",
         "unitsSold14d",
         "dpv14d",
+        "attributedBrandedSearches14d",
+        "keywordId",
+        "searchTermImpressionShare",
     ],
     "adGroups": [
         "campaignName",
@@ -68,6 +67,7 @@ METRICS_MAP = {
         "attributedUnitsOrderedNewToBrandPercentage14d",
         "unitsSold14d",
         "dpv14d",
+        "attributedBrandedSearches14d",
     ],
     "campaigns": [
         "campaignName",
@@ -95,7 +95,15 @@ METRICS_MAP = {
         "attributedUnitsOrderedNewToBrandPercentage14d",
         "unitsSold14d",
         "dpv14d",
+        "attributedBrandedSearches14d",
     ],
+}
+
+
+METRICS_TYPE_TO_ID_MAP = {
+    "keywords": "keywordBid",
+    "adGroups": "adGroupId",
+    "campaigns": "campaignId",
 }
 
 
@@ -108,6 +116,7 @@ class SponsoredBrandsReportStream(ReportStream):
         return f"/v2/hsa/{record_type}/report"
 
     metrics_map = METRICS_MAP
+    metrics_type_to_id_map = METRICS_TYPE_TO_ID_MAP
 
     def _get_init_report_body(self, report_date: str, record_type: str, profile):
         metrics_list = self.metrics_map[record_type]

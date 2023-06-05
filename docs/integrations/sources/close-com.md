@@ -12,7 +12,7 @@ We recommend creating a restricted key specifically for Airbyte access. This wil
 
 ## Setup guide
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Close.com connector and select **Close.com** from the Source type dropdown.
 4. Fill in the API Key and Start date fields and click **Set up source**.
@@ -87,8 +87,11 @@ The Close.com Connector has rate limit. There are 60 RPS for Organizations. You 
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.2.0 | 2022-11-04 | [18968](https://github.com/airbytehq/airbyte/pull/18968) | Migrate to Low-Code |
-| 0.1.0 | 2021-08-10 | [5366](https://github.com/airbytehq/airbyte/pull/5366) | Initial release of Close.com connector for Airbyte |
+| Version | Date       | Pull Request                                             | Subject                                                                                                |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------|
+| 0.3.0   | 2023-05-12 | [26024](https://github.com/airbytehq/airbyte/pull/26024) | Update the `Email sequences` stream schema                                                             |
+| 0.2.2   | 2023-05-05 | [25868](https://github.com/airbytehq/airbyte/pull/25868) | Added `CDK TypeTransformer` to gurantee JSON Schema types, added missing properties for `roles` stream |
+| 0.2.1   | 2023-02-15 | [23074](https://github.com/airbytehq/airbyte/pull/23074) | Specified date formatting in specification                                                             |
+| 0.2.0   | 2022-11-04 | [18968](https://github.com/airbytehq/airbyte/pull/18968) | Migrate to Low-Code                                                                                    |
+| 0.1.0   | 2021-08-10 | [5366](https://github.com/airbytehq/airbyte/pull/5366)   | Initial release of Close.com connector for Airbyte                                                     |
 
