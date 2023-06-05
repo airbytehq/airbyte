@@ -229,7 +229,7 @@ class ModelToComponentFactory:
 
         request_option = (
             RequestOption(
-                inject_into=RequestOptionType(model.inject_into.inject_into),
+                inject_into=RequestOptionType(model.inject_into.inject_into.value),
                 field_name=model.inject_into.field_name,
                 parameters=model.parameters,
             )
