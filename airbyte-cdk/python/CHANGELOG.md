@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.39.2
+Make step and cursor_granularity optional
+
 ## 0.39.1
 Improve connector builder error messages
 
