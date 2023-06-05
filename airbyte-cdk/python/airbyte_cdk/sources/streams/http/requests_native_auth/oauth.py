@@ -114,7 +114,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         access_token_config_path: Sequence[str] = ("credentials", "access_token"),
         refresh_token_config_path: Sequence[str] = ("credentials", "refresh_token"),
         token_expiry_date_config_path: Sequence[str] = ("credentials", "token_expiry_date"),
-        token_expiry_date_format: str = None,
+        token_expiry_date_format: Optional[str] = None,
     ):
         """
 
@@ -156,6 +156,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             expires_in_name=expires_in_name,
             refresh_request_body=refresh_request_body,
             grant_type=grant_type,
+            token_expiry_date_format=token_expiry_date_format,
         )
 
     def _validate_connector_config(self):
