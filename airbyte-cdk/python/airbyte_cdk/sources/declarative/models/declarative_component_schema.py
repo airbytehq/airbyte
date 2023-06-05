@@ -853,7 +853,7 @@ class DatetimeBasedCursor(BaseModel):
     )
     cursor_granularity: Optional[str] = Field(
         None,
-        description="Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one, e.g. for %Y-%m-%d the granularity should be P1D, for %Y-%m-%dT%H:%M:%SZ the granularity should be PT1S. Given this field is provide, `step` needs to be provided as well.",
+        description="Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one, e.g. for %Y-%m-%d the granularity should be P1D, for %Y-%m-%dT%H:%M:%SZ the granularity should be PT1S. Given this field is provided, `step` needs to be provided as well.",
         examples=["PT1S"],
         title="Cursor Granularity",
     )
@@ -871,7 +871,7 @@ class DatetimeBasedCursor(BaseModel):
     )
     step: Optional[str] = Field(
         None,
-        description="The size of the time window (ISO8601 duration). Given this field is provide, `cursor_granularity` needs to be provided as well.",
+        description="The size of the time window (ISO8601 duration). Given this field is provided, `cursor_granularity` needs to be provided as well.",
         examples=["P1W", "{{ config['step_increment'] }}"],
         title="Step",
     )

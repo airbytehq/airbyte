@@ -65,7 +65,7 @@ class DatetimeBasedCursor(StreamSlicer):
     def __post_init__(self, parameters: Mapping[str, Any]):
         if (self.step and not self.cursor_granularity) or (not self.step and self.cursor_granularity):
             raise ValueError(
-                f"If step is define, cursor_granularity should be as well and vice-versa. "
+                f"If step is defined, cursor_granularity should be as well and vice-versa. "
                 f"Right now, step is `{self.step}` and cursor_granularity is `{self.cursor_granularity}`"
             )
         if not isinstance(self.start_datetime, MinMaxDatetime):
