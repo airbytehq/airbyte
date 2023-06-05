@@ -253,7 +253,7 @@ def with_global_dockerd_service(dagger_client) -> Container:
             dagger_client.cache_volume("shared-tmp"),
         )
         .with_exposed_port(2375)
-        .with_exec(["dockerd", "--log-level=debug", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
+        .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
     )
 
 
