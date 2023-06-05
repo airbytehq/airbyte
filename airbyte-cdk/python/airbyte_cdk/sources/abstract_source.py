@@ -22,6 +22,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import StreamData
@@ -69,6 +70,10 @@ class AbstractSource(Source, ABC):
     def name(self) -> str:
         """Source name"""
         return self.__class__.__name__
+
+    @property
+    def message_repository(self) -> Union[None, MessageRepository]:
+        return None
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         """Implements the Discover operation from the Airbyte Specification.
@@ -130,6 +135,7 @@ class AbstractSource(Source, ABC):
                     yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.INCOMPLETE)
                     raise e
                 except Exception as e:
+                    yield from self._emit_pending_messages()
                     logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
                     logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
                     yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.INCOMPLETE)
@@ -323,11 +329,17 @@ class AbstractSource(Source, ABC):
             )
             for record_data_or_message in record_data_or_messages:
                 message = self._get_message(record_data_or_message, stream_instance)
+                yield from self._emit_pending_messages()
                 yield message
                 if message.type == MessageType.RECORD:
                     total_records_counter += 1
                     if self._limit_reached(internal_config, total_records_counter):
                         return
+
+    def _emit_pending_messages(self):
+        if self.message_repository:
+            yield from self.message_repository.consume_queue()
+        return
 
     def _checkpoint_state(self, stream: Stream, stream_state, state_manager: ConnectorStateManager):
         # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state

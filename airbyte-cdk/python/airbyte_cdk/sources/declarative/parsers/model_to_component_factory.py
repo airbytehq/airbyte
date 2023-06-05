@@ -101,6 +101,7 @@ from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStrea
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from pydantic import BaseModel
 
@@ -123,6 +124,7 @@ class ModelToComponentFactory:
         self._limit_slices_fetched = limit_slices_fetched
         self._emit_connector_builder_messages = emit_connector_builder_messages
         self._disable_retries = disable_retries
+        self._message_repository = InMemoryMessageRepository()
 
     def _init_mappings(self):
         self.PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
@@ -675,9 +677,8 @@ class ModelToComponentFactory:
             parameters=model.parameters,
         )
 
-    @staticmethod
     def create_single_use_refresh_token_oauth_authenticator(
-        model: SingleUseRefreshTokenOAuthAuthenticatorModel, config: Config, **kwargs
+        self, model: SingleUseRefreshTokenOAuthAuthenticatorModel, config: Config, **kwargs
     ) -> SingleUseRefreshTokenOauth2Authenticator:
         return SingleUseRefreshTokenOauth2Authenticator(
             config,
@@ -693,6 +694,7 @@ class ModelToComponentFactory:
             grant_type=model.grant_type,
             refresh_request_body=model.refresh_request_body,
             scopes=model.scopes,
+            message_repository=self._message_repository
         )
 
     @staticmethod

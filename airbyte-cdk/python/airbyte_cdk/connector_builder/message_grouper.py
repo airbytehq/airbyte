@@ -79,7 +79,7 @@ class MessageGrouper:
             inferred_schema=schema_inferrer.get_stream_schema(
                 configured_catalog.streams[0].stream.name
             ),  # The connector builder currently only supports reading from a single stream at a time
-            latest_config_update=latest_config_update.connectorConfig.config if latest_config_update else self._clean_config(config),
+            latest_config_update=latest_config_update.connectorConfig.config if latest_config_update else {},
         )
 
     def _get_message_groups(
@@ -224,11 +224,3 @@ class MessageGrouper:
 
     def _parse_slice_description(self, log_message):
         return json.loads(log_message.replace(AbstractSource.SLICE_LOG_PREFIX, "", 1))
-
-    @staticmethod
-    def _clean_config(config: Mapping[str, Any]):
-        cleaned_config = deepcopy(config)
-        for key in config.keys():
-            if key.startswith("__"):
-                del cleaned_config[key]
-        return cleaned_config
