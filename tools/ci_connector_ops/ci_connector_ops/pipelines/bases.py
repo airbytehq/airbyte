@@ -189,11 +189,11 @@ class PytestStep(Step, ABC):
         """
         last_log_line = logs.split("\n")[-2]
         if "failed" in last_log_line or "errors" in last_log_line:
-            return StepResult(self, StepStatus.FAILURE, stderr=logs, output_artifact=logs)
+            return StepResult(self, StepStatus.FAILURE, stderr=logs)
         elif "no tests ran" in last_log_line:
-            return StepResult(self, StepStatus.SKIPPED, stdout=logs, output_artifact=logs)
+            return StepResult(self, StepStatus.SKIPPED, stdout=logs)
         else:
-            return StepResult(self, StepStatus.SUCCESS, stdout=logs, output_artifact=logs)
+            return StepResult(self, StepStatus.SUCCESS, stdout=logs)
 
     async def _run_tests_in_directory(self, connector_under_test: Container, test_directory: str) -> StepResult:
         """Run the pytest tests in the test_directory that was passed.
