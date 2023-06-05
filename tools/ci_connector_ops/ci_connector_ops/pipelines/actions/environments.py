@@ -581,7 +581,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "tidb.Dockerfile",
         "dbt_adapter": "dbt-tidb==1.0.1",
         "integration_name": "tidb",
-        "supports_in_connector_normalization": False,
+        "supports_in_connector_normalization": True,
         "yum_packages": [],
     },
 }
