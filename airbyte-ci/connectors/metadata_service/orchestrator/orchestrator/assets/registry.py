@@ -11,7 +11,7 @@ from dagster import asset, OpExecutionContext, MetadataValue, Output
 
 from metadata_service.spec_cache import get_cached_spec
 
-from orchestrator.models.metadata import MetadataDefinition
+from orchestrator.models.metadata import MetadataDefinition, LatestMetadataEntry
 from orchestrator.utils.dagster_helpers import OutputDataFrame
 from orchestrator.utils.object_helpers import deep_copy_params
 
@@ -55,7 +55,7 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
 
 
 @deep_copy_params
-def metadata_to_registry_entry(metadata_definition: dict, connector_type: str, override_registry_key: str) -> dict:
+def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, connector_type: str, override_registry_key: str) -> dict:
     """Convert the metadata definition to a registry entry.
 
     Args:
@@ -66,6 +66,8 @@ def metadata_to_registry_entry(metadata_definition: dict, connector_type: str, o
     Returns:
         dict: The registry equivalent of the metadata definition.
     """
+    metadata_definition = metadata_entry.metadata_definition.dict()
+
     metadata_data = metadata_definition["data"]
 
     overrode_metadata_data = apply_overrides_from_registry(metadata_data, override_registry_key)
@@ -78,12 +80,6 @@ def metadata_to_registry_entry(metadata_definition: dict, connector_type: str, o
     if connection_type:
         overrode_metadata_data["sourceType"] = overrode_metadata_data["connectorSubtype"]
         del overrode_metadata_data["connectorSubtype"]
-
-    # rename supportUrl to documentationUrl
-    support_url = overrode_metadata_data.get("supportUrl")
-    if support_url:
-        overrode_metadata_data["documentationUrl"] = overrode_metadata_data["supportUrl"]
-        del overrode_metadata_data["supportUrl"]
 
     # rename definitionId field to sourceDefinitionId or destinationDefinitionId
     id_field = "sourceDefinitionId" if connector_type == "source" else "destinationDefinitionId"
@@ -101,37 +97,40 @@ def metadata_to_registry_entry(metadata_definition: dict, connector_type: str, o
     if not overrode_metadata_data.get("releaseStage"):
         overrode_metadata_data["releaseStage"] = "alpha"
 
+    overrode_metadata_data["iconUrl"] = metadata_entry.icon_url
+
     return overrode_metadata_data
 
 
-def is_metadata_registry_enabled(metadata_definition: dict, registry_name: str) -> bool:
+def is_metadata_registry_enabled(metadata_entry: LatestMetadataEntry, registry_name: str) -> bool:
+    metadata_definition = metadata_entry.metadata_definition.dict()
     return get(metadata_definition, f"data.registries.{registry_name}.enabled", False)
 
 
-def is_metadata_connector_type(metadata_definition: dict, connector_type: str) -> bool:
+def is_metadata_connector_type(metadata_entry: LatestMetadataEntry, connector_type: str) -> bool:
+    metadata_definition = metadata_entry.metadata_definition.dict()
     return metadata_definition["data"]["connectorType"] == connector_type
 
 
-def construct_registry_from_metadata(metadata_definitions: List[MetadataDefinition], registry_name: str) -> ConnectorRegistryV0:
+def construct_registry_from_metadata(metadata_entries: List[LatestMetadataEntry], registry_name: str) -> ConnectorRegistryV0:
     """Construct the registry from the metadata definitions.
 
     Args:
-        metadata_definitions (List[dict]): Metadata definitions that have been derived from the existing registry.
+        metadata_entries (List[dict]): Metadata definitions that have been derived from the existing registry.
         registry_name (str): The name of the registry to construct. One of "cloud" or "oss".
 
     Returns:
         dict: The registry.
     """
-    metadata_dicts = [metadata_definition.dict() for metadata_definition in metadata_definitions]
     registry_sources = [
-        metadata_to_registry_entry(metadata, "source", registry_name)
-        for metadata in metadata_dicts
-        if is_metadata_registry_enabled(metadata, registry_name) and is_metadata_connector_type(metadata, "source")
+        metadata_to_registry_entry(metadata_entry, "source", registry_name)
+        for metadata_entry in metadata_entries
+        if is_metadata_registry_enabled(metadata_entry, registry_name) and is_metadata_connector_type(metadata_entry, "source")
     ]
     registry_destinations = [
-        metadata_to_registry_entry(metadata, "destination", registry_name)
-        for metadata in metadata_dicts
-        if is_metadata_registry_enabled(metadata, registry_name) and is_metadata_connector_type(metadata, "destination")
+        metadata_to_registry_entry(metadata_entry, "destination", registry_name)
+        for metadata_entry in metadata_entries
+        if is_metadata_registry_enabled(metadata_entry, registry_name) and is_metadata_connector_type(metadata_entry, "destination")
     ]
 
     return {"sources": registry_sources, "destinations": registry_destinations}
@@ -180,7 +179,7 @@ def persist_registry_to_json(
 
 
 def generate_and_persist_registry(
-    metadata_definitions: List[MetadataDefinition],
+    metadata_definitions: List[LatestMetadataEntry],
     cached_specs: OutputDataFrame,
     registry_directory_manager: GCSFileManager,
     registry_name: str,
@@ -189,7 +188,7 @@ def generate_and_persist_registry(
 
     Args:
         context (OpExecutionContext): The execution context.
-        metadata_definitions (List[MetadataDefinition]): The metadata definitions.
+        metadata_definitions (List[LatestMetadataEntry]): The metadata definitions.
         cached_specs (OutputDataFrame): The cached specs.
 
     Returns:
@@ -214,7 +213,7 @@ def generate_and_persist_registry(
 
 @asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)
 def persist_cloud_registry_from_metadata(
-    context: OpExecutionContext, metadata_definitions: List[MetadataDefinition], cached_specs: OutputDataFrame
+    context: OpExecutionContext, metadata_definitions: List[LatestMetadataEntry], cached_specs: OutputDataFrame
 ) -> Output[ConnectorRegistryV0]:
     """
     This asset is used to generate the cloud registry from the metadata definitions.
@@ -232,7 +231,7 @@ def persist_cloud_registry_from_metadata(
 
 @asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)
 def persist_oss_registry_from_metadata(
-    context: OpExecutionContext, metadata_definitions: List[MetadataDefinition], cached_specs: OutputDataFrame
+    context: OpExecutionContext, metadata_definitions: List[LatestMetadataEntry], cached_specs: OutputDataFrame
 ) -> Output[ConnectorRegistryV0]:
     """
     This asset is used to generate the oss registry from the metadata definitions.

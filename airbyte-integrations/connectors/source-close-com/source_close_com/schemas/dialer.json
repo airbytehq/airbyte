@@ -42,6 +42,9 @@
     },
     "id": {
       "type": ["null", "string"]
+    },
+    "visibility_mode": {
+      "type": ["null", "string"]
     }
   }
 }

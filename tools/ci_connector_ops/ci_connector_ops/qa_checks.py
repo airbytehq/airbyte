@@ -116,8 +116,11 @@ IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS = {
     ".hypothesis",
 }
 
-IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS = {"*Test.java", "*.pyc", "*.gz"}
-IGNORED_URLS_PREFIX = {"http://json-schema.org", "http://localhost"}
+IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS = {"*Test.java", "*.pyc", "*.gz", "*.svg"}
+IGNORED_URLS_PREFIX = {
+    "http://json-schema.org",
+    "http://localhost",
+}
 
 
 def is_comment(line: str, file_path: Path):

@@ -21,7 +21,7 @@ properties:
       - dockerRepository
       - dockerImageTag
       - license
-      - supportUrl
+      - documentationUrl
       - githubIssueLabel
       - connectorSubtype
       - releaseStage
@@ -48,7 +48,7 @@ properties:
         type: boolean
       license:
         type: string
-      supportUrl:
+      documentationUrl:
         type: string
         format: uri
       githubIssueLabel:
@@ -79,7 +79,11 @@ properties:
           - beta
           - generally_available
           - source
-
+      tags:
+        type: array
+        description: "An array of tags that describe the connector. E.g: language:python, keyword:rds, etc."
+        items:
+          type: string
       registries:
         anyOf:
           - type: object

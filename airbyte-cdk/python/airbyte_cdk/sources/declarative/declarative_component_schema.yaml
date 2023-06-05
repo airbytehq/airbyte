@@ -552,9 +552,7 @@ definitions:
       - cursor_field
       - end_datetime
       - datetime_format
-      - cursor_granularity
       - start_datetime
-      - step
     properties:
       type:
         type: string
@@ -570,8 +568,8 @@ definitions:
           - "created_at"
           - "{{ config['record_cursor'] }}"
       datetime_format:
-        title: Datetime Format
-        description: The format of the datetime value.
+        title: Cursor Field Datetime Format
+        description: The datetime format of the Cursor Field.
         type: string
         examples:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -579,7 +577,7 @@ definitions:
         title: Cursor Granularity
         description:
           Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one, e.g. for %Y-%m-%d the granularity should
-          be P1D, for %Y-%m-%dT%H:%M:%SZ the granularity should be PT1S.
+          be P1D, for %Y-%m-%dT%H:%M:%SZ the granularity should be PT1S. Given this field is provided, `step` needs to be provided as well.
         type: string
         examples:
           - "PT1S"
@@ -604,7 +602,7 @@ definitions:
           - "{{ config['start_time'] }}"
       step:
         title: Step
-        description: The size of the time window (ISO8601 duration).
+        description: The size of the time window (ISO8601 duration). Given this field is provided, `cursor_granularity` needs to be provided as well.
         type: string
         examples:
           - "P1W"
@@ -1127,12 +1125,11 @@ definitions:
               }, "orderBy": 1, "columnName": "Timestamp"}]/
       request_body_json:
         title: Request Body JSON Payload
-        description: Specifies how to populate the body of the request with a JSON payload.
+        description: Specifies how to populate the body of the request with a JSON payload. Can contain nested objects.
         anyOf:
           - type: string
           - type: object
-            additionalProperties:
-              type: string
+            additionalProperties: true
         interpolation_context:
           - next_page_token
           - stream_interval
@@ -1143,6 +1140,9 @@ definitions:
           - sort_order: "ASC"
             sort_field: "CREATED_AT"
           - key: "{{ config['value'] }}"
+          - sort:
+              field: "updated_at"
+              order: "ascending"
       request_headers:
         title: Request Headers
         description: Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
@@ -1520,7 +1520,6 @@ definitions:
     type: object
     required:
       - type
-      - page_size
     properties:
       type:
         type: string
@@ -1533,6 +1532,7 @@ definitions:
           - type: string
         interpolation_context:
           - config
+          - response
         examples:
           - 100
           - "{{ config['page_size'] }}"
@@ -1545,7 +1545,6 @@ definitions:
     type: object
     required:
       - type
-      - page_size
     properties:
       type:
         type: string

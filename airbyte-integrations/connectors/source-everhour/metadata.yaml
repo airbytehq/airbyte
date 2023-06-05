@@ -17,5 +17,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/everhour
+  documentationUrl: https://docs.airbyte.com/integrations/sources/everhour
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

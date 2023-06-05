@@ -71,8 +71,8 @@ export default function ConnectorRegistry({ type }) {
                   </strong>
                 </td>
                 <td>
-                  {connector.icon_url ? (
-                    <img src={connector.icon_url} style={iconStyle} />
+                  {connector.iconUrl_oss ? (
+                    <img src={connector.iconUrl_oss} style={iconStyle} />
                   ) : null}
                 </td>
                 {/* min width to prevent wrapping */}

@@ -483,7 +483,7 @@ def test_given_stream_is_not_declarative_stream_when_list_streams_then_return_ex
     error_message = list_streams(manifest_declarative_source, {})
 
     assert error_message.type == MessageType.TRACE
-    assert "Error listing streams." == error_message.trace.error.message
+    assert error_message.trace.error.message.startswith("Error listing streams")
     assert "A declarative source should only contain streams of type DeclarativeStream" in error_message.trace.error.internal_message
 
 
@@ -496,7 +496,7 @@ def test_given_declarative_stream_retriever_is_not_http_when_list_streams_then_r
     error_message = list_streams(manifest_declarative_source, {})
 
     assert error_message.type == MessageType.TRACE
-    assert "Error listing streams." == error_message.trace.error.message
+    assert error_message.trace.error.message.startswith("Error listing streams")
     assert "A declarative stream should only have a retriever of type HttpStream" in error_message.trace.error.internal_message
 
 
@@ -506,7 +506,7 @@ def test_given_unexpected_error_when_list_streams_then_return_exception_message(
     error_message = list_streams(manifest_declarative_source, {})
 
     assert error_message.type == MessageType.TRACE
-    assert "Error listing streams." == error_message.trace.error.message
+    assert error_message.trace.error.message.startswith("Error listing streams")
     assert "unexpected error" == error_message.trace.error.internal_message
 
 
