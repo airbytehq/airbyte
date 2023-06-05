@@ -554,7 +554,8 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dbt_adapter": "dbt-oracle==0.4.3",
         "integration_name": "oracle",
         "supports_in_connector_normalization": True,
-        "yum_packages": [],
+        "yum_packages": ["gcc-c++"],
+        "pip_packages": ["MarkupSafe<2.1"],
     },
     "destination-postgres": {
         "dockerfile": "Dockerfile",
@@ -615,6 +616,11 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
     additional_yum_packages = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["yum_packages"]
     yum_packages_to_install += additional_yum_packages
 
+    # amazon linux 2 isn't compatible with urllib3 2.x, so force 1.x
+    pip_packages_to_install = ["urllib3<2"]
+    additional_pip_packages = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["pip_packages"]
+    pip_packages_to_install += additional_pip_packages
+
     dbt_adapter_package = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dbt_adapter"]
     normalization_integration_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["integration_name"]
 
@@ -637,8 +643,7 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         .with_workdir("/airbyte/normalization_code")
         .with_exec(["pip3", "install", "."])
         .with_workdir("/airbyte/normalization_code/dbt-template/")
-        # amazon linux 2 isn't compatible with urllib3 2.x, so force 1.x
-        .with_exec(["pip3", "install", "urllib3<2"])
+        .with_exec(["pip3", "install"] + pip_packages_to_install)
         .with_exec(["dbt", "deps"])
         .with_workdir("/airbyte")
         .with_file(
