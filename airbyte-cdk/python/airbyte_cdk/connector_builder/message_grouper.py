@@ -79,7 +79,7 @@ class MessageGrouper:
             inferred_schema=schema_inferrer.get_stream_schema(
                 configured_catalog.streams[0].stream.name
             ),  # The connector builder currently only supports reading from a single stream at a time
-            latest_config_update=latest_config_update.connectorConfig.config if latest_config_update else None,
+            latest_config_update=latest_config_update.connectorConfig.config if latest_config_update else self._clean_config(config),
         )
 
     def _get_message_groups(
@@ -225,20 +225,10 @@ class MessageGrouper:
     def _parse_slice_description(self, log_message):
         return json.loads(log_message.replace(AbstractSource.SLICE_LOG_PREFIX, "", 1))
 
-    @classmethod
-    def _create_configure_catalog(cls, stream_name: str) -> ConfiguredAirbyteCatalog:
-        return ConfiguredAirbyteCatalog.parse_obj(
-            {
-                "streams": [
-                    {
-                        "stream": {
-                            "name": stream_name,
-                            "json_schema": {},
-                            "supported_sync_modes": ["full_refresh", "incremental"],
-                        },
-                        "sync_mode": "full_refresh",
-                        "destination_sync_mode": "overwrite",
-                    }
-                ]
-            }
-        )
+    @staticmethod
+    def _clean_config(config: Mapping[str, Any]):
+        cleaned_config = deepcopy(config)
+        for key in config.keys():
+            if key.startswith("__"):
+                del cleaned_config[key]
+        return cleaned_config
