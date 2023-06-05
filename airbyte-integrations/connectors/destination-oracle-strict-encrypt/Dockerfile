@@ -8,7 +8,7 @@
 # Please reach out to the Connectors Operations team if you have any question.
 FROM airbyte/integration-base-java:dev AS build
 
-RUN yum install -y python3 python3-devel jq sshpass git && \
+RUN yum install -y python3 python3-devel jq sshpass git gcc-c++ && \
   alternatives --install /usr/bin/python python /usr/bin/python3 60 && \
   python -m ensurepip --upgrade && \
   pip3 install dbt-oracle==0.4.3
@@ -24,7 +24,8 @@ RUN pip3 install .
 WORKDIR /airbyte/normalization_code/dbt-template/
 # Download external dbt dependencies
 # amazon linux 2 isn't compatible with urllib3 2.x, so force 1.26.15
-RUN pip3 install "urllib3<2"
+# and there's some sort of dependency issue with MarkupSafe 2.1.0, so install 2.0.x
+RUN pip3 install "urllib3<2" "MarkupSafe<2.1"
 RUN dbt deps
 
 WORKDIR /airbyte
