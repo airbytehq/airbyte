@@ -1,0 +1,19 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*" # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: database
+  connectorType: source
+  definitionId: c0c171ef-b4f3-4d5f-a1e1-53886f6ad3a1
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-vertica
+  githubIssueLabel: source-vertica
+  icon: vertica.svg
+  license: MIT
+  name: Vertica 
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/vertica
+metadataSpecVersion: "1.0"
