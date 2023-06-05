@@ -99,17 +99,6 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
     }
   }
 
-  @Override
-  protected void putBinary(final ObjectNode node,
-                           final String columnName,
-                           final ResultSet resultSet,
-                           final int index)
-      throws SQLException {
-    final byte[] bytes = resultSet.getBytes(index);
-    final String value = new String(bytes, Charset.defaultCharset());
-    node.put(columnName, value);
-  }
-
   protected void putGeometry(final ObjectNode node,
                              final String columnName,
                              final ResultSet resultSet,
