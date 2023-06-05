@@ -54,7 +54,7 @@ jobs:
             mkdir -p "$DAGGER_TMP_BINDIR"
             curl "https://dl.dagger.io/dagger/main/${DAGGER_CLI_COMMIT}/dagger_${DAGGER_CLI_COMMIT}_$(uname -s | tr A-Z a-z)_$(uname -m | sed s/x86_64/amd64/).tar.gz" | tar xvz -C "$DAGGER_TMP_BINDIR"
           fi
-          airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} connectors --concurrency=8 --release-stage=generally_available --release-stage=beta --language=python --languague=low-code test
+          airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} connectors --concurrency=8 --release-stage=generally_available --release-stage=beta --language=python --language=low-code test
         env:
           _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
