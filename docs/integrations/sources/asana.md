@@ -16,9 +16,7 @@ This page contains the setup guide and reference information for the Asana sourc
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. Set the name for your source
 4. Authenticate using OAuth (recommended) or enter your `personal_access_token`. Please follow these [steps](https://developers.asana.com/docs/personal-access-token) to obtain Personal Access Token for your account.
-
 5. Click **Set up source**
-
 <!-- env:oss -->
 ### For Airbyte OSS:
 
