@@ -553,7 +553,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "oracle.Dockerfile",
         "dbt_adapter": "dbt-oracle==0.4.3",
         "integration_name": "oracle",
-        "supports_in_connector_normalization": False,
+        "supports_in_connector_normalization": True,
         "yum_packages": [],
     },
     "destination-postgres": {
