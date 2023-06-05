@@ -785,6 +785,10 @@ class ApiKeyAuthenticator(BaseModel):
     inject_into: Optional[RequestOption] = Field(
         None,
         description="Configure how the API Key will be sent in requests to the source API. Either inject_into or header has to be defined.",
+        examples=[
+            {"inject_into": "header", "field_name": "Authorization"},
+            {"inject_into": "request_parameter", "field_name": "authKey"},
+        ],
         title="Inject API Key Into Outgoing HTTP Request",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")

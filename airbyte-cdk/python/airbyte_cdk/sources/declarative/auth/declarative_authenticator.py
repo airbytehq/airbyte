@@ -14,17 +14,17 @@ class DeclarativeAuthenticator(AbstractHeaderAuthenticator):
     Interface used to associate which authenticators can be used as part of the declarative framework
     """
 
-    def get_request_params(self) -> Union[MutableMapping[str, Any], None]:
+    def get_request_params(self) -> MutableMapping[str, Any]:
         """HTTP request parameter to add to the requests"""
-        return None
+        return {}
 
-    def get_request_body_data(self) -> Union[Mapping, str, None]:
+    def get_request_body_data(self) -> Union[Mapping, str]:
         """Form-encoded body data to set on the requests"""
-        return None
+        return {}
 
-    def get_request_body_json(self) -> Union[Mapping, None]:
+    def get_request_body_json(self) -> Mapping:
         """JSON-encoded body data to set on the requests"""
-        return None
+        return {}
 
 
 @dataclass

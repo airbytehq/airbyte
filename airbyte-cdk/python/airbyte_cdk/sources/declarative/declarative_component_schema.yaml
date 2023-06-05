@@ -121,6 +121,11 @@ definitions:
         title: Inject API Key Into Outgoing HTTP Request
         description: Configure how the API Key will be sent in requests to the source API. Either inject_into or header has to be defined.
         "$ref": "#/definitions/RequestOption"
+        examples:
+          - inject_into: header
+            field_name: Authorization
+          - inject_into: request_parameter
+            field_name: authKey
       $parameters:
         type: object
         additionalProperties: true

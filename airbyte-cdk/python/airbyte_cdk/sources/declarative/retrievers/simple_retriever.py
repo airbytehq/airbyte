@@ -176,7 +176,9 @@ class SimpleRetriever(Retriever, HttpStream):
             (requester_mapping_keys & paginator_mapping_keys)
             | (requester_mapping_keys & stream_slicer_mapping_keys)
             | (paginator_mapping_keys & stream_slicer_mapping_keys)
-            | (auth_options_mapping_keys & auth_options_mapping_keys)
+            | (requester_mapping_keys & auth_options_mapping_keys)
+            | (paginator_mapping_keys & auth_options_mapping_keys)
+            | (stream_slicer_mapping_keys & auth_options_mapping_keys)
         )
         if intersection:
             raise ValueError(f"Duplicate keys found: {intersection}")
@@ -195,7 +197,7 @@ class SimpleRetriever(Retriever, HttpStream):
             self.requester.get_request_headers,
             self.paginator.get_request_headers,
             self.stream_slicer.get_request_headers,
-            # auth headers are handled separately
+            # auth headers are handled separately by passing the authenticator to the HttpStream constructor
             lambda: {},
         )
         return {str(k): str(v) for k, v in headers.items()}
@@ -217,7 +219,7 @@ class SimpleRetriever(Retriever, HttpStream):
             self.requester.get_request_params,
             self.paginator.get_request_params,
             self.stream_slicer.get_request_params,
-            self.requester.get_authenticator().get_query_params,
+            self.requester.get_authenticator().get_request_params,
         )
 
     def request_body_data(
