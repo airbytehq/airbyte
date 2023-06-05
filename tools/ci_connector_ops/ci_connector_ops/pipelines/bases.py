@@ -15,8 +15,9 @@ from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 
 import anyio
 import asyncer
+from anyio import Path
 from ci_connector_ops.pipelines.consts import PYPROJECT_TOML_FILE_PATH
-from ci_connector_ops.pipelines.utils import check_path_in_workdir, with_exit_code, with_stderr, with_stdout
+from ci_connector_ops.pipelines.utils import check_path_in_workdir, slugify, with_exit_code, with_stderr, with_stdout
 from ci_connector_ops.utils import console
 from dagger import Container, QueryError
 from rich.console import Group
@@ -169,6 +170,13 @@ class Step(ABC):
 class PytestStep(Step, ABC):
     """An abstract class to run pytest tests and evaluate success or failure according to pytest logs."""
 
+    async def write_log_file(self, logs) -> str:
+        """Return the path to the pytest log file."""
+        log_directory = Path(f"{self.context.connector.code_directory}/airbyte_ci_logs")
+        await log_directory.mkdir(exist_ok=True)
+        await Path(f"{log_directory}/{slugify(self.title).replace('-', '_')}.log").write_text(logs)
+        self.context.logger.info(f"Pytest logs written to {log_directory}/{slugify(self.title)}.log")
+
     # TODO this is not very robust if pytest crashes and does not outputs its expected last log line.
     def pytest_logs_to_step_result(self, logs: str) -> StepResult:
         """Parse pytest log and infer failure, success or skipping.
@@ -181,11 +189,11 @@ class PytestStep(Step, ABC):
         """
         last_log_line = logs.split("\n")[-2]
         if "failed" in last_log_line or "errors" in last_log_line:
-            return StepResult(self, StepStatus.FAILURE, stderr=logs)
+            return StepResult(self, StepStatus.FAILURE, stderr=logs, output_artifact=logs)
         elif "no tests ran" in last_log_line:
-            return StepResult(self, StepStatus.SKIPPED, stdout=logs)
+            return StepResult(self, StepStatus.SKIPPED, stdout=logs, output_artifact=logs)
         else:
-            return StepResult(self, StepStatus.SUCCESS, stdout=logs)
+            return StepResult(self, StepStatus.SUCCESS, stdout=logs, output_artifact=logs)
 
     async def _run_tests_in_directory(self, connector_under_test: Container, test_directory: str) -> StepResult:
         """Run the pytest tests in the test_directory that was passed.
@@ -214,7 +222,10 @@ class PytestStep(Step, ABC):
                     test_config,
                 ]
             )
-            return self.pytest_logs_to_step_result(await tester.stdout())
+            logs = await tester.stdout()
+            if self.context.is_local:
+                await self.write_log_file(logs)
+            return self.pytest_logs_to_step_result(logs)
 
         else:
             return StepResult(self, StepStatus.SKIPPED)
