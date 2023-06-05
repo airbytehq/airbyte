@@ -4,6 +4,16 @@ This page contains the setup guide and reference information for the Google Anal
 
 This connector supports Universal Analytics properties through the [Reporting API v4](https://developers.google.com/analytics/devguides/reporting/core/v4).
 
+:::caution
+
+**The Google Analytics (Universal Analytics) connector will be deprecated soon.**
+
+Google is phasing out Universal Analytics in favor of Google Analytics 4 (GA4). In consequence, we are deprecating the Google Analytics (Universal Analytics) connector and recommend that you migrate to the [Google Analytics 4 (GA4) connector](https://docs.airbyte.com/integrations/sources/google-analytics-data-api) as soon as possible to ensure your syncs are not affected.
+
+For more information, see ["Universal Analytics is going away"](https://support.google.com/analytics/answer/11583528).
+
+:::
+
 :::note
 
 Google Analytics Universal Analytics (UA) connector, uses the older version of Google Analytics, which has been the standard for tracking website and app user behavior since 2012. 
