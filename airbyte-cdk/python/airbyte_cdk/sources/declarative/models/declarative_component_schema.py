@@ -284,12 +284,6 @@ class RefreshTokenUpdater(BaseModel):
         examples=[["credentials", "token_expiry_date"]],
         title="Config Path To Expiry Date",
     )
-    access_token_name: Optional[str] = Field(
-        "access_token",
-        description="The name of the field to extract the access token from in the token refresh response.",
-        examples=["access_token"],
-        title="Access Token Response Field Name",
-    )
 
 
 class OAuthAuthenticator(BaseModel):

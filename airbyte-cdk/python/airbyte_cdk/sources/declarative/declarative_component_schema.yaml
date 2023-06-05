@@ -774,13 +774,6 @@ definitions:
             default: ["credentials", "token_expiry_date"]
             examples:
               - ["credentials", "token_expiry_date"]
-          access_token_name:
-            title: Access Token Response Field Name
-            description: The name of the field to extract the access token from in the token refresh response.
-            type: string
-            default: "access_token"
-            examples:
-              - "access_token"
       $parameters:
         type: object
         additionalProperties: true
