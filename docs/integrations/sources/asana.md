@@ -25,7 +25,7 @@ This page contains the setup guide and reference information for the Asana sourc
 3. Set the name for your source
 4. Enter your `personal_access_token`
 5. Click **Set up source**
-
+<!-- /env:oss -->
 ## Supported sync modes
 
 The Asana source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
@@ -35,7 +35,7 @@ The Asana source connector supports the following [sync modes](https://docs.airb
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | No         |
 | Namespaces        | No         |
-<!-- /env:oss -->
+
 ## Supported Streams
 
 - [Custom fields](https://developers.asana.com/docs/custom-fields)
