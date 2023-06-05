@@ -1,0 +1,18 @@
+============================= test session starts ==============================
+platform linux -- Python 3.9.11, pytest-6.2.5, py-1.11.0, pluggy-1.0.0
+rootdir: /test_input, configfile: setup.cfg
+plugins: custom-exit-code-0.3.0, mock-3.6.1, cov-3.0.0, requests-mock-1.9.3, timeout-1.4.2, hypothesis-6.54.6, sugar-0.9.7
+collected 38 items / 1 skipped / 37 selected
+
+test_core.py .....................s...........ss..                       [ 97%]
+test_full_refresh.py .                                                   [100%]
+
+
+=============================== warnings summary ===============================
+test_core.py: 26 warnings
+test_full_refresh.py: 1 warning
+  /usr/local/lib/python3.9/site-packages/docker/utils/utils.py:269: DeprecationWarning: urllib.parse.splitnport() is deprecated as of 3.8, use urllib.parse.urlparse() instead
+    host, port = splitnport(parsed_url.netloc)
+
+-- Docs: https://docs.pytest.org/en/stable/warnings.html
+================= 35 passed, 4 skipped, 27 warnings in 41.41s ==================
