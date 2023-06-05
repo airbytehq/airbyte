@@ -252,7 +252,7 @@ def with_dockerd_service(
     Returns:
         Container: The container running dockerd as a service.
     """
-    docker_lib_volume_name = f"{slugify(context.connector.technical_name)}-docker-lib"
+    docker_lib_volume_name = "docker-lib"
     if docker_service_name:
         docker_lib_volume_name = f"{docker_lib_volume_name}-{slugify(docker_service_name)}"
     dind = (
@@ -267,7 +267,7 @@ def with_dockerd_service(
     if shared_volume is not None:
         dind = dind.with_mounted_cache(*shared_volume)
     return dind.with_exposed_port(2375).with_exec(
-        ["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True
+        ["dockerd", "--log-level=debug", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True
     )
 
 
