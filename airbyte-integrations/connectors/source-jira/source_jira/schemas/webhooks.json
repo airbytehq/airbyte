@@ -4,8 +4,7 @@
   "properties": {
     "id": {
       "type": "integer",
-      "description": "The ID of the webhook.",
-      "format": "int64"
+      "description": "The ID of the webhook."
     },
     "jqlFilter": {
       "type": "string",
@@ -30,7 +29,6 @@
     },
     "expirationDate": {
       "type": "integer",
-      "format": "int64",
       "readOnly": true
     }
   },
