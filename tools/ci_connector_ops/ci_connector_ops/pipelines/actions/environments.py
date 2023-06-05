@@ -18,7 +18,7 @@ from ci_connector_ops.pipelines.consts import (
     DEFAULT_PYTHON_EXCLUDE,
     PYPROJECT_TOML_FILE_PATH,
 )
-from ci_connector_ops.pipelines.utils import get_file_contents, with_exit_code
+from ci_connector_ops.pipelines.utils import get_file_contents
 from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 
@@ -407,12 +407,6 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
     tar_name = f"{str(uuid.uuid4())}.tar"
     docker_cli = with_docker_cli(context).with_mounted_file(tar_name, tar_file)
 
-    # Remove a previously existing image with the same tag if any.
-    docker_image_rm_exit_code = await with_exit_code(
-        docker_cli.with_env_variable("CACHEBUSTER", tar_name).with_exec(["docker", "image", "rm", image_tag])
-    )
-    if docker_image_rm_exit_code == 0:
-        context.logger.info(f"Removed an existing image tagged {image_tag}")
     image_load_output = await docker_cli.with_exec(["docker", "load", "--input", tar_name]).stdout()
     context.logger.info(image_load_output)
     # Not tagged images only have a sha256 id the load output shares.
