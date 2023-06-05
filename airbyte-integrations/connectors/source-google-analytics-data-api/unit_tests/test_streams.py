@@ -10,10 +10,9 @@ from unittest.mock import MagicMock
 
 import pytest
 from freezegun import freeze_time
-from source_google_analytics_data_api.source import GoogleAnalyticsDataApiBaseStream, PAGE_SIZE
+from source_google_analytics_data_api.source import PAGE_SIZE, GoogleAnalyticsDataApiBaseStream
 
 from .utils import read_incremental
-
 
 json_credentials = """
 {
@@ -90,10 +89,12 @@ def test_request_body_json(patch_base_class):
         "dateRanges": [request_body_params["stream_slice"]],
         "returnPropertyQuota": True,
         "offset": str(0),
-        "limit": str(PAGE_SIZE)
+        "limit": str(PAGE_SIZE),
     }
 
-    request_body_json = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"]).request_body_json(**request_body_params)
+    request_body_json = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"]).request_body_json(
+        **request_body_params
+    )
     assert request_body_json == expected_body_json
 
 
@@ -315,38 +316,38 @@ def test_read_incremental(requests_mock):
             "dimensionHeaders": [{"name": "date"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
             "rows": [{"dimensionValues": [{"value": "20221229"}], "metricValues": [{"value": "100"}]}],
-            "rowCount": 1
+            "rowCount": 1,
         },
         {
             "dimensionHeaders": [{"name": "date"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
             "rows": [{"dimensionValues": [{"value": "20221230"}], "metricValues": [{"value": "110"}]}],
-            "rowCount": 1
+            "rowCount": 1,
         },
         {
             "dimensionHeaders": [{"name": "date"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
             "rows": [{"dimensionValues": [{"value": "20221231"}], "metricValues": [{"value": "120"}]}],
-            "rowCount": 1
+            "rowCount": 1,
         },
         {
             "dimensionHeaders": [{"name": "date"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
             "rows": [{"dimensionValues": [{"value": "20230101"}], "metricValues": [{"value": "130"}]}],
-            "rowCount": 1
+            "rowCount": 1,
         },
         {
             "dimensionHeaders": [{"name": "date"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
             "rows": [{"dimensionValues": [{"value": "20230101"}], "metricValues": [{"value": "140"}]}],
-            "rowCount": 1
+            "rowCount": 1,
         },
         {
             "dimensionHeaders": [{"name": "date"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
             "rows": [{"dimensionValues": [{"value": "20230102"}], "metricValues": [{"value": "150"}]}],
-            "rowCount": 1
-        }
+            "rowCount": 1,
+        },
     ]
 
     requests_mock.register_uri(
