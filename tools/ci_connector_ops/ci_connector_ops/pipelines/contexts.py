@@ -266,6 +266,7 @@ class ConnectorContext(PipelineContext):
         git_branch: bool,
         git_revision: bool,
         modified_files: List[str],
+        test_report_bucket: str,
         report_output_prefix: str,
         use_remote_secrets: bool = True,
         ci_gcs_credentials: Optional[str] = None,
@@ -301,6 +302,7 @@ class ConnectorContext(PipelineContext):
         self.use_remote_secrets = use_remote_secrets
         self.connector_acceptance_test_image = connector_acceptance_test_image
         self.modified_files = modified_files
+        self.test_report_bucket = test_report_bucket
         self.report_output_prefix = report_output_prefix
         self._secrets_dir = None
         self._updated_secrets_dir = None
@@ -365,13 +367,6 @@ class ConnectorContext(PipelineContext):
         # TODO (ben): Update this to be in use ANYWHERE we use a service account.
         return self.dagger_client.set_secret("ci_gcs_credentials", self.ci_gcs_credentials)
 
-    @property
-    def test_report_bucket(self) -> str:
-        bucket = os.environ.get("TEST_REPORTS_BUCKET_NAME")  # TODO (ben): move to config
-        if not bucket:
-            raise Exception("TEST_REPORTS_BUCKET_NAME not set")
-        return bucket
-
     def get_connector_dir(self, exclude=None, include=None) -> Directory:
         """Get the connector under test source code directory.
 
@@ -415,8 +410,8 @@ class ConnectorContext(PipelineContext):
         self.logger.info(self.report.to_json())
 
         local_reports_path_root = "tools/ci_connector_ops/pipeline_reports/"
-        connector_name = self.connector.technical_name
-        connector_version = self.connector.version
+        connector_name = self.report.pipeline_context.connector.technical_name
+        connector_version = self.report.pipeline_context.connector.version
 
         suffix = f"{connector_name}/{connector_version}/output.json"
         file_path_key = f"{self.report_output_prefix}/{suffix}"
@@ -469,8 +464,8 @@ class PublishConnectorContext(ConnectorContext):
         docker_hub_password: str,
         slack_webhook: str,
         reporting_slack_channel: str,
+        test_report_bucket: str,
         report_output_prefix: str,
-
         is_local: bool,
         git_branch: bool,
         git_revision: bool,
@@ -495,6 +490,7 @@ class PublishConnectorContext(ConnectorContext):
             connector=connector,
             modified_files=modified_files,
             report_output_prefix=report_output_prefix,
+            test_report_bucket=test_report_bucket,
             is_local=is_local,
             git_branch=git_branch,
             git_revision=git_revision,
