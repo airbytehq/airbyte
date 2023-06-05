@@ -26,8 +26,7 @@
             "type": "number"
           },
           "property_big_number": {
-            "type": "string",
-            "airbyte_type": "big_number"
+            "type": "number"
           },
           "property_integer": {
             "type": "integer"

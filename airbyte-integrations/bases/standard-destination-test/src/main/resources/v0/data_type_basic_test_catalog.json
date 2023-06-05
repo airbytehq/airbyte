@@ -60,8 +60,7 @@
       "json_schema": {
         "properties": {
           "data": {
-            "type": "string",
-            "airbyte_type": "big_number"
+            "type": "number"
           }
         }
       }
