@@ -55,7 +55,7 @@ class GoogleAds:
         try:
             return GoogleAdsClient.load_from_dict(credentials, version=API_VERSION)
         except exceptions.RefreshError as e:
-            message = f"Config Error, Please Check permissions: {str(e)}"
+            message = "The authentication to Google Ads has expired. Re-authenticate to restore access to Google Ads."
             raise AirbyteTracedException(message=message, failure_type=FailureType.config_error) from e
 
     @backoff.on_exception(

@@ -103,7 +103,7 @@ class RegistryOverrides(BaseModel):
     supportsDbt: Optional[bool] = None
     supportsNormalization: Optional[bool] = None
     license: Optional[str] = None
-    supportUrl: Optional[AnyUrl] = None
+    documentationUrl: Optional[AnyUrl] = None
     connectorSubtype: Optional[str] = None
     allowedHosts: Optional[AllowedHosts] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None

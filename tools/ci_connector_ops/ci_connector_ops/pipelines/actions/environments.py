@@ -20,6 +20,7 @@ from ci_connector_ops.pipelines.consts import (
 )
 from ci_connector_ops.pipelines.utils import get_file_contents, slugify, with_exit_code
 from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Platform, Secret
+from dagger.engine._version import CLI_VERSION as dagger_engine_version
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
@@ -474,6 +475,7 @@ def with_poetry_module(context: PipelineContext, parent_dir: Directory, module_p
         python_with_poetry.with_mounted_directory("/src", parent_dir)
         .with_workdir(f"/src/{module_path}")
         .with_exec(poetry_install_dependencies_cmd)
+        .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
     )
 
 
@@ -517,60 +519,70 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dbt_adapter": "dbt-bigquery==1.0.0",
         "integration_name": "bigquery",
         "supports_in_connector_normalization": True,
+        "yum_packages": [],
     },
     "destination-clickhouse": {
         "dockerfile": "clickhouse.Dockerfile",
         "dbt_adapter": "dbt-clickhouse>=1.4.0",
         "integration_name": "clickhouse",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-duckdb": {
         "dockerfile": "duckdb.Dockerfile",
         "dbt_adapter": "dbt-duckdb==1.0.1",
         "integration_name": "duckdb",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-mssql": {
         "dockerfile": "mssql.Dockerfile",
         "dbt_adapter": "dbt-sqlserver==1.0.0",
         "integration_name": "mssql",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-mysql": {
         "dockerfile": "mysql.Dockerfile",
         "dbt_adapter": "dbt-mysql==1.0.0",
         "integration_name": "mysql",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-oracle": {
         "dockerfile": "oracle.Dockerfile",
         "dbt_adapter": "dbt-oracle==0.4.3",
         "integration_name": "oracle",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-postgres": {
         "dockerfile": "Dockerfile",
         "dbt_adapter": "dbt-postgres==1.0.0",
         "integration_name": "postgres",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-redshift": {
         "dockerfile": "redshift.Dockerfile",
         "dbt_adapter": "dbt-redshift==1.0.0",
         "integration_name": "redshift",
-        "supports_in_connector_normalization": False,
+        "supports_in_connector_normalization": True,
+        "yum_packages": [],
     },
     "destination-snowflake": {
         "dockerfile": "snowflake.Dockerfile",
         "dbt_adapter": "dbt-snowflake==1.0.0",
         "integration_name": "snowflake",
-        "supports_in_connector_normalization": False,
+        "supports_in_connector_normalization": True,
+        "yum_packages": ["gcc-c++"],
     },
     "destination-tidb": {
         "dockerfile": "tidb.Dockerfile",
         "dbt_adapter": "dbt-tidb==1.0.1",
         "integration_name": "tidb",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
 }
 
@@ -599,6 +611,9 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         "sshpass",
         "git",
     ]
+
+    additional_yum_packages = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["yum_packages"]
+    yum_packages_to_install += additional_yum_packages
 
     dbt_adapter_package = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dbt_adapter"]
     normalization_integration_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["integration_name"]
@@ -671,6 +686,15 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
     return await finalize_build(context, connector_container)
 
 
+async def get_cdk_version_from_python_connector(python_connector: Container) -> Optional[str]:
+    pip_freeze_stdout = await python_connector.with_entrypoint("pip").with_exec(["freeze"]).stdout()
+    pip_dependencies = [dep.split("==") for dep in pip_freeze_stdout.split("\n")]
+    for package_name, package_version in pip_dependencies:
+        if package_name == "airbyte-cdk":
+            return package_version
+    return None
+
+
 async def with_airbyte_python_connector(context: ConnectorContext, build_platform: Platform) -> Container:
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
     connector_container = (
@@ -680,11 +704,16 @@ async def with_airbyte_python_connector(context: ConnectorContext, build_platfor
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
     )
+    cdk_version = await get_cdk_version_from_python_connector(connector_container)
+    if cdk_version:
+        connector_container = connector_container.with_label("io.airbyte.cdk_version", cdk_version)
+        context.cdk_version = cdk_version
     return await finalize_build(context, connector_container)
 
 
 async def finalize_build(context: ConnectorContext, connector_container: Container) -> Container:
-    """Finalize build by running finalize_build.sh or finalize_build.py if present in the connector directory."""
+    """Finalize build by adding dagger engine version label and running finalize_build.sh or finalize_build.py if present in the connector directory."""
+    connector_container = connector_container.with_label("io.dagger.engine_version", dagger_engine_version)
     connector_dir_with_finalize_script = context.get_connector_dir(include=["finalize_build.sh", "finalize_build.py"])
     finalize_scripts = await connector_dir_with_finalize_script.entries()
     if not finalize_scripts:
@@ -753,9 +782,29 @@ def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_p
     )
 
 
-def with_crane(context: PipelineContext) -> Container:
+def with_crane(
+    context: PipelineContext,
+) -> Container:
     """Crane is a tool to analyze and manipulate container images.
     We can use it to extract the image manifest and the list of layers or list the existing tags on an image repository.
     https://github.com/google/go-containerregistry/tree/main/cmd/crane
     """
-    return context.dagger_client.container().from_("gcr.io/go-containerregistry/crane:v0.15.1")
+
+    # We use the debug image as it contains a shell which we need to properly use environment variables
+    # https://github.com/google/go-containerregistry/tree/main/cmd/crane#images
+    base_container = context.dagger_client.container().from_("gcr.io/go-containerregistry/crane/debug:v0.15.1")
+
+    if context.docker_hub_username_secret and context.docker_hub_password_secret:
+        base_container = (
+            base_container.with_secret_variable("DOCKER_HUB_USERNAME", context.docker_hub_username_secret).with_secret_variable(
+                "DOCKER_HUB_PASSWORD", context.docker_hub_password_secret
+            )
+            # We need to use skip_entrypoint=True to avoid the entrypoint to be overridden by the crane command
+            # We use sh -c to be able to use environment variables in the command
+            # This is a workaround as the default crane entrypoint doesn't support environment variables
+            .with_exec(
+                ["sh", "-c", "crane auth login index.docker.io -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"], skip_entrypoint=True
+            )
+        )
+
+    return base_container

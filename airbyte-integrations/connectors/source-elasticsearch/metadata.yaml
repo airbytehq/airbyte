@@ -14,5 +14,8 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/elasticsearch
+  documentationUrl: https://docs.airbyte.com/integrations/sources/elasticsearch
+  tags:
+    - language:java
+    - language:python
 metadataSpecVersion: "1.0"
