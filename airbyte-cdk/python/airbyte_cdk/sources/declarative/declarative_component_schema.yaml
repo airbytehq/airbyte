@@ -552,9 +552,7 @@ definitions:
       - cursor_field
       - end_datetime
       - datetime_format
-      - cursor_granularity
       - start_datetime
-      - step
     properties:
       type:
         type: string
@@ -579,7 +577,7 @@ definitions:
         title: Cursor Granularity
         description:
           Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one, e.g. for %Y-%m-%d the granularity should
-          be P1D, for %Y-%m-%dT%H:%M:%SZ the granularity should be PT1S.
+          be P1D, for %Y-%m-%dT%H:%M:%SZ the granularity should be PT1S. Given this field is provided, `step` needs to be provided as well.
         type: string
         examples:
           - "PT1S"
@@ -604,7 +602,7 @@ definitions:
           - "{{ config['start_time'] }}"
       step:
         title: Step
-        description: The size of the time window (ISO8601 duration).
+        description: The size of the time window (ISO8601 duration). Given this field is provided, `cursor_granularity` needs to be provided as well.
         type: string
         examples:
           - "P1W"
