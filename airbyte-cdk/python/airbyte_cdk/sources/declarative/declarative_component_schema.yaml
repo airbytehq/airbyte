@@ -550,7 +550,6 @@ definitions:
     required:
       - type
       - cursor_field
-      - end_datetime
       - datetime_format
       - start_datetime
     properties:

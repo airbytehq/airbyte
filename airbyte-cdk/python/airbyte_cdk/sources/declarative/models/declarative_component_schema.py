@@ -857,8 +857,8 @@ class DatetimeBasedCursor(BaseModel):
         examples=["PT1S"],
         title="Cursor Granularity",
     )
-    end_datetime: Union[str, MinMaxDatetime] = Field(
-        ...,
+    end_datetime: Optional[Union[str, MinMaxDatetime]] = Field(
+        None,
         description="The datetime that determines the last record that should be synced.",
         examples=["2021-01-1T00:00:00Z", "{{ now_utc() }}", "{{ day_delta(-1) }}"],
         title="End Datetime",
