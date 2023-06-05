@@ -8,7 +8,7 @@ on:
         default: dev-large-runner
         required: true
       test-connectors-options:
-        default: --concurrency=10 --release-stage=generally_available --release-stage=beta
+        default: --concurrency=6 --release-stage=generally_available --release-stage=beta
         required: true
 
 run-name: "Test connectors ${{ inputs.test-connectors-options}} on ${{ inputs.runs-on }}"

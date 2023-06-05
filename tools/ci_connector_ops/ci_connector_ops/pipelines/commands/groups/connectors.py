@@ -177,10 +177,28 @@ def test(
     try:
         anyio.run(
             run_connectors_pipelines,
-            connectors_tests_contexts,
+            [
+                connector_context
+                for connector_context in connectors_tests_contexts
+                if connector_context.connector.language != ConnectorLanguage.JAVA
+            ],
             run_connector_test_pipeline,
             "Test Pipeline",
             ctx.obj["concurrency"],
+            ctx.obj["execute_timeout"],
+        )
+        # We run the Java connectors tests sequentially because we currently have a bug when Java integration tests are run in parallel.
+        # See https://github.com/airbytehq/airbyte/issues/26862
+        anyio.run(
+            run_connectors_pipelines,
+            [
+                connector_context
+                for connector_context in connectors_tests_contexts
+                if connector_context.connector.language == ConnectorLanguage.JAVA
+            ],
+            run_connector_test_pipeline,
+            "Test Pipeline",
+            1,
             ctx.obj["execute_timeout"],
         )
     except Exception as e:
@@ -314,29 +332,31 @@ def publish(
 
     click.secho(f"Will publish the following connectors: {', '.join(selected_connectors_names)}.", fg="green")
 
-    publish_connector_contexts = reorder_contexts([
-        PublishConnectorContext(
-            connector,
-            pre_release,
-            modified_files,
-            spec_cache_gcs_credentials,
-            spec_cache_bucket_name,
-            metadata_service_gcs_credentials,
-            metadata_service_bucket_name,
-            docker_hub_username,
-            docker_hub_password,
-            slack_webhook,
-            slack_channel,
-            ctx.obj["is_local"],
-            ctx.obj["git_branch"],
-            ctx.obj["git_revision"],
-            gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
-            pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
-            ci_context=ctx.obj.get("ci_context"),
-            pull_request=ctx.obj.get("pull_request"),
-        )
-        for connector, modified_files in selected_connectors_and_files.items()
-    ])
+    publish_connector_contexts = reorder_contexts(
+        [
+            PublishConnectorContext(
+                connector,
+                pre_release,
+                modified_files,
+                spec_cache_gcs_credentials,
+                spec_cache_bucket_name,
+                metadata_service_gcs_credentials,
+                metadata_service_bucket_name,
+                docker_hub_username,
+                docker_hub_password,
+                slack_webhook,
+                slack_channel,
+                ctx.obj["is_local"],
+                ctx.obj["git_branch"],
+                ctx.obj["git_revision"],
+                gha_workflow_run_url=ctx.obj.get("gha_workflow_run_url"),
+                pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
+                ci_context=ctx.obj.get("ci_context"),
+                pull_request=ctx.obj.get("pull_request"),
+            )
+            for connector, modified_files in selected_connectors_and_files.items()
+        ]
+    )
 
     click.secho("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.", fg="yellow")
     ctx.obj["concurrency"] = 1
