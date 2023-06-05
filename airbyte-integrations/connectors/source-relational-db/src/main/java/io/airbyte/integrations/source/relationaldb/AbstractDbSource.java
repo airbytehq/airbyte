@@ -250,7 +250,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     /* no-op */
   }
 
-  private List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(final Database database)
+  protected List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(final Database database)
       throws Exception {
     final Set<String> systemNameSpaces = getExcludedInternalNameSpaces();
     final Set<String> systemViews = getExcludedViews();
