@@ -2,6 +2,94 @@
   "properties": {
     "object": { "type": "string"},
     "type": { "type": "string" },
+    "paragraph": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "color": { "type": "string" },
+        "rich_text": { "type": "array", "items": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": ["null", "string"]
+            },
+            "text": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "content": {
+                  "type": ["null", "string"]
+                },
+                "link": {
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "type": {
+                      "enum": ["url"]
+                    },
+                    "url": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            },
+            "rich_text": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "content": {
+                  "type": ["null", "string"]
+                },
+                "link": {
+                  "type": ["null", "object"],
+                  "additionalProperties": true,
+                  "properties": {
+                    "type": {
+                      "enum": ["url"]
+                    },
+                    "url": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            },
+            "annotations": {
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "bold": {
+                  "type": ["null", "boolean"]
+                },
+                "italic": {
+                  "type": ["null", "boolean"]
+                },
+                "strikethrough": {
+                  "type": ["null", "boolean"]
+                },
+                "underline": {
+                  "type": ["null", "boolean"]
+                },
+                "code": {
+                  "type": ["null", "boolean"]
+                },
+                "color": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "plain_text": {
+              "type": ["null", "string"]
+            },
+            "href": {
+              "type": ["null", "string"]
+            }
+          }
+        } },
+        "children": { "type": "array", "items": { "type": "object" } }
+      }
+    },
     "callout": {
       "type": "object",
       "properties": {
