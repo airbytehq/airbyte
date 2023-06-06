@@ -263,8 +263,9 @@ class CustomTransformation(BaseModel):
 class RefreshTokenUpdater(BaseModel):
     refresh_token_name: Optional[str] = Field(
         "refresh_token",
+        description="The name of the property which contains the updated refresh token in the response from the token refresh endpoint.",
         examples=["refresh_token"],
-        title="Refresh Token Response Field Name",
+        title="Refresh Token Property Name",
     )
     access_token_config_path: Optional[List[str]] = Field(
         ["credentials", "access_token"],

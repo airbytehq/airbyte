@@ -135,10 +135,12 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     def access_token(self, value: str):
         self._access_token = value
 
+
 @dataclass
 class DeclarativeSingleUseRefreshTokenOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator, DeclarativeAuthenticator):
     """
     Declarative version of SingleUseRefreshTokenOauth2Authenticator which can be used in declarative connectors.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -12,6 +12,7 @@ from typing import Any, Callable, List, Literal, Mapping, Optional, Type, Union,
 import dpath
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
+from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
     BasicHttpAuthenticator,
@@ -103,7 +104,6 @@ from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStrea
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
-from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from pydantic import BaseModel
 
