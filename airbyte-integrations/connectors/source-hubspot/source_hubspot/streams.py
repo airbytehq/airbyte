@@ -523,6 +523,12 @@ class Stream(HttpStream, ABC):
         target_type_name = next(filter(lambda t: t != "null", declared_field_types))
         target_type = CUSTOM_FIELD_VALUE_TO_TYPE.get(target_type_name)
 
+        if target_type_name == "boolean" and actual_field_type_name == "string":
+            # do not cast string with bool function to prevent : bool("false") = True
+            if str(field_value).lower() in ["true", "false"]:
+                field_value = str(field_value).lower() == "true"
+                return field_value
+
         if target_type_name == "number":
             # do not cast numeric IDs into float, use integer instead
             target_type = int if field_value.isnumeric() else target_type
