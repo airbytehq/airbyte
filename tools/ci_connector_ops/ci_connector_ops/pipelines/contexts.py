@@ -268,8 +268,10 @@ class ConnectorContext(PipelineContext):
         git_branch: bool,
         git_revision: bool,
         modified_files: List[str],
-        s3_report_key: str,
+        test_report_bucket: str,
+        report_output_prefix: str,
         use_remote_secrets: bool = True,
+        ci_gcs_credentials: Optional[str] = None,
         connector_acceptance_test_image: Optional[str] = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
         gha_workflow_run_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
@@ -286,7 +288,7 @@ class ConnectorContext(PipelineContext):
             git_branch (str): The current git branch name.
             git_revision (str): The current git revision, commit hash.
             modified_files (List[str]): The list of modified files in the current git branch.
-            s3_report_key (str): The S3 key to upload the test report to.
+            report_output_prefix (str): The S3 key to upload the test report to.
             use_remote_secrets (bool, optional): Whether to download secrets for GSM or use the local secrets. Defaults to True.
             connector_acceptance_test_image (Optional[str], optional): The image to use to run connector acceptance tests. Defaults to DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE.
             gha_workflow_run_url (Optional[str], optional): URL to the github action workflow run. Only valid for CI run. Defaults to None.
@@ -302,10 +304,13 @@ class ConnectorContext(PipelineContext):
         self.use_remote_secrets = use_remote_secrets
         self.connector_acceptance_test_image = connector_acceptance_test_image
         self.modified_files = modified_files
-        self.s3_report_key = s3_report_key
+        self.test_report_bucket = test_report_bucket
+        self.report_output_prefix = report_output_prefix
         self._secrets_dir = None
         self._updated_secrets_dir = None
         self.cdk_version = None
+        self.ci_gcs_credentials = sanitize_gcs_credentials(ci_gcs_credentials) if ci_gcs_credentials else None
+
         super().__init__(
             pipeline_name=pipeline_name,
             is_local=is_local,
@@ -359,6 +364,11 @@ class ConnectorContext(PipelineContext):
     def docker_image_from_metadata(self) -> str:
         return f"{self.metadata['dockerRepository']}:{self.metadata['dockerImageTag']}"
 
+    @property
+    def ci_gcs_credentials_secret(self) -> Secret:
+        # TODO (ben): Update this to be in use ANYWHERE we use a service account.
+        return self.dagger_client.set_secret("ci_gcs_credentials", self.ci_gcs_credentials)
+
     def get_connector_dir(self, exclude=None, include=None) -> Directory:
         """Get the connector under test source code directory.
 
@@ -404,24 +414,37 @@ class ConnectorContext(PipelineContext):
         local_reports_path_root = "tools/ci_connector_ops/pipeline_reports/"
         connector_name = self.report.pipeline_context.connector.technical_name
         connector_version = self.report.pipeline_context.connector.version
-        git_revision = self.report.pipeline_context.git_revision
-        git_branch = self.report.pipeline_context.git_branch.replace("/", "_")
-        suffix = f"{connector_name}/{git_branch}/{connector_version}/{git_revision}.json"
-        local_report_path = Path(local_reports_path_root + suffix)
+
+        suffix = f"{connector_name}/{connector_version}/output.json"
+        file_path_key = f"{self.report_output_prefix}/{suffix}"
+
+        local_report_path = Path(local_reports_path_root + file_path_key)
+
         await local_report_path.parents[0].mkdir(parents=True, exist_ok=True)
         await local_report_path.write_text(self.report.to_json())
+
         if self.report.should_be_saved:
-            s3_key = self.s3_report_key + suffix
-            report_upload_exit_code = await remote_storage.upload_to_s3(
-                self.dagger_client, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"]
+            local_report_dagger_file = (
+                self.dagger_client.host().directory(".", include=[str(local_report_path)]).file(str(local_report_path))
+            )
+            report_upload_exit_code, _stdout, _stderr = await remote_storage.upload_to_gcs(
+                dagger_client=self.dagger_client,
+                file_to_upload=local_report_dagger_file,
+                key=file_path_key,
+                bucket=self.test_report_bucket,
+                gcs_credentials=self.ci_gcs_credentials_secret,
             )
             if report_upload_exit_code != 0:
-                self.logger.error("Uploading the report to S3 failed.")
+                self.logger.error(f"Uploading the report to GCS Bucket: {self.test_report_bucket} failed.")
+
         if self.report.should_be_commented_on_pr:
             self.report.post_comment_on_pr()
+
         await asyncify(update_commit_status_check)(**self.github_commit_status)
+
         if self.should_send_slack_message:
             await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)
+
         # Supress the exception if any
         return True
 
@@ -443,12 +466,15 @@ class PublishConnectorContext(ConnectorContext):
         docker_hub_password: str,
         slack_webhook: str,
         reporting_slack_channel: str,
+        test_report_bucket: str,
+        report_output_prefix: str,
         is_local: bool,
         git_branch: bool,
         git_revision: bool,
         gha_workflow_run_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
+        ci_gcs_credentials: str = None,
         pull_request: PullRequest = None,
     ):
         self.pre_release = pre_release
@@ -466,7 +492,8 @@ class PublishConnectorContext(ConnectorContext):
             pipeline_name=pipeline_name,
             connector=connector,
             modified_files=modified_files,
-            s3_report_key="python-poc/publish/history/",
+            report_output_prefix=report_output_prefix,
+            test_report_bucket=test_report_bucket,
             is_local=is_local,
             git_branch=git_branch,
             git_revision=git_revision,
@@ -475,6 +502,7 @@ class PublishConnectorContext(ConnectorContext):
             ci_context=ci_context,
             slack_webhook=slack_webhook,
             reporting_slack_channel=reporting_slack_channel,
+            ci_gcs_credentials=ci_gcs_credentials,
         )
 
     @property
