@@ -1218,3 +1218,11 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/elasticsearch
   sourceType: api
   releaseStage: alpha
+- name: SHEIN
+  sourceDefinitionId: 1db6dfaf-3ed3-4f8d-a18a-f6d290c5eede
+  dockerRepository: yuanrui2014/source-shein
+  dockerImageTag: 0.0.1
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/shein
+  icon: Shein_Logo_2017.svg
+  sourceType: api
+  releaseStage: alpha

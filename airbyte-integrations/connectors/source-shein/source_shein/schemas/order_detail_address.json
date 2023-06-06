@@ -1,0 +1,269 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+
+    "orderNo": {
+      "type": ["null", "string"]
+    },
+    "orderStatus": {
+      "type": ["null", "string"]
+    },
+    "orderCreateTime": {
+      "type": ["null", "string"]
+    },
+    "orderUpdateTime": {
+      "type": ["null", "string"]
+    },
+
+    "orderType": {
+      "type": ["null", "number"]
+    },
+    "performanceType": {
+      "type": ["null", "number"]
+    },
+    "isCod": {
+      "type": ["null", "number"]
+    },
+    "orderTag": {
+      "type": ["null", "number"]
+    },
+    "deliveryType": {
+      "type": ["null", "number"]
+    },
+    "printOrderStatus": {
+      "type": ["null", "number"]
+    },
+    "invoiceStatus": {
+      "type": ["null", "number"]
+    },
+    "orderCurrency": {
+      "type": ["null", "string"]
+    },
+    "productTotalPrice": {
+      "type": ["null", "number"]
+    },
+    "storeDiscountTotalPrice": {
+      "type": ["null", "number"]
+    },
+    "promotionDiscountTotalPrice": {
+      "type": ["null", "number"]
+    },
+    "totalCommission": {
+      "type": ["null", "number"]
+    },
+    "totalServiceCharge": {
+      "type": ["null", "number"]
+    },
+    "totalPerformanceServiceCharge": {
+      "type": ["null", "number"]
+    },
+    "estimatedGrossIncome": {
+      "type": ["null", "number"]
+    },
+    "orderTime": {
+      "type": ["null", "string"]
+    },
+    "paymentTime": {
+      "type": ["null", "string"]
+    },
+    "orderAllocateTime": {
+      "type": ["null", "string"]
+    },
+    "requestDeliveryTime": {
+      "type": ["null", "string"]
+    },
+    "sellerDeliveryTime": {
+      "type": ["null", "string"]
+    },
+    "warehouseDeliveryTime": {
+      "type": ["null", "string"]
+    },
+    "printingTime": {
+      "type": ["null", "string"]
+    },
+    "scheduleDeliveryTime": {
+      "type": ["null", "string"]
+    },
+    "pickUpTime": {
+      "type": ["null", "string"]
+    },
+    "orderReceiptTime": {
+      "type": ["null", "string"]
+    },
+    "orderRejectionTime": {
+      "type": ["null", "string"]
+    },
+    "orderReportedLossTime": {
+      "type": ["null", "string"]
+    },
+    "orderReturnTime": {
+      "type": ["null", "string"]
+    },
+    "orderMsgUpdateTime": {
+      "type": ["null", "string"]
+    },
+    "billNo": {
+      "type": ["null", "string"]
+    },
+    "salesArea": {
+      "type": ["null", "number"]
+    },
+    "stockMode": {
+      "type": ["null", "number"]
+    },
+    "salesSite": {
+      "type": ["null", "string"]
+    },
+    "storeCode": {
+      "type": ["null", "number"]
+    },
+    "orderGoodsInfoList": {
+      "type": "array",
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "goodsId": {
+            "type": ["null", "number"]
+          },
+          "skuCode": {
+            "type": ["null", "string"]
+          },
+          "skc": {
+            "type": ["null", "string"]
+          },
+          "goodsSn": {
+            "type": ["null", "string"]
+          },
+          "sellerSku": {
+            "type": ["null", "string"]
+          },
+          "goodsStatus": {
+            "type": ["null", "number"]
+          },
+          "newGoodsStatus": {
+            "type": ["null", "number"]
+          },
+          "goodsTitle": {
+            "type": ["null", "string"]
+          },
+          "spuPicURL": {
+            "type": ["null", "string"]
+          },
+          "goodsWeight": {
+            "type": ["null", "number"]
+          },
+          "storageTag": {
+            "type": ["null", "number"]
+          },
+          "performanceTag": {
+            "type": ["null", "number"]
+          },
+          "goodsExchangeTag": {
+            "type": ["null", "number"]
+          },
+          "orderCurrency": {
+            "type": ["null", "string"]
+          },
+          "sellerCurrencyPrice": {
+            "type": ["null", "number"]
+          },
+          "orderCurrencyStoreCouponPrice": {
+            "type": ["null", "number"]
+          },
+          "orderCurrencyPromotionPrice": {
+            "type": ["null", "number"]
+          },
+          "commission": {
+            "type": ["null", "number"]
+          },
+          "commissionRate": {
+            "type": ["null", "number"]
+          },
+          "serviceCharge": {
+            "type": ["null", "number"]
+          },
+          "performanceServiceCharge": {
+            "type": ["null", "number"]
+          },
+          "estimatedIncome": {
+            "type": ["null", "number"]
+          },
+          "spuName": {
+            "type": ["null", "string"]
+          },
+          "skuAttribute": {
+            "type": "array",
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "attrValueId": {
+                  "type": ["null", "string"]
+                },
+                "attrName": {
+                  "type": ["null", "string"]
+                },
+                "language": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "packageWaybillList": {
+      "type" : "array"
+    },
+    "receiveMsgList": {
+      "type" : "array",
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "orderNo": {
+            "type": ["null", "string"]
+          },
+          "lastName": {
+            "type": ["null", "string"]
+          },
+          "middleName": {
+            "type": ["null", "string"]
+          },
+          "firstName": {
+            "type": ["null", "string"]
+          },
+          "country": {
+            "type": ["null", "string"]
+          },
+          "province": {
+            "type": ["null", "string"]
+          },
+          "city": {
+            "type": ["null", "string"]
+          },
+          "district": {
+            "type": ["null", "string"]
+          },
+          "street": {
+            "type": ["null", "string"]
+          },
+          "address": {
+            "type": ["null", "string"]
+          },
+          "addressExt": {
+            "type": ["null", "string"]
+          },
+          "phone": {
+            "type": ["null", "string"]
+          },
+          "postCode": {
+            "type": ["null", "string"]
+          },
+          "taxNo": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}
