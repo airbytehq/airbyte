@@ -6,6 +6,7 @@ import json
 import logging
 from dataclasses import dataclass
 from time import sleep
+from typing import List
 
 import backoff
 import pendulum
@@ -160,16 +161,16 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, account_id: str, access_token: str):
-        self._account_id = account_id
+    def __init__(self, account_ids: List[str], access_token: str):
+        self._account_ids = account_ids
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
         FacebookAdsApi.set_default_api(self.api)
 
     @cached_property
-    def account(self) -> AdAccount:
+    def accounts(self) -> AdAccount:
         """Find current account"""
-        return self._find_account(self._account_id)
+        return [self._find_account(account_id) for account_id in self._account_ids]
 
     @staticmethod
     def _find_account(account_id: str) -> AdAccount:

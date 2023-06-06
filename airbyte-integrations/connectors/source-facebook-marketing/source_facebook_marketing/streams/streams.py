@@ -166,7 +166,7 @@ class Videos(FBMarketingReversedIncrementalStream):
         return list(itertools.chain(*ad_sets))
 
 
-class AdAccount(FBMarketingStream):
+class AdAccounts(FBMarketingStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/ad-account"""
 
     use_batch = False

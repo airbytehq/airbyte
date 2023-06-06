@@ -17,7 +17,7 @@ from source_facebook_marketing.api import API, FacebookAPIException
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
     Activities,
-    AdAccount,
+    AdAccounts,
     AdCreatives,
     Ads,
     AdSets,
@@ -65,13 +65,14 @@ class SourceFacebookMarketing(AbstractSource):
             if config.end_date < config.start_date:
                 return False, "end_date must be equal or after start_date."
 
-            api = API(account_id=config.account_id, access_token=config.access_token)
-            logger.info(f"Select account {api.account}")
+            account_ids = config.account_ids.split(",")
+            api = API(account_ids=account_ids, access_token=config.access_token)
+            logger.info(f"Selected accounts {api.accounts}")
         except (requests.exceptions.RequestException, ValidationError, FacebookAPIException) as e:
             return False, e
 
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
-        for stream in self.get_custom_insights_streams(api, [api.account], config):
+        for stream in self.get_custom_insights_streams(api, api.accounts, config):
             try:
                 stream.check_breakdowns()
             except facebook_business.exceptions.FacebookRequestError as e:
@@ -88,17 +89,17 @@ class SourceFacebookMarketing(AbstractSource):
         config.start_date = validate_start_date(config.start_date)
         config.end_date = validate_end_date(config.start_date, config.end_date)
 
-        api = API(account_id=config.account_id, access_token=config.access_token)
-        accounts = [api._find_account(account_id) for account_id in config.account_ids.split(",")]
+        account_ids = config.account_ids.split(",")
+        api = API(account_ids=account_ids, access_token=config.access_token)
 
         insights_args = dict(
-            api=api, accounts=accounts, start_date=config.start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
+            api=api, accounts=api.accounts, start_date=config.start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
         )
         streams = [
-            AdAccount(api=api, accounts=accounts),
+            AdAccounts(api=api, accounts=api.accounts),
             AdSets(
                 api=api,
-                accounts=accounts,
+                accounts=api.accounts,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -107,7 +108,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
             Ads(
                 api=api,
-                accounts=accounts,
+                accounts=api.accounts,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -116,7 +117,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
             AdCreatives(
                 api=api,
-                accounts=accounts,
+                accounts=api.accounts,
                 fetch_thumbnail_images=config.fetch_thumbnail_images,
                 page_size=config.page_size,
                 max_batch_size=config.max_batch_size,
@@ -130,7 +131,7 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsActionType(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
             Campaigns(
                 api=api,
-                accounts=accounts,
+                accounts=api.accounts,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -139,14 +140,14 @@ class SourceFacebookMarketing(AbstractSource):
             ),
             CustomConversions(
                 api=api,
-                accounts=accounts,
+                accounts=api.accounts,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
                 max_batch_size=config.max_batch_size,
             ),
             Images(
                 api=api,
-                accounts=accounts,
+                accounts=api.accounts,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -155,7 +156,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
             Videos(
                 api=api,
-                accounts=accounts,
+                accounts=api.accounts,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -164,7 +165,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
             Activities(
                 api=api,
-                accounts=accounts,
+                accounts=api.accounts,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
@@ -173,7 +174,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
         ]
 
-        return streams + self.get_custom_insights_streams(api, accounts, config)
+        return streams + self.get_custom_insights_streams(api, api.accounts, config)
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
         """Returns the spec for this integration.
