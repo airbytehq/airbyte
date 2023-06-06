@@ -415,14 +415,7 @@ class ConnectorContext(PipelineContext):
         self.report.print()
         self.logger.info(self.report.to_json())
 
-        local_reports_path_root = "tools/ci_connector_ops/pipeline_reports/"
-        connector_name = self.report.pipeline_context.connector.technical_name
-        connector_version = self.report.pipeline_context.connector.version
-
-        suffix = f"{connector_name}/{connector_version}/output.json"
-        file_path_key = f"{self.report_output_prefix}/{suffix}"
-
-        await self.report.save(file_path_key)
+        await self.report.save()
 
         if self.report.should_be_commented_on_pr:
             self.report.post_comment_on_pr()

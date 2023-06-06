@@ -41,8 +41,10 @@ async def run_report_complete_pipeline(dagger_client: dagger.Client, contexts: L
 
     # Repurpose the first context to be the pipeline upload context to preserve timestamps
     first_connector_context = contexts[0]
+
     pipeline_name = f"Report upload {first_connector_context.report_output_prefix}"
     first_connector_context.pipeline_name = pipeline_name
+    file_path_key = f"{first_connector_context.report_output_prefix}/complete.json"
 
     # Transform contexts into a list of steps
     steps_results = [context_state_to_step_result(context.state) for context in contexts]
@@ -51,9 +53,10 @@ async def run_report_complete_pipeline(dagger_client: dagger.Client, contexts: L
         name=pipeline_name,
         pipeline_context=first_connector_context,
         steps_results=steps_results,
+        file_path_key=file_path_key,
     )
 
-    file_path_key = f"{first_connector_context.report_output_prefix}/complete.json"
+
     return await report.save(file_path_key)
 
 

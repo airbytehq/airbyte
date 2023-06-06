@@ -259,6 +259,7 @@ class Report:
     steps_results: List[StepResult]
     created_at: datetime = field(default_factory=datetime.utcnow)
     name: str = "REPORT"
+    file_path_key: str = "report.json"
 
     @property
     def failed_steps(self) -> List[StepResult]:  # noqa D102
@@ -284,9 +285,9 @@ class Report:
     def remote_storage_enabled(self) -> bool:  # noqa D102
         return self.pipeline_context.is_ci
 
-    async def save(self, file_path_key: str) -> None:
+    async def save(self) -> None:
         """Save the report as a JSON file."""
-        local_report_path = anyio.Path(LOCAL_REPORTS_PATH_ROOT + file_path_key)
+        local_report_path = anyio.Path(LOCAL_REPORTS_PATH_ROOT + self.file_path_key)
         await local_report_path.parents[0].mkdir(parents=True, exist_ok=True)
         await local_report_path.write_text(self.to_json())
 
@@ -297,7 +298,7 @@ class Report:
             report_upload_exit_code, _stdout, _stderr = await remote_storage.upload_to_gcs(
                 dagger_client=self.pipeline_context.dagger_client,
                 file_to_upload=local_report_dagger_file,
-                key=file_path_key,
+                key=self.file_path_key,
                 bucket=self.pipeline_context.ci_report_bucket,
                 gcs_credentials=self.pipeline_context.ci_gcs_credentials_secret,
             )
@@ -372,6 +373,15 @@ class Report:
 @dataclass(frozen=True)
 class ConnectorReport(Report):
     """A dataclass to build connector test reports to share pipelines executions results with the user."""
+
+    @property
+    def file_path_key(self) -> str:  # noqa D102
+        connector_name = self.pipeline_context.connector.technical_name
+        connector_version = self.pipeline_context.connector.version
+
+        suffix = f"{connector_name}/{connector_version}/output.json"
+        file_path_key = f"{self.pipeline_context.report_output_prefix}/{suffix}"
+        return file_path_key
 
     @property
     def should_be_commented_on_pr(self) -> bool:  # noqa D102
