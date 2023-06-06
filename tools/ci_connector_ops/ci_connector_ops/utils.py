@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from enum import Enum
 from glob import glob
 from pathlib import Path
-from typing import List, Optional, Set, Tuple
+from typing import List, Optional, Set, Tuple, Union
 
 import git
 import requests
@@ -310,8 +310,14 @@ class Connector:
         return set(dependencies_paths)
 
 
-def get_changed_connectors(source: bool = True, destination: bool = True, third_party: bool = True) -> Set[Connector]:
+def get_changed_connectors(
+    modified_files: Optional[Set[Union[str, Path]]] = None, source: bool = True, destination: bool = True, third_party: bool = True
+) -> Set[Connector]:
     """Retrieve a set of Connectors that were changed in the current branch (compared to master)."""
+    if modified_files is None:
+        airbyte_repo = git.Repo(search_parent_directories=True)
+        modified_files = airbyte_repo.git.diff("--name-only", DIFFED_BRANCH).split("\n")
+
     prefix_to_check = []
     if source:
         prefix_to_check.append(SOURCE_CONNECTOR_PATH_PREFIX)
@@ -320,10 +326,9 @@ def get_changed_connectors(source: bool = True, destination: bool = True, third_
     if third_party:
         prefix_to_check.append(THIRD_PARTY_CONNECTOR_PATH_PREFIX)
 
-    airbyte_repo = git.Repo(search_parent_directories=True)
     changed_source_connector_files = {
         file_path
-        for file_path in airbyte_repo.git.diff("--name-only", DIFFED_BRANCH).split("\n")
+        for file_path in modified_files
         if any(file_path.startswith(prefix) for prefix in prefix_to_check) and SCAFFOLD_CONNECTOR_GLOB not in file_path
     }
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_source_connector_files}

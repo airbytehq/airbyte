@@ -259,8 +259,8 @@ def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Pa
     }
 
 
-def get_expected_metadata_files() -> Set[Path]:
-    changed_connectors = get_changed_connectors()
+def get_expected_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
+    changed_connectors = get_changed_connectors(modified_files=modified_files)
     return {changed_connector.metadata_file_path for changed_connector in changed_connectors}
 
 

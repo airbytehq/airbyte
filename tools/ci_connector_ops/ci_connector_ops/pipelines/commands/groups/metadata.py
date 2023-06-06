@@ -42,7 +42,7 @@ def metadata(ctx: click.Context):
 @click.pass_context
 def validate(ctx: click.Context, modified_only: bool) -> bool:
     if modified_only:
-        metadata_to_validate = get_expected_metadata_files()
+        metadata_to_validate = get_expected_metadata_files(ctx.obj["modified_files"])
     else:
         click.secho("Will run metadata validation on all the metadata files found in the repo.")
         metadata_to_validate = get_all_metadata_files()
