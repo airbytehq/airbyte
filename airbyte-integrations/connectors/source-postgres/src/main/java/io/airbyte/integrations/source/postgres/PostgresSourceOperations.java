@@ -128,7 +128,9 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   private void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     try {
       preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
+      LOGGER.info("Inside setTimestamp with Timezone ++++++");
     } catch (final DateTimeParseException e) {
+      LOGGER.info("Inside setTimestamp with Timezone exception +++++ {}", e.toString());
       // attempt to parse the datetime w/o timezone. This can be caused by schema created with a different
       // version of the connector
       preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
