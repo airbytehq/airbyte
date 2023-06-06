@@ -14,18 +14,12 @@ import java.util.List;
 public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   @Override
-  public SanitizedTableIdentifier sanitizeNames(final String namespace, final String name) {
-    return null;
-  }
-
-  @Override
-  public String createTable(final SanitizedTableIdentifier id, final ConfiguredAirbyteStream stream, final LinkedHashMap<String, AirbyteType> types) {
+  public String createTable(final ConfiguredAirbyteStream stream, final LinkedHashMap<String, AirbyteType> types) {
     return "CREATE TABLE ";
   }
 
   @Override
-  public String alterTable(final SanitizedTableIdentifier id,
-                           final ConfiguredAirbyteStream stream,
+  public String alterTable(final ConfiguredAirbyteStream stream,
                            final LinkedHashMap<String, AirbyteType> types,
                            final TableDefinition existingTable) {
     if (existingTable instanceof StandardTableDefinition s) {
@@ -41,7 +35,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   // We need the configuredairbytestream for the sync mode + cursor name
   @Override
-  public String updateTable(final SanitizedTableIdentifier id, final ConfiguredAirbyteStream stream, final LinkedHashMap<String, AirbyteType> types) {
+  public String updateTable(final ConfiguredAirbyteStream stream, final LinkedHashMap<String, AirbyteType> types) {
     // do the stuff that evan figured out how to do https://github.com/airbytehq/typing-and-deduping-sql/blob/main/one-table.postgres.sql#L153
     // TODO use a better string templating thing
     return String.format(
@@ -55,10 +49,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         
         COMMIT;
         """,
-        id.namespace(),
-        id.name(),
-        id.namespace(),
-        id.name()
+        stream.getStream().getNamespace(),
+        stream.getStream().getName(),
+        stream.getStream().getNamespace(),
+        stream.getStream().getName()
     );
   }
 
