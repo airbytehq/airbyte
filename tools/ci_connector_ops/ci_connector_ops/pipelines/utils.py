@@ -18,7 +18,7 @@ import anyio
 import asyncer
 import click
 import git
-from ci_connector_ops.utils import get_all_released_connectors
+from ci_connector_ops.utils import get_all_released_connectors, get_changed_connectors
 from dagger import Config, Connection, Container, DaggerError, File, ImageLayerCompression, QueryError
 from more_itertools import chunked
 
@@ -257,6 +257,11 @@ def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Pa
         for f in modified_files
         if str(f).endswith(METADATA_FILE_NAME) and str(f).startswith("airbyte-integrations/connectors") and "-scaffold-" not in str(f)
     }
+
+
+def get_expected_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
+    changed_connectors = get_changed_connectors(modified_files=modified_files)
+    return {changed_connector.metadata_file_path for changed_connector in changed_connectors}
 
 
 def get_all_metadata_files() -> Set[Path]:
