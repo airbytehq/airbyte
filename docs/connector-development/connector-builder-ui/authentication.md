@@ -128,6 +128,12 @@ curl -X GET \
   https://connect.squareup.com/v2/<stream path>
 ```
 
+#### Update refresh token from authentication response
+
+In a lot of cases, OAuth refresh tokens are long-lived and can be used to create access tokens for every sync. In some cases however, a refresh token becomes invalid after it has been used to create an access token. In these situations, a new refresh token is returned along with the access token. One example of this behavior is the [Smartsheets API](https://smartsheet.redoc.ly/#section/OAuth-Walkthrough/Get-or-Refresh-an-Access-Token). In these cases, it's necessary to update the refresh token in the configuration every time an access token is generated, so the next sync will still succeed.
+
+This can be done using the "Overwrite config with refresh token response" setting. If enabled, the authenticator expects a new refresh token to be returned from the token refresh endpoint. By default, the property `refresh_token` is used to extract the new refresh token, but this can be configured using the "Refresh token property name" setting. The connector then updates its own configuration with the new refresh token and uses it the next time an access token needs to be generated.
+
 ### Other authentication methods
 
 If your API is not using one of the natively supported authentication methods, it's still possible to build an Airbyte connector as described below.
