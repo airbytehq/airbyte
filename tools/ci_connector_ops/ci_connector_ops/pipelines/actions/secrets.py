@@ -27,9 +27,6 @@ async def mask_secrets_in_gha_logs(ci_credentials_with_downloaded_secrets: Conta
         # We print directly to stdout because the GHA runner will mask only if the log line starts with "::add-mask::"
         # If we use the dagger logger, or context logger, the log line will start with other stuff and will not be masked
         print(f"::add-mask::{secret_to_mask}")
-        # TODO: remove this print, only used for testing the mask in GHA logs
-        print("THE FOLLOWING LINE SHOULD BE MASKED IN GHA LOGS:")
-        print(secret_to_mask)
 
 
 async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GCP_GSM_CREDENTIALS") -> Directory:
