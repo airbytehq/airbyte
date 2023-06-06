@@ -473,6 +473,7 @@ class PublishConnectorContext(ConnectorContext):
         pipeline_start_timestamp: Optional[int] = None,
         ci_context: Optional[str] = None,
         ci_gcs_credentials: str = None,
+        pull_request: PullRequest = None,
     ):
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
