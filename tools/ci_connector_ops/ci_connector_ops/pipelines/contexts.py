@@ -52,6 +52,7 @@ class PipelineContext:
         + glob("**/.eggs", recursive=True)
         + glob("**/.mypy_cache", recursive=True)
         + glob("**/.DS_Store", recursive=True)
+        + glob("**/airbyte_ci_logs", recursive=True)
     )
 
     def __init__(
@@ -99,6 +100,7 @@ class PipelineContext:
         self.logger = logging.getLogger(self.pipeline_name)
         self.dagger_client = None
         self._report = None
+        self.dockerd_service = None
         update_commit_status_check(**self.github_commit_status)
 
     @property
