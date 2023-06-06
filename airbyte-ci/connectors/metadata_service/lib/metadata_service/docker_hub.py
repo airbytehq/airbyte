@@ -37,7 +37,4 @@ def is_image_on_docker_hub(image_name: str, version: str) -> bool:
     tag_url = f"https://registry.hub.docker.com/v2/repositories/{image_name}/tags/{version}"
     response = requests.get(tag_url, headers=headers)
 
-    if response.ok:
-        return True
-
-    return False
+    return response.ok
