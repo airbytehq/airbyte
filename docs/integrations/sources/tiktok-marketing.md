@@ -549,7 +549,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 ## Performance considerations
 
 The connector is restricted by [requests limitation](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1725359439428610). This connector should not run into TikTok Marketing API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
-<!-- env:oss -->
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
@@ -584,4 +584,3 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 | 0.1.2   | 2021-12-02 | [8292](https://github.com/airbytehq/airbyte/pull/8292)   | Support reports                                                                               |
 | 0.1.1   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                                               |
 | 0.1.0   | 2021-09-18 | [5887](https://github.com/airbytehq/airbyte/pull/5887)   | Release TikTok Marketing CDK Connector                                                        |
-<!-- /env:oss -->
