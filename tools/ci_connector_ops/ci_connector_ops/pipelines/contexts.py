@@ -34,18 +34,6 @@ class ContextState(Enum):
     SUCCESSFUL = {"github_state": "success", "description": "All Pipelines ran successfully."}
     FAILURE = {"github_state": "failure", "description": "Pipeline failed."}
 
-    def to_step_status(self) -> StepStatus:
-        if self == ContextState.SUCCESS:
-            return StepStatus.SUCCESS
-
-        if self == ContextState.FAILURE:
-            return StepStatus.FAILURE
-
-        if self == ContextState.ERROR:
-            return StepStatus.FAILURE
-
-        raise ValueError(f"Could not convert context state: {self} to step status")
-
 
 class PipelineContext:
     """The pipeline context is used to store configuration for a specific pipeline run."""
