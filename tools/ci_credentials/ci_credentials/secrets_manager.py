@@ -10,6 +10,8 @@ from json.decoder import JSONDecodeError
 from pathlib import Path
 from typing import Any, ClassVar, List, Mapping
 
+import requests
+import yaml
 from ci_common_utils import GoogleApi, Logger
 
 from .models import DEFAULT_SECRET_FILE, RemoteSecret, Secret
@@ -18,7 +20,7 @@ DEFAULT_SECRET_FILE_WITH_EXT = DEFAULT_SECRET_FILE + ".json"
 
 GSM_SCOPES = ("https://www.googleapis.com/auth/cloud-platform",)
 
-MASK_KEY_PATTERNS = [
+DEFAULT_MASK_KEY_PATTERNS = [
     "password",
     "host",
     "user",
@@ -42,11 +44,14 @@ MASK_KEY_PATTERNS = [
     "survey_",
     "appid",
     "apikey",
+    "api_key",
 ]
 
 
 class SecretsManager:
     """Loading, saving and updating all requested secrets into connector folders"""
+
+    SPEC_MASK_URL = "https://connectors.airbyte.com/files/registries/v0/specs_secrets_mask.yaml"
 
     logger: ClassVar[Logger] = Logger()
     if os.getenv("VERSION") in ["dev", "dagger_ci"]:
@@ -64,6 +69,10 @@ class SecretsManager:
         if self._api is None:
             self._api = GoogleApi(self.gsm_credentials, GSM_SCOPES)
         return self._api
+
+    @property
+    def mask_key_patterns(self) -> List[str]:
+        return self._get_spec_mask() + DEFAULT_MASK_KEY_PATTERNS
 
     def __load_gsm_secrets(self) -> List[RemoteSecret]:
         """Loads needed GSM secrets"""
@@ -145,7 +154,7 @@ class SecretsManager:
         else:
             if key:
                 # regular value, check for what to mask
-                for pattern in MASK_KEY_PATTERNS:
+                for pattern in self.mask_key_patterns:
                     if re.search(pattern, key):
                         self.logger.info(f"Add mask for key: {key}")
                         for line in str(value).splitlines():
@@ -275,3 +284,13 @@ class SecretsManager:
                 new_remote_secrets.append(new_remote_secret)
                 self.logger.info(f"Updated {new_remote_secret.name} with new value")
         return new_remote_secrets
+
+    def _get_spec_mask(self) -> List[str]:
+        response = requests.get(self.SPEC_MASK_URL, allow_redirects=True)
+        if not response.ok:
+            self.logger.error(f"Failed to fetch spec mask: {response.content}")
+        try:
+            return yaml.safe_load(response.content)["properties"]
+        except Exception as e:
+            self.logger.error(f"Failed to parse spec mask: {e}")
+            return []

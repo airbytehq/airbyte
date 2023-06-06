@@ -7,7 +7,7 @@ from pathlib import Path
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["requests", "click~=8.1.3"]
+MAIN_REQUIREMENTS = ["requests", "click~=8.1.3", "pyyaml"]
 
 
 def local_pkg(name: str) -> str:
