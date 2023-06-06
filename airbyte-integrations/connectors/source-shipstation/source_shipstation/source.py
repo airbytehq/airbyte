@@ -4,6 +4,8 @@
 
 
 import json
+import requests
+import base64
 from datetime import datetime
 from typing import Dict, Generator
 
@@ -24,20 +26,32 @@ from airbyte_cdk.sources import Source
 class SourceShipstation(Source):
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """
-        Tests if the input configuration can be used to successfully connect to the integration
-            e.g: if a provided Stripe API token can be used to connect to the Stripe API.
-
-        :param logger: Logging object to display debug/info/error to the logs
-            (logs will not be accessible via airbyte UI if they are not passed to this logger)
-        :param config: Json object containing the configuration of this source, content of this json is as specified in
-        the properties of the spec.yaml file
-
-        :return: AirbyteConnectionStatus indicating a Success or Failure
+        return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            # Not Implemented
+            base_url = config["base_url"]
+            api_key = config["api_key"]
+            api_secret = config["api_secret"]
 
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            url = f"{base_url}/carriers/list/"
+            payload = {}
+            # headers = {
+            #     "Authorization": f"{api_key}:{api_secret}",
+            #     "Content-Type": "application/json"
+            # }
+
+            # response = requests.get(url, headers=headers)
+            
+            
+            
+            response=requests.get(url, auth=(api_key,api_secret), params=payload,)
+
+            # Check the response status code and content to determine the connection status
+            if response.status_code == 200:
+                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            else:
+                return AirbyteConnectionStatus(status=Status.FAILED, message="Failed to connect to ShipStation API")
+
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
 

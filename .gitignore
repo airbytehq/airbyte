@@ -29,6 +29,7 @@ acceptance_tests_logs
 __pycache__
 .eggs
 .venv
+myvenv
 .mypy_cache
 .ipynb_checkpoints
 .pytest_

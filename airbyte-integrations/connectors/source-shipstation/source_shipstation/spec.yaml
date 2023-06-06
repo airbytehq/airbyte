@@ -1,11 +1,27 @@
-documentationUrl: https://docsurl.com
+# spec.yaml
+
+# Connector identification
 connectionSpecification:
-  $schema: http://json-schema.org/draft-07/schema#
-  title: Shipstation Spec
-  type: object
-  required:
-    - fix-me
-  properties:
-    fix-me:
-      type: string
-      description: describe me
+  name: shipstation
+  documentationUrl: <documentation_url>
+  changelogUrl: <changelog_url>
+
+# Connector source definition
+source:
+  name: ShipStation
+  dockerImage: <docker_image>
+  documentationUrl: <documentation_url>
+  sourceDefinedConfig:
+    properties:
+      base_url:
+        title: Base URL
+        description: The base URL for the ShipStation API.
+        type: string
+      api_key:
+        title: API Key
+        description: The API key for ShipStation authentication.
+        type: string
+        airbyte_secret:
+          secret: true
+          description: The API secret for ShipStation authentication.
+          type: string
