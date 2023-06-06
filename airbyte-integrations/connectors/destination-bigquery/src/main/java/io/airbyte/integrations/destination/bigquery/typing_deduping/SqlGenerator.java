@@ -12,6 +12,7 @@ public interface SqlGenerator<DialectTableDefinition> {
    * Only use the constructor if you already have sanitized names or are writing a test.
    */
   // TODO - is this a reasonable interface? maybe it's on the sqlgenerator implementation to do this as needed?
+  // We need to be able to reference both namespace.name and namespace._airbyte_raw_name
   // alternatively, should we extend this to the column names?
   record SanitizedTableIdentifier(String namespace, String name) {
 

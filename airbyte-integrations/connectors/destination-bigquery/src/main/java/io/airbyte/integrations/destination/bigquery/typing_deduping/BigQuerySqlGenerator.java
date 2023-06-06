@@ -43,6 +43,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @Override
   public String updateTable(final SanitizedTableIdentifier id, final ConfiguredAirbyteStream stream, final LinkedHashMap<String, AirbyteType> types) {
     // do the stuff that evan figured out how to do https://github.com/airbytehq/typing-and-deduping-sql/blob/main/one-table.postgres.sql#L153
+    // TODO use a better string templating thing
     return String.format(
         """
         BEGIN;
@@ -50,9 +51,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         INSERT INTO %s.%s
         SELECT
           TODO....
+        FROM %s._airbyte_raw_%s
         
         COMMIT;
         """,
+        id.namespace(),
+        id.name(),
         id.namespace(),
         id.name()
     );
