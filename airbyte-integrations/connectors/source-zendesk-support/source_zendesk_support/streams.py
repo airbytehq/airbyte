@@ -678,7 +678,6 @@ class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
             params.pop("start_time", None)
             params["page[after]"] = next_page_token
         return params
-
    
 class TicketMetricEvents(SourceZendeskSupportCursorPaginationStream):
     """
