@@ -652,13 +652,14 @@ class TicketForms(SourceZendeskSupportCursorPaginationStream):
 
 class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
-
+    page_size = 100
+    
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         https://developer.zendesk.com/documentation/api-basics/pagination/paginating-through-lists-using-cursor-pagination/#when-to-stop-paginating
         """
         meta = response.json().get("meta", {})
-        return meta.get("after_cursor") if meta.get("has_more", False) else None
+        return meta.get("after_cursor") if meta.get("has_more", True) else None
 
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
@@ -678,7 +679,7 @@ class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
             params["page[after]"] = next_page_token
         return params
 
-
+   
 class TicketMetricEvents(SourceZendeskSupportCursorPaginationStream):
     """
     TicketMetricEvents stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/
