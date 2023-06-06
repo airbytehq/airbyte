@@ -41,6 +41,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   @Override
   public String updateTable(final SanitizedTableIdentifier id, final ConfiguredAirbyteStream stream, final LinkedHashMap<String, AirbyteType> types) {
+    // do the stuff that evan figured out how to do https://github.com/airbytehq/typing-and-deduping-sql/blob/main/one-table.postgres.sql#L153
     return null;
   }
 
