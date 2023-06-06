@@ -49,7 +49,7 @@ class SecretsManager:
     """Loading, saving and updating all requested secrets into connector folders"""
 
     logger: ClassVar[Logger] = Logger()
-    if os.getenv("VERSION") == "dev":
+    if os.getenv("VERSION") in ["dev", "dagger_ci"]:
         base_folder = Path(os.getcwd())
     else:
         base_folder = Path("/actions-runner/_work/airbyte/airbyte")
@@ -151,9 +151,13 @@ class SecretsManager:
                         for line in str(value).splitlines():
                             line = str(line).strip()
                             # don't output } and such
-                            if len(line) > 1 and not os.getenv("VERSION") == "dev":
-                                # has to be at the beginning of line for Github to notice it
-                                print(f"::add-mask::{line}")
+                            if len(line) > 1:
+                                if not os.getenv("VERSION") in ["dev", "dagger_ci"]:
+                                    # has to be at the beginning of line for Github to notice it
+                                    print(f"::add-mask::{line}")
+                                if os.getenv("VERSION") == "dagger_ci":
+                                    with open("/tmp/secrets_to_mask.txt", "a") as f:
+                                        f.write(f"{line}\n")
                         break
             # see if it's really embedded json and get those values too
             try:

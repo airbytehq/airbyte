@@ -181,8 +181,8 @@ async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> C
     """
     python_base_environment: Container = with_python_base(context)
     ci_credentials = await with_installed_python_package(context, python_base_environment, CI_CREDENTIALS_SOURCE_PATH)
-
-    return ci_credentials.with_env_variable("VERSION", "dev").with_secret_variable("GCP_GSM_CREDENTIALS", gsm_secret).with_workdir("/")
+    ci_credentials = ci_credentials.with_env_variable("VERSION", "dagger_ci")
+    return ci_credentials.with_secret_variable("GCP_GSM_CREDENTIALS", gsm_secret).with_workdir("/")
 
 
 def with_alpine_packages(base_container: Container, packages_to_install: List[str]) -> Container:

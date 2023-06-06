@@ -21,7 +21,7 @@ LOCAL_REQUIREMENTS = [local_pkg("ci_common_utils")]
 TEST_REQUIREMENTS = ["requests-mock", "pytest"]
 
 setup(
-    version="1.0.1",
+    version="1.1.0",
     name="ci_credentials",
     description="CLI tooling to read and manage GSM secrets",
     author="Airbyte",
