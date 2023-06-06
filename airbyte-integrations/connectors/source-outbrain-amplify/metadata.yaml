@@ -1,10 +1,9 @@
 data:
-  allowedHosts:
-    hosts:
-      - TODO # Please change to the hostname of the source.
   registries:
+    cloud:
+      enabled: true
     oss:
-      enabled: false
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 4fe962d0-a70e-4516-aa99-c551abf46352
@@ -14,7 +13,6 @@ data:
   icon: outbrain-amplify.svg
   license: MIT
   name: Outbrain Amplify
-  releaseDate: TODO
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/outbrain-amplify
 metadataSpecVersion: "1.0"
