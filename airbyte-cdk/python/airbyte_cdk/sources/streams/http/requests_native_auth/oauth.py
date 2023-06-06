@@ -173,20 +173,20 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
 
     @access_token.setter
     def access_token(self, new_access_token: str):
-        dpath.util.set(self._connector_config, self._access_token_config_path, new_access_token)
+        dpath.util.new(self._connector_config, self._access_token_config_path, new_access_token)
 
     def get_refresh_token(self) -> str:
         return dpath.util.get(self._connector_config, self._refresh_token_config_path, default="")
 
     def set_refresh_token(self, new_refresh_token: str):
-        dpath.util.set(self._connector_config, self._refresh_token_config_path, new_refresh_token)
+        dpath.util.new(self._connector_config, self._refresh_token_config_path, new_refresh_token)
 
     def get_token_expiry_date(self) -> pendulum.DateTime:
         expiry_date = dpath.util.get(self._connector_config, self._token_expiry_date_config_path, default="")
         return pendulum.now().subtract(days=1) if expiry_date is "" else pendulum.parse(expiry_date)
 
     def set_token_expiry_date(self, new_token_expiry_date):
-        dpath.util.set(self._connector_config, self._token_expiry_date_config_path, str(new_token_expiry_date))
+        dpath.util.new(self._connector_config, self._token_expiry_date_config_path, str(new_token_expiry_date))
 
     def token_has_expired(self) -> bool:
         """Returns True if the token is expired"""
