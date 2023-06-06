@@ -752,3 +752,14 @@ class Accounts(StripeStream):
 
     def path(self, **kwargs):
         return "accounts"
+
+
+class Cards(IncrementalStripeStream):
+    """
+    Docs: https://stripe.com/docs/api/issuing/cards/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "issuing/cards"
