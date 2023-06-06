@@ -740,7 +740,8 @@ definitions:
         description: When the token updater is defined, new refresh tokens, access tokens and the access token expiry date are written back from the authentication response to the config object. This is important if the refresh token can only used once.
         properties:
           refresh_token_name:
-            title: Refresh Token Response Field Name
+            title: Refresh Token Property Name
+            description: The name of the property which contains the updated refresh token in the response from the token refresh endpoint.
             type: string
             default: "refresh_token"
             examples:
