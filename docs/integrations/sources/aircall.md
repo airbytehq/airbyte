@@ -4,15 +4,18 @@ This page contains the setup guide and reference information for the [Aircall](h
 
 ## Prerequisites
 
-- Access to the Aircall API
-- Aircall [API Token](https://dashboard.aircall.io/integrations/api-keys) 
+Access Token (which acts as bearer token) is mandate for this connector to work, It could be seen at settings (ref - https://dashboard.aircall.io/integrations/api-keys).
 
 ## Setup guide
-1. Enter a name for the source.
-2. Enter the **App ID**. This is the auto-generated ID of your account.
-3. Enter the **API Token**. This can be found in the [settings](https://dashboard.aircall.io/integrations/api-keys).
-4. Enter the **Date-From Filter** in the format 
-YYYY-MM-DDTHH:mm:ss.SSSZ. Only date after this date will be synced.
+
+### Step 1: Set up Aircall connection
+
+- Get an Aircall access token via settings (ref - https://dashboard.aircall.io/integrations/api-keys)
+- Setup params (All params are required)
+- Available params
+    - api_id: The auto generated id
+    - api_token: Seen at the Aircall settings (ref - https://dashboard.aircall.io/integrations/api-keys)
+    - start_date: Date filter for eligible streams, enter
 
 ## Supported sync modes
 
