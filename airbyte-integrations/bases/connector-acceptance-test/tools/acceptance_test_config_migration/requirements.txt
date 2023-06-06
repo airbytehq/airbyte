@@ -47,7 +47,7 @@ pytest-timeout==1.4.2
 python-dateutil==2.8.2
 pytzdata==2020.1
 PyYAML==5.4.1
-requests==2.28.1
+requests==2.31.0
 requests-cache==0.9.7
 requests-mock==1.9.3
 ruamel.yaml==0.17.21
