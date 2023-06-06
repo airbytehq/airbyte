@@ -1690,10 +1690,7 @@ class ContactsMergedAudit(CRMSearchStream):
     def url(self):
         return f"/crm/v3/objects/{self.entity}/search"
 
-    def __init__(
-        self,
-        **kwargs
-    ):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._sync_mode = "incremental"
         self._state = self.state if self.state else self._start_date
@@ -1719,23 +1716,14 @@ class ContactsMergedAudit(CRMSearchStream):
     ) -> Tuple[List, requests.Response]:
         stream_records = {}
 
-        payload = (
-            {
-                "filters": [
-                    {
-                        "value": int(self._state.timestamp() * 1000),
-                        "propertyName": self.last_modified_field,
-                        "operator": "GTE"
-                    },
-                    {
-                        "propertyName": "hs_merged_object_ids",
-                        "operator": "HAS_PROPERTY"
-                    }
-                ],
-                "sorts": [{"propertyName": self.last_modified_field, "direction": "ASCENDING"}],
-                "limit": 100,
-            }
-        )
+        payload = {
+            "filters": [
+                {"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"},
+                {"propertyName": "hs_merged_object_ids", "operator": "HAS_PROPERTY"},
+            ],
+            "sorts": [{"propertyName": self.last_modified_field, "direction": "ASCENDING"}],
+            "limit": 100,
+        }
 
         if next_page_token:
             payload.update(next_page_token["payload"])
@@ -1745,7 +1733,7 @@ class ContactsMergedAudit(CRMSearchStream):
         if len(response_search.get("results", [])) == 0:
             return [], raw_response
 
-        ids_to_get = list(map(lambda d: d['id'], response_search["results"]))
+        ids_to_get = list(map(lambda d: d["id"], response_search["results"]))
         response, _ = self._get_contact_merge_audit(url=self.url_audit, params={"vid": ids_to_get})
 
         for record in response_search["results"]:
