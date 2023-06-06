@@ -13,9 +13,11 @@ from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 
+import anyio
 import asyncer
+from anyio import Path
 from ci_connector_ops.pipelines.consts import PYPROJECT_TOML_FILE_PATH
-from ci_connector_ops.pipelines.utils import check_path_in_workdir, with_exit_code, with_stderr, with_stdout
+from ci_connector_ops.pipelines.utils import check_path_in_workdir, slugify, with_exit_code, with_stderr, with_stdout
 from ci_connector_ops.utils import console
 from dagger import Container, QueryError
 from rich.console import Group
@@ -92,9 +94,12 @@ class Step(ABC):
 
     title: ClassVar[str]
     started_at: ClassVar[datetime]
+    retry: ClassVar[bool] = False
+    max_retries: ClassVar[int] = 0
 
     def __init__(self, context: ConnectorContext) -> None:  # noqa D107
         self.context = context
+        self.retry_count = 0
 
     async def run(self, *args, **kwargs) -> StepResult:
         """Public method to run the step. It output a step result.
@@ -106,7 +111,15 @@ class Step(ABC):
         """
         self.started_at = datetime.utcnow()
         try:
-            return await self._run(*args, **kwargs)
+            result = await self._run(*args, **kwargs)
+            if result.status is StepStatus.FAILURE and self.retry_count <= self.max_retries:
+                self.retry_count += 1
+                await anyio.sleep(10)
+                self.context.logger.warn(
+                    f"Retry #{self.retry_count} for {self.title} step on connector {self.context.connector.technical_name}"
+                )
+                return await self.run(*args, **kwargs)
+            return result
         except QueryError as e:
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
@@ -157,6 +170,13 @@ class Step(ABC):
 class PytestStep(Step, ABC):
     """An abstract class to run pytest tests and evaluate success or failure according to pytest logs."""
 
+    async def write_log_file(self, logs) -> str:
+        """Return the path to the pytest log file."""
+        log_directory = Path(f"{self.context.connector.code_directory}/airbyte_ci_logs")
+        await log_directory.mkdir(exist_ok=True)
+        await Path(f"{log_directory}/{slugify(self.title).replace('-', '_')}.log").write_text(logs)
+        self.context.logger.info(f"Pytest logs written to {log_directory}/{slugify(self.title)}.log")
+
     # TODO this is not very robust if pytest crashes and does not outputs its expected last log line.
     def pytest_logs_to_step_result(self, logs: str) -> StepResult:
         """Parse pytest log and infer failure, success or skipping.
@@ -202,7 +222,10 @@ class PytestStep(Step, ABC):
                     test_config,
                 ]
             )
-            return self.pytest_logs_to_step_result(await tester.stdout())
+            logs = await tester.stdout()
+            if self.context.is_local:
+                await self.write_log_file(logs)
+            return self.pytest_logs_to_step_result(logs)
 
         else:
             return StepResult(self, StepStatus.SKIPPED)
