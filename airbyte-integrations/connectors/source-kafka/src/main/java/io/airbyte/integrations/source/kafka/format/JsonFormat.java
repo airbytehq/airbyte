@@ -11,8 +11,11 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.*;
-
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -101,7 +104,7 @@ public class JsonFormat extends AbstractFormat {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(){
+  public AutoCloseableIterator<AirbyteMessage> read() {
 
     final KafkaConsumer<String, JsonNode> consumer = getConsumer();
     final List<ConsumerRecord<String, JsonNode>> recordsList = new ArrayList<>();
