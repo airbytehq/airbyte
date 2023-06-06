@@ -1676,6 +1676,90 @@ class Contacts(CRMSearchStream):
     scopes = {"crm.objects.contacts.read"}
 
 
+class ContactsMergedAudit(CRMSearchStream):
+    entity = "contact"
+    last_modified_field = "lastmodifieddate"
+    associations = ["contacts", "companies"]
+    primary_key = "id"
+    scopes = {"crm.objects.contacts.read"}
+
+    # Use API V1 to get merge-audit field
+    url_audit = "/contacts/v1/contact/vids/batch/"
+
+    @property
+    def url(self):
+        return f"/crm/v3/objects/{self.entity}/search"
+
+    def __init__(
+        self,
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        self._sync_mode = "incremental"
+        self._state = self.state if self.state else self._start_date
+
+    @retry_connection_handler(max_tries=5, factor=5)
+    @retry_after_handler(fixed_retry_after=1, max_tries=3)
+    def _get_contact_merge_audit(
+        self, url: str, params: MutableMapping[str, Any] = None
+    ) -> Tuple[Union[Mapping[str, Any], List[Mapping[str, Any]]], requests.Response]:
+        return self._api.get(url=url, params=params)
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        # Final object does not have properties field
+        # We return JSON schema as defined in :
+        # source_hubspot/schemas/contacts_merged_audit.json
+        return super(Stream, self).get_json_schema()
+
+    def _process_search(
+        self,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Tuple[List, requests.Response]:
+        stream_records = {}
+
+        payload = (
+            {
+                "filters": [
+                    {
+                        "value": int(self._state.timestamp() * 1000),
+                        "propertyName": self.last_modified_field,
+                        "operator": "GTE"
+                    },
+                    {
+                        "propertyName": "hs_merged_object_ids",
+                        "operator": "HAS_PROPERTY"
+                    }
+                ],
+                "sorts": [{"propertyName": self.last_modified_field, "direction": "ASCENDING"}],
+                "limit": 100,
+            }
+        )
+
+        if next_page_token:
+            payload.update(next_page_token["payload"])
+
+        response_search, raw_response = self.search(url=self.url, data=payload)
+
+        if len(response_search.get("results", [])) == 0:
+            return [], raw_response
+
+        ids_to_get = list(map(lambda d: d['id'], response_search["results"]))
+        response, _ = self._get_contact_merge_audit(url=self.url_audit, params={"vid": ids_to_get})
+
+        for record in response_search["results"]:
+            hs_object_id = record["id"]
+            for merge_audit in response[hs_object_id]["merge-audits"]:
+                # Create primary key to store each record within stream_records
+                primary_key = "".join([str(merge_audit["canonical-vid"]), "_", str(merge_audit["vid-to-merge"])])
+                stream_records[primary_key] = merge_audit
+                stream_records[primary_key]["id"] = hs_object_id
+                stream_records[primary_key]["updatedAt"] = record["updatedAt"]
+
+        return list(stream_records.values()), raw_response
+
+
 class EngagementsCalls(CRMSearchStream):
     entity = "calls"
     last_modified_field = "hs_lastmodifieddate"
