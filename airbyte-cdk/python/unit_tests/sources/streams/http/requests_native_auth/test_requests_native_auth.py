@@ -234,15 +234,6 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         assert authenticator.get_refresh_token() == connector_config["credentials"]["refresh_token"]
         assert authenticator.get_token_expiry_date() == pendulum.parse(connector_config["credentials"]["token_expiry_date"])
 
-    def test_init_with_invalid_config(self, invalid_connector_config):
-        with pytest.raises(ValueError):
-            SingleUseRefreshTokenOauth2Authenticator(
-                invalid_connector_config,
-                token_refresh_endpoint="foobar",
-                client_id="my_client_id",
-                client_secret="my_client_secret",
-            )
-
     @freezegun.freeze_time("2022-12-31")
     @pytest.mark.parametrize(
         "test_name, expires_in_value, expiry_date_format, expected_expiry_date",

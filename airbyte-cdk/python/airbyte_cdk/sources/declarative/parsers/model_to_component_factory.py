@@ -103,6 +103,7 @@ from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStrea
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from pydantic import BaseModel
 
@@ -662,7 +663,7 @@ class ModelToComponentFactory:
     @staticmethod
     def create_oauth_authenticator(model: OAuthAuthenticatorModel, config: Config, **kwargs) -> DeclarativeOauth2Authenticator:
         if model.refresh_token_updater:
-            return SingleUseRefreshTokenOauth2Authenticator(
+            return DeclarativeSingleUseRefreshTokenOauth2Authenticator(
                 config,
                 InterpolatedString.create(model.token_refresh_endpoint, parameters=model.parameters).eval(config),
                 access_token_name=InterpolatedString.create(model.access_token_name, parameters=model.parameters).eval(config),
