@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the Asana sourc
 
 ## Prerequisites
 
-* OAuth access or a Personal Access Token
+Please follow these [steps](https://developers.asana.com/docs/personal-access-token) to obtain Personal Access Token for your account.
 
 ## Setup guide
 
@@ -15,10 +15,11 @@ This page contains the setup guide and reference information for the Asana sourc
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. Set the name for your source
-4. Authenticate using OAuth or enter your `personal_access_token`. Please follow these [steps](https://developers.asana.com/docs/personal-access-token) to obtain Personal Access Token for your account.
+4. Enter your `personal_access_token`
 5. Click **Set up source**
 
-<!-- env:oss -->
+⚠️ For the moment, oAuth login is disabled for Asana on Airbyte Cloud.
+
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard
@@ -36,7 +37,7 @@ The Asana source connector supports the following [sync modes](https://docs.airb
 | Full Refresh Sync | Yes        |
 | Incremental Sync  | No         |
 | Namespaces        | No         |
-<!-- /env:oss -->
+
 ## Supported Streams
 
 - [Custom fields](https://developers.asana.com/docs/custom-fields)
@@ -64,7 +65,7 @@ The connector is restricted by normal Asana [requests limitation](https://develo
 | `datetime`               | `datetime`   |
 | `array`                  | `array`      |
 | `object`                 | `object`     |
-<!-- env:oss -->
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
@@ -75,4 +76,3 @@ The connector is restricted by normal Asana [requests limitation](https://develo
 | 0.1.2   | 2021-09-24 | [6402](https://github.com/airbytehq/airbyte/pull/6402)   | Fix SAT tests: update schemas and invalid_config.json file |
 | 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add entrypoint and bump version for connector              |
 | 0.1.0   | 2021-05-25 | [3510](https://github.com/airbytehq/airbyte/pull/3510)   | New Source: Asana                                          |
-<!-- /env:oss -->
