@@ -706,7 +706,7 @@ class ModelToComponentFactory:
             refresh_token_name=model.refresh_token_name,
             expires_in_name=model.expires_in_name,
             client_id=dpath.util.get(config, model.client_id_config_path),
-            client_secret=dpath.util.get(config, model.client_id_config_path),
+            client_secret=dpath.util.get(config, model.client_secret_config_path),
             access_token_config_path=model.access_token_config_path,
             refresh_token_config_path=model.refresh_token_config_path,
             token_expiry_date_config_path=model.token_expiry_date_config_path,
