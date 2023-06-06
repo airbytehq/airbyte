@@ -375,88 +375,6 @@ class OAuthAuthenticator(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class SingleUseRefreshTokenOAuthAuthenticator(BaseModel):
-    type: Literal["SingleUseRefreshTokenOAuthAuthenticator"]
-    token_refresh_endpoint: str = Field(
-        ...,
-        description="Endpoint to send a POST request in order to get a new access token.",
-        examples=["https://connect.squareup.com/oauth2/token"],
-        title="Token Refresh Endpoint",
-    )
-    client_id_config_path: Optional[List[str]] = Field(
-        ["credentials", "client_id"],
-        description="Config path to the client ID.",
-        examples=[["credentials", "client_id"], ["client_id"]],
-        title="Config Path To Client ID",
-    )
-    client_secret_config_path: Optional[List[str]] = Field(
-        ["credentials", "client_secret"],
-        description="Config path to the client secret.",
-        examples=[["credentials", "client_secret"], ["client_secret"]],
-        title="Config Path To Client Secret",
-    )
-    access_token_config_path: Optional[List[str]] = Field(
-        ["credentials", "access_token"],
-        description="Config path to the access token.",
-        examples=[["credentials", "access_token"], ["access_token"]],
-        title="Config Path To Access Token",
-    )
-    refresh_token_config_path: Optional[List[str]] = Field(
-        ["credentials", "refresh_token"],
-        description="Config path to the access token.",
-        examples=[["credentials", "refresh_token"], ["refresh_token"]],
-        title="Config Path To Refresh Token",
-    )
-    token_expiry_date_config_path: Optional[List[str]] = Field(
-        ["credentials", "token_expiry_date"],
-        description="Config path to the expiry date.",
-        examples=[["credentials", "token_expiry_date"]],
-        title="Config Path To Expiry Date",
-    )
-    access_token_name: Optional[str] = Field(
-        "access_token",
-        description="The name of the field to extract the access token from in the token refresh response.",
-        examples=["access_token"],
-        title="Access Token Response Field Name",
-    )
-    refresh_token_name: Optional[str] = Field(
-        "refresh_token",
-        examples=["refresh_token"],
-        title="Refresh Token Response Field Name",
-    )
-    expires_in_name: Optional[str] = Field(
-        "expires_in",
-        description="The name of the field the extract the number of seconds the access token will be valid from the token refresh response.",
-        examples=["expires_in"],
-        title="Time To Expiration Response Field Name",
-    )
-    grant_type: Optional[str] = Field(
-        "refresh_token",
-        description="Specifies the OAuth2 grant type. If set to refresh_token, the refresh_token needs to be provided as well. For client_credentials, only client id and secret are required. Other grant types are not officially supported.",
-        examples=["refresh_token", "client_credentials"],
-        title="Grant Type",
-    )
-    refresh_request_body: Optional[Dict[str, Any]] = Field(
-        None,
-        description="Body of the request sent to get a new access token.",
-        examples=[
-            {
-                "applicationId": "{{ config['application_id'] }}",
-                "applicationSecret": "{{ config['application_secret'] }}",
-                "token": "{{ config['token'] }}",
-            }
-        ],
-        title="Refresh Request Body",
-    )
-    scopes: Optional[List[str]] = Field(
-        None,
-        description="List of scopes that should be granted to the access token.",
-        examples=[["crm.list.read", "crm.objects.contacts.read", "crm.schema.contacts.read"]],
-        title="Scopes",
-    )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
-
-
 class ExponentialBackoffStrategy(BaseModel):
     type: Literal["ExponentialBackoffStrategy"]
     factor: Optional[Union[float, str]] = Field(
@@ -1098,7 +1016,6 @@ class HttpRequester(BaseModel):
             BearerAuthenticator,
             CustomAuthenticator,
             OAuthAuthenticator,
-            SingleUseRefreshTokenOAuthAuthenticator,
             NoAuth,
             SessionTokenAuthenticator,
         ]
