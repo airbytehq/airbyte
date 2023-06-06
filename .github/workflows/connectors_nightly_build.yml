@@ -2,7 +2,7 @@ name: Connectors nightly build
 
 on:
   schedule:
-    # 10AM UTC is 11AM CET, 4AM PST.
+    # 10AM UTC is 12AM CET, 1PM EEST, 2AM PST.
     - cron: "0 10 * * *"
   workflow_dispatch:
     inputs:
