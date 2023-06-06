@@ -51,7 +51,13 @@ Airbyte version 0.40.27 or later requires [Docker Compose V2](https://docs.docke
 
    ii. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget https://raw.githubusercontent.com/airbytehq/airbyte/master/run-ab-platform.sh` to download the installation script.
 
-3. Bring Airbyte back online, optionally with the `-b` flag to run the containers in the background (docker detached mode).
+3. Remove previous local `docker-compose.yaml` and `.env`
+
+   ```bash
+   ./run-ab-platform.sh -r
+   ```
+
+4. Bring Airbyte back online, optionally with the `-b` flag to run the containers in the background (docker detached mode).
 
    ```bash
    ./run-ab-platform.sh -b
