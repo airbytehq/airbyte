@@ -39,10 +39,23 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     return null;
   }
 
+  // We need the configuredairbytestream for the sync mode + cursor name
   @Override
   public String updateTable(final SanitizedTableIdentifier id, final ConfiguredAirbyteStream stream, final LinkedHashMap<String, AirbyteType> types) {
     // do the stuff that evan figured out how to do https://github.com/airbytehq/typing-and-deduping-sql/blob/main/one-table.postgres.sql#L153
-    return null;
+    return String.format(
+        """
+        BEGIN;
+        
+        INSERT INTO %s.%s
+        SELECT
+          TODO....
+        
+        COMMIT;
+        """,
+        id.namespace(),
+        id.name()
+    );
   }
 
   public static void main(String[] args) throws InterruptedException {

@@ -11,6 +11,8 @@ public interface SqlGenerator<DialectTableDefinition> {
    * <p>
    * Only use the constructor if you already have sanitized names or are writing a test.
    */
+  // TODO - is this a reasonable interface? maybe it's on the sqlgenerator implementation to do this as needed?
+  // alternatively, should we extend this to the column names?
   record SanitizedTableIdentifier(String namespace, String name) {
 
   }
