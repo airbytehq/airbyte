@@ -778,7 +778,7 @@ class ApiKeyAuthenticator(BaseModel):
     )
     header: Optional[str] = Field(
         None,
-        description="The name of the HTTP header that will be set to the API key. This setting is deprecated, use inject_into instead. If header and inject_into is defined at the same time, header will be ignored.",
+        description="The name of the HTTP header that will be set to the API key. This setting is deprecated, use inject_into instead. Header and inject_into can not be defined at the same time.",
         examples=["Authorization", "Api-Token", "X-Auth-Token"],
         title="Header Name",
     )

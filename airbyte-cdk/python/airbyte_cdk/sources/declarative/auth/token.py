@@ -5,7 +5,7 @@
 import base64
 import logging
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping, MutableMapping, Union
+from typing import Any, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
@@ -59,13 +59,13 @@ class ApiKeyAuthenticator(DeclarativeAuthenticator):
             options[self._field_name.eval(self.config)] = self.token
         return options
 
-    def get_request_params(self) -> Union[MutableMapping[str, Any], None]:
+    def get_request_params(self) -> Optional[Mapping[str, Any]]:
         return self._get_request_options(RequestOptionType.request_parameter)
 
-    def get_request_body_data(self) -> Union[Mapping, str, None]:
+    def get_request_body_data(self) -> Optional[Union[Mapping[str, Any], str]]:
         return self._get_request_options(RequestOptionType.body_data)
 
-    def get_request_body_json(self) -> Union[Mapping, None]:
+    def get_request_body_json(self) -> Optional[Mapping[str, Any]]:
         return self._get_request_options(RequestOptionType.body_json)
 
 

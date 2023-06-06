@@ -227,6 +227,9 @@ class ModelToComponentFactory:
         if model.inject_into is None and model.header is None:
             raise ValueError("Expected either inject_into or header to be set for ApiKeyAuthenticator")
 
+        if model.inject_into is not None and model.header is not None:
+            raise ValueError("inject_into and header cannot be set both for ApiKeyAuthenticator - remove the deprecated header option")
+
         request_option = (
             RequestOption(
                 inject_into=RequestOptionType(model.inject_into.inject_into.value),
@@ -236,7 +239,7 @@ class ModelToComponentFactory:
             if model.inject_into
             else RequestOption(
                 inject_into=RequestOptionType.header,
-                field_name=InterpolatedString.create(model.header, parameters=model.parameters).eval(config),
+                field_name=model.header,
                 parameters=model.parameters,
             )
         )
