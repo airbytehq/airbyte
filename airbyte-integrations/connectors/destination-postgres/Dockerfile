@@ -13,7 +13,7 @@ RUN yum install -y python3 python3-devel jq sshpass git gcc-c++ && \
   python -m ensurepip --upgrade && \
   pip3 install dbt-snowflake==1.0.0 "urllib3<2"
 
-COPY --from=airbyte/normalization-snowflake:dev /airbyte /airbyte
+COPY --from=airbyte/normalization:dev /airbyte /airbyte
 # Install python dependencies
 WORKDIR /airbyte/base_python_structs
 RUN pip3 install .
@@ -21,11 +21,14 @@ WORKDIR /airbyte/normalization_code
 RUN pip3 install .
 WORKDIR /airbyte/normalization_code/dbt-template/
 # Download external dbt dependencies
+# amazon linux 2 isn't compatible with urllib3 2.x, so force 1.26.15
+RUN pip3 install "urllib3<2" "MarkupSafe<2.1"
 RUN dbt deps
 
 WORKDIR /airbyte
 
 ENV APPLICATION destination-postgres
+ENV AIRBYTE_NORMALIZATION_INTEGRATION postgres
 
 COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
@@ -41,5 +44,8 @@ COPY --from=build /airbyte /airbyte
 
 
 
-LABEL io.airbyte.version=0.3.27
+LABEL io.airbyte.version=0.3.28
 LABEL io.airbyte.name=airbyte/destination-postgres
+
+ENV AIRBYTE_ENTRYPOINT "/airbyte/run_with_normalization.sh"
+ENTRYPOINT ["/airbyte/run_with_normalization.sh"]

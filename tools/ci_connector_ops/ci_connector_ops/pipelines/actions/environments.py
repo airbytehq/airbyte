@@ -8,8 +8,6 @@ from __future__ import annotations
 
 import importlib.util
 import uuid
-from typing import TYPE_CHECKING, List, Optional, Tuple
-
 from ci_connector_ops.pipelines import consts
 from ci_connector_ops.pipelines.consts import (
     CI_CONNECTOR_OPS_SOURCE_PATH,
@@ -18,9 +16,12 @@ from ci_connector_ops.pipelines.consts import (
     DEFAULT_PYTHON_EXCLUDE,
     PYPROJECT_TOML_FILE_PATH,
 )
-from ci_connector_ops.pipelines.utils import get_file_contents, slugify, with_exit_code
-from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Platform, Secret
+from ci_connector_ops.pipelines.utils import get_file_contents, slugify, \
+    with_exit_code
+from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, \
+    Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
@@ -560,8 +561,9 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "Dockerfile",
         "dbt_adapter": "dbt-postgres==1.0.0",
         "integration_name": "postgres",
-        "supports_in_connector_normalization": False,
-        "yum_packages": [],
+        "supports_in_connector_normalization": True,
+        "yum_packages": ["gcc-c++"],
+        "pip_packages": ["MarkupSafe<2.1"],
     },
     "destination-redshift": {
         "dockerfile": "redshift.Dockerfile",
