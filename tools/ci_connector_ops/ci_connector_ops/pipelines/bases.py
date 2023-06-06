@@ -39,6 +39,9 @@ class CIContext(str, Enum):
     NIGHTLY_BUILDS = "nightly_builds"
     MASTER = "master"
 
+    def __str__(self) -> str:
+        return self.value
+
 
 class StepStatus(Enum):
     """An Enum to characterize the success, failure or skipping of a Step."""
