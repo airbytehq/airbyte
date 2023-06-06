@@ -193,5 +193,7 @@ class AcceptanceTests(PytestStep):
                 if file_path.startswith("updated_configurations"):
                     self.context.updated_secrets_dir = secret_dir
                     break
-
-        return self.pytest_logs_to_step_result(soon_cat_container_stdout.value)
+        logs = soon_cat_container_stdout.value
+        if self.context.is_local:
+            await self.write_log_file(logs)
+        return self.pytest_logs_to_step_result(logs)
