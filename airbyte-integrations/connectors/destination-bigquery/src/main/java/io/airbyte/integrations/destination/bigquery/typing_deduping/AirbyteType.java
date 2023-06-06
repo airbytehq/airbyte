@@ -8,7 +8,7 @@ public sealed interface AirbyteType permits AirbyteType.Primitive, AirbyteType.O
 
   /**
    * The most common call pattern is probably to use this method on the stream schema, verify that it's an {@link Object} schema, and then call
-   * {@link Object#asColumns()} on it.
+   * {@link Object#properties()} to get the columns.
    * <p>
    * If the top-level schema is not an object, then we can't really do anything with it, and should probably fail the sync.
    */
@@ -37,13 +37,6 @@ public sealed interface AirbyteType permits AirbyteType.Primitive, AirbyteType.O
   // TODO maybe we shouldn't call this thing Object, since java.lang.Object also exists?
   record Object(LinkedHashMap<String, AirbyteType> properties) implements AirbyteType {
 
-    LinkedHashMap<String, AirbyteType> asColumns() {
-      return properties.entrySet().stream()
-          .collect(
-              LinkedHashMap::new,
-              (map, entry) -> map.put(entry.getKey(), entry.getValue()),
-              LinkedHashMap::putAll);
-    }
   }
 
   record Array(AirbyteType items) implements AirbyteType {
