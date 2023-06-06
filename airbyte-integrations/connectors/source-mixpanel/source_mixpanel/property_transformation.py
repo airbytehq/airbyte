@@ -22,7 +22,7 @@ def transform_property_names(property_names: Iterable[str]) -> Iterator[Transfor
     lowercase_properties = set()
 
     # Sort property names for consistent result
-    for property_name in sorted(property_names):
+    for property_name in sorted(property_names, reverse=True):
         property_name_transformed = property_name
         if property_name_transformed.startswith("$"):
             property_name_transformed = property_name_transformed[1:]
