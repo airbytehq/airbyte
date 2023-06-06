@@ -65,7 +65,7 @@ The Stripe source connector supports the following streams:
 - [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
 - [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
-- [Payment Methods](https://stripe.com/docs/api/payment_methods/list) \(Incremental\)
+- [Payment Methods](https://stripe.com/docs/api/payment_methods/list)
 - [Payouts](https://stripe.com/docs/api/payouts/list) \(Incremental\)
 - [Promotion Code](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
 - [Plans](https://stripe.com/docs/api/plans/list) \(Incremental\)
