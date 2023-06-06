@@ -539,7 +539,7 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dockerfile": "mssql.Dockerfile",
         "dbt_adapter": "dbt-sqlserver==1.0.0",
         "integration_name": "mssql",
-        "supports_in_connector_normalization": False,
+        "supports_in_connector_normalization": True,
         "yum_packages": [],
     },
     "destination-mysql": {
