@@ -145,7 +145,7 @@
       "type": ["null", "integer"]
     },
     "customer": {
-      "$ref": "customers.json"
+      "$ref": "customer.json"
     },
     "eps": {
       "additionalProperties": true,
