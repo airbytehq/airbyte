@@ -50,7 +50,7 @@ You'll also need the ID of the Spreadsheet you'd like to sync. Unlike Google She
 
 ## Supported sync modes
 
-The Smartsheets source connector supports the following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Smartsheets source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
  - Full Refresh | Overwrite
  - Full Refresh | Append
  - Incremental  | Append
@@ -64,6 +64,28 @@ At the time of writing, the [Smartsheets API rate limit](https://developers.smar
 
 This source provides a single stream per spreadsheet with a dynamic schema, depending on your spreadsheet structure.
 For example, having a spreadsheet `Customers`, the connector would introduce a stream with the same name and properties typed according to Data type map (see [below](https://docs.airbyte.com/integrations/sources/smartsheets/#data-type-map)).
+
+Additionallly specific metadata fields related to the sheet or row can be include in the stream, these must be specified in the configuration in order to be included in the data stream
+
+| Supported Metadata Fields |
+|------|
+|sheetcreatedAt|
+|sheetid|
+|sheetmodifiedAt|
+|sheetname|
+|sheetpermalink|
+|sheetversion|
+|sheetaccess_level|
+|row_id|
+|row_access_level|
+|row_created_at|
+|row_created_by|
+|row_expanded|
+|row_modified_by|
+|row_parent_id|
+|row_permalink|
+|row_number|
+|row_version|
 
 ## Important highlights
 The Smartsheet Source is written to pull data from a single Smartsheet spreadsheet. Unlike Google Sheets, Smartsheets only allows one sheet per Smartsheet - so a given Airbyte connector instance can sync only one sheet at a time. To replicate multiple spreadsheets, you can create multiple instances of the Smartsheet Source in Airbyte, reusing the API token for all your sheets that you need to sync.
@@ -88,6 +110,7 @@ The remaining column datatypes supported by Smartsheets are more complex types (
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 1.1.0   | 2023-06-02 | [22382](https://github.com/airbytehq/airbyte/pull/22382) | Add support for ingesting metadata fields |
 | 1.0.2   | 2023-05-12 | [26024](https://github.com/airbytehq/airbyte/pull/26024) | Fix dependencies conflict                                 |
 | 1.0.1   | 2023-04-27 | [25562](https://github.com/airbytehq/airbyte/pull/25562) | Update testing dependencies                               |
 | 1.0.0   | 2023-02-19 | [23237](https://github.com/airbytehq/airbyte/pull/23237) | Fix OAuth2.0 token refresh                                |

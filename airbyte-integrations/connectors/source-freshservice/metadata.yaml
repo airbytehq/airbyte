@@ -10,9 +10,11 @@ data:
   name: Freshservice
   registries:
     cloud:
-      enabled: false
+      enabled: true
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/freshservice
+  documentationUrl: https://docs.airbyte.com/integrations/sources/freshservice
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

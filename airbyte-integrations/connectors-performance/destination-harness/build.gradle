@@ -1,6 +1,7 @@
 plugins {
     id 'application'
     id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
 }
 
 repositories {
@@ -22,4 +23,9 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     implementation 'io.airbyte:airbyte-commons-worker:0.42.0'
     implementation 'io.airbyte.airbyte-config:config-models:0.42.0'
+    implementation 'junit:junit:4.13.1'
+    implementation 'junit:junit:4.13.1'
+    implementation 'org.testng:testng:7.1.0'
+    implementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+
 }

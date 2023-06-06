@@ -13,8 +13,7 @@ import requests
 import semver
 import yaml
 from ci_connector_ops.pipelines.actions import environments
-from ci_connector_ops.pipelines.bases import PytestStep, Step, StepResult, StepStatus
-from ci_connector_ops.pipelines.contexts import CIContext
+from ci_connector_ops.pipelines.bases import CIContext, PytestStep, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.utils import METADATA_FILE_NAME
 from ci_connector_ops.utils import Connector
 from dagger import File
@@ -61,7 +60,7 @@ class VersionCheck(Step, ABC):
     async def _run(self) -> StepResult:
         if not self.should_run:
             return StepResult(self, status=StepStatus.SKIPPED, stdout="No modified files required a version bump.")
-        if self.context.ci_context is CIContext.MASTER:
+        if self.context.ci_context in [CIContext.MASTER, CIContext.NIGHTLY_BUILDS]:
             return StepResult(self, status=StepStatus.SKIPPED, stdout="Version check are not running in master context.")
         try:
             return self.validate()

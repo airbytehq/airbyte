@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.39.2
+Make step and cursor_granularity optional
+
+## 0.39.1
+Improve connector builder error messages
+
+## 0.39.0
+Align schema generation in SchemaInferrer with Airbyte platform capabilities
+
+## 0.38.0
+Allow nested objects in request_body_json
+
 ## 0.37.0
 low-code: Make refresh token in oauth authenticator optional
 

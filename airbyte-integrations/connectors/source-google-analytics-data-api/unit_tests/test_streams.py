@@ -10,7 +10,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from freezegun import freeze_time
-from source_google_analytics_data_api.source import GoogleAnalyticsDataApiBaseStream
+from source_google_analytics_data_api.source import PAGE_SIZE, GoogleAnalyticsDataApiBaseStream
 
 from .utils import read_incremental
 
@@ -88,9 +88,13 @@ def test_request_body_json(patch_base_class):
         ],
         "dateRanges": [request_body_params["stream_slice"]],
         "returnPropertyQuota": True,
+        "offset": str(0),
+        "limit": str(PAGE_SIZE),
     }
 
-    request_body_json = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"]).request_body_json(**request_body_params)
+    request_body_json = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"]).request_body_json(
+        **request_body_params
+    )
     assert request_body_json == expected_body_json
 
 
@@ -98,21 +102,15 @@ def test_next_page_token_equal_chunk(patch_base_class):
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
     response = MagicMock()
     response.json.side_effect = [
-        {"limit": 100000, "offset": 0, "rowCount": 200000},
-        {"limit": 100000, "offset": 100000, "rowCount": 200000},
-        {"limit": 100000, "offset": 200000, "rowCount": 200000},
+        {"rowCount": 300000},
+        {"rowCount": 300000},
+        {"rowCount": 300000},
     ]
     inputs = {"response": response}
 
     expected_tokens = [
-        {
-            "limit": 100000,
-            "offset": 100000,
-        },
-        {
-            "limit": 100000,
-            "offset": 200000,
-        },
+        {"offset": 100000},
+        {"offset": 200000},
         None,
     ]
 
@@ -124,26 +122,19 @@ def test_next_page_token(patch_base_class):
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
     response = MagicMock()
     response.json.side_effect = [
-        {"limit": 100000, "offset": 0, "rowCount": 250000},
-        {"limit": 100000, "offset": 100000, "rowCount": 250000},
-        {"limit": 100000, "offset": 200000, "rowCount": 250000},
-        {"limit": 100000, "offset": 300000, "rowCount": 250000},
+        {"rowCount": 450000},
+        {"rowCount": 450000},
+        {"rowCount": 450000},
+        {"rowCount": 450000},
+        {"rowCount": 450000},
     ]
     inputs = {"response": response}
 
     expected_tokens = [
-        {
-            "limit": 100000,
-            "offset": 100000,
-        },
-        {
-            "limit": 100000,
-            "offset": 200000,
-        },
-        {
-            "limit": 100000,
-            "offset": 300000,
-        },
+        {"offset": 100000},
+        {"offset": 200000},
+        {"offset": 300000},
+        {"offset": 400000},
         None,
     ]
 
@@ -325,38 +316,38 @@ def test_read_incremental(requests_mock):
             "dimensionHeaders": [{"name": "date"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
             "rows": [{"dimensionValues": [{"value": "20221229"}], "metricValues": [{"value": "100"}]}],
-            "rowCount": 1
+            "rowCount": 1,
         },
         {
             "dimensionHeaders": [{"name": "date"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
             "rows": [{"dimensionValues": [{"value": "20221230"}], "metricValues": [{"value": "110"}]}],
-            "rowCount": 1
+            "rowCount": 1,
         },
         {
             "dimensionHeaders": [{"name": "date"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
             "rows": [{"dimensionValues": [{"value": "20221231"}], "metricValues": [{"value": "120"}]}],
-            "rowCount": 1
+            "rowCount": 1,
         },
         {
             "dimensionHeaders": [{"name": "date"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
             "rows": [{"dimensionValues": [{"value": "20230101"}], "metricValues": [{"value": "130"}]}],
-            "rowCount": 1
+            "rowCount": 1,
         },
         {
             "dimensionHeaders": [{"name": "date"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
             "rows": [{"dimensionValues": [{"value": "20230101"}], "metricValues": [{"value": "140"}]}],
-            "rowCount": 1
+            "rowCount": 1,
         },
         {
             "dimensionHeaders": [{"name": "date"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
             "rows": [{"dimensionValues": [{"value": "20230102"}], "metricValues": [{"value": "150"}]}],
-            "rowCount": 1
-        }
+            "rowCount": 1,
+        },
     ]
 
     requests_mock.register_uri(

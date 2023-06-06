@@ -1,5 +1,8 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
+  "title": "Ad Campaign Analytics",
+  "additionalProperties": true,
   "properties": {
     "actionClicks": {
       "type": ["null", "number"]
@@ -7,7 +10,19 @@
     "adUnitClicks": {
       "type": ["null", "number"]
     },
+    "approximateUniqueImpressions": {
+      "type": ["null", "number"]
+    },
+    "cardClicks": {
+      "type": ["null", "number"]
+    },
+    "cardImpressions": {
+      "type": ["null", "number"]
+    },
     "clicks": {
+      "type": ["null", "number"]
+    },
+    "commentLikes": {
       "type": ["null", "number"]
     },
     "comments": {
@@ -17,17 +32,28 @@
       "type": ["null", "number"]
     },
     "conversionValueInLocalCurrency": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "costInLocalCurrency": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "costInUsd": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
-    "start_date": {
-      "type": ["null", "string"],
-      "format": "date"
+    "documentCompletions": {
+      "type": ["null", "number"]
+    },
+    "documentFirstQuartileCompletions": {
+      "type": ["null", "number"]
+    },
+    "documentMidpointCompletions": {
+      "type": ["null", "number"]
+    },
+    "documentThirdQuartileCompletions": {
+      "type": ["null", "number"]
+    },
+    "downloadClicks": {
+      "type": ["null", "number"]
     },
     "end_date": {
       "type": ["null", "string"],
@@ -49,6 +75,12 @@
       "type": ["null", "number"]
     },
     "impressions": {
+      "type": ["null", "number"]
+    },
+    "jobApplications": {
+      "type": ["null", "number"]
+    },
+    "jobApplyClicks": {
       "type": ["null", "number"]
     },
     "landingPageClicks": {
@@ -75,9 +107,6 @@
     "otherEngagements": {
       "type": ["null", "number"]
     },
-    "_pivot": {
-      "type": ["null", "string"]
-    },
     "pivotValue": {
       "type": ["null", "string"]
     },
@@ -87,7 +116,28 @@
         "type": ["null", "string"]
       }
     },
+    "postClickJobApplications": {
+      "type": ["null", "number"]
+    },
+    "postClickJobApplyClicks": {
+      "type": ["null", "number"]
+    },
+    "postClickRegistrations": {
+      "type": ["null", "number"]
+    },
+    "postViewJobApplications": {
+      "type": ["null", "number"]
+    },
+    "postViewJobApplyClicks": {
+      "type": ["null", "number"]
+    },
+    "postViewRegistrations": {
+      "type": ["null", "number"]
+    },
     "reactions": {
+      "type": ["null", "number"]
+    },
+    "registrations": {
       "type": ["null", "number"]
     },
     "sends": {
@@ -96,10 +146,20 @@
     "shares": {
       "type": ["null", "number"]
     },
+    "start_date": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "talentLeads": {
+      "type": ["null", "number"]
+    },
     "textUrlClicks": {
       "type": ["null", "number"]
     },
     "totalEngagements": {
+      "type": ["null", "number"]
+    },
+    "validWorkEmailLeads": {
       "type": ["null", "number"]
     },
     "videoCompletions": {
@@ -120,16 +180,37 @@
     "videoViews": {
       "type": ["null", "number"]
     },
-    "viralClicks": {
+    "viralCardClicks": {
       "type": ["null", "number"]
     },
-    "viralComments": {
+    "viralCardImpressions": {
+      "type": ["null", "number"]
+    },
+    "viralClicks": {
       "type": ["null", "number"]
     },
     "viralCommentLikes": {
       "type": ["null", "number"]
     },
+    "viralComments": {
+      "type": ["null", "number"]
+    },
     "viralCompanyPageClicks": {
+      "type": ["null", "number"]
+    },
+    "viralDocumentCompletions": {
+      "type": ["null", "number"]
+    },
+    "viralDocumentFirstQuartileCompletions": {
+      "type": ["null", "number"]
+    },
+    "viralDocumentMidpointCompletions": {
+      "type": ["null", "number"]
+    },
+    "viralDocumentThirdQuartileCompletions": {
+      "type": ["null", "number"]
+    },
+    "viralDownloadClicks": {
       "type": ["null", "number"]
     },
     "viralExternalWebsiteConversions": {
@@ -150,6 +231,12 @@
     "viralImpressions": {
       "type": ["null", "number"]
     },
+    "viralJobApplications": {
+      "type": ["null", "number"]
+    },
+    "viralJobApplyClicks": {
+      "type": ["null", "number"]
+    },
     "viralLandingPageClicks": {
       "type": ["null", "number"]
     },
@@ -165,7 +252,28 @@
     "viralOtherEngagements": {
       "type": ["null", "number"]
     },
+    "viralPostClickJobApplications": {
+      "type": ["null", "number"]
+    },
+    "viralPostClickJobApplyClicks": {
+      "type": ["null", "number"]
+    },
+    "viralPostClickRegistrations": {
+      "type": ["null", "number"]
+    },
+    "viralPostViewJobApplications": {
+      "type": ["null", "number"]
+    },
+    "viralPostViewJobApplyClicks": {
+      "type": ["null", "number"]
+    },
+    "viralPostViewRegistrations": {
+      "type": ["null", "number"]
+    },
     "viralReactions": {
+      "type": ["null", "number"]
+    },
+    "viralRegistrations": {
       "type": ["null", "number"]
     },
     "viralShares": {

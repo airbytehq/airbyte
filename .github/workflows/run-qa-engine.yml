@@ -9,7 +9,6 @@ on:
 jobs:
   run-qa-engine:
     name: "Run QA Engine"
-    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
@@ -22,7 +21,7 @@ jobs:
       - name: Preparing Runner to the Build process
         uses: ./.github/actions/runner-prepare-for-build
       - name: Install ci-connector-ops package
-        run: pip install --quiet -e ./tools/ci_connector_ops\[qa_engine\]
+        run: pip install airbyte-ci/connectors/qa-engine
       - name: Run QA Engine
         env:
           LOGLEVEL: INFO
