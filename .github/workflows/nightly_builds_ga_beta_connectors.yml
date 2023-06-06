@@ -1,4 +1,4 @@
-name: POC Connectors CI - nightly builds
+name: Nightly builds for GA and Beta connectors
 
 on:
   schedule:
@@ -14,11 +14,11 @@ on:
         default: --concurrency=10 --release-stage=generally_available --release-stage=beta
         required: true
 
-run-name: Test connectors ${{ inputs.test-connectors-options || 'Nightly builds GA and Beta connectors' }}
+run-name: Test connectors ${{ inputs.test-connectors-options || 'Nightly builds for GA and Beta connectors' }}
 
 jobs:
   test_connectors:
-    name: Test connectors ${{ inputs.test-connectors-options || 'Nightly builds GA and Beta connectors' }}
+    name: Test connectors ${{ inputs.test-connectors-options || 'Nightly builds for GA and Beta connectors' }}
     timeout-minutes: 600 # 10 hours
     runs-on: ${{ inputs.runs-on || 'dev-large-runner' }}
     steps:
