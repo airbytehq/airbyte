@@ -22,6 +22,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
@@ -60,7 +61,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   private boolean isEphemeralKeysAndPurgingStagingData(final JsonNode config, final EncryptionConfig encryptionConfig) {
-    return !isPurgeStagingData(config) && encryptionConfig instanceof AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL;
+    return !isPurgeStagingData(config) && encryptionConfig instanceof final AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL;
   }
 
   @Override
@@ -163,9 +164,37 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   /**
+   * This consumer is used for asynchronous writing to S3
+   *
+   * @param config config
+   * @param catalog catalog
+   * @param outputRecordCollector outputRecordCollector
+   * @return
+   */
+  @Override
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(final JsonNode config,
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final Consumer<AirbyteMessage> outputRecordCollector) {
+    final EncryptionConfig encryptionConfig =
+        config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
+    final JsonNode s3Options = findS3Options(config);
+    final S3DestinationConfig s3Config = getS3DestinationConfig(s3Options);
+
+    return new StagingConsumerFactory().createAsync(
+        outputRecordCollector,
+        getDatabase(getDataSource(config)),
+        new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
+        getNamingResolver(),
+        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, 1)),
+        config,
+        catalog,
+        isPurgeStagingData(s3Options));
+  }
+
+  /**
    * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number of
    * file buffers and sets the minimum number to the default
-   *
+   * <p>
    * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit has
    * not been thoroughly load tested across all instance sizes
    *
