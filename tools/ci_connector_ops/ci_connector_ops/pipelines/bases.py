@@ -16,8 +16,10 @@ from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 import anyio
 import asyncer
 from anyio import Path
-from ci_connector_ops.pipelines.consts import PYPROJECT_TOML_FILE_PATH
+from ci_connector_ops.pipelines.consts import PYPROJECT_TOML_FILE_PATH, LOCAL_REPORTS_PATH_ROOT
+from ci_connector_ops.pipelines.actions import remote_storage
 from ci_connector_ops.pipelines.utils import check_path_in_workdir, slugify, with_exit_code, with_stderr, with_stdout
+
 from ci_connector_ops.utils import console
 from dagger import Container, QueryError
 from rich.console import Group
@@ -278,6 +280,30 @@ class Report:
     def run_duration(self) -> int:  # noqa D102
         return (self.created_at - self.pipeline_context.created_at).total_seconds()
 
+    @property
+    def remote_storage_enabled(self) -> bool:  # noqa D102
+        return self.pipeline_context.is_ci
+
+    async def save(self, file_path_key: str) -> None:
+        """Save the report as a JSON file."""
+        local_report_path = anyio.Path(LOCAL_REPORTS_PATH_ROOT + file_path_key)
+        await local_report_path.parents[0].mkdir(parents=True, exist_ok=True)
+        await local_report_path.write_text(self.to_json())
+
+        if self.remote_storage_enabled:
+            local_report_dagger_file = (
+                self.pipeline_context.dagger_client.host().directory(".", include=[str(local_report_path)]).file(str(local_report_path))
+            )
+            report_upload_exit_code, _stdout, _stderr = await remote_storage.upload_to_gcs(
+                dagger_client=self.pipeline_context.dagger_client,
+                file_to_upload=local_report_dagger_file,
+                key=file_path_key,
+                bucket=self.pipeline_context.ci_report_bucket,
+                gcs_credentials=self.pipeline_context.ci_gcs_credentials_secret,
+            )
+            if report_upload_exit_code != 0:
+                self.pipeline_context.logger.error(f"Uploading the report to GCS Bucket: {self.pipeline_context.ci_report_bucket} failed.")
+
     def to_json(self) -> str:
         """Create a JSON representation of the report.
 
@@ -346,10 +372,6 @@ class Report:
 @dataclass(frozen=True)
 class ConnectorReport(Report):
     """A dataclass to build connector test reports to share pipelines executions results with the user."""
-
-    @property
-    def should_be_saved(self) -> bool:  # noqa D102
-        return self.pipeline_context.is_ci
 
     @property
     def should_be_commented_on_pr(self) -> bool:  # noqa D102

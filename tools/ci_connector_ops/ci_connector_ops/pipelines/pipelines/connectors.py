@@ -4,16 +4,38 @@
 """This module groups the functions to run full pipelines for connector testing."""
 
 import sys
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, TYPE_CHECKING
 
 import anyio
 import dagger
-from ci_connector_ops.pipelines.actions import environments
-from ci_connector_ops.pipelines.contexts import ConnectorContext
 from dagger import Config
+
+from ci_connector_ops.pipelines.actions import environments
+from ci_connector_ops.pipelines.bases import Report, StepResult
+from ci_connector_ops.pipelines.contexts import ConnectorContext
 
 GITHUB_GLOBAL_CONTEXT = "[POC please ignore] Connectors CI"
 GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
+
+
+# HACK: This is to avoid wrapping the whole pipeline in a dagger pipeline to avoid instability just prior to launch
+# TODO (ben): Refactor run_connectors_pipelines to wrap the whole pipeline in a dagger pipeline
+async def run_report_upload_pipeline(dagger_client: dagger.Client, contexts: List[ConnectorContext]) -> List[ConnectorContext]:
+    first_connector_context = contexts[0]
+    pipeline_name = f"Report upload {first_connector_context.report_output_prefix}"
+    first_connector_context.pipeline_name = pipeline_name
+
+    # Transform contexts into a list of steps
+    steps_results = [StepResult(step=None, status=context.state.to_step_status) for context in contexts]
+
+    report = Report(
+        name=pipeline_name,
+        pipeline_context=first_connector_context,
+        steps_results=steps_results,
+    )
+
+    file_path_key = f"{first_connector_context.report_output_prefix}/complete.json"
+    return await report.save(file_path_key)
 
 
 async def run_connectors_pipelines(
