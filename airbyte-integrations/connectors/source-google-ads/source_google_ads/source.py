@@ -7,9 +7,10 @@ import logging
 import traceback
 from typing import Any, Iterable, List, Mapping, MutableMapping, Tuple
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.errors import GoogleAdsException
 from pendulum import parse, today
 
@@ -37,7 +38,7 @@ from .streams import (
 )
 from .utils import GAQL
 
-FULL_REFRESH_CUSTOM_TABLE = ["geo_target_constant", "custom_audience"]
+FULL_REFRESH_CUSTOM_TABLE = ["asset", "asset_group_listing_group_filter", "custom_audience", "geo_target_constant"]
 
 
 class SourceGoogleAds(AbstractSource):
@@ -46,7 +47,11 @@ class SourceGoogleAds(AbstractSource):
         if config.get("end_date") == "":
             config.pop("end_date")
         for query in config.get("custom_queries", []):
-            query["query"] = GAQL.parse(query["query"])
+            try:
+                query["query"] = GAQL.parse(query["query"])
+            except ValueError:
+                message = f"The custom GAQL query {query['table_name']} failed. Validate your GAQL query with the Google Ads query validator. https://developers.google.com/google-ads/api/fields/v13/query_validator"
+                raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
         return config
 
     @staticmethod

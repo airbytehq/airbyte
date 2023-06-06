@@ -581,5 +581,47 @@ def test_format_datetime(test_name, input_dt, datetimeformat, datetimeformat_gra
     assert expected_output == output_date
 
 
+def test_step_but_no_cursor_granularity():
+    with pytest.raises(ValueError):
+        DatetimeBasedCursor(
+            start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000", parameters={}),
+            end_datetime=MinMaxDatetime("2021-01-10T00:00:00.000000+0000", parameters={}),
+            step="P1D",
+            cursor_field=InterpolatedString(cursor_field, parameters={}),
+            datetime_format="%Y-%m-%d",
+            lookback_window=InterpolatedString("P0D", parameters={}),
+            config=config,
+            parameters={},
+        )
+
+
+def test_cursor_granularity_but_no_step():
+    with pytest.raises(ValueError):
+        DatetimeBasedCursor(
+            start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000", parameters={}),
+            end_datetime=MinMaxDatetime("2021-01-10T00:00:00.000000+0000", parameters={}),
+            cursor_granularity="P1D",
+            cursor_field=InterpolatedString(cursor_field, parameters={}),
+            datetime_format="%Y-%m-%d",
+            lookback_window=InterpolatedString("P0D", parameters={}),
+            config=config,
+            parameters={},
+        )
+
+
+def test_no_cursor_granularity_and_no_step_then_only_return_one_slice():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2021-01-01", parameters={}),
+        end_datetime=MinMaxDatetime("2023-01-01", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        lookback_window=InterpolatedString("P0D", parameters={}),
+        config=config,
+        parameters={},
+    )
+    stream_slices = cursor.stream_slices(SyncMode.incremental, {})
+    assert stream_slices == [{"start_time": "2021-01-01", "end_time": "2023-01-01"}]
+
+
 if __name__ == "__main__":
     unittest.main()

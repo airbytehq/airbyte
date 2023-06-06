@@ -13,9 +13,12 @@ data:
   name: IBM Db2
   registries:
     cloud:
-      enabled: false
+      enabled: false # Requires a strict-encrypt variant
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/db2
+  documentationUrl: https://docs.airbyte.com/integrations/sources/db2
+  tags:
+    - language:java
+    - language:python
 metadataSpecVersion: "1.0"
