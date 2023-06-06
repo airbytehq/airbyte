@@ -386,6 +386,7 @@ def publish(
                 pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
                 ci_context=ctx.obj.get("ci_context"),
                 ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+                pull_request=ctx.obj.get("pull_request"),
             )
             for connector, modified_files in selected_connectors_and_files.items()
         ]
