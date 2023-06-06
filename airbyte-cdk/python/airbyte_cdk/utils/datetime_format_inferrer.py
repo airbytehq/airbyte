@@ -2,10 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from collections import defaultdict
-from typing import Any, Dict, List, Optional, Union
-from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
+from typing import Any, Dict, Union
+
 from airbyte_cdk.models import AirbyteRecordMessage
+from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 
 
 class DatetimeFormatInferrer:
@@ -55,13 +55,17 @@ class DatetimeFormatInferrer:
                 if self._matches_format(field_value, format):
                     self._datetime_candidates[field_name] = format
                     break
-    
+
     def _validate(self, record: AirbyteRecordMessage):
         """Validates that the record is consistent with the inferred datetime formats"""
         for candidate_field_name in list(self._datetime_candidates.keys()):
             candidate_field_format = self._datetime_candidates[candidate_field_name]
             current_value = record.data.get(candidate_field_name, None)
-            if current_value is None or not self._can_be_datetime(current_value) or not self._matches_format(current_value, candidate_field_format):
+            if (
+                current_value is None
+                or not self._can_be_datetime(current_value)
+                or not self._matches_format(current_value, candidate_field_format)
+            ):
                 self._datetime_candidates.pop(candidate_field_name)
 
     def accumulate(self, record: AirbyteRecordMessage):
