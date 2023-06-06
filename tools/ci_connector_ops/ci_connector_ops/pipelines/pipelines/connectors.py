@@ -17,6 +17,7 @@ from ci_connector_ops.pipelines.contexts import ConnectorContext, ContextState
 GITHUB_GLOBAL_CONTEXT = "[POC please ignore] Connectors CI"
 GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
 
+
 def context_state_to_step_result(state: ContextState) -> StepResult:
     if state == ContextState.SUCCESSFUL:
         return StepResult(step=None, status=StepStatus.SUCCESS)
@@ -26,7 +27,6 @@ def context_state_to_step_result(state: ContextState) -> StepResult:
 
     if state == ContextState.ERROR:
         return StepResult(step=None, status=StepStatus.FAILURE)
-
 
     raise ValueError(f"Could not convert context state: {state} to step status")
 
@@ -53,11 +53,10 @@ async def run_report_complete_pipeline(dagger_client: dagger.Client, contexts: L
         name=pipeline_name,
         pipeline_context=first_connector_context,
         steps_results=steps_results,
-        file_path_key=file_path_key,
+        _file_path_key=file_path_key,
     )
 
-
-    return await report.save(file_path_key)
+    return await report.save()
 
 
 async def run_connectors_pipelines(

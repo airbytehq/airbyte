@@ -259,7 +259,15 @@ class Report:
     steps_results: List[StepResult]
     created_at: datetime = field(default_factory=datetime.utcnow)
     name: str = "REPORT"
-    file_path_key: str = "report.json"
+    _file_path_key: str = "report.json"
+
+    @property
+    def file_path_key(self) -> str:
+        return self._file_path_key
+
+    @file_path_key.setter
+    def file_path_key(self, v: str) -> None:
+        self._file_path_key = v
 
     @property
     def failed_steps(self) -> List[StepResult]:  # noqa D102
