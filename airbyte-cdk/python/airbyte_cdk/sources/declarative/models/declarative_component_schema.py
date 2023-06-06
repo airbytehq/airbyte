@@ -1137,6 +1137,7 @@ class DeclarativeSource(BaseModel):
     schemas: Optional[Schemas] = None
     definitions: Optional[Dict[str, Any]] = None
     spec: Optional[Spec] = None
+    metadata: Optional[Dict[str, Any]] = None
 
 
 class DeclarativeStream(BaseModel):
