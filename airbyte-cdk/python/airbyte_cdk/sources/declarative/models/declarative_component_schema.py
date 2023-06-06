@@ -847,13 +847,13 @@ class DatetimeBasedCursor(BaseModel):
     )
     datetime_format: str = Field(
         ...,
-        description="The format of the datetime value.",
+        description="The datetime format of the Cursor Field.",
         examples=["%Y-%m-%dT%H:%M:%S.%f%z"],
-        title="Datetime Format",
+        title="Cursor Field Datetime Format",
     )
-    cursor_granularity: str = Field(
-        ...,
-        description="Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one, e.g. for %Y-%m-%d the granularity should be P1D, for %Y-%m-%dT%H:%M:%SZ the granularity should be PT1S.",
+    cursor_granularity: Optional[str] = Field(
+        None,
+        description="Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one, e.g. for %Y-%m-%d the granularity should be P1D, for %Y-%m-%dT%H:%M:%SZ the granularity should be PT1S. Given this field is provided, `step` needs to be provided as well.",
         examples=["PT1S"],
         title="Cursor Granularity",
     )
@@ -869,9 +869,9 @@ class DatetimeBasedCursor(BaseModel):
         examples=["2020-01-1T00:00:00Z", "{{ config['start_time'] }}"],
         title="Start Datetime",
     )
-    step: str = Field(
-        ...,
-        description="The size of the time window (ISO8601 duration).",
+    step: Optional[str] = Field(
+        None,
+        description="The size of the time window (ISO8601 duration). Given this field is provided, `cursor_granularity` needs to be provided as well.",
         examples=["P1W", "{{ config['step_increment'] }}"],
         title="Step",
     )
@@ -1094,12 +1094,13 @@ class HttpRequester(BaseModel):
         ],
         title="Request Body Payload (Non-JSON)",
     )
-    request_body_json: Optional[Union[str, Dict[str, str]]] = Field(
+    request_body_json: Optional[Union[str, Dict[str, Any]]] = Field(
         None,
-        description="Specifies how to populate the body of the request with a JSON payload.",
+        description="Specifies how to populate the body of the request with a JSON payload. Can contain nested objects.",
         examples=[
             {"sort_order": "ASC", "sort_field": "CREATED_AT"},
             {"key": "{{ config['value'] }}"},
+            {"sort": {"field": "updated_at", "order": "ascending"}},
         ],
         title="Request Body JSON Payload",
     )

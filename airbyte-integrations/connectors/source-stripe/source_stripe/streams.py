@@ -237,6 +237,7 @@ class Disputes(IncrementalStripeStream):
     def path(self, **kwargs):
         return "disputes"
 
+
 class EarlyFraudWarnings(StripeStream):
     """
     API docs: https://stripe.com/docs/api/radar/early_fraud_warnings/list
@@ -380,6 +381,33 @@ class StripeSubStream(StripeStream, ABC):
                 # add reference to parent object when item doesn't have it already
                 item[self.parent_id] = parent_record["id"]
             yield item
+
+
+class ApplicationFees(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/application_fees
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "application_fees"
+
+
+class ApplicationFeesRefunds(StripeSubStream):
+    """
+    API docs: https://stripe.com/docs/api/fee_refunds/list
+    """
+
+    name = "application_fees_refunds"
+
+    parent = ApplicationFees
+    parent_id: str = "refund_id"
+    sub_items_attr = "refunds"
+    add_parent_id = True
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"application_fees/{stream_slice[self.parent_id]}/refunds"
 
 
 class Invoices(IncrementalStripeStream):
