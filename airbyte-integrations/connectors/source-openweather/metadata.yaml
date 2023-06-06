@@ -13,7 +13,7 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: alpha
+  releaseStage: generally_available
   documentationUrl: https://docs.airbyte.com/integrations/sources/openweather
   tags:
     - language:python
