@@ -40,7 +40,7 @@ public class KafkaSource extends BaseConnector implements Source {
   @Override
   public AirbyteCatalog discover(final JsonNode config) {
     KafkaFormat kafkaFormat = KafkaFormatFactory.getFormat(config);
-    final List<AirbyteStream> streams = kafkaFormat.getStreams();
+    final List<AirbyteStream> streams = kafkaFormat.getStreams(config);
     return new AirbyteCatalog().withStreams(streams);
   }
 
