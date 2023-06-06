@@ -53,7 +53,7 @@ The Aircall source connector supports the following [sync modes](https://docs.ai
 - contacts
 - numbers
 - tags
-- user_availablity
+- user_availability
 - users
 - teams
 - webhooks
