@@ -27,6 +27,7 @@ from source_zendesk_support.streams import (
     GroupMemberships,
     Groups,
     Macros,
+    Posts,
     Organizations,
     SatisfactionRatings,
     Schedules,
@@ -268,6 +269,7 @@ class TestAllStreams:
             (Groups),
             (Macros),
             (Organizations),
+            (Posts),
             (SatisfactionRatings),
             (SlaPolicies),
             (Tags),
@@ -289,6 +291,7 @@ class TestAllStreams:
             "Groups",
             "Macros",
             "Organizations",
+            "Posts",
             "SatisfactionRatings",
             "SlaPolicies",
             "Tags",
@@ -321,6 +324,7 @@ class TestAllStreams:
             (Groups, "groups"),
             (Macros, "macros"),
             (Organizations, "organizations"),
+            (Posts, "posts"),
             (SatisfactionRatings, "satisfaction_ratings"),
             (SlaPolicies, "slas/policies.json"),
             (Tags, "tags"),
@@ -342,6 +346,7 @@ class TestAllStreams:
             "Groups",
             "Macros",
             "Organizations",
+            "Posts",
             "SatisfactionRatings",
             "SlaPolicies",
             "Tags",
@@ -370,6 +375,7 @@ class TestSourceZendeskSupportStream:
         [
             (Macros),
             (Organizations),
+            (Posts),
             (Groups),
             (SatisfactionRatings),
             (TicketFields),
@@ -378,6 +384,7 @@ class TestSourceZendeskSupportStream:
         ids=[
             "Macros",
             "Organizations",
+            "Posts",
             "Groups",
             "SatisfactionRatings",
             "TicketFields",
@@ -398,6 +405,7 @@ class TestSourceZendeskSupportStream:
         [
             (Macros),
             (Organizations),
+            (Posts),
             (Groups),
             (SatisfactionRatings),
             (TicketFields),
@@ -406,6 +414,7 @@ class TestSourceZendeskSupportStream:
         ids=[
             "Macros",
             "Organizations",
+            "Posts",
             "Groups",
             "SatisfactionRatings",
             "TicketFields",
@@ -421,6 +430,7 @@ class TestSourceZendeskSupportStream:
         "stream_cls, current_state, last_record, expected",
         [
             (Macros, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
+            (Posts, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (
                 Organizations,
                 {"updated_at": "2022-03-17T16:03:07Z"},
@@ -434,6 +444,7 @@ class TestSourceZendeskSupportStream:
         ],
         ids=[
             "Macros",
+            "Posts",
             "Organizations",
             "Groups",
             "SatisfactionRatings",
@@ -450,12 +461,14 @@ class TestSourceZendeskSupportStream:
         "stream_cls, expected",
         [
             (Macros, None),
+            (Posts, None)
             (Organizations, None),
             (Groups, None),
             (TicketFields, None),
         ],
         ids=[
             "Macros",
+            "Posts",
             "Organizations",
             "Groups",
             "TicketFields",
@@ -470,12 +483,14 @@ class TestSourceZendeskSupportStream:
         "stream_cls, expected",
         [
             (Macros, {"start_time": 1622505600}),
+            (Posts, {"start_time": 1622505600}),
             (Organizations, {"start_time": 1622505600}),
             (Groups, {"start_time": 1622505600}),
             (TicketFields, {"start_time": 1622505600}),
         ],
         ids=[
             "Macros",
+            "Posts",
             "Organizations",
             "Groups",
             "TicketFields",
