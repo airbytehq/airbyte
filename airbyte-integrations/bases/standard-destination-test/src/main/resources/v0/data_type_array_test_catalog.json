@@ -42,7 +42,8 @@
           "array_big_number": {
             "type": ["array"],
             "items": {
-              "type": "number"
+              "type": "string",
+              "airbyte_type": "big_number"
             }
           },
           "array_integer": {
