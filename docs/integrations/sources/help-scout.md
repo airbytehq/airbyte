@@ -1,4 +1,4 @@
-# Wikipedia Pageviews
+# Help Scout
 
 This page contains the setup guide and reference information for the Help Scout source connector.
 
@@ -9,11 +9,12 @@ This page contains the setup guide and reference information for the Help Scout 
 3. Navigate to `https://secure.helpscout.net/authentication/authorizeClientApplication?client_id={application_id}&state={your_secret}`
 4. Copy the `code` param from the redirection URL
 5. Then make a post request with the 3 params you need as seen here: ```
-curl -X POST https://api.helpscout.net/v2/oauth2/token \
- --data 'code={code}' \
- --data 'client_id={application_id}' \
- --data 'client_secret={application_secret}' \
- --data 'grant_type=authorization_code'
+   curl -X POST https://api.helpscout.net/v2/oauth2/token \
+    --data 'code={code}' \
+    --data 'client_id={application_id}' \
+    --data 'client_secret={application_secret}' \
+    --data 'grant_type=authorization_code'
+
 ```
 
 
@@ -61,10 +62,11 @@ The Help Scout source connector supports the following [sync modes](https://docs
 
 ## Performance considerations
 
-Unknown
+No known performance considerations at this point.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                           | Subject        |
 | :------ | :--------- | :----------------------------------------------------- | :------------- |
 | 0.1.0   | 2023-02-25 | [#21489](https://github.com/airbytehq/airbyte/pull/21489) | Initial commit |
+```
