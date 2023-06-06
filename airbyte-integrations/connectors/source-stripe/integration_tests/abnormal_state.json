@@ -3,6 +3,20 @@
     "type": "STREAM",
     "stream": {
       "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "application_fees" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "date": 10000000000 },
+      "stream_descriptor": { "name": "application_fees_refunds" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
       "stream_descriptor": { "name": "charges" }
     }
   },

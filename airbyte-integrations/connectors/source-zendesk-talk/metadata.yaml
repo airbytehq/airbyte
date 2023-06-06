@@ -18,5 +18,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/zendesk-talk
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-talk
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

@@ -2,21 +2,19 @@
 
 Whether you are an Airbyte user or contributor, we have docs for you!
 
-## For Airbyte Users
-
-### For Airbyte Cloud users
+## For Airbyte Cloud users
 
 Browse the [connector catalog](https://docs.airbyte.com/integrations/) to find the connector you want. In case the connector is not yet supported on Airbyte Cloud, consider using [Airbyte Open Source](#for-airbyte-open-source-users).
 
 Next, check out the [step-by-step tutorial](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud) to sign up for Airbyte Cloud, understand Airbyte [concepts](https://docs.airbyte.com/cloud/core-concepts), and run your first sync. Then learn how to [use your Airbyte Cloud account](https://docs.airbyte.com/category/using-airbyte-cloud).
 
-### For Airbyte Open Source users
+## For Airbyte Open Source users
 
 Browse the [connector catalog](https://docs.airbyte.com/integrations/) to find the connector you want. If the connector is not yet supported on Airbyte Open Source, [build your own connector](https://docs.airbyte.com/connector-development/).
 
 Next, check out the [Airbyte Open Source QuickStart](https://docs.airbyte.com/quickstart/deploy-airbyte). Then learn how to [deploy](https://docs.airbyte.com/deploying-airbyte/local-deployment) and [manage](https://docs.airbyte.com/operator-guides/upgrading-airbyte) Airbyte Open Source in your cloud infrastructure. 
 
-### For Airbyte contributors
+## For Airbyte contributors
 
 To contribute to Airbyte code, connectors, and documentation, refer to our [Contributing Guide](https://docs.airbyte.com/contributing-to-airbyte/).
 

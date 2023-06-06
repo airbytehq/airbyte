@@ -9,8 +9,6 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk",
     "cached_property~=1.5",
     "facebook_business~=11.0",
-    "pendulum>=2,<3",
-    "backoff",
 ]
 
 TEST_REQUIREMENTS = [

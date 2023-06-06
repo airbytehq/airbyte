@@ -100,6 +100,11 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
   }
 
   @Override
+  protected boolean supportsInDestinationNormalization() {
+    return true;
+  }
+
+  @Override
   protected Optional<NamingConventionTransformer> getNameTransformer() {
     return Optional.of(NAME_TRANSFORMER);
   }
