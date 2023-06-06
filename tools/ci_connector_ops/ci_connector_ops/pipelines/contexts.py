@@ -100,6 +100,7 @@ class PipelineContext:
         self.logger = logging.getLogger(self.pipeline_name)
         self.dagger_client = None
         self._report = None
+        self.dockerd_service = None
         update_commit_status_check(**self.github_commit_status)
 
     @property
