@@ -19,7 +19,7 @@ from ci_connector_ops.pipelines.consts import (
     PYPROJECT_TOML_FILE_PATH,
 )
 from ci_connector_ops.pipelines.utils import get_file_contents
-from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Platform, Secret
+from dagger import CacheSharingMode, CacheVolume, Client, Container, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 
 if TYPE_CHECKING:
@@ -239,7 +239,14 @@ async def with_ci_connector_ops(context: PipelineContext) -> Container:
     return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])
 
 
-def with_global_dockerd_service(dagger_client) -> Container:
+def with_global_dockerd_service(dagger_client: Client) -> Container:
+    """Create a container with a docker daemon running.
+    We expose its 2375 port to use it as a docker host for docker-in-docker use cases.
+    Args:
+        dagger_client (Client): The dagger client used to create the container.
+    Returns:
+        Container: The container running dockerd as a service
+    """
     return (
         dagger_client.container()
         .from_(consts.DOCKER_DIND_IMAGE)
