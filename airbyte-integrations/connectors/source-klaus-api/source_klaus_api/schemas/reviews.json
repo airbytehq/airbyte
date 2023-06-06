@@ -1,213 +1,400 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "properties": {
-    "externalId": {
-      "type": ["string", "null"]
-    },
-    "url": {
-      "type": ["string", "null"]
-    },
-    "externalUrl": {
-      "type": ["string", "null"]
-    },
-    "lastUpdated": {
-      "type": "string"
-    },
-    "reviews": {
-      "type": "array",
-      "items": [{
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": ["string", "null"]
-          },
-          "reviewer": {
-            "type": "object",
-            "properties": {
-              "email": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "avatar": {
-                "type": ["string", "null"]
-              }
-            }
-          },
-          "reviewee": {
-            "type": "object",
-            "properties": {
-              "email": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "avatar": {
-                "type": ["string", "null"]
-              }
-            }
-          },
-          "score": {
-            "type": "integer"
-          },
-          "ratings": {
-            "type": "array",
-            "items": [{
-              "type": "object",
-              "properties": {
-                "categoryId": {
-                  "type": "string"
-                },
-                "categoryName": {
-                  "type": "string"
-                },
-                "score": {
-                  "type": "integer"
-                },
-                "weight": {
-                  "type": "integer"
-                },
-                "critical": {
-                  "type": "boolean"
-                },
-                "cause": {
-                  "type": "null"
-                }
-              }
-            }, {
-              "type": "object",
-              "properties": {
-                "categoryId": {
-                  "type": "string"
-                },
-                "categoryName": {
-                  "type": "string"
-                },
-                "score": {
-                  "type": "integer"
-                },
-                "weight": {
-                  "type": "integer"
-                },
-                "critical": {
-                  "type": "boolean"
-                },
-                "cause": {
-                  "type": "null"
-                }
-              }
-            }, {
-              "type": "object",
-              "properties": {
-                "categoryId": {
-                  "type": "string"
-                },
-                "categoryName": {
-                  "type": "string"
-                },
-                "score": {
-                  "type": "integer"
-                },
-                "weight": {
-                  "type": "number"
-                },
-                "critical": {
-                  "type": "boolean"
-                },
-                "cause": {
-                  "type": "null"
-                }
-              }
-            }, {
-              "type": "object",
-              "properties": {
-                "categoryId": {
-                  "type": "string"
-                },
-                "categoryName": {
-                  "type": "string"
-                },
-                "score": {
-                  "type": "integer"
-                },
-                "weight": {
-                  "type": "number"
-                },
-                "critical": {
-                  "type": "boolean"
-                },
-                "cause": {
-                  "type": "null"
-                }
-              }
-            }, {
-              "type": "object",
-              "properties": {
-                "categoryId": {
-                  "type": "string"
-                },
-                "categoryName": {
-                  "type": "string"
-                },
-                "score": {
-                  "type": "integer"
-                },
-                "weight": {
-                  "type": "integer"
-                },
-                "critical": {
-                  "type": "boolean"
-                },
-                "cause": {
-                  "type": "null"
-                }
-              }
-            }]
-          },
-          "comment": {
-            "type": "null"
-          },
-          "thread": {
-            "type": "array",
-            "items": {}
-          },
-          "tags": {
-            "type": "array",
-            "items": {}
-          },
-          "created": {
-            "type": "string"
-          },
-          "updated": {
-            "type": "string"
-          },
-          "received": {
-            "type": "boolean"
-          },
-          "reviewTime": {
-            "type": "string"
-          },
-          "scorecard": {
-            "type": "null"
-          }
-        }
-      }]
-    },
-    "comments": {
-      "type": "array",
-      "items": {}
-    },
-    "workspaceId": {
-      "type": "string"
-    },
-    "sourceType": {
-      "type": "string"
-    },
-    "createdAt": {
-      "type": "string"
-    }
-  }
-}
+   "$schema": "http://json-schema.org/schema#",
+   "properties": {
+     "comments": {
+       "items": {
+         "properties": {
+           "comment": {
+             "type": "string"
+           },
+           "created": {
+             "type": "string"
+           },
+           "createdISO": {
+             "type": "string"
+           },
+           "id": {
+             "type": "string"
+           },
+           "owner": {
+             "properties": {
+               "avatar": {
+                 "type": "string"
+               },
+               "email": {
+                 "type": "string"
+               },
+               "groups": {
+                 "items": {
+                   "properties": {
+                     "id": {
+                       "type": "string"
+                     },
+                     "name": {
+                       "type": "string"
+                     }
+                   },
+                   "type": "object"
+                 },
+                 "type": "array"
+               },
+               "name": {
+                 "type": "string"
+               }
+             },
+             "type": "object"
+           },
+           "tags": {
+             "type": "array"
+           },
+           "thread": {
+             "items": {
+               "properties": {
+                 "comment": {
+                   "type": "string"
+                 },
+                 "created": {
+                   "type": "string"
+                 },
+                 "createdISO": {
+                   "type": "string"
+                 },
+                 "id": {
+                   "type": "string"
+                 },
+                 "owner": {
+                   "properties": {
+                     "avatar": {
+                       "type": "string"
+                     },
+                     "email": {
+                       "type": "string"
+                     },
+                     "groups": {
+                       "type": "array"
+                     },
+                     "name": {
+                       "type": "string"
+                     }
+                   },
+                   "type": "object"
+                 },
+                 "tags": {
+                   "items": {
+                     "properties": {
+                       "tag": {
+                         "type": "string"
+                       },
+                       "user": {
+                         "properties": {
+                           "avatar": {
+                             "type": "string"
+                           },
+                           "email": {
+                             "type": "string"
+                           },
+                           "groups": {
+                             "items": {
+                               "properties": {
+                                 "id": {
+                                   "type": "string"
+                                 },
+                                 "name": {
+                                   "type": "string"
+                                 }
+                               },
+                               "type": "object"
+                             },
+                             "type": "array"
+                           },
+                           "name": {
+                             "type": "string"
+                           }
+                         },
+                         "type": "object"
+                       }
+                     },
+                     "type": "object"
+                   },
+                   "type": "array"
+                 },
+                 "thread": {
+                   "type": "array"
+                 },
+                 "updated": {
+                   "type": "string"
+                 },
+                 "updatedISO": {
+                   "type": "string"
+                 }
+               },
+               "type": "object"
+             },
+             "type": "array"
+           },
+           "updated": {
+             "type": "string"
+           },
+           "updatedISO": {
+             "type": "string"
+           }
+         },
+         "type": "object"
+       },
+       "type": "array"
+     },
+     "createdAt": {
+       "type": "string"
+     },
+     "createdAtISO": {
+       "type": "string"
+     },
+     "externalId": {
+       "type": "string"
+     },
+     "externalUrl": {
+       "type": "string"
+     },
+     "lastUpdatedISO": {
+       "type": "string"
+     },
+     "reviews": {
+       "items": {
+         "properties": {
+           "comment": {
+             "type": [
+               "null",
+               "string"
+             ]
+           },
+           "created": {
+             "type": "string"
+           },
+           "createdISO": {
+             "type": "string"
+           },
+           "id": {
+             "type": "string"
+           },
+           "ratings": {
+             "items": {
+               "properties": {
+                 "categoryId": {
+                   "type": "string"
+                 },
+                 "categoryName": {
+                   "type": "string"
+                 },
+                 "cause": {
+                   "type": "null"
+                 },
+                 "critical": {
+                   "type": "boolean"
+                 },
+                 "score": {
+                   "type": [
+                     "integer",
+                     "null"
+                   ]
+                 },
+                 "weight": {
+                   "type": "number"
+                 }
+               },
+               "type": "object"
+             },
+             "type": "array"
+           },
+           "received": {
+             "type": "boolean"
+           },
+           "reviewTime": {
+             "type": "string"
+           },
+           "reviewee": {
+             "properties": {
+               "avatar": {
+                 "type": "string"
+               },
+               "email": {
+                 "type": "string"
+               },
+               "groups": {
+                 "items": {
+                   "properties": {
+                     "id": {
+                       "type": "string"
+                     },
+                     "name": {
+                       "type": "string"
+                     }
+                   },
+                   "type": "object"
+                 },
+                 "type": "array"
+               },
+               "name": {
+                 "type": "string"
+               }
+             },
+             "type": "object"
+           },
+           "reviewer": {
+             "properties": {
+               "avatar": {
+                 "type": "string"
+               },
+               "email": {
+                 "type": "string"
+               },
+               "groups": {
+                 "items": {
+                   "properties": {
+                     "id": {
+                       "type": "string"
+                     },
+                     "name": {
+                       "type": "string"
+                     }
+                   },
+                   "type": "object"
+                 },
+                 "type": "array"
+               },
+               "name": {
+                 "type": "string"
+               }
+             },
+             "type": "object"
+           },
+           "score": {
+             "type": "number"
+           },
+           "scorecard": {
+             "type": "null"
+           },
+           "tags": {
+             "type": "array"
+           },
+           "thread": {
+             "items": {
+               "properties": {
+                 "comment": {
+                   "type": "string"
+                 },
+                 "created": {
+                   "type": "string"
+                 },
+                 "createdISO": {
+                   "type": "string"
+                 },
+                 "id": {
+                   "type": "string"
+                 },
+                 "owner": {
+                   "properties": {
+                     "avatar": {
+                       "type": "string"
+                     },
+                     "email": {
+                       "type": "string"
+                     },
+                     "groups": {
+                       "items": {
+                         "properties": {
+                           "id": {
+                             "type": "string"
+                           },
+                           "name": {
+                             "type": "string"
+                           }
+                         },
+                         "type": "object"
+                       },
+                       "type": "array"
+                     },
+                     "name": {
+                       "type": "string"
+                     }
+                   },
+                   "type": "object"
+                 },
+                 "tags": {
+                   "items": {
+                     "properties": {
+                       "tag": {
+                         "type": "string"
+                       },
+                       "user": {
+                         "properties": {
+                           "avatar": {
+                             "type": "string"
+                           },
+                           "email": {
+                             "type": "string"
+                           },
+                           "groups": {
+                             "items": {
+                               "properties": {
+                                 "id": {
+                                   "type": "string"
+                                 },
+                                 "name": {
+                                   "type": "string"
+                                 }
+                               },
+                               "type": "object"
+                             },
+                             "type": "array"
+                           },
+                           "name": {
+                             "type": "string"
+                           }
+                         },
+                         "type": "object"
+                       }
+                     },
+                     "type": "object"
+                   },
+                   "type": "array"
+                 },
+                 "thread": {
+                   "type": "array"
+                 },
+                 "updated": {
+                   "type": "string"
+                 },
+                 "updatedISO": {
+                   "type": "string"
+                 }
+               },
+               "type": "object"
+             },
+             "type": "array"
+           },
+           "updated": {
+             "type": "string"
+           },
+           "updatedISO": {
+             "type": "string"
+           }
+         },
+         "type": "object"
+       },
+       "type": "array"
+     },
+     "sourceType": {
+       "type": "string"
+     },
+     "updated_at": {
+       "type": "string"
+     },
+     "url": {
+       "type": "string"
+     },
+     "workspaceId": {
+       "type": "string"
+     }
+   },
+   "type": "object"
+ }

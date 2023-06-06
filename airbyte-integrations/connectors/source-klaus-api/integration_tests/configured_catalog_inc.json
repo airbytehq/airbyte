@@ -9,8 +9,7 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
-      "cursor_field": ["lastUpdated"],
-      "primary_key": [["externalId"]]
+      "cursor_field": ["lastUpdatedISO"]
     }
   ]
 }
