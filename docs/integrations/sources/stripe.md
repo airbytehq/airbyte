@@ -90,7 +90,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.7.0   | 2023-05-24 | [27083](https://github.com/airbytehq/airbyte/pull/27083) | Add new Streams: Cards, Payment Methods                                                                                                              |
+| 3.7.0   | 2023-06-06 | [27083](https://github.com/airbytehq/airbyte/pull/27083) | Add new Streams: Cards, Payment Methods                                                                                                              |
 | 3.6.0   | 2023-05-24 | [25893](https://github.com/airbytehq/airbyte/pull/25893) | Add `ApplicationFeesRefunds` stream with parent `ApplicationFees`                                                                                    |
 | 3.5.0   | 2023-05-20 | [22859](https://github.com/airbytehq/airbyte/pull/22859) | Add stream `Early Fraud Warnings`                                                                                                                    |
 | 3.4.3   | 2023-05-10 | [25965](https://github.com/airbytehq/airbyte/pull/25965) | Fix Airbyte date-time data-types                                                                                                                     |
