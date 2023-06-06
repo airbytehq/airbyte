@@ -48,6 +48,7 @@ The Stripe source connector supports the following streams:
 - [Application Fee Refunds](https://stripe.com/docs/api/fee_refunds/list)
 - [Balance Transactions](https://stripe.com/docs/api/balance_transactions/list) \(Incremental\)
 - [Bank accounts](https://stripe.com/docs/api/customer_bank_accounts/list)
+- [Cards](https://stripe.com/docs/api/issuing/cards/list) \(Incremental\)
 - [Charges](https://stripe.com/docs/api/charges/list) \(Incremental\)
   - The `amount` column defaults to the smallest currency unit. (See [charge object](https://stripe.com/docs/api/charges/object) for more details)
 - [Checkout Sessions](https://stripe.com/docs/api/checkout/sessions/list)
