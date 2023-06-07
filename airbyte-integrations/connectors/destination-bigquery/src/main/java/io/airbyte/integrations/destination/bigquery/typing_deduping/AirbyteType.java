@@ -16,6 +16,8 @@ public sealed interface AirbyteType permits Array, OneOf, Object, UnsupportedOne
    * {@link Object#properties()} to get the columns.
    * <p>
    * If the top-level schema is not an object, then we can't really do anything with it, and should probably fail the sync.
+   * <p>
+   * TODO legacy code: handle weird schemas with top-level {type: [object, ...]}
    */
   static AirbyteType fromJsonSchema(JsonNode schema) {
     // TODO
@@ -71,5 +73,21 @@ public sealed interface AirbyteType permits Array, OneOf, Object, UnsupportedOne
    */
   record OneOf(List<AirbyteType> options) implements AirbyteType {
 
+    /**
+     * This is a hack to handle weird schemas like {type: [object, string]}. If a stream's top-level schema looks like this, we still want to be able
+     * to extract the object properties (i.e. treat it as though the string option didn't exist).
+     *
+     * @throws IllegalArgumentException if we cannot extract columns from this schema
+     */
+    public LinkedHashMap<String, AirbyteType> asColumns() {
+      final long numObjectOptions = options.stream().filter(o -> o instanceof Object).count();
+      if (numObjectOptions > 1) {
+        throw new IllegalArgumentException("Can't extract columns from a schema with multiple object options");
+      }
+
+      return (options.stream().filter(o -> o instanceof Object).findFirst())
+          .map(o -> ((Object) o).properties())
+          .orElseThrow(() -> new IllegalArgumentException("Can't extract columns from a schema with no object options"));
+    }
   }
 }

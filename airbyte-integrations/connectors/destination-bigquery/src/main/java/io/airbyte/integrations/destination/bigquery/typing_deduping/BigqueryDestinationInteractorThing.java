@@ -4,6 +4,7 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.QuotedStreamId;
 import java.util.Optional;
 
 public class BigqueryDestinationInteractorThing implements DestinationInteractorThing<TableDefinition> {
@@ -15,9 +16,8 @@ public class BigqueryDestinationInteractorThing implements DestinationInteractor
   }
 
   @Override
-  public Optional<TableDefinition> findExistingTable(String namespace, String name) {
-    // TODO sanitize these names
-    final Table table = bq.getTable(namespace, name);
+  public Optional<TableDefinition> findExistingTable(QuotedStreamId id) {
+    final Table table = bq.getTable(id.namespace(), id.name());
     return Optional.ofNullable(table).map(Table::getDefinition);
   }
 
