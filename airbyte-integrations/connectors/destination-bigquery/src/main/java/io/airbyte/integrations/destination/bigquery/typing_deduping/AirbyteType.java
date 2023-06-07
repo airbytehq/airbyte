@@ -15,9 +15,8 @@ public sealed interface AirbyteType permits Array, OneOf, Object, UnsupportedOne
    * The most common call pattern is probably to use this method on the stream schema, verify that it's an {@link Object} schema, and then call
    * {@link Object#properties()} to get the columns.
    * <p>
-   * If the top-level schema is not an object, then we can't really do anything with it, and should probably fail the sync.
-   * <p>
-   * TODO legacy code: handle weird schemas with top-level {type: [object, ...]}
+   * If the top-level schema is not an object, then we can't really do anything with it, and should probably fail the sync. (but see also
+   * {@link OneOf#asColumns()}).
    */
   static AirbyteType fromJsonSchema(JsonNode schema) {
     // TODO
