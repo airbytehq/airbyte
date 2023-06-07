@@ -1139,7 +1139,7 @@ class DeclarativeSource(BaseModel):
     spec: Optional[Spec] = None
     metadata: Optional[Dict[str, Any]] = Field(
         None,
-        description="For internal use only - used by consumers of declarative manifests for storing related metadata",
+        description="For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.",
     )
 
 
