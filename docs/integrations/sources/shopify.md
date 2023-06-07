@@ -125,48 +125,6 @@ Add the following scopes to your custom app to ensure Airbyte can sync all avail
 * `read_order_edits`
 * `read_orders`
 
-### Output Streams Schemas
-
-This Source is capable of syncing the following core Streams:
-
-* [Articles](https://shopify.dev/api/admin-rest/2022-01/resources/article)
-* [Blogs](https://shopify.dev/api/admin-rest/2022-01/resources/blog)
-* [Abandoned Checkouts](https://shopify.dev/api/admin-rest/2022-01/resources/abandoned-checkouts#top)
-* [Collects](https://shopify.dev/api/admin-rest/2022-01/resources/collect#top)
-* [Collections](https://shopify.dev/api/admin-rest/2022-01/resources/collection)
-* [Custom Collections](https://shopify.dev/api/admin-rest/2022-01/resources/customcollection#top)
-* [Smart Collections](https://shopify.dev/api/admin-rest/2022-01/resources/smartcollection)
-* [Customers](https://shopify.dev/api/admin-rest/2022-01/resources/customer#top)
-* [Draft Orders](https://shopify.dev/api/admin-rest/2022-01/resources/draftorder#top)
-* [Discount Codes](https://shopify.dev/api/admin-rest/2022-01/resources/discountcode#top)
-* [Metafields](https://shopify.dev/api/admin-rest/2022-01/resources/metafield#top)
-* [Orders](https://shopify.dev/api/admin-rest/2022-01/resources/order#top)
-* [Orders Refunds](https://shopify.dev/api/admin-rest/2022-01/resources/refund#top)
-* [Orders Risks](https://shopify.dev/api/admin-rest/2022-01/resources/order-risk#top)
-* [Products](https://shopify.dev/api/admin-rest/2022-01/resources/product#top)
-* [Products (GraphQL)](https://shopify.dev/api/admin-graphql/2022-10/queries/products)
-* [Product Images](https://shopify.dev/api/admin-rest/2022-01/resources/product-image)
-* [Product Variants](https://shopify.dev/api/admin-rest/2022-01/resources/product-variant)
-* [Transactions](https://shopify.dev/api/admin-rest/2022-01/resources/transaction#top)
-* [Tender Transactions](https://shopify.dev/api/admin-rest/2022-01/resources/tendertransaction)
-* [Pages](https://shopify.dev/api/admin-rest/2022-01/resources/page#top)
-* [Price Rules](https://shopify.dev/api/admin-rest/2022-01/resources/pricerule#top)
-* [Locations](https://shopify.dev/api/admin-rest/2022-01/resources/location)
-* [InventoryItems](https://shopify.dev/api/admin-rest/2022-01/resources/inventoryItem)
-* [InventoryLevels](https://shopify.dev/api/admin-rest/2021-01/resources/inventorylevel)
-* [Fulfillment Orders](https://shopify.dev/api/admin-rest/2022-01/resources/fulfillmentorder)
-* [Fulfillments](https://shopify.dev/api/admin-rest/2022-01/resources/fulfillment)
-* [Shop](https://shopify.dev/api/admin-rest/2022-01/resources/shop)
-
-#### Notes
-
-For better experience with `Incremental Refresh` the following is recommended:
-
-* `Order Refunds`, `Order Risks`, `Transactions` should be synced along with `Orders` stream.
-* `Discount Codes` should be synced along with `Price Rules` stream.
-
-If child streams are synced alone from the parent stream - the full sync will take place, and the records are filtered out afterwards.
-
 ### Performance considerations
 
 Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but in some edge cases, user can receive the warning message as follows:
