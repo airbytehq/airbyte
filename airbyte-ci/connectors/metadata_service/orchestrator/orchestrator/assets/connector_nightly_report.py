@@ -77,8 +77,6 @@ def compute_connector_nightly_report_history(nightly_report_complete_df, nightly
     # Sort columns by name
     matrix_df = matrix_df.reindex(sorted(matrix_df.columns), axis=1)
 
-    # import pdb; pdb.set_trace()
-
     return matrix_df
 
 # ASSETS
@@ -97,7 +95,6 @@ def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]
 
     # Given that the name of these blobs is in the following format airbyte-ci/connectors/test/{unixtimestamp}/{gitsha}/complete.json
     # We can sort by the name to get the latest 10 nightly runs
-    # TODO write test for this
     latest_10_nightly_complete_file_blobs = get_latest_reports(latest_nightly_complete_file_blobs, 10)
     relevant_nightly_test_output_file_blobs = get_relevant_test_outputs(latest_nightly_test_output_file_blobs, latest_10_nightly_complete_file_blobs)
 
