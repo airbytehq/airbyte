@@ -3,14 +3,16 @@
 #
 
 from abc import ABC, abstractmethod
-from enum import Enum
-
-import jsonschema
-from airbyte_cdk.models import ConnectorSpecification
-from connector_acceptance_test.utils import SecretDict
 from deepdiff import DeepDiff
+from enum import Enum
+import jsonschema
+
 from hypothesis import HealthCheck, Verbosity, given, settings
 from hypothesis_jsonschema import from_schema
+
+from airbyte_cdk.models import ConnectorSpecification
+from connector_acceptance_test.utils import SecretDict
+from typing import Dict, Any
 
 
 class BackwardIncompatibilityContext(Enum):
@@ -180,17 +182,47 @@ class SpecDiffChecker(BaseDiffChecker):
             self._raise_error("An 'enum' field was declared on an existing property", diff)
 
 
+def remove_date_time_pattern_format(schema: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    This function traverses a JSON schema and removes the 'format' field for properties
+    that are of 'date-time' format and have a 'pattern' field.
+
+    The 'pattern' is often more restrictive than the 'date-time' format, and Hypothesis can't natively generate
+    date-times that match a specific pattern. Therefore, in this case, we've opted to
+    remove the 'date-time' format since the 'pattern' is more restrictive and more likely
+    to cause a breaking change if not adhered to.
+
+    On the otherside we also validate the output of hypothesis against the new schema to ensure
+    that the generated data matches the new schema. In this case we will catch whether or not the
+    date-time format is still being adhered to.
+
+    Args:
+        schema (Dict[str, Any]): The JSON schema to be processed.
+
+    Returns:
+        Dict[str, Any]: The processed JSON schema where 'date-time' format has been removed
+                        for properties that have a 'pattern'.
+    """
+    if isinstance(schema, dict):
+        for key, value in schema.items():
+            if isinstance(value, dict):
+                if value.get('format') == 'date-time' and 'pattern' in value:
+                    del value['format']
+                remove_date_time_pattern_format(value)
+    return schema
+
+
 def validate_previous_configs(
     previous_connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification, number_of_configs_to_generate=100
 ):
     """Use hypothesis and hypothesis-jsonschema to run property based testing:
     1. Generate fake previous config with the previous connector specification json schema.
     2. Validate a fake previous config against the actual connector specification json schema."""
-
-    @given(from_schema(previous_connector_spec.dict()["connectionSpecification"]))
+    prev_con_spec = previous_connector_spec.dict()["connectionSpecification"]
+    @given(from_schema(remove_date_time_pattern_format(prev_con_spec)))
     @settings(
         max_examples=number_of_configs_to_generate,
-        verbosity=Verbosity.quiet,
+        verbosity=Verbosity.verbose,
         suppress_health_check=(HealthCheck.too_slow, HealthCheck.filter_too_much),
     )
     def check_fake_previous_config_against_actual_spec(fake_previous_config):
