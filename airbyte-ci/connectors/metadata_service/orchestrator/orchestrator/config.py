@@ -3,6 +3,10 @@ from typing import Optional
 REGISTRIES_FOLDER = "registries/v0"
 REPORT_FOLDER = "generated_reports"
 
+# NIGHTLY_FOLDER = "airbyte-ci/connectors/test/nighly_builds/master"
+NIGHTLY_FOLDER = "airbyte-ci/connectors/test/manual/bnchrch_dagger_nightly-report-finished-step"
+NIGHTLY_REPORT_FILE_NAME = "complete.json"
+
 CONNECTOR_REPO_NAME = "airbytehq/airbyte"
 CONNECTORS_PATH = "airbyte-integrations/connectors"
 CONNECTORS_TEST_RESULT_BUCKET_URL = "https://dnsgjos7lj2fu.cloudfront.net"

@@ -8,6 +8,7 @@ from orchestrator.resources.github import github_client, github_connector_repo, 
 
 from orchestrator.assets import (
     github,
+    connector_nightly_report,
     specs_secrets_mask,
     spec_cache,
     registry,
@@ -19,8 +20,8 @@ from orchestrator.jobs.registry import generate_registry_reports, generate_regis
 from orchestrator.sensors.registry import registry_updated_sensor
 from orchestrator.sensors.metadata import metadata_updated_sensor
 
-from orchestrator.config import REPORT_FOLDER, REGISTRIES_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME
-from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER, NIGHTLY_FOLDER, NIGHTLY_REPORT_FILE_NAME
+from orchestrator.config import REPORT_FOLDER, REGISTRIES_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME, NIGHTLY_FOLDER, NIGHTLY_REPORT_FILE_NAME
+from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 
 ASSETS = load_assets_from_modules(
     [
@@ -30,6 +31,7 @@ ASSETS = load_assets_from_modules(
         metadata,
         registry,
         registry_report,
+        connector_nightly_report,
     ]
 )
 
