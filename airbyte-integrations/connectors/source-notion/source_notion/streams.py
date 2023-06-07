@@ -77,7 +77,8 @@ class NotionStream(HttpStream, ABC):
             return {"next_cursor": next_cursor}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        data = response.json().get("results")
+        # sometimes notion api returns response without results object
+        data = response.json().get("results", [])
         yield from data
 
 
