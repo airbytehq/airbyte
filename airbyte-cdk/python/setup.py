@@ -62,7 +62,7 @@ setup(
         "Deprecated~=1.2",
         "Jinja2~=3.1.2",
         "cachetools",
-        "typing-extensions==4.5.0"
+        "typing-extensions==4.5.0",
     ],
     python_requires=">=3.8",
     extras_require={
