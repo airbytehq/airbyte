@@ -103,6 +103,7 @@ class ShopifyStream(HttpStream, ABC):
             # extend the mapping with more handable errors, if needed.
         }
         status = response.status_code
+        print(response.text)
         if status in error_mapping.keys():
             setattr(self, "raise_on_http_errors", False)
             self.logger.warn(error_mapping.get(status))
@@ -752,6 +753,59 @@ class MetafieldShops(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
 
+class Users(ShopifyStream):
+    data_field = "users"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
+class Checkouts(ShopifyStream):
+    data_field = "checkouts"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
+class GiftCards(ShopifyStream):
+    data_field = "gift_cards"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
+class CustomerSavedSearch(IncrementalShopifyStream):
+    api_version = "2022-01"
+    data_field = "customer_saved_searches"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
+class CustomerAddress(ShopifySubstream):
+    parent_stream_class: object = Customers
+    slice_key = "id"
+    data_field = "addresses"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        customer_id = stream_slice[self.slice_key]
+        return f"customers/{customer_id}/{self.data_field}.json"
+
+
+class Countries(ShopifyStream):
+    data_field = "countries"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
+class CollectionListing(ShopifyStream):
+    data_field = "collection_listings"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
@@ -774,7 +828,8 @@ class SourceShopify(AbstractSource):
         """
         config["authenticator"] = ShopifyAuthenticator(config)
         user_scopes = self.get_user_scopes(config)
-        always_permitted_streams = ["MetafieldShops", "Shop"]
+        print(user_scopes)
+        always_permitted_streams = ["MetafieldShops", "Shop", "Countries"]
         permitted_streams = [
             stream
             for user_scope in user_scopes
@@ -825,6 +880,13 @@ class SourceShopify(AbstractSource):
             SmartCollections(config),
             TenderTransactions(config),
             Transactions(config),
+            Users(config),
+            Checkouts(config),
+            GiftCards(config),
+            CustomerSavedSearch(config),
+            CustomerAddress(config),
+            Countries(config),
+            CollectionListing(config),
         ]
 
         return [stream_instance for stream_instance in stream_instances if self.format_name(stream_instance.name) in permitted_streams]

@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "api_client_id": {
+      "type": ["null", "integer"]
+    },
+    "balance": {
+      "type": ["null", "string"]
+    },
+    "code": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "customer_id": {
+      "type": ["null", "integer"]
+    },
+    "disabled_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "expires_on": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "initial_value": {
+      "type": ["null", "string"]
+    },
+    "last_characters": {
+      "type": ["null", "string"]
+    },
+    "line_item_id": {
+      "type": ["null", "integer"]
+    },
+    "note": {
+      "type": ["null", "string"]
+    },
+    "order_id": {
+      "type": ["null", "integer"]
+    },
+    "template_suffix": {
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "type": ["null", "integer"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

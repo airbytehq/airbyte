@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "first_name": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "im": {
+      "type": ["null", "string"]
+    },
+    "screen_name": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "last_name": {
+      "type": ["null", "string"]
+    },
+    "account_owner": {
+      "type": ["null", "boolean"]
+    },
+    "receive_announcements": {
+      "type": ["null", "integer"]
+    },
+    "bio": {
+      "type": ["null", "string"]
+    },
+    "permissions": {
+      "type": ["null", "array"]
+    },
+    "locale": {
+      "type": ["null", "string"]
+    },
+    "user_type": {
+      "type": ["null", "string"]
+    },
+    "admin_graphql_api_id": {
+      "type": ["null", "string"]
+    },
+    "tfa_enabled?": {
+      "type": ["null", "boolean"]
+    }
+  }
+}
