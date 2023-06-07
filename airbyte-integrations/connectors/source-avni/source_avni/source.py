@@ -15,8 +15,8 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class TokenHeadAuthenticator(AbstractHeaderAuthenticator):
 
     """
-    This is custom class for authentication as airbyte 
-    as airbyte does not provide with authentication process for avni API's
+    This is custom class for authentication
+    as airbyte does not provid method for authentication process of avni API's
     """
     @property
     def auth_header(self) -> str:
@@ -51,6 +51,24 @@ class AvniStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield {}
 
+class Subjects(AvniStream):
+    
+    def primary_key(self) -> Optional[str]:
+            return None
+        
+    def path(self,**kwargs) -> str:
+        return "subjects"
+    
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+        params = {"lastModifiedDateTime": self.lastdateandtimemodify}
+        return params
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        self.logger.info("Parsing response...")
+        data = response.json()
+        return data["content"]
+    
+
 
 class SourceAvni(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
@@ -71,5 +89,10 @@ class SourceAvni(AbstractSource):
         
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenHeadAuthenticator(token = config["AUTH_TOKEN"])
+        stream_kwargs = {
+            "authenticator": authenticator,
+            "lastdateandtimemodify":config['lastdateandtimemodify']
+        }
+        return [Subjects(**stream_kwargs)]
 
 
