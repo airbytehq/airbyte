@@ -22,6 +22,8 @@ from github import PullRequest
 from .groups.connectors import connectors
 from .groups.metadata import metadata
 
+# HELPERS
+
 
 def get_modified_files(
     git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext, pull_request: PullRequest
@@ -47,6 +49,9 @@ def get_modified_files(
     return get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
 
 
+# COMMANDS
+
+
 @click.group(help="Airbyte CI top-level command group.")
 @click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
@@ -62,6 +67,7 @@ def get_modified_files(
 @click.option("--pipeline-start-timestamp", default=get_current_epoch_time, envvar="CI_PIPELINE_START_TIMESTAMP", type=int)
 @click.option("--pull-request-number", envvar="PULL_REQUEST_NUMBER", type=int)
 @click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str)
+@click.option("--ci-report-bucket-name", envvar="CI_REPORT_BUCKET_NAME", type=str)
 @click.pass_context
 def airbyte_ci(
     ctx: click.Context,
@@ -74,6 +80,7 @@ def airbyte_ci(
     pipeline_start_timestamp: int,
     pull_request_number: int,
     ci_github_access_token: str,
+    ci_report_bucket_name: str,
 ):  # noqa D103
     ctx.ensure_object(dict)
     ctx.obj["is_local"] = is_local
@@ -85,6 +92,7 @@ def airbyte_ci(
         f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}" if gha_workflow_run_id else None
     )
     ctx.obj["ci_context"] = ci_context
+    ctx.obj["ci_report_bucket_name"] = ci_report_bucket_name
     ctx.obj["pipeline_start_timestamp"] = pipeline_start_timestamp
 
     if pull_request_number and ci_github_access_token:
@@ -97,6 +105,7 @@ def airbyte_ci(
     if not is_local:
         click.echo("Running airbyte-ci in CI mode.")
         click.echo(f"CI Context: {ci_context}")
+        click.echo(f"CI Report Bucket Name: {ci_report_bucket_name}")
         click.echo(f"Git Branch: {git_branch}")
         click.echo(f"Git Revision: {git_revision}")
         click.echo(f"GitHub Workflow Run ID: {gha_workflow_run_id}")

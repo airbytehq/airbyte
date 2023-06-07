@@ -104,6 +104,7 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------|
+| `2.0.2` | 2023-06-07 | [26722](https://github.com/airbytehq/airbyte/pull/27053) | Update CDK version and adjust authenticator configuration |
 | `2.0.1` | 2023-05-28 | [26722](https://github.com/airbytehq/airbyte/pull/26722) | Change datatype for undisclosed amount field in payments |
 | `2.0.0` | 2023-04-11 | [25045](https://github.com/airbytehq/airbyte/pull/25045) | Fix datetime format, disable OAuth button in cloud       |
 | `1.0.0` | 2023-03-20 | [24324](https://github.com/airbytehq/airbyte/pull/24324) | Migrate to Low-Code                                      |
