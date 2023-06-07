@@ -140,7 +140,7 @@ const config = {
       },
       algolia: {
           appId: 'R2IYF7ETH7',
-          apiKey: '599cec31baffa4868cae4e79f180729b', // Public API key: it is safe to commit it
+          apiKey: '15c487fd9f7722282efd8fcb76746fce', // Public API key: it is safe to commit it
           indexName: 'docsearch',
       },
       navbar: {
