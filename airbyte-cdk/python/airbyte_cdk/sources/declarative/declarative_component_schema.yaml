@@ -29,7 +29,7 @@ properties:
     "$ref": "#/definitions/Spec"
   metadata:
     type: object
-    description: For internal use only - used by consumers of declarative manifests for storing related metadata
+    description: For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.
     additionalProperties: true
 additionalProperties: false
 definitions:
