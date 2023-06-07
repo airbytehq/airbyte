@@ -752,3 +752,17 @@ class Accounts(StripeStream):
 
     def path(self, **kwargs):
         return "accounts"
+
+
+class CreditNotes(StripeStream):
+    """
+    API docs: https://stripe.com/docs/api/credit_notes/list
+    """
+
+    name = "credit_notes"
+
+    def path(self, **kwargs) -> str:
+        return "credit_notes"
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+        return next_page_token or {}

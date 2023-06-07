@@ -66,6 +66,9 @@ acceptance_tests:
               bypass_reason: "URL changes upon each request for privacy/security"
             - name: charges/data/*/payment_method_details
               bypass_reason: "Randomly added network_token field to the record"
+          credit_notes:
+            - name: pdf
+              bypass_reason: "URL changes upon each request for privacy/security"
   incremental:
     tests:
       - config_path: "secrets/config.json"

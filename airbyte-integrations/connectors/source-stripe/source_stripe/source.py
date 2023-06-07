@@ -21,6 +21,7 @@ from source_stripe.streams import (
     CheckoutSessions,
     CheckoutSessionsLineItems,
     Coupons,
+    CreditNotes,
     CustomerBalanceTransactions,
     Customers,
     Disputes,
@@ -95,4 +96,5 @@ class SourceStripe(AbstractSource):
             ExternalAccountBankAccounts(**args),
             ExternalAccountCards(**args),
             SetupIntents(**incremental_args),
+            CreditNotes(**args),
         ]
