@@ -86,7 +86,7 @@ def compute_connector_nightly_report_history(nightly_report_complete_df, nightly
 def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]:
     """
     TODO
-    3. Write the report to a markdown file
+    3. Add sensor
     5. Message slack with report contents
     6. Write to badge locations with same data
     """

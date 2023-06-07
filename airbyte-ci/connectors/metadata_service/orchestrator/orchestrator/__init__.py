@@ -19,6 +19,7 @@ from orchestrator.assets import (
 from orchestrator.jobs.registry import generate_registry_reports, generate_registry, generate_nightly_reports
 from orchestrator.sensors.registry import registry_updated_sensor
 from orchestrator.sensors.metadata import metadata_updated_sensor
+from orchestrator.sensors.gcs import new_gcs_blobs_sensor
 
 from orchestrator.config import REPORT_FOLDER, REGISTRIES_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME, NIGHTLY_FOLDER, NIGHTLY_COMPLETE_REPORT_FILE_NAME, NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
@@ -64,6 +65,12 @@ RESOURCES = {
 SENSORS = [
     registry_updated_sensor(job=generate_registry_reports, resources_def=RESOURCES),
     metadata_updated_sensor(job=generate_registry, resources_def=RESOURCES),
+    new_gcs_blobs_sensor(
+        job=generate_nightly_reports,
+        resources_def=RESOURCES,
+        gcs_blobs_resource_key="latest_nightly_complete_file_blobs",
+        interval=(1 * 60 * 60),
+    ),
 ]
 
 SCHEDULES = []
