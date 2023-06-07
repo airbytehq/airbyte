@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Users Schema",
   "additionalProperties": true,
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "aptrinsicId": {
       "type": ["null", "string"]

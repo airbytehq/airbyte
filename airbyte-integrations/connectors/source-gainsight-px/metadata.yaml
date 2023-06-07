@@ -1,10 +1,10 @@
 data:
   allowedHosts:
     hosts:
-      - TODO # Please change to the hostname of the source.
+      - api.aptrinsic.com/v1
   registries:
     oss:
-      enabled: false
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 0da3b186-8879-4e94-8738-55b48762f1e8

@@ -2,10 +2,11 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "KCBot Schema",
   "additionalProperties": true,
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "createdBy": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "string"]
@@ -22,7 +23,7 @@
       "type": ["null", "string"]
     },
     "environments": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
       }
@@ -32,6 +33,7 @@
     },
     "modifiedBy": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "string"]

@@ -61,7 +61,8 @@
       "type": ["null", "string"]
     },
     "customAttributes": {
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "parentGroupId": {
       "type": ["null", "string"]

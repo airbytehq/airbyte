@@ -9,6 +9,7 @@
     },
     "modifiedBy": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "string"]
@@ -22,6 +23,7 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "kcId": {
             "type": ["null", "string"]
