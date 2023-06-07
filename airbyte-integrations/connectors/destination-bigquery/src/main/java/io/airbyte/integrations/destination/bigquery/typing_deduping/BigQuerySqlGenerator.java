@@ -43,13 +43,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @Override
-  public String createTable(final ConfiguredAirbyteStream stream, final LinkedHashMap<String, AirbyteType> types) {
+  public String createTable(final ConfiguredAirbyteStream stream, final LinkedHashMap<String, StandardSQLTypeName> types) {
     return "CREATE TABLE ";
   }
 
   @Override
   public String alterTable(final ConfiguredAirbyteStream stream,
-                           final LinkedHashMap<String, AirbyteType> types,
+                           final LinkedHashMap<String, StandardSQLTypeName> desiredTypes,
                            final TableDefinition existingTable) {
     if (existingTable instanceof StandardTableDefinition s) {
       // TODO check if clustering/partitioning config is different from what we want, do something to handle it
@@ -64,7 +64,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   // We need the configuredairbytestream for the sync mode + cursor name
   @Override
-  public String updateTable(final ConfiguredAirbyteStream stream, final LinkedHashMap<String, AirbyteType> types) {
+  public String updateTable(final ConfiguredAirbyteStream stream, final LinkedHashMap<String, StandardSQLTypeName> types) {
     // do the stuff that evan figured out how to do https://github.com/airbytehq/typing-and-deduping-sql/blob/main/one-table.postgres.sql#L153
     // TODO use a better string templating thing
     return String.format(

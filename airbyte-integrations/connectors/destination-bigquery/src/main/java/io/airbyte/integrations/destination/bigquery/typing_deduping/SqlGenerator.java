@@ -12,10 +12,10 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
   /**
    * Generate a SQL statement to create a fresh table to match the given stream.
    * <p>
-   * This method may throw an exception if the table already exists. Callers should use
+   * The generated SQL may throw an exception if the table already exists. Callers should use
    * {@link #alterTable(ConfiguredAirbyteStream, LinkedHashMap, Object)} if the table is known to exist.
    */
-  String createTable(ConfiguredAirbyteStream stream, LinkedHashMap<String, AirbyteType> types);
+  String createTable(ConfiguredAirbyteStream stream, LinkedHashMap<String, DialectType> types);
 
   /**
    * Generate a SQL statement to alter the table definition to match the given stream.
@@ -24,13 +24,13 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
    * to drop+recreate the table).
    */
   String alterTable(ConfiguredAirbyteStream stream,
-                    LinkedHashMap<String, AirbyteType> types,
+                    LinkedHashMap<String, DialectType> desiredTypes,
                     DialectTableDefinition existingTable);
 
   /**
    * Generate a SQL statement to copy new data from the raw table into the final table.
    */
   // TODO maybe this should be broken into smaller methods, idk
-  String updateTable(ConfiguredAirbyteStream stream, LinkedHashMap<String, AirbyteType> types);
+  String updateTable(ConfiguredAirbyteStream stream, LinkedHashMap<String, DialectType> types);
 
 }
