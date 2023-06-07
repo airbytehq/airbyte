@@ -42,6 +42,7 @@ The following streams do not have a primary key:
 - form_submissions (The entities returned by this endpoint do not have an identifier field - https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form)
 - subscription_changes (The entities returned by this endpoint do not have an identified field - https://legacydocs.hubspot.com/docs/methods/email/get_subscriptions_timeline)
 - property_history (The entities returned by this endpoint do not have an identifier field - https://legacydocs.hubspot.com/docs/methods/contacts/get_contacts)
+- contacts_merged_audit (The primary key could potentially be a composite key (portalId, listId) - https://legacydocs.hubspot.com/docs/methods/lists/get_lists)
 
 ## Local development
 
