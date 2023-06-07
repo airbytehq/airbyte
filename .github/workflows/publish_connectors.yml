@@ -19,9 +19,6 @@ jobs:
     name: Publish connectors
     runs-on: large-runner
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
-      AWS_DEFAULT_REGION: "us-east-2"
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
       CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
       DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
       DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -31,7 +28,7 @@ jobs:
       METADATA_SERVICE_BUCKET_NAME: prod-airbyte-cloud-connector-metadata-service
       SPEC_CACHE_BUCKET_NAME: io-airbyte-cloud-spec-cache
       SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-      TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
+      CI_REPORT_BUCKET_NAME: "airbyte-ci-reports"
       SLACK_WEBHOOK: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
     steps:
       - name: Checkout Airbyte
