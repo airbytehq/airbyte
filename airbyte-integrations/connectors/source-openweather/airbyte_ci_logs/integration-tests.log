@@ -1,9 +1,0 @@
-[1m============================= test session starts ==============================[0m
-platform linux -- Python 3.9.16, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /usr/local/bin/python
-cachedir: .pytest_cache
-hypothesis profile 'default' -> database=DirectoryBasedExampleDatabase('/airbyte-integrations/connectors/source-openweather/.hypothesis/examples')
-rootdir: /airbyte-integrations/connectors/source-openweather/integration_tests, configfile: ../../../../pyproject.toml
-plugins: mock-3.6.1, cov-3.0.0, requests-mock-1.9.3, timeout-1.4.2, hypothesis-6.54.6, sugar-0.9.7, custom-exit-code-0.3.0
-[1mcollecting ... [0mcollected 0 items
-
-[33m============================ [33mno tests ran[0m[33m in 0.37s[0m[33m =============================[0m
