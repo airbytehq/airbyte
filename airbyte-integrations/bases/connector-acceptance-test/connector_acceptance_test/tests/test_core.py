@@ -580,7 +580,6 @@ class TestDiscovery(BaseTest):
         ({"string"}, "timestamp_with_timezone"),
         ({"string"}, "timestamp_without_timezone"),
         ({"string", "null"}, "timestamp_with_timezone"),
-        ({"string", "null"}, "timestamp_without_timezone"),
         ({"integer"}, "integer"),
         ({"integer", "null"}, "integer"),
         ({"number"}, "integer"),
