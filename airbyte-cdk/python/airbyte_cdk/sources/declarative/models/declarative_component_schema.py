@@ -1137,7 +1137,10 @@ class DeclarativeSource(BaseModel):
     schemas: Optional[Schemas] = None
     definitions: Optional[Dict[str, Any]] = None
     spec: Optional[Spec] = None
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: Optional[Dict[str, Any]] = Field(
+        None,
+        description="For internal use only - used by consumers of declarative manifests for storing related metadata",
+    )
 
 
 class DeclarativeStream(BaseModel):
