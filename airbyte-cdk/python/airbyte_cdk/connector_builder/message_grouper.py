@@ -14,6 +14,7 @@ from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.datetime_format_inferrer import DatetimeFormatInferrer
 from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
 from airbyte_protocol.models.airbyte_protocol import (
     AirbyteLogMessage,
@@ -44,6 +45,7 @@ class MessageGrouper:
         if record_limit is not None and not (1 <= record_limit <= 1000):
             raise ValueError(f"Record limit must be between 1 and 1000. Got {record_limit}")
         schema_inferrer = SchemaInferrer()
+        datetime_format_inferrer = DatetimeFormatInferrer()
 
         if record_limit is None:
             record_limit = self._max_record_limit
@@ -55,6 +57,7 @@ class MessageGrouper:
         for message_group in self._get_message_groups(
                 self._read_stream(source, config, configured_catalog),
                 schema_inferrer,
+                datetime_format_inferrer,
                 record_limit,
         ):
             if isinstance(message_group, AirbyteLogMessage):
@@ -74,10 +77,11 @@ class MessageGrouper:
             inferred_schema=schema_inferrer.get_stream_schema(
                 configured_catalog.streams[0].stream.name
             ),  # The connector builder currently only supports reading from a single stream at a time
+            inferred_datetime_formats=datetime_format_inferrer.get_inferred_datetime_formats(),
         )
 
     def _get_message_groups(
-            self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, limit: int
+            self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, datetime_format_inferrer: DatetimeFormatInferrer, limit: int
     ) -> Iterable[Union[StreamReadPages, AirbyteLogMessage, AirbyteTraceMessage]]:
         """
         Message groups are partitioned according to when request log messages are received. Subsequent response log messages
@@ -135,6 +139,7 @@ class MessageGrouper:
                 current_page_records.append(message.record.data)
                 records_count += 1
                 schema_inferrer.accumulate(message.record)
+                datetime_format_inferrer.accumulate(message.record)
         else:
             self._close_page(current_page_request, current_page_response, current_slice_pages, current_page_records, validate_page_complete=not had_error)
             yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor)
