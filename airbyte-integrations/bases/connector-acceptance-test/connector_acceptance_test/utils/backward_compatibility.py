@@ -3,16 +3,15 @@
 #
 
 from abc import ABC, abstractmethod
-from deepdiff import DeepDiff
 from enum import Enum
+from typing import Any, Dict
+
 import jsonschema
-
-from hypothesis import HealthCheck, Verbosity, given, settings
-from hypothesis_jsonschema import from_schema
-
 from airbyte_cdk.models import ConnectorSpecification
 from connector_acceptance_test.utils import SecretDict
-from typing import Dict, Any
+from deepdiff import DeepDiff
+from hypothesis import HealthCheck, Verbosity, given, settings
+from hypothesis_jsonschema import from_schema
 
 
 class BackwardIncompatibilityContext(Enum):
@@ -206,8 +205,8 @@ def remove_date_time_pattern_format(schema: Dict[str, Any]) -> Dict[str, Any]:
     if isinstance(schema, dict):
         for key, value in schema.items():
             if isinstance(value, dict):
-                if value.get('format') == 'date-time' and 'pattern' in value:
-                    del value['format']
+                if value.get("format") == "date-time" and "pattern" in value:
+                    del value["format"]
                 remove_date_time_pattern_format(value)
     return schema
 
@@ -219,6 +218,7 @@ def validate_previous_configs(
     1. Generate fake previous config with the previous connector specification json schema.
     2. Validate a fake previous config against the actual connector specification json schema."""
     prev_con_spec = previous_connector_spec.dict()["connectionSpecification"]
+
     @given(from_schema(remove_date_time_pattern_format(prev_con_spec)))
     @settings(
         max_examples=number_of_configs_to_generate,
