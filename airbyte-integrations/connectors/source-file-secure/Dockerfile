@@ -6,21 +6,13 @@
 
 # If you need to add a custom logic to build your connector image, you can do it by adding a finalize_build.sh or finalize_build.py script in the connector folder.
 # Please reach out to the Connectors Operations team if you have any question.
-FROM python:3.9-slim as base
-FROM base as builder
+FROM airbyte/source-file:0.3.9
 
-RUN apt-get update
 WORKDIR /airbyte/integration_code
-COPY setup.py ./
-RUN pip install --prefix=/install .
-
-FROM base
-WORKDIR /airbyte/integration_code
-COPY --from=builder /install /usr/local
-
-COPY main.py ./
 COPY source_file_secure ./source_file_secure
-
+COPY main.py ./
+COPY setup.py ./
+RUN pip install .
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
