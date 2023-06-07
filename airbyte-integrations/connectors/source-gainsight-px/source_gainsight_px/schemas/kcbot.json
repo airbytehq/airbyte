@@ -32,8 +32,8 @@
       "type": ["null", "string"]
     },
     "modifiedBy": {
-      "type": ["null", "object"],
       "additionalProperties": true,
+      "type": ["null", "object"],
       "properties": {
         "id": {
           "type": ["null", "string"]

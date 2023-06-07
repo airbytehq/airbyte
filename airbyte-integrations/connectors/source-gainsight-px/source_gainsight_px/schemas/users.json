@@ -90,8 +90,32 @@
     "lastVisitedUserAgentData": {
       "type": ["null", "array"],
       "items": {
-        "globalUnsubscribe": {
-          "type": ["null", "boolean"]
+        "propertyKey": {
+          "type": ["null", "string"]
+        },
+        "userAgent": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "rawUserAgent": {
+              "type": ["null", "string"]
+            },
+            "device": {
+              "type": ["null", "string"]
+            },
+            "platformType": {
+              "type": ["null", "string"]
+            },
+            "platformVersion": {
+              "type": ["null", "string"]
+            },
+            "browserType": {
+              "type": ["null", "string"]
+            },
+            "browserVersion": {
+              "type": ["null", "string"]
+            }
+          }
         }
       }
     },
@@ -100,7 +124,52 @@
       "description": "Synonym for identifyId, output only, not filterable"
     },
     "lastInferredLocation": {
-      "type": ["null", "boolean"]
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "countryName": {
+          "type": ["null", "string"]
+        },
+        "countryCode": {
+          "type": ["null", "string"]
+        },
+        "stateName": {
+          "type": ["null", "string"]
+        },
+        "stateCode": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "street": {
+          "type": ["null", "string"]
+        },
+        "postalCode": {
+          "type": ["null", "string"]
+        },
+        "continent": {
+          "type": ["null", "string"]
+        },
+        "regionName": {
+          "type": ["null", "string"]
+        },
+        "timeZone": {
+          "type": ["null", "string"]
+        },
+        "coordinates": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
+          "properties": {
+            "latitude": {
+              "type": ["null", "number"]
+            },
+            "longitude": {
+              "type": ["null", "number"]
+            }
+          }
+        }
+      }
     }
   }
 }

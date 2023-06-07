@@ -25,7 +25,15 @@ definitions:
   retriever:
     type: SimpleRetriever
     paginator:
-      type: NoPagination
+      type: "DefaultPaginator"
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ last_records[-1]['scrollId'] }}"
+        page_size: 5
+      page_token_option:
+        type: "RequestPath"
+        field_name: "scrollId"
+        inject_into: "request_parameter"
     requester:
       $ref: "#/definitions/requester"
     record_selector:
