@@ -18,7 +18,6 @@ from orchestrator.assets import (
 from orchestrator.jobs.registry import generate_registry_reports, generate_registry, generate_nightly_reports
 from orchestrator.sensors.registry import registry_updated_sensor
 from orchestrator.sensors.metadata import metadata_updated_sensor
-from orchestrator.sensors.github import github_connector_nightly_workflow_run_sensor
 
 from orchestrator.config import REPORT_FOLDER, REGISTRIES_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
@@ -62,7 +61,6 @@ RESOURCES = {
 SENSORS = [
     registry_updated_sensor(job=generate_registry_reports, resources_def=RESOURCES),
     metadata_updated_sensor(job=generate_registry, resources_def=RESOURCES),
-    github_connector_nightly_workflow_run_sensor(job=generate_nightly_reports, resources_def=RESOURCES),
 ]
 
 SCHEDULES = []
