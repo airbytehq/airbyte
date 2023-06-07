@@ -1739,8 +1739,7 @@ class ContactsMergedAudit(CRMSearchStream):
         for record in response_search["results"]:
             hs_object_id = record["id"]
             for merge_audit in response[hs_object_id]["merge-audits"]:
-                # Create primary key to store each record within stream_records
-                primary_key = "".join([str(merge_audit["canonical-vid"]), "_", str(merge_audit["vid-to-merge"])])
+                primary_key = merge_audit["vid-to-merge"]
                 stream_records[primary_key] = merge_audit
                 stream_records[primary_key]["id"] = hs_object_id
                 stream_records[primary_key]["updatedAt"] = record["updatedAt"]
