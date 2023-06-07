@@ -495,6 +495,17 @@ class Products(IncrementalStripeStream):
         return "products"
 
 
+class Reviews(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/radar/reviews/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "reviews"
+
+
 class Subscriptions(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/subscriptions/list
