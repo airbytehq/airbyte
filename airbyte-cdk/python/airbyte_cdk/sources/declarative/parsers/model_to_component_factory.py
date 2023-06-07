@@ -9,8 +9,10 @@ import inspect
 import re
 from typing import Any, Callable, List, Literal, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
+import dpath
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
+from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
     BasicHttpAuthenticator,
@@ -24,6 +26,7 @@ from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
@@ -659,6 +662,23 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_oauth_authenticator(model: OAuthAuthenticatorModel, config: Config, **kwargs) -> DeclarativeOauth2Authenticator:
+        if model.refresh_token_updater:
+            return DeclarativeSingleUseRefreshTokenOauth2Authenticator(
+                config,
+                InterpolatedString.create(model.token_refresh_endpoint, parameters=model.parameters).eval(config),
+                access_token_name=InterpolatedString.create(model.access_token_name, parameters=model.parameters).eval(config),
+                refresh_token_name=model.refresh_token_updater.refresh_token_name,
+                expires_in_name=InterpolatedString.create(model.expires_in_name, parameters=model.parameters).eval(config),
+                client_id=InterpolatedString.create(model.client_id, parameters=model.parameters).eval(config),
+                client_secret=InterpolatedString.create(model.client_secret, parameters=model.parameters).eval(config),
+                access_token_config_path=model.refresh_token_updater.access_token_config_path,
+                refresh_token_config_path=model.refresh_token_updater.refresh_token_config_path,
+                token_expiry_date_config_path=model.refresh_token_updater.token_expiry_date_config_path,
+                grant_type=InterpolatedString.create(model.grant_type, parameters=model.parameters).eval(config),
+                refresh_request_body=InterpolatedMapping(model.refresh_request_body or {}, parameters=model.parameters).eval(config),
+                scopes=model.scopes,
+                token_expiry_date_format=model.token_expiry_date_format,
+            )
         return DeclarativeOauth2Authenticator(
             access_token_name=model.access_token_name,
             client_id=model.client_id,
@@ -685,8 +705,8 @@ class ModelToComponentFactory:
             access_token_name=model.access_token_name,
             refresh_token_name=model.refresh_token_name,
             expires_in_name=model.expires_in_name,
-            client_id_config_path=model.client_id_config_path,
-            client_secret_config_path=model.client_secret_config_path,
+            client_id=dpath.util.get(config, model.client_id_config_path),
+            client_secret=dpath.util.get(config, model.client_secret_config_path),
             access_token_config_path=model.access_token_config_path,
             refresh_token_config_path=model.refresh_token_config_path,
             token_expiry_date_config_path=model.token_expiry_date_config_path,

@@ -260,6 +260,33 @@ class CustomTransformation(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
+class RefreshTokenUpdater(BaseModel):
+    refresh_token_name: Optional[str] = Field(
+        "refresh_token",
+        description="The name of the property which contains the updated refresh token in the response from the token refresh endpoint.",
+        examples=["refresh_token"],
+        title="Refresh Token Property Name",
+    )
+    access_token_config_path: Optional[List[str]] = Field(
+        ["credentials", "access_token"],
+        description="Config path to the access token. Make sure the field actually exists in the config.",
+        examples=[["credentials", "access_token"], ["access_token"]],
+        title="Config Path To Access Token",
+    )
+    refresh_token_config_path: Optional[List[str]] = Field(
+        ["credentials", "refresh_token"],
+        description="Config path to the access token. Make sure the field actually exists in the config.",
+        examples=[["credentials", "refresh_token"], ["refresh_token"]],
+        title="Config Path To Refresh Token",
+    )
+    token_expiry_date_config_path: Optional[List[str]] = Field(
+        ["credentials", "token_expiry_date"],
+        description="Config path to the expiry date. Make sure actually exists in the config.",
+        examples=[["credentials", "token_expiry_date"]],
+        title="Config Path To Expiry Date",
+    )
+
+
 class OAuthAuthenticator(BaseModel):
     type: Literal["OAuthAuthenticator"]
     client_id: str = Field(
@@ -339,6 +366,11 @@ class OAuthAuthenticator(BaseModel):
         description="The format of the time to expiration datetime. Provide it if the time is returned as a date-time string instead of seconds.",
         examples=["%Y-%m-%d %H:%M:%S.%f+00:00"],
         title="Token Expiry Date Format",
+    )
+    refresh_token_updater: Optional[RefreshTokenUpdater] = Field(
+        None,
+        description="When the token updater is defined, new refresh tokens, access tokens and the access token expiry date are written back from the authentication response to the config object. This is important if the refresh token can only used once.",
+        title="Token Updater",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
