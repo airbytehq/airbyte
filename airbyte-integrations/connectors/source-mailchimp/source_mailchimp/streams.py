@@ -137,6 +137,78 @@ class Lists(IncrementalMailChimpStream):
     def path(self, **kwargs) -> str:
         return "lists"
 
+class ListMembers(IncrementalMailChimpStream):
+    cursor_field = ""
+    filter_field = "since"
+    sort_field = "create_time"
+    data_field = "members"
+    primary_key = ["timestamp", "email_id", "action"]
+
+    def __init__(self, list_id: Optional[str] = None, **kwargs):
+        super().__init__(**kwargs)
+        self.list_id = list_id
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        stream_state = stream_state or {}
+        if self.list_id:
+            # this is a workaround to speed up SATs and enable incremental tests
+            lists = [{"id": self.list_id}]
+        else:
+            lists = Lists(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
+        for mclist in lists:
+            slice_ = {"list_id": list["id"]}
+            cursor_value = stream_state.get(list["id"], {}).get(self.cursor_field)
+            if cursor_value:
+                slice_[self.filter_field] = cursor_value
+            yield slice_
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        list_id = stream_slice["list_id"]
+        return f"reports/{list_id}/email-activity"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the list_id and cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+        list_id = latest_record.get("list_id")
+        latest_cursor_value = latest_record.get(self.cursor_field)
+        current_stream_state = current_stream_state or {}
+        current_state = current_stream_state.get(list_id) if current_stream_state else None
+        if current_state:
+            current_state = current_state.get(self.cursor_field)
+        current_state_value = current_state or latest_cursor_value
+        max_value = max(current_state_value, latest_cursor_value)
+        new_value = {self.cursor_field: max_value}
+
+        current_stream_state[list_id] = new_value
+        return current_stream_state
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        try:
+            response_json = response.json()
+        except requests.exceptions.JSONDecodeError:
+            logger.error(f"Response returned with {response.status_code=}, {response.content=}")
+            response_json = {}
+        # transform before save
+        # [{'list_id', 'list_id', 'list_is_active', 'email_id', 'email_address', 'activity[array[object]]', '_links'}] ->
+        # -> [[{'list_id', 'list_id', 'list_is_active', 'email_id', 'email_address', '**activity[i]', '_links'}, ...]]
+        data = response_json.get(self.data_field, [])
+        for item in data:
+            for activity_item in item.pop("activity", []):
+                yield {**item, **activity_item}
+
+
+class Reports(IncrementalMailChimpStream):
+    cursor_field = "send_time"
+    data_field = "reports"
+
+    def path(self, **kwargs) -> str:
+        return "reports"
+
+
 
 class Campaigns(IncrementalMailChimpStream):
     cursor_field = "create_time"
