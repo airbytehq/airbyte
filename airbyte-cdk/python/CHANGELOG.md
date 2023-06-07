@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.39.3
+Add refresh token update capabilities to OAuthAuthenticator
+
 ## 0.39.2
 Make step and cursor_granularity optional
 
