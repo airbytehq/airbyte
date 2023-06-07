@@ -4,6 +4,18 @@ This page contains the setup guide and reference information for the Google Anal
 
 This connector supports Universal Analytics properties through the [Reporting API v4](https://developers.google.com/analytics/devguides/reporting/core/v4).
 
+:::caution
+
+**The Google Analytics (Universal Analytics) connector will be deprecated soon.**
+
+Google is phasing out Universal Analytics in favor of Google Analytics 4 (GA4). In consequence, we are deprecating the Google Analytics (Universal Analytics) connector and recommend that you migrate to the [Google Analytics 4 (GA4) connector](https://docs.airbyte.com/integrations/sources/google-analytics-data-api) as soon as possible to ensure your syncs are not affected.
+
+Due to this deprecation, we will not be accepting new contributions for this source, and OAuth is no longer supported as an authentication method for new connections in Airbyte Cloud.
+
+For more information, see ["Universal Analytics is going away"](https://support.google.com/analytics/answer/11583528).
+
+:::
+
 :::note
 
 Google Analytics Universal Analytics (UA) connector, uses the older version of Google Analytics, which has been the standard for tracking website and app user behavior since 2012. 
@@ -28,7 +40,7 @@ To set up Google Analytics as a source in Airbyte Cloud:
 3. On the Set up the source page, select **Google Analytics** from the **Source type** dropdown.
 4. For Name, enter a name for the Google Analytics connector.
 5. Authenticate your Google account via OAuth or Service Account Key Authentication.
-    - **(Recommended)** To authenticate your Google account via OAuth, click **Sign in with Google** and complete the authentication workflow.
+    - To authenticate your Google account via OAuth, click **Sign in with Google** and complete the authentication workflow.
     - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Make sure the Service Account has the Project Viewer permission.
 6. Enter the **Replication Start Date** in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. Enter the [**View ID**](https://ga-dev-tools.appspot.com/account-explorer/) for the Google Analytics View you want to fetch data from.
