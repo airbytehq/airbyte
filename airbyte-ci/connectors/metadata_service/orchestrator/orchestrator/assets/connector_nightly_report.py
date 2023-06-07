@@ -1,9 +1,12 @@
-from dagster import Output, asset, OpExecutionContext
+from dagster import Output, asset, OpExecutionContext, MetadataValue
 import pandas as pd
 import json
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 from orchestrator.models.ci_report import ConnectorNightlyReport, ConnectorPipelineReport
 from orchestrator.config import REPORT_FOLDER, REGISTRIES_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME, NIGHTLY_FOLDER, NIGHTLY_COMPLETE_REPORT_FILE_NAME, NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME
+from orchestrator.templates.render import (
+    render_connector_nightly_report_md,
+)
 
 GROUP_NAME = "connector_nightly_report"
 
@@ -57,7 +60,6 @@ def get_relevant_test_outputs(latest_nightly_test_output_file_blobs, latest_nigh
     return relevant_nightly_test_output_file_blobs
 
 def compute_connector_nightly_report_history(nightly_report_complete_df, nightly_report_test_output_df):
-    import pdb; pdb.set_trace()
 
     # Add a new column to nightly_report_complete_df that is the parent file path of the complete.json file
     nightly_report_complete_df["parent_file_path"] = nightly_report_complete_df["file_path"].apply(lambda file_path: file_path.replace(f"/{NIGHTLY_COMPLETE_REPORT_FILE_NAME}", ""))
@@ -72,10 +74,10 @@ def compute_connector_nightly_report_history(nightly_report_complete_df, nightly
     # This will be a matrix of connector success/failure for each nightly run
     matrix_df = nightly_report_test_output_df.pivot(index="connector_technical_name", columns="nightly_path", values="success")
 
-    # replace all NaN with ?, and all True with ✅, and all False with ❌
-    matrix_df = matrix_df.fillna("?").replace(True, "✅").replace(False, "❌")
+    # Sort columns by name
+    matrix_df = matrix_df.reindex(sorted(matrix_df.columns), axis=1)
 
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
 
     return matrix_df
 
@@ -83,13 +85,9 @@ def compute_connector_nightly_report_history(nightly_report_complete_df, nightly
 
 
 @asset(required_resource_keys={"latest_nightly_complete_file_blobs", "latest_nightly_test_output_file_blobs"}, group_name=GROUP_NAME)
-def generate_nightly_report(context: OpExecutionContext) -> OutputDataFrame:
+def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]:
     """
     TODO
-    0. Get recent 10 nightly runs
-    2. Get the github action url
-    1. Parse all connectors into a pass fail, not present
-    2. Filter to Failed last build, and more than last build
     3. Write the report to a markdown file
     5. Message slack with report contents
     6. Write to badge locations with same data
@@ -107,4 +105,7 @@ def generate_nightly_report(context: OpExecutionContext) -> OutputDataFrame:
     nightly_report_test_output_df = blobs_to_typed_df(relevant_nightly_test_output_file_blobs, ConnectorPipelineReport)
 
     nightly_report_connector_matrix_df = compute_connector_nightly_report_history(nightly_report_complete_df, nightly_report_test_output_df)
-    return output_dataframe(nightly_report_connector_matrix_df)
+
+    nightly_report_complete_md = render_connector_nightly_report_md(nightly_report_connector_matrix_df, nightly_report_complete_df)
+
+    return Output(nightly_report_connector_matrix_df, metadata={"count": len(nightly_report_connector_matrix_df), "preview": MetadataValue.md(nightly_report_complete_md)})
