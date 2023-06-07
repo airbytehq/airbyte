@@ -94,7 +94,6 @@ definitions:
     type: object
     required:
       - type
-      - api_token
     properties:
       type:
         type: string
@@ -110,7 +109,7 @@ definitions:
           - "Token token={{ config['api_key'] }}"
       header:
         title: Header Name
-        description: The name of the HTTP header that will be set to the API key.
+        description: The name of the HTTP header that will be set to the API key. This setting is deprecated, use inject_into instead. Header and inject_into can not be defined at the same time.
         type: string
         interpolation_context:
           - config
@@ -118,6 +117,15 @@ definitions:
           - Authorization
           - Api-Token
           - X-Auth-Token
+      inject_into:
+        title: Inject API Key Into Outgoing HTTP Request
+        description: Configure how the API Key will be sent in requests to the source API. Either inject_into or header has to be defined.
+        "$ref": "#/definitions/RequestOption"
+        examples:
+          - inject_into: header
+            field_name: Authorization
+          - inject_into: request_parameter
+            field_name: authKey
       $parameters:
         type: object
         additionalProperties: true
@@ -339,7 +347,7 @@ definitions:
         enum: [CustomAuthenticator]
       class_name:
         title: Class Name
-        description: Fully-qualified name of the class that will be implementing the custom authentication strategy. The format is `source_<name>.<package>.<class_name>`.
+        description: Fully-qualified name of the class that will be implementing the custom authentication strategy. Has to be a sub class of DeclarativeAuthenticator. The format is `source_<name>.<package>.<class_name>`.
         type: string
         additionalProperties: true
         examples:

@@ -221,7 +221,26 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_api_key_authenticator(model: ApiKeyAuthenticatorModel, config: Config, **kwargs) -> ApiKeyAuthenticator:
-        return ApiKeyAuthenticator(api_token=model.api_token, header=model.header, config=config, parameters=model.parameters)
+        if model.inject_into is None and model.header is None:
+            raise ValueError("Expected either inject_into or header to be set for ApiKeyAuthenticator")
+
+        if model.inject_into is not None and model.header is not None:
+            raise ValueError("inject_into and header cannot be set both for ApiKeyAuthenticator - remove the deprecated header option")
+
+        request_option = (
+            RequestOption(
+                inject_into=RequestOptionType(model.inject_into.inject_into.value),
+                field_name=model.inject_into.field_name,
+                parameters=model.parameters,
+            )
+            if model.inject_into
+            else RequestOption(
+                inject_into=RequestOptionType.header,
+                field_name=model.header,
+                parameters=model.parameters,
+            )
+        )
+        return ApiKeyAuthenticator(api_token=model.api_token, request_option=request_option, config=config, parameters=model.parameters)
 
     @staticmethod
     def create_basic_http_authenticator(model: BasicHttpAuthenticatorModel, config: Config, **kwargs) -> BasicHttpAuthenticator:

@@ -45,23 +45,6 @@ class AddFields(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class ApiKeyAuthenticator(BaseModel):
-    type: Literal["ApiKeyAuthenticator"]
-    api_token: str = Field(
-        ...,
-        description="The API key to inject in the request. Fill it in the user inputs.",
-        examples=["{{ config['api_key'] }}", "Token token={{ config['api_key'] }}"],
-        title="API Key",
-    )
-    header: Optional[str] = Field(
-        None,
-        description="The name of the HTTP header that will be set to the API key.",
-        examples=["Authorization", "Api-Token", "X-Auth-Token"],
-        title="Header Name",
-    )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
-
-
 class AuthFlowType(Enum):
     oauth2_0 = "oauth2.0"
     oauth1_0 = "oauth1.0"
@@ -123,7 +106,7 @@ class CustomAuthenticator(BaseModel):
     type: Literal["CustomAuthenticator"]
     class_name: str = Field(
         ...,
-        description="Fully-qualified name of the class that will be implementing the custom authentication strategy. The format is `source_<name>.<package>.<class_name>`.",
+        description="Fully-qualified name of the class that will be implementing the custom authentication strategy. Has to be a sub class of DeclarativeAuthenticator. The format is `source_<name>.<package>.<class_name>`.",
         examples=["source_railz.components.ShortLivedTokenAuthenticator"],
         title="Class Name",
     )
@@ -731,6 +714,32 @@ class WaitUntilTimeFromHeader(BaseModel):
         description="Optional regex to apply on the header to extract its value. The regex should define a capture group defining the wait time.",
         examples=["([-+]?\\d+)"],
         title="Extraction Regex",
+    )
+    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+
+
+class ApiKeyAuthenticator(BaseModel):
+    type: Literal["ApiKeyAuthenticator"]
+    api_token: Optional[str] = Field(
+        None,
+        description="The API key to inject in the request. Fill it in the user inputs.",
+        examples=["{{ config['api_key'] }}", "Token token={{ config['api_key'] }}"],
+        title="API Key",
+    )
+    header: Optional[str] = Field(
+        None,
+        description="The name of the HTTP header that will be set to the API key. This setting is deprecated, use inject_into instead. Header and inject_into can not be defined at the same time.",
+        examples=["Authorization", "Api-Token", "X-Auth-Token"],
+        title="Header Name",
+    )
+    inject_into: Optional[RequestOption] = Field(
+        None,
+        description="Configure how the API Key will be sent in requests to the source API. Either inject_into or header has to be defined.",
+        examples=[
+            {"inject_into": "header", "field_name": "Authorization"},
+            {"inject_into": "request_parameter", "field_name": "authKey"},
+        ],
+        title="Inject API Key Into Outgoing HTTP Request",
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
