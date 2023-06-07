@@ -275,6 +275,15 @@ class Blocks(HttpSubStream, IncrementalNotionStream):
         self.block_id_stack.pop()
 
     def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 404:
+            setattr(self, "raise_on_http_errors", False)
+            self.logger.error(
+                f"Stream {self.name}: {response.json().get('message')}. 404 HTTP response returns if the block specified by id doesn't"
+                " exist, or if the integration doesn't have access to the block."
+                "See more in docs: https://developers.notion.com/reference/get-block-children"
+            )
+            return False
+
         if response.status_code == 400:
             error_code = response.json().get("code")
             error_msg = response.json().get("message")
