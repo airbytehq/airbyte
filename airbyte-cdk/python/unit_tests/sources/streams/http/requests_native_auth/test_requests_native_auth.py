@@ -227,25 +227,31 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         authenticator = SingleUseRefreshTokenOauth2Authenticator(
             connector_config,
             token_refresh_endpoint="foobar",
+            client_id=connector_config["credentials"]["client_id"],
+            client_secret=connector_config["credentials"]["client_secret"],
         )
         assert authenticator.access_token == connector_config["credentials"]["access_token"]
         assert authenticator.get_refresh_token() == connector_config["credentials"]["refresh_token"]
         assert authenticator.get_token_expiry_date() == pendulum.parse(connector_config["credentials"]["token_expiry_date"])
 
-    def test_init_with_invalid_config(self, invalid_connector_config):
-        with pytest.raises(ValueError):
-            SingleUseRefreshTokenOauth2Authenticator(
-                invalid_connector_config,
-                token_refresh_endpoint="foobar",
-            )
-
     @freezegun.freeze_time("2022-12-31")
-    def test_get_access_token(self, capsys, mocker, connector_config):
+    @pytest.mark.parametrize(
+        "test_name, expires_in_value, expiry_date_format, expected_expiry_date",
+        [
+            ("number_of_seconds", 42, None, "2022-12-31T00:00:42+00:00"),
+            ("string_of_seconds", "42", None, "2022-12-31T00:00:42+00:00"),
+            ("date_format", "2023-04-04", "YYYY-MM-DD", "2023-04-04T00:00:00+00:00"),
+        ]
+    )
+    def test_get_access_token(self, test_name, expires_in_value, expiry_date_format, expected_expiry_date, capsys, mocker, connector_config):
         authenticator = SingleUseRefreshTokenOauth2Authenticator(
             connector_config,
             token_refresh_endpoint="foobar",
+            client_id=connector_config["credentials"]["client_id"],
+            client_secret=connector_config["credentials"]["client_secret"],
+            token_expiry_date_format=expiry_date_format,
         )
-        authenticator.refresh_access_token = mocker.Mock(return_value=("new_access_token", 42, "new_refresh_token"))
+        authenticator.refresh_access_token = mocker.Mock(return_value=("new_access_token", expires_in_value, "new_refresh_token"))
         authenticator.token_has_expired = mocker.Mock(return_value=True)
         access_token = authenticator.get_access_token()
         captured = capsys.readouterr()
@@ -253,7 +259,7 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         expected_new_config = connector_config.copy()
         expected_new_config["credentials"]["access_token"] = "new_access_token"
         expected_new_config["credentials"]["refresh_token"] = "new_refresh_token"
-        expected_new_config["credentials"]["token_expiry_date"] = "2022-12-31T00:00:42+00:00"
+        expected_new_config["credentials"]["token_expiry_date"] = expected_expiry_date
         assert airbyte_message["control"]["connectorConfig"]["config"] == expected_new_config
         assert authenticator.access_token == access_token == "new_access_token"
         assert authenticator.get_refresh_token() == "new_refresh_token"
@@ -268,26 +274,18 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         authenticator = SingleUseRefreshTokenOauth2Authenticator(
             connector_config,
             token_refresh_endpoint="foobar",
+            client_id=connector_config["credentials"]["client_id"],
+            client_secret=connector_config["credentials"]["client_secret"],
         )
 
         authenticator._get_refresh_access_token_response = mocker.Mock(
             return_value={
                 authenticator.get_access_token_name(): "new_access_token",
-                authenticator.get_expires_in_name(): 42,
+                authenticator.get_expires_in_name(): "42",
                 authenticator.get_refresh_token_name(): "new_refresh_token",
             }
         )
-        assert authenticator.refresh_access_token() == ("new_access_token", 42, "new_refresh_token")
-
-        # Test with expires_in as str
-        authenticator._get_refresh_access_token_response = mocker.Mock(
-            return_value={
-                authenticator.get_access_token_name(): "new_access_token",
-                authenticator.get_expires_in_name(): "1000",
-                authenticator.get_refresh_token_name(): "new_refresh_token",
-            }
-        )
-        assert authenticator.refresh_access_token() == ("new_access_token", 1000, "new_refresh_token")
+        assert authenticator.refresh_access_token() == ("new_access_token", "42", "new_refresh_token")
 
 
 def mock_request(method, url, data):
