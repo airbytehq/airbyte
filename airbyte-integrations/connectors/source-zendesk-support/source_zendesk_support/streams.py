@@ -728,6 +728,17 @@ class Tags(SourceZendeskSupportFullRefreshStream):
     primary_key = "name"
 
 
+class Topics(SourceZendeskSupportCursorPaginationStream):
+    """
+    Topics stream: https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics
+    """
+
+    cursor_field = "updated_at"
+
+    def path(self, **kwargs):
+        return "community/topics"
+    
+
 class SlaPolicies(SourceZendeskSupportFullRefreshStream):
     """SlaPolicies stream: https://developer.zendesk.com/api-reference/ticketing/business-rules/sla_policies/"""
 

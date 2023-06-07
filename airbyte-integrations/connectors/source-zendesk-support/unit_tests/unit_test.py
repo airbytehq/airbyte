@@ -40,6 +40,7 @@ from source_zendesk_support.streams import (
     TicketMetricEvents,
     TicketMetrics,
     Tickets,
+    Topics,
     Users,
     UserSettingsStream,
 )
@@ -278,6 +279,7 @@ class TestAllStreams:
             (TicketMetrics),
             (TicketMetricEvents),
             (Tickets),
+            (Topics),
             (Users),
             (Brands),
             (CustomRoles),
@@ -299,6 +301,7 @@ class TestAllStreams:
             "TicketMetrics",
             "TicketMetricEvents",
             "Tickets",
+            "Topics",
             "Users",
             "Brands",
             "CustomRoles",
@@ -331,6 +334,7 @@ class TestAllStreams:
             (TicketMetrics, "ticket_metrics"),
             (TicketMetricEvents, "incremental/ticket_metric_events"),
             (Tickets, "incremental/tickets.json"),
+            (Topics, "community/topics"),
             (Users, "incremental/users.json"),
             (Brands, "brands"),
             (CustomRoles, "custom_roles"),
@@ -352,6 +356,7 @@ class TestAllStreams:
             "TicketMetrics",
             "TicketMetricEvents",
             "Tickets",
+            "Topics",
             "Users",
             "Brands",
             "CustomRoles",
@@ -374,6 +379,7 @@ class TestSourceZendeskSupportStream:
             (SatisfactionRatings),
             (TicketFields),
             (TicketMetrics),
+            (Topics)
         ],
         ids=[
             "Macros",
@@ -382,6 +388,7 @@ class TestSourceZendeskSupportStream:
             "SatisfactionRatings",
             "TicketFields",
             "TicketMetrics",
+            "Topics"
         ],
     )
     def test_parse_response(self, requests_mock, stream_cls):
@@ -402,6 +409,7 @@ class TestSourceZendeskSupportStream:
             (SatisfactionRatings),
             (TicketFields),
             (TicketMetrics),
+            (Topics)
         ],
         ids=[
             "Macros",
@@ -410,6 +418,7 @@ class TestSourceZendeskSupportStream:
             "SatisfactionRatings",
             "TicketFields",
             "TicketMetrics",
+            "Topics"
         ],
     )
     def test_url_base(self, stream_cls):
@@ -431,6 +440,7 @@ class TestSourceZendeskSupportStream:
             (SatisfactionRatings, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketFields, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketMetrics, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
+            (Topics, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
         ],
         ids=[
             "Macros",
@@ -439,6 +449,7 @@ class TestSourceZendeskSupportStream:
             "SatisfactionRatings",
             "TicketFields",
             "TicketMetrics",
+            "Topics"
         ],
     )
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):
