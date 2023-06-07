@@ -1,7 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft-07/schema#",
-  "additionalProperties": true,
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "billing": {
       "type": ["null", "object"],

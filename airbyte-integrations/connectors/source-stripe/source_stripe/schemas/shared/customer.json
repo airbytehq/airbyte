@@ -1,6 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft-07/schema#",
-  "additionalProperties": true,
   "type": ["null", "object"],
   "properties": {
     "metadata": {
@@ -46,10 +44,7 @@
       "type": ["null", "string"]
     },
     "address": {
-      "type": ["null", "object"],
-      "properties": {
-        "$ref": "address.json"
-      }
+      "$ref": "address.json"
     },
     "shipping": {
       "type": ["null", "object"],

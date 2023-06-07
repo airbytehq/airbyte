@@ -131,8 +131,8 @@
       "type": ["null", "object"],
       "properties": {
         "address": {
-      "$ref": "address.json"
-    },
+          "$ref": "address.json"
+        },
         "name": { "type": ["null", "string"] }
       }
     },

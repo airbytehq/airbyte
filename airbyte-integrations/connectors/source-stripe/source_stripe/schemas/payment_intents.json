@@ -374,10 +374,7 @@
                       "type": ["null", "object"],
                       "properties": {
                         "billing_address": {
-                          "type": ["null", "object"],
-                          "properties": {
                             "$ref": "address.json"
-                          }
                         },
                         "email": {
                           "type": ["null", "string"]
