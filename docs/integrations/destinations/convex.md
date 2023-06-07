@@ -7,7 +7,7 @@ See your data on the [Convex dashboard](https://dashboard.convex.dev/).
 
 ## Overview
 
-The Convex destination connector supports Full Refresh Overwrite, Full Refresh Append, Incremental Append, and Incremental Append Dedup.
+The Convex destination connector supports Full Refresh Overwrite, Full Refresh Append, Incremental Append, and Incremental Dedup. Note that for Incremental Dedup, Convex does not store a history table like some other destinations that use DBT, but Convex does store a deduped snapshot.
 
 ### Output schema
 
@@ -28,8 +28,8 @@ Each record is a [document](https://docs.convex.dev/using/types) in Convex and i
 
 ### Performance considerations
 
-Take care to use the appropriate sync method and frequency for the quantity of data streaming from the source. Performance may suffer with large, frequent syncs with Full Refresh. Prefer Incremental modes when possible.
-If you see performance issues,please reach via email to [Convex support](mailto:support@convex.dev) or on [Discord](https://convex.dev/community).
+Take care to use the appropriate sync method and frequency for the quantity of data streaming from the source. Performance may suffer with large, frequent syncs with Full Refresh. Prefer Incremental modes when they are supported and especially for large tables.
+If you see performance issues, please reach via email to [Convex support](mailto:support@convex.dev) or on [Discord](https://convex.dev/community).
 
 ## Getting started
 
@@ -52,6 +52,7 @@ On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the projec
 
 ## Changelog
 
-| Version | Date       | Pull Request          | Subject                    |
-| :------ | :--------- | :-------------------- | :------------------------- |
-| 0.1.0   | 2023-01-05 | TODO: link to PR here | 🎉 New Destination: Convex |
+| Version | Date       | Pull Request                                             | Subject                                                           |
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 0.2.0   | 2023-05-15 | [26103](https://github.com/airbytehq/airbyte/pull/26103) | 🐛 Update Convex destination connector to fix overwrite sync mode |
+| 0.1.0   | 2023-01-05 | [21287](https://github.com/airbytehq/airbyte/pull/21287) | 🎉 New Destination: Convex                                        |

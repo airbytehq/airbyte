@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
@@ -13,6 +8,13 @@ data:
   icon: onesignal.svg
   license: MIT
   name: OneSignal
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/onesignal
+  documentationUrl: https://docs.airbyte.com/integrations/sources/onesignal
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

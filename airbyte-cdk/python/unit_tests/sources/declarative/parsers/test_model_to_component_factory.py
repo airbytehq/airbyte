@@ -54,6 +54,7 @@ from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStrea
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from unit_tests.sources.declarative.parsers.testing_components import TestingCustomSubstreamPartitionRouter, TestingSomeComponent
 
 factory = ModelToComponentFactory()
@@ -293,6 +294,45 @@ def test_interpolate_config():
     assert authenticator.get_refresh_request_body() == {"body_field": "yoyoyo", "interpolated_body_field": "verysecrettoken"}
 
 
+def test_single_use_oauth_branch():
+    single_use_input_config = {"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"], "credentials": {"access_token": "access_token", "token_expiry_date": "1970-01-01"}}
+
+    content = """
+    authenticator:
+      type: OAuthAuthenticator
+      client_id: "some_client_id"
+      client_secret: "some_client_secret"
+      token_refresh_endpoint: "https://api.sendgrid.com/v3/auth"
+      refresh_token: "{{ config['apikey'] }}"
+      refresh_request_body:
+        body_field: "yoyoyo"
+        interpolated_body_field: "{{ config['apikey'] }}"
+      refresh_token_updater:
+        refresh_token_name: "the_refresh_token"
+        refresh_token_config_path:
+          - apikey
+    """
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    authenticator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["authenticator"], {})
+
+    authenticator: SingleUseRefreshTokenOauth2Authenticator = factory.create_component(
+        model_type=OAuthAuthenticatorModel, component_definition=authenticator_manifest, config=single_use_input_config
+    )
+
+    assert isinstance(authenticator, SingleUseRefreshTokenOauth2Authenticator)
+    assert authenticator._client_id == "some_client_id"
+    assert authenticator._client_secret == "some_client_secret"
+    assert authenticator._token_refresh_endpoint == "https://api.sendgrid.com/v3/auth"
+    assert authenticator._refresh_token == "verysecrettoken"
+    assert authenticator._refresh_request_body == {"body_field": "yoyoyo", "interpolated_body_field": "verysecrettoken"}
+    assert authenticator._refresh_token_name == "the_refresh_token"
+    assert authenticator._refresh_token_config_path == ["apikey"]
+    # default values
+    assert authenticator._access_token_config_path == ["credentials", "access_token"]
+    assert authenticator._token_expiry_date_config_path == ["credentials", "token_expiry_date"]
+
+
 def test_list_based_stream_slicer_with_values_refd():
     content = """
     repositories: ["airbyte", "airbyte-cloud"]
@@ -437,7 +477,6 @@ def test_datetime_based_cursor():
     stream_slicer = factory.create_component(model_type=DatetimeBasedCursorModel, component_definition=slicer_manifest, config=input_config)
 
     assert isinstance(stream_slicer, DatetimeBasedCursor)
-    assert stream_slicer._timezone == datetime.timezone.utc
     assert stream_slicer._step == datetime.timedelta(days=10)
     assert stream_slicer.cursor_field.string == "created"
     assert stream_slicer.cursor_granularity == "PT0.000001S"
@@ -451,7 +490,6 @@ def test_datetime_based_cursor():
 
     assert isinstance(stream_slicer.start_datetime, MinMaxDatetime)
     assert stream_slicer.start_datetime._datetime_format == "%Y-%m-%dT%H:%M:%S.%f%z"
-    assert stream_slicer.start_datetime._timezone == datetime.timezone.utc
     assert stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
     assert stream_slicer.start_datetime.min_datetime.string == "{{ config['start_time'] + day_delta(2) }}"
 
@@ -1360,3 +1398,29 @@ def test_simple_retriever_emit_log_messages():
     )
 
     assert isinstance(retriever, SimpleRetrieverTestReadDecorator)
+
+
+def test_ignore_retry():
+    requester_model = {
+        "type": "SimpleRetriever",
+        "record_selector": {
+            "type": "RecordSelector",
+            "extractor": {
+                "type": "DpathExtractor",
+                "field_path": [],
+            },
+        },
+        "requester": {"type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api"},
+    }
+
+    connector_builder_factory = ModelToComponentFactory(disable_retries=True)
+    retriever = connector_builder_factory.create_component(
+        model_type=SimpleRetrieverModel,
+        component_definition=requester_model,
+        config={},
+        name="Test",
+        primary_key="id",
+        stream_slicer=None,
+    )
+
+    assert retriever.max_retries == 0

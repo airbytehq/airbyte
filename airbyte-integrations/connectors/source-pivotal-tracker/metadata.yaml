@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: d60f5393-f99e-4310-8d05-b1876820f40e
@@ -13,6 +8,13 @@ data:
   icon: pivotal-tracker.svg
   license: MIT
   name: Pivotal Tracker
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/pivotal-tracker
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pivotal-tracker
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

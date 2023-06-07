@@ -560,23 +560,30 @@ class PostgresSourceTest {
     }
   }
 
-  /* The messages that are emitted from an incremental sync should follow certain invariants. They should :
-  (i) Be emitted in increasing order of the defined cursor.
-  (ii) A record that is emitted after a state message should not have a cursor value less than a previously emitted state message.
+  /*
+   * The messages that are emitted from an incremental sync should follow certain invariants. They
+   * should : (i) Be emitted in increasing order of the defined cursor. (ii) A record that is emitted
+   * after a state message should not have a cursor value less than a previously emitted state
+   * message.
    */
-  private void assertCorrectRecordOrderForIncrementalSync(final List<AirbyteMessage> messages, final String cursorField,
-      final JsonSchemaPrimitive cursorType, final ConfiguredAirbyteCatalog catalog, final AirbyteStreamNameNamespacePair pair) {
+  private void assertCorrectRecordOrderForIncrementalSync(final List<AirbyteMessage> messages,
+                                                          final String cursorField,
+                                                          final JsonSchemaPrimitive cursorType,
+                                                          final ConfiguredAirbyteCatalog catalog,
+                                                          final AirbyteStreamNameNamespacePair pair) {
     String prevRecordCursorValue = null;
     String prevStateCursorValue = null;
     for (final AirbyteMessage message : messages) {
       if (message.getType().equals(Type.RECORD)) {
-        // Parse the cursor. Assert that (i) it's greater/equal to the prevRecordCursorValue and (ii) greater than the previous state cursor value.
+        // Parse the cursor. Assert that (i) it's greater/equal to the prevRecordCursorValue and (ii)
+        // greater than the previous state cursor value.
         final String cursorCandidate = message.getRecord().getData().get(cursorField).asText();
         assertThat(IncrementalUtils.compareCursors(prevRecordCursorValue, cursorCandidate, cursorType)).isLessThanOrEqualTo(0);
         assertThat(IncrementalUtils.compareCursors(prevStateCursorValue, cursorCandidate, cursorType)).isLessThanOrEqualTo(0);
         prevRecordCursorValue = cursorCandidate;
       } else if (message.getType().equals(Type.STATE)) {
-        // Parse the state and the cursor value here. Assert that it is (i) greater than the previous state emission value.
+        // Parse the state and the cursor value here. Assert that it is (i) greater than the previous state
+        // emission value.
         final StateManager stateManager =
             StateManagerFactory.createStateManager(AirbyteStateType.LEGACY, List.of(message.getState()), catalog);
         final Optional<CursorInfo> cursorInfoOptional = stateManager.getCursorInfo(pair);
@@ -663,7 +670,7 @@ class PostgresSourceTest {
     assertEquals(EXPECTED_JDBC_ESCAPED_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
-  private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:postgresql://localhost:1111/db%2Ffoo?";
+  private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:postgresql://localhost:1111/db%2Ffoo?prepareThreshold=0&";
 
   private JsonNode buildConfigEscapingNeeded() {
     return Jsons.jsonNode(ImmutableMap.of(

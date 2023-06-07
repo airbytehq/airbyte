@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 6cbea164-3237-433b-9abb-36d384ee4cbf
@@ -13,6 +8,13 @@ data:
   icon: gridly.svg
   license: MIT
   name: Gridly
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/gridly
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gridly
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

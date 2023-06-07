@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 7d272065-c316-4c04-a433-cd4ee143f83e
@@ -13,6 +8,13 @@ data:
   icon: todoist.svg
   license: MIT
   name: Todoist
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/todoist
+  documentationUrl: https://docs.airbyte.com/integrations/sources/todoist
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

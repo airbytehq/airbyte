@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: d99e9ace-8621-46c2-9144-76ae4751d64b
@@ -13,6 +8,14 @@ data:
   icon: dremio.svg
   license: MIT
   name: Dremio
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/dremio
+  documentationUrl: https://docs.airbyte.com/integrations/sources/dremio
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

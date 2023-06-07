@@ -1,0 +1,82 @@
+name: 🐛 Report a connector problem
+description: Use this template to report a problem using source or a destination connector
+labels: [type/bug, area/connectors, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        <p align="center">
+          <a target="_blank" href="https://airbyte.com">
+            <image>
+              <source srcset="https://raw.githubusercontent.com/airbytehq/airbyte/master/.github/octavia-issue-template.svg">
+              <img alt="octavia-welcome" src="https://raw.githubusercontent.com/airbytehq/airbyte/master/.github/octavia-issue-template.svg" width="auto" height="120">
+            </image>
+          </a>
+        </p>
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report...
+        Make sure you update this issue with a concise title and provide all information you have to help us debug the problem together.
+        Some examples of good titles following the convention:
+        <ul>
+          <li> Source Name: issue description </li>
+          <li> Destination Name: issue description </li>
+          <li> Source Postgres: Add `_ab_cdc_inserted_at` column for CDC syncs </li>
+          <li> Source Chargebee: cannot sync transaction objects</li>
+          <li> Source Snowflake: support for case sensitive parameters in connection string</li>
+          <li> Destination BigQuery: normalization incorrectly processes arrays</li>
+        </ul>
+        <br>
+        <p><small>Issues not following the template will be closed. </small></p>
+  - type: input
+    id: connector-name
+    attributes:
+      label: Connector Name
+      description: |
+        Insert only the name of the connector is having issue. 
+        Use the pattern source-postgres or destination-postgres. 
+        This will help us automatically label the issue to the correct teams.
+      placeholder: destination-mssql
+    validations:
+      required: true
+  - type: input
+    id: connector-version
+    attributes:
+      label: Connector Version
+      description: Give the connector version that has a problem. You can find it in the sync log file or the settings page.
+      placeholder: 0.2.63
+    validations:
+      required: true
+  - type: dropdown
+    id: step
+    attributes:
+      label: What step the error happened?
+      multiple: false
+      options:
+        - Configuring a new connector
+        - During the sync
+        - Updating the connector
+        - Other
+  - type: textarea
+    id: description
+    attributes:
+      label: Revelant information
+      description: Please give any additional information you have and steps to reproduce the problem.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: |
+        Please copy and paste any relevant log output. 
+        This will be automatically formatted into code, so no need for backticks.
+        We strongly recommend to upload the log file for further debugging.
+      render: shell
+  - type: checkboxes
+    id: submit-pr
+    attributes:
+      label: Contribute
+      description: Are you willing to submit the fix?
+      options:
+        - label: Yes, I want to contribute
+          required: false

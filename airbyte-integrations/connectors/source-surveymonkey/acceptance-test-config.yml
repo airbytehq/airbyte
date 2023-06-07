@@ -3,7 +3,7 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "source_surveymonkey/spec.json"
+      - spec_path: "source_surveymonkey/spec.json"
   connection:
     tests:
       - config_path: "secrets/config_old.json"
@@ -14,20 +14,20 @@ acceptance_tests:
         status: "failed"
   discovery:
     tests:
-    - config_path: "secrets/config.json"
+      - config_path: "secrets/config.json"
   basic_read:
     tests:
-    - config_path: "secrets/config.json"
-      expect_records:
-        path: "integration_tests/expected_records.txt"
-      fail_on_extra_columns: false
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.txt"
+        fail_on_extra_columns: false
   incremental:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state:
-        future_state_path: "integration_tests/abnormal_state.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

@@ -16,7 +16,7 @@
           },
           "column3": {
             "type": "string",
-            "format": "datetime",
+            "format": "date-time",
             "airbyte_type": "timestamp_without_timezone"
           },
           "column4": {

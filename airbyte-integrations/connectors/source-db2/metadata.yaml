@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - ${host}
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: source
   definitionId: 447e0381-3780-4b46-bb62-00a4e3c8b8e2
@@ -16,6 +11,14 @@ data:
   icon: db2.svg
   license: MIT
   name: IBM Db2
+  registries:
+    cloud:
+      enabled: false # Requires a strict-encrypt variant
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/db2
+  documentationUrl: https://docs.airbyte.com/integrations/sources/db2
+  tags:
+    - language:java
+    - language:python
 metadataSpecVersion: "1.0"

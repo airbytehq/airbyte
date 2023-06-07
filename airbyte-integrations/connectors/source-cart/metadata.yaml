@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: bb1a6d31-6879-4819-a2bd-3eed299ea8e2
@@ -13,6 +8,13 @@ data:
   icon: cart.svg
   license: MIT
   name: Cart.com
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/cart
+  documentationUrl: https://docs.airbyte.com/integrations/sources/cart
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

@@ -9,6 +9,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
+import io.airbyte.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
 import io.debezium.connector.sqlserver.Lsn;
 import java.io.IOException;
@@ -29,16 +30,14 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition<Lsn> {
   }
 
   @Override
-  public boolean reachedTargetPosition(final JsonNode valueAsJson) {
-    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.fromString(valueAsJson.get("source").get("snapshot").asText());
-
-    if (SnapshotMetadata.isSnapshotEventMetadata(snapshotMetadata)) {
+  public boolean reachedTargetPosition(final ChangeEventWithMetadata changeEventWithMetadata) {
+    if (changeEventWithMetadata.isSnapshotEvent()) {
       return false;
-    } else if (SnapshotMetadata.LAST == snapshotMetadata) {
+    } else if (SnapshotMetadata.LAST == changeEventWithMetadata.snapshotMetadata()) {
       LOGGER.info("Signalling close because Snapshot is complete");
       return true;
     } else {
-      final Lsn recordLsn = extractLsn(valueAsJson);
+      final Lsn recordLsn = extractLsn(changeEventWithMetadata.eventValueAsJson());
       final boolean isEventLSNAfter = targetLsn.compareTo(recordLsn) <= 0;
       if (isEventLSNAfter) {
         LOGGER.info("Signalling close because record's LSN : " + recordLsn + " is after target LSN : " + targetLsn);

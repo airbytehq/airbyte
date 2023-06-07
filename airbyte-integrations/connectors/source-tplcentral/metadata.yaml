@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: f9b6c538-ee12-42fe-8d4b-0c10f5955417
@@ -12,6 +7,13 @@ data:
   githubIssueLabel: source-tplcentral
   license: MIT
   name: TPLcentral
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/tplcentral
+  documentationUrl: https://docs.airbyte.com/integrations/sources/tplcentral
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

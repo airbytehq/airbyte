@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: ec5f3102-fb31-4916-99ae-864faf8e7e25
@@ -13,6 +8,14 @@ data:
   icon: sapfieldglass.svg
   license: MIT
   name: SAP Fieldglass
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/sap-fieldglass
+  documentationUrl: https://docs.airbyte.com/integrations/sources/sap-fieldglass
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

@@ -3,11 +3,13 @@
 #
 
 
-from unittest.mock import patch
+from unittest.mock import patch, sentinel
 
 import pytest
 from pandas import read_csv, read_excel
+from paramiko import SSHException
 from source_file.client import Client, ConfigurationError, URLFile
+from urllib3.exceptions import ProtocolError
 
 
 @pytest.fixture
@@ -93,6 +95,7 @@ def test_load_nested_json(client, absolute_path, test_files):
         ("boolean", "bool", "boolean"),
         ("number", "int64", "number"),
         ("number", "float64", "number"),
+        ("number", "datetime64[ns]", "date-time"),
     ],
 )
 def test_dtype_to_json_type(client, current_type, dtype, expected):
@@ -149,3 +152,39 @@ def test_read(test_read_config):
         except ConnectionResetError:
             print("Exception has been raised correctly!")
         mock_method.assert_called()
+
+
+def test_read_network_issues(test_read_config):
+    test_read_config.update(format='excel')
+    client = Client(**test_read_config)
+    client.sleep_on_retry_sec = 0  # just for test
+    with patch.object(client, "_cache_stream", side_effect=ProtocolError), pytest.raises(ConfigurationError):
+        next(client.read(["date", "key"]))
+
+
+def test_urlfile_open_backoff_sftp(monkeypatch, mocker):
+    call_count = 0
+    result = sentinel.result
+
+    def patched_open(self):
+        nonlocal call_count
+        call_count += 1
+        if call_count < 7:
+            raise SSHException("Error reading SSH protocol banner[Errno 104] Connection reset by peer")
+        return result
+
+    sleep_mock = mocker.patch("time.sleep")
+    monkeypatch.setattr(URLFile, "_open", patched_open)
+
+    provider = {'storage': 'SFTP', 'user': 'user', 'password': 'password', 'host': 'sftp.domain.com', 'port': 22}
+    reader = URLFile(url='/DISTDA.CSV', provider=provider, binary=False)
+    with pytest.raises(SSHException):
+        reader.open()
+    assert reader._file is None
+    assert call_count == 5
+
+    reader.open()
+    assert reader._file is result
+    assert call_count == 7
+
+    assert sleep_mock.call_count == 5

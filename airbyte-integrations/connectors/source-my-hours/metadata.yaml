@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 722ba4bf-06ec-45a4-8dd5-72e4a5cf3903
@@ -13,6 +8,13 @@ data:
   icon: my-hours.svg
   license: MIT
   name: My Hours
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/my-hours
+  documentationUrl: https://docs.airbyte.com/integrations/sources/my-hours
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

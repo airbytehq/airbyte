@@ -18,6 +18,7 @@ import io.debezium.engine.ChangeEvent;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.slf4j.Logger;
@@ -41,15 +42,18 @@ public class AirbyteDebeziumHandler<T> {
   private final CdcTargetPosition<T> targetPosition;
   private final boolean trackSchemaHistory;
   private final Duration firstRecordWaitTime;
+  private final OptionalInt queueSize;
 
   public AirbyteDebeziumHandler(final JsonNode config,
                                 final CdcTargetPosition<T> targetPosition,
                                 final boolean trackSchemaHistory,
-                                final Duration firstRecordWaitTime) {
+                                final Duration firstRecordWaitTime,
+                                final OptionalInt queueSize) {
     this.config = config;
     this.targetPosition = targetPosition;
     this.trackSchemaHistory = trackSchemaHistory;
     this.firstRecordWaitTime = firstRecordWaitTime;
+    this.queueSize = queueSize;
   }
 
   public AutoCloseableIterator<AirbyteMessage> getSnapshotIterators(
@@ -60,7 +64,7 @@ public class AirbyteDebeziumHandler<T> {
                                                                     final Instant emittedAt) {
 
     LOGGER.info("Running snapshot for " + catalogContainingStreamsToSnapshot.getStreams().size() + " new tables");
-    final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
+    final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(queueSize.orElse(QUEUE_CAPACITY));
 
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeDummyStateForSnapshotPurpose();
     final DebeziumRecordPublisher tableSnapshotPublisher = new DebeziumRecordPublisher(snapshotProperties,
@@ -70,7 +74,7 @@ public class AirbyteDebeziumHandler<T> {
         schemaHistoryManager(new EmptySavedInfo()));
     tableSnapshotPublisher.start(queue);
 
-    final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator = new DebeziumRecordIterator<>(
+    final AutoCloseableIterator<ChangeEventWithMetadata> eventIterator = new DebeziumRecordIterator<>(
         queue,
         targetPosition,
         tableSnapshotPublisher::hasClosed,
@@ -93,7 +97,7 @@ public class AirbyteDebeziumHandler<T> {
                                                                        final Instant emittedAt,
                                                                        final boolean addDbNameToState) {
     LOGGER.info("Using CDC: {}", true);
-    final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
+    final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(queueSize.orElse(QUEUE_CAPACITY));
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset(),
         addDbNameToState ? Optional.ofNullable(config.get(JdbcUtils.DATABASE_KEY).asText()) : Optional.empty());
     final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager = schemaHistoryManager(cdcSavedInfoFetcher);
@@ -102,7 +106,7 @@ public class AirbyteDebeziumHandler<T> {
     publisher.start(queue);
 
     // handle state machine around pub/sub logic.
-    final AutoCloseableIterator<ChangeEvent<String, String>> eventIterator = new DebeziumRecordIterator<>(
+    final AutoCloseableIterator<ChangeEventWithMetadata> eventIterator = new DebeziumRecordIterator<>(
         queue,
         targetPosition,
         publisher::hasClosed,

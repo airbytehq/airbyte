@@ -16,8 +16,10 @@ data:
   normalizationConfig:
     normalizationIntegrationType: oracle
     normalizationRepository: airbyte/normalization-oracle
-    normalizationTag: 0.4.0
+    normalizationTag: 0.4.1
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/oracle
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/oracle
   supportsDbt: true
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

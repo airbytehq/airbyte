@@ -1,13 +1,13 @@
 # Snowflake
 
-Setting up the Snowflake destination connector involves setting up Snowflake entities (warehouse, database, schema, user, and role) in the Snowflake console, setting up the data loading method (internal stage, AWS S3, Google Cloud Storage bucket, or Azure Blob Storage), and configuring the Snowflake destination connector using the Airbyte UI.
+Setting up the Snowflake destination connector involves setting up Snowflake entities (warehouse, database, schema, user, and role) in the Snowflake console, setting up the data loading method (internal stage, AWS S3, or Google Cloud Storage bucket), and configuring the Snowflake destination connector using the Airbyte UI.
 
 This page describes the step-by-step process of setting up the Snowflake destination connector.
 
 ## Prerequisites
 
 - A Snowflake account with the [ACCOUNTADMIN](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html) role. If you don’t have an account with the `ACCOUNTADMIN` role, contact your Snowflake administrator to set one up for you.
-- (Optional) An AWS, Google Cloud Storage, or Azure account.
+- (Optional) An AWS, or Google Cloud Storage.
 
 ### Network policies
 
@@ -114,7 +114,7 @@ You can use the following script in a new [Snowflake worksheet](https://docs.sno
 
 ### Step 2: Set up a data loading method
 
-By default, Airbyte uses Snowflake’s [Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html) to load data. You can also load data using an [Amazon S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html), a [Google Cloud Storage bucket](https://cloud.google.com/storage/docs/introduction), or [Azure Blob Storage](https://docs.microsoft.com/en-us/azure/storage/blobs/).
+By default, Airbyte uses Snowflake’s [Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html) to load data. You can also load data using an [Amazon S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html), or [Google Cloud Storage bucket](https://cloud.google.com/storage/docs/introduction).
 
 Make sure the database and schema have the `USAGE` privilege.
 
@@ -149,10 +149,6 @@ To use a Google Cloud Storage bucket:
     The final query should show a `STORAGE_GCP_SERVICE_ACCOUNT` property with an email as the property value. Add read/write permissions to your bucket with that email.
 
 4. Navigate to the Snowflake UI and run the script as a [Snowflake account admin](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html) using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html).
-
-#### Using Azure Blob Storage
-
-To use Azure Blob Storage, [create a storage account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) and [container](https://docs.microsoft.com/en-us/rest/api/storageservices/create-container), and provide a [SAS Token](https://docs.snowflake.com/en/user-guide/data-load-azure-config.html#option-2-generating-a-sas-token) to access the container. We recommend creating a dedicated container for Airbyte to stage data to Snowflake. Airbyte needs read/write access to interact with this container.
 
 
 ### Step 3: Set up Snowflake as a destination in Airbyte
@@ -231,16 +227,6 @@ To use a Google Cloud Storage bucket, enter the information for the bucket you c
 | GCP Bucket Name                | The name of the staging bucket. Airbyte will write files to this bucket and read them via statements on Snowflake. (Example: `airbyte-staging`)                                                                                                                                                                                                                                                      |
 | Google Application Credentials | The contents of the JSON key file that has read/write permissions to the staging GCS bucket. You will separately need to grant bucket access to your Snowflake GCP service account. See the [Google Cloud docs](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) for more information on how to generate a JSON key for your service account. |
 
-To use Azure Blob storage, enter the information for the storage you created in Step 2:
-
-| Field                                      | Description                                                                                                                                                                                                |
-|--------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Endpoint Domain Name                       | Leave default value `blob.core.windows.net` or [map a custom domain](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-custom-domain-name?tabs=azure-portal) to an Azure Blob Storage endpoint. |
-| Azure Blob Storage Account Name            | The Azure storage account you created in Step 2.                                                                                                                                                           |
-| Azure blob storage container (Bucket) Name | The Azure blob storage container you created in Step 2.                                                                                                                                                    |
-| SAS Token                                  | The SAS Token you provided in Step 2.                                                                                                                                                                      |
-
-
 ## Output schema
 
 Airbyte outputs each stream into its own table with the following columns in Snowflake:
@@ -287,12 +273,19 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.4.61          | 2023-03-30 | [#24736](https://github.com/airbytehq/airbyte/pull/24736)  | Improve behavior when throttled by AWS API                                                                                                          |
-| 0.4.60          | 2023-03-30 | [#24698](https://github.com/airbytehq/airbyte/pull/24698)  | Add option in spec to allow increasing the stream buffer size to 50                                                                                 |
-| 0.4.59          | 2023-03-23 | [#23904](https://github.com/airbytehq/airbyte/pull/24405)  | Fail faster in certain error cases                                                                                                                  |
-| 0.4.58          | 2023-03-27 | [#24615](https://github.com/airbytehq/airbyte/pull/24615)  | Fixed host validation by pattern on UI                                                                                                              |
-| 0.4.56 (broken) | 2023-03-22 | [#23904](https://github.com/airbytehq/airbyte/pull/23904)  | Added host validation by pattern on UI                                                                                                              |
-| 0.4.54          | 2023-03-17 | [#23788](https://github.com/airbytehq/airbyte/pull/23788)  | S3-Parquet: added handler to process null values in arrays                                                                                          |
+| 1.0.5           | 2023-05-31 | [\#25782](https://github.com/airbytehq/airbyte/pull/25782) | Internal scaffolding for future development                                                                                                         |
+| 1.0.4           | 2023-05-19 | [\#26323](https://github.com/airbytehq/airbyte/pull/26323) | Prevent infinite retry loop under specific circumstances                                                                                            |
+| 1.0.3           | 2023-05-15 | [\#26081](https://github.com/airbytehq/airbyte/pull/26081) | Reverts splits bases                                                                                                                                |
+| 1.0.2           | 2023-05-05 | [\#25649](https://github.com/airbytehq/airbyte/pull/25649) | Splits bases (reverted)                                                                                                                             |
+| 1.0.1           | 2023-04-29 | [\#25570](https://github.com/airbytehq/airbyte/pull/25570) | Internal library update                                                                                                                             |
+| 1.0.0           | 2023-05-02 | [\#25739](https://github.com/airbytehq/airbyte/pull/25739) | Removed Azure Blob Storage as a loading method                                                                                                      |
+| 0.4.63          | 2023-04-27 | [\#25346](https://github.com/airbytehq/airbyte/pull/25346) | Added FlushBufferFunction interface                                                                                                                 |
+| 0.4.61          | 2023-03-30 | [\#24736](https://github.com/airbytehq/airbyte/pull/24736) | Improve behavior when throttled by AWS API                                                                                                          |
+| 0.4.60          | 2023-03-30 | [\#24698](https://github.com/airbytehq/airbyte/pull/24698) | Add option in spec to allow increasing the stream buffer size to 50                                                                                 |
+| 0.4.59          | 2023-03-23 | [\#23904](https://github.com/airbytehq/airbyte/pull/24405) | Fail faster in certain error cases                                                                                                                  |
+| 0.4.58          | 2023-03-27 | [\#24615](https://github.com/airbytehq/airbyte/pull/24615) | Fixed host validation by pattern on UI                                                                                                              |
+| 0.4.56 (broken) | 2023-03-22 | [\#23904](https://github.com/airbytehq/airbyte/pull/23904) | Added host validation by pattern on UI                                                                                                              |
+| 0.4.54          | 2023-03-17 | [\#23788](https://github.com/airbytehq/airbyte/pull/23788) | S3-Parquet: added handler to process null values in arrays                                                                                          |
 | 0.4.53          | 2023-03-15 | [\#24058](https://github.com/airbytehq/airbyte/pull/24058) | added write attempt to internal staging Check method                                                                                                |
 | 0.4.52          | 2023-03-10 | [\#23931](https://github.com/airbytehq/airbyte/pull/23931) | Added support for periodic buffer flush                                                                                                             |
 | 0.4.51          | 2023-03-10 | [\#23466](https://github.com/airbytehq/airbyte/pull/23466) | Changed S3 Avro type from Int to Long                                                                                                               |

@@ -132,7 +132,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 * `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in Redshift is `VARCHAR`.
 * `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Redshift is `TIMESTAMP WITH TIME ZONE`.
-* `_airbyte_data`: a json blob representing with the event data. The column type in Redshift is `VARCHAR` but can be be parsed with JSON functions.
+* `_airbyte_data`: a json blob representing with the event data. The column type in Redshift is `SUPER`.
 
 ## Data type mapping
 
@@ -152,9 +152,12 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.4.5   | 2023-03-30 | [#24736](https://github.com/airbytehq/airbyte/pull/24736)  | Improve behavior when throttled by AWS API                                                                                                                                                                       |
-| 0.4.4   | 2023-03-29 | [#24671](https://github.com/airbytehq/airbyte/pull/24671)  | Fail faster in certain error cases                                                                                                                                                                               |
-| 0.4.3   | 2023-03-17 | [#23788](https://github.com/airbytehq/airbyte/pull/23788)  | S3-Parquet: added handler to process null values in arrays                                                                                                                                                       |
+| 0.4.8   | 2023-05-17 | [\#26165](https://github.com/airbytehq/airbyte/pull/26165) | Internal code change for future development (install normalization packages inside connector)                                                                                                                    |
+| 0.4.7   | 2023-05-01 | [\#25698](https://github.com/airbytehq/airbyte/pull/25698) | Remove old VARCHAR to SUPER migration Java functionality                                                                                                                                                         |
+| 0.4.6   | 2023-04-27 | [\#25346](https://github.com/airbytehq/airbyte/pull/25346) | Internal code cleanup                                                                                                                                                                                            |
+| 0.4.5   | 2023-03-30 | [\#24736](https://github.com/airbytehq/airbyte/pull/24736) | Improve behavior when throttled by AWS API                                                                                                                                                                       |
+| 0.4.4   | 2023-03-29 | [\#24671](https://github.com/airbytehq/airbyte/pull/24671) | Fail faster in certain error cases                                                                                                                                                                               |
+| 0.4.3   | 2023-03-17 | [\#23788](https://github.com/airbytehq/airbyte/pull/23788) | S3-Parquet: added handler to process null values in arrays                                                                                                                                                       |
 | 0.4.2   | 2023-03-10 | [\#23931](https://github.com/airbytehq/airbyte/pull/23931) | Added support for periodic buffer flush                                                                                                                                                                          |
 | 0.4.1   | 2023-03-10 | [\#23466](https://github.com/airbytehq/airbyte/pull/23466) | Changed S3 Avro type from Int to Long                                                                                                                                                                            |
 | 0.4.0   | 2023-02-28 | [\#23523](https://github.com/airbytehq/airbyte/pull/23523) | Add SSH Bastion Host configuration options                                                                                                                                                                       |

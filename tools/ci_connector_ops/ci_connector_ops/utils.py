@@ -2,13 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import functools
 import logging
 import os
+import re
 from dataclasses import dataclass
 from enum import Enum
-from functools import cached_property
+from glob import glob
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import List, Optional, Set, Tuple, Union
 
 import git
 import requests
@@ -16,24 +18,22 @@ import yaml
 from ci_credentials import SecretsManager
 from rich.console import Console
 
-try:
-    from yaml import CLoader as Loader
-# Some environments do not have a system C Yaml loader
-except ImportError:
-    from yaml import Loader
-
 console = Console()
 
 DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")
-OSS_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json"
+OSS_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
 SOURCE_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/source-"
 DESTINATION_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/destination-"
+THIRD_PARTY_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/third_party/"
+SCAFFOLD_CONNECTOR_GLOB = "-scaffold-"
+
+
 ACCEPTANCE_TEST_CONFIG_FILE_NAME = "acceptance-test-config.yml"
 AIRBYTE_DOCKER_REPO = "airbyte"
-SOURCE_DEFINITIONS_FILE_PATH = "airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml"
-DESTINATION_DEFINITIONS_FILE_PATH = "airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml"
-DEFINITIONS_FILE_PATH = {"source": SOURCE_DEFINITIONS_FILE_PATH, "destination": DESTINATION_DEFINITIONS_FILE_PATH}
+AIRBYTE_REPO_DIRECTORY_NAME = "airbyte"
+GRADLE_PROJECT_RE_PATTERN = r"project\((['\"])(.+?)\1\)"
+TEST_GRADLE_DEPENDENCIES = ["testImplementation", "integrationTestJavaImplementation", "performanceTestJavaImplementation"]
 
 
 def download_catalog(catalog_url):
@@ -42,6 +42,8 @@ def download_catalog(catalog_url):
 
 
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
+METADATA_FILE_NAME = "metadata.yaml"
+ICON_FILE_NAME = "icon.svg"
 
 
 class ConnectorInvalidNameError(Exception):
@@ -50,11 +52,6 @@ class ConnectorInvalidNameError(Exception):
 
 class ConnectorVersionNotFound(Exception):
     pass
-
-
-def read_definitions(definitions_file_path: str) -> Dict:
-    with open(definitions_file_path) as definitions_file:
-        return yaml.load(definitions_file, Loader=Loader)
 
 
 def get_connector_name_from_path(path):
@@ -83,6 +80,90 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[
         if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) and file_path.endswith(ACCEPTANCE_TEST_CONFIG_FILE_NAME)
     }
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_acceptance_test_config_paths}
+
+
+def get_gradle_dependencies_block(build_file: Path) -> str:
+    """Get the dependencies block of a Gradle file.
+
+    Args:
+        build_file (Path): Path to the build.gradle file of the project.
+
+    Returns:
+        str: The dependencies block of the Gradle file.
+    """
+    contents = build_file.read_text().split("\n")
+    dependency_block = []
+    in_dependencies_block = False
+    for line in contents:
+        if line.strip().startswith("dependencies"):
+            in_dependencies_block = True
+            continue
+        if in_dependencies_block:
+            if line.startswith("}"):
+                in_dependencies_block = False
+                break
+            else:
+                dependency_block.append(line)
+    dependencies_block = "\n".join(dependency_block)
+    return dependencies_block
+
+
+def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]:
+    """Parse the dependencies block of a Gradle file and return the list of project dependencies and test dependencies.
+
+    Args:
+        build_file (Path): _description_
+
+    Returns:
+        Tuple[List[Tuple[str, Path]], List[Tuple[str, Path]]]: _description_
+    """
+
+    dependencies_block = get_gradle_dependencies_block(build_file)
+
+    project_dependencies: List[Tuple[str, Path]] = []
+    test_dependencies: List[Tuple[str, Path]] = []
+
+    # Find all matches for test dependencies and regular dependencies
+    matches = re.findall(
+        r"(testImplementation|integrationTestJavaImplementation|performanceTestJavaImplementation|implementation).*?project\(['\"](.*?)['\"]\)",
+        dependencies_block,
+    )
+    if matches:
+        # Iterate through each match
+        for match in matches:
+            dependency_type, project_path = match
+            path_parts = project_path.split(":")
+            path = Path(*path_parts)
+
+            if dependency_type in TEST_GRADLE_DEPENDENCIES:
+                test_dependencies.append(path)
+            else:
+                project_dependencies.append(path)
+    return project_dependencies, test_dependencies
+
+
+def get_all_gradle_dependencies(
+    build_file: Path, with_test_dependencies: bool = True, found_dependencies: Optional[List[Path]] = None
+) -> List[Path]:
+    """Recursively retrieve all transitive dependencies of a Gradle project.
+
+    Args:
+        build_file (Path): Path to the build.gradle file of the project.
+        found_dependencies (List[Path]): List of dependencies that have already been found. Defaults to None.
+
+    Returns:
+        List[Path]: All dependencies of the project.
+    """
+    if found_dependencies is None:
+        found_dependencies = []
+    project_dependencies, test_dependencies = parse_gradle_dependencies(build_file)
+    all_dependencies = project_dependencies + test_dependencies if with_test_dependencies else project_dependencies
+    for dependency_path in all_dependencies:
+        if dependency_path not in found_dependencies and Path(dependency_path / "build.gradle").exists():
+            found_dependencies.append(dependency_path)
+            get_all_gradle_dependencies(dependency_path / "build.gradle", with_test_dependencies, found_dependencies)
+
+    return found_dependencies
 
 
 class ConnectorLanguage(str, Enum):
@@ -122,13 +203,23 @@ class Connector:
 
     @property
     def icon_path(self) -> Path:
-        if self.definition and self.definition.get("icon"):
-            return Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{self.definition['icon']}")
-        return Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{self.name}.svg")
+        file_path = self.code_directory / ICON_FILE_NAME
+        return file_path
 
     @property
     def code_directory(self) -> Path:
         return Path(f"./airbyte-integrations/connectors/{self.technical_name}")
+
+    @property
+    def metadata_file_path(self) -> Path:
+        return self.code_directory / METADATA_FILE_NAME
+
+    @property
+    def metadata(self) -> Optional[dict]:
+        file_path = self.metadata_file_path
+        if not file_path.is_file():
+            return None
+        return yaml.safe_load((self.code_directory / METADATA_FILE_NAME).read_text())["data"]
 
     @property
     def language(self) -> ConnectorLanguage:
@@ -147,6 +238,12 @@ class Connector:
 
     @property
     def version(self) -> str:
+        if self.metadata is None:
+            return self.version_in_dockerfile_label
+        return self.metadata["dockerImageTag"]
+
+    @property
+    def version_in_dockerfile_label(self) -> str:
         with open(self.code_directory / "Dockerfile") as f:
             for line in f:
                 if "io.airbyte.version" in line:
@@ -158,33 +255,17 @@ class Connector:
             """
         )
 
-    @cached_property
-    def definition(self) -> Optional[dict]:
-        """Find a connector definition from the catalog.
-        Returns:
-            Optional[Dict]: The definition if the connector was found in the catalog. Returns None otherwise.
-        """
-        try:
-            definition_type = self.technical_name.split("-")[0]
-            assert definition_type in ["source", "destination"]
-        except AssertionError:
-            return None
-        definitions = read_definitions(DEFINITIONS_FILE_PATH[definition_type])
-        for definition in definitions:
-            if definition["dockerRepository"].replace(f"{AIRBYTE_DOCKER_REPO}/", "") == self.technical_name:
-                return definition
-
     @property
     def release_stage(self) -> Optional[str]:
-        return self.definition.get("releaseStage") if self.definition else None
+        return self.metadata.get("releaseStage") if self.metadata else None
 
     @property
     def allowed_hosts(self) -> Optional[List[str]]:
-        return self.definition.get("allowedHosts") if self.definition else None
+        return self.metadata.get("allowedHosts") if self.metadata else None
 
     @property
     def suggested_streams(self) -> Optional[List[str]]:
-        return self.definition.get("suggestedStreams") if self.definition else None
+        return self.metadata.get("suggestedStreams") if self.metadata else None
 
     @property
     def acceptance_test_config_path(self) -> Path:
@@ -201,17 +282,17 @@ class Connector:
 
     @property
     def supports_normalization(self) -> bool:
-        return self.definition and self.definition.get("normalizationConfig") is not None
+        return self.metadata and self.metadata.get("normalizationConfig") is not None
 
     @property
     def normalization_repository(self) -> Optional[str]:
         if self.supports_normalization:
-            return f"{self.definition['normalizationConfig']['normalizationRepository']}"
+            return f"{self.metadata['normalizationConfig']['normalizationRepository']}"
 
     @property
     def normalization_tag(self) -> Optional[str]:
         if self.supports_normalization:
-            return f"{self.definition['normalizationConfig']['normalizationTag']}"
+            return f"{self.metadata['normalizationConfig']['normalizationTag']}"
 
     def get_secret_manager(self, gsm_credentials: str):
         return SecretsManager(connector_name=self.technical_name, gsm_credentials=gsm_credentials)
@@ -219,18 +300,43 @@ class Connector:
     def __repr__(self) -> str:
         return self.technical_name
 
+    @functools.lru_cache(maxsize=2)
+    def get_local_dependencies_paths(self, with_test_dependencies: bool = True) -> Set[Path]:
+        dependencies_paths = [self.code_directory]
+        if self.language == ConnectorLanguage.JAVA:
+            dependencies_paths += get_all_gradle_dependencies(
+                self.code_directory / "build.gradle", with_test_dependencies=with_test_dependencies
+            )
+        return set(dependencies_paths)
 
-def get_changed_connectors() -> Set[Connector]:
+
+def get_changed_connectors(
+    modified_files: Optional[Set[Union[str, Path]]] = None, source: bool = True, destination: bool = True, third_party: bool = True
+) -> Set[Connector]:
     """Retrieve a set of Connectors that were changed in the current branch (compared to master)."""
-    airbyte_repo = git.Repo(search_parent_directories=True)
+    if modified_files is None:
+        airbyte_repo = git.Repo(search_parent_directories=True)
+        modified_files = airbyte_repo.git.diff("--name-only", DIFFED_BRANCH).split("\n")
+
+    prefix_to_check = []
+    if source:
+        prefix_to_check.append(SOURCE_CONNECTOR_PATH_PREFIX)
+    if destination:
+        prefix_to_check.append(DESTINATION_CONNECTOR_PATH_PREFIX)
+    if third_party:
+        prefix_to_check.append(THIRD_PARTY_CONNECTOR_PATH_PREFIX)
+
     changed_source_connector_files = {
         file_path
-        for file_path in airbyte_repo.git.diff("--name-only", DIFFED_BRANCH).split("\n")
-        if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX)
+        for file_path in modified_files
+        if any(file_path.startswith(prefix) for prefix in prefix_to_check) and SCAFFOLD_CONNECTOR_GLOB not in file_path
     }
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_source_connector_files}
 
 
 def get_all_released_connectors() -> Set:
-    all_definitions = OSS_CATALOG["sources"] + OSS_CATALOG["destinations"]
-    return {Connector(definition["dockerRepository"].replace("airbyte/", "")) for definition in all_definitions}
+    return {
+        Connector(Path(metadata_file).parent.name)
+        for metadata_file in glob("airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
+        if SCAFFOLD_CONNECTOR_GLOB not in metadata_file
+    }

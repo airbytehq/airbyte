@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 16447954-e6a8-4593-b140-43dea13bc457
@@ -13,6 +8,13 @@ data:
   icon: appsflyer.svg
   license: MIT
   name: AppsFlyer
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/appsflyer
+  documentationUrl: https://docs.airbyte.com/integrations/sources/appsflyer
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

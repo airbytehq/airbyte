@@ -97,7 +97,9 @@ public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptance
   }
 
   @Override
-  protected boolean supportIncrementalSchemaChanges() { return true; }
+  protected boolean supportIncrementalSchemaChanges() {
+    return true;
+  }
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)

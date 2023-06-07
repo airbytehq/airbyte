@@ -2,6 +2,10 @@
 
 This page guides you through the process of setting up the GCS source connector. This connector supports loading multiple CSV files (non compressed) from a GCS directory. The conntector will check for all files ending in `.csv`, even nested files.
 
+:::info
+Cloud storage may incur egress costs. Egress refers to data that is transferred out of the cloud storage system, such as when you download files or access them from a different location. For more information, see the [Google Cloud Storage pricing guide](https://cloud.google.com/storage/pricing).
+:::
+
 ## Prerequisites
 
 * JSON credentials for the service account that has access to GCS. For more details check [instructions](https://cloud.google.com/iam/docs/creating-managing-service-accounts)

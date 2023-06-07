@@ -33,6 +33,12 @@
     },
     "updated_by_id": {
       "type": ["null", "string"]
+    },
+    "allow_manual_enrollment": {
+      "type": ["null", "boolean"]
+    },
+    "trigger_query": {
+      "type": ["null", "string"]
     }
   }
 }

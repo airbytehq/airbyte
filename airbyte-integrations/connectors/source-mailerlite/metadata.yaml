@@ -1,9 +1,4 @@
 data:
-  registries:
-    cloud:
-      enabled: false
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: dc3b9003-2432-4e93-a7f4-4620b0f14674
@@ -13,6 +8,14 @@ data:
   icon: mailerlite.svg
   license: MIT
   name: MailerLite
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/mailerlite
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mailerlite
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

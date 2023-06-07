@@ -3,22 +3,25 @@ data:
     hosts:
       - ${host}
       - ${tunnel_method.tunnel_host}
-  registries:
-    cloud:
-      dockerImageTag: 2.0.16
-      dockerRepository: airbyte/source-postgres-strict-encrypt
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: database
   connectorType: source
   definitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
-  dockerImageTag: 2.0.17
+  dockerImageTag: 2.0.33
+  maxSecondsBetweenMessages: 7200
   dockerRepository: airbyte/source-postgres
   githubIssueLabel: source-postgres
   icon: postgresql.svg
   license: MIT
   name: Postgres
+  registries:
+    cloud:
+      dockerRepository: airbyte/source-postgres-strict-encrypt
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/postgres
+  documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
+  tags:
+    - language:java
+    - language:python
 metadataSpecVersion: "1.0"

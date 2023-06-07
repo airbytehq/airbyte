@@ -11,11 +11,15 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, ClassVar, List, Optional
+from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 
+import anyio
 import asyncer
-from ci_connector_ops.pipelines.actions import environments
-from ci_connector_ops.pipelines.utils import check_path_in_workdir, with_exit_code, with_stderr, with_stdout
+from anyio import Path
+from ci_connector_ops.pipelines.consts import PYPROJECT_TOML_FILE_PATH, LOCAL_REPORTS_PATH_ROOT
+from ci_connector_ops.pipelines.actions import remote_storage
+from ci_connector_ops.pipelines.utils import check_path_in_workdir, slugify, with_exit_code, with_stderr, with_stdout
+
 from ci_connector_ops.utils import console
 from dagger import Container, QueryError
 from rich.console import Group
@@ -23,9 +27,22 @@ from rich.panel import Panel
 from rich.style import Style
 from rich.table import Table
 from rich.text import Text
+from tabulate import tabulate
 
 if TYPE_CHECKING:
-    from ci_connector_ops.pipelines.contexts import ConnectorTestContext, PipelineContext
+    from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
+
+
+class CIContext(str, Enum):
+    """An enum for Ci context values which can be ["manual", "pull_request", "nightly_builds"]."""
+
+    MANUAL = "manual"
+    PULL_REQUEST = "pull_request"
+    NIGHTLY_BUILDS = "nightly_builds"
+    MASTER = "master"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 class StepStatus(Enum):
@@ -49,13 +66,11 @@ class StepStatus(Enum):
         """
         if exit_code == 0:
             return StepStatus.SUCCESS
-        if exit_code == 1:
-            return StepStatus.FAILURE
         # pytest returns a 5 exit code when no test is found.
-        if exit_code == 5:
+        elif exit_code == 5:
             return StepStatus.SKIPPED
         else:
-            raise ValueError(f"No step status is mapped to exit code {exit_code}")
+            return StepStatus.FAILURE
 
     def get_rich_style(self) -> Style:
         """Match color used in the console output to the step status."""
@@ -66,6 +81,15 @@ class StepStatus(Enum):
         if self is StepStatus.SKIPPED:
             return Style(color="yellow")
 
+    def get_emoji(self) -> str:
+        """Match emoji used in the console output to the step status."""
+        if self is StepStatus.SUCCESS:
+            return "✅"
+        if self is StepStatus.FAILURE:
+            return "❌"
+        if self is StepStatus.SKIPPED:
+            return "🟡"
+
     def __str__(self) -> str:  # noqa D105
         return self.value
 
@@ -75,10 +99,12 @@ class Step(ABC):
 
     title: ClassVar[str]
     started_at: ClassVar[datetime]
+    retry: ClassVar[bool] = False
+    max_retries: ClassVar[int] = 0
 
-    def __init__(self, context: ConnectorTestContext) -> None:  # noqa D107
+    def __init__(self, context: ConnectorContext) -> None:  # noqa D107
         self.context = context
-        self.host_image_export_dir_path = "." if self.context.is_ci else "/tmp"
+        self.retry_count = 0
 
     async def run(self, *args, **kwargs) -> StepResult:
         """Public method to run the step. It output a step result.
@@ -90,7 +116,15 @@ class Step(ABC):
         """
         self.started_at = datetime.utcnow()
         try:
-            return await self._run(*args, **kwargs)
+            result = await self._run(*args, **kwargs)
+            if result.status is StepStatus.FAILURE and self.retry_count <= self.max_retries:
+                self.retry_count += 1
+                await anyio.sleep(10)
+                self.context.logger.warn(
+                    f"Retry #{self.retry_count} for {self.title} step on connector {self.context.connector.technical_name}"
+                )
+                return await self.run(*args, **kwargs)
+            return result
         except QueryError as e:
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
@@ -129,11 +163,24 @@ class Step(ABC):
             soon_exit_code = task_group.soonify(with_exit_code)(container)
             soon_stderr = task_group.soonify(with_stderr)(container)
             soon_stdout = task_group.soonify(with_stdout)(container)
-        return StepResult(self, StepStatus.from_exit_code(soon_exit_code.value), stderr=soon_stderr.value, stdout=soon_stdout.value)
+        return StepResult(
+            self,
+            StepStatus.from_exit_code(soon_exit_code.value),
+            stderr=soon_stderr.value,
+            stdout=soon_stdout.value,
+            output_artifact=container,
+        )
 
 
 class PytestStep(Step, ABC):
     """An abstract class to run pytest tests and evaluate success or failure according to pytest logs."""
+
+    async def write_log_file(self, logs) -> str:
+        """Return the path to the pytest log file."""
+        log_directory = Path(f"{self.context.connector.code_directory}/airbyte_ci_logs")
+        await log_directory.mkdir(exist_ok=True)
+        await Path(f"{log_directory}/{slugify(self.title).replace('-', '_')}.log").write_text(logs)
+        self.context.logger.info(f"Pytest logs written to {log_directory}/{slugify(self.title)}.log")
 
     # TODO this is not very robust if pytest crashes and does not outputs its expected last log line.
     def pytest_logs_to_step_result(self, logs: str) -> StepResult:
@@ -146,7 +193,7 @@ class PytestStep(Step, ABC):
             StepResult: The inferred step result according to the log.
         """
         last_log_line = logs.split("\n")[-2]
-        if "failed" in last_log_line:
+        if "failed" in last_log_line or "errors" in last_log_line:
             return StepResult(self, StepStatus.FAILURE, stderr=logs)
         elif "no tests ran" in last_log_line:
             return StepResult(self, StepStatus.SKIPPED, stdout=logs)
@@ -165,9 +212,7 @@ class PytestStep(Step, ABC):
         Returns:
             Tuple[StepStatus, Optional[str], Optional[str]]: Tuple of StepStatus, stderr and stdout.
         """
-        test_config = (
-            "pytest.ini" if await check_path_in_workdir(connector_under_test, "pytest.ini") else "/" + environments.PYPROJECT_TOML_FILE_PATH
-        )
+        test_config = "pytest.ini" if await check_path_in_workdir(connector_under_test, "pytest.ini") else "/" + PYPROJECT_TOML_FILE_PATH
         if await check_path_in_workdir(connector_under_test, test_directory):
             tester = connector_under_test.with_exec(
                 [
@@ -182,7 +227,10 @@ class PytestStep(Step, ABC):
                     test_config,
                 ]
             )
-            return self.pytest_logs_to_step_result(await tester.stdout())
+            logs = await tester.stdout()
+            if self.context.is_local:
+                await self.write_log_file(logs)
+            return self.pytest_logs_to_step_result(logs)
 
         else:
             return StepResult(self, StepStatus.SKIPPED)
@@ -197,18 +245,29 @@ class StepResult:
     created_at: datetime = field(default_factory=datetime.utcnow)
     stderr: Optional[str] = None
     stdout: Optional[str] = None
+    output_artifact: Any = None
 
     def __repr__(self) -> str:  # noqa D105
         return f"{self.step.title}: {self.status.value}"
 
 
 @dataclass(frozen=True)
-class TestReport:
-    """A dataclass to build test reports to share pipelines executions results with the user."""
+class Report:
+    """A dataclass to build reports to share pipelines executions results with the user."""
 
     pipeline_context: PipelineContext
     steps_results: List[StepResult]
     created_at: datetime = field(default_factory=datetime.utcnow)
+    name: str = "REPORT"
+    _file_path_key: str = "report.json"
+
+    @property
+    def file_path_key(self) -> str:
+        return self._file_path_key
+
+    @file_path_key.setter
+    def file_path_key(self, v: str) -> None:
+        self._file_path_key = v
 
     @property
     def failed_steps(self) -> List[StepResult]:  # noqa D102
@@ -224,11 +283,35 @@ class TestReport:
 
     @property
     def success(self) -> bool:  # noqa D102
-        return len(self.failed_steps) == 0 and len(self.steps_results) > 0
+        return len(self.failed_steps) == 0
 
     @property
     def run_duration(self) -> int:  # noqa D102
         return (self.created_at - self.pipeline_context.created_at).total_seconds()
+
+    @property
+    def remote_storage_enabled(self) -> bool:  # noqa D102
+        return self.pipeline_context.is_ci
+
+    async def save(self) -> None:
+        """Save the report as a JSON file."""
+        local_report_path = anyio.Path(LOCAL_REPORTS_PATH_ROOT + self.file_path_key)
+        await local_report_path.parents[0].mkdir(parents=True, exist_ok=True)
+        await local_report_path.write_text(self.to_json())
+
+        if self.remote_storage_enabled:
+            local_report_dagger_file = (
+                self.pipeline_context.dagger_client.host().directory(".", include=[str(local_report_path)]).file(str(local_report_path))
+            )
+            report_upload_exit_code, _stdout, _stderr = await remote_storage.upload_to_gcs(
+                dagger_client=self.pipeline_context.dagger_client,
+                file_to_upload=local_report_dagger_file,
+                key=self.file_path_key,
+                bucket=self.pipeline_context.ci_report_bucket,
+                gcs_credentials=self.pipeline_context.ci_gcs_credentials_secret,
+            )
+            if report_upload_exit_code != 0:
+                self.pipeline_context.logger.error(f"Uploading the report to GCS Bucket: {self.pipeline_context.ci_report_bucket} failed.")
 
     def to_json(self) -> str:
         """Create a JSON representation of the report.
@@ -252,13 +335,14 @@ class TestReport:
                 "git_branch": self.pipeline_context.git_branch,
                 "git_revision": self.pipeline_context.git_revision,
                 "ci_context": self.pipeline_context.ci_context,
+                "pull_request_url": self.pipeline_context.pull_request.html_url if self.pipeline_context.pull_request else None,
             }
         )
 
     def print(self):
         """Print the test report to the console in a nice way."""
         pipeline_name = self.pipeline_context.pipeline_name
-        main_panel_title = Text(f"{pipeline_name.upper()} - TEST RESULTS")
+        main_panel_title = Text(f"{pipeline_name.upper()} - {self.name}")
         main_panel_title.stylize(Style(color="blue", bold=True))
         duration_subtitle = Text(f"⏲️  Total pipeline duration for {pipeline_name}: {round(self.run_duration)} seconds")
         step_results_table = Table(title="Steps results")
@@ -295,12 +379,21 @@ class TestReport:
 
 
 @dataclass(frozen=True)
-class ConnectorTestReport(TestReport):
+class ConnectorReport(Report):
     """A dataclass to build connector test reports to share pipelines executions results with the user."""
 
     @property
-    def should_be_saved(self) -> bool:  # noqa D102
-        return self.pipeline_context.is_ci
+    def file_path_key(self) -> str:  # noqa D102
+        connector_name = self.pipeline_context.connector.technical_name
+        connector_version = self.pipeline_context.connector.version
+
+        suffix = f"{connector_name}/{connector_version}/output.json"
+        file_path_key = f"{self.pipeline_context.report_output_prefix}/{suffix}"
+        return file_path_key
+
+    @property
+    def should_be_commented_on_pr(self) -> bool:  # noqa D102
+        return self.pipeline_context.is_ci and self.pipeline_context.pull_request and self.pipeline_context.PRODUCTION
 
     def to_json(self) -> str:
         """Create a JSON representation of the connector test report.
@@ -325,13 +418,32 @@ class ConnectorTestReport(TestReport):
                 "git_branch": self.pipeline_context.git_branch,
                 "git_revision": self.pipeline_context.git_revision,
                 "ci_context": self.pipeline_context.ci_context,
+                "cdk_version": self.pipeline_context.cdk_version,
             }
         )
+
+    def post_comment_on_pr(self) -> None:
+        icon_url = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
+        global_status_emoji = "✅" if self.success else "❌"
+        commit_url = f"{self.pipeline_context.pull_request.html_url}/commits/{self.pipeline_context.git_revision}"
+        markdown_comment = f'## <img src="{icon_url}" width="40" height="40"> {self.pipeline_context.connector.technical_name} test report (commit [`{self.pipeline_context.git_revision[:10]}`]({commit_url})) - {global_status_emoji}\n\n'
+        markdown_comment += f"⏲️  Total pipeline duration: {round(self.run_duration)} seconds\n\n"
+        report_data = [
+            [step_result.step.title, step_result.status.get_emoji()]
+            for step_result in self.steps_results
+            if step_result.status is not StepStatus.SKIPPED
+        ]
+        markdown_comment += tabulate(report_data, headers=["Step", "Result"], tablefmt="pipe") + "\n\n"
+        markdown_comment += f"🔗 [View the logs here]({self.pipeline_context.gha_workflow_run_url})\n\n"
+        markdown_comment += "*Please note that tests are only run on PR ready for review. Please set your PR to draft mode to not flood the CI engine and upstream service on following commits.*\n"
+        markdown_comment += "**You can run the same pipeline locally on this branch with the [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/README.md) tool with the following command**\n"
+        markdown_comment += f"```bash\nairbyte-ci connectors --name={self.pipeline_context.connector.technical_name} test\n```\n\n"
+        self.pipeline_context.pull_request.create_issue_comment(markdown_comment)
 
     def print(self):
         """Print the test report to the console in a nice way."""
         connector_name = self.pipeline_context.connector.technical_name
-        main_panel_title = Text(f"{connector_name.upper()} - TEST RESULTS")
+        main_panel_title = Text(f"{connector_name.upper()} - {self.name}")
         main_panel_title.stylize(Style(color="blue", bold=True))
         duration_subtitle = Text(f"⏲️  Total pipeline duration for {connector_name}: {round(self.run_duration)} seconds")
         step_results_table = Table(title="Steps results")

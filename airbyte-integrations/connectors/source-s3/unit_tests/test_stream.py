@@ -62,65 +62,6 @@ class TestIncrementalFileStream:
                 LOGGER.debug(str(e_info))
 
     @pytest.mark.parametrize(  # set expected_return_record to None for an expected fail
-        "target_columns, record, expected_return_record",
-        [
-            (  # simple case
-                ["id", "first_name", "last_name"],
-                {"id": "1", "first_name": "Frodo", "last_name": "Baggins"},
-                {"id": "1", "first_name": "Frodo", "last_name": "Baggins", "_ab_additional_properties": {}},
-            ),
-            (  # additional columns
-                ["id", "first_name", "last_name"],
-                {"id": "1", "first_name": "Frodo", "last_name": "Baggins", "location": "The Shire", "items": ["The One Ring", "Sting"]},
-                {
-                    "id": "1",
-                    "first_name": "Frodo",
-                    "last_name": "Baggins",
-                    "_ab_additional_properties": {"location": "The Shire", "items": ["The One Ring", "Sting"]},
-                },
-            ),
-            (  # missing columns
-                ["id", "first_name", "last_name", "location", "items"],
-                {"id": "1", "first_name": "Frodo", "last_name": "Baggins"},
-                {
-                    "id": "1",
-                    "first_name": "Frodo",
-                    "last_name": "Baggins",
-                    "location": None,
-                    "items": None,
-                    "_ab_additional_properties": {},
-                },
-            ),
-            (  # additional and missing columns
-                ["id", "first_name", "last_name", "friends", "enemies"],
-                {"id": "1", "first_name": "Frodo", "last_name": "Baggins", "location": "The Shire", "items": ["The One Ring", "Sting"]},
-                {
-                    "id": "1",
-                    "first_name": "Frodo",
-                    "last_name": "Baggins",
-                    "friends": None,
-                    "enemies": None,
-                    "_ab_additional_properties": {"location": "The Shire", "items": ["The One Ring", "Sting"]},
-                },
-            ),
-        ],
-        ids=["simple_case", "additional_columns", "missing_columns", "additional_and_missing_columns"],
-    )
-    @patch(
-        "source_s3.source_files_abstract.stream.IncrementalFileStream.__abstractmethods__", set()
-    )  # patching abstractmethods to empty set so we can instantiate ABC to test
-    def test_match_target_schema(
-        self, target_columns: List[str], record: Dict[str, Any], expected_return_record: Mapping[str, Any]
-    ) -> None:
-        fs = IncrementalFileStream(dataset="dummy", provider={}, format={}, path_pattern="")
-        if expected_return_record is not None:
-            assert fs._match_target_schema(record, target_columns) == expected_return_record
-        else:
-            with pytest.raises(Exception) as e_info:
-                fs._match_target_schema(record, target_columns)
-                LOGGER.debug(str(e_info))
-
-    @pytest.mark.parametrize(  # set expected_return_record to None for an expected fail
         "extra_map, record, expected_return_record",
         [
             (  # one extra field
@@ -578,9 +519,8 @@ class TestIncrementalFileStream:
             path_pattern="**/prefix*.csv"
         )
         assert stream_instance._schema == {
-            "_ab_additional_properties": "object",
-            "_ab_source_file_last_modified": "string",
-            "_ab_source_file_url": "string",
+            "_ab_source_file_last_modified": {"type": "string"},
+            "_ab_source_file_url": {"type": "string"},
             "column_A": "string",
             "column_B": "integer",
             "column_C": "boolean",
@@ -618,7 +558,6 @@ class TestIncrementalFileStream:
         )
         assert stream_instance.get_json_schema() == {
             "properties": {
-                "_ab_additional_properties": {"type": "object"},
                 "_ab_source_file_last_modified": {"format": "date-time", "type": "string"},
                 "_ab_source_file_url": {"type": "string"},
                 "column_A": {"type": ["null", "string"]},
@@ -638,7 +577,6 @@ class TestIncrementalFileStream:
         mocker.patch.object(stream_instance, "filepath_iterator", MagicMock(return_value=[]))
         assert stream_instance.get_json_schema() == {
             "properties": {
-                "_ab_additional_properties": {"type": "object"},
                 "_ab_source_file_last_modified": {"format": "date-time", "type": "string"},
                 "_ab_source_file_url": {"type": "string"}
             },

@@ -2,11 +2,6 @@ data:
   allowedHosts:
     hosts:
       - api.zenloop.com
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: f1e4c7f6-db5c-4035-981f-d35ab4998794
@@ -16,6 +11,14 @@ data:
   icon: zenloop.svg
   license: MIT
   name: Zenloop
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/zenloop
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zenloop
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

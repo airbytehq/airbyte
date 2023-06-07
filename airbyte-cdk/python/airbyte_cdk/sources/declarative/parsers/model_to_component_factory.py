@@ -11,6 +11,7 @@ from typing import Any, Callable, List, Literal, Mapping, Optional, Type, Union,
 
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
+from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
     BasicHttpAuthenticator,
@@ -24,6 +25,7 @@ from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
@@ -71,9 +73,6 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestPath as RequestPathModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SessionTokenAuthenticator as SessionTokenAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
-    SingleUseRefreshTokenOAuthAuthenticator as SingleUseRefreshTokenOAuthAuthenticatorModel,
-)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamPartitionRouter as SubstreamPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
@@ -101,7 +100,6 @@ from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStrea
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
-from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from pydantic import BaseModel
 
 ComponentDefinition: Union[Literal, Mapping, List]
@@ -112,12 +110,17 @@ DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
 
 class ModelToComponentFactory:
     def __init__(
-        self, limit_pages_fetched_per_slice: int = None, limit_slices_fetched: int = None, emit_connector_builder_messages: bool = False
+        self,
+        limit_pages_fetched_per_slice: int = None,
+        limit_slices_fetched: int = None,
+        emit_connector_builder_messages: bool = False,
+        disable_retries=False,
     ):
         self._init_mappings()
         self._limit_pages_fetched_per_slice = limit_pages_fetched_per_slice
         self._limit_slices_fetched = limit_slices_fetched
         self._emit_connector_builder_messages = emit_connector_builder_messages
+        self._disable_retries = disable_retries
 
     def _init_mappings(self):
         self.PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
@@ -156,7 +159,6 @@ class ModelToComponentFactory:
             NoAuthModel: self.create_no_auth,
             NoPaginationModel: self.create_no_pagination,
             OAuthAuthenticatorModel: self.create_oauth_authenticator,
-            SingleUseRefreshTokenOAuthAuthenticatorModel: self.create_single_use_refresh_token_oauth_authenticator,
             OffsetIncrementModel: self.create_offset_increment,
             PageIncrementModel: self.create_page_increment,
             ParentStreamConfigModel: self.create_parent_stream_config,
@@ -219,7 +221,26 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_api_key_authenticator(model: ApiKeyAuthenticatorModel, config: Config, **kwargs) -> ApiKeyAuthenticator:
-        return ApiKeyAuthenticator(api_token=model.api_token, header=model.header, config=config, parameters=model.parameters)
+        if model.inject_into is None and model.header is None:
+            raise ValueError("Expected either inject_into or header to be set for ApiKeyAuthenticator")
+
+        if model.inject_into is not None and model.header is not None:
+            raise ValueError("inject_into and header cannot be set both for ApiKeyAuthenticator - remove the deprecated header option")
+
+        request_option = (
+            RequestOption(
+                inject_into=RequestOptionType(model.inject_into.inject_into.value),
+                field_name=model.inject_into.field_name,
+                parameters=model.parameters,
+            )
+            if model.inject_into
+            else RequestOption(
+                inject_into=RequestOptionType.header,
+                field_name=model.header,
+                parameters=model.parameters,
+            )
+        )
+        return ApiKeyAuthenticator(api_token=model.api_token, request_option=request_option, config=config, parameters=model.parameters)
 
     @staticmethod
     def create_basic_http_authenticator(model: BasicHttpAuthenticatorModel, config: Config, **kwargs) -> BasicHttpAuthenticator:
@@ -654,6 +675,23 @@ class ModelToComponentFactory:
 
     @staticmethod
     def create_oauth_authenticator(model: OAuthAuthenticatorModel, config: Config, **kwargs) -> DeclarativeOauth2Authenticator:
+        if model.refresh_token_updater:
+            return DeclarativeSingleUseRefreshTokenOauth2Authenticator(
+                config,
+                InterpolatedString.create(model.token_refresh_endpoint, parameters=model.parameters).eval(config),
+                access_token_name=InterpolatedString.create(model.access_token_name, parameters=model.parameters).eval(config),
+                refresh_token_name=model.refresh_token_updater.refresh_token_name,
+                expires_in_name=InterpolatedString.create(model.expires_in_name, parameters=model.parameters).eval(config),
+                client_id=InterpolatedString.create(model.client_id, parameters=model.parameters).eval(config),
+                client_secret=InterpolatedString.create(model.client_secret, parameters=model.parameters).eval(config),
+                access_token_config_path=model.refresh_token_updater.access_token_config_path,
+                refresh_token_config_path=model.refresh_token_updater.refresh_token_config_path,
+                token_expiry_date_config_path=model.refresh_token_updater.token_expiry_date_config_path,
+                grant_type=InterpolatedString.create(model.grant_type, parameters=model.parameters).eval(config),
+                refresh_request_body=InterpolatedMapping(model.refresh_request_body or {}, parameters=model.parameters).eval(config),
+                scopes=model.scopes,
+                token_expiry_date_format=model.token_expiry_date_format,
+            )
         return DeclarativeOauth2Authenticator(
             access_token_name=model.access_token_name,
             client_id=model.client_id,
@@ -668,26 +706,6 @@ class ModelToComponentFactory:
             token_refresh_endpoint=model.token_refresh_endpoint,
             config=config,
             parameters=model.parameters,
-        )
-
-    @staticmethod
-    def create_single_use_refresh_token_oauth_authenticator(
-        model: SingleUseRefreshTokenOAuthAuthenticatorModel, config: Config, **kwargs
-    ) -> SingleUseRefreshTokenOauth2Authenticator:
-        return SingleUseRefreshTokenOauth2Authenticator(
-            config,
-            model.token_refresh_endpoint,
-            access_token_name=model.access_token_name,
-            refresh_token_name=model.refresh_token_name,
-            expires_in_name=model.expires_in_name,
-            client_id_config_path=model.client_id_config_path,
-            client_secret_config_path=model.client_secret_config_path,
-            access_token_config_path=model.access_token_config_path,
-            refresh_token_config_path=model.refresh_token_config_path,
-            token_expiry_date_config_path=model.token_expiry_date_config_path,
-            grant_type=model.grant_type,
-            refresh_request_body=model.refresh_request_body,
-            scopes=model.scopes,
         )
 
     @staticmethod
@@ -779,6 +797,7 @@ class ModelToComponentFactory:
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched,
                 parameters=model.parameters,
+                disable_retries=self._disable_retries,
             )
         return SimpleRetriever(
             name=name,
@@ -789,6 +808,7 @@ class ModelToComponentFactory:
             stream_slicer=stream_slicer or SinglePartitionRouter(parameters={}),
             config=config,
             parameters=model.parameters,
+            disable_retries=self._disable_retries,
         )
 
     @staticmethod

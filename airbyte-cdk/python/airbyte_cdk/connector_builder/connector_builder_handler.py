@@ -50,7 +50,9 @@ def create_source(config: Mapping[str, Any], limits: TestReadLimits) -> Manifest
         component_factory=ModelToComponentFactory(
             emit_connector_builder_messages=True,
             limit_pages_fetched_per_slice=limits.max_pages_per_slice,
-            limit_slices_fetched=limits.max_slices)
+            limit_slices_fetched=limits.max_slices,
+            disable_retries=True
+        )
     )
 
 
@@ -65,7 +67,7 @@ def read_stream(source: DeclarativeSource, config: Mapping[str, Any], configured
         )
     except Exception as exc:
         error = AirbyteTracedException.from_exception(
-            exc, message=f"Error reading stream with config={config} and catalog={configured_catalog}"
+            exc, message=f"Error reading stream with config={config} and catalog={configured_catalog}: {str(exc)}"
         )
         return error.as_airbyte_message()
 
@@ -81,7 +83,7 @@ def resolve_manifest(source: ManifestDeclarativeSource) -> AirbyteMessage:
             ),
         )
     except Exception as exc:
-        error = AirbyteTracedException.from_exception(exc, message="Error resolving manifest.")
+        error = AirbyteTracedException.from_exception(exc, message=f"Error resolving manifest: {str(exc)}")
         return error.as_airbyte_message()
 
 
@@ -100,7 +102,7 @@ def list_streams(source: ManifestDeclarativeSource, config: Dict[str, Any]) -> A
             ),
         )
     except Exception as exc:
-        return AirbyteTracedException.from_exception(exc, message="Error listing streams.").as_airbyte_message()
+        return AirbyteTracedException.from_exception(exc, message=f"Error listing streams: {str(exc)}").as_airbyte_message()
 
 
 def _get_http_streams(source: ManifestDeclarativeSource, config: Dict[str, Any]) -> List[HttpStream]:
