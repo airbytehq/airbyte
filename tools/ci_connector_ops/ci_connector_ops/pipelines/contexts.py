@@ -15,8 +15,8 @@ from typing import List, Optional
 import yaml
 from anyio import Path
 from asyncer import asyncify
-from ci_connector_ops.pipelines.actions import remote_storage, secrets
-from ci_connector_ops.pipelines.bases import CIContext, ConnectorReport, Report, StepStatus
+from ci_connector_ops.pipelines.actions import secrets
+from ci_connector_ops.pipelines.bases import CIContext, ConnectorReport, Report
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.slack import send_message_to_webhook
 from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, sanitize_gcs_credentials
@@ -267,7 +267,7 @@ class PipelineContext:
 class ConnectorContext(PipelineContext):
     """The connector context is used to store configuration for a specific connector pipeline run."""
 
-    DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE = "airbyte/connector-acceptance-test:latest"
+    DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE = "airbyte/connector-acceptance-test:0.10.4"
 
     def __init__(
         self,
