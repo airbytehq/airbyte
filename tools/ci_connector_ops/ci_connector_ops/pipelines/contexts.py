@@ -16,7 +16,7 @@ import yaml
 from anyio import Path
 from asyncer import asyncify
 from ci_connector_ops.pipelines.actions import remote_storage, secrets
-from ci_connector_ops.pipelines.bases import CIContext, ConnectorReport, Report
+from ci_connector_ops.pipelines.bases import CIContext, ConnectorReport, Report, StepStatus
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.slack import send_message_to_webhook
 from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, sanitize_gcs_credentials
@@ -68,6 +68,8 @@ class PipelineContext:
         slack_webhook: Optional[str] = None,
         reporting_slack_channel: Optional[str] = None,
         pull_request: PullRequest = None,
+        ci_report_bucket: Optional[str] = None,
+        ci_gcs_credentials: Optional[str] = None,
     ):
         """Initialize a pipeline context.
 
@@ -101,6 +103,9 @@ class PipelineContext:
         self.dagger_client = None
         self._report = None
         self.dockerd_service = None
+        self.ci_gcs_credentials = sanitize_gcs_credentials(ci_gcs_credentials) if ci_gcs_credentials else None
+        self.ci_report_bucket = ci_report_bucket
+
         update_commit_status_check(**self.github_commit_status)
 
     @property
@@ -130,6 +135,10 @@ class PipelineContext:
     @report.setter
     def report(self, report: Report):  # noqa D102
         self._report = report
+
+    @property
+    def ci_gcs_credentials_secret(self) -> Secret:
+        return self.dagger_client.set_secret("ci_gcs_credentials", self.ci_gcs_credentials)
 
     @property
     def github_commit_status(self) -> dict:
@@ -268,9 +277,9 @@ class ConnectorContext(PipelineContext):
         git_branch: bool,
         git_revision: bool,
         modified_files: List[str],
-        test_report_bucket: str,
         report_output_prefix: str,
         use_remote_secrets: bool = True,
+        ci_report_bucket: Optional[str] = None,
         ci_gcs_credentials: Optional[str] = None,
         connector_acceptance_test_image: Optional[str] = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
         gha_workflow_run_url: Optional[str] = None,
@@ -304,12 +313,10 @@ class ConnectorContext(PipelineContext):
         self.use_remote_secrets = use_remote_secrets
         self.connector_acceptance_test_image = connector_acceptance_test_image
         self.modified_files = modified_files
-        self.test_report_bucket = test_report_bucket
         self.report_output_prefix = report_output_prefix
         self._secrets_dir = None
         self._updated_secrets_dir = None
         self.cdk_version = None
-        self.ci_gcs_credentials = sanitize_gcs_credentials(ci_gcs_credentials) if ci_gcs_credentials else None
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -322,6 +329,8 @@ class ConnectorContext(PipelineContext):
             slack_webhook=slack_webhook,
             reporting_slack_channel=reporting_slack_channel,
             pull_request=pull_request,
+            ci_report_bucket=ci_report_bucket,
+            ci_gcs_credentials=ci_gcs_credentials,
         )
 
     @property
@@ -363,11 +372,6 @@ class ConnectorContext(PipelineContext):
     @property
     def docker_image_from_metadata(self) -> str:
         return f"{self.metadata['dockerRepository']}:{self.metadata['dockerImageTag']}"
-
-    @property
-    def ci_gcs_credentials_secret(self) -> Secret:
-        # TODO (ben): Update this to be in use ANYWHERE we use a service account.
-        return self.dagger_client.set_secret("ci_gcs_credentials", self.ci_gcs_credentials)
 
     def get_connector_dir(self, exclude=None, include=None) -> Directory:
         """Get the connector under test source code directory.
@@ -411,31 +415,7 @@ class ConnectorContext(PipelineContext):
         self.report.print()
         self.logger.info(self.report.to_json())
 
-        local_reports_path_root = "tools/ci_connector_ops/pipeline_reports/"
-        connector_name = self.report.pipeline_context.connector.technical_name
-        connector_version = self.report.pipeline_context.connector.version
-
-        suffix = f"{connector_name}/{connector_version}/output.json"
-        file_path_key = f"{self.report_output_prefix}/{suffix}"
-
-        local_report_path = Path(local_reports_path_root + file_path_key)
-
-        await local_report_path.parents[0].mkdir(parents=True, exist_ok=True)
-        await local_report_path.write_text(self.report.to_json())
-
-        if self.report.should_be_saved:
-            local_report_dagger_file = (
-                self.dagger_client.host().directory(".", include=[str(local_report_path)]).file(str(local_report_path))
-            )
-            report_upload_exit_code, _stdout, _stderr = await remote_storage.upload_to_gcs(
-                dagger_client=self.dagger_client,
-                file_to_upload=local_report_dagger_file,
-                key=file_path_key,
-                bucket=self.test_report_bucket,
-                gcs_credentials=self.ci_gcs_credentials_secret,
-            )
-            if report_upload_exit_code != 0:
-                self.logger.error(f"Uploading the report to GCS Bucket: {self.test_report_bucket} failed.")
+        await self.report.save()
 
         if self.report.should_be_commented_on_pr:
             self.report.post_comment_on_pr()
@@ -466,7 +446,7 @@ class PublishConnectorContext(ConnectorContext):
         docker_hub_password: str,
         slack_webhook: str,
         reporting_slack_channel: str,
-        test_report_bucket: str,
+        ci_report_bucket: str,
         report_output_prefix: str,
         is_local: bool,
         git_branch: bool,
@@ -493,7 +473,7 @@ class PublishConnectorContext(ConnectorContext):
             connector=connector,
             modified_files=modified_files,
             report_output_prefix=report_output_prefix,
-            test_report_bucket=test_report_bucket,
+            ci_report_bucket=ci_report_bucket,
             is_local=is_local,
             git_branch=git_branch,
             git_revision=git_revision,
