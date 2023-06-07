@@ -19,9 +19,9 @@ class FileBasedAvailabilityStrategy(AvailabilityStrategy):
         """
         Perform a connection check for the stream.
 
-        Returns None if successful, otherwise raises an exception.
+        Returns (True, None) if successful, otherwise (False, <error message>).
 
-        For each stream:
+        For the stream:
         - Verify that we can list files from the stream using the configured globs.
         - Verify that we can read one file from the stream.
 

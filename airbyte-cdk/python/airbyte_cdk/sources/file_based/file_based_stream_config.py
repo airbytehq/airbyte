@@ -1,11 +1,10 @@
 from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional
 
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError
 from airbyte_cdk.sources.file_based.remote_file import FileType
-
-
-MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE = 10
+from airbyte_cdk.sources.file_based.schema_validation_policies import UserValidationPolicies
 
 
 @dataclass
@@ -17,17 +16,19 @@ class FileBasedStreamConfig:
     name: str
     file_type: FileType
     globs: List[str]
-    catalog_schema: Optional[Mapping[str, Any]]
+    catalog_schema: ConfiguredAirbyteCatalog
     input_schema: Optional[Mapping[str, Any]]
-    primary_key: Optional[str]
-    validation_policy: str
+    primary_key: Optional[Any]
+    validation_policy: UserValidationPolicies
 
     @classmethod
     def from_raw_config(cls, raw_config: Mapping[str, Any]) -> "FileBasedStreamConfig":
         try:
             file_type = FileType(raw_config["file_type"])
         except ValueError:
-            raise ConfigValidationError(f"Invalid file type: {raw_config['file_type']}")
+            raise ConfigValidationError(
+                f"Invalid file type: {raw_config['file_type']}. Supported file types are CSV, JSONL, Avro, and Parquet."
+            )
 
         globs = raw_config["globs"]
 
@@ -38,5 +39,5 @@ class FileBasedStreamConfig:
             catalog_schema=raw_config.get("json_schema"),
             input_schema=raw_config.get("input_schema"),
             primary_key=raw_config.get("primary_key"),
-            validation_policy=raw_config["validation_policy"],
+            validation_policy=UserValidationPolicies(raw_config["validation_policy"]),
         )

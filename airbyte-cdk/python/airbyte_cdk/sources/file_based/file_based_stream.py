@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from functools import cache, cached_property
 from typing import Any, Dict, List, Iterable, Mapping, Optional, Union
 
@@ -8,7 +9,7 @@ from airbyte_cdk.sources.file_based.availability_strategy import (
     FileBasedAvailabilityStrategy,
 )
 from airbyte_cdk.sources.file_based.discovery_concurrency_policy import (
-    DiscoveryConcurrencyPolicy,
+    AbstractDiscoveryConcurrencyPolicy,
 )
 from airbyte_cdk.sources.file_based.exceptions import (
     MissingSchemaError,
@@ -37,7 +38,7 @@ from airbyte_cdk.sources.file_based.schema_validation_policies import (
 )
 from airbyte_cdk.sources.streams import Stream
 
-MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE = 10
+MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE = os.getenv("MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE", 10)
 
 
 class FileBasedStream(Stream):
@@ -56,12 +57,12 @@ class FileBasedStream(Stream):
         self,
         raw_config: Dict[str, Any],
         stream_reader: AbstractFileBasedStreamReader,
+        discovery_concurrency_policy: AbstractDiscoveryConcurrencyPolicy,
     ):
         self.config = FileBasedStreamConfig.from_raw_config(raw_config)
         self.catalog_schema = {}  # TODO: wire through configured catalog
         self.stream_reader = stream_reader
-
-    # BEGIN: abstract methods of Stream interface
+        self.discovery_concurrency_policy = discovery_concurrency_policy
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -83,8 +84,9 @@ class FileBasedStream(Stream):
             raise MissingSchemaError(
                 "Expected `json_schema` in the configured catalog but it is missing."
             )
+        parser = self._get_parser(self.config.file_type)
         for file in self.list_files_for_this_sync(stream_state):
-            for record in self._get_parser(self.config.file_type).parse_records(
+            for record in parser.parse_records(
                 file, self.stream_reader
             ):
                 if not record_passes_validation_policy(
@@ -93,8 +95,6 @@ class FileBasedStream(Stream):
                     logging.warning(f"Record did not pass validation policy: {record}")
                     continue
                 yield record
-
-    # END: abstract methods of Stream interface
 
     @cached_property
     def availability_strategy(self):
@@ -118,12 +118,11 @@ class FileBasedStream(Stream):
 
         files = self.list_files()
         if len(files) > MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE:
-            files = files[:MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE]
+            files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE]
             logging.warning(
                 f"Refusing to infer schema for {len(files)} files; using {MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE} files."
             )
-        loop = asyncio.get_event_loop()
-        return loop.run_until_complete(self.infer_schema(files))
+        return self.infer_schema(files)
 
     @cache
     def list_files(self) -> List[RemoteFile]:
@@ -148,7 +147,11 @@ class FileBasedStream(Stream):
         # TODO: implement me
         return iter(self.list_files())
 
-    async def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
+    def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(self._infer_schema(files))
+
+    async def _infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         """
         Infer the schema for a stream.
 
@@ -156,17 +159,19 @@ class FileBasedStream(Stream):
         Dispatch on file type.
         """
         base_schema = {}
-        tasks = set()
+        pending_tasks = set()
 
         n_started, n_files = 0, len(files)
         files = iter(files)
-        while tasks or n_started < n_files:
-            while len(tasks) < DiscoveryConcurrencyPolicy.n_concurrent_requests and (
+        while pending_tasks or n_started < n_files:
+            while len(pending_tasks) < self.discovery_concurrency_policy.n_concurrent_requests and (
                 file := next(files, None)
             ):
-                tasks.add(asyncio.create_task(self._infer_file_schema(file)))
+                pending_tasks.add(asyncio.create_task(self._infer_file_schema(file)))
                 n_started += 1
-            done, tasks = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+            # Return when the first task is completed so that we can enqueue a new task as soon as the
+            # number of concurrent tasks drops below the number allowed.
+            done, pending_tasks = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
             for task in done:
                 base_schema = merge_schemas(base_schema, task.result())
 

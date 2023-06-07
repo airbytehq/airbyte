@@ -1,4 +1,4 @@
-from .base_file_type_parser import FileTypeParser
+from .file_type_parser import FileTypeParser
 from .avro_parser import AvroParser
 from .csv_parser import CsvParser
 from .jsonl_parser import JsonlParser

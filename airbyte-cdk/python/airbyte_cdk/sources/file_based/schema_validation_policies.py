@@ -9,8 +9,8 @@ class UserValidationPolicies(Enum):
 
 
 def record_passes_validation_policy(
-    policy: str, record: Mapping[str, Any], schema: Mapping[str, Any]
-):
+    policy: UserValidationPolicies, record: Mapping[str, Any], schema: Mapping[str, Any]
+) -> bool:
     """
     Return True if the record passes the user's validation policy.
     """

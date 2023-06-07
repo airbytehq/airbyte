@@ -43,7 +43,7 @@ class AbstractFileBasedStreamReader(ABC):
         """
 
     @staticmethod
-    def filter_files_by_globs(files: List[RemoteFile], globs: List[str]):
+    def filter_files_by_globs(files: List[RemoteFile], globs: List[str]) -> List[RemoteFile]:
         """
         Utility method for filtering files based on globs.
         """
@@ -52,7 +52,7 @@ class AbstractFileBasedStreamReader(ABC):
         ]
 
     @staticmethod
-    def get_prefixes_from_globs(files: List[RemoteFile], globs: List[str]):
+    def get_prefixes_from_globs(files: List[RemoteFile], globs: List[str]) -> List[str]:
         """
         Utility method for extracting prefixes from the globs.
         """

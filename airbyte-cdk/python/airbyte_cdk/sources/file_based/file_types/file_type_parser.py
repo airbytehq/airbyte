@@ -7,6 +7,10 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import (
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 
+Schema = Dict[str, str]
+Record = Dict[str, Any]
+
+
 class FileTypeParser(ABC):
     """
     An abstract class containing methods that must be implemented for each
@@ -16,7 +20,7 @@ class FileTypeParser(ABC):
     @abstractmethod
     async def infer_schema(
         self, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
-    ) -> Dict[str, Any]:
+    ) -> Schema:
         """
         Infer the JSON Schema for this file.
         """
@@ -25,7 +29,7 @@ class FileTypeParser(ABC):
     @abstractmethod
     def parse_records(
         self, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader
-    ) -> Iterable[Dict[str, Any]]:
+    ) -> Iterable[Record]:
         """
         Parse and emit each record.
         """

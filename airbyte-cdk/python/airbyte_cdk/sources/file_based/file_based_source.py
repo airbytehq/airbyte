@@ -5,6 +5,9 @@ from dataclasses import dataclass
 from typing import Any, List, Mapping, Tuple, Optional
 
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.file_based.discovery_concurrency_policy import (
+    AbstractDiscoveryConcurrencyPolicy, DefaultDiscoveryConcurrencyPolicy,
+)
 from airbyte_cdk.sources.file_based.file_based_stream import FileBasedStream
 from airbyte_cdk.sources.file_based.file_based_stream_reader import (
     AbstractFileBasedStreamReader,
@@ -21,7 +24,9 @@ class AbstractFileBasedSource(AbstractSource, ABC):
     def stream_reader(self, config: Mapping[str, Any]) -> AbstractFileBasedStreamReader:
         ...
 
-    # BEGIN: abstract methods of Source interface implemented here
+    @property
+    def discovery_concurrency_policy(self) -> AbstractDiscoveryConcurrencyPolicy:
+        return DefaultDiscoveryConcurrencyPolicy()
 
     def check_connection(
         self, logger: logging.Logger, config: Mapping[str, Any]
@@ -67,8 +72,7 @@ class AbstractFileBasedSource(AbstractSource, ABC):
             FileBasedStream(
                 raw_config=stream,
                 stream_reader=stream_reader,
+                discovery_concurrency_policy=self.discovery_concurrency_policy,
             )
             for stream in config["streams"]
         ]
-
-    # END: abstract methods of Source interface
