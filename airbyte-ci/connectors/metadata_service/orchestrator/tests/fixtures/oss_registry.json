@@ -6481,6 +6481,13 @@
                       "default": "No flattening",
                       "enum": ["No flattening", "Root level flattening"]
                     },
+                    "stringify": {
+                      "type": "string",
+                      "title": "Stringify",
+                      "description": "Whether nested objects in the input json data should be converted to strings in the output JSON Lines. Please refer to docs for details.",
+                      "default": "Default",
+                      "enum": [ "Default", "Stringify" ]
+                    },
                     "compression": {
                       "title": "Compression",
                       "type": "object",
