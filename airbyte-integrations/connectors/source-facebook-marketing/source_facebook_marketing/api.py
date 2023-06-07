@@ -15,6 +15,7 @@ from airbyte_cdk.utils import AirbyteTracedException
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
+from facebook_business.adobjects.user import User
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams.common import retry_pattern
@@ -162,14 +163,17 @@ class API:
     """Simple wrapper around Facebook API"""
 
     def __init__(self, account_ids: List[str], access_token: str):
-        self._account_ids = account_ids
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
         FacebookAdsApi.set_default_api(self.api)
+        self._account_ids = account_ids
+        self.me = User(fbid='me')
 
     @cached_property
-    def accounts(self) -> AdAccount:
+    def accounts(self) -> List[AdAccount]:
         """Find current account"""
+        if not self._account_ids:
+            return list(self.me.get_ad_accounts())
         return [self._find_account(account_id) for account_id in self._account_ids]
 
     @staticmethod
