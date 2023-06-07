@@ -12,6 +12,7 @@ from typing import Any, Callable, List, Literal, Mapping, Optional, Type, Union,
 import dpath
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
+from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
     BasicHttpAuthenticator,
@@ -662,7 +663,7 @@ class ModelToComponentFactory:
     @staticmethod
     def create_oauth_authenticator(model: OAuthAuthenticatorModel, config: Config, **kwargs) -> DeclarativeOauth2Authenticator:
         if model.refresh_token_updater:
-            return SingleUseRefreshTokenOauth2Authenticator(
+            return DeclarativeSingleUseRefreshTokenOauth2Authenticator(
                 config,
                 InterpolatedString.create(model.token_refresh_endpoint, parameters=model.parameters).eval(config),
                 access_token_name=InterpolatedString.create(model.access_token_name, parameters=model.parameters).eval(config),
@@ -705,7 +706,7 @@ class ModelToComponentFactory:
             refresh_token_name=model.refresh_token_name,
             expires_in_name=model.expires_in_name,
             client_id=dpath.util.get(config, model.client_id_config_path),
-            client_secret=dpath.util.get(config, model.client_id_config_path),
+            client_secret=dpath.util.get(config, model.client_secret_config_path),
             access_token_config_path=model.access_token_config_path,
             refresh_token_config_path=model.refresh_token_config_path,
             token_expiry_date_config_path=model.token_expiry_date_config_path,
