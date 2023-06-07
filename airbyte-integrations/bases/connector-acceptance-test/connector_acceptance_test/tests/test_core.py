@@ -692,7 +692,6 @@ class TestDiscovery(BaseTest):
         checker = CatalogDiffChecker(previous_discovered_catalog, discovered_catalog)
         checker.assert_is_backward_compatible()
 
-    @pytest.mark.skip("This tests currently leads to too much failures. We need to fix the connectors at scale first.")
     def test_catalog_has_supported_data_types(self, discovered_catalog: Mapping[str, Any]):
         """Check that all streams have supported data types, format and airbyte_types.
         Supported data types are listed there: https://docs.airbyte.com/understanding-airbyte/supported-data-types/
