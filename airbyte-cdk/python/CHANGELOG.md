@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.40.0
+Remove SingleUseRefreshTokenOAuthAuthenticator from low code CDK and add generic injection capabilities to ApiKeyAuthenticator
+
 ## 0.39.4
 Connector builder: add latest connector config control message to read calls
 
