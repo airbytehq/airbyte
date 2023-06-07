@@ -139,9 +139,9 @@ const config = {
         },
       },
       algolia: {
-          appId: 'R2IYF7ETH7',
+          appId: 'OYKDBC51MU',
           apiKey: '15c487fd9f7722282efd8fcb76746fce', // Public API key: it is safe to commit it
-          indexName: 'docsearch',
+          indexName: 'airbyte',
       },
       navbar: {
         title: "",
