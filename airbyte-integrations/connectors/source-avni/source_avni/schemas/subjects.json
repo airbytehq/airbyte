@@ -1,0 +1,192 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "properties": {
+      "totalElements": {
+        "type": "integer"
+      },
+      "totalPages": {
+        "type": "integer"
+      },
+      "pageSize": {
+        "type": "integer"
+      },
+      "content": {
+        "type": "array",
+        "items": [
+          {
+            "type": "object",
+            "properties": {
+              "ID": {
+                "type": "string"
+              },
+              "External ID": {
+                "type": "string"
+              },
+              "Voided": {
+                "type": "boolean"
+              },
+              "Subject type": {
+                "type": "string"
+              },
+              "Registration location": {
+                "type": "object",
+                "properties": {
+                  "X": {
+                    "type": "number"
+                  },
+                  "Y": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "X",
+                  "Y"
+                ]
+              },
+              "Registration date": {
+                "type": "string"
+              },
+              "location": {
+                "type": "object",
+                "properties": {
+                  "Village": {
+                    "type": "string"
+                  },
+                  "Block": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "Village",
+                  "Block"
+                ]
+              },
+              "relatives": {
+                "type": "array",
+                "items": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "Voided": {
+                        "type": "boolean"
+                      },
+                      "Relationship type": {
+                        "type": "string"
+                      },
+                      "Relative ID": {
+                        "type": "string"
+                      },
+                      "Relative external ID": {
+                        "type": "string"
+                      },
+                      "Enter date": {
+                        "type": "string"
+                      },
+                      "Exit date": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "Voided",
+                      "Relationship type",
+                      "Relative ID",
+                      "Relative external ID",
+                      "Enter date",
+                      "Exit date"
+                    ]
+                  }
+                ]
+              },
+              "observations": {
+                "type": "object",
+                "properties": {
+                  "Phone number": {
+                    "type": "integer"
+                  },
+                  "Medical problems": {
+                    "type": "array",
+                    "items": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "Marriage date": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "Phone number",
+                  "Medical problems",
+                  "Marriage date"
+                ]
+              },
+              "encounters": {
+                "type": "array",
+                "items": [
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "enrolments": {
+                "type": "array",
+                "items": [
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "audit": {
+                "type": "object",
+                "properties": {
+                  "Created at": {
+                    "type": "string"
+                  },
+                  "Last modified at": {
+                    "type": "string"
+                  },
+                  "Created by": {
+                    "type": "string"
+                  },
+                  "Last modified by": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "Created at",
+                  "Last modified at",
+                  "Created by",
+                  "Last modified by"
+                ]
+              }
+            },
+            "required": [
+              "ID",
+              "External ID",
+              "Voided",
+              "Subject type",
+              "Registration location",
+              "Registration date",
+              "location",
+              "relatives",
+              "observations",
+              "encounters",
+              "enrolments",
+              "audit"
+            ]
+          }
+        ]
+      }
+    },
+    "required": [
+      "totalElements",
+      "totalPages",
+      "pageSize",
+      "content"
+    ]
+  }
