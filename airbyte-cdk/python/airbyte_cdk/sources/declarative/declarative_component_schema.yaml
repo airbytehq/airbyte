@@ -733,6 +733,46 @@ definitions:
         type: string
         examples:
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
+      refresh_token_updater:
+        title: Token Updater
+        description: When the token updater is defined, new refresh tokens, access tokens and the access token expiry date are written back from the authentication response to the config object. This is important if the refresh token can only used once.
+        properties:
+          refresh_token_name:
+            title: Refresh Token Property Name
+            description: The name of the property which contains the updated refresh token in the response from the token refresh endpoint.
+            type: string
+            default: "refresh_token"
+            examples:
+              - "refresh_token"
+          access_token_config_path:
+            title: Config Path To Access Token
+            description: Config path to the access token. Make sure the field actually exists in the config.
+            type: array
+            items:
+              type: string
+            default: ["credentials", "access_token"]
+            examples:
+              - ["credentials", "access_token"]
+              - ["access_token"]
+          refresh_token_config_path:
+            title: Config Path To Refresh Token
+            description: Config path to the access token. Make sure the field actually exists in the config.
+            type: array
+            items:
+              type: string
+            default: ["credentials", "refresh_token"]
+            examples:
+              - ["credentials", "refresh_token"]
+              - ["refresh_token"]
+          token_expiry_date_config_path:
+            title: Config Path To Expiry Date
+            description: Config path to the expiry date. Make sure actually exists in the config.
+            type: array
+            items:
+              type: string
+            default: ["credentials", "token_expiry_date"]
+            examples:
+              - ["credentials", "token_expiry_date"]
       $parameters:
         type: object
         additionalProperties: true
