@@ -761,25 +761,21 @@ class AudienceReport(BasicReports, ABC):
 
 
 class CampaignsAudienceReports(AudienceReport):
-
     ref_pk = "campaign_id"
     report_level = ReportLevel.CAMPAIGN
 
 
 class AdGroupAudienceReports(AudienceReport):
-
     ref_pk = "adgroup_id"
     report_level = ReportLevel.ADGROUP
 
 
 class AdsAudienceReports(AudienceReport):
-
     ref_pk = "ad_id"
     report_level = ReportLevel.AD
 
 
 class AdvertisersAudienceReports(AudienceReport):
-
     ref_pk = "advertiser_id"
     report_level = ReportLevel.ADVERTISER
 
@@ -830,3 +826,45 @@ class AdvertisersAudienceReportsByPlatform(AdvertisersAudienceReports):
     """Custom reports for advertisers by platform"""
 
     audience_dimensions = ["platform"]
+
+
+class ReservationAdsReports(BasicReports, ABC):
+    """Reports from which you can get spending and performance data of your reservation ads"""
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+
+        params["service_type"] = "RESERVATION"
+        params["data_level"] = f"RESERVATION_{self.report_level}"
+
+        return params
+
+
+class AdsReservationAdsReports(ReservationAdsReports):
+    """Custom reports for ads"""
+
+    ref_pk = "ad_id"
+    report_level = ReportLevel.AD
+
+
+class AdvertisersReservationAdsReports(ReservationAdsReports):
+    """Custom reports for advertiser"""
+
+    ref_pk = "advertiser_id"
+    report_level = ReportLevel.ADVERTISER
+
+
+class CampaignsReservationAdsReports(ReservationAdsReports):
+    """Custom reports for campaigns"""
+
+    ref_pk = "campaign_id"
+    report_level = ReportLevel.CAMPAIGN
+
+
+class AdGroupsReservationAdsReports(ReservationAdsReports):
+    """Custom reports for adgroups"""
+
+    ref_pk = "adgroup_id"
+    report_level = ReportLevel.ADGROUP

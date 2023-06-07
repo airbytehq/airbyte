@@ -18,23 +18,27 @@ from .streams import (
     AdGroupAudienceReportsByPlatform,
     AdGroups,
     AdGroupsReports,
+    AdGroupsReservationAdsReports,
     Ads,
     AdsAudienceReports,
     AdsAudienceReportsByCountry,
     AdsAudienceReportsByPlatform,
     AdsReports,
+    AdsReservationAdsReports,
     AdvertiserIds,
     Advertisers,
     AdvertisersAudienceReports,
     AdvertisersAudienceReportsByCountry,
     AdvertisersAudienceReportsByPlatform,
     AdvertisersReports,
+    AdvertisersReservationAdsReports,
     BasicReports,
     Campaigns,
     CampaignsAudienceReports,
     CampaignsAudienceReportsByCountry,
     CampaignsAudienceReportsByPlatform,
     CampaignsReports,
+    CampaignsReservationAdsReports,
     Daily,
     Hourly,
     Lifetime,
@@ -96,7 +100,7 @@ class SourceTiktokMarketing(AbstractSource):
             "is_sandbox": is_sandbox,
             "attribution_window": config.get("attribution_window"),
         }
-        
+
         if advertiser_id:
             stream_args.update(**{"advertiser_id": advertiser_id})
 
@@ -190,6 +194,12 @@ class SourceTiktokMarketing(AbstractSource):
                 CampaignsAudienceReportsByCountry,
                 CampaignsAudienceReportsByPlatform,
             ]
+            reservation_ads_reports = [
+                AdsReservationAdsReports,
+                AdvertisersReservationAdsReports,
+                CampaignsReservationAdsReports,
+                AdGroupsReservationAdsReports,
+            ]
             if is_production:
                 # 2.1 streams work only in prod env
                 reports.append(AdvertisersReports)
@@ -214,5 +224,10 @@ class SourceTiktokMarketing(AbstractSource):
                 # Audience report supports lifetime metrics only at the ADVERTISER level (see 2.1).
                 if Report == AdvertisersAudienceReports:
                     streams.append(get_report_stream(Report, Lifetime)(**args))
+
+            for Report in reservation_ads_reports:
+                for Granularity in [Hourly, Daily]:
+                    streams.append(get_report_stream(Report, Granularity)(**args))
+                    # add a for loop here for the other dimension to split by
 
         return streams
