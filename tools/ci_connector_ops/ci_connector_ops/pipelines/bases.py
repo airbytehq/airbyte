@@ -94,7 +94,6 @@ class Step(ABC):
 
     title: ClassVar[str]
     started_at: ClassVar[datetime]
-    retry: ClassVar[bool] = False
     max_retries: ClassVar[int] = 0
 
     def __init__(self, context: ConnectorContext) -> None:  # noqa D107
@@ -112,7 +111,7 @@ class Step(ABC):
         self.started_at = datetime.utcnow()
         try:
             result = await self._run(*args, **kwargs)
-            if result.status is StepStatus.FAILURE and self.retry_count <= self.max_retries:
+            if result.status is StepStatus.FAILURE and self.retry_count <= self.max_retries and self.max_retries > 0:
                 self.retry_count += 1
                 await anyio.sleep(10)
                 self.context.logger.warn(
@@ -209,6 +208,7 @@ class PytestStep(Step, ABC):
         """
         test_config = "pytest.ini" if await check_path_in_workdir(connector_under_test, "pytest.ini") else "/" + PYPROJECT_TOML_FILE_PATH
         if await check_path_in_workdir(connector_under_test, test_directory):
+
             tester = connector_under_test.with_exec(
                 [
                     "python",
