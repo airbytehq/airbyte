@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.39.4
+Connector builder: add latest connector config control message to read calls
+
 ## 0.39.3
 Add refresh token update capabilities to OAuthAuthenticator
 
