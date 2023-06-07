@@ -71,6 +71,7 @@ The Stripe source connector supports the following streams:
 - [Plans](https://stripe.com/docs/api/plans/list) \(Incremental\)
 - [Products](https://stripe.com/docs/api/products/list) \(Incremental\)
 - [Refunds](https://stripe.com/docs/api/refunds/list) \(Incremental\)
+- [Reviews](https://stripe.com/docs/api/radar/reviews/list) \(Incremental\)
 - [SetupIntents](https://stripe.com/docs/api/setup_intents/list) \(Incremental\)
 - [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
