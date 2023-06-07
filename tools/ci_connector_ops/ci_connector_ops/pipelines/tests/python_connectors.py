@@ -7,7 +7,8 @@
 from typing import List
 
 import asyncer
-from ci_connector_ops.pipelines.actions import environments, run_steps, secrets
+from ci_connector_ops.pipelines.helpers.steps import run_steps
+from ci_connector_ops.pipelines.actions import environments, secrets
 from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.builds import LOCAL_BUILD_PLATFORM
 from ci_connector_ops.pipelines.builds.python_connectors import BuildConnectorImage
@@ -56,6 +57,7 @@ class ConnectorPackageInstall(Step):
     """A step to install the Python connector package in a container."""
 
     title = "Connector package install"
+    max_retries = 3
 
     async def _run(self) -> StepResult:
         """Install the connector under test package in a Python container.
