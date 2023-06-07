@@ -137,25 +137,39 @@ advanced_auth = AdvancedAuth(
         complete_oauth_output_specification={
             "type": "object",
             "additionalProperties": False,
-            "properties": {"refresh_token": {"type": "string", "path_in_connector_config": ["refresh_token"]}},
+            "properties": {
+                "refresh_token": {
+                    "type": "string",
+                    "path_in_connector_config": ["refresh_token"],
+                }
+            },
         },
         complete_oauth_server_input_specification={
             "type": "object",
             "additionalProperties": False,
-            "properties": {"lwa_app_id": {"type": "string"}, "lwa_client_secret": {"type": "string"}},
+            "properties": {
+                "app_id": {"type": "string"},
+                "lwa_app_id": {"type": "string"},
+                "lwa_client_secret": {"type": "string"},
+            },
         },
         complete_oauth_server_output_specification={
             "type": "object",
             "additionalProperties": False,
             "properties": {
-                "lwa_app_id": {"type": "string", "path_in_connector_config": ["lwa_app_id"]},
-                "lwa_client_secret": {"type": "string", "path_in_connector_config": ["lwa_client_secret"]},
+                "app_id": {
+                    "type": "string",
+                    "path_in_connector_config": ["app_id"],
+                },
+                "lwa_app_id": {
+                    "type": "string",
+                    "path_in_connector_config": ["lwa_app_id"],
+                },
+                "lwa_client_secret": {
+                    "type": "string",
+                    "path_in_connector_config": ["lwa_client_secret"],
+                },
             },
-        },
-        oauth_user_input_from_connector_config_specification={
-            "type": "object",
-            "additionalProperties": False,
-            "properties": {"app_id": {"type": "string", "path_in_connector_config": ["app_id"]}},
         },
     ),
 )
