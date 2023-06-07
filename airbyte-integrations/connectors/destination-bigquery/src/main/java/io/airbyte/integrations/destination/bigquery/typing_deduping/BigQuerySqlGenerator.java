@@ -3,15 +3,44 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableResult;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Array;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Object;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Primitive;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.OneOf;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.UnsupportedOneOf;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
+public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, StandardSQLTypeName> {
+
+  @Override
+  public StandardSQLTypeName toDialectType(final AirbyteType type) {
+    // switch pattern-matching is still in preview at language level 17 :(
+    if (type instanceof Primitive p) {
+      // TODO map data types
+      return null;
+    } else if (type instanceof Object o) {
+      // eventually this should be JSON; keep STRING for now as legacy compatibility
+      return StandardSQLTypeName.STRING;
+    } else if (type instanceof Array a) {
+      // eventually this should be JSON; keep STRING for now as legacy compatibility
+      return StandardSQLTypeName.STRING;
+    } else if (type instanceof UnsupportedOneOf u) {
+      // eventually this should be JSON; keep STRING for now as legacy compatibility
+      return StandardSQLTypeName.STRING;
+    } else if (type instanceof OneOf o) {
+      // TODO choose the best data type + map to bigquery type
+      return null;
+    }
+
+    // Literally impossible; AirbyteType is a sealed interface.
+    throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
+  }
 
   @Override
   public String createTable(final ConfiguredAirbyteStream stream, final LinkedHashMap<String, AirbyteType> types) {
@@ -61,6 +90,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final TableResult query = bq.query(QueryJobConfiguration.newBuilder("select 1; select 2;").build());
     System.out.println(query);
 
-    new OneOf(List.of(AirbyteType.Primitive.STRING));
+    new UnsupportedOneOf(List.of(AirbyteType.Primitive.STRING));
   }
 }

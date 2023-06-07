@@ -5,7 +5,9 @@ import java.util.LinkedHashMap;
 
 // TODO would be cool if we could centralize the name sanitizing logic (i.e. quoting+espacing)
 // right now it's on the sqlgenerator+destinationinteractor to do it everywhere
-public interface SqlGenerator<DialectTableDefinition> {
+public interface SqlGenerator<DialectTableDefinition, DialectType> {
+
+  DialectType toDialectType(AirbyteType type);
 
   /**
    * Generate a SQL statement to create a fresh table to match the given stream.

@@ -2,14 +2,14 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Array;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.LegacyOneOf;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Object;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.OneOf;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Object;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.UnsupportedOneOf;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Primitive;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-public sealed interface AirbyteType permits Array, LegacyOneOf, Object, OneOf, Primitive {
+public sealed interface AirbyteType permits Array, OneOf, Object, UnsupportedOneOf, Primitive {
 
   /**
    * The most common call pattern is probably to use this method on the stream schema, verify that it's an {@link Object} schema, and then call
@@ -51,10 +51,9 @@ public sealed interface AirbyteType permits Array, LegacyOneOf, Object, OneOf, P
   /**
    * Represents a {oneOf: [...]} schema.
    * <p>
-   * See also {@link LegacyOneOf} - in principle, {type: [a, b, ...]} schemas should also parse into OneOf, but we want to maintain legacy behavior
-   * for now.
+   * This is purely a legacy type that we should eventually delete. See also {@link OneOf}.
    */
-  record OneOf(List<AirbyteType> options) implements AirbyteType {
+  record UnsupportedOneOf(List<AirbyteType> options) implements AirbyteType {
 
   }
 
@@ -66,12 +65,11 @@ public sealed interface AirbyteType permits Array, LegacyOneOf, Object, OneOf, P
    * <ol>
    *   <li>Announce a breaking change to handle both oneOf styles the same</li>
    *   <li>Test against some number of API sources to verify that they won't break badly</li>
-   *   <li>Update AirbyteType consumers to handle {@link OneOf} and LegacyOneOf identically</li>
-   *   <li>Update {@link AirbyteType#fromJsonSchema(JsonNode)} to parse both styles into OneOf</li>
-   *   <li>Delete this class</li>
+   *   <li>Update {@link AirbyteType#fromJsonSchema(JsonNode)} to parse both styles into SupportedOneOf</li>
+   *   <li>Delete UnsupportedOneOf</li>
    *  </ol>
    */
-  record LegacyOneOf(List<AirbyteType> options) implements AirbyteType {
+  record OneOf(List<AirbyteType> options) implements AirbyteType {
 
   }
 }
