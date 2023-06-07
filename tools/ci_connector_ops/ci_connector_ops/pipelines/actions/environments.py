@@ -102,6 +102,16 @@ def with_python_package(
 
 
 async def find_local_python_dependencies(context: PipelineContext, package_source_code_path: str) -> Tuple[List[str], List[str]]:
+    """Retrieve the list of local dependencies of a python package source code.
+    Returns both the list of local dependencies found in setup.py and requirements.txt.
+
+    Args:
+        context (PipelineContext): The current pipeline context.
+        package_source_code_path (str): Path to the package source code in airbyte repo .
+
+    Returns:
+        Tuple[List[str], List[str]]: A tuple containing the list of local dependencies found in setup.py and requirements.txt.
+    """
     python_environment = with_python_base(context)
     container = with_python_package(context, python_environment, package_source_code_path)
 
