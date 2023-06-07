@@ -21,7 +21,7 @@ source:
         title: API Key
         description: The API key for ShipStation authentication.
         type: string
-        airbyte_secret:
-          secret: true
-          description: The API secret for ShipStation authentication.
-          type: string
+      api_secret:
+        secret: true
+        description: The API secret for ShipStation authentication.
+        type: string
