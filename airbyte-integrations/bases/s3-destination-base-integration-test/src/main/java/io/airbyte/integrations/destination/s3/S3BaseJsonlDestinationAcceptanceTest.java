@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.util.Flattening;
+import io.airbyte.integrations.destination.s3.util.Stringify;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -29,6 +30,7 @@ public abstract class S3BaseJsonlDestinationAcceptanceTest extends S3Destination
     return Jsons.jsonNode(Map.of(
         "format_type", outputFormat,
         "flattening", Flattening.NO.getValue(),
+        "stringify", Stringify.NO.getValue(),
         "compression", Jsons.jsonNode(Map.of("compression_type", "No Compression"))));
   }
 

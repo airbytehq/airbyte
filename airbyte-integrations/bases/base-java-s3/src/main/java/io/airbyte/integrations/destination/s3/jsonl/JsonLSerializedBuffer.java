@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3.jsonl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,6 +18,7 @@ import io.airbyte.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.integrations.destination.s3.util.Flattening;
+import io.airbyte.integrations.destination.s3.util.Stringify;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -35,11 +37,14 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
 
   private final boolean flattenData;
 
-  protected JsonLSerializedBuffer(final BufferStorage bufferStorage, final boolean gzipCompression, final boolean flattenData) throws Exception {
+  private final boolean stringifyData;
+
+  protected JsonLSerializedBuffer(final BufferStorage bufferStorage, final boolean gzipCompression, final boolean flattenData, final boolean stringifyData) throws Exception {
     super(bufferStorage);
     // we always want to compress jsonl files
     withCompression(gzipCompression);
     this.flattenData = flattenData;
+    this.stringifyData = stringifyData;
   }
 
   @Override
@@ -48,15 +53,34 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
   }
 
   @Override
-  protected void writeRecord(final AirbyteRecordMessage record) {
+  protected void writeRecord(final AirbyteRecordMessage recordMessage) {
     final ObjectNode json = MAPPER.createObjectNode();
     json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
-    json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, record.getEmittedAt());
+    json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
     if (flattenData) {
-      Map<String, JsonNode> data = MAPPER.convertValue(record.getData(), new TypeReference<>() {});
+      Map<String, JsonNode> data = MAPPER.convertValue(recordMessage.getData(), new TypeReference<>() {});
       json.setAll(data);
     } else {
-      json.set(JavaBaseConstants.COLUMN_NAME_DATA, record.getData());
+      json.set(JavaBaseConstants.COLUMN_NAME_DATA, recordMessage.getData());
+    }
+    // We want all root level objects as strings, including _airbyte_data
+    if (stringifyData) {
+      // Get the names of all the root level objects in the "json" ObjectNode
+      try {
+        JsonNode rootNode = MAPPER.readTree(json.toString());
+        rootNode.fieldNames().forEachRemaining(fieldName -> {
+          JsonNode node = rootNode.get(fieldName);
+          if (node.isObject()) {
+            // Convert the root level object to a string
+            String jsonString = node.toString();
+
+            // Set the value of the root level object in the "json" ObjectNode as a string
+            json.put(fieldName, jsonString);
+          }
+        });
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException(e);
+      }
     }
     printWriter.println(Jsons.serialize(json));
   }
@@ -81,8 +105,12 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
       final Flattening flattening = config == null
           ? Flattening.NO
           : config.getFlatteningType();
+
+      final Stringify stringify = config == null
+              ? Stringify.NO
+              : config.getStringifyType();
       return new JsonLSerializedBuffer(createStorageFunction.call(), compressionType != CompressionType.NO_COMPRESSION,
-          flattening != Flattening.NO);
+          flattening != Flattening.NO, stringify != Stringify.NO);
     };
 
   }
