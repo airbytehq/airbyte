@@ -130,7 +130,7 @@ def test_users_request_params(patch_base_class):
     assert stream.request_params(**inputs) == expected_params
 
 
-def test_user_stream_handles_pagination_correclty(requests_mock):
+def test_user_stream_handles_pagination_correctly(requests_mock):
     """
     Test shows that Users stream uses pagination as per Notion API docs.
     """
