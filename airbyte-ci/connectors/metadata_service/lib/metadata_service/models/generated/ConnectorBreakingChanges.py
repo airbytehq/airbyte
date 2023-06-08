@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Dict, List, Optional
+from typing import Dict
 
 from pydantic import BaseModel, Extra, Field, constr
 
@@ -22,20 +22,12 @@ class VersionBreakingChange(BaseModel):
     )
 
 
-class BreakingChangeEntry(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    __root__: Dict[
-        constr(regex=r"^([0-9]+).([0-9]+).([0-9]+)$"), VersionBreakingChange
-    ] = Field(
-        ...,
-        description="Describes a breaking change for a specific version of a connector.",
-    )
-
-
 class ConnectorBreakingChanges(BaseModel):
     class Config:
-        extra = Extra.forbid
+        extra = Extra.allow
 
-    breakingChanges: Optional[List[BreakingChangeEntry]] = None
+    __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+$"), VersionBreakingChange] = Field(
+        ...,
+        description="Describes breaking changes in different versions of a connector.",
+        title="ConnectorBreakingChanges",
+    )

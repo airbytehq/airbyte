@@ -96,15 +96,14 @@ class JobTypeResourceLimit(BaseModel):
     resourceRequirements: ResourceRequirements
 
 
-class BreakingChangeEntry(BaseModel):
+class ConnectorBreakingChanges(BaseModel):
     class Config:
-        extra = Extra.forbid
+        extra = Extra.allow
 
-    __root__: Dict[
-        constr(regex=r"^([0-9]+).([0-9]+).([0-9]+)$"), VersionBreakingChange
-    ] = Field(
+    __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+$"), VersionBreakingChange] = Field(
         ...,
-        description="Describes a breaking change for a specific version of a connector.",
+        description="Describes breaking changes in different versions of a connector.",
+        title="ConnectorBreakingChanges",
     )
 
 
@@ -117,13 +116,6 @@ class ActorDefinitionResourceRequirements(BaseModel):
         description="if set, these are the requirements that should be set for ALL jobs run for this actor definition.",
     )
     jobSpecific: Optional[List[JobTypeResourceLimit]] = None
-
-
-class ConnectorBreakingChanges(BaseModel):
-    class Config:
-        extra = Extra.forbid
-
-    breakingChanges: Optional[List[BreakingChangeEntry]] = None
 
 
 class RegistryOverrides(BaseModel):
