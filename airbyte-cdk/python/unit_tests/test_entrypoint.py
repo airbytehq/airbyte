@@ -26,7 +26,6 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import Source
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 class MockSource(Source):
