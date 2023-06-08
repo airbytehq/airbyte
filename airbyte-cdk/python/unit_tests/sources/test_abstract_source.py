@@ -6,9 +6,8 @@ import copy
 import datetime
 import logging
 from collections import defaultdict
-from pytest import fixture
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
-from unittest.mock import call, Mock
+from unittest.mock import Mock, call
 
 import pytest
 from airbyte_cdk.models import (
@@ -42,6 +41,7 @@ from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from pytest import fixture
 
 logger = logging.getLogger("airbyte")
 
