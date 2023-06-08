@@ -4,7 +4,7 @@ data:
       - "*" # Please change to the hostname of the source.
   registries:
     oss:
-      enabled: false
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: aad35903-2c0d-4e25-8010-d62ed909e0b7

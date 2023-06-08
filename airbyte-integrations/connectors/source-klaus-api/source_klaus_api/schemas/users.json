@@ -2,8 +2,8 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "id": {"type": ["string"]},
-    "name": {"type": ["string"]},
-    "email": {"type": ["string"]}
+    "id": {"type": ["string", "null"]},
+    "name": {"type": ["string", "null"]},
+    "email": {"type": ["string", "null"]}
   }
 }
