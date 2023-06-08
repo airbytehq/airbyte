@@ -1697,6 +1697,9 @@ class ContactsMergedAudit(CRMSearchStream):
         return f"/contacts/v1/contact/vids/batch/"
 
     def __init__(self, **kwargs):
+        """ Override Stream init function
+        To use read_records from CRMSearchStream with Search endpoint only, we define _state value
+        """
         super().__init__(**kwargs)
         self._sync_mode = "incremental"
         self._state = self.state if self.state else self._start_date
