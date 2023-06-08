@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
-      - name: Connectors' metadata.yaml files validation
+      - name: Connectors' metadata.yaml files validation Step
         id: metadata-validate-pipeline
         uses: ./.github/actions/run-dagger-pipeline
         with:
