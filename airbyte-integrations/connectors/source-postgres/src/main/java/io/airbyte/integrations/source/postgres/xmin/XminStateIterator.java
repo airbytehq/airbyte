@@ -71,6 +71,7 @@ public class XminStateIterator extends AbstractIterator<AirbyteMessage> implemen
         return endOfData();
       }
     } else if (!hasEmittedFinalState) {
+      LOGGER.info("Emitting state for stream: " + pair.toString());
       hasEmittedFinalState = true;
       return XminStateManager.createStateMessage(pair, xminStatus);
     } else {

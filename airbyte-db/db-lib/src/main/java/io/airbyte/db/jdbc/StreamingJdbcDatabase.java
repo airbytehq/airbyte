@@ -66,7 +66,7 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
       final PreparedStatement statement = statementCreator.apply(connection);
       final JdbcStreamingQueryConfig streamingConfig = streamingQueryConfigProvider.get();
       streamingConfig.initialize(connection, statement);
-      return toUnsafeStream(statement.executeQuery(), recordTransform, streamingConfig)
+      return toUnsafeStream(statement.executeQuery(), recordTransform, streamingConfig, connection)
           .onClose(() -> {
             try {
               connection.setAutoCommit(true);
@@ -89,7 +89,8 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
    */
   protected <T> Stream<T> toUnsafeStream(final ResultSet resultSet,
                                          final CheckedFunction<ResultSet, T, SQLException> mapper,
-                                         final JdbcStreamingQueryConfig streamingConfig) {
+                                         final JdbcStreamingQueryConfig streamingConfig,
+                                         final Connection connection) {
     return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
 
       @Override
@@ -105,11 +106,12 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
           return true;
         } catch (final SQLException e) {
           LOGGER.error("SQLState: {}, Message: {}", e.getSQLState(), e.getMessage());
-          streamException = e;
+          throw new RuntimeException(e);
+          /*streamException = e;
           isStreamFailed = true;
           // throwing an exception in tryAdvance() method lead to the endless loop in Spliterator and stream
           // will never close
-          return false;
+          return false;*/
         }
       }
 
