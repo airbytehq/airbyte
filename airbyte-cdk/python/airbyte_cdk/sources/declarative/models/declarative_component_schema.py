@@ -859,7 +859,7 @@ class DatetimeBasedCursor(BaseModel):
     )
     end_datetime: Optional[Union[str, MinMaxDatetime]] = Field(
         None,
-        description="The datetime that determines the last record that should be synced.",
+        description="The datetime that determines the last record that should be synced. If not provided, `{{ now_utc() }}` will be used.",
         examples=["2021-01-1T00:00:00Z", "{{ now_utc() }}", "{{ day_delta(-1) }}"],
         title="End Datetime",
     )

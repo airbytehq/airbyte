@@ -582,7 +582,7 @@ definitions:
           - "PT1S"
       end_datetime:
         title: End Datetime
-        description: The datetime that determines the last record that should be synced.
+        description: The datetime that determines the last record that should be synced. If not provided, `{{ now_utc() }}` will be used.
         anyOf:
           - type: string
           - "$ref": "#/definitions/MinMaxDatetime"
