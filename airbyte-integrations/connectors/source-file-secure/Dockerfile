@@ -6,7 +6,6 @@
 
 # If you need to add a custom logic to build your connector image, you can do it by adding a finalize_build.sh or finalize_build.py script in the connector folder.
 # Please reach out to the Connectors Operations team if you have any question.
-
 FROM airbyte/source-file:0.3.11
 
 WORKDIR /airbyte/integration_code
