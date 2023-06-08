@@ -36,3 +36,4 @@ advanced_auth:
           type: string
         client_secret:
           type: string
+    complete_oauth_server_output_specification: {}
