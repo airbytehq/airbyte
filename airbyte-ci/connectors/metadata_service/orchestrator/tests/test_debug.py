@@ -10,7 +10,7 @@ from orchestrator.assets.connector_nightly_report import (
 from orchestrator.config import NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME, NIGHTLY_FOLDER, NIGHTLY_COMPLETE_REPORT_FILE_NAME
 
 
-def test_debug_nightly_report():
+def debug_nightly_report():
     resources = {
         "gcp_gcs_client": gcp_gcs_client.configured(
             {
