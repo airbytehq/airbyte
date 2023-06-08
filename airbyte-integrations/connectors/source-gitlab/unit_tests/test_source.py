@@ -34,8 +34,6 @@ def test_streams(config, requests_mock):
     )
 )
 def test_connection_success(config, requests_mock, url_mocks):
-
-    print(url_mocks)
     for url_mock in url_mocks:
         requests_mock.get(**url_mock)
     source = SourceGitlab()
