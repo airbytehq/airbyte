@@ -27,8 +27,10 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
 
   /**
    * In general, callers should not directly instantiate this class. Use {@link #quoteColumnId(String)} instead.
+   * <p>
+   * TODO maybe this needs a column_name_for_lookup, a la normalization?
    *
-   * @param name         the name of the column in the final table
+   * @param name         the name of the column in the final table. Usable directly in a SQL query. For example, "`foo`" or "foo".
    * @param originalName the name of the field in the raw JSON blob
    */
   record QuotedColumnId(String name, String originalName) {
@@ -68,16 +70,24 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
    *   <li>Extracting the JSON fields and casting to the appropriate types</li>
    *   <li>Handling errors in those casts</li>
    *   <li>Merging those typed records into an existing table</li>
+   *   <li>(maybe) When reading from a tmp table, copying the new raw records into the real raw table</li>
    * </ul>
+   *
+   * @param rawSuffix the suffix of the raw table to read from. If empty string, reads from the raw table directly. Useful for incremental syncs,
+   *                  where we load batches of records into special temporary raw tables.
    */
   // TODO maybe this should be broken into smaller methods, idk
-  // TODO this probably needs source+target table names
-  String updateTable(final StreamConfig<DialectType> stream);
+  String updateTable(String rawSuffix, final StreamConfig<DialectType> stream);
 
   /**
    * Delete records from the final table with a non-null _ab_cdc_deleted_at column.
    */
   String executeCdcDeletions(final StreamConfig<DialectType> stream);
+
+  /**
+   * Delete outdated raw records from the raw table.
+   */
+  String deleteOldRawRecords(final StreamConfig<DialectType> stream);
 
   /**
    * Generate a SQL statement to delete records from the final table that were not emitted in the current sync.

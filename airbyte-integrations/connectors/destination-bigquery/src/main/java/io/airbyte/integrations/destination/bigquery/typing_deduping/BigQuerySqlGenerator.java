@@ -7,27 +7,38 @@ import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableResult;
+import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Array;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Object;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.OneOf;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Primitive;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.UnsupportedOneOf;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, StandardSQLTypeName> {
 
+  private static final BigQuerySQLNameTransformer nameTransformer = new BigQuerySQLNameTransformer();
+
   @Override
   public QuotedStreamId quoteStreamId(final String namespace, final String name) {
-    // TODO
-    return null;
+    // TODO is this correct?
+    return new QuotedStreamId(
+        nameTransformer.getNamespace(namespace),
+        nameTransformer.convertStreamName(name),
+        // TODO maybe do something with #getRawTableName?
+        nameTransformer.convertStreamName(namespace + "_" + name),
+        namespace,
+        name);
   }
 
   @Override
   public QuotedColumnId quoteColumnId(final String name) {
-    // TODO
-    return null;
+    // TODO this is probably wrong
+    return new QuotedColumnId(nameTransformer.getIdentifier(name), name);
   }
 
   @Override
@@ -81,44 +92,61 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   // We need the configuredairbytestream for the sync mode + cursor name
   @Override
-  public String updateTable(final StreamConfig<StandardSQLTypeName> stream) {
+  public String updateTable(String rawSuffix, final StreamConfig<StandardSQLTypeName> stream) {
+    // TODO this method needs to handle all the sync modes
     // do the stuff that evan figured out how to do https://github.com/airbytehq/typing-and-deduping-sql/blob/main/one-table.postgres.sql#L153
     // TODO use a better string templating thing
     return String.format(
         """
-        BEGIN;
-        
-        INSERT INTO %s.%s
-        SELECT
-          TODO....
-        FROM airbyte._airbyte_raw_%s_%s
-        
-        COMMIT;
-        """,
+            BEGIN;
+                    
+            INSERT INTO %s.%s
+            SELECT
+              TODO....
+            FROM airbyte.%s_%s
+                    
+            COMMIT;
+            """,
         stream.id().namespace(),
         stream.id().name(),
         stream.id().namespace(),
-        stream.id().name()
+        rawSuffix.length() > 0 ? stream.id().rawName() + "_" + rawSuffix : stream.id().rawName()
     );
   }
 
   @Override
   public String executeCdcDeletions(final StreamConfig<StandardSQLTypeName> stream) {
-    // TODO maybe this should have an extracted_at / loaded_at condition for efficiency
-    return "DELETE FROM " + stream.id().finalTableId() + " WHERE _ab_cdc_deleted_at IS NOT NULL";
+    // CDC is always incremental dedup
+    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+      // TODO maybe this should have an extracted_at / loaded_at condition for efficiency
+      return "DELETE FROM " + stream.id().finalTableId() + " WHERE _ab_cdc_deleted_at IS NOT NULL";
+    } else {
+      return "";
+    }
+  }
+
+  @Override
+  public String deleteOldRawRecords(final StreamConfig<StandardSQLTypeName> stream) {
+    // We don't need to filter out `_airbyte_data ->> '_ab_cdc_deleted_at' IS NULL` because we can run this sql before executing CDC deletes
+    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+      // TODO maybe this should have an extracted_at / loaded_at condition for efficiency
+      return """
+          DELETE FROM airbyte.%s WHERE _airbyte_raw_id NOT IN (
+            SELECT _airbyte_raw_id FROM public.users
+          )""".formatted(stream.id().rawName());
+    } else {
+      return "";
+    }
   }
 
   @Override
   public String deletePreviousSyncRecords(final StreamConfig<StandardSQLTypeName> stream, final UUID syncId) {
-    // TODO maybe this should have an extracted_at / loaded_at condition for efficiency
-    return "DELETE FROM " + stream.id().finalTableId() + " WHERE _airbyte_loaded_at != " + syncId;
+    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+      // TODO maybe this should have an extracted_at / loaded_at condition for efficiency
+      return "DELETE FROM " + stream.id().finalTableId() + " WHERE _airbyte_loaded_at != " + syncId;
+    } else {
+      return "";
+    }
   }
 
-  public static void main(String[] args) throws InterruptedException {
-    BigQuery bq = BigQueryOptions.newBuilder().setProjectId("dataline-integration-testing").build().getService();
-    final TableResult query = bq.query(QueryJobConfiguration.newBuilder("select 1; select 2;").build());
-    System.out.println(query);
-
-    new UnsupportedOneOf(List.of(AirbyteType.Primitive.STRING));
-  }
 }

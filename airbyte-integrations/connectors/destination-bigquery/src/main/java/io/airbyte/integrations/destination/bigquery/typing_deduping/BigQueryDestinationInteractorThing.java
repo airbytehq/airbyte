@@ -7,11 +7,12 @@ import com.google.cloud.bigquery.TableDefinition;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.QuotedStreamId;
 import java.util.Optional;
 
-public class BigqueryDestinationInteractorThing implements DestinationInteractorThing<TableDefinition> {
+// TODO this stuff almost definitely exists somewhere else in our codebase.
+public class BigQueryDestinationInteractorThing implements DestinationInteractorThing<TableDefinition> {
 
   private final BigQuery bq;
 
-  public BigqueryDestinationInteractorThing(final BigQuery bq) {
+  public BigQueryDestinationInteractorThing(final BigQuery bq) {
     this.bq = bq;
   }
 
