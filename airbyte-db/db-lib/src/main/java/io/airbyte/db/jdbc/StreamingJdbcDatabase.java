@@ -107,11 +107,10 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
         } catch (final SQLException e) {
           LOGGER.error("SQLState: {}, Message: {}", e.getSQLState(), e.getMessage());
           throw new RuntimeException(e);
-          /*streamException = e;
-          isStreamFailed = true;
-          // throwing an exception in tryAdvance() method lead to the endless loop in Spliterator and stream
-          // will never close
-          return false;*/
+          /*
+           * streamException = e; isStreamFailed = true; // throwing an exception in tryAdvance() method lead
+           * to the endless loop in Spliterator and stream // will never close return false;
+           */
         }
       }
 
