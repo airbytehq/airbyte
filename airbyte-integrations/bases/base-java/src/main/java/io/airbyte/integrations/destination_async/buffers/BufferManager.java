@@ -48,7 +48,7 @@ public class BufferManager {
     bufferEnqueue = new BufferEnqueue(memoryManager, buffers, stateManager);
     bufferDequeue = new BufferDequeue(memoryManager, buffers, stateManager);
     debugLoop = Executors.newSingleThreadScheduledExecutor();
-    debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 10, TimeUnit.SECONDS);
+    debugLoop.scheduleAtFixedRate(this::printQueueInfo, 0, 500, TimeUnit.MILLISECONDS);
   }
 
   public GlobalAsyncStateManager getStateManager() {
@@ -77,11 +77,13 @@ public class BufferManager {
     final var queueInfo = new StringBuilder().append("QUEUE INFO").append(System.lineSeparator());
 
     queueInfo
-        .append(String.format("  Global Mem Manager -- max: %s, allocated: %s (%s MB), %% used: %s",
+        .append(String.format("  Global Mem Manager -- max: %s, allocated: %s (%s MB), %% used: %s, used: %s (MB, free: %s (MB)",
             AirbyteFileUtils.byteCountToDisplaySize(memoryManager.getMaxMemoryBytes()),
             AirbyteFileUtils.byteCountToDisplaySize(memoryManager.getCurrentMemoryBytes()),
             (double) memoryManager.getCurrentMemoryBytes() / 1024 / 1024,
-            (double) memoryManager.getCurrentMemoryBytes() / memoryManager.getMaxMemoryBytes()))
+            (double) memoryManager.getCurrentMemoryBytes() / memoryManager.getMaxMemoryBytes(),
+            (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024,
+            (double) Runtime.getRuntime().freeMemory() / 1024 / 1024))
         .append(System.lineSeparator());
 
     for (final var entry : buffers.entrySet()) {
