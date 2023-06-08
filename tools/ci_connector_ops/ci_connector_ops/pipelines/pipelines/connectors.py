@@ -68,6 +68,7 @@ async def run_connectors_pipelines(
     *args,
 ) -> List[ConnectorContext]:
     """Run a connector pipeline for all the connector contexts."""
+
     semaphore = anyio.Semaphore(concurrency)
     async with dagger.Connection(Config(log_output=sys.stderr, execute_timeout=execute_timeout)) as dagger_client:
         dockerd_service = environments.with_global_dockerd_service(dagger_client)
@@ -75,7 +76,6 @@ async def run_connectors_pipelines(
             for context in contexts:
                 context.dagger_client = dagger_client.pipeline(f"{pipeline_name} - {context.connector.technical_name}")
                 context.dockerd_service = dockerd_service
-
                 tg.start_soon(connector_pipeline, context, semaphore, *args)
 
         await run_report_complete_pipeline(dagger_client, contexts)

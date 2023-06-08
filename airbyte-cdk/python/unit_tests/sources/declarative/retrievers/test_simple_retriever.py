@@ -9,6 +9,7 @@ import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status
 import pytest
 import requests
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, Type
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter
@@ -22,7 +23,6 @@ from airbyte_cdk.sources.declarative.retrievers.simple_retriever import (
     _prepared_request_to_airbyte_message,
     _response_to_airbyte_message,
 )
-from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.streams.http.http import HttpStream
 
 primary_key = "pk"
@@ -57,7 +57,7 @@ def test_simple_retriever_full(mock_http_stream):
     underlying_state = {"date": "2021-01-01"}
     stream_slicer.get_stream_state.return_value = underlying_state
 
-    requester.get_authenticator.return_value = NoAuth()
+    requester.get_authenticator.return_value = NoAuth({})
     url_base = "https://airbyte.io"
     requester.get_url_base.return_value = url_base
     path = "/v1"
@@ -328,17 +328,20 @@ def test_backoff_time(test_name, response_action, retry_in, expected_backoff_tim
 
 
 @pytest.mark.parametrize(
-    "test_name, paginator_mapping, stream_slicer_mapping, expected_mapping",
+    "test_name, paginator_mapping, stream_slicer_mapping, auth_mapping, expected_mapping",
     [
-        ("test_only_base_headers", {}, {}, {"key": "value"}),
-        ("test_header_from_pagination", {"offset": 1000}, {}, {"key": "value", "offset": 1000}),
-        ("test_header_from_stream_slicer", {}, {"slice": "slice_value"}, {"key": "value", "slice": "slice_value"}),
-        ("test_duplicate_header_slicer", {}, {"key": "slice_value"}, None),
-        ("test_duplicate_header_slicer_paginator", {"k": "v"}, {"k": "slice_value"}, None),
-        ("test_duplicate_header_paginator", {"key": 1000}, {}, None),
+        ("test_only_base_headers", {}, {}, {}, {"key": "value"}),
+        ("test_header_from_pagination", {"offset": 1000}, {}, {}, {"key": "value", "offset": 1000}),
+        ("test_header_from_stream_slicer", {}, {"slice": "slice_value"}, {}, {"key": "value", "slice": "slice_value"}),
+        ("test_duplicate_header_slicer", {}, {"key": "slice_value"}, {}, None),
+        ("test_duplicate_header_slicer_paginator", {"k": "v"}, {"k": "slice_value"}, {}, None),
+        ("test_duplicate_header_paginator", {"key": 1000}, {}, {}, None),
+        ("test_only_base_and_auth_headers", {}, {}, {"AuthKey": "secretkey"}, {"key": "value", "AuthKey": "secretkey"}),
+        ("test_header_from_pagination_and_auth", {"offset": 1000}, {}, {"AuthKey": "secretkey"}, {"key": "value", "offset": 1000, "AuthKey": "secretkey"}),
+        ("test_duplicate_auth", {}, {"AuthKey": "secretkey"}, {"AuthKey": "secretkey"}, None),
     ],
 )
-def test_get_request_options_from_pagination(test_name, paginator_mapping, stream_slicer_mapping, expected_mapping):
+def test_get_request_options_from_pagination(test_name, paginator_mapping, stream_slicer_mapping, auth_mapping, expected_mapping):
     # This test does not test request headers because they must be strings
     paginator = MagicMock()
     paginator.get_request_params.return_value = paginator_mapping
@@ -350,11 +353,17 @@ def test_get_request_options_from_pagination(test_name, paginator_mapping, strea
     stream_slicer.get_request_body_data.return_value = stream_slicer_mapping
     stream_slicer.get_request_body_json.return_value = stream_slicer_mapping
 
+    authenticator = MagicMock()
+    authenticator.get_request_params.return_value = auth_mapping
+    authenticator.get_request_body_data.return_value = auth_mapping
+    authenticator.get_request_body_json.return_value = auth_mapping
+
     base_mapping = {"key": "value"}
     requester = MagicMock(use_cache=False)
     requester.get_request_params.return_value = base_mapping
     requester.get_request_body_data.return_value = base_mapping
     requester.get_request_body_json.return_value = base_mapping
+    requester.get_authenticator.return_value = authenticator
 
     record_selector = MagicMock()
     retriever = SimpleRetriever(
