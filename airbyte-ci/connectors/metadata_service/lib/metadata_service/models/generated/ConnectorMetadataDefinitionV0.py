@@ -4,10 +4,10 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import List, Optional
+from typing import Dict, List, Optional
 from uuid import UUID
 
-from pydantic import AnyUrl, BaseModel, Extra, Field
+from pydantic import AnyUrl, BaseModel, Extra, Field, constr
 from typing_extensions import Literal
 
 
@@ -75,12 +75,37 @@ class JobType(BaseModel):
     )
 
 
+class VersionBreakingChange(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    upgradeDeadline: date = Field(
+        ...,
+        description="The deadline by which to upgrade before the breaking change takes effect.",
+    )
+    message: str = Field(
+        ..., description="Descriptive message detailing the breaking change."
+    )
+
+
 class JobTypeResourceLimit(BaseModel):
     class Config:
         extra = Extra.forbid
 
     jobType: JobType
     resourceRequirements: ResourceRequirements
+
+
+class BreakingChangeEntry(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    __root__: Dict[
+        constr(regex=r"^([0-9]+).([0-9]+).([0-9]+)$"), VersionBreakingChange
+    ] = Field(
+        ...,
+        description="Describes a breaking change for a specific version of a connector.",
+    )
 
 
 class ActorDefinitionResourceRequirements(BaseModel):
@@ -92,6 +117,13 @@ class ActorDefinitionResourceRequirements(BaseModel):
         description="if set, these are the requirements that should be set for ALL jobs run for this actor definition.",
     )
     jobSpecific: Optional[List[JobTypeResourceLimit]] = None
+
+
+class ConnectorBreakingChanges(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    breakingChanges: Optional[List[BreakingChangeEntry]] = None
 
 
 class RegistryOverrides(BaseModel):
@@ -154,6 +186,7 @@ class Data(BaseModel):
     )
     registries: Optional[Registry] = None
     allowedHosts: Optional[AllowedHosts] = None
+    breakingChanges: Optional[ConnectorBreakingChanges] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
     suggestedStreams: Optional[SuggestedStreams] = None
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None

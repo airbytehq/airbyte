@@ -98,6 +98,8 @@ properties:
 
       allowedHosts:
         "$ref": AllowedHosts.yaml
+      breakingChanges:
+        "$ref": ConnectorBreakingChanges.yaml
       normalizationConfig:
         "$ref": NormalizationDestinationDefinitionConfig.yaml
       suggestedStreams:

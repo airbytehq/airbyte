@@ -1,0 +1,37 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/ConnectorBreakingChanges.yaml
+title: ConnectorBreakingChanges
+description: Denotes breaking changes by version and their upgrade deadline.
+type: object
+additionalProperties: false
+properties:
+  breakingChanges:
+    type: array
+    items:
+      "$ref": "#/definitions/BreakingChangeEntry"
+definitions:
+  BreakingChangeEntry:
+    description: Describes a breaking change for a specific version of a connector.
+    type: object
+    patternProperties:
+      "^([0-9]+).([0-9]+).([0-9]+)$":
+        "$ref": "#/definitions/VersionBreakingChange"
+    additionalProperties: false
+    minProperties: 1
+    maxProperties: 1
+  VersionBreakingChange:
+    description: Contains information about a breaking change, including the deadline to upgrade and a message detailing the change.
+    type: object
+    additionalProperties: false
+    required:
+      - upgradeDeadline
+      - message
+    properties:
+      upgradeDeadline:
+        description: The deadline by which to upgrade before the breaking change takes effect.
+        type: string
+        format: date
+      message:
+        description: Descriptive message detailing the breaking change.
+        type: string
