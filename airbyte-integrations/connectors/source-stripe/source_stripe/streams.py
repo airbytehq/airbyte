@@ -199,6 +199,17 @@ class BalanceTransactions(IncrementalStripeStream):
         return "balance_transactions"
 
 
+class Cardholders(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/issuing/cardholders/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "issuing/cardholders"
+
+
 class Charges(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/charges/list
