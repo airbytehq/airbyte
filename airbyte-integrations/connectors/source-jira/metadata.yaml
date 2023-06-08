@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
-  dockerImageTag: 0.3.11
+  dockerImageTag: 0.3.12
   maxSecondsBetweenMessages: 21600
   dockerRepository: airbyte/source-jira
   githubIssueLabel: source-jira
