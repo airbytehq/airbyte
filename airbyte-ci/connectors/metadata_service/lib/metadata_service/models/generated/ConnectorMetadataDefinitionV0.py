@@ -86,6 +86,10 @@ class VersionBreakingChange(BaseModel):
     message: str = Field(
         ..., description="Descriptive message detailing the breaking change."
     )
+    migrationDocumentationUrl: Optional[AnyUrl] = Field(
+        None,
+        description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}/migration_guide#${version}",
+    )
 
 
 class JobTypeResourceLimit(BaseModel):
@@ -102,8 +106,7 @@ class ConnectorBreakingChanges(BaseModel):
 
     __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+$"), VersionBreakingChange] = Field(
         ...,
-        description="Describes breaking changes in different versions of a connector.",
-        title="ConnectorBreakingChanges",
+        description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.",
     )
 
 
@@ -116,6 +119,17 @@ class ActorDefinitionResourceRequirements(BaseModel):
         description="if set, these are the requirements that should be set for ALL jobs run for this actor definition.",
     )
     jobSpecific: Optional[List[JobTypeResourceLimit]] = None
+
+
+class ConnectorReleases(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    breakingChanges: ConnectorBreakingChanges
+    migrationDocumentationUrl: Optional[AnyUrl] = Field(
+        None,
+        description="URL to documentation on how to migrate from the previous version to the current version. Defaults to ${documentationUrl}/migration_guide",
+    )
 
 
 class RegistryOverrides(BaseModel):
@@ -178,7 +192,7 @@ class Data(BaseModel):
     )
     registries: Optional[Registry] = None
     allowedHosts: Optional[AllowedHosts] = None
-    breakingChanges: Optional[ConnectorBreakingChanges] = None
+    releases: Optional[ConnectorReleases] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
     suggestedStreams: Optional[SuggestedStreams] = None
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None

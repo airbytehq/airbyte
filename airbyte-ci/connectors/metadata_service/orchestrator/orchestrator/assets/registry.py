@@ -70,9 +70,11 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, connector_ty
 
     metadata_data = metadata_definition["data"]
 
+    # apply overrides from the registry
     overrode_metadata_data = apply_overrides_from_registry(metadata_data, override_registry_key)
-    del overrode_metadata_data["registries"]
 
+    # remove fields that are not needed in the registry
+    del overrode_metadata_data["registries"]
     del overrode_metadata_data["connectorType"]
 
     # rename field connectorSubtype to sourceType
@@ -92,12 +94,13 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, connector_ty
     overrode_metadata_data["public"] = True
 
     # if there is no releaseStage, set it to "alpha"
-    # Note: this is something our current cloud registry generator does
-    # Note: We will not once this is live
     if not overrode_metadata_data.get("releaseStage"):
         overrode_metadata_data["releaseStage"] = "alpha"
 
+    # apply generated fields
     overrode_metadata_data["iconUrl"] = metadata_entry.icon_url
+    # overrode_metadata_data["releases"] =
+
 
     return overrode_metadata_data
 
