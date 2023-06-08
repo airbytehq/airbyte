@@ -3,8 +3,8 @@ from typing import Optional
 REGISTRIES_FOLDER = "registries/v0"
 REPORT_FOLDER = "generated_reports"
 
-# NIGHTLY_FOLDER = "airbyte-ci/connectors/test/nightly_builds/master"
-NIGHTLY_FOLDER = "airbyte-ci/connectors/test/manual/bnchrch_dagger_nightly-report-finished-step"
+NIGHTLY_FOLDER = "airbyte-ci/connectors/test/nightly_builds/master"
+# NIGHTLY_FOLDER = "airbyte-ci/connectors/test/manual/bnchrch_dagger_nightly-report-finished-step"
 NIGHTLY_COMPLETE_REPORT_FILE_NAME = "complete.json"
 NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME = "output.json"
 

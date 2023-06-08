@@ -1,6 +1,8 @@
 from dagster import Output, asset, OpExecutionContext, MetadataValue
 import pandas as pd
 import json
+import os
+from orchestrator.ops.slack import send_slack_webhook
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 from orchestrator.models.ci_report import ConnectorNightlyReport, ConnectorPipelineReport
 from orchestrator.config import REPORT_FOLDER, REGISTRIES_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME, NIGHTLY_FOLDER, NIGHTLY_COMPLETE_REPORT_FILE_NAME, NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME
@@ -104,5 +106,9 @@ def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]
     nightly_report_connector_matrix_df = compute_connector_nightly_report_history(nightly_report_complete_df, nightly_report_test_output_df)
 
     nightly_report_complete_md = render_connector_nightly_report_md(nightly_report_connector_matrix_df, nightly_report_complete_df)
+
+    slack_webhook_url = os.getenv("NIGHTLY_REPORT_SLACK_WEBHOOK_URL")
+    if slack_webhook_url:
+        send_slack_webhook(slack_webhook_url, nightly_report_complete_md)
 
     return Output(nightly_report_connector_matrix_df, metadata={"count": len(nightly_report_connector_matrix_df), "preview": MetadataValue.md(nightly_report_complete_md)})
