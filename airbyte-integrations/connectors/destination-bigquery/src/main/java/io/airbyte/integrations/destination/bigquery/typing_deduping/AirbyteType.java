@@ -20,7 +20,7 @@ public sealed interface AirbyteType permits Array, OneOf, Object, UnsupportedOne
    */
   static AirbyteType fromJsonSchema(JsonNode schema) {
     // TODO
-    return null;
+    return new Object(new LinkedHashMap<>());
   }
 
   enum Primitive implements AirbyteType {

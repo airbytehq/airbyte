@@ -12,7 +12,9 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.OneOf;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Primitive;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.UnsupportedOneOf;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
 import java.util.List;
+import java.util.UUID;
 
 public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, StandardSQLTypeName> {
 
@@ -52,9 +54,14 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
   }
 
+  public StandardSQLTypeName toDialectType(final Primitive primitive) {
+    // TODO maybe this should be in the interface? unclear if that has value, but I expect every implementation to have this method
+    return null;
+  }
+
   @Override
   public String createTable(final StreamConfig<StandardSQLTypeName> stream) {
-    return "CREATE TABLE ";
+    return "CREATE TABLE " + stream.id().finalTableId();
   }
 
   @Override
@@ -62,6 +69,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
                            final TableDefinition existingTable) {
     if (existingTable instanceof StandardTableDefinition s) {
       // TODO check if clustering/partitioning config is different from what we want, do something to handle it
+      // iirc this will depend on the stream (destination?) sync mode + cursor + pk name
       if (s.getClustering() != null) {
 
       }
@@ -92,6 +100,18 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
         stream.id().namespace(),
         stream.id().name()
     );
+  }
+
+  @Override
+  public String executeCdcDeletions(final StreamConfig<StandardSQLTypeName> stream) {
+    // TODO maybe this should have an extracted_at / loaded_at condition for efficiency
+    return "DELETE FROM " + stream.id().finalTableId() + " WHERE _ab_cdc_deleted_at IS NOT NULL";
+  }
+
+  @Override
+  public String deletePreviousSyncRecords(final StreamConfig<StandardSQLTypeName> stream, final UUID syncId) {
+    // TODO maybe this should have an extracted_at / loaded_at condition for efficiency
+    return "DELETE FROM " + stream.id().finalTableId() + " WHERE _airbyte_loaded_at != " + syncId;
   }
 
   public static void main(String[] args) throws InterruptedException {

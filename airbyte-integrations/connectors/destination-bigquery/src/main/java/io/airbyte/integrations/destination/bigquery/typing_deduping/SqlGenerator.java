@@ -1,25 +1,37 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import io.airbyte.protocol.models.v0.SyncMode;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Optional;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
+import java.util.UUID;
 
 public interface SqlGenerator<DialectTableDefinition, DialectType> {
 
   /**
    * In general, callers should not directly instantiate this class. Use {@link #quoteStreamId(String, String)} instead.
+   *
+   * @param namespace         the namespace where the final table will be created
+   * @param name              the name of the final table
+   * @param rawName           the name of the raw table (typically namespace_name, but may be different if there are collisions). There is no
+   *                          rawNamespace because we assume that we're writing raw tables to the airbyte namespace.
+   * @param originalNamespace the namespace of the stream according to the Airbyte catalog
+   * @param originalName      the name of the stream according to the Airbyte catalog
    */
-  record QuotedStreamId(String namespace, String name) {
+  record QuotedStreamId(String namespace, String name, String rawName, String originalNamespace, String originalName) {
 
+    /**
+     * Most databases/warehouses use a `schema.name` syntax to identify tables. This is a convenience method to generate that syntax.
+     */
+    public String finalTableId() {
+      return namespace + "." + name;
+    }
   }
 
   /**
    * In general, callers should not directly instantiate this class. Use {@link #quoteColumnId(String)} instead.
+   *
+   * @param name         the name of the column in the final table
+   * @param originalName the name of the field in the raw JSON blob
    */
-  record QuotedColumnId(String name) {
+  record QuotedColumnId(String name, String originalName) {
 
   }
 
@@ -28,54 +40,6 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
   QuotedColumnId quoteColumnId(String name);
 
   DialectType toDialectType(AirbyteType type);
-
-  record StreamConfig<DialectType>(QuotedStreamId id,
-                                   SyncMode syncMode,
-                                   DestinationSyncMode destinationSyncMode,
-                                   List<QuotedColumnId> primaryKey,
-                                   Optional<QuotedColumnId> cursor,
-                                   LinkedHashMap<String, DialectType> columns) {
-
-  }
-
-  default StreamConfig<DialectType> toStreamConfig(ConfiguredAirbyteStream stream) {
-    AirbyteType schema = AirbyteType.fromJsonSchema(stream.getStream().getJsonSchema());
-    final LinkedHashMap<String, AirbyteType> airbyteColumns;
-    if (schema instanceof AirbyteType.Object o) {
-      airbyteColumns = o.properties();
-    } else if (schema instanceof AirbyteType.OneOf o) {
-      airbyteColumns = o.asColumns();
-    } else {
-      throw new IllegalArgumentException("Top-level schema must be an object");
-    }
-
-    if (stream.getPrimaryKey().stream().anyMatch(key -> key.size() > 1)) {
-      throw new IllegalArgumentException("Only top-level primary keys are supported");
-    }
-    final List<QuotedColumnId> primaryKey = stream.getPrimaryKey().stream().map(key -> quoteColumnId(key.get(0))).toList();
-
-    if (stream.getCursorField().size() > 1) {
-      throw new IllegalArgumentException("Only top-level cursors are supported");
-    }
-    final Optional<QuotedColumnId> cursor;
-    if (stream.getCursorField().size() > 0) {
-      cursor = Optional.of(quoteColumnId(stream.getCursorField().get(0)));
-    } else {
-      cursor = Optional.empty();
-    }
-
-    return new StreamConfig<>(
-        quoteStreamId(stream.getStream().getNamespace(), stream.getStream().getName()),
-        stream.getSyncMode(),
-        stream.getDestinationSyncMode(),
-        primaryKey,
-        cursor,
-        airbyteColumns.entrySet().stream().collect(
-            LinkedHashMap::new,
-            (map, entry) -> map.put(entry.getKey(), toDialectType(entry.getValue())),
-            LinkedHashMap::putAll)
-    );
-  }
 
   /**
    * Generate a SQL statement to create a fresh table to match the given stream.
@@ -95,8 +59,31 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
 
   /**
    * Generate a SQL statement to copy new data from the raw table into the final table.
+   * <p>
+   * Supports both incremental and one-shot loading. (maybe.)
+   * <p>
+   * Responsible for:
+   * <ul>
+   *   <li>Pulling new raw records from a table (i.e. records with null _airbyte_loaded_at)</li>
+   *   <li>Extracting the JSON fields and casting to the appropriate types</li>
+   *   <li>Handling errors in those casts</li>
+   *   <li>Merging those typed records into an existing table</li>
+   * </ul>
    */
   // TODO maybe this should be broken into smaller methods, idk
+  // TODO this probably needs source+target table names
   String updateTable(final StreamConfig<DialectType> stream);
+
+  /**
+   * Delete records from the final table with a non-null _ab_cdc_deleted_at column.
+   */
+  String executeCdcDeletions(final StreamConfig<DialectType> stream);
+
+  /**
+   * Generate a SQL statement to delete records from the final table that were not emitted in the current sync.
+   * <p>
+   * Useful for the full-refresh case, where we need to delete records that from the previous sync and which weren't re-emitted in the current sync.
+   */
+  String deletePreviousSyncRecords(StreamConfig<DialectType> stream, UUID syncId);
 
 }
