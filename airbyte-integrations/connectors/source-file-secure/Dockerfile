@@ -12,6 +12,7 @@ WORKDIR /airbyte/integration_code
 COPY source_file_secure ./source_file_secure
 COPY main.py ./
 COPY setup.py ./
+ENV DOCKER_BUILD=True
 RUN pip install .
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
