@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.40.2
+Add a metadata field to the declarative component schema
+
 ## 0.40.1
 make DatetimeBasedCursor.end_datetime optional
 
