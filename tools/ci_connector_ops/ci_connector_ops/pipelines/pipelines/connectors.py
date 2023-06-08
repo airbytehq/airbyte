@@ -68,6 +68,7 @@ async def run_connectors_pipelines(
     *args,
 ) -> List[ConnectorContext]:
     """Run a connector pipeline for all the connector contexts."""
+
     semaphore = anyio.Semaphore(concurrency)
     async with dagger.Connection(Config(log_output=sys.stderr, execute_timeout=execute_timeout)) as dagger_client:
         dockerd_service = environments.with_global_dockerd_service(dagger_client)
