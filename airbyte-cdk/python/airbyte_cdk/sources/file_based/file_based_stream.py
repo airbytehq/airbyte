@@ -1,8 +1,12 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import asyncio
 import logging
 import os
 from functools import cache, cached_property
-from typing import Any, Dict, List, Iterable, Mapping, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.file_based.availability_strategy import (
@@ -22,9 +26,9 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import (
     AbstractFileBasedStreamReader,
 )
 from airbyte_cdk.sources.file_based.file_types import (
-    FileTypeParser,
     AvroParser,
     CsvParser,
+    FileTypeParser,
     JsonlParser,
     ParquetParser,
 )
@@ -38,7 +42,9 @@ from airbyte_cdk.sources.file_based.schema_validation_policies import (
 )
 from airbyte_cdk.sources.streams import Stream
 
-MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE = os.getenv("MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE", 10)
+MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE = os.getenv(
+    "MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE", 10
+)
 
 
 class FileBasedStream(Stream):
@@ -86,9 +92,7 @@ class FileBasedStream(Stream):
             )
         parser = self._get_parser(self.config.file_type)
         for file in self.list_files_for_this_sync(stream_state):
-            for record in parser.parse_records(
-                file, self.stream_reader
-            ):
+            for record in parser.parse_records(file, self.stream_reader):
                 if not record_passes_validation_policy(
                     self.config.validation_policy, record, schema
                 ):
@@ -118,7 +122,9 @@ class FileBasedStream(Stream):
 
         files = self.list_files()
         if len(files) > MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE:
-            files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE]
+            files = sorted(files, key=lambda x: x.last_modified, reverse=True)[
+                :MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE
+            ]
             logging.warning(
                 f"Refusing to infer schema for {len(files)} files; using {MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE} files."
             )
@@ -164,14 +170,18 @@ class FileBasedStream(Stream):
         n_started, n_files = 0, len(files)
         files = iter(files)
         while pending_tasks or n_started < n_files:
-            while len(pending_tasks) < self.discovery_concurrency_policy.n_concurrent_requests and (
+            while len(
+                pending_tasks
+            ) < self.discovery_concurrency_policy.n_concurrent_requests and (
                 file := next(files, None)
             ):
                 pending_tasks.add(asyncio.create_task(self._infer_file_schema(file)))
                 n_started += 1
             # Return when the first task is completed so that we can enqueue a new task as soon as the
             # number of concurrent tasks drops below the number allowed.
-            done, pending_tasks = await asyncio.wait(pending_tasks, return_when=asyncio.FIRST_COMPLETED)
+            done, pending_tasks = await asyncio.wait(
+                pending_tasks, return_when=asyncio.FIRST_COMPLETED
+            )
             for task in done:
                 base_schema = merge_schemas(base_schema, task.result())
 

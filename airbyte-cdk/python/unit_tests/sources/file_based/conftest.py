@@ -1,10 +1,12 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import json
 import os
 import sys
-from pathlib import Path
 
 import pytest
-
 
 CONNECTION_SPECIFICATION = {
     "type": "object",
@@ -31,8 +33,3 @@ def json_spec():
         f.write(json.dumps(spec))
     yield
     os.remove(json_path)
-
-
-def make_file(path: Path, file_contents: dict) -> str:
-    path.write_text(json.dumps(file_contents))
-    return str(path)

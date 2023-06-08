@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from typing import Any, Dict, Iterable
 
 from airbyte_cdk.sources.file_based.file_based_stream_reader import (

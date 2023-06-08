@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from abc import ABC, abstractmethod
 from fnmatch import fnmatch
 from io import IOBase
@@ -43,7 +47,9 @@ class AbstractFileBasedStreamReader(ABC):
         """
 
     @staticmethod
-    def filter_files_by_globs(files: List[RemoteFile], globs: List[str]) -> List[RemoteFile]:
+    def filter_files_by_globs(
+        files: List[RemoteFile], globs: List[str]
+    ) -> List[RemoteFile]:
         """
         Utility method for filtering files based on globs.
         """

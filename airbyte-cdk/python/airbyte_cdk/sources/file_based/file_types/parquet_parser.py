@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from io import IOBase
 from typing import Any, Dict, Iterable
 

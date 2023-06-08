@@ -1,9 +1,14 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from typing import Any, Dict, Mapping
 
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
 
 
 class BaseTestScenario:
+    name: str
     config: Mapping[str, Any]
     files: Dict[str, Any]
     expected_catalog: Dict[str, Any]

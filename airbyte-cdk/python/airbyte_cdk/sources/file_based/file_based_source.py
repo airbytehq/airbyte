@@ -1,12 +1,17 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import logging
 import traceback
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, List, Mapping, Tuple, Optional
+from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.file_based.discovery_concurrency_policy import (
-    AbstractDiscoveryConcurrencyPolicy, DefaultDiscoveryConcurrencyPolicy,
+    AbstractDiscoveryConcurrencyPolicy,
+    DefaultDiscoveryConcurrencyPolicy,
 )
 from airbyte_cdk.sources.file_based.file_based_stream import FileBasedStream
 from airbyte_cdk.sources.file_based.file_based_stream_reader import (

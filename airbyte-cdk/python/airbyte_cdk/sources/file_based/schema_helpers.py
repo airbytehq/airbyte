@@ -1,8 +1,11 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from copy import deepcopy
-from typing import Any, Dict, Literal, Mapping, Optional
+from typing import Any, Dict, Literal, Mapping
 
 from airbyte_cdk.sources.file_based.exceptions import SchemaInferenceError
-
 
 type_widths = {str: 0}
 
@@ -10,7 +13,9 @@ JsonSchemaType = Literal["string"]
 supported_types = {"string"}
 
 
-def merge_schemas(schema1: Dict[str, JsonSchemaType], schema2: Dict[str, JsonSchemaType]) -> Dict[str, JsonSchemaType]:
+def merge_schemas(
+    schema1: Dict[str, JsonSchemaType], schema2: Dict[str, JsonSchemaType]
+) -> Dict[str, JsonSchemaType]:
     """
     Returns a new dictionary that contains schema1 and schema2.
 
@@ -46,12 +51,12 @@ def _is_valid_type(t: str) -> bool:
     return t in supported_types
 
 
-def _choose_wider_type(key: str, t1: JsonSchemaType, t2: JsonSchemaType) -> JsonSchemaType:
+def _choose_wider_type(
+    key: str, t1: JsonSchemaType, t2: JsonSchemaType
+) -> JsonSchemaType:
     # TODO: update with additional types.
     if t1 is None and t2 is None:
-        raise SchemaInferenceError(
-            f"Null value found in schema at {key}."
-        )
+        raise SchemaInferenceError(f"Null value found in schema at {key}.")
     elif t1 is None or t2 is None:
         return t1 or t2
     else:

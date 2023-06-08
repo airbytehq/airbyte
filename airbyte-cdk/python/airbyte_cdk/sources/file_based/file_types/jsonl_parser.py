@@ -1,4 +1,8 @@
-from typing import Any, Dict, List, Iterable
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+from typing import Any, Dict, Iterable, List
 
 from airbyte_cdk.sources.file_based.file_based_stream_reader import (
     AbstractFileBasedStreamReader,
