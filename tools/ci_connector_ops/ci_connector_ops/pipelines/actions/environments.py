@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import importlib.util
 import uuid
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional
 
 from ci_connector_ops.pipelines import consts
 from ci_connector_ops.pipelines.consts import (
@@ -18,8 +18,8 @@ from ci_connector_ops.pipelines.consts import (
     DEFAULT_PYTHON_EXCLUDE,
     PYPROJECT_TOML_FILE_PATH,
 )
-from ci_connector_ops.pipelines.utils import get_file_contents, slugify, with_exit_code
-from dagger import CacheSharingMode, CacheVolume, Container, Directory, File, Platform, Secret
+from ci_connector_ops.pipelines.utils import get_file_contents
+from dagger import CacheSharingMode, CacheVolume, Client, Container, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 
 if TYPE_CHECKING:
@@ -181,8 +181,8 @@ async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> C
     """
     python_base_environment: Container = with_python_base(context)
     ci_credentials = await with_installed_python_package(context, python_base_environment, CI_CREDENTIALS_SOURCE_PATH)
-
-    return ci_credentials.with_env_variable("VERSION", "dev").with_secret_variable("GCP_GSM_CREDENTIALS", gsm_secret).with_workdir("/")
+    ci_credentials = ci_credentials.with_env_variable("VERSION", "dagger_ci")
+    return ci_credentials.with_secret_variable("GCP_GSM_CREDENTIALS", gsm_secret).with_workdir("/")
 
 
 def with_alpine_packages(base_container: Container, packages_to_install: List[str]) -> Container:
@@ -239,43 +239,34 @@ async def with_ci_connector_ops(context: PipelineContext) -> Container:
     return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])
 
 
-def with_dockerd_service(
-    context: ConnectorContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None, docker_service_name: Optional[str] = None
-) -> Container:
-    """Create a container running dockerd, exposing its 2375 port, can be used as the docker host for docker-in-docker use cases.
-
+def with_global_dockerd_service(dagger_client: Client) -> Container:
+    """Create a container with a docker daemon running.
+    We expose its 2375 port to use it as a docker host for docker-in-docker use cases.
     Args:
-        context (ConnectorContext): The current connector context.
-        shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be mounted to the dockerd container. Defaults to None.
-        docker_service_name (Optional[str], optional): The name of the docker service, appended to volume name, useful context isolation. Defaults to None.
-
+        dagger_client (Client): The dagger client used to create the container.
     Returns:
-        Container: The container running dockerd as a service.
+        Container: The container running dockerd as a service
     """
-    docker_lib_volume_name = f"{slugify(context.connector.technical_name)}-docker-lib"
-    if docker_service_name:
-        docker_lib_volume_name = f"{docker_lib_volume_name}-{slugify(docker_service_name)}"
-    dind = (
-        context.dagger_client.container()
+    return (
+        dagger_client.container()
         .from_(consts.DOCKER_DIND_IMAGE)
         .with_mounted_cache(
             "/var/lib/docker",
-            context.dagger_client.cache_volume(docker_lib_volume_name),
+            dagger_client.cache_volume("docker-lib"),
             sharing=CacheSharingMode.SHARED,
         )
-    )
-    if shared_volume is not None:
-        dind = dind.with_mounted_cache(*shared_volume)
-    return dind.with_exposed_port(2375).with_exec(
-        ["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True
+        .with_mounted_cache(
+            "/tmp",
+            dagger_client.cache_volume("shared-tmp"),
+        )
+        .with_exposed_port(2375)
+        .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
     )
 
 
 def with_bound_docker_host(
     context: ConnectorContext,
     container: Container,
-    shared_volume: Optional(Tuple[str, CacheVolume]) = None,
-    docker_service_name: Optional[str] = None,
 ) -> Container:
     """Bind a container to a docker host. It will use the dockerd service as a docker host.
 
@@ -288,19 +279,18 @@ def with_bound_docker_host(
     Returns:
         Container: The container bound to the docker host.
     """
-    dockerd = with_dockerd_service(context, shared_volume, docker_service_name)
-    docker_hostname = f"dockerhost-{slugify(context.connector.technical_name)}"
-    if docker_service_name:
-        docker_hostname = f"{docker_hostname}-{slugify(docker_service_name)}"
-    bound = container.with_env_variable("DOCKER_HOST", f"tcp://{docker_hostname}:2375").with_service_binding(docker_hostname, dockerd)
-    if shared_volume:
-        bound = bound.with_mounted_cache(*shared_volume)
+    dockerd = context.dockerd_service
+    docker_hostname = "global-docker-host"
+    bound = (
+        container.with_env_variable("DOCKER_HOST", f"tcp://{docker_hostname}:2375")
+        .with_service_binding(docker_hostname, dockerd)
+        .with_mounted_cache("/tmp", context.dagger_client.cache_volume("shared-tmp"))
+    )
+
     return bound
 
 
-def with_docker_cli(
-    context: ConnectorContext, shared_volume: Optional(Tuple[str, CacheVolume]) = None, docker_service_name: Optional[str] = None
-) -> Container:
+def with_docker_cli(context: ConnectorContext) -> Container:
     """Create a container with the docker CLI installed and bound to a persistent docker host.
 
     Args:
@@ -312,7 +302,7 @@ def with_docker_cli(
         Container: A docker cli container bound to a docker host.
     """
     docker_cli = context.dagger_client.container().from_(consts.DOCKER_CLI_IMAGE)
-    return with_bound_docker_host(context, docker_cli, shared_volume, docker_service_name)
+    return with_bound_docker_host(context, docker_cli)
 
 
 async def with_connector_acceptance_test(context: ConnectorContext, connector_under_test_image_tar: File) -> Container:
@@ -331,10 +321,9 @@ async def with_connector_acceptance_test(context: ConnectorContext, connector_un
         cat_container = context.connector_acceptance_test_source_dir.docker_build()
     else:
         cat_container = context.dagger_client.container().from_(context.connector_acceptance_test_image)
-    shared_tmp_volume = ("/tmp", context.dagger_client.cache_volume("share-tmp-cat"))
 
     return (
-        with_bound_docker_host(context, cat_container, shared_tmp_volume, docker_service_name="cat")
+        with_bound_docker_host(context, cat_container)
         .with_entrypoint([])
         .with_exec(["pip", "install", "pytest-custom_exit_code"])
         .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
@@ -389,8 +378,6 @@ def with_gradle(
     gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
     gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
 
-    shared_tmp_volume = ("/tmp", context.dagger_client.cache_volume("share-tmp-gradle"))
-
     openjdk_with_docker = (
         context.dagger_client.container()
         .from_("openjdk:17.0.1-jdk-slim")
@@ -409,7 +396,7 @@ def with_gradle(
     )
 
     if bind_to_docker_host:
-        return with_bound_docker_host(context, openjdk_with_docker, shared_tmp_volume, docker_service_name=docker_service_name)
+        return with_bound_docker_host(context, openjdk_with_docker)
     else:
         return openjdk_with_docker
 
@@ -425,14 +412,8 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
     """
     # Hacky way to make sure the image is always loaded
     tar_name = f"{str(uuid.uuid4())}.tar"
-    docker_cli = with_docker_cli(context, docker_service_name=docker_service_name).with_mounted_file(tar_name, tar_file)
+    docker_cli = with_docker_cli(context).with_mounted_file(tar_name, tar_file)
 
-    # Remove a previously existing image with the same tag if any.
-    docker_image_rm_exit_code = await with_exit_code(
-        docker_cli.with_env_variable("CACHEBUSTER", tar_name).with_exec(["docker", "image", "rm", image_tag])
-    )
-    if docker_image_rm_exit_code == 0:
-        context.logger.info(f"Removed an existing image tagged {image_tag}")
     image_load_output = await docker_cli.with_exec(["docker", "load", "--input", tar_name]).stdout()
     context.logger.info(image_load_output)
     # Not tagged images only have a sha256 id the load output shares.
@@ -519,60 +500,70 @@ BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
         "dbt_adapter": "dbt-bigquery==1.0.0",
         "integration_name": "bigquery",
         "supports_in_connector_normalization": True,
+        "yum_packages": [],
     },
     "destination-clickhouse": {
         "dockerfile": "clickhouse.Dockerfile",
         "dbt_adapter": "dbt-clickhouse>=1.4.0",
         "integration_name": "clickhouse",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-duckdb": {
         "dockerfile": "duckdb.Dockerfile",
         "dbt_adapter": "dbt-duckdb==1.0.1",
         "integration_name": "duckdb",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-mssql": {
         "dockerfile": "mssql.Dockerfile",
         "dbt_adapter": "dbt-sqlserver==1.0.0",
         "integration_name": "mssql",
-        "supports_in_connector_normalization": False,
+        "supports_in_connector_normalization": True,
+        "yum_packages": [],
     },
     "destination-mysql": {
         "dockerfile": "mysql.Dockerfile",
         "dbt_adapter": "dbt-mysql==1.0.0",
         "integration_name": "mysql",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-oracle": {
         "dockerfile": "oracle.Dockerfile",
         "dbt_adapter": "dbt-oracle==0.4.3",
         "integration_name": "oracle",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-postgres": {
         "dockerfile": "Dockerfile",
         "dbt_adapter": "dbt-postgres==1.0.0",
         "integration_name": "postgres",
         "supports_in_connector_normalization": False,
+        "yum_packages": [],
     },
     "destination-redshift": {
         "dockerfile": "redshift.Dockerfile",
         "dbt_adapter": "dbt-redshift==1.0.0",
         "integration_name": "redshift",
         "supports_in_connector_normalization": True,
+        "yum_packages": [],
     },
     "destination-snowflake": {
         "dockerfile": "snowflake.Dockerfile",
         "dbt_adapter": "dbt-snowflake==1.0.0",
         "integration_name": "snowflake",
-        "supports_in_connector_normalization": False,
+        "supports_in_connector_normalization": True,
+        "yum_packages": ["gcc-c++"],
     },
     "destination-tidb": {
         "dockerfile": "tidb.Dockerfile",
         "dbt_adapter": "dbt-tidb==1.0.1",
         "integration_name": "tidb",
-        "supports_in_connector_normalization": False,
+        "supports_in_connector_normalization": True,
+        "yum_packages": [],
     },
 }
 
@@ -601,6 +592,9 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
         "sshpass",
         "git",
     ]
+
+    additional_yum_packages = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["yum_packages"]
+    yum_packages_to_install += additional_yum_packages
 
     dbt_adapter_package = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["dbt_adapter"]
     normalization_integration_name = DESTINATION_NORMALIZATION_BUILD_CONFIGURATION[context.connector.technical_name]["integration_name"]

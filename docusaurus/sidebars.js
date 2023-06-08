@@ -467,7 +467,7 @@ module.exports = {
         {
           type: 'link',
           label: 'Roadmap',
-          href: 'https://app.harvestr.io/roadmap/view/pQU6gdCyc/airbyte-roadmap',
+          href: 'https://go.airbyte.com/roadmap',
         },
         'project-overview/product-release-stages',
         'project-overview/slack-code-of-conduct',
