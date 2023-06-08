@@ -138,11 +138,8 @@ class Lists(IncrementalMailChimpStream):
         return "lists"
 
 class ListMembers(IncrementalMailChimpStream):
-    cursor_field = ""
-    filter_field = "since"
-    sort_field = "create_time"
+    cursor_field = "last_changed"
     data_field = "members"
-    primary_key = ["timestamp", "email_id", "action"]
 
     def __init__(self, list_id: Optional[str] = None, **kwargs):
         super().__init__(**kwargs)
@@ -166,7 +163,7 @@ class ListMembers(IncrementalMailChimpStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         list_id = stream_slice["list_id"]
-        return f"reports/{list_id}/email-activity"
+        return f"lists/{list_id}/members"
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
@@ -192,13 +189,10 @@ class ListMembers(IncrementalMailChimpStream):
         except requests.exceptions.JSONDecodeError:
             logger.error(f"Response returned with {response.status_code=}, {response.content=}")
             response_json = {}
-        # transform before save
-        # [{'list_id', 'list_id', 'list_is_active', 'email_id', 'email_address', 'activity[array[object]]', '_links'}] ->
-        # -> [[{'list_id', 'list_id', 'list_is_active', 'email_id', 'email_address', '**activity[i]', '_links'}, ...]]
         data = response_json.get(self.data_field, [])
         for item in data:
-            for activity_item in item.pop("activity", []):
-                yield {**item, **activity_item}
+            for member_item in item.pop("member", []):
+                yield {**item, **member_item}
 
 
 class Reports(IncrementalMailChimpStream):
