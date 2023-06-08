@@ -105,11 +105,10 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path) -> Tuple[
     raw_metadata = yaml.safe_load(metadata_file_path.read_text())
     metadata = ConnectorMetadataDefinitionV0.parse_obj(raw_metadata)
 
-    # TODO (ben) Renable once docker hub api is fixed
-    # print("Validating that the images are on DockerHub...")
-    # is_valid, error = validate_metadata_images_in_dockerhub(metadata)
-    # if not is_valid:
-    #     raise ValueError(error)
+    print("Validating that the images are on DockerHub...")
+    is_valid, error = validate_metadata_images_in_dockerhub(metadata)
+    if not is_valid:
+        raise ValueError(error)
 
     service_account_info = json.loads(os.environ.get("GCS_CREDENTIALS"))
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
