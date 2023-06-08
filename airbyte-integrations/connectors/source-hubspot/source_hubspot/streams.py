@@ -1394,11 +1394,6 @@ class EmailEvents(IncrementalStream):
 
 
 class EngagementsABC(Stream, ABC):
-    """Engagements, API v1
-    Docs: https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements
-          https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
-    """
-
     more_key = "hasMore"
     updated_at_field = "lastUpdated"
     created_at_field = "createdAt"
@@ -1424,7 +1419,7 @@ class EngagementsAll(EngagementsABC):
     """All Engagements API:
     https://legacydocs.hubspot.com/docs/methods/engagements/get-all-engagements
 
-    Note: Returns all engagements without ordered by 'createdAt', not 'lastUpdated' field
+    Note: Returns all engagements records ordered by 'createdAt' (not 'lastUpdated') field
     """
 
     @property
@@ -1498,6 +1493,11 @@ class EngagementsRecent(EngagementsABC):
 
 
 class Engagements(EngagementsABC, IncrementalStream):
+    """Engagements stream does not send requests directly, instead it uses:
+    - EngagementsRecent if start_date/state is less than 30 days and API is able to return all records (<10k), or
+    - EngagementsAll which extracts all records, but supports filter on connector side
+    """
+
     @property
     def url(self):
         return "/engagements/v1/engagements/paged"
@@ -1508,8 +1508,8 @@ class Engagements(EngagementsABC, IncrementalStream):
         self.set_sync(sync_mode)
         return [None]
 
-    def process_latest_cursor(self, records: Iterable[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
-        self.latest_cursor = None
+    def process_records(self, records: Iterable[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
+        """Process each record to find latest cursor value"""
         for record in records:
             cursor = self._field_to_datetime(record[self.updated_at_field])
             self.latest_cursor = max(cursor, self.latest_cursor) if self.latest_cursor else cursor
@@ -1523,6 +1523,9 @@ class Engagements(EngagementsABC, IncrementalStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
 
+        self.latest_cursor = None
+
+        # The date we need records since
         since_date = self._start_date
         if stream_state:
             since_date_timestamp = stream_state.get(self.updated_at_field)
@@ -1536,14 +1539,18 @@ class Engagements(EngagementsABC, IncrementalStream):
         }
 
         try:
+            # Try 'Recent' API first, since it is more efficient
             records = EngagementsRecent(**stream_params).read_records(sync_mode.full_refresh, cursor_field)
-            yield from self.process_latest_cursor(records)
+            yield from self.process_records(records)
         except EngagementsRecentError as e:
-            # incremental API in not applicable so use full refresh
+            # if 'Recent' API in not applicable and raises the error
+            # then use 'All' API which returns all records, which are filtered on connector side
             self.logger.info(e)
             records = EngagementsAll(**stream_params).read_records(sync_mode.full_refresh, cursor_field)
-            yield from self.process_latest_cursor(records)
+            yield from self.process_records(records)
 
+        # State should be updated only once at the end of the sync
+        # because records are not ordered in ascending by 'lastUpdated' field
         self._update_state(latest_cursor=self.latest_cursor, is_last_record=True)
 
     def _transform(self, records: Iterable) -> Iterable:
