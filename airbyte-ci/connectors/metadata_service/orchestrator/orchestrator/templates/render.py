@@ -1,8 +1,10 @@
-from jinja2 import Environment, PackageLoader
 import pandas as pd
+import urllib.parse
+
+from jinja2 import Environment, PackageLoader
 from typing import List, Optional, Callable, Any
 from dataclasses import dataclass
-import urllib.parse
+from datetime import timedelta
 
 
 # 🔗 HTML Renderers
@@ -138,8 +140,8 @@ def get_stats_for_connector_type(enhanced_nightly_report_df: pd.DataFrame, conne
     }
 
 
-def get_latest_nightly_report_df(nightly_report_complete_df):
-    nightly_report_complete_df = nightly_report_complete_df.sort_values(by=["parent_file_path"])
+def get_latest_nightly_report_df(nightly_report_complete_df: pd.DataFrame) -> pd.DataFrame:
+    nightly_report_complete_df = nightly_report_complete_df.sort_values(by=["parent_prefix"])
     latest_run = nightly_report_complete_df.iloc[-1]
 
     return latest_run
@@ -170,11 +172,14 @@ def render_connector_nightly_report_md(nightly_report_connector_matrix_df: pd.Da
     latest_run = get_latest_nightly_report_df(nightly_report_complete_df)
     last_action_url = latest_run["gha_workflow_run_url"]
     last_action_date = latest_run["run_timestamp"]
+    last_action_run_duration_seconds = latest_run["run_duration"]
+    last_action_run_duration_human_readable = str(timedelta(seconds=last_action_run_duration_seconds))
 
     return template.render(
         total_connectors=total_connectors,
         last_action_url=last_action_url,
         last_action_date=last_action_date,
+        last_action_run_time=last_action_run_duration_human_readable,
         source_stats=source_stats,
         destination_stats=destination_stats,
         failed_last_build_only=nightly_report_df_to_md(failed_last_build_only_df),

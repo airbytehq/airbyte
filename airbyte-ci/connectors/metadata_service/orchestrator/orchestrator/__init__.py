@@ -28,6 +28,7 @@ from orchestrator.config import (
     NIGHTLY_FOLDER,
     NIGHTLY_COMPLETE_REPORT_FILE_NAME,
     NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME,
+    NIGHTLY_GHA_WORKFLOW_ID,
 )
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 
@@ -50,7 +51,7 @@ RESOURCES = {
     "github_connectors_directory": github_connectors_directory.configured({"connectors_path": CONNECTORS_PATH}),
     "github_connector_nightly_workflow_successes": github_workflow_runs.configured(
         {
-            "workflow_id": "connector_nightly_builds_dagger.yml",
+            "workflow_id": NIGHTLY_GHA_WORKFLOW_ID,
             "branch": "master",
             "status": "success",
         }

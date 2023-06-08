@@ -4,6 +4,8 @@ Date: {{ last_action_date }}
 
 Url: {{ last_action_url }}
 
+Run time: {{ last_action_run_time }}
+
 
 CONNECTORS:   total: {{ total_connectors }}
 

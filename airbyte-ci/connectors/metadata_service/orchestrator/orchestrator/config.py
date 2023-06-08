@@ -6,6 +6,7 @@ REPORT_FOLDER = "generated_reports"
 NIGHTLY_FOLDER = "airbyte-ci/connectors/test/nightly_builds/master"
 NIGHTLY_COMPLETE_REPORT_FILE_NAME = "complete.json"
 NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME = "output.json"
+NIGHTLY_GHA_WORKFLOW_ID = "connector_nightly_builds_dagger.yml"
 
 CONNECTOR_REPO_NAME = "airbytehq/airbyte"
 CONNECTORS_PATH = "airbyte-integrations/connectors"
