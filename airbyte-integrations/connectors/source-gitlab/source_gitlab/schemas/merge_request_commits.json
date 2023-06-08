@@ -193,6 +193,38 @@
     },
     "merge_request_iid": {
       "type": ["null", "integer"]
+    },
+    "draft": {
+      "type": ["null", "boolean"]
+    },
+    "detailed_merge_status": {
+      "type": ["null", "string"]
+    },
+    "squash_on_merge": {
+      "type": ["null", "boolean"]
+    },
+    "merge_user": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "username": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        },
+        "web_url": {
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }
