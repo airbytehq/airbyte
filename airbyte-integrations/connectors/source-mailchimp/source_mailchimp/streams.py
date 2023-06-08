@@ -155,8 +155,8 @@ class ListMembers(IncrementalMailChimpStream):
         else:
             lists = Lists(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
         for mclist in lists:
-            slice_ = {"list_id": list["id"]}
-            cursor_value = stream_state.get(list["id"], {}).get(self.cursor_field)
+            slice_ = {"list_id": mclist["id"]}
+            cursor_value = stream_state.get(mclist["id"], {}).get(self.cursor_field)
             if cursor_value:
                 slice_[self.filter_field] = cursor_value
             yield slice_
