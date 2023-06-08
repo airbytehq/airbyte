@@ -414,9 +414,11 @@ class ModelToComponentFactory:
         start_datetime = (
             model.start_datetime if isinstance(model.start_datetime, str) else self.create_min_max_datetime(model.start_datetime, config)
         )
-        end_datetime = (
-            model.end_datetime if isinstance(model.end_datetime, str) else self.create_min_max_datetime(model.end_datetime, config)
-        )
+        end_datetime = None
+        if model.end_datetime:
+            end_datetime = (
+                model.end_datetime if isinstance(model.end_datetime, str) else self.create_min_max_datetime(model.end_datetime, config)
+            )
 
         end_time_option = (
             RequestOption(
