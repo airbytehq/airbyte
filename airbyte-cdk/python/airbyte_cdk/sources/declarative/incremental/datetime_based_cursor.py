@@ -33,7 +33,7 @@ class DatetimeBasedCursor(StreamSlicer):
 
     Attributes:
         start_datetime (Union[MinMaxDatetime, str]): the datetime that determines the earliest record that should be synced
-        end_datetime (Union[MinMaxDatetime, str]): the datetime that determines the last record that should be synced
+        end_datetime (Optional[Union[MinMaxDatetime, str]]): the datetime that determines the last record that should be synced
         step (str): size of the timewindow (ISO8601 duration)
         cursor_field (Union[InterpolatedString, str]): record's cursor field
         datetime_format (str): format of the datetime
@@ -53,7 +53,7 @@ class DatetimeBasedCursor(StreamSlicer):
     parameters: InitVar[Mapping[str, Any]]
     _cursor: dict = field(repr=False, default=None)  # tracks current datetime
     _cursor_end: dict = field(repr=False, default=None)  # tracks end of current stream slice
-    end_datetime: Union[MinMaxDatetime, str] = None
+    end_datetime: Optional[Union[MinMaxDatetime, str]] = None
     step: Optional[Union[InterpolatedString, str]] = None
     cursor_granularity: Optional[str] = None
     start_time_option: Optional[RequestOption] = None
