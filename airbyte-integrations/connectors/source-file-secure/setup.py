@@ -32,9 +32,10 @@ MAIN_REQUIREMENTS = [
     "xlrd==2.0.1",
     "openpyxl==3.0.10",
     "pyxlsb==1.0.9",
-    local_dependency("source-file"),
 ]
 
+if not os.environ.get("DOCKER_BUILD"):
+    MAIN_REQUIREMENTS.append(local_dependency("source-file"))
 
 TEST_REQUIREMENTS = ["boto3==1.21.21", "pytest==7.1.2", "pytest-docker==1.0.0", "pytest-mock~=3.8.2"]
 
