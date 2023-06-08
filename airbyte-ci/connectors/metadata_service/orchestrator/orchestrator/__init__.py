@@ -20,7 +20,15 @@ from orchestrator.jobs.registry import generate_registry_reports, generate_regis
 from orchestrator.sensors.registry import registry_updated_sensor
 from orchestrator.sensors.gcs import new_gcs_blobs_sensor
 
-from orchestrator.config import REPORT_FOLDER, REGISTRIES_FOLDER, CONNECTORS_PATH, CONNECTOR_REPO_NAME, NIGHTLY_FOLDER, NIGHTLY_COMPLETE_REPORT_FILE_NAME, NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME
+from orchestrator.config import (
+    REPORT_FOLDER,
+    REGISTRIES_FOLDER,
+    CONNECTORS_PATH,
+    CONNECTOR_REPO_NAME,
+    NIGHTLY_FOLDER,
+    NIGHTLY_COMPLETE_REPORT_FILE_NAME,
+    NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME,
+)
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 
 ASSETS = load_assets_from_modules(
@@ -54,11 +62,21 @@ RESOURCES = {
     ),
     "registry_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER}),
     "registry_report_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REPORT_FOLDER}),
-    "latest_metadata_file_blobs": gcs_directory_blobs.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "suffix": f"latest/{METADATA_FILE_NAME}"}),
-    "latest_oss_registry_gcs_blob": gcs_file_blob.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER, "gcs_filename": "oss_registry.json"}),
-    "latest_cloud_registry_gcs_blob": gcs_file_blob.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER, "gcs_filename": "cloud_registry.json"}),
-    "latest_nightly_complete_file_blobs": gcs_directory_blobs.configured({"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": NIGHTLY_FOLDER, "suffix": NIGHTLY_COMPLETE_REPORT_FILE_NAME}),
-    "latest_nightly_test_output_file_blobs": gcs_directory_blobs.configured({"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": NIGHTLY_FOLDER, "suffix": NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME}),
+    "latest_metadata_file_blobs": gcs_directory_blobs.configured(
+        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "suffix": f"latest/{METADATA_FILE_NAME}"}
+    ),
+    "latest_oss_registry_gcs_blob": gcs_file_blob.configured(
+        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER, "gcs_filename": "oss_registry.json"}
+    ),
+    "latest_cloud_registry_gcs_blob": gcs_file_blob.configured(
+        {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER, "gcs_filename": "cloud_registry.json"}
+    ),
+    "latest_nightly_complete_file_blobs": gcs_directory_blobs.configured(
+        {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": NIGHTLY_FOLDER, "suffix": NIGHTLY_COMPLETE_REPORT_FILE_NAME}
+    ),
+    "latest_nightly_test_output_file_blobs": gcs_directory_blobs.configured(
+        {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": NIGHTLY_FOLDER, "suffix": NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME}
+    ),
 }
 
 SENSORS = [

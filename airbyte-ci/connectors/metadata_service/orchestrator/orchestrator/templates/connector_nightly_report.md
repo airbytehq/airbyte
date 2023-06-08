@@ -1,5 +1,10 @@
 **Connector Nightly Report**
 
+Date: {{ last_action_date }}
+
+Url: {{ last_action_url }}
+
+
 CONNECTORS:   total: {{ total_connectors }}
 
 Sources:      total: {{ source_stats["total"] }} / tested: {{ source_stats["tested"] }} / success: {{ source_stats["success"] }} ({{ source_stats["success_percent"] }}%)

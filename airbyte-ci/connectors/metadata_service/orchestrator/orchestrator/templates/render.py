@@ -71,6 +71,7 @@ def dataframe_to_table_html(df: pd.DataFrame, column_mapping: List[ColumnInfo]) 
         render_links=True,
     )
 
+
 def value_to_emoji(value: Any) -> str:
     if value is True:
         return "✅"
@@ -81,34 +82,39 @@ def value_to_emoji(value: Any) -> str:
     else:
         return str(value)
 
-def enhance_nightly_report(nightly_report_df: pd.DataFrame) -> str:
-    # Each row is indexed by the connector name
-    # Each column is the path to the nightly report file
-    # The path is in the format of airbyte-ci/connectors/test/{unixtimestamp}/{gitsha}
-    # Each cell is true if successful, false is failed, and nan if not run
 
-    # Add a new column called run_history_emoji
+def calculated_report_columns(row: pd.Series) -> dict:
+    # Add a new column called past_runs
     # This column will be a string of checkmarks and x's from oldest to newest "❌❌✅❓✅✅✅✅✅❌"
-    nightly_report_df["past_runs"] = nightly_report_df.apply(lambda row: "".join([value_to_emoji(value) for value in row]), axis=1)
+    past_runs = "".join([value_to_emoji(value) for value in row])
 
-    # Add a new column called last_build_status
-    # This column will be true if the last build succeeded and false if it failed
-    # We have to ignore the past_runs column
+    # if there is only one build, then the second to last build status cannot be determined, and we will default to true
+    last_build_status = row.iloc[-1]
+    second_to_last_build_status = True if len(row) == 1 else row.iloc[-2]
 
-    nightly_report_df["last_build_status"] = nightly_report_df.apply(lambda row: row[-2], axis=1)
+    only_failed_last_build = last_build_status == False and second_to_last_build_status == True
+    failed_last_build_two_builds = last_build_status == False and second_to_last_build_status == False
 
-    # Add a new column called only_failed_last_build
-    # This column will be true if the last build failed and the build before that succeeded
-    nightly_report_df["only_failed_last_build"] = nightly_report_df.apply(lambda row: row[-2] is False and row[-3] is True, axis=1)
+    return {
+        "past_runs": past_runs,
+        "last_build_status": last_build_status,
+        "only_failed_last_build": only_failed_last_build,
+        "failed_last_build_two_builds": failed_last_build_two_builds,
+    }
 
-    # Add a new column called failed_last_build_two_builds
-    # This column will be true if the last build failed and the build before that failed
-    nightly_report_df["failed_last_build_two_builds"] = nightly_report_df.apply(lambda row: row[-2] is False and row[-3] is False, axis=1)
 
-    return nightly_report_df
+def enhance_nightly_report(nightly_report_df: pd.DataFrame) -> str:
+    nightly_report_df = nightly_report_df.reindex(sorted(nightly_report_df.columns), axis=1)
+
+    calculated_report_columns_df = nightly_report_df.apply(lambda row: calculated_report_columns(row), axis="columns", result_type="expand")
+    enhance_nightly_report_df = pd.concat([nightly_report_df, calculated_report_columns_df], axis="columns")
+
+    return enhance_nightly_report_df
+
 
 def nightly_report_df_to_md(nightly_report_df: pd.DataFrame) -> str:
     return nightly_report_df[["past_runs"]].to_markdown(index=True)
+
 
 def get_stats_for_connector_type(enhanced_nightly_report_df: pd.DataFrame, connector_type: str) -> str:
     specific_connector_type_df = enhanced_nightly_report_df[enhanced_nightly_report_df.index.str.contains(connector_type)]
@@ -123,7 +129,6 @@ def get_stats_for_connector_type(enhanced_nightly_report_df: pd.DataFrame, conne
     if tested > 0:
         success_percent = round(success / tested * 100, 2)
 
-
     return {
         "total": total,
         "tested": tested,
@@ -131,6 +136,14 @@ def get_stats_for_connector_type(enhanced_nightly_report_df: pd.DataFrame, conne
         "failure": failure,
         "success_percent": success_percent,
     }
+
+
+def get_latest_nightly_report_df(nightly_report_complete_df):
+    nightly_report_complete_df = nightly_report_complete_df.sort_values(by=["parent_file_path"])
+    latest_run = nightly_report_complete_df.iloc[-1]
+
+    return latest_run
+
 
 # Templates
 
@@ -153,8 +166,10 @@ def render_connector_nightly_report_md(nightly_report_connector_matrix_df: pd.Da
 
     source_stats = get_stats_for_connector_type(enhanced_nightly_report_df, "source")
     destination_stats = get_stats_for_connector_type(enhanced_nightly_report_df, "destination")
-    last_action_url = "TODO"
-    last_action_date = "TODO"
+
+    latest_run = get_latest_nightly_report_df(nightly_report_complete_df)
+    last_action_url = latest_run["gha_workflow_run_url"]
+    last_action_date = latest_run["run_timestamp"]
 
     return template.render(
         total_connectors=total_connectors,

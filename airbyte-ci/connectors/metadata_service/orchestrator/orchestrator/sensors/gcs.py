@@ -3,10 +3,10 @@ from orchestrator.utils.dagster_helpers import string_array_to_hash
 
 
 def new_gcs_blobs_sensor(
-        gcs_blobs_resource_key,
-        job,
-        interval,
-        resources_def,
+    gcs_blobs_resource_key,
+    job,
+    interval,
+    resources_def,
 ) -> SensorDefinition:
     """
     This sensor is responsible for polling a list of gcs blobs and triggering a job when the list changes.
