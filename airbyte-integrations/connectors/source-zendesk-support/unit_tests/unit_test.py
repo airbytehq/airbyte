@@ -20,6 +20,7 @@ from source_zendesk_support.streams import (
     DATETIME_FORMAT,
     END_OF_STREAM_KEY,
     LAST_END_TIME_KEY,
+    AuditLogs,
     BaseSourceZendeskSupportStream,
     AuditLogs,
     Brands,
@@ -121,11 +122,7 @@ def test_get_authenticator(config, expected):
 
 @pytest.mark.parametrize(
     "response, start_date, check_passed",
-    [
-        ({"active_features": {"organization_access_enabled": True}},
-         "2020-01-01T00:00:00Z", True),
-        ({}, "2020-01-00T00:00:00Z", False)
-    ],
+    [({"active_features": {"organization_access_enabled": True}}, "2020-01-01T00:00:00Z", True), ({}, "2020-01-00T00:00:00Z", False)],
     ids=["check_successful", "invalid_start_date"],
 )
 def test_check(response, start_date, check_passed):
@@ -142,11 +139,13 @@ def test_check(response, start_date, check_passed):
 @pytest.mark.parametrize(
     "ticket_forms_response, status_code, expected_n_streams, expected_warnings",
     [
-        ({"ticket_forms": [
-         {"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 19, []),
-        ({"error": "Not sufficient permissions"}, 403, 18, [
-            "Skipping stream ticket_forms: Check permissions, error message: Not sufficient permissions."
-        ]),
+        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 19, []),
+        (
+            {"error": "Not sufficient permissions"},
+            403,
+            18,
+            ["Skipping stream ticket_forms: Check permissions, error message: Not sufficient permissions."],
+        ),
     ],
     ids=["forms_accessible", "forms_inaccessible"],
 )
@@ -205,10 +204,9 @@ def test_parse_next_page_number(requests_mock):
 
 
 def test_parse_next_page_number_from_empty_json(requests_mock):
-    requests_mock.get(STREAM_URL, text='', status_code=403)
+    requests_mock.get(STREAM_URL, text="", status_code=403)
     test_response = requests.get(STREAM_URL)
-    output = BaseSourceZendeskSupportStream._parse_next_page_number(
-        test_response)
+    output = BaseSourceZendeskSupportStream._parse_next_page_number(test_response)
     assert output is None
 
 
@@ -256,7 +254,7 @@ def test_request_params(requests_mock):
 
 
 def test_parse_response_from_empty_json(requests_mock):
-    requests_mock.get(STREAM_URL, text='', status_code=403)
+    requests_mock.get(STREAM_URL, text="", status_code=403)
     test_response = requests.get(STREAM_URL)
     output = Schedules(**STREAM_ARGS).parse_response(test_response, {})
     assert list(output) == []
@@ -610,14 +608,24 @@ class TestSourceZendeskSupportCursorPaginationStream:
         assert expected == result
 
     @pytest.mark.parametrize(
-        "stream_cls",
+        "stream_cls, response, expected",
         [
-            (GroupMemberships),
-            (TicketForms),
-            (TicketMetricEvents),
-            (TicketAudits),
-            (TicketMetrics),
-            (SatisfactionRatings),
+            (GroupMemberships, {}, None),
+            (TicketForms, {}, None),
+            (TicketMetricEvents, {}, None),
+            (TicketAudits, {}, None),
+            (
+                TicketMetrics,
+                {
+                    "meta": {"has_more": True, "after_cursor": "<after_cursor>", "before_cursor": "<before_cursor>"},
+                    "links": {
+                        "prev": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bbefore%5D=<before_cursor>%3D&page%5Bsize%5D=2",
+                        "next": "https://subdomain.zendesk.com/api/v2/ticket_metrics.json?page%5Bafter%5D=<after_cursor>%3D&page%5Bsize%5D=2",
+                    },
+                },
+                "<after_cursor>",
+            ),
+            (SatisfactionRatings, {}, None),
         ],
         ids=[
             "GroupMemberships",
@@ -628,13 +636,13 @@ class TestSourceZendeskSupportCursorPaginationStream:
             "SatisfactionRatings",
         ],
     )
-    def test_next_page_token(self, requests_mock, stream_cls):
+    def test_next_page_token(self, requests_mock, stream_cls, response, expected):
         stream = stream_cls(**STREAM_ARGS)
-        stream_name = snake_case(stream.__class__.__name__)
-        requests_mock.get(STREAM_URL, json={stream_name: {}})
+        # stream_name = snake_case(stream.__class__.__name__)
+        requests_mock.get(STREAM_URL, json=response)
         test_response = requests.get(STREAM_URL)
         output = stream.next_page_token(test_response)
-        assert output is None
+        assert output == expected
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
@@ -663,12 +671,9 @@ class TestSourceZendeskSupportCursorPaginationStream:
              "sort_by": "asc", "start_time": 1622505600}),
             (TicketForms, {"start_time": 1622505600}),
             (TicketMetricEvents, {"start_time": 1622505600}),
-            (TicketAudits, {"sort_by": "created_at",
-             "sort_order": "desc", "limit": 1000}),
-            (SatisfactionRatings, {"page": 1, "per_page": 100,
-             "sort_by": "asc", "start_time": 1622505600}),
-            (TicketMetrics, {"page": 1, "per_page": 100,
-             "start_time": 1622505600}),
+            (TicketAudits, {"sort_by": "created_at", "sort_order": "desc", "limit": 1000}),
+            (SatisfactionRatings, {"page": 1, "per_page": 100, "sort_by": "asc", "start_time": 1622505600}),
+            (TicketMetrics, {"page[size]": 100, "start_time": 1622505600}),
         ],
         ids=[
             "GroupMemberships",

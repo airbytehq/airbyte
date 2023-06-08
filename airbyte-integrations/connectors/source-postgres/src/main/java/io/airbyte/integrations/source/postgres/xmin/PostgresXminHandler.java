@@ -127,18 +127,19 @@ public class PostgresXminHandler {
   }
 
   private PreparedStatement createXminQueryStatement(
-      final Connection connection,
-      final List<String> columnNames,
-      final String schemaName,
-      final String tableName,
-      final AirbyteStreamNameNamespacePair airbyteStream) {
+                                                     final Connection connection,
+                                                     final List<String> columnNames,
+                                                     final String schemaName,
+                                                     final String tableName,
+                                                     final AirbyteStreamNameNamespacePair airbyteStream) {
     try {
       LOGGER.info("Preparing query for table: {}", tableName);
       final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
           quoteString);
 
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
-      // The xmin state that we save represents the lowest XID that is still in progress. To make sure we don't miss
+      // The xmin state that we save represents the lowest XID that is still in progress. To make sure we
+      // don't miss
       // data associated with the current transaction, we have to issue an >=
       final String sql = String.format("SELECT %s FROM %s WHERE xmin::text::bigint >= ?",
           wrappedColumnNames, fullTableName);
@@ -160,10 +161,10 @@ public class PostgresXminHandler {
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}
   private static AutoCloseableIterator<AirbyteMessage> getRecordIterator(
-                                                                          final AutoCloseableIterator<JsonNode> recordIterator,
-                                                                          final String streamName,
-                                                                          final String namespace,
-                                                                          final long emittedAt) {
+                                                                         final AutoCloseableIterator<JsonNode> recordIterator,
+                                                                         final String streamName,
+                                                                         final String namespace,
+                                                                         final long emittedAt) {
     return AutoCloseableIterators.transform(recordIterator, r -> new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
@@ -175,7 +176,8 @@ public class PostgresXminHandler {
 
   // Augments the given iterator with record count logs.
   private AutoCloseableIterator<AirbyteMessage> augmentWithLogs(final AutoCloseableIterator<AirbyteMessage> iterator,
-      final AirbyteStreamNameNamespacePair pair, final String streamName) {
+                                                                final AirbyteStreamNameNamespacePair pair,
+                                                                final String streamName) {
     final AtomicLong recordCount = new AtomicLong();
     return AutoCloseableIterators.transform(iterator,
         AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()),
@@ -189,8 +191,8 @@ public class PostgresXminHandler {
   }
 
   private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessage> recordIterator,
-      final AirbyteStreamNameNamespacePair pair) {
-    return  AutoCloseableIterators.transform(
+                                                                 final AirbyteStreamNameNamespacePair pair) {
+    return AutoCloseableIterators.transform(
         autoCloseableIterator -> new XminStateIterator(
             autoCloseableIterator,
             pair,
@@ -198,4 +200,5 @@ public class PostgresXminHandler {
         recordIterator,
         AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()));
   }
+
 }

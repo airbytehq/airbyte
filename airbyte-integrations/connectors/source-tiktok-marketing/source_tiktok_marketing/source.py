@@ -102,6 +102,11 @@ class SourceTiktokMarketing(AbstractSource):
 
         return stream_args
 
+        if advertiser_id:
+            stream_args.update(**{"advertiser_id": advertiser_id})
+
+        return stream_args
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Tests if the input configuration can be used to successfully connect to the integration

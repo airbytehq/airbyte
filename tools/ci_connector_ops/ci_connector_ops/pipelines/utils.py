@@ -18,12 +18,13 @@ import anyio
 import asyncer
 import click
 import git
-from ci_connector_ops.utils import get_all_released_connectors
+from ci_connector_ops.utils import get_all_released_connectors, get_changed_connectors
 from dagger import Config, Connection, Container, DaggerError, File, ImageLayerCompression, QueryError
 from more_itertools import chunked
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext
+    from github import PullRequest
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
@@ -224,6 +225,11 @@ def get_modified_files_in_commit(current_git_branch: str, current_git_revision: 
         return anyio.run(get_modified_files_in_commit_remote, current_git_branch, current_git_revision)
 
 
+def get_modified_files_in_pull_request(pull_request: PullRequest) -> List[str]:
+    """Retrieve the list of modified files in a pull request."""
+    return [f.filename for f in pull_request.get_files()]
+
+
 def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
     """Create a mapping of modified connectors (key) and modified files (value).
     As we call connector.get_local_dependencies_paths() any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
@@ -251,6 +257,11 @@ def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Pa
         for f in modified_files
         if str(f).endswith(METADATA_FILE_NAME) and str(f).startswith("airbyte-integrations/connectors") and "-scaffold-" not in str(f)
     }
+
+
+def get_expected_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
+    changed_connectors = get_changed_connectors(modified_files=modified_files)
+    return {changed_connector.metadata_file_path for changed_connector in changed_connectors}
 
 
 def get_all_metadata_files() -> Set[Path]:

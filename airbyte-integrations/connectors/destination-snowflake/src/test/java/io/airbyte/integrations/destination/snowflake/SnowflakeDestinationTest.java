@@ -14,7 +14,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDestination.DestinationType;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,7 +70,7 @@ public class SnowflakeDestinationTest {
     final ConnectorSpecification spec = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS).spec();
     final Pattern pattern = Pattern.compile(spec.getConnectionSpecification().get("properties").get("host").get("pattern").asText());
 
-    Matcher matcher = pattern.matcher(url);
+    final Matcher matcher = pattern.matcher(url);
     assertEquals(isMatch, matcher.find());
   }
 
@@ -121,6 +124,14 @@ public class SnowflakeDestinationTest {
         arguments("copy_gcs_config.json", DestinationType.COPY_GCS),
         arguments("copy_s3_config.json", DestinationType.COPY_S3),
         arguments("insert_config.json", DestinationType.INTERNAL_STAGING));
+  }
+
+  @Test
+  void testWriteSnowflakeInternal() throws Exception {
+    final JsonNode config = Jsons.deserialize(MoreResources.readResource("internal_staging_config.json"), JsonNode.class);
+    final SerializedAirbyteMessageConsumer consumer = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS)
+        .getSerializedMessageConsumer(config, new ConfiguredAirbyteCatalog(), null);
+    assertEquals(Destination.ShimToSerializedAirbyteMessageConsumer.class, consumer.getClass());
   }
 
 }
