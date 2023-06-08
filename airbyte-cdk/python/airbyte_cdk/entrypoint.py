@@ -82,7 +82,8 @@ class AirbyteEntrypoint(object):
         with tempfile.TemporaryDirectory() as temp_dir:
             if cmd == "spec":
                 message = AirbyteMessage(type=Type.SPEC, spec=source_spec)
-                yield message.json(exclude_unset=True)
+                yield from [self.airbyte_message_to_string(queued_message) for queued_message in self._emit_queued_messages(self.source)]
+                yield self.airbyte_message_to_string(message)
             else:
                 raw_config = self.source.read_config(parsed_args.config)
                 config = self.source.configure(raw_config, temp_dir)
@@ -115,6 +116,7 @@ class AirbyteEntrypoint(object):
         else:
             self.logger.error("Check failed")
 
+        yield from self._emit_queued_messages(self.source)
         yield AirbyteMessage(type=Type.CONNECTION_STATUS, connectionStatus=check_result)
 
     def discover(self, source_spec: ConnectorSpecification, config: TConfig) -> Iterable[AirbyteMessage]:
@@ -122,6 +124,8 @@ class AirbyteEntrypoint(object):
         if self.source.check_config_against_spec:
             self.validate_connection(source_spec, config)
         catalog = self.source.discover(self.logger, config)
+
+        yield from self._emit_queued_messages(self.source)
         yield AirbyteMessage(type=Type.CATALOG, catalog=catalog)
 
     def read(self, source_spec: ConnectorSpecification, config: TConfig, catalog: TCatalog, state: TState) -> Iterable[AirbyteMessage]:
@@ -130,6 +134,7 @@ class AirbyteEntrypoint(object):
             self.validate_connection(source_spec, config)
 
         yield from self.source.read(self.logger, config, catalog, state)
+        yield from self._emit_queued_messages(self.source)
 
     @staticmethod
     def validate_connection(source_spec: ConnectorSpecification, config: Mapping[str, Any]) -> None:
@@ -148,6 +153,11 @@ class AirbyteEntrypoint(object):
     @staticmethod
     def airbyte_message_to_string(airbyte_message: AirbyteMessage) -> str:
         return airbyte_message.json(exclude_unset=True)
+
+    def _emit_queued_messages(self, source) -> Iterable[AirbyteMessage]:
+        if hasattr(source, "message_repository") and source.message_repository:
+            yield from source.message_repository.consume_queue()
+        return
 
 
 def launch(source: Source, args: List[str]):

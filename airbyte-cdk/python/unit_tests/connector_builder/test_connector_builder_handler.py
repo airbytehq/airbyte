@@ -410,7 +410,7 @@ def test_read_returns_error_response(mock_from_exception):
                                           slice_descriptor=None, state=None)],
                                       test_read_limit_reached=False,
                                       inferred_schema=None,
-                                      latest_config_update={})
+                                      latest_config_update=None)
 
     expected_message = AirbyteMessage(
         type=MessageType.RECORD,
