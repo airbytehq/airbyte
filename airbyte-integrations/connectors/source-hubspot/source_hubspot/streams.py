@@ -1679,8 +1679,8 @@ class Contacts(CRMSearchStream):
 class ContactsMergedAudit(CRMSearchStream):
     entity = "contact"
     last_modified_field = "lastmodifieddate"
-    associations = ["contacts", "companies"]
-    primary_key = "id"
+    associations = []
+    primary_key = "vid-to-merge"
     scopes = {"crm.objects.contacts.read"}
 
     # Use API V1 to get merge-audit field
