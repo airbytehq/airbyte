@@ -1691,6 +1691,7 @@ class ContactsMergedAudit(CRMSearchStream):
     def url_audit(self):
         """ Get batch Contacts Endpoint, API v1
         Is used to get merge-audits field for all contacts with merge history
+        Note: CRM API V3 do not return this field
         Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_batch_by_vid
         """
         return f"/contacts/v1/contact/vids/batch/"
@@ -1741,15 +1742,15 @@ class ContactsMergedAudit(CRMSearchStream):
     ) -> Tuple[List, requests.Response]:
         stream_records = {}
 
-        # Get contacts with a merge history
+        # Get contacts with a merge history using CRM Search endpoint API V3
         search_payload = self._get_search_payload(next_page_token=next_page_token)
         response_search, raw_response = self.search(url=self.url, data=search_payload)
 
         if len(response_search.get("results", [])) == 0:
             return [], raw_response
-        contact_ids = list(map(lambda d: d["id"], response_search["results"]))
 
         # Get merge-audit details using Contact API V1
+        contact_ids = list(map(lambda d: d["id"], response_search["results"]))
         response, _ = self._get_contact_merge_audit(contacts_ids=contact_ids)
 
         for record in response_search["results"]:
