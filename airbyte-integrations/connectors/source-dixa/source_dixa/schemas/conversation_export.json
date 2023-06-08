@@ -3,7 +3,6 @@
   "title": "Conversation Export",
   "additionalProperties": true,
   "type": ["null", "object"],
-  "required": ["id", "created_at", "initial_channel", "requester_id"],
   "properties": {
     "id": {
       "type": ["null", "integer"]
@@ -151,7 +150,8 @@
     "tags_info": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "string"]
+        "type": ["null", "object"],
+        "additionalProperties": true
       }
     },
     "conversation_wrapup_notes": {
@@ -200,14 +200,13 @@
         "additionalProperties": true,
         "properties": {
           "attribute_id": {
-            "type": ["null", "string"],
-            "format": "uuid"
+            "type": ["null", "string"]
           },
           "identifier": {
             "type": ["null", "string"]
           },
           "value": {
-            "type": ["null", "string"]
+            "type": ["null", "array", "string"]
           },
           "data_type": {
             "type": ["null", "string"]

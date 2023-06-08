@@ -53,8 +53,8 @@ def test_stream_slices_without_state(conversation_export):
     conversation_export.end_timestamp = 1625259600000  # 2021-07-03 00:00:00 + 1 ms
 
     expected_slices = [
-        {'updated_after': 1625122800000, 'updated_before': 1625209200000},
-        {'updated_after': 1625209200000, 'updated_before': 1625259600000},
+        {'updated_after': 1625097600000, 'updated_before': 1625184000000},
+        {'updated_after': 1625184000000, 'updated_before': 1625259600000},
     ]
 
     actual_slices = conversation_export.stream_slices()
@@ -68,7 +68,7 @@ def test_stream_slices_without_state_large_batch():
 
     conversation_export = ConversationExport(updated_config)
     conversation_export.end_timestamp = 1625259600000  # 2021-07-03 00:00:00 + 1 ms
-    expected_slices = [{"updated_after": 1625122800000, "updated_before": 1625259600000}]  # 2021-07-01 12:00:00 """
+    expected_slices = [{"updated_after": 1625097600000, "updated_before": 1625259600000}]  # 2021-07-01 12:00:00 """
     actual_slices = conversation_export.stream_slices()
     assert actual_slices == expected_slices
 
@@ -90,13 +90,13 @@ def test_stream_slices_with_start_timestamp_larger_than_state():
 
     conversation_export = ConversationExport(updated_config)
     conversation_export.end_timestamp = 1638352800001  # 2021-12-01 12:00:00 + 1 ms
-    expected_slices = [{"updated_after": 1638345600000, "updated_before": 1638352800001}]  # 2021-07-01 12:00:00 """
+    expected_slices = [{"updated_after": 1638316800000, "updated_before": 1638352800001}]  # 2021-07-01 12:00:00 """
     actual_slices = conversation_export.stream_slices(stream_state={"updated_at": 1625216400000})  # # 2021-07-02 12:00:00
     assert actual_slices == expected_slices
 
 
 def test_get_updated_state_without_state(conversation_export):
-    expected = {"updated_at": 1638345600000}
+    expected = {"updated_at": 1638316800000}
     actual = conversation_export.get_updated_state(current_stream_state=None, latest_record={"updated_at": 1625259600001})
     assert actual == expected
 
