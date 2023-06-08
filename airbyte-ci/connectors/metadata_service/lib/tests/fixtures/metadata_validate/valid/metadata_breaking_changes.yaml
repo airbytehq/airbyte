@@ -10,9 +10,10 @@ data:
   connectorSubtype: database
   releaseStage: generally_available
   license: MIT
-  breakingChanges:
-    2.0.0:
-      upgradeDeadline: 2023-08-22
-      message: "This version changes the connector’s authentication method from `ApiKey` to `oAuth`, per the [API guide](https://amazon-sqs.com/api/someguide)."
+  releases:
+    breakingChanges:
+      2.0.0:
+        upgradeDeadline: 2023-08-22
+        message: "This version changes the connector’s authentication method from `ApiKey` to `oAuth`, per the [API guide](https://amazon-sqs.com/api/someguide)."
   tags:
     - language:java
