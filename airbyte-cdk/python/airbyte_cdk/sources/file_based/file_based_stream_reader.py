@@ -47,15 +47,11 @@ class AbstractFileBasedStreamReader(ABC):
         """
 
     @staticmethod
-    def filter_files_by_globs(
-        files: List[RemoteFile], globs: List[str]
-    ) -> List[RemoteFile]:
+    def filter_files_by_globs(files: List[RemoteFile], globs: List[str]) -> List[RemoteFile]:
         """
         Utility method for filtering files based on globs.
         """
-        return [
-            file for file in files if any(fnmatch(file.uri, glob) for glob in globs)
-        ]
+        return [file for file in files if any(fnmatch(file.uri, glob) for glob in globs)]
 
     @staticmethod
     def get_prefixes_from_globs(files: List[RemoteFile], globs: List[str]) -> List[str]:

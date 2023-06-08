@@ -12,9 +12,7 @@ class UserValidationPolicies(Enum):
     WAIT = "wait_for_discover_on_schema_mismatch"
 
 
-def record_passes_validation_policy(
-    policy: UserValidationPolicies, record: Mapping[str, Any], schema: Mapping[str, Any]
-) -> bool:
+def record_passes_validation_policy(policy: UserValidationPolicies, record: Mapping[str, Any], schema: Mapping[str, Any]) -> bool:
     """
     Return True if the record passes the user's validation policy.
     """

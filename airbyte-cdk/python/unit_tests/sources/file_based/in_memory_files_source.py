@@ -8,9 +8,7 @@ from io import IOBase
 from typing import Any, Dict, List, Mapping
 
 from airbyte_cdk.sources.file_based.file_based_source import AbstractFileBasedSource
-from airbyte_cdk.sources.file_based.file_based_stream_reader import (
-    AbstractFileBasedStreamReader,
-)
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 

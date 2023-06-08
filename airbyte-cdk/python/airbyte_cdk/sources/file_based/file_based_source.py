@@ -14,9 +14,7 @@ from airbyte_cdk.sources.file_based.discovery_concurrency_policy import (
     DefaultDiscoveryConcurrencyPolicy,
 )
 from airbyte_cdk.sources.file_based.file_based_stream import FileBasedStream
-from airbyte_cdk.sources.file_based.file_based_stream_reader import (
-    AbstractFileBasedStreamReader,
-)
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 
 
 @dataclass
@@ -33,9 +31,7 @@ class AbstractFileBasedSource(AbstractSource, ABC):
     def discovery_concurrency_policy(self) -> AbstractDiscoveryConcurrencyPolicy:
         return DefaultDiscoveryConcurrencyPolicy()
 
-    def check_connection(
-        self, logger: logging.Logger, config: Mapping[str, Any]
-    ) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
         Check that the source can be accessed using the user-provided configuration.
 
@@ -55,13 +51,9 @@ class AbstractFileBasedSource(AbstractSource, ABC):
                 (
                     stream_is_available,
                     reason,
-                ) = stream.availability_strategy.check_availability(
-                    stream, logger, self
-                )
+                ) = stream.availability_strategy.check_availability(stream, logger, self)
             except Exception:
-                errors.append(
-                    f"Unable to connect to stream {stream} - {traceback.format_exc()}"
-                )
+                errors.append(f"Unable to connect to stream {stream} - {traceback.format_exc()}")
             else:
                 if not stream_is_available:
                     errors.append(reason)

@@ -6,9 +6,7 @@ import logging
 from typing import Optional, Tuple
 
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.file_based.file_based_stream_reader import (
-    AbstractFileBasedStreamReader,
-)
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
@@ -17,9 +15,7 @@ class FileBasedAvailabilityStrategy(AvailabilityStrategy):
     def __init__(self, stream_reader: AbstractFileBasedStreamReader):
         self.stream_reader = stream_reader
 
-    def check_availability(
-        self, stream: Stream, logger: logging.Logger, _: Optional[Source]
-    ) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, stream: Stream, logger: logging.Logger, _: Optional[Source]) -> Tuple[bool, Optional[str]]:
         """
         Perform a connection check for the stream.
 
