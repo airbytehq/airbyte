@@ -1,13 +1,8 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
-import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryOptions;
-import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
-import com.google.cloud.bigquery.TableResult;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Array;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Object;
@@ -16,13 +11,19 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.UnsupportedOneOf;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, StandardSQLTypeName> {
 
   private static final BigQuerySQLNameTransformer nameTransformer = new BigQuerySQLNameTransformer();
+
+  // metadata columns
+  private final String RAW_ID = quoteColumnId("_airbyte_raw_id").name();
+  private final String SYNC_ID = quoteColumnId("_airbyte_sync_id").name();
+
+
+  // hardcoded CDC column name for deletions
+  private final QuotedColumnId DELETED_AT = quoteColumnId("_ab_cdc_deleted_at");
 
   @Override
   public QuotedStreamId quoteStreamId(final String namespace, final String name) {
@@ -118,10 +119,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   @Override
   public String executeCdcDeletions(final StreamConfig<StandardSQLTypeName> stream) {
     // CDC is always incremental dedup, and we only need to do this query if there's actually a deleted_at column
-    final QuotedColumnId deletedAt = quoteColumnId("_ab_cdc_deleted_at");
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && stream.columns().containsKey(deletedAt)) {
+    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && stream.columns().containsKey(DELETED_AT)) {
       // TODO maybe this should have an extracted_at / loaded_at condition for efficiency
-      return "DELETE FROM " + stream.id().finalTableId() + " WHERE " + deletedAt.name() + " IS NOT NULL";
+      return "DELETE FROM " + stream.id().finalTableId() + " WHERE " + DELETED_AT.name() + " IS NOT NULL";
     } else {
       return "";
     }
@@ -132,15 +132,14 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       // TODO maybe this should have an extracted_at / loaded_at condition for efficiency
       // We don't need to filter out `_airbyte_data ->> '_ab_cdc_deleted_at' IS NULL` because we can run this sql before executing CDC deletes
-      final String rawId = quoteColumnId("_airbyte_raw_id").name();
       return """
           DELETE FROM %s WHERE %s NOT IN (
             SELECT %s FROM %s
           )
           """.formatted(
           stream.id().rawTableId(),
-          rawId,
-          rawId,
+          RAW_ID,
+          RAW_ID,
           stream.id().finalTableId()
       );
     } else {
@@ -152,7 +151,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   public String deletePreviousSyncRecords(final StreamConfig<StandardSQLTypeName> stream, final UUID syncId) {
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       // TODO maybe this should have an extracted_at / loaded_at condition for efficiency
-      return "DELETE FROM " + stream.id().finalTableId() + " WHERE " + quoteColumnId("_airbyte_sync_id").name() + " != " + syncId;
+      return "DELETE FROM " + stream.id().finalTableId() + " WHERE " + SYNC_ID + " != " + syncId;
     } else {
       return "";
     }
