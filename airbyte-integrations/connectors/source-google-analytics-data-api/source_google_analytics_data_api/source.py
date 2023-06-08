@@ -11,6 +11,7 @@ from abc import ABC
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple
 
+import dpath
 import jsonschema
 import requests
 from airbyte_cdk.models import FailureType, SyncMode
@@ -32,9 +33,6 @@ GoogleAnalyticsQuotaHandler: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
 # set page_size to 100000 due to determination of maximum limit value in official documentation
 # https://developers.google.com/analytics/devguides/reporting/data/v1/basics#pagination
 PAGE_SIZE = 100000
-
-CONFIG_CUSTOM_REPORT_ERROR_MESSAGE = "The custom report is not valid. Validate your custom query with the GA 4 Query Explorer: " \
-                                     "https://ga-dev-tools.google/ga4/query-explorer/"
 
 
 class ConfigurationError(Exception):
@@ -319,16 +317,52 @@ class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream)
         yield response.json()
 
 
+WRONG_JSON_SYNTAX = "The custom report entered is not in a JSON array format. Check the entered format follows the syntax in our docs: https://docs.airbyte.com/integrations/sources/google-analytics-data-api/"
+NO_NAME = "The custom report entered does not contain a name, which is required. Check the entered format follows the syntax in our docs: https://docs.airbyte.com/integrations/sources/google-analytics-data-api/"
+NO_DIMENSIONS = "The custom report entered does not contain dimensions, which is required. Check the entered format follows the syntax in our docs (https://docs.airbyte.com/integrations/sources/google-analytics-data-api/) and validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/)."
+NO_METRICS = "The custom report entered does not contain metrics, which is required. Check the entered format follows the syntax in our docs (https://docs.airbyte.com/integrations/sources/google-analytics-data-api/) and validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/)."
+WRONG_DIMENSIONS = "The custom report {report_name} entered contains invalid dimensions: {dimensions}. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/)."
+WRONG_METRICS = "The custom report {report_name} entered contains invalid metrics: {metrics}. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/)."
+WRONG_PIVOTS =  "The custom report {report_name} entered contains invalid pivots. Ensure the pivot follow the syntax described in the docs."
+
+
 class SourceGoogleAnalyticsDataApi(AbstractSource):
     def _validate_and_transform(self, config: Mapping[str, Any], report_names: Set[str]):
+        if "custom_reports" in config:
+            if isinstance(config["custom_reports"], str):
+                try:
+                    config["custom_reports"] = json.loads(config["custom_reports"])
+                    if not isinstance(config["custom_reports"], list):
+                        raise ValueError
+                except ValueError:
+                    raise ConfigurationError(WRONG_JSON_SYNTAX)
+        else:
+            config["custom_reports"] = []
+
+        schema = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/custom_reports_schema.json"))
         try:
-            config["custom_reports"] = (
-                json.loads(config["custom_reports"]) if "custom_reports" in config and isinstance(config["custom_reports"], str) else []
-            )
-            schema = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/custom_reports_schema.json"))
             jsonschema.validate(instance=config["custom_reports"], schema=schema)
-        except (ValueError, jsonschema.ValidationError):
-            raise ConfigurationError(CONFIG_CUSTOM_REPORT_ERROR_MESSAGE)
+        except jsonschema.ValidationError as e:
+            if e.message == "'name' is a required property":
+                raise ConfigurationError(NO_NAME)
+            elif e.message == "'dimensions' is a required property":
+                raise ConfigurationError(NO_DIMENSIONS)
+            elif e.message == "'metrics' is a required property":
+                raise ConfigurationError(NO_METRICS)
+            elif "dimensions" in e.schema_path:
+                report_name = dpath.util.get(config['custom_reports'], str(e.absolute_path[0])).get('name')
+                raise ConfigurationError(WRONG_DIMENSIONS.format(dimensions=e.message, report_name=report_name))
+            elif "metrics" in e.schema_path:
+                report_name = dpath.util.get(config['custom_reports'], str(e.absolute_path[0])).get('name')
+                raise ConfigurationError(WRONG_METRICS.format(metrics=e.message, report_name=report_name))
+            elif "pivots" in e.schema_path:
+                report_name = dpath.util.get(config['custom_reports'], str(e.absolute_path[0])).get('name')
+                raise ConfigurationError(WRONG_PIVOTS.format(pivots=e.message, report_name=report_name))
+
+            key_path = "custom_reports"
+            if e.path:
+                key_path += "." + ".".join(map(str, e.path))
+            raise ConfigurationError(f"{key_path}: {e.message}")
 
         existing_names = {r["name"] for r in config["custom_reports"]} & report_names
         if existing_names:
@@ -390,9 +424,13 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
 
         for report in config["custom_reports"]:
             invalid_dimensions = set(report["dimensions"]) - dimensions
+            if invalid_dimensions:
+                invalid_dimensions = ", ".join(invalid_dimensions)
+                return False, WRONG_DIMENSIONS.format(dimensions=invalid_dimensions, report_name=report['name'])
             invalid_metrics = set(report["metrics"]) - metrics
-            if any((invalid_dimensions, invalid_metrics)):
-                return False, CONFIG_CUSTOM_REPORT_ERROR_MESSAGE
+            if invalid_metrics:
+                invalid_metrics = ", ".join(invalid_metrics)
+                return False, WRONG_METRICS.format(metrics=invalid_metrics, report_name=report['name'])
             report_stream = self.instantiate_report_class(report, config)
             # check if custom_report dimensions + metrics can be combined and report generated
             stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
