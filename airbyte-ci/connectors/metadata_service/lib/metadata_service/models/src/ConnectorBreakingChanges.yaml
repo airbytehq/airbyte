@@ -2,7 +2,7 @@
 "$schema": http://json-schema.org/draft-07/schema#
 "$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/ConnectorBreakingChanges.yaml
 title: ConnectorBreakingChanges
-description: Describes breaking changes in different versions of a connector.
+description: Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.
 type: object
 additionalProperties: true
 minProperties: 1
