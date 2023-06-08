@@ -33,7 +33,6 @@ public sealed interface AirbyteType permits Array, OneOf, Object, UnsupportedOne
     TIME_WITH_TIMEZONE,
     TIME_WITHOUT_TIMEZONE,
     DATE,
-    // TODO maybe this should be its own class
     UNKNOWN
   }
 

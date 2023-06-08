@@ -7,6 +7,7 @@ import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableResult;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Array;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Object;
@@ -25,10 +26,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   @Override
   public QuotedStreamId quoteStreamId(final String namespace, final String name) {
-    // TODO is this correct?
     return new QuotedStreamId(
+        // TODO is this correct?
         nameTransformer.getNamespace(namespace),
         nameTransformer.convertStreamName(name),
+        // TODO constant
+        nameTransformer.getNamespace("airbyte"),
         // TODO maybe do something with #getRawTableName?
         nameTransformer.convertStreamName(namespace + "_" + name),
         namespace,
@@ -45,8 +48,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   public StandardSQLTypeName toDialectType(final AirbyteType type) {
     // switch pattern-matching is still in preview at language level 17 :(
     if (type instanceof Primitive p) {
-      // TODO map data types
-      return null;
+      return toDialectType(p);
     } else if (type instanceof Object o) {
       // eventually this should be JSON; keep STRING for now as legacy compatibility
       return StandardSQLTypeName.STRING;
@@ -103,23 +105,23 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
             INSERT INTO %s.%s
             SELECT
               TODO....
-            FROM airbyte.%s_%s
+            FROM %s
                     
             COMMIT;
             """,
         stream.id().namespace(),
         stream.id().name(),
-        stream.id().namespace(),
-        rawSuffix.length() > 0 ? stream.id().rawName() + "_" + rawSuffix : stream.id().rawName()
+        rawSuffix.length() > 0 ? stream.id().rawTableId() + "_" + rawSuffix : stream.id().rawTableId()
     );
   }
 
   @Override
   public String executeCdcDeletions(final StreamConfig<StandardSQLTypeName> stream) {
-    // CDC is always incremental dedup
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+    // CDC is always incremental dedup, and we only need to do this query if there's actually a deleted_at column
+    final QuotedColumnId deletedAt = quoteColumnId("_ab_cdc_deleted_at");
+    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && stream.columns().containsKey(deletedAt)) {
       // TODO maybe this should have an extracted_at / loaded_at condition for efficiency
-      return "DELETE FROM " + stream.id().finalTableId() + " WHERE _ab_cdc_deleted_at IS NOT NULL";
+      return "DELETE FROM " + stream.id().finalTableId() + " WHERE " + deletedAt.name() + " IS NOT NULL";
     } else {
       return "";
     }
@@ -127,13 +129,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   @Override
   public String deleteOldRawRecords(final StreamConfig<StandardSQLTypeName> stream) {
-    // We don't need to filter out `_airbyte_data ->> '_ab_cdc_deleted_at' IS NULL` because we can run this sql before executing CDC deletes
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       // TODO maybe this should have an extracted_at / loaded_at condition for efficiency
+      // We don't need to filter out `_airbyte_data ->> '_ab_cdc_deleted_at' IS NULL` because we can run this sql before executing CDC deletes
+      final String rawId = quoteColumnId("_airbyte_raw_id").name();
       return """
-          DELETE FROM airbyte.%s WHERE _airbyte_raw_id NOT IN (
-            SELECT _airbyte_raw_id FROM public.users
-          )""".formatted(stream.id().rawName());
+          DELETE FROM %s WHERE %s NOT IN (
+            SELECT %s FROM %s
+          )
+          """.formatted(
+          stream.id().rawTableId(),
+          rawId,
+          rawId,
+          stream.id().finalTableId()
+      );
     } else {
       return "";
     }
@@ -143,10 +152,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   public String deletePreviousSyncRecords(final StreamConfig<StandardSQLTypeName> stream, final UUID syncId) {
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       // TODO maybe this should have an extracted_at / loaded_at condition for efficiency
-      return "DELETE FROM " + stream.id().finalTableId() + " WHERE _airbyte_loaded_at != " + syncId;
+      return "DELETE FROM " + stream.id().finalTableId() + " WHERE " + quoteColumnId("_airbyte_sync_id").name() + " != " + syncId;
     } else {
       return "";
     }
   }
-
 }

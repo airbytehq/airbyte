@@ -15,13 +15,17 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
    * @param originalNamespace the namespace of the stream according to the Airbyte catalog
    * @param originalName      the name of the stream according to the Airbyte catalog
    */
-  record QuotedStreamId(String namespace, String name, String rawName, String originalNamespace, String originalName) {
+  record QuotedStreamId(String namespace, String name, String rawNamespace, String rawName, String originalNamespace, String originalName) {
 
     /**
      * Most databases/warehouses use a `schema.name` syntax to identify tables. This is a convenience method to generate that syntax.
      */
     public String finalTableId() {
       return namespace + "." + name;
+    }
+
+    public String rawTableId() {
+      return rawNamespace + "." + rawName;
     }
   }
 
@@ -92,7 +96,8 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
   /**
    * Generate a SQL statement to delete records from the final table that were not emitted in the current sync.
    * <p>
-   * Useful for the full-refresh case, where we need to delete records that from the previous sync and which weren't re-emitted in the current sync.
+   * Useful for full-refresh overwrite syncs, where we need to delete records that from the previous sync and which weren't re-emitted in the current
+   * sync.
    */
   String deletePreviousSyncRecords(StreamConfig<DialectType> stream, UUID syncId);
 
