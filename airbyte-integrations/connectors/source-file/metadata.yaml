@@ -14,7 +14,7 @@ data:
   registries:
     cloud:
       dockerRepository: airbyte/source-file-secure
-      dockerImageTag: 0.3.9 # Dont forget to publish source-file-secure as well when updating this.
+      dockerImageTag: 0.3.11 # Dont forget to publish source-file-secure as well when updating this.
       enabled: true
     oss:
       enabled: true
