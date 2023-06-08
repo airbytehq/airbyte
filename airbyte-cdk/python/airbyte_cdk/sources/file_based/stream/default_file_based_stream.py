@@ -9,11 +9,12 @@ from functools import cache
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.file_based.exceptions import MissingSchemaError, SchemaInferenceError
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.file_based.exceptions import MissingSchemaError, RecordParseError, SchemaInferenceError
+from airbyte_cdk.sources.file_based.remote_file import FileType, RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, type_mapping_to_jsonschema
 from airbyte_cdk.sources.file_based.schema_validation_policies import record_passes_validation_policy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
+from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 
 
 class DefaultFileBasedStream(AbstractFileBasedStream):
@@ -40,12 +41,17 @@ class DefaultFileBasedStream(AbstractFileBasedStream):
             # On read requests we should always have the catalog available
             raise MissingSchemaError("Expected `json_schema` in the configured catalog but it is missing.")
         parser = self.get_parser(self.config.file_type)
-        for file in self.list_files_for_this_sync(stream_state):
-            for record in parser.parse_records(file, self._stream_reader):
-                if not record_passes_validation_policy(self.config.validation_policy, record, schema):
-                    logging.warning(f"Record did not pass validation policy: {record}")
-                    continue
-                yield record
+        try:
+            for file in self.list_files_for_this_sync(stream_state):
+                for record in parser.parse_records(file, self._stream_reader):
+                    if not record_passes_validation_policy(self.config.validation_policy, record, schema):
+                        logging.warning(f"Record did not pass validation policy: {record}")
+                        continue
+                    yield stream_data_to_airbyte_message(self.name, record)
+        except Exception as exc:
+            raise RecordParseError(
+                f"Error reading records from file: {file.uri}. Is the file valid {FileType(self.config.file_type.value)}?"
+            ) from exc
 
     @cache
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -122,4 +128,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream):
         try:
             return await self.get_parser(self.config.file_type).infer_schema(file, self._stream_reader)
         except Exception as exc:
-            raise SchemaInferenceError(f"Error inferring schema for file: {file.uri}") from exc
+            raise SchemaInferenceError(
+                f"Error inferring schema for file: {file.uri}. Is the file valid {FileType(self.config.file_type.value)}?"
+            ) from exc

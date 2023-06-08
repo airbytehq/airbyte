@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, Mapping, Type
+from typing import Any, Dict, Mapping, Optional, Type
 
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
@@ -27,11 +27,15 @@ class TestScenario:
             discovery_policy: AbstractDiscoveryPolicy,
             parsers: Dict[FileType, FileTypeParser],
             stream_cls: Type[AbstractFileBasedStream],
+            expected_discover_error: Optional[Type[Exception]],
+            expected_read_error: Optional[Type[Exception]]
     ):
         self.name = name
         self.config = config
         self.expected_catalog = expected_catalog
         self.expected_records = expected_records
+        self.expected_discover_error = expected_discover_error
+        self.expected_read_error = expected_read_error
         self.source = InMemoryFilesSource(
             files,
             file_type,
@@ -73,6 +77,8 @@ class TestScenarioBuilder:
         self._discovery_policy = DefaultDiscoveryPolicy()
         self._parsers = default_parsers
         self._stream_cls = DefaultFileBasedStream
+        self._expected_discover_error = None
+        self._expected_read_error = None
 
     def set_name(self, name: str):
         self._name = name
@@ -110,6 +116,14 @@ class TestScenarioBuilder:
         self._discovery_policy = discovery_policy
         return self
 
+    def set_expected_discover_error(self, error: Type[Exception]):
+        self._expected_discover_error = error
+        return self
+
+    def set_expected_read_error(self, error: Type[Exception]):
+        self._expected_read_error = error
+        return self
+
     def build(self):
         return TestScenario(
             self._name,
@@ -122,4 +136,6 @@ class TestScenarioBuilder:
             self._discovery_policy,
             self._parsers,
             self._stream_cls,
+            self._expected_discover_error,
+            self._expected_read_error,
         )

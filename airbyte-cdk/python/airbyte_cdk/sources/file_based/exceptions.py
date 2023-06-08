@@ -11,6 +11,10 @@ class MissingSchemaError(Exception):
     pass
 
 
+class RecordParseError(Exception):
+    pass
+
+
 class SchemaInferenceError(Exception):
     pass
 
