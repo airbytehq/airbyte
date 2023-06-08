@@ -4,6 +4,7 @@
     "null",
     "object"
   ],
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": [
@@ -35,6 +36,7 @@
         "null",
         "object"
       ],
+      "additionalProperties": true,
       "properties": {
         "source-vids": {
           "type": [
@@ -97,6 +99,7 @@
         "null",
         "object"
       ],
+      "additionalProperties": true,
       "properties": {
         "updated-by-user-id": {
           "type": [
