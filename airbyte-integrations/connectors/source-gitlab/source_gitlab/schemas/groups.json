@@ -106,6 +106,22 @@
     },
     "prevent_forking_outside_group": {
       "type": ["null", "boolean"]
+    },
+    "wiki_access_level": {
+      "type": ["null", "string"]
+    },
+    "marked_for_deletion_on": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "prevent_sharing_groups_outside_hierarchy": {
+      "type": ["null", "boolean"]
+    },
+    "membership_lock": {
+      "type": ["null", "boolean"]
+    },
+    "ip_restriction_ranges": {
+      "type": ["null", "string"]
     }
   }
 }
