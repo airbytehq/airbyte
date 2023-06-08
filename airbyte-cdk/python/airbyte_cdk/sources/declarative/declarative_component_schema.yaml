@@ -594,15 +594,15 @@ definitions:
             * **%p**: AM/PM indicator
             * **%M**: Minute (zero-padded) - `00`, `01`, ..., `59`
             * **%S**: Second (zero-padded) - `00`, `01`, ..., `59`
-            * **%f**: Microsecond (zero-padded to 6 digits) - `000000`, `000001`, ..., `999999`
-            * **%z**: UTC offset - `(empty)`, `+0000`, `-0400`, `+1030`, `+063415`, `-030712.345216`
+            * **%f**: Microsecond (zero-padded to 6 digits) - `000000`
+            * **%z**: UTC offset - `(empty)`, `+0000`, `-0400`
             * **%Z**: Time zone name - `(empty)`, `UTC`, `GMT`
             * **%j**: Day of the year (zero-padded) - `001`, `002`, ..., `366`
-            * **%U**: Week number of the year (Sunday as first day) - `00`, `01`, ..., `53`
-            * **%W**: Week number of the year (Monday as first day) - `00`, `01`, ..., `53`
-            * **%c**: Date and time representation - `Tue Aug 16 21:30:00 1988`
-            * **%x**: Date representation - `08/16/1988`
-            * **%X**: Time representation - `21:30:00`
+            * **%U**: Week number of the year (starting Sunday) - `00`, ..., `53`
+            * **%W**: Week number of the year (starting Monday) - `00`, ..., `53`
+            * **%c**: Date and time - `Tue Aug 16 21:30:00 1988`
+            * **%x**: Date standard format - `08/16/1988`
+            * **%X**: Time standard format - `21:30:00`
             * **%%**: Literal '%' character
 
             Some placeholders depend on the locale of the underlying system - in most cases this locale is configured as en/US. For more information see the [Python documentation](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes).
