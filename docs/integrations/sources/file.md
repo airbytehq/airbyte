@@ -191,6 +191,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version   | Date         | Pull Request                                               | Subject                                                                                                   |
 |:----------|:-------------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 0.3.10     | 2023-06-07   | [27107](https://github.com/airbytehq/airbyte/pull/27107)   | Make source-file testable in our new airbyte-ci pipelines |
 | 0.3.9     | 2023-05-18   | [26275](https://github.com/airbytehq/airbyte/pull/26275)   | add ParserError handling                                                                                  |
 | 0.3.8     | 2023-05-17   | [26210](https://github.com/airbytehq/airbyte/pull/26210)   | Bugfix for https://github.com/airbytehq/airbyte/pull/26115                                                |
 | 0.3.7     | 2023-05-16   | [26131](https://github.com/airbytehq/airbyte/pull/26131)   | Re-release source-file to be in sync with source-file-secure                                              |
