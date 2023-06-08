@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: cf9c4355-b171-4477-8f2d-6c5cc5fc8b7e
-  dockerImageTag: 2.0.1
+  dockerImageTag: 2.0.2
   dockerRepository: airbyte/source-quickbooks
   githubIssueLabel: source-quickbooks
   icon: quickbooks.svg
