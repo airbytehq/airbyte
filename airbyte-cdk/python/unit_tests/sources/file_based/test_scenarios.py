@@ -21,12 +21,12 @@ scenarios = [
 ]
 
 
-@pytest.mark.parametrize("scenario", scenarios)
+@pytest.mark.parametrize("scenario", scenarios, ids=[s.name for s in scenarios])
 def test_discover(capsys, tmp_path, json_spec, scenario):
     assert discover(capsys, tmp_path, scenario) == scenario.expected_catalog
 
 
-@pytest.mark.parametrize("scenario", scenarios)
+@pytest.mark.parametrize("scenario", scenarios, ids=[s.name for s in scenarios])
 def test_read(capsys, tmp_path, json_spec, scenario):
     records = read(capsys, tmp_path, scenario)
     expected_records = scenario.expected_records

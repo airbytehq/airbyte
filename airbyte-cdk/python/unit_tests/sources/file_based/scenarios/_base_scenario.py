@@ -4,6 +4,7 @@
 
 from typing import Any, Dict, Mapping
 
+from airbyte_cdk.sources.file_based.remote_file import FileType
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
 
 
@@ -11,11 +12,12 @@ class BaseTestScenario:
     name: str
     config: Mapping[str, Any]
     files: Dict[str, Any]
+    file_type: FileType
     expected_catalog: Dict[str, Any]
     expected_records: Dict[str, Any]
 
     def __init__(self):
-        self.source = InMemoryFilesSource(self.files)
+        self.source = InMemoryFilesSource(self.files, self.file_type)
         self.validate()
 
     def validate(self):

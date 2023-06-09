@@ -1,19 +1,18 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+from datetime import datetime
 from fnmatch import fnmatch
 from io import IOBase
-from typing import Any, List, Mapping
+from typing import List, Optional
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
+from pydantic import BaseModel
 
-class AbstractFileBasedStreamReader(ABC):
-    def __int__(self, config: Mapping[str, Any]):
-        self.config = config
 
+class AbstractFileBasedStreamReader(BaseModel):
     @abstractmethod
     def open_file(self, file: RemoteFile) -> IOBase:
         """
@@ -30,9 +29,11 @@ class AbstractFileBasedStreamReader(ABC):
     def list_matching_files(
         self,
         globs: List[str],
+        from_date: Optional[datetime] = None,
     ) -> List[RemoteFile]:
         """
-        Return all files that match any of the globs.
+        Return all files that match any of the globs. If a from_date provided,
+        return only files last modified after that date.
 
         Example:
 

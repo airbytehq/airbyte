@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from airbyte_cdk.sources.file_based.remote_file import FileType
 from unit_tests.sources.file_based.scenarios._base_scenario import BaseTestScenario
 
 
@@ -12,7 +13,7 @@ class SingleCsvTestScenario(BaseTestScenario):
             {
                 "name": name,
                 "file_type": "csv",
-                "globs": [["*.csv"]],
+                "globs": ["*.csv"],
                 "validation_policy": "emit_record_on_schema_mismatch",
             }
         ]
@@ -27,6 +28,7 @@ class SingleCsvTestScenario(BaseTestScenario):
             "last_modified": "2023-06-05T03:54:07.000Z",
         }
     }
+    file_type = FileType.Csv
     expected_catalog = {
         "streams": [
             {
@@ -49,7 +51,7 @@ class MultiCsvTestScenario(BaseTestScenario):
             {
                 "name": name,
                 "file_type": "csv",
-                "globs": [["*.csv"]],
+                "globs": ["*.csv"],
                 "validation_policy": "emit_record_on_schema_mismatch",
             }
         ]
@@ -72,6 +74,7 @@ class MultiCsvTestScenario(BaseTestScenario):
             "last_modified": "2023-06-05T03:54:07.000Z",
         },
     }
+    file_type = FileType.Csv
     expected_catalog = {
         "streams": [
             {

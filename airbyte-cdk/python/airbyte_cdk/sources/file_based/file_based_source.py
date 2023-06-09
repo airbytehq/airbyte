@@ -5,7 +5,6 @@
 import logging
 import traceback
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.sources import AbstractSource
@@ -17,7 +16,6 @@ from airbyte_cdk.sources.file_based.file_based_stream import FileBasedStream
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 
 
-@dataclass
 class AbstractFileBasedSource(AbstractSource, ABC):
     """
     All file-based sources must extend this class, implementing `stream_reader()`.
@@ -64,7 +62,7 @@ class AbstractFileBasedSource(AbstractSource, ABC):
                 if not stream_is_available:
                     errors.append(reason)
 
-        return bool(errors), (errors or None)
+        return not bool(errors), (errors or None)
 
     def streams(self, config: Mapping[str, Any]) -> List[FileBasedStream]:
         """

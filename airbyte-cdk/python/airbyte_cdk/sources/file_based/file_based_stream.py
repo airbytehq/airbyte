@@ -5,16 +5,35 @@
 import asyncio
 import logging
 import os
+from datetime import datetime
 from functools import cache, cached_property
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.file_based.availability_strategy import FileBasedAvailabilityStrategy
-from airbyte_cdk.sources.file_based.discovery_concurrency_policy import AbstractDiscoveryConcurrencyPolicy
-from airbyte_cdk.sources.file_based.exceptions import MissingSchemaError, SchemaInferenceError
-from airbyte_cdk.sources.file_based.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
-from airbyte_cdk.sources.file_based.file_types import AvroParser, CsvParser, FileTypeParser, JsonlParser, ParquetParser
+from airbyte_cdk.sources.file_based.availability_strategy import (
+    FileBasedAvailabilityStrategy,
+)
+from airbyte_cdk.sources.file_based.discovery_concurrency_policy import (
+    AbstractDiscoveryConcurrencyPolicy,
+)
+from airbyte_cdk.sources.file_based.exceptions import (
+    ConfigValidationError,
+    MissingSchemaError,
+    SchemaInferenceError,
+)
+from airbyte_cdk.sources.file_based.file_based_stream_config import (
+    FileBasedStreamConfig,
+)
+from airbyte_cdk.sources.file_based.file_based_stream_reader import (
+    AbstractFileBasedStreamReader,
+)
+from airbyte_cdk.sources.file_based.file_types import (
+    AvroParser,
+    CsvParser,
+    FileTypeParser,
+    JsonlParser,
+    ParquetParser,
+)
 from airbyte_cdk.sources.file_based.remote_file import FileType, RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, type_mapping_to_jsonschema
 from airbyte_cdk.sources.file_based.schema_validation_policies import record_passes_validation_policy
@@ -41,7 +60,10 @@ class FileBasedStream(Stream):
         stream_reader: AbstractFileBasedStreamReader,
         discovery_concurrency_policy: AbstractDiscoveryConcurrencyPolicy,
     ):
-        self.config = FileBasedStreamConfig.from_raw_config(raw_config)
+        try:
+            self.config = FileBasedStreamConfig(**raw_config)
+        except Exception as exc:
+            raise ConfigValidationError("Error creating stream config object.") from exc
         self.catalog_schema = {}  # TODO: wire through configured catalog
         self.stream_reader = stream_reader
         self.discovery_concurrency_policy = discovery_concurrency_policy
@@ -94,8 +116,13 @@ class FileBasedStream(Stream):
 
         files = self.list_files()
         if len(files) > MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE:
-            files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE]
-            logging.warning(f"Refusing to infer schema for {len(files)} files; using {MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE} files.")
+            # Use the most recent files for schema inference, so we pick up schema changes during discovery.
+            files = sorted(files, key=lambda x: x.last_modified, reverse=True)[
+                :MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE
+            ]
+            logging.warning(
+                f"Refusing to infer schema for {len(files)} files; using {MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE} files."
+            )
         return self.infer_schema(files)
 
     @cache
@@ -106,7 +133,9 @@ class FileBasedStream(Stream):
         """
         return list(self.stream_reader.list_matching_files(self.config.globs))
 
-    def list_files_for_this_sync(self, stream_state: Mapping[str, Any]) -> Iterable[RemoteFile]:
+    def list_files_for_this_sync(
+        self, stream_state: Optional[Mapping[str, Any]]
+    ) -> Iterable[RemoteFile]:
         """
         Return the subset of this stream's files that will be read in the current sync.
 
@@ -116,8 +145,15 @@ class FileBasedStream(Stream):
         - If `stream_state.start` is non-None then remove all files with last_modified
           date before `start`
         """
+        return self.stream_reader.list_matching_files(
+            self.config.globs, self._get_datetime_from_stream_state(stream_state)
+        )
+
+    def _get_datetime_from_stream_state(
+        self, stream_state: Optional[Mapping[str, Any]]
+    ) -> Optional[datetime]:
         # TODO: implement me
-        return iter(self.list_files())
+        return None
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
@@ -136,7 +172,11 @@ class FileBasedStream(Stream):
         n_started, n_files = 0, len(files)
         files = iter(files)
         while pending_tasks or n_started < n_files:
-            while len(pending_tasks) < self.discovery_concurrency_policy.n_concurrent_requests and (file := next(files, None)):
+            while len(
+                pending_tasks
+            ) <= self.discovery_concurrency_policy.n_concurrent_requests and (
+                file := next(files, None)
+            ):
                 pending_tasks.add(asyncio.create_task(self._infer_file_schema(file)))
                 n_started += 1
             # Return when the first task is completed so that we can enqueue a new task as soon as the

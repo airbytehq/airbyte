@@ -7,9 +7,14 @@ from airbyte_cdk.sources.file_based.discovery_concurrency_policy.abstract_discov
 )
 
 
+DEFAULT_N_CONCURRENT_REQUESTS = 10
+
+
 class DefaultDiscoveryConcurrencyPolicy(AbstractDiscoveryConcurrencyPolicy):
     """
     Default number of concurrent requests to send to the source.
     """
 
-    n_concurrent_requests = 10
+    @property
+    def n_concurrent_requests(self):
+        return DEFAULT_N_CONCURRENT_REQUESTS

@@ -19,6 +19,7 @@ class RemoteFile(ABC):
     A file in a file-based stream.
     """
 
-    def __init__(self, uri: str, last_modified: datetime):
+    def __init__(self, uri: str, last_modified: datetime, file_type: FileType):
         self.uri = uri
         self.last_modified = last_modified
+        self.file_type = file_type
