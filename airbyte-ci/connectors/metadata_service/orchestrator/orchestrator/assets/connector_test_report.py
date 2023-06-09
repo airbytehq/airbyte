@@ -157,44 +157,22 @@ def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]
         metadata={"count": len(nightly_report_connector_matrix_df), "preview": MetadataValue.md(nightly_report_complete_md)},
     )
 
-@asset(required_resource_keys={"gcp_gcs_client"}, group_name=GROUP_NAME)
+@asset(required_resource_keys={"all_connector_test_output_file_blobs"}, group_name=GROUP_NAME)
 def last_10_connector_test_results(context: OpExecutionContext) -> OutputDataFrame:
-    # TODO pull into resources
-    gcp_gcs_client = context.resources.gcp_gcs_client
-    ci_report_bucket = os.getenv("CI_REPORT_BUCKET")
+    gcs_file_blobs = context.resources.all_connector_test_output_file_blobs
 
-    prefix = "airbyte-ci/connectors/test"
-    branch = "master"
-    suffix = "output.json"
-
-    bucket = gcp_gcs_client.get_bucket(ci_report_bucket)
-    gcs_file_blobs = bucket.list_blobs(prefix=prefix)
-
-    # regex that matches any path that contains the branch name and ends with output.json
-    # e.g. airbyte-ci/connectors/test/somerandomfoler/master/connectorname/connectorversion/gitsha/output.json
-    # TODO make all work off regex
-    regex = f".*{branch}.*{suffix}$"
-
-
-
-    # filter gcs_file_blobs to only those that match the regex
-    gcs_file_blobs = [blob for blob in gcs_file_blobs if re.match(regex, blob.name)]
-
-    # This is an example path a blob that match the regex airbyte-ci/connectors/test/nightly_builds/master/1686249301/61a6f8ed68cbeaa8b8b1ff4e64496d989826fd5e/source-strava/0.1.4/output.json
+    # This is an example path a blob that match the regex:
+    #   airbyte-ci/connectors/test/nightly_builds/master/1686249301/61a6f8ed68cbeaa8b8b1ff4e64496d989826fd5e/source-strava/0.1.4/output.json
     # We want to extract the following information from the path
     # 1. connector name (source-strava)
     # 2. connector version (0.1.4)
     # 3. timestamp (1686249301)
-    # And add them as columns to the dataframe
-    # note that we should only pay attention to the end of the file path, not the beginning
-    # because the beginning of the file path is not consistent 1686249301/61a6f8ed68cbeaa8b8b1ff4e64496d989826fd5e/source-strava/0.1.4/output.json
     report_status = [
         {
             "connector_name": blob.name.split("/")[-3],
             "connector_version": blob.name.split("/")[-2],
             "timestamp": blob.name.split("/")[-5],
             "blob": blob,
-            # "success": json_blob_to_model(blob, ConnectorPipelineReport).success,
         }
         for blob in gcs_file_blobs
     ]
