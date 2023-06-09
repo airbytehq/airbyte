@@ -25,7 +25,6 @@ from airbyte_cdk.sources.declarative.retrievers.simple_retriever import (
 )
 from airbyte_cdk.sources.streams.http.http import HttpStream
 
-
 A_SLICE_STATE = {"slice_state": "slice state value"}
 A_STREAM_SLICE = {"stream slice": "slice value"}
 A_STREAM_STATE = {"stream state": "state value"}
