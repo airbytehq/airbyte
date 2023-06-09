@@ -54,7 +54,7 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
     return List.of(
             id,
             formattedString,
-            Timestamp.from(Instant.ofEpochSecond(emittedAt)));
+            Timestamp.from(Instant.ofEpochMilli(emittedAt)));
   }
 
 }
