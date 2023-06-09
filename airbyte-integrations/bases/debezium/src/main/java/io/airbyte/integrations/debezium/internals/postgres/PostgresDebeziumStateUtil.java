@@ -222,8 +222,6 @@ public class PostgresDebeziumStateUtil {
 
     return OptionalLong.empty();
 
-
-
   }
 
 }
