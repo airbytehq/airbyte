@@ -66,6 +66,10 @@ def render_report_output_prefix(ctx: click.Context) -> str:
     git_revision = ctx.obj["git_revision"]
     pipeline_start_timestamp = ctx.obj["pipeline_start_timestamp"]
     ci_context = ctx.obj["ci_context"]
+
+    # get ci_job_key from ctx, if not defined then use ci_context
+    ci_job_key = ctx.obj.get("ci_job_key", ci_context)
+
     sanitized_branch = git_branch.replace("/", "_")
 
     # get the command name for the current context, if a group then prepend the parent command name
@@ -75,7 +79,7 @@ def render_report_output_prefix(ctx: click.Context) -> str:
 
     path_values = [
         cmd,
-        ci_context,
+        ci_job_key,
         sanitized_branch,
         pipeline_start_timestamp,
         git_revision,
