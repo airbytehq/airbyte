@@ -53,27 +53,20 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
 
     return metadata_data
 
-def calculate_migration_documentation_url(releases_or_breaking_change: pd.DataFrame, documentation_url: str, version: Optional[str] = None) -> str:
+def calculate_migration_documentation_url(releases_or_breaking_change: dict, documentation_url: str, version: Optional[str] = None) -> str:
     """Calculate the migration documentation url for the connector releases.
 
     Args:
-        metadata_releases (pd.DataFrame): The connector releases.
+        metadata_releases (dict): The connector releases.
 
     Returns:
         str: The migration documentation url.
     """
 
-    # set migrationDocumentationUrl to {documentationUrl}/migration_guide if it is not set
-
-    migrationDocumentationUrl = releases_or_breaking_change["migrationDocumentationUrl"]
-
-    # if migrationDocumentationUrl jhas a value, return it
-    if migrationDocumentationUrl is not None:
-        return migrationDocumentationUrl
-
-    # Return the documentation url with the migration guide path and the version as a hash link if it is set
     base_url = f"{documentation_url}/migration_guide"
-    return f"{base_url}#{version}" if version is not None else base_url
+    default_migration_documentation_url = f"{base_url}#{version}" if version is not None else base_url
+
+    return releases_or_breaking_change.get("migrationDocumentationUrl", default_migration_documentation_url)
 
 @deep_copy_params
 def apply_connector_release_defaults(metadata: dict) -> Optional[pd.DataFrame]:

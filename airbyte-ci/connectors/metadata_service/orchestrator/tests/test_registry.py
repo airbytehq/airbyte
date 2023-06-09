@@ -1,6 +1,8 @@
+import pytest
+from unittest.mock import Mock
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 
-
+from orchestrator.assets.registry import metadata_to_registry_entry
 from orchestrator.assets.registry_report import (
     all_sources_dataframe,
     all_destinations_dataframe,
@@ -51,9 +53,6 @@ def test_merged_registry_dataframes(oss_registry_dict, cloud_registry_dict):
 
     assert all_destination_definition_ids == oss_destination_definition_ids.union(cloud_destination_definition_ids)
 
-import pytest
-from unittest.mock import Mock
-from orchestrator.assets.registry import metadata_to_registry_entry, apply_overrides_from_registry
 
 @pytest.mark.parametrize("registry_type, connector_type, expected_id_field",
                          [("cloud", "source", "sourceDefinitionId"),
@@ -219,3 +218,95 @@ def test_release_stage_default():
 
     result = metadata_to_registry_entry(mock_metadata_entry, "source", "oss")
     assert result["releaseStage"] == "alpha"
+
+def test_migration_documentation_url_default():
+    """
+    Test if migrationDocumentationUrl is successfully defaulted in releases.migrationDocumentationUrl in the registry entry.
+    """
+    metadata = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "documentationUrl": "test-doc-url",
+            "registries": {
+                "oss": {
+                    "enabled": True
+                }
+            },
+            "releases": {
+                "breakingChanges": {
+                    "1.0.0": {}
+                }
+            }
+        }
+    }
+
+    mock_metadata_entry = Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = metadata
+    mock_metadata_entry.icon_url = "test-icon-url"
+
+    expected_top_migration_documentation_url = "test-doc-url/migration_guide"
+    expected_version_migration_documentation_url = "test-doc-url/migration_guide#1.0.0"
+
+    result = metadata_to_registry_entry(mock_metadata_entry, "source", "oss")
+    assert result["releases"]["migrationDocumentationUrl"] == expected_top_migration_documentation_url
+    assert result["releases"]["breakingChanges"]["1.0.0"]["migrationDocumentationUrl"] == expected_version_migration_documentation_url
+
+
+def test_breaking_changes_migration_documentation_url():
+    """
+    Test if migrationDocumentationUrl is successfully defaulted for all entries in releases.breakingChanges including the key as the version.
+    """
+    metadata = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "documentationUrl": "test-doc-url",
+            "registries": {
+                "oss": {
+                    "enabled": True
+                }
+            },
+            "releases": {
+                "migrationDocumentationUrl": "test-migration-doc-url",
+                "breakingChanges": {
+                    "1.0.0": {
+                        "migrationDocumentationUrl": "test-migration-doc-url-version"
+                    }
+                }
+            }
+        }
+    }
+
+    mock_metadata_entry = Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = metadata
+    mock_metadata_entry.icon_url = "test-icon-url"
+
+    result = metadata_to_registry_entry(mock_metadata_entry, "source", "oss")
+    assert result["releases"]["migrationDocumentationUrl"] == "test-migration-doc-url"
+    assert result["releases"]["breakingChanges"]["1.0.0"]["migrationDocumentationUrl"] == "test-migration-doc-url-version"
+
+
+def test_icon_url():
+    """
+    Test if the iconUrl in the metadata entry is correctly set in the registry entry.
+    """
+    metadata = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "registries": {
+                "oss": {
+                    "enabled": True
+                }
+            }
+        }
+    }
+
+    mock_metadata_entry = Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = metadata
+    mock_metadata_entry.icon_url = "test-icon-url"
+
+    result = metadata_to_registry_entry(mock_metadata_entry, "source", "oss")
+    assert result["iconUrl"] == "test-icon-url"
+
