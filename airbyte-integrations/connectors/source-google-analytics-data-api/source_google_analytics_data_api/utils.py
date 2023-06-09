@@ -7,6 +7,7 @@ import calendar
 import datetime
 from typing import Dict
 
+import jsonschema
 from airbyte_cdk.sources.streams.http import auth
 from source_google_analytics_data_api.authenticator import GoogleServiceKeyAuthenticator
 
@@ -58,6 +59,14 @@ authenticator_class_map: Dict = {
     ),
 }
 
+WRONG_JSON_SYNTAX = "The custom report entered is not in a JSON array format. Check the entered format follows the syntax in our docs: https://docs.airbyte.com/integrations/sources/google-analytics-data-api/"
+NO_NAME = "The custom report entered does not contain a name, which is required. Check the entered format follows the syntax in our docs: https://docs.airbyte.com/integrations/sources/google-analytics-data-api/"
+NO_DIMENSIONS = "The custom report entered does not contain dimensions, which is required. Check the entered format follows the syntax in our docs (https://docs.airbyte.com/integrations/sources/google-analytics-data-api/) and validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/)."
+NO_METRICS = "The custom report entered does not contain metrics, which is required. Check the entered format follows the syntax in our docs (https://docs.airbyte.com/integrations/sources/google-analytics-data-api/) and validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/)."
+WRONG_DIMENSIONS = "The custom report {report_name} entered contains invalid dimensions: {fields}. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/)."
+WRONG_METRICS = "The custom report {report_name} entered contains invalid metrics: {fields}. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/)."
+WRONG_PIVOTS = "The custom report {report_name} entered contains invalid pivots: {fields}. Ensure the pivot follow the syntax described in the docs (https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot)."
+
 
 def datetime_to_secs(dt: datetime.datetime) -> int:
     return calendar.timegm(dt.utctimetuple())
@@ -88,3 +97,19 @@ def metrics_type_to_python(t: str) -> type:
 
 def get_dimensions_type(d: str) -> str:
     return "string"
+
+
+def check_no_property_error(exc: jsonschema.ValidationError) -> str:
+    mapper = {
+        "'name' is a required property": NO_NAME,
+        "'dimensions' is a required property": NO_DIMENSIONS,
+        "'metrics' is a required property": NO_METRICS,
+    }
+    return mapper.get(exc.message)
+
+
+def check_invalid_property_error(exc: jsonschema.ValidationError) -> str:
+    mapper = {"dimensions": WRONG_DIMENSIONS, "metrics": WRONG_METRICS, "pivots": WRONG_PIVOTS}
+    for property in mapper:
+        if property in exc.schema_path:
+            return mapper[property]
