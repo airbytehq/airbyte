@@ -53,6 +53,7 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
 
     return metadata_data
 
+
 def calculate_migration_documentation_url(releases_or_breaking_change: dict, documentation_url: str, version: Optional[str] = None) -> str:
     """Calculate the migration documentation url for the connector releases.
 
@@ -67,6 +68,7 @@ def calculate_migration_documentation_url(releases_or_breaking_change: dict, doc
     default_migration_documentation_url = f"{base_url}#{version}" if version is not None else base_url
 
     return releases_or_breaking_change.get("migrationDocumentationUrl", default_migration_documentation_url)
+
 
 @deep_copy_params
 def apply_connector_release_defaults(metadata: dict) -> Optional[pd.DataFrame]:
@@ -83,9 +85,12 @@ def apply_connector_release_defaults(metadata: dict) -> Optional[pd.DataFrame]:
     breaking_changes = metadata_releases["breakingChanges"]
     if breaking_changes is not None:
         for version, breaking_change in breaking_changes.items():
-            breaking_change["migrationDocumentationUrl"] = calculate_migration_documentation_url(breaking_change, documentation_url, version)
+            breaking_change["migrationDocumentationUrl"] = calculate_migration_documentation_url(
+                breaking_change, documentation_url, version
+            )
 
     return metadata_releases
+
 
 @deep_copy_params
 def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, connector_type: str, override_registry_key: str) -> dict:
@@ -133,7 +138,6 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, connector_ty
     # apply generated fields
     overrode_metadata_data["iconUrl"] = metadata_entry.icon_url
     overrode_metadata_data["releases"] = apply_connector_release_defaults(overrode_metadata_data)
-
 
     return overrode_metadata_data
 
