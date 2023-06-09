@@ -12,6 +12,7 @@ from orchestrator.ops.slack import send_slack_webhook
 from orchestrator.models.ci_report import ConnectorNightlyReport, ConnectorPipelineReport
 from orchestrator.config import (
     NIGHTLY_COMPLETE_REPORT_FILE_NAME,
+    CONNECTOR_TEST_SUMMARY_FOLDER,
 )
 from orchestrator.templates.render import (
     render_connector_nightly_report_md,
@@ -214,23 +215,12 @@ def last_10_connector_test_results(context: OpExecutionContext) -> OutputDataFra
     # Drop the blob column
     report_status = report_status.drop(columns=["blob", "model"])
 
-    # TODO
-    # 1. add a persist summary asset (we will need the connectors icon url for this)
-    # 2. add a persist badge asset (we will need the connectors icon url for this)
-
     return output_dataframe(report_status)
 
 @asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
 def persist_connectors_test_summary_files(context: OpExecutionContext, last_10_connector_test_results: OutputDataFrame) -> OutputDataFrame:
     registry_report_directory_manager = context.resources.registry_report_directory_manager
 
-    # We want to create a dataframe per connector_name that contains the following columns
-    # 1. date
-    # 2. connector_version
-    # 3. success
-    # 4. gha_workflow_run_url
-    # so that we can create a summary file for each connector
-    # for connector_name, connector_df in last_10_connector_test_results.items():
     metadata = {}
     all_connector_names = last_10_connector_test_results["connector_name"].unique()
     for connector_name in all_connector_names:
@@ -246,21 +236,23 @@ def persist_connectors_test_summary_files(context: OpExecutionContext, last_10_c
         # drop the timestamp column
         connector_test_summary = connector_test_summary.drop(columns=["timestamp"])
 
-        report_file_name = f"test_summary/{connector_name}"
+        report_file_name = f"{CONNECTOR_TEST_SUMMARY_FOLDER}/{connector_name}"
 
         badge_json = render_connector_test_badge(connector_test_summary)
-        html_string = render_connector_test_summary_html(connector_name, connector_test_summary)
+        summary_html = render_connector_test_summary_html(connector_name, connector_test_summary)
+        summary_json = connector_test_summary.to_json(orient="records")
 
-        html_file_key = f"{report_file_name}/summary"
-        badge_json_file_key = f"{report_file_name}/badge"
+        summary_file_key = f"{report_file_name}/index"
+        badge_file_key = f"{report_file_name}/badge"
 
-        html_file_handle = registry_report_directory_manager.write_data(html_string.encode(), ext="html", key=html_file_key)
-        badge_json_file_handle = registry_report_directory_manager.write_data(badge_json.encode(), ext="json", key=badge_json_file_key)
+        summary_html_file_handle = registry_report_directory_manager.write_data(summary_html.encode(), ext="html", key=summary_file_key)
+        summary_json_file_handle = registry_report_directory_manager.write_data(summary_json.encode(), ext="json", key=summary_file_key)
+        badge_json_file_handle = registry_report_directory_manager.write_data(badge_json.encode(), ext="json", key=badge_file_key)
 
         # add to metadata
-        metadata[html_file_key] = MetadataValue.url(html_file_handle.public_url)
-        metadata[badge_json_file_key] = MetadataValue.url(badge_json_file_handle.public_url)
-        # json_file_handle = registry_report_directory_manager.write_data(json_string.encode(), ext="json", key=report_file_name)
+        metadata[summary_file_key] = MetadataValue.url(summary_html_file_handle.public_url)
+        metadata[badge_file_key] = MetadataValue.url(badge_json_file_handle.public_url)
+        metadata[f"{summary_file_key}/json"] = MetadataValue.url(summary_json_file_handle.public_url)
 
     return Output(
         value=last_10_connector_test_results,
