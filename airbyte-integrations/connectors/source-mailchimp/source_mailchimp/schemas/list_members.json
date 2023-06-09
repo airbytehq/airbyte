@@ -3,260 +3,221 @@
     "type": ["object", "null"],
     "title": "Members List",
     "description": "Information about members in a specific list.",
+    "additionalProperties": true,
     "properties": {
       "id": {
-        "type": "string",
+        "type": ["null", "string"],
         "title": "List ID",
-        "description": "A string that uniquely identifies this list.",
-        "readOnly": true
+        "description": "A string that uniquely identifies this list."
       },
       "email_address": {
-        "type": "string",
+        "type": ["null", "string"],
         "title": "Email Address",
-        "description": "The email address of the member.",
-        "readOnly": true
+        "description": "The email address of the member."
       },
       "unique_email_id": {
-        "type": "string",
+        "type": ["null", "string"],
         "title": "Unique Email ID",
-        "description": "A unique identifier for the member's email address.",
-        "readOnly": true
+        "description": "A unique identifier for the member's email address."
       },
       "contact_id": {
-        "type": "string",
+        "type": ["null", "string"],
         "title": "Contact ID",
-        "description": "The identifier for the member's contact.",
-        "readOnly": true
+        "description": "The identifier for the member's contact."
       },
       "full_name": {
-        "type": "string",
+        "type": ["null", "string"],
         "title": "Full Name",
-        "description": "The full name of the member.",
-        "readOnly": true
+        "description": "The full name of the member."
       },
       "web_id": {
-        "type": "integer",
+        "type": ["null", "integer"],
         "title": "Web ID",
-        "description": "An integer that uniquely identifies the member on the web.",
-        "readOnly": true
+        "description": "An integer that uniquely identifies the member on the web."
       },
       "email_type": {
-        "type": "string",
+        "type": ["null", "string"],
         "title": "Email Type",
-        "description": "The type of email associated with the member.",
-        "readOnly": true
+        "description": "The type of email associated with the member."
       },
       "status": {
-        "type": "string",
+        "type": ["null", "string"],
         "title": "Status",
-        "description": "The subscription status of the member.",
-        "readOnly": true
+        "description": "The subscription status of the member."
       },
       "unsubscribe_reason": {
-        "type": "string",
+        "type": ["null", "string"],
         "title": "Unsubscribe Reason",
-        "description": "The reason for the member's unsubscribe, if applicable.",
-        "readOnly": true
+        "description": "The reason for the member's unsubscribe, if applicable."
       },
       "consents_to_one_to_one_messaging": {
-        "type": "boolean",
+        "type": ["null", "boolean"],
         "title": "Consents to One-to-One Messaging",
-        "description": "Indicates whether the member consents to one-to-one messaging.",
-        "readOnly": true
+        "description": "Indicates whether the member consents to one-to-one messaging."
       },
       "merge_fields": {
-        "type": "object",
+        "type": ["null", "object"],
         "title": "Merge Fields",
         "description": "Additional merge fields for the member.",
         "properties": {
           "property1": {
-            "type": "string",
+            "type": ["null", "string"],
             "title": "Property 1",
-            "description": "The value of property 1 for the member.",
-            "readOnly": true
+            "description": "The value of property 1 for the member."
           },
           "property2": {
-            "type": "string",
+            "type": ["null", "string"],
             "title": "Property 2",
-            "description": "The value of property 2 for the member.",
-            "readOnly": true
+            "description": "The value of property 2 for the member."
           }
         },
-        "additionalProperities": true,
-        "readOnly": true
+        "additionalProperities": true
       },
       "interests": {
-        "type": "object",
+        "type": ["null", "object"],
         "title": "Interests",
         "description": "Interests of the member.",
         "properties": {
           "property1": {
-            "type": "boolean",
+            "type": ["null", "boolean"],
             "title": "Property 1",
-            "description": "Indicates the interest status of property 1 for the member.",
-            "readOnly": true
+            "description": "Indicates the interest status of property 1 for the member."
           },
           "property2": {
-            "type": "boolean",
+            "type": ["null", "boolean"],
             "title": "Property 2",
-            "description": "Indicates the interest status of property 2 for the member.",
-            "readOnly": true
+            "description": "Indicates the interest status of property 2 for the member."
           }
-        },
-        "readOnly": true
+        }
       },
       "stats": {
-        "type": "object",
+        "type": ["null","object"],
         "title": "Stats",
         "description": "Statistics related to the member.",
         "properties": {
           "avg_open_rate": {
-            "type": "integer",
+            "type": ["null", "integer"],
             "title": "Average Open Rate",
-            "description": "The average open rate of the member.",
-            "readOnly": true
+            "description": "The average open rate of the member."
           },
           "avg_click_rate": {
-            "type": "integer",
+            "type": ["null", "integer"],
             "title": "Average Click Rate",
-            "description": "The average click rate of the member.",
-            "readOnly": true
+            "description": "The average click rate of the member."
           },
           "ecommerce_data": {
-            "type": "object",
+            "type": ["null", "object"],
             "title": "Ecommerce Data",
             "description": "Ecommerce data related to the member.",
             "properties": {
               "total_revenue": {
-                "type": "integer",
+                "type": ["null", "integer"],
                 "title": "Total Revenue",
-                "description": "The total revenue generated by the member.",
-                "readOnly": true
+                "description": "The total revenue generated by the member."
               },
               "number_of_orders": {
-                "type": "integer",
+                "type": ["null", "integer"],
                 "title": "Number of Orders",
-                "description": "The number of orders placed by the member.",
-                "readOnly": true
+                "description": "The number of orders placed by the member."
               },
               "currency_code": {
-                "type": "string",
+                "type": ["null", "string"],
                 "title": "Currency Code",
-                "description": "The currency code used for revenue.",
-                "readOnly": true
+                "description": "The currency code used for revenue."
               }
-            },
-            "readOnly": true
+            }
           }
-        },
-        "readOnly": true
+        }
       },
       "ip_signup": {
-        "type": "string",
+        "type": ["null", "string"],
         "title": "IP Signup",
-        "description": "The IP address used during signup.",
-        "readOnly": true
+        "description": "The IP address used during signup."
       },
       "timestamp_signup": {
-        "type": "string",
+        "type": ["null", "string"],
         "format": "date-time",
         "title": "Timestamp Signup",
-        "description": "The timestamp of the signup.",
-        "readOnly": true
+        "description": "The timestamp of the signup."
       },
       "ip_opt": {
-        "type": "string",
+        "type": ["null", "string"],
         "title": "IP Opt",
-        "description": "The IP address used for opting.",
-        "readOnly": true
+        "description": "The IP address used for opting."
       },
       "timestamp_opt": {
-        "type": "string",
+        "type": ["null", "string"],
         "format": "date-time",
         "title": "Timestamp Opt",
-        "description": "The timestamp of the opt.",
-        "readOnly": true
+        "description": "The timestamp of the opt."
       },
       "member_rating": {
-        "type": "integer",
+        "type": ["null", "integer"],
         "title": "Member Rating",
-        "description": "The rating of the member.",
-        "readOnly": true
+        "description": "The rating of the member."
       },
       "last_changed": {
-        "type": "string",
+        "type": ["null", "string"],
         "format": "date-time",
         "title": "Last Changed",
-        "description": "The timestamp of the last change.",
-        "readOnly": true
+        "description": "The timestamp of the last change."
       },
       "language": {
-        "type": "string",
+        "type": ["null", "string"],
         "title": "Language",
-        "description": "The language preference of the member.",
-        "readOnly": true
+        "description": "The language preference of the member."
       },
       "vip": {
-        "type": "boolean",
+        "type": ["null", "boolean"],
         "title": "VIP",
-        "description": "Indicates if the member is a VIP.",
-        "readOnly": true
+        "description": "Indicates if the member is a VIP."
       },
       "email_client": {
-        "type": "string",
+        "type": ["null", "string"],
         "title": "Email Client",
-        "description": "The email client used by the member.",
-        "readOnly": true
+        "description": "The email client used by the member."
       },
       "location": {
-        "type": "object",
+        "type": ["null", "object"],
         "title": "Location",
         "description": "Location information of the member.",
         "properties": {
           "latitude": {
-            "type": "integer",
+            "type": ["null", "integer"],
             "title": "Latitude",
-            "description": "The latitude of the member's location.",
-            "readOnly": true
+            "description": "The latitude of the member's location."
           },
           "longitude": {
-            "type": "integer",
+            "type": ["null", "integer"],
             "title": "Longitude",
-            "description": "The longitude of the member's location.",
-            "readOnly": true
+            "description": "The longitude of the member's location."
           },
           "gmtoff": {
-            "type": "integer",
+            "type": ["null", "integer"],
             "title": "GMT Offset",
-            "description": "The GMT offset of the member's location.",
-            "readOnly": true
+            "description": "The GMT offset of the member's location."
           },
           "dstoff": {
-            "type": "integer",
+            "type": ["null", "integer"],
             "title": "DST Offset",
-            "description": "The DST offset of the member's location.",
-            "readOnly": true
+            "description": "The DST offset of the member's location."
           },
           "country_code": {
-            "type": "string",
+            "type": ["null", "string"],
             "title": "Country Code",
-            "description": "The country code of the member's location.",
-            "readOnly": true
+            "description": "The country code of the member's location."
           },
           "timezone": {
-            "type": "string",
+            "type": ["null", "string"],
             "title": "Timezone",
-            "description": "The timezone of the member's location.",
-            "readOnly": true
+            "description": "The timezone of the member's location."
           },
           "region": {
-            "type": "string",
+            "type": ["null", "string"],
             "title": "Region",
-            "description": "The region of the member's location.",
-            "readOnly": true
+            "description": "The region of the member's location."
           }
-        },
-        "readOnly": true
+        }
       },
       "marketing_permissions": {
         "type": "array",
@@ -266,140 +227,119 @@
           "type": "object",
           "properties": {
             "marketing_permission_id": {
-              "type": "string",
+              "type": ["null", "string"],
               "title": "Marketing Permission ID",
-              "description": "The ID of the marketing permission.",
-              "readOnly": true
+              "description": "The ID of the marketing permission."
             },
             "text": {
-              "type": "string",
+              "type": ["null", "string"],
               "title": "Text",
-              "description": "The text of the marketing permission.",
-              "readOnly": true
+              "description": "The text of the marketing permission."
             },
             "enabled": {
-              "type": "boolean",
+              "type": ["null", "boolean"],
               "title": "Enabled",
-              "description": "Indicates if the marketing permission is enabled.",
-              "readOnly": true
+              "description": "Indicates if the marketing permission is enabled."
             }
-          },
-          "readOnly": true
+          }
         }
       },
       "last_note": {
-        "type": "object",
+        "type": ["null", "object"],
         "title": "Last Note",
         "description": "Last note related to the member.",
         "properties": {
           "note_id": {
-            "type": "integer",
+            "type": ["null", "integer"],
             "title": "Note ID",
-            "description": "The ID of the note.",
-            "readOnly": true
+            "description": "The ID of the note."
           },
           "created_at": {
-            "type": "string",
+            "type": ["null", "string"],
             "format": "date-time",
             "title": "Created At",
-            "description": "The timestamp of note creation.",
-            "readOnly": true
+            "description": "The timestamp of note creation."
           },
           "created_by": {
-            "type": "string",
+            "type": ["null", "string"],
             "title": "Created By",
-            "description": "The creator of the note.",
-            "readOnly": true
+            "description": "The creator of the note."
           },
           "note": {
-            "type": "string",
+            "type": ["null", "string"],
             "title": "Note",
-            "description": "The content of the note.",
-            "readOnly": true
+            "description": "The content of the note."
           }
-        },
-        "readOnly": true
+        }
       },
       "source": {
-        "type": "string",
+        "type": ["null", "string"],
         "title": "Source",
-        "description": "The source of the member.",
-        "readOnly": true
+        "description": "The source of the member."
       },
       "tags_count": {
-        "type": "integer",
+        "type": ["null", "integer"],
         "title": "Tags Count",
-        "description": "The count of tags associated with the member.",
-        "readOnly": true
+        "description": "The count of tags associated with the member."
       },
       "tags": {
-        "type": "array",
+        "type": ["null", "array"],
         "title": "Tags",
         "description": "Tags associated with the member.",
         "items": {
           "type": "object",
           "properties": {
             "id": {
-              "type": "integer",
+              "type": ["null", "integer"],
               "title": "ID",
-              "description": "The ID of the tag.",
-              "readOnly": true
+              "description": "The ID of the tag."
             },
             "name": {
-              "type": "string",
+              "type": ["null", "string"],
               "title": "Name",
-              "description": "The name of the tag.",
-              "readOnly": true
+              "description": "The name of the tag."
             }
-          },
-          "readOnly": true
+          }
         }
       },
       "list_id": {
-        "type": "string",
+        "type": ["null", "string"],
         "title": "List ID",
-        "description": "A string that uniquely identifies this list.",
-        "readOnly": true
+        "description": "A string that uniquely identifies this list."
       },
       "_links": {
-        "type": "array",
+        "type": ["null", "array"],
         "title": "Links",
         "description": "Links associated with the member.",
         "items": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "rel": {
-              "type": "string",
+              "type": ["null", "string"],
               "title": "Rel",
-              "description": "The relationship of the link.",
-              "readOnly": true
+              "description": "The relationship of the link."
             },
             "href": {
-              "type": "string",
+              "type": ["null", "string"],
               "title": "Href",
-              "description": "The URL of the link.",
-              "readOnly": true
+              "description": "The URL of the link."
             },
             "method": {
-              "type": "string",
+              "type": ["null", "string"],
               "title": "Method",
-              "description": "The HTTP method of the link.",
-              "readOnly": true
+              "description": "The HTTP method of the link."
             },
             "targetSchema": {
-              "type": "string",
+              "type": ["null", "string"],
               "title": "Target Schema",
-              "description": "The schema of the target.",
-              "readOnly": true
+              "description": "The schema of the target."
             },
             "schema": {
-              "type": "string",
+              "type": ["null", "string"],
               "title": "Schema",
-              "description": "The schema of the link.",
-              "readOnly": true
+              "description": "The schema of the link."
             }
-          },
-          "readOnly": true
+          }
         }
       }
   }
