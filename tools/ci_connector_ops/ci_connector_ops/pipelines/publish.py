@@ -24,7 +24,11 @@ class CheckConnectorImageDoesNotExist(Step):
     async def _run(self) -> StepResult:
         docker_repository, docker_tag = self.context.docker_image_name.split(":")
         crane_ls = (
-            environments.with_crane(self.context).with_env_variable("CACHEBUSTER", str(uuid.uuid4())).with_exec(["ls", docker_repository])
+            environments.with_crane(
+                self.context,
+            )
+            .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
+            .with_exec(["ls", docker_repository])
         )
         crane_ls_exit_code = await with_exit_code(crane_ls)
         crane_ls_stderr = await with_stderr(crane_ls)
@@ -83,7 +87,6 @@ class PullConnectorImageFromRegistry(Step):
         We use crane to inspect the manifest of the image and check if it only has gzip layers.
         """
         for platform in consts.BUILD_PLATFORMS:
-
             inspect = environments.with_crane(self.context).with_exec(
                 ["manifest", "--platform", f"{str(platform)}", f"docker.io/{self.context.docker_image_name}"]
             )
@@ -264,7 +267,6 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
                 metadata_upload_results = await metadata_upload_step.run()
                 results.append(metadata_upload_results)
 
-
             # Exit early if the connector image already exists or has failed to build
             if check_connector_image_results.status is not StepStatus.SUCCESS:
                 return create_connector_report(results)
@@ -304,3 +306,16 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
                 results.append(metadata_upload_results)
 
             return create_connector_report(results)
+
+
+def reorder_contexts(contexts: List[PublishConnectorContext]) -> List[PublishConnectorContext]:
+    """Reorder contexts so that the ones that are for strict-encrypt/secure connectors come first.
+    The metadata upload on publish checks if the the connectors referenced in the metadata file are already published to DockerHub.
+    Non strict-encrypt variant reference the strict-encrypt variant in their metadata file for cloud.
+    So if we publish the non strict-encrypt variant first, the metadata upload will fail if the strict-encrypt variant is not published yet.
+    As strict-encrypt variant are often modified in the same PR as the non strict-encrypt variant, we want to publish them first.
+    This is an hacky approach: as connector names with -strict-encrypt/secure prefix are longer,
+    they will be sorted first with our reverse sort below.
+    """
+
+    return sorted(contexts, key=lambda context: context.connector.technical_name, reverse=True)

@@ -15,7 +15,7 @@ from ci_connector_ops.utils import console
 if TYPE_CHECKING:
     from logging import Logger
 
-from github import Github
+from github import Github, PullRequest
 
 AIRBYTE_GITHUB_REPO = "airbytehq/airbyte"
 GITHUB_GLOBAL_CONTEXT_FOR_TESTS = "Connectors CI tests"
@@ -74,6 +74,20 @@ def update_commit_status_check(
         context=context,
     )
     safe_log(logger, f"Created {state} status for commit {sha} on Github in {context} context with desc: {description}.")
+
+
+def get_pull_request(pull_request_number: int, github_access_token: str) -> PullRequest:
+    """Get a pull request object from its number.
+
+    Args:
+        pull_request_number (str): The number of the pull request to get.
+        github_access_token (str): The GitHub access token to use to authenticate.
+    Returns:
+        PullRequest: The pull request object.
+    """
+    github_client = Github(github_access_token)
+    airbyte_repo = github_client.get_repo(AIRBYTE_GITHUB_REPO)
+    return airbyte_repo.get_pull(pull_request_number)
 
 
 def update_global_commit_status_check_for_tests(click_context: dict, github_state: str, logger: Logger = None):
