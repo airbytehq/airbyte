@@ -46,6 +46,7 @@ class AsyncFlush implements DestinationFlushFunction {
   public void flush(final StreamDescriptor decs, final Stream<PartialAirbyteMessage> stream) throws Exception {
     final CsvSerializedBuffer writer;
     try {
+      log.info("Free memory before: {}", Runtime.getRuntime().freeMemory() / 1024 / 1024);
       writer = new CsvSerializedBuffer(
           new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
           new StagingDatabaseCsvSheetGenerator(),
@@ -57,8 +58,6 @@ class AsyncFlush implements DestinationFlushFunction {
           // todo (cgardens) - most writers just go ahead and re-serialize the contents of the record message.
           // we should either just pass the raw string or at least have a way to do that and create a default
           // impl that maintains backwards compatible behavior.
-          log.info("Free memory {}", FileUtils.byteCountToDisplaySize(Runtime.getRuntime().freeMemory() / 1024 / 1024));
-          log.info("Record estimated size {}", FileUtils.byteCountToDisplaySize(record.getSerialized().length()));
           writer.accept(Jsons.deserialize(record.getSerialized(), AirbyteMessage.class).getRecord());
         } catch (final Exception e) {
           throw new RuntimeException(e);
@@ -67,6 +66,9 @@ class AsyncFlush implements DestinationFlushFunction {
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
+
+    log.info("Free memory after deserializing: {}", Runtime.getRuntime().freeMemory() / 1024 / 1024);
+    log.info("Total memory used: {}", (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024);
 
     writer.flush();
     log.info("Flushing CSV buffer for stream {} ({}) to staging", decs.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
