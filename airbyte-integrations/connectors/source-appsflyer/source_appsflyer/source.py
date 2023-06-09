@@ -50,7 +50,7 @@ class AppsflyerStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return f"https://hq.appsflyer.com/export/{self.app_id}/"
+        return f"https://hq1.appsflyer.com/api/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -59,7 +59,6 @@ class AppsflyerStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {
-            "api_token": self.api_token,
             "from": pendulum.yesterday(self.timezone).to_date_string(),
             "to": pendulum.today(self.timezone).to_date_string(),
             "timezone": self.timezone.name,
@@ -71,7 +70,12 @@ class AppsflyerStream(HttpStream, ABC):
             params["additional_fields"] = additional_fields
 
         return params
-
+    
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {'authorization': f"Bearer {self.api_token}"}
+    
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         fields = add(self.main_fields, self.additional_fields) if self.additional_fields else self.main_fields
         csv_data = map(lambda x: x.decode("utf-8"), response.iter_lines())
@@ -184,6 +188,11 @@ class RawDataMixin:
         params["currency"] = "preferred"
 
         return params
+    
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return super().request_headers(stream_state, stream_slice, next_page_token)
 
 
 class AggregateDataMixin:
@@ -198,6 +207,10 @@ class AggregateDataMixin:
 
         return params
 
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return super().request_headers(stream_state, stream_slice, next_page_token)
 
 class RetargetingMixin:
     def request_params(
@@ -208,6 +221,10 @@ class RetargetingMixin:
 
         return params
 
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return super().request_headers(stream_state, stream_slice, next_page_token)
 
 class InAppEvents(RawDataMixin, IncrementalAppsflyerStream):
     intervals = 31
@@ -216,7 +233,7 @@ class InAppEvents(RawDataMixin, IncrementalAppsflyerStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "in_app_events_report/v5"
+        return f"raw-data/export/app/{self.app_id}/in_app_events_report/v5"
 
 
 class UninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
@@ -226,7 +243,7 @@ class UninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "uninstall_events_report/v5"
+        return f"raw-data/export/app/{self.app_id}/uninstall_events_report/v5"
 
 
 class Installs(RawDataMixin, IncrementalAppsflyerStream):
@@ -235,7 +252,7 @@ class Installs(RawDataMixin, IncrementalAppsflyerStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "installs_report/v5"
+        return f"raw-data/export/app/{self.app_id}/installs_report/v5"
 
 
 class RetargetingInAppEvents(RetargetingMixin, InAppEvents):
@@ -252,7 +269,7 @@ class PartnersReport(AggregateDataMixin, IncrementalAppsflyerStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "partners_by_date_report/v5"
+        return f"agg-data/export/app/{self.app_id}/partners_report/v5"
 
 
 class DailyReport(AggregateDataMixin, IncrementalAppsflyerStream):
@@ -261,7 +278,7 @@ class DailyReport(AggregateDataMixin, IncrementalAppsflyerStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "daily_report/v5"
+        return f"agg-data/export/app/{self.app_id}/daily_report/v5"
 
 
 class GeoReport(AggregateDataMixin, IncrementalAppsflyerStream):
@@ -270,7 +287,7 @@ class GeoReport(AggregateDataMixin, IncrementalAppsflyerStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "geo_by_date_report/v5"
+        return f"agg-data/export/app/{self.app_id}/geo_by_date_report/v5"
 
 
 class RetargetingPartnersReport(RetargetingMixin, PartnersReport):
@@ -289,6 +306,7 @@ class RetargetingGeoReport(RetargetingMixin, GeoReport):
 class SourceAppsflyer(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
+            AirbyteLogger().log("reached here to check connection")
             timezone = config.get("timezone", "UTC")
             if timezone not in pendulum.timezones:
                 return False, "The supplied timezone is invalid."
@@ -296,11 +314,26 @@ class SourceAppsflyer(AbstractSource):
             api_token = config["api_token"]
             dates = pendulum.now("UTC").to_date_string()
             test_url = (
-                f"https://hq.appsflyer.com/export/{app_id}/partners_report/v5?api_token={api_token}&from={dates}&to={dates}&timezone=UTC"
+                f"https://hq1.appsflyer.com/api/agg-data/export/app/{app_id}/partners_report/v5?from={dates}&to={dates}"
             )
-            response = requests.request("GET", url=test_url)
+            test_url_2 = (
+                f"https://hq1.appsflyer.com/api/raw-data/export/app/{app_id}/in_app_events_report/v5?from={dates}&to={dates}"
+            )
+            headers = {
+                "accept": "text/csv",
+                "authorization": "Bearer f{api_token}"
+            }
+            response = requests.request("GET", url=test_url,headers=headers)
 
             if response.status_code != 200:
+                error_message = "The supplied APP ID is invalid" if response.status_code == 404 else response.text.rstrip("\n")
+                if error_message:
+                    return False, error_message
+                response.raise_for_status()
+
+            response2 = requests.request("GET", url=test_url_2,headers=headers)
+            
+            if response2.status_code != 200:
                 error_message = "The supplied APP ID is invalid" if response.status_code == 404 else response.text.rstrip("\n")
                 if error_message:
                     return False, error_message
