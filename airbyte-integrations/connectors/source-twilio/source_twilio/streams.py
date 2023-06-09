@@ -633,3 +633,4 @@ class UserConversations(TwilioNestedStream):
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {"user_sid": record["sid"]}
+    
