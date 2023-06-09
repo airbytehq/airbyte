@@ -148,7 +148,31 @@ class DoubleverifyStream(HttpStream, ABC):
                 for row in reader :
                     yield row
 
-class Youtube(DoubleverifyStream):
+
+class DoubleverifyIncrementalStream(DoubleverifyStream):
+    state_checkpoint_interval = None
+
+    @property
+    def cursor_field(self) -> str:
+        """
+        TODO
+        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
+        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
+
+        :return str: The name of the cursor field.
+        """
+        return []
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
+        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
+        """
+        return {}
+
+
+class Youtube(DoubleverifyIncrementalStream):
+    cursor_field = "date"
     primary_key = ""
     request_type = 2
     catalog = json.load(open("./source_doubleverify/schemas/youtube.json"))
@@ -156,7 +180,9 @@ class Youtube(DoubleverifyStream):
         super().__init__(config=config, catalog_stream=self.catalog)
 
 
-class Pinterest(DoubleverifyStream):
+class Pinterest(DoubleverifyIncrementalStream):
+    cursor_field = "date"
+    cursor_field = "date"
     primary_key = ""
     request_type = 3
     catalog = json.load(open("./source_doubleverify/schemas/pinterest.json"))
@@ -164,7 +190,8 @@ class Pinterest(DoubleverifyStream):
         super().__init__(config=config, catalog_stream=self.catalog)
 
 
-class Facebook(DoubleverifyStream):
+class Facebook(DoubleverifyIncrementalStream):
+    cursor_field = "date"
     primary_key = ""
     request_type = 4
     catalog = json.load(open("./source_doubleverify/schemas/facebook.json"))
@@ -172,7 +199,8 @@ class Facebook(DoubleverifyStream):
         super().__init__(config=config, catalog_stream=self.catalog)
 
 
-class Twitter(DoubleverifyStream):
+class Twitter(DoubleverifyIncrementalStream):
+    cursor_field = "date"
     primary_key = ""
     request_type = 6
     catalog = json.load(open("./source_doubleverify/schemas/twitter.json"))
@@ -180,35 +208,40 @@ class Twitter(DoubleverifyStream):
         super().__init__(config=config, catalog_stream=self.catalog)
 
 
-class Snapchat(DoubleverifyStream):
+class Snapchat(DoubleverifyIncrementalStream):
+    cursor_field = "date"
     primary_key = ""
     request_type = 9
     catalog = json.load(open("./source_doubleverify/schemas/snapchat.json"))
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config=config, catalog_stream=self.catalog)
         
-class BrandSafety(DoubleverifyStream):
+class BrandSafety(DoubleverifyIncrementalStream):
+    cursor_field = "date"
     primary_key = ""
     request_type = 1
     catalog = json.load(open("./source_doubleverify/schemas/brand_safety.json"))
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config=config, catalog_stream=self.catalog)
         
-class Fraud(DoubleverifyStream):
+class Fraud(DoubleverifyIncrementalStream):
+    cursor_field = "date"
     primary_key = ""
     request_type = 1
     catalog = json.load(open("./source_doubleverify/schemas/fraud.json"))
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config=config, catalog_stream=self.catalog)
         
-class GeoReport(DoubleverifyStream):
+class GeoReport(DoubleverifyIncrementalStream):
+    cursor_field = "date"
     primary_key = ""
     request_type = 1
     catalog = json.load(open("./source_doubleverify/schemas/geo_report.json"))
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config=config, catalog_stream=self.catalog)
         
-class Viewability(DoubleverifyStream):
+class Viewability(DoubleverifyIncrementalStream):
+    cursor_field = "date"
     primary_key = ""
     request_type = 1
     catalog = json.load(open("./source_doubleverify/schemas/viewability.json"))
