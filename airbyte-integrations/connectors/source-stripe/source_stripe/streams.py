@@ -812,3 +812,17 @@ class Cards(IncrementalStripeStream):
 
     def path(self, **kwargs):
         return "issuing/cards"
+
+
+class TopUps(StripeStream):
+    """
+    API docs: https://stripe.com/docs/api/topups/list
+    """
+
+    name = "top_ups"
+
+    def path(self, **kwargs) -> str:
+        return "topups"
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+        return next_page_token or {}

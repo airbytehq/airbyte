@@ -46,6 +46,7 @@ from source_stripe.streams import (
     SubscriptionItems,
     Subscriptions,
     SubscriptionSchedule,
+    TopUps,
     Transfers,
 )
 
@@ -85,8 +86,10 @@ class SourceStripe(AbstractSource):
             CustomerBalanceTransactions(**args),
             Customers(**incremental_args),
             Disputes(**incremental_args),
-            Events(**incremental_args),
             EarlyFraudWarnings(**args),
+            Events(**incremental_args),
+            ExternalAccountBankAccounts(**args),
+            ExternalAccountCards(**args),
             InvoiceItems(**incremental_args),
             InvoiceLineItems(**args),
             Invoices(**incremental_args),
@@ -98,11 +101,10 @@ class SourceStripe(AbstractSource):
             PromotionCodes(**incremental_args),
             Refunds(**incremental_args),
             Reviews(**incremental_args),
+            SetupIntents(**incremental_args),
             SubscriptionItems(**args),
             Subscriptions(**incremental_args),
             SubscriptionSchedule(**incremental_args),
+            TopUps(**args),
             Transfers(**incremental_args),
-            ExternalAccountBankAccounts(**args),
-            ExternalAccountCards(**args),
-            SetupIntents(**incremental_args),
         ]
