@@ -354,6 +354,7 @@ def test_read():
         ],
         test_read_limit_reached=False,
         inferred_schema=None,
+        latest_config_update={}
     )
 
     expected_airbyte_message = AirbyteMessage(
@@ -367,6 +368,7 @@ def test_read():
                 ],
                 "test_read_limit_reached": False,
                 "inferred_schema": None,
+                "latest_config_update": {}
             },
             emitted_at=1,
         ),
@@ -407,7 +409,8 @@ def test_read_returns_error_response(mock_from_exception):
                                           pages=[StreamReadPages(records=[], request=None, response=None)],
                                           slice_descriptor=None, state=None)],
                                       test_read_limit_reached=False,
-                                      inferred_schema=None)
+                                      inferred_schema=None,
+                                      latest_config_update={})
 
     expected_message = AirbyteMessage(
         type=MessageType.RECORD,
@@ -483,7 +486,7 @@ def test_given_stream_is_not_declarative_stream_when_list_streams_then_return_ex
     error_message = list_streams(manifest_declarative_source, {})
 
     assert error_message.type == MessageType.TRACE
-    assert "Error listing streams." == error_message.trace.error.message
+    assert error_message.trace.error.message.startswith("Error listing streams")
     assert "A declarative source should only contain streams of type DeclarativeStream" in error_message.trace.error.internal_message
 
 
@@ -496,7 +499,7 @@ def test_given_declarative_stream_retriever_is_not_http_when_list_streams_then_r
     error_message = list_streams(manifest_declarative_source, {})
 
     assert error_message.type == MessageType.TRACE
-    assert "Error listing streams." == error_message.trace.error.message
+    assert error_message.trace.error.message.startswith("Error listing streams")
     assert "A declarative stream should only have a retriever of type HttpStream" in error_message.trace.error.internal_message
 
 
@@ -506,7 +509,7 @@ def test_given_unexpected_error_when_list_streams_then_return_exception_message(
     error_message = list_streams(manifest_declarative_source, {})
 
     assert error_message.type == MessageType.TRACE
-    assert "Error listing streams." == error_message.trace.error.message
+    assert error_message.trace.error.message.startswith("Error listing streams")
     assert "unexpected error" == error_message.trace.error.internal_message
 
 

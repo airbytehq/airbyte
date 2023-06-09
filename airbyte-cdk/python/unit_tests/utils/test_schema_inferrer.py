@@ -48,6 +48,117 @@ NOW = 1234567
             },
             id="test_derive_schema_for_nested_structures",
         ),
+        pytest.param(
+            [
+                {"stream": "my_stream", "data": {"field_A": 1}},
+                {"stream": "my_stream", "data": {"field_A": 2}},
+            ],
+            {"my_stream": {"field_A": {"type": "number"}}},
+            id="test_integer_number",
+        ),
+        pytest.param(
+            [
+                {"stream": "my_stream", "data": {"field_A": None}},
+            ],
+            {"my_stream": {}},
+            id="test_null",
+        ),
+        pytest.param(
+            [
+                {"stream": "my_stream", "data": {"field_A": None}},
+                {"stream": "my_stream", "data": {"field_A": "abc"}},
+            ],
+            {"my_stream": {"field_A": {"type": ["null", "string"]}}},
+            id="test_null_optional",
+        ),
+        pytest.param(
+            [
+                {"stream": "my_stream", "data": {"field_A": None}},
+                {"stream": "my_stream", "data": {"field_A": {"nested": "abc"}}},
+            ],
+            {"my_stream": {"field_A": {"type": ["object", "null"], "properties": {"nested": {"type": "string"}}}}},
+            id="test_any_of",
+        ),
+        pytest.param(
+            [
+                {"stream": "my_stream", "data": {"field_A": None}},
+                {"stream": "my_stream", "data": {"field_A": {"nested": "abc", "nully": None}}},
+            ],
+            {"my_stream": {"field_A": {"type": ["object", "null"], "properties": {"nested": {"type": "string"}}}}},
+            id="test_any_of_with_null",
+        ),
+        pytest.param(
+            [
+                {"stream": "my_stream", "data": {"field_A": None}},
+                {"stream": "my_stream", "data": {"field_A": {"nested": "abc", "nully": None}}},
+                {"stream": "my_stream", "data": {"field_A": {"nested": "abc", "nully": "a string"}}},
+            ],
+            {
+                "my_stream": {
+                    "field_A": {
+                        "type": ["object", "null"],
+                        "properties": {"nested": {"type": "string"}, "nully": {"type": ["null", "string"]}},
+                    }
+                }
+            },
+            id="test_any_of_with_null_union",
+        ),
+        pytest.param(
+            [
+                {"stream": "my_stream", "data": {"field_A": {"nested": "abc", "nully": "a string"}}},
+                {"stream": "my_stream", "data": {"field_A": None}},
+                {"stream": "my_stream", "data": {"field_A": {"nested": "abc", "nully": None}}},
+            ],
+            {
+                "my_stream": {
+                    "field_A": {
+                        "type": ["object", "null"],
+                        "properties": {"nested": {"type": "string"}, "nully": {"type": ["null", "string"]}},
+                    }
+                }
+            },
+            id="test_any_of_with_null_union_changed_order",
+        ),
+        pytest.param(
+            [
+                {"stream": "my_stream", "data": {"field_A": "abc", "nested": {"field_B": None}}},
+            ],
+            {"my_stream": {"field_A": {"type": "string"}, "nested": {"type": "object", "properties": {}}}},
+            id="test_nested_null",
+        ),
+        pytest.param(
+            [
+                {"stream": "my_stream", "data": {"field_A": "abc", "nested": [{"field_B": None, "field_C": "abc"}]}},
+            ],
+            {
+                "my_stream": {
+                    "field_A": {"type": "string"},
+                    "nested": {"type": "array", "items": {"type": "object", "properties": {"field_C": {"type": "string"}}}},
+                }
+            },
+            id="test_array_nested_null",
+        ),
+        pytest.param(
+            [
+                {"stream": "my_stream", "data": {"field_A": "abc", "nested": None}},
+                {"stream": "my_stream", "data": {"field_A": "abc", "nested": [{"field_B": None, "field_C": "abc"}]}},
+            ],
+            {
+                "my_stream": {
+                    "field_A": {"type": "string"},
+                    "nested": {"type": ["array", "null"], "items": {"type": "object", "properties": {"field_C": {"type": "string"}}}},
+                }
+            },
+            id="test_array_top_level_null",
+        ),
+        pytest.param(
+            [
+                {"stream": "my_stream", "data": {"field_A": None}},
+                {"stream": "my_stream", "data": {"field_A": "abc"}},
+            ],
+            {"my_stream": {"field_A": {"type": ["null", "string"]}}},
+            id="test_null_string",
+        ),
     ],
 )
 def test_schema_derivation(input_records: List, expected_schemas: Mapping):
