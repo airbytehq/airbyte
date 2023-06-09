@@ -178,11 +178,11 @@ class ConvexStream(HttpStream, IncrementalMixin):
         return params
 
     def request_headers(
-            self,
-            stream_state: ConvexState,
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            next_page_token: Optional[ConvexState] = None,
-        ) -> Dict[str, str]:
+        self,
+        stream_state: ConvexState,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[ConvexState] = None,
+    ) -> Dict[str, str]:
         """
         Custom headers for each HTTP request, not including Authorization.
         """
