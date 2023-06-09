@@ -1,4 +1,4 @@
-name: POC Connectors CI - test pipeline
+name: Connectors tests
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -70,6 +70,7 @@ jobs:
           CI_GIT_REVISION: ${{ github.sha }}
           CI_CONTEXT: "manual"
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
+          PRODUCTION: "True"
       - name: Run airbyte-ci connectors test [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         run: |
@@ -92,3 +93,4 @@ jobs:
           CI_CONTEXT: "pull_request"
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
           PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+          PRODUCTION: "True"
