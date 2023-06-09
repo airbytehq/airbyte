@@ -27,7 +27,7 @@ TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
 TWILIO_STUDIO_API_BASE = "https://studio.twilio.com/v1/"
 TWILIO_CONVERSATIONS_URL_BASE = "https://conversations.twilio.com/v1/"
 TWILIO_TRUNKING_URL_BASE = "https://trunking.twilio.com/v1/"
-
+TWILIO_VERIFY_BASE_V2 = "https://verify.twilio.com/v2/"
 
 class TwilioStream(HttpStream, ABC):
     url_base = TWILIO_API_URL_BASE
@@ -456,6 +456,16 @@ class Services(TwilioStream):
     def path(self, **kwargs):
         return "Services"
 
+
+class VerifyServices(TwilioStream):
+    """
+    https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources
+    """
+
+    url_base = TWILIO_VERIFY_BASE_V2
+
+    def path(self, **kwargs):
+        return "Services"
 
 class Roles(TwilioNestedStream):
     """
