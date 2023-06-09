@@ -16,6 +16,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
 /**
  * Track the number of flush workers (and their size) that are currently running for a given stream.
@@ -24,11 +25,13 @@ import lombok.extern.slf4j.Slf4j;
 public class RunningFlushWorkers {
 
   private final ConcurrentMap<StreamDescriptor, ConcurrentMap<UUID, Optional<Long>>> streamToFlushWorkerToBatchSize;
-  private final ScheduledExecutorService debugLoop;
 
   public RunningFlushWorkers() {
     streamToFlushWorkerToBatchSize = new ConcurrentHashMap<>();
-    debugLoop = Executors.newSingleThreadScheduledExecutor();
+    // this thread executor will create daemon threads, so it does not block exiting if all other active
+    // threads are already stopped.
+    final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor(new BasicThreadFactory.Builder()
+        .daemon(true).build());
     debugLoop.scheduleAtFixedRate(this::printRunningWorkerInfo, 0, 5, TimeUnit.SECONDS);
   }
 
@@ -102,13 +105,6 @@ public class RunningFlushWorkers {
           .append(System.lineSeparator());
     }
     log.info(workerInfo.toString());
-  }
-
-  /**
-   * Closes the debug loop for printing all in-flight workers and memory that is still pending
-   */
-  public void close() throws Exception {
-    debugLoop.shutdownNow();
   }
 
 }

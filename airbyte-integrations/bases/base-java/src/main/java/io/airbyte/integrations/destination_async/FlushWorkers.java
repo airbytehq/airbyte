@@ -218,7 +218,6 @@ public class FlushWorkers implements AutoCloseable {
     workerPool.shutdown();
     final var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
     log.info("Closing flush workers -- Workers shutdown status: {}", workersShut);
-    runningFlushWorkers.close();
     debugLoop.shutdownNow();
   }
 

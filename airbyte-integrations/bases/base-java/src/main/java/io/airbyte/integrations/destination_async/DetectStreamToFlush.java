@@ -70,14 +70,13 @@ public class DetectStreamToFlush {
   @VisibleForTesting
   long computeQueueThreshold() {
     // Eagerly flush when the Runtime used memory is 70% of the total memory. This is to avoid cases
-    // where
-    // the record estimation is inaccurate and we end up using too much memory.
+    // where the record estimation is inaccurate and we end up using too much memory.
     // TODO: (ryankfu) - We should improve the record estimation to avoid this.
-    final boolean isBuffer70Full =
+    final boolean isBufferTooFull =
         EAGER_FLUSH_THRESHOLD <= Math.max((double) bufferDequeue.getTotalGlobalQueueSizeBytes() / bufferDequeue.getMaxQueueSizeBytes(),
             (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / Runtime.getRuntime().totalMemory());
     // when we are closing or queues are very full, flush regardless of how few items are in the queue.
-    return isClosing.get() || isBuffer70Full ? 0 : QUEUE_FLUSH_THRESHOLD_BYTES;
+    return isClosing.get() || isBufferTooFull ? 0 : QUEUE_FLUSH_THRESHOLD_BYTES;
   }
 
   // todo (cgardens) - improve prioritization by getting a better estimate of how much data running
