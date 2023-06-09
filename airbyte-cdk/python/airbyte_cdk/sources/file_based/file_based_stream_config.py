@@ -4,11 +4,10 @@
 
 from typing import Any, List, Mapping, Optional
 
-from pydantic import BaseModel
-
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.sources.file_based.remote_file import FileType
 from airbyte_cdk.sources.file_based.schema_validation_policies import UserValidationPolicies
+from pydantic import BaseModel
 
 
 class FileBasedStreamConfig(BaseModel):

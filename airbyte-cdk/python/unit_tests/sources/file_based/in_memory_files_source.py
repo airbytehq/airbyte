@@ -6,23 +6,23 @@ import csv
 import io
 from datetime import datetime
 from io import IOBase
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Dict, List, Optional
 
-from airbyte_cdk.sources.file_based.file_based_source import AbstractFileBasedSource
-from airbyte_cdk.sources.file_based.file_based_stream_reader import (
-    AbstractFileBasedStreamReader,
-)
+from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.remote_file import FileType, RemoteFile
 
 
-class InMemoryFilesSource(AbstractFileBasedSource):
-    def __init__(self, files, file_type):
-        super().__init__()
+class InMemoryFilesSource(FileBasedSource):
+    def __init__(self, files, file_type, discovery_policy=None):
+        super().__init__(InMemoryFilesStreamReader(files=files, file_type=file_type))
         self.files = files
         self.file_type = file_type
+        self._discovery_policy = discovery_policy
 
-    def stream_reader(self, config: Mapping[str, Any]):
-        return InMemoryFilesStreamReader(files=self.files, file_type=self.file_type)
+    @property
+    def discovery_policy(self):
+        return self._discovery_policy
 
 
 class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):

@@ -6,7 +6,7 @@ from io import IOBase
 from typing import Any, Dict, Iterable
 
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
-from airbyte_cdk.sources.file_based.file_types import FileTypeParser
+from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 

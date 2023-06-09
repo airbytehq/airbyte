@@ -4,33 +4,29 @@
 
 import logging
 import traceback
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.file_based.discovery_concurrency_policy import (
-    AbstractDiscoveryConcurrencyPolicy,
-    DefaultDiscoveryConcurrencyPolicy,
-)
+from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_stream import FileBasedStream
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 
 
-class AbstractFileBasedSource(AbstractSource, ABC):
+class FileBasedSource(AbstractSource, ABC):
     """
-    All file-based sources must extend this class, implementing `stream_reader()`.
+    All file-based sources must provide a `stream_reader`.
     """
 
-    @abstractmethod
-    def stream_reader(self, config: Mapping[str, Any]) -> AbstractFileBasedStreamReader:
-        ...
+    def __init__(self, stream_reader: AbstractFileBasedStreamReader):
+        self.stream_reader = stream_reader
 
     @property
-    def discovery_concurrency_policy(self) -> AbstractDiscoveryConcurrencyPolicy:
+    def discovery_policy(self) -> AbstractDiscoveryPolicy:
         """
         Override to specify a non-default discovery concurrency policy
         """
-        return DefaultDiscoveryConcurrencyPolicy()
+        return DefaultDiscoveryPolicy()
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
@@ -68,12 +64,11 @@ class AbstractFileBasedSource(AbstractSource, ABC):
         """
         Return a list of this source's streams.
         """
-        stream_reader = self.stream_reader(config)
         return [
             FileBasedStream(
                 raw_config=stream,
-                stream_reader=stream_reader,
-                discovery_concurrency_policy=self.discovery_concurrency_policy,
+                stream_reader=self.stream_reader,
+                discovery_policy=self.discovery_policy,
             )
             for stream in config["streams"]
         ]

@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from abc import abstractmethod
 from datetime import datetime
 from fnmatch import fnmatch
@@ -8,7 +9,6 @@ from io import IOBase
 from typing import List, Optional
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-
 from pydantic import BaseModel
 
 
