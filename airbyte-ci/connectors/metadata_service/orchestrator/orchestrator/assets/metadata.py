@@ -1,14 +1,16 @@
 import pandas as pd
 import numpy as np
+import os
 from typing import List
 from dagster import Output, asset, OpExecutionContext
 import yaml
 
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+from metadata_service.constants import METADATA_FILE_NAME, ICON_FILE_NAME
 
 from orchestrator.utils.object_helpers import are_values_equal, merge_values
-from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
-from orchestrator.models.metadata import PartialMetadataDefinition, MetadataDefinition
+from orchestrator.models.metadata import PartialMetadataDefinition, MetadataDefinition, LatestMetadataEntry
+from orchestrator.config import get_public_url_for_gcs_file
 
 GROUP_NAME = "metadata"
 
@@ -173,54 +175,30 @@ def validate_metadata(metadata: PartialMetadataDefinition) -> tuple[bool, str]:
 # ASSETS
 
 
-@asset(group_name=GROUP_NAME)
-def valid_metadata_report_dataframe(overrode_metadata_definitions: List[PartialMetadataDefinition]) -> OutputDataFrame:
-    """
-    Validates the metadata definitions and returns a dataframe with the results
-    """
-
-    result = []
-
-    for metadata in overrode_metadata_definitions:
-        valid, error_msg = metadata.is_valid
-        result.append(
-            {
-                "definitionId": metadata["data"]["definitionId"],
-                "name": metadata["data"]["name"],
-                "dockerRepository": metadata["data"]["dockerRepository"],
-                "is_metadata_valid": valid,
-                "error_msg": error_msg,
-            }
-        )
-
-    result_df = pd.DataFrame(result)
-
-    return output_dataframe(result_df)
-
-
-@asset(group_name=GROUP_NAME)
-def legacy_registry_derived_metadata_definitions(
-    legacy_cloud_sources_dataframe, legacy_cloud_destinations_dataframe, legacy_oss_sources_dataframe, legacy_oss_destinations_dataframe
-) -> Output[List[PartialMetadataDefinition]]:
-    sources_metadata_list = merge_into_metadata_definitions(
-        "sourceDefinitionId", "source", legacy_oss_sources_dataframe, legacy_cloud_sources_dataframe
-    )
-    destinations_metadata_list = merge_into_metadata_definitions(
-        "destinationDefinitionId", "destination", legacy_oss_destinations_dataframe, legacy_cloud_destinations_dataframe
-    )
-    all_definitions = sources_metadata_list + destinations_metadata_list
-    return Output(all_definitions, metadata={"count": len(all_definitions)})
-
-
 @asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME)
-def metadata_definitions(context: OpExecutionContext) -> List[MetadataDefinition]:
+def metadata_definitions(context: OpExecutionContext) -> List[LatestMetadataEntry]:
     latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
 
-    metadata_definitions = []
+    metadata_entries = []
     for blob in latest_metadata_file_blobs:
         yaml_string = blob.download_as_string().decode("utf-8")
         metadata_dict = yaml.safe_load(yaml_string)
         metadata_def = MetadataDefinition.parse_obj(metadata_dict)
-        metadata_definitions.append(metadata_def)
 
-    return metadata_definitions
+        metadata_file_path = blob.name
+        icon_file_path = metadata_file_path.replace(METADATA_FILE_NAME, ICON_FILE_NAME)
+        icon_blob = blob.bucket.blob(icon_file_path)
+
+        icon_url = (
+            get_public_url_for_gcs_file(icon_blob.bucket.name, icon_blob.name, os.getenv("METADATA_CDN_BASE_URL"))
+            if icon_blob.exists()
+            else None
+        )
+
+        metadata_entry = LatestMetadataEntry(
+            metadata_definition=metadata_def,
+            icon_url=icon_url,
+        )
+        metadata_entries.append(metadata_entry)
+
+    return metadata_entries

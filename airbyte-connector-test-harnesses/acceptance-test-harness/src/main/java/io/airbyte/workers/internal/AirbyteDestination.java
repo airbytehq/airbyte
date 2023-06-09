@@ -8,6 +8,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.configoss.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -24,9 +25,10 @@ public interface AirbyteDestination extends CheckedConsumer<AirbyteMessage, Exce
    * @param destinationConfig - contains the arguments that must be passed to the write method of the
    *        Destination.
    * @param jobRoot - directory where the job can write data.
+   * @param additionalEnvironmentVariables
    * @throws Exception - throws if there is any failure in startup.
    */
-  void start(WorkerDestinationConfig destinationConfig, Path jobRoot) throws Exception;
+  void start(WorkerDestinationConfig destinationConfig, Path jobRoot, Map<String, String> additionalEnvironmentVariables) throws Exception;
 
   /**
    * Accepts an AirbyteMessage and writes it to STDIN of the Destination. Blocks if STDIN's buffer is

@@ -23,12 +23,13 @@ public class DevNullDestinationAcceptanceTest extends DestinationAcceptanceTest 
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.jsonNode(Collections.singletonMap("type", "SILENT"));
+    return Jsons.jsonNode(
+        Collections.singletonMap("test_destination", Collections.singletonMap("test_destination_type", "SILENT")));
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    return Jsons.jsonNode(Collections.singletonMap("type", "invalid"));
+    return Jsons.jsonNode(Collections.singletonMap("test_destination", Collections.singletonMap("test_destination_type", "invalid")));
   }
 
   @Override

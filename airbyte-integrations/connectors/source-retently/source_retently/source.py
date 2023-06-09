@@ -80,6 +80,14 @@ class RetentlyStream(HttpStream):
         stream_data = data.get(self.json_path) if self.json_path else data
         yield from stream_data
 
+    @staticmethod
+    def convert_empty_string_to_null(record: MutableMapping[str, Any], parent_key: str, field_key: str):
+        """
+        Converts empty strings to null in the specified field of the record.
+        """
+        if record.get(parent_key, {}).get(field_key, "") == "":
+            record[parent_key][field_key] = None
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json = response.json().get("data", dict())
         total = json.get("total")
@@ -166,6 +174,18 @@ class Outbox(RetentlyStream):
         **kwargs,
     ) -> str:
         return "nps/outbox"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs,
+    ) -> Iterable[Mapping]:
+        data = response.json().get("data")
+        stream_data = data.get(self.json_path) if self.json_path else data
+        for record in stream_data:
+            self.convert_empty_string_to_null(record, "detailedStatus", "openedDate")
+            self.convert_empty_string_to_null(record, "detailedStatus", "respondedDate")
+            yield record
 
 
 class Reports(RetentlyStream):
