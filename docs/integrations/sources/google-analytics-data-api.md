@@ -112,6 +112,7 @@ This connector outputs the following incremental streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------|
+| 0.2.5   | 2023-06-08 | [27175](https://github.com/airbytehq/airbyte/pull/27175) | Improve Error Messages                                                        |
 | 0.2.4   | 2023-06-01 | [26887](https://github.com/airbytehq/airbyte/pull/26887) | Remove `authSpecification` from connector spec in favour of `advancedAuth`    |
 | 0.2.3   | 2023-05-16 | [26126](https://github.com/airbytehq/airbyte/pull/26126) | Fix pagination                                                                |
 | 0.2.2   | 2023-05-12 | [25987](https://github.com/airbytehq/airbyte/pull/25987) | Categorized Config Errors Accurately                                          |
