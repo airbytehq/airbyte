@@ -10,6 +10,7 @@ out
 .project
 .settings
 .vscode
+env
 bin
 **/gmon.out
 static_checker_reports/
