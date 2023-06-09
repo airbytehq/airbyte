@@ -11,7 +11,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 class JsonlParser(FileTypeParser):
 
-    MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE = 1000000
+    MAX_BYTES_PER_FILE_FOR_SCHEMA_INFERENCE = 1_000_000
 
     async def infer_schema(self, files: List[RemoteFile], stream_reader: AbstractFileBasedStreamReader) -> Dict[str, Any]:
         ...

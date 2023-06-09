@@ -29,6 +29,9 @@ class AbstractFileBasedSource(AbstractSource, ABC):
 
     @property
     def discovery_concurrency_policy(self) -> AbstractDiscoveryConcurrencyPolicy:
+        """ 
+        Override to specify a non-default discovery concurrency policy
+        """
         return DefaultDiscoveryConcurrencyPolicy()
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -43,7 +46,7 @@ class AbstractFileBasedSource(AbstractSource, ABC):
         """
         streams = self.streams(config)
         if len(streams) == 0:
-            return False, f"No streams are available for source {self.name}"
+            return False, f"No streams are available for source {self.name}. This is probably an issue with the connector. Please contact support. "
 
         errors = []
         for stream in streams:
