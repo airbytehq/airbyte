@@ -47,8 +47,9 @@ public class BufferEnqueue {
   }
 
   /**
-   * Enqueues the record if available memory exists. When unsuccessful, this method will apply back-pressure
-   * to avoid enqueue more records than available memory. This method presumes each message is less than 10 MB
+   * Enqueues the record if available memory exists. When unsuccessful, this method will apply
+   * back-pressure to avoid enqueue more records than available memory. This method presumes each
+   * message is less than 10 MB
    *
    * @param message partially deserialized AirbyteMessage
    * @param sizeInBytes estimated size of the message in bytes

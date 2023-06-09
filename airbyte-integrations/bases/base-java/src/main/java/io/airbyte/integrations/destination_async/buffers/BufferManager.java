@@ -20,8 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class serves as the conductor of the buffer system. It provides separation of concerns for how buffers enqueue and dequeue items. It also provides
- * an overview into available memory across all buffers
+ * This class serves as the conductor of the buffer system. It provides separation of concerns for
+ * how buffers enqueue and dequeue items. It also provides an overview into available memory across
+ * all buffers
  */
 @Slf4j
 public class BufferManager {
@@ -80,7 +81,8 @@ public class BufferManager {
     final var queueInfo = new StringBuilder().append("QUEUE INFO").append(System.lineSeparator());
 
     queueInfo
-        .append(String.format("  Global Mem Manager -- max: %s, allocated: %s, %% used max: %s, %% used total: %s, RT used: %s (MB), free: %s (MB), %% used: %s",
+        .append(String.format(
+            "  Global Mem Manager -- max: %s, allocated: %s, %% used max: %s, %% used total: %s, RT used: %s (MB), free: %s (MB), %% used: %s",
             AirbyteFileUtils.byteCountToDisplaySize(memoryManager.getMaxMemoryBytes()),
             AirbyteFileUtils.byteCountToDisplaySize(memoryManager.getCurrentMemoryBytes()),
             (double) memoryManager.getCurrentMemoryBytes() / memoryManager.getMaxMemoryBytes() * 100,

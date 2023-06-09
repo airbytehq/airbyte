@@ -6,8 +6,6 @@ package io.airbyte.integrations.destination_async;
 
 import com.google.common.base.Preconditions;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +15,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Track the number of flush workers (and their size) that are currently running for a given stream.
@@ -100,7 +99,7 @@ public class RunningFlushWorkers {
                   .filter(Optional::isPresent)
                   .map(Optional::get)
                   .reduce(0L, Long::sum))))
-              .append(System.lineSeparator());
+          .append(System.lineSeparator());
     }
     log.info(workerInfo.toString());
   }
