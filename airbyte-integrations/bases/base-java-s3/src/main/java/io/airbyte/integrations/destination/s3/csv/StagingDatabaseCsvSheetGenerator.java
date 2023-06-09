@@ -53,7 +53,7 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
   public List<Object> getDataRow(final UUID id, final String formattedString, final long emittedAt) {
     return List.of(
             id,
-            Jsons.serialize(formattedString),
+            formattedString,
             Timestamp.from(Instant.ofEpochSecond(emittedAt)));
   }
 
