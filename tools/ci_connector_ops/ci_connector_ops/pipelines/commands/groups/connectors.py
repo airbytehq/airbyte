@@ -233,8 +233,8 @@ def test(
             ctx.obj["concurrency"],
             ctx.obj["execute_timeout"],
         )
-        # We run the Java connectors tests sequentially because we currently have a bug when Java integration tests are run in parallel.
-        # See https://github.com/airbytehq/airbyte/issues/26862
+        # We run the Java connectors tests sequentially because we currently have memory issues when Java integration tests are run in parallel.
+        # See https://github.com/airbytehq/airbyte/issues/27168
         anyio.run(
             run_connectors_pipelines,
             [
