@@ -1,5 +1,6 @@
 import pandas as pd
 import urllib.parse
+import json
 
 from jinja2 import Environment, PackageLoader
 from typing import List, Optional, Callable, Any
@@ -187,3 +188,67 @@ def render_connector_nightly_report_md(nightly_report_connector_matrix_df: pd.Da
         failed_last_build_two_builds=nightly_report_df_to_md(failed_last_build_two_builds_df),
         failed_last_build_two_builds_count=len(failed_last_build_two_builds_df),
     )
+
+def render_connector_test_summary_html(connector_name: str, connector_test_summary_df: pd.DataFrame) -> str:
+    env = Environment(loader=PackageLoader("orchestrator", "templates"))
+    template = env.get_template("connector_test_summary.html")
+    columns_to_show: List[ColumnInfo] = [
+        {
+            "column": "date",
+            "title": "Date",
+        },
+        {
+            "column": "connector_version",
+            "title": "Version",
+        },
+        {
+            "column": "success",
+            "title": "Success",
+        },
+        {
+            "column": "gha_workflow_run_url",
+            "title": "Github Action",
+            "formatter": simple_link_html,
+        },
+    ]
+
+    connector_test_summary_html = dataframe_to_table_html(connector_test_summary_df, columns_to_show)
+
+
+    return template.render(
+        connector_name=connector_name,
+        connector_test_summary_html=connector_test_summary_html
+    )
+
+def render_connector_test_badge(test_summary: pd.DataFrame) -> str:
+    number_of_passes = len(test_summary[test_summary["success"] == True])
+    number_of_fails = len(test_summary[test_summary["success"] == False])
+
+    logo_svg_string = "<svg version=\"1.0\" xmlns=\"http://www.w3.org/2000/svg\"\n width=\"32.000000pt\" height=\"32.000000pt\" viewBox=\"0 0 32.000000 32.000000\"\n preserveAspectRatio=\"xMidYMid meet\">\n\n<g transform=\"translate(0.000000,32.000000) scale(0.100000,-0.100000)\"\nfill=\"#000000\" stroke=\"none\">\n<path d=\"M136 279 c-28 -22 -111 -157 -102 -166 8 -8 34 16 41 38 8 23 21 25\n29 3 3 -8 -6 -35 -20 -60 -18 -31 -22 -44 -12 -44 20 0 72 90 59 103 -6 6 -11\n27 -11 47 0 77 89 103 137 41 18 -23 16 -62 -5 -96 -66 -109 -74 -125 -59\n-125 24 0 97 140 97 185 0 78 -92 123 -154 74z\"/>\n<path d=\"M168 219 c-22 -13 -23 -37 -2 -61 12 -12 14 -22 7 -30 -5 -7 -22 -34\n-37 -60 -20 -36 -23 -48 -12 -48 13 0 106 147 106 169 0 11 -28 41 -38 41 -4\n0 -15 -5 -24 -11z m32 -34 c0 -8 -4 -15 -10 -15 -5 0 -10 7 -10 15 0 8 5 15\n10 15 6 0 10 -7 10 -15z\"/>\n</g>\n</svg>\n"
+
+    message = ""
+    color="red"
+    if number_of_passes > 0:
+        color="green"
+        message += f"✔ {number_of_passes}"
+
+    if number_of_passes > 0 and number_of_fails > 0:
+        color="yellow"
+        message += " | "
+
+    if number_of_fails > 0:
+        message += f"✘ {number_of_fails}"
+
+    badge_dict = {
+        "schemaVersion": 1,
+        "label": "",
+        "labelColor": "#c5c4ff",
+        "message": message,
+        "color": color,
+        "cacheSeconds": 300,
+        "logoSvg": logo_svg_string,
+    }
+
+    json_string = json.dumps(badge_dict)
+
+    return json_string

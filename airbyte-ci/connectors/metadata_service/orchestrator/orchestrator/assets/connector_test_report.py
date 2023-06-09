@@ -15,6 +15,8 @@ from orchestrator.config import (
 )
 from orchestrator.templates.render import (
     render_connector_nightly_report_md,
+    render_connector_test_summary_html,
+    render_connector_test_badge,
 )
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 
@@ -117,73 +119,6 @@ def compute_connector_nightly_report_history(
     matrix_df = matrix_df.reindex(sorted(matrix_df.columns), axis=1)
 
     return matrix_df
-
-
-def test_summary_to_badge_df(test_summary: pd.DataFrame) -> str:
-    # Example fail json
-    #     {
-    # "schemaVersion": 1,
-    # "label": "",
-    # "labelColor": "#c5c4ff",
-    # "message": "✘ 10",
-    # "color": "red",
-    # "cacheSeconds": 300,
-    # "logoSvg": "<svg version=\"1.0\" xmlns=\"http://www.w3.org/2000/svg\"\n width=\"32.000000pt\" height=\"32.000000pt\" viewBox=\"0 0 32.000000 32.000000\"\n preserveAspectRatio=\"xMidYMid meet\">\n\n<g transform=\"translate(0.000000,32.000000) scale(0.100000,-0.100000)\"\nfill=\"#000000\" stroke=\"none\">\n<path d=\"M136 279 c-28 -22 -111 -157 -102 -166 8 -8 34 16 41 38 8 23 21 25\n29 3 3 -8 -6 -35 -20 -60 -18 -31 -22 -44 -12 -44 20 0 72 90 59 103 -6 6 -11\n27 -11 47 0 77 89 103 137 41 18 -23 16 -62 -5 -96 -66 -109 -74 -125 -59\n-125 24 0 97 140 97 185 0 78 -92 123 -154 74z\"/>\n<path d=\"M168 219 c-22 -13 -23 -37 -2 -61 12 -12 14 -22 7 -30 -5 -7 -22 -34\n-37 -60 -20 -36 -23 -48 -12 -48 13 0 106 147 106 169 0 11 -28 41 -38 41 -4\n0 -15 -5 -24 -11z m32 -34 c0 -8 -4 -15 -10 -15 -5 0 -10 7 -10 15 0 8 5 15\n10 15 6 0 10 -7 10 -15z\"/>\n</g>\n</svg>\n"
-    # }
-
-    # Example pass and fail json
-    #     {
-    # "schemaVersion": 1,
-    # "label": "",
-    # "labelColor": "#c5c4ff",
-    # "message": "✔ 1 | ✘ 9",
-    # "color": "yellow",
-    # "cacheSeconds": 300,
-    # "logoSvg": "<svg version=\"1.0\" xmlns=\"http://www.w3.org/2000/svg\"\n width=\"32.000000pt\" height=\"32.000000pt\" viewBox=\"0 0 32.000000 32.000000\"\n preserveAspectRatio=\"xMidYMid meet\">\n\n<g transform=\"translate(0.000000,32.000000) scale(0.100000,-0.100000)\"\nfill=\"#000000\" stroke=\"none\">\n<path d=\"M136 279 c-28 -22 -111 -157 -102 -166 8 -8 34 16 41 38 8 23 21 25\n29 3 3 -8 -6 -35 -20 -60 -18 -31 -22 -44 -12 -44 20 0 72 90 59 103 -6 6 -11\n27 -11 47 0 77 89 103 137 41 18 -23 16 -62 -5 -96 -66 -109 -74 -125 -59\n-125 24 0 97 140 97 185 0 78 -92 123 -154 74z\"/>\n<path d=\"M168 219 c-22 -13 -23 -37 -2 -61 12 -12 14 -22 7 -30 -5 -7 -22 -34\n-37 -60 -20 -36 -23 -48 -12 -48 13 0 106 147 106 169 0 11 -28 41 -38 41 -4\n0 -15 -5 -24 -11z m32 -34 c0 -8 -4 -15 -10 -15 -5 0 -10 7 -10 15 0 8 5 15\n10 15 6 0 10 -7 10 -15z\"/>\n</g>\n</svg>\n"
-    # }
-
-    # Example pass json
-    # {
-    #     "schemaVersion": 1,
-    #     "label": "",
-    #     "labelColor": "#c5c4ff",
-    #     "message": "✔ 10",
-    #     "color": "green",
-    #     "cacheSeconds": 300,
-    #     "logoSvg": "<svg version=\"1.0\" xmlns=\"http://www.w3.org/2000/svg\"\n width=\"32.000000pt\" height=\"32.000000pt\" viewBox=\"0 0 32.000000 32.000000\"\n preserveAspectRatio=\"xMidYMid meet\">\n\n<g transform=\"translate(0.000000,32.000000) scale(0.100000,-0.100000)\"\nfill=\"#000000\" stroke=\"none\">\n<path d=\"M136 279 c-28 -22 -111 -157 -102 -166 8 -8 34 16 41 38 8 23 21 25\n29 3 3 -8 -6 -35 -20 -60 -18 -31 -22 -44 -12 -44 20 0 72 90 59 103 -6 6 -11\n27 -11 47 0 77 89 103 137 41 18 -23 16 -62 -5 -96 -66 -109 -74 -125 -59\n-125 24 0 97 140 97 185 0 78 -92 123 -154 74z\"/>\n<path d=\"M168 219 c-22 -13 -23 -37 -2 -61 12 -12 14 -22 7 -30 -5 -7 -22 -34\n-37 -60 -20 -36 -23 -48 -12 -48 13 0 106 147 106 169 0 11 -28 41 -38 41 -4\n0 -15 -5 -24 -11z m32 -34 c0 -8 -4 -15 -10 -15 -5 0 -10 7 -10 15 0 8 5 15\n10 15 6 0 10 -7 10 -15z\"/>\n</g>\n</svg>\n"
-    #     }
-
-    # df test_summary column success  is true
-    number_of_passes = len(test_summary[test_summary["success"] == True])
-    number_of_fails = len(test_summary[test_summary["success"] == False])
-
-    message = ""
-    color="red"
-    if number_of_passes > 0:
-        color="green"
-        message += f"✔ {number_of_passes}"
-
-    if number_of_passes > 0 and number_of_fails > 0:
-        color="yellow"
-        message += " | "
-
-    if number_of_fails > 0:
-        message += f"✘ {number_of_fails}"
-
-
-    badge_dict = {
-        "schemaVersion": 1,
-        "label": "",
-        "labelColor": "#c5c4ff",
-        "message": message,
-        "color": color,
-        "cacheSeconds": 300,
-        "logoSvg": "TODO",
-    }
-
-    json_string = json.dumps(badge_dict)
-
-    return json_string
 
 
 
@@ -312,21 +247,9 @@ def persist_connectors_test_summary_files(context: OpExecutionContext, last_10_c
         connector_test_summary = connector_test_summary.drop(columns=["timestamp"])
 
         report_file_name = f"test_summary/{connector_name}"
-        markdown_string = connector_test_summary.to_markdown()
 
-        # TODO render using our helpers to have a prettier table
-        html_string = connector_test_summary.to_html(
-            # columns=columns,
-            justify="left",
-            index=False,
-            # formatters=html_formatters,
-            escape=False,
-            # classes="styled-table",
-            na_rep="❌",
-            render_links=True,
-        )
-
-        badge_json = test_summary_to_badge_df(connector_test_summary)
+        badge_json = render_connector_test_badge(connector_test_summary)
+        html_string = render_connector_test_summary_html(connector_name, connector_test_summary)
 
         html_file_key = f"{report_file_name}/summary"
         badge_json_file_key = f"{report_file_name}/badge"
