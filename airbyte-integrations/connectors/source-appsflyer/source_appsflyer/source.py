@@ -334,10 +334,10 @@ class SourceAppsflyer(AbstractSource):
             response2 = requests.request("GET", url=test_url_2,headers=headers)
 
             if response2.status_code != 200:
-                error_message = "The supplied APP ID is invalid" if response.status_code == 404 else response.text.rstrip("\n")
+                error_message = "The supplied APP ID is invalid" if response2.status_code == 404 else response2.text.rstrip("\n")
                 if error_message:
                     return False, error_message
-                response.raise_for_status()
+                response2.raise_for_status()
         except Exception as e:
             return False, e
 
