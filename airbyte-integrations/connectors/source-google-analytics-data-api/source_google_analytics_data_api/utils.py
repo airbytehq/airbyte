@@ -65,9 +65,7 @@ NO_DIMENSIONS = "The custom report entered does not contain dimensions, which is
 NO_METRICS = "The custom report entered does not contain metrics, which is required. Check the entered format follows the syntax in our docs (https://docs.airbyte.com/integrations/sources/google-analytics-data-api/) and validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/)."
 WRONG_DIMENSIONS = "The custom report {report_name} entered contains invalid dimensions: {fields}. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/)."
 WRONG_METRICS = "The custom report {report_name} entered contains invalid metrics: {fields}. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/)."
-WRONG_PIVOTS = (
-    "The custom report {report_name} entered contains invalid pivots: {fields}. Ensure the pivot follow the syntax described in the docs."
-)
+WRONG_PIVOTS = "The custom report {report_name} entered contains invalid pivots: {fields}. Ensure the pivot follow the syntax described in the docs (https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot)."
 
 
 def datetime_to_secs(dt: datetime.datetime) -> int:

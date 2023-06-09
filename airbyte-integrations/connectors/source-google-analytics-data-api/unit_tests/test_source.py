@@ -92,7 +92,7 @@ def config_gen(config):
         ({"custom_reports": "[{\"name\": \"pivot_report\", \"dateRanges\": [{ \"startDate\": \"2020-09-01\", \"endDate\": "
                             "\"2020-09-15\" }], \"dimensions\": [\"browser\", \"country\", \"language\"], \"metrics\": [\"sessions\"], "
                             "\"pivots\": {}}]"},
-         Status.FAILED, '"The custom report pivot_report entered contains invalid pivots: {} is not of type \'null\', \'array\'. Ensure the pivot follow the syntax described in the docs."'),
+         Status.FAILED, '"The custom report pivot_report entered contains invalid pivots: {} is not of type \'null\', \'array\'. Ensure the pivot follow the syntax described in the docs (https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot)."'),
     ],
 )
 def test_check(requests_mock, config_gen, config_values, status, message):
