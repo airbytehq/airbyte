@@ -10,6 +10,7 @@ from source_hubspot.streams import (
     Companies,
     ContactLists,
     Contacts,
+    ContactsMergedAudit,
     CustomObject,
     DealPipelines,
     Deals,
@@ -84,6 +85,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (Companies, "company", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (ContactLists, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Contacts, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
+        (ContactsMergedAudit, "contact", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (Deals, "deal", {"updatedAt": "2022-02-25T16:43:11Z"}),
         (DealsArchived, "deal", {"archivedAt": "2022-02-25T16:43:11Z"}),
         (DealPipelines, "deal", {"updatedAt": 1675121674226}),
@@ -130,6 +132,23 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
             "status_code": 200,
         }
     ]
+    read_batch_contact_v1_response = [
+        {
+            "json": {
+                "test_id": {
+                    "vid": "test_id",
+                    'merge-audits': [
+                        {
+                            'canonical-vid': 2,
+                            'vid-to-merge': 5608,
+                            'timestamp': 1576188219693
+                        }
+                    ]
+                }
+            },
+            "status_code": 200,
+        }
+    ]
     is_form_submission = isinstance(stream, FormSubmissions)
     stream._sync_mode = SyncMode.full_refresh
     stream_url = stream.url + "/test_id" if is_form_submission else stream.url
@@ -139,6 +158,8 @@ def test_streams_read(stream, endpoint, cursor_value, requests_mock, common_para
     requests_mock.register_uri("GET", "/marketing/v3/forms", responses)
     requests_mock.register_uri("GET", "/email/public/v1/campaigns/test_id", responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
+    requests_mock.register_uri("GET", "/contacts/v1/contact/vids/batch/", read_batch_contact_v1_response)
+    requests_mock.register_uri("POST", f"/crm/v3/objects/{endpoint}/search", responses)
 
     records = read_full_refresh(stream)
     assert records
@@ -354,6 +375,29 @@ def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_availabl
     json_schema = stream.get_json_schema()
 
     assert json_schema == expected_custom_object_json_schema
+    assert not adapter.called
+
+
+def test_contacts_merged_audit_stream_doesnt_call_hubspot_to_get_json_schema(requests_mock, common_params):
+    stream = ContactsMergedAudit(**common_params)
+
+    adapter = requests_mock.register_uri(
+        "GET",
+        f"/properties/v2/{stream.entity}/properties",
+        [
+            {
+                "json": [
+                    {
+                        'name': 'hs_object_id',
+                        'label': 'Record ID',
+                        'type': 'number',
+                    }
+                ]
+            }
+        ]
+    )
+    _ = stream.get_json_schema()
+
     assert not adapter.called
 
 
