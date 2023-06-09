@@ -1,0 +1,223 @@
+{
+  "$schema":"http://json-schema.org/schema#",
+  "type":"object",
+  "additionalProperties": true,
+  "properties":{
+    "totals":{
+      "type":"object",
+      "properties":{
+        "events":{
+          "type":["integer", "null", "number"]
+        },
+        "targetEvents":{
+          "type":["integer", "null", "number"]
+        },
+        "frequency":{
+          "type":["integer", "null", "number"]
+        },
+        "targetGroupSize":{
+          "type":["integer", "null", "number"]
+        },
+        "reach":{
+          "type":["integer", "null", "number"]
+        },
+        "reachPersons":{
+          "type":["integer", "null", "number"]
+        },
+        "estimatedUniqueVisitors":{
+          "type":["integer", "null", "number"]
+        },
+        "affinity":{
+          "type":["integer", "null", "number"]
+        },
+        "trp":{
+          "type":["integer", "null", "number"]
+        },
+        "profile":{
+          "type":"object",
+          "properties":{
+            "gender":{
+              "type":"array",
+              "items":{
+                "type":["integer", "null", "number"]
+              }
+            },
+            "age":{
+              "type":"array",
+              "items":{
+                "type":["integer", "null", "number"]
+              }
+            }
+          },
+          "required":[
+            "age",
+            "gender"
+          ]
+        },
+        "share":{
+          "type":["integer", "null", "number"]
+        },
+        "totalEventsPercentage":{
+          "type":["integer", "null", "number"]
+        },
+        "targetEventsPercentage":{
+          "type":["integer", "null", "number"]
+        }
+      },
+      "required":[
+        "affinity",
+        "estimatedUniqueVisitors",
+        "events",
+        "frequency",
+        "profile",
+        "reach",
+        "reachPersons",
+        "share",
+        "targetEvents",
+        "targetEventsPercentage",
+        "targetGroupSize",
+        "totalEventsPercentage",
+        "trp"
+      ]
+    },
+    "weekly":{
+      "type":"array",
+      "items":{
+        "type":"object",
+        "properties":{
+          "week":{
+            "type":["integer", "null", "number"]
+          },
+          "weekISO":{
+            "type":["string", "null"]
+          },
+          "events":{
+            "type":["integer", "null", "number"]
+          },
+          "targetEvents":{
+            "type":["integer", "null", "number"]
+          },
+          "reach":{
+            "type":["integer", "null", "number"]
+          },
+          "reachPersons":{
+            "type":["integer", "null", "number"]
+          },
+          "trp":{
+            "type":["integer", "null", "number"]
+          },
+          "marginal":{
+            "type":["integer", "null", "number"]
+          }
+        },
+        "required":[
+          "events",
+          "marginal",
+          "reach",
+          "reachPersons",
+          "targetEvents",
+          "trp",
+          "week",
+          "weekISO"
+        ]
+      }
+    },
+    "reportItems":{
+      "type":"array",
+      "items":{
+        "type":"object",
+        "properties":{
+          "fusionId":{
+            "type":["string", "null"]
+          },
+          "providerId":{
+            "type":["string", "null"]
+          },
+          "events":{
+            "type":["integer", "null", "number"]
+          },
+          "targetEvents":{
+            "type":["integer", "null", "number"]
+          },
+          "totalEventsPercentage":{
+            "type":["integer", "null", "number"]
+          },
+          "targetEventsPercentage":{
+            "type":["integer", "null", "number"]
+          },
+          "reach":{
+            "type":["integer", "null", "number"]
+          },
+          "reachPersons":{
+            "type":["integer", "null", "number"]
+          },
+          "frequency":{
+            "type":["integer", "null", "number"]
+          },
+          "estimatedUniqueVisitors":{
+            "type":["integer", "null", "number"]
+          },
+          "affinity":{
+            "type":["integer", "null", "number"]
+          },
+          "affinityPercentage":{
+            "type":["integer", "null", "number"]
+          },
+          "trp":{
+            "type":["integer", "null", "number"]
+          },
+          "profile":{
+            "type":"object",
+            "properties":{
+              "age":{
+                "type":"array",
+                "items":{
+                  "type":["integer", "null", "number"]
+                }
+              },
+              "gender":{
+                "type":"array",
+                "items":{
+                  "type":["integer", "null", "number"]
+                }
+              }
+            },
+            "required":[
+              "age",
+              "gender"
+            ]
+          },
+          "share":{
+            "type":["integer", "null", "number"]
+          }
+        },
+        "required":[
+          "affinity",
+          "affinityPercentage",
+          "estimatedUniqueVisitors",
+          "events",
+          "frequency",
+          "fusionId",
+          "profile",
+          "providerId",
+          "reach",
+          "reachPersons",
+          "share",
+          "targetEvents",
+          "targetEventsPercentage",
+          "totalEventsPercentage",
+          "trp"
+        ]
+      }
+    },
+    "campaign_id":{
+      "type":["string", "null"]
+    }
+  },
+  "required":[
+    "reportItems",
+    "totals",
+    "weekly",
+    "campaign_id"
+  ]
+}

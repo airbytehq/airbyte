@@ -1,0 +1,189 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "deviceCounts": {
+      "type": "object",
+      "properties": {
+        "desktop": {
+          "type": ["integer", "null", "number"]
+        },
+        "mobile": {
+          "type": ["integer", "null", "number"]
+        },
+        "other": {
+          "type": ["integer", "null", "number"]
+        },
+        "tablet": {
+          "type": ["integer", "null", "number"]
+        },
+        "tv": {
+          "type": ["integer", "null", "number"]
+        }
+      },
+      "required": [
+        "desktop",
+        "mobile",
+        "other",
+        "tablet",
+        "tv"
+      ]
+    },
+    "subdeviceCounts": {
+      "type": "object",
+      "properties": {
+        "desktop": {
+          "type": "object",
+          "properties": {
+            "windows": {
+              "type": ["integer", "null", "number"]
+            },
+            "macosx": {
+              "type": ["integer", "null", "number"]
+            },
+            "linux": {
+              "type": ["integer", "null", "number"]
+            },
+            "chromeos": {
+              "type": ["integer", "null", "number"]
+            },
+            "other": {
+              "type": ["integer", "null", "number"]
+            }
+          },
+          "required": [
+            "chromeos",
+            "linux",
+            "macosx",
+            "other",
+            "windows"
+          ]
+        },
+        "mobile": {
+          "type": "object",
+          "properties": {
+            "android": {
+              "type": ["integer", "null", "number"]
+            },
+            "iphone": {
+              "type": ["integer", "null", "number"]
+            },
+            "windowsPhone": {
+              "type": ["integer", "null", "number"]
+            },
+            "other": {
+              "type": ["integer", "null", "number"]
+            }
+          },
+          "required": [
+            "android",
+            "iphone",
+            "other",
+            "windowsPhone"
+          ]
+        },
+        "other": {
+          "type": "object",
+          "properties": {
+            "other": {
+              "type": ["integer", "null", "number"]
+            }
+          },
+          "required": [
+            "other"
+          ]
+        },
+        "tablet": {
+          "type": "object",
+          "properties": {
+            "windows": {
+              "type": ["integer", "null", "number"]
+            },
+            "android": {
+              "type": ["integer", "null", "number"]
+            },
+            "iPad": {
+              "type": ["integer", "null", "number"]
+            },
+            "other": {
+              "type": ["integer", "null", "number"]
+            }
+          },
+          "required": [
+            "android",
+            "iPad",
+            "other",
+            "windows"
+          ]
+        },
+        "tv": {
+          "type": "object",
+          "properties": {
+            "appleTV": {
+              "type": ["integer", "null", "number"]
+            },
+            "roku": {
+              "type": ["integer", "null", "number"]
+            },
+            "chromecast": {
+              "type": ["integer", "null", "number"]
+            },
+            "console": {
+              "type": ["integer", "null", "number"]
+            },
+            "smartTV": {
+              "type": ["integer", "null", "number"]
+            },
+            "webTV": {
+              "type": ["integer", "null", "number"]
+            },
+            "hbbTV": {
+              "type": ["integer", "null", "number"]
+            },
+            "YouView": {
+              "type": ["integer", "null", "number"]
+            },
+            "AmazonFireTV": {
+              "type": ["integer", "null", "number"]
+            },
+            "SmartHub": {
+              "type": ["integer", "null", "number"]
+            },
+            "other": {
+              "type": ["integer", "null", "number"]
+            }
+          },
+          "required": [
+            "AmazonFireTV",
+            "SmartHub",
+            "YouView",
+            "appleTV",
+            "chromecast",
+            "console",
+            "hbbTV",
+            "other",
+            "roku",
+            "smartTV",
+            "webTV"
+          ]
+        }
+      },
+      "required": [
+        "desktop",
+        "mobile",
+        "other",
+        "tablet",
+        "tv"
+      ]
+    },
+    "campaign_id":{
+      "type":["string", "null"]
+    }
+  },
+  "required": [
+    "deviceCounts",
+    "subdeviceCounts",
+    "campaign_id"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "credentials":
+  {
+    "type": "access_token",
+    "access_token" : "123xyz"
+  },
+  "start_date" : "20220101",
+  "end_date" : "20231228"
+}
+

@@ -1,0 +1,57 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "created": "2052-09-30"
+      },
+      "stream_descriptor": {
+        "name": "campaigns"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "created": "2052-09-30"
+      },
+      "stream_descriptor": {
+        "name": "report"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "created": "2052-09-30"
+      },
+      "stream_descriptor": {
+        "name": "devices"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "created": "2052-09-30"
+      },
+      "stream_descriptor": {
+        "name": "profile"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "created": "2052-09-30"
+      },
+      "stream_descriptor": {
+        "name": "reach"
+      }
+    }
+  }
+]

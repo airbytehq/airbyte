@@ -1,0 +1,151 @@
+{
+  "$schema":"http://json-schema.org/schema#",
+  "type":"object",
+  "additionalProperties": true,
+  "properties":{
+    "id":{
+      "type":["string", "null"]
+    },
+    "name":{
+      "type":["string", "null"]
+    },
+    "cid":{
+      "type":["string", "null"]
+    },
+    "type":{
+      "type":["string", "null"]
+    },
+    "customerId":{
+      "type":["integer", "null", "number"]
+    },
+    "countryCode":{
+      "type":["string", "null"]
+    },
+    "status":{
+      "type":["string", "null"]
+    },
+    "referenceId":{
+      "type":["string", "null"]
+    },
+    "events":{
+      "type":["integer", "null", "number"]
+    },
+    "numReportItems":{
+      "type":["integer", "null", "number"]
+    },
+    "created":{
+      "type":["string", "null"]
+    },
+    "reachBuildEventType":{
+      "type":["string", "null"]
+    },
+    "dates":{
+      "type":"object",
+      "properties":{
+        "created":{
+          "type":["string", "null"]
+        },
+        "lastRecalc":{
+          "type":["string", "null"]
+        },
+        "lastRecalcCheck":{
+          "type":["string", "null"]
+        },
+        "reportStart":{
+          "type":["string", "null"]
+        },
+        "reportEnd":{
+          "type":["string", "null"]
+        },
+        "start":{
+          "type":["string", "null"]
+        },
+        "end":{
+          "type":["string", "null"]
+        }
+      },
+      "required":[
+        "created",
+        "end",
+        "lastRecalc",
+        "lastRecalcCheck",
+        "reportEnd",
+        "reportStart",
+        "start"
+      ]
+    },
+    "sources":{
+      "type":"array",
+      "items":{
+        "type":"object",
+        "properties":{
+          "provider":{
+            "type":["string", "null"]
+          },
+          "id":{
+            "type":["string", "null"]
+          },
+          "name":{
+            "type":["string", "null"]
+          },
+          "account":{
+            "type":["string", "null"]
+          }
+        },
+        "required":[
+          "account",
+          "id",
+          "name",
+          "provider"
+        ]
+      }
+    },
+    "labels":{
+      "type":"object",
+      "properties":{
+        "data":{
+          "type":"array",
+          "items":{
+            "type":"object",
+            "properties":{
+              "name":{
+                "type":["string", "null"]
+              },
+              "pid":{
+                "type":["string", "null"]
+              }
+            },
+            "required":[
+              "name",
+              "pid"
+            ]
+          }
+        }
+      },
+      "required":[
+        "data"
+      ]
+    },
+    "sourceFor":{
+      "type":"array"
+    }
+  },
+  "required":[
+    "cid",
+    "countryCode",
+    "customerId",
+    "dates",
+    "events",
+    "id",
+    "labels",
+    "name",
+    "created",
+    "numReportItems",
+    "reachBuildEventType",
+    "referenceId",
+    "sourceFor",
+    "sources",
+    "status",
+    "type"
+  ]
+}

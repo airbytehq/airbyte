@@ -1,0 +1,155 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "totals": {
+      "type": "object",
+      "properties": {
+        "reach": {
+          "type": ["integer", "null", "number"]
+        },
+        "reachPersons": {
+          "type": ["integer", "null", "number"]
+        },
+        "estimatedUniqueVisitors": {
+          "type": ["integer", "null", "number"]
+        },
+        "frequency": {
+          "type": ["integer", "null", "number"]
+        }
+      },
+      "required": [
+        "estimatedUniqueVisitors",
+        "frequency",
+        "reach",
+        "reachPersons"
+      ]
+    },
+    "weekly": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "week": {
+            "type": ["integer", "null", "number"]
+          },
+          "weekISO": {
+            "type": ["string", "null"]
+          },
+          "reach": {
+            "type": ["integer", "null", "number"]
+          },
+          "reachPersons": {
+            "type": ["integer", "null", "number"]
+          },
+          "trp": {
+            "type": ["integer", "null", "number"]
+          },
+          "marginal": {
+            "type": ["integer", "null", "number"]
+          }
+        },
+        "required": [
+          "marginal",
+          "reach",
+          "reachPersons",
+          "trp",
+          "week",
+          "weekISO"
+        ]
+      }
+    },
+    "reportItems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": ["string", "null"]
+          },
+          "reach": {
+            "type": ["integer", "null", "number"]
+          },
+          "reach2": {
+            "type": ["integer", "null", "number"]
+          },
+          "reachPersons": {
+            "type": ["integer", "null", "number"]
+          },
+          "reachContribution": {
+            "type": ["integer", "null", "number"]
+          },
+          "estimatedUniqueVisitors": {
+            "type": ["integer", "null", "number"]
+          },
+          "frequency": {
+            "type": ["integer", "null", "number"]
+          },
+          "fusionId": {
+            "type": ["string", "null"]
+          },
+          "providerId": {
+            "type": ["string", "null"]
+          },
+          "sourceId": {
+            "type": ["string", "null"]
+          },
+          "weekly": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "week": {
+                  "type": ["integer", "null", "number"]
+                },
+                "weekISO": {
+                  "type": ["string", "null"]
+                },
+                "reach": {
+                  "type": ["integer", "null", "number"]
+                },
+                "reachPersons": {
+                  "type": ["integer", "null", "number"]
+                },
+                "reachContribution": {
+                  "type": ["integer", "null", "number"]
+                }
+              },
+              "required": [
+                "reach",
+                "reachContribution",
+                "reachPersons",
+                "week",
+                "weekISO"
+              ]
+            }
+          }
+        },
+        "required": [
+          "estimatedUniqueVisitors",
+          "frequency",
+          "fusionId",
+          "name",
+          "providerId",
+          "reach",
+          "reach2",
+          "reachContribution",
+          "reachPersons",
+          "sourceId",
+          "weekly"
+        ]
+      }
+    },
+    "campaign_id":{
+      "type":["string", "null"]
+    }
+  },
+  "required": [
+    "reportItems",
+    "totals",
+    "weekly",
+    "campaign_id"
+  ]
+}
+
