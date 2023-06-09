@@ -83,6 +83,7 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
 
   @Override
   protected void writeRecord(final String recordString) throws IOException {
+    // TODO: (ryankfu) get the emittedAt value from the record string
     csvPrinter.printRecord(csvSheetGenerator.getDataRow(UUID.randomUUID(), recordString, Instant.now().toEpochMilli()));
   }
 
