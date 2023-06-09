@@ -27,10 +27,10 @@ class DatetimeFormatInferrer:
             "%d-%m-%Y",
             "%Y-%m-%dT%H:%M:%SZ",
         ]
-        self._timestamp_heuristic_range = range(1000000000, 2000000000)
+        self._timestamp_heuristic_range = range(1_000_000_000, 2_000_000_000)
 
     def _can_be_datetime(self, value: Any) -> bool:
-        """Checks if the value can be a datetime. This is separate from the format check for performance reasons"""
+        """Checks if the value can be a datetime. This is the case if the value is a string or an integer between 1_000_000_000 and 2_000_000_000. This is separate from the format check for performance reasons"""
         if isinstance(value, str) and (not value.isdecimal() or int(value) in self._timestamp_heuristic_range):
             return True
         if isinstance(value, int) and value in self._timestamp_heuristic_range:
@@ -42,7 +42,7 @@ class DatetimeFormatInferrer:
         try:
             self._parser.parse(value, format)
             return True
-        except Exception:
+        except ValueError:
             return False
 
     def _initialize(self, record: AirbyteRecordMessage):
