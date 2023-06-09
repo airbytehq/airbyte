@@ -321,7 +321,7 @@ class SourceAppsflyer(AbstractSource):
             )
             headers = {
                 "accept": "text/csv",
-                "authorization": "Bearer f{api_token}"
+                "authorization": f"Bearer {api_token}"
             }
             response = requests.request("GET", url=test_url,headers=headers)
 
@@ -332,7 +332,7 @@ class SourceAppsflyer(AbstractSource):
                 response.raise_for_status()
 
             response2 = requests.request("GET", url=test_url_2,headers=headers)
-            
+
             if response2.status_code != 200:
                 error_message = "The supplied APP ID is invalid" if response.status_code == 404 else response.text.rstrip("\n")
                 if error_message:
