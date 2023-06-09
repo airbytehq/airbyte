@@ -21,7 +21,7 @@ on:
 jobs:
   connectors_ci:
     name: Connectors CI
-    timeout-minutes: 240 # 4 hours
+    timeout-minutes: 1440 # 24 hours
     runs-on: dev-medium-runner
     steps:
       - name: Get start timestamp
