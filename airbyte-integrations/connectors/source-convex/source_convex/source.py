@@ -143,8 +143,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
         next_page_token: Optional[ConvexState] = None,
     ) -> str:
         # https://docs.convex.dev/http-api/#sync
-        state = next_page_token or stream_state or self.state
-        if state["snapshot_has_more"]:
+        if self._snapshot_has_more:
             return "/api/list_snapshot"
         else:
             return "/api/document_deltas"
@@ -167,24 +166,28 @@ class ConvexStream(HttpStream, IncrementalMixin):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[ConvexState] = None,
     ) -> MutableMapping[str, Any]:
-        state = next_page_token or stream_state or self.state
         params: Dict[str, Any] = {"tableName": self.table_name, "format": "convex_json"}
-        if state["snapshot_has_more"]:
-            if state["snapshot_cursor"]:
+        if self._snapshot_has_more:
+            if self._snapshot_cursor_value:
                 params["cursor"] = self._snapshot_cursor_value
-            if state["delta_cursor_value"]:
+            if self._delta_cursor_value:
                 params["snapshot"] = self._delta_cursor_value
         else:
-            if state["delta_cursor"]:
+            if self._delta_cursor_value:
                 params["cursor"] = self._delta_cursor_value
         return params
 
-    def request_headers(self, stream_state: ConvexState, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[ConvexState] = None) -> Dict[str, str]:
+    def request_headers(
+            self,
+            stream_state: ConvexState,
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            next_page_token: Optional[ConvexState] = None,
+        ) -> Dict[str, str]:
         """
         Custom headers for each HTTP request, not including Authorization.
         """
         return {
-            "Convex-Client": "streaming-export-0.2.0",
+            "Convex-Client": "airbyte-export-0.2.0",
         }
 
     def get_updated_state(self, current_stream_state: ConvexState, latest_record: Mapping[str, Any]) -> ConvexState:
