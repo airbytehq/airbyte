@@ -13,7 +13,12 @@ import { RoutePaths } from "pages/routePaths";
 import { SettingsRoute } from "pages/SettingsPage/SettingsPage";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
-import { UpgradePlanBanner, SyncNotificationBanner, BillingWarningBanner } from "views/layout/Banners";
+import {
+  UpgradePlanBanner,
+  SyncNotificationBanner,
+  BillingWarningBanner,
+  FailedPaymentBanner,
+} from "views/layout/Banners";
 import SideBar from "views/layout/SideBar";
 
 const MainContainer = styled.div`
@@ -46,6 +51,7 @@ const MainView: React.FC = (props) => {
   const { user } = useUser();
   const { healthData } = useHealth();
   const { usage } = healthData;
+  const { isPaymentFailed } = healthData;
   const { pathname, location, push } = useRouter();
   const [usagePercentage, setUsagePercentage] = useState<number>(0);
   const [isSidebar, setIsSidebar] = useState<boolean>(true);
@@ -101,6 +107,8 @@ const MainView: React.FC = (props) => {
       }
     } else if (lastPathName === RoutePaths.Payment) {
       setBackgroundColor(theme.backgroundColor);
+    } else if (lastPathName === RoutePaths.FailedPayment) {
+      setBackgroundColor(theme.backgroundColor);
     } else if (isSidebarBol) {
       // In the page with sidebar, the background color of these three pages is #F8F8FE, and the others are the theme background color.
       if (
@@ -123,6 +131,10 @@ const MainView: React.FC = (props) => {
     push(`/${RoutePaths.Settings}/${SettingsRoute.PlanAndBilling}`);
   };
 
+  const onFailedPaymentPage = () => {
+    push(`/${RoutePaths.FailedPayment}`);
+  };
+
   const isUpgradePlanBanner = (): boolean => {
     let showUpgradePlanBanner = false;
     if (getPaymentStatus(user.status) === PAYMENT_STATUS.Free_Trial) {
@@ -140,6 +152,7 @@ const MainView: React.FC = (props) => {
         <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
           <React.Suspense fallback={<LoadingPage />}>
             {isUpgradePlanBanner() && <UpgradePlanBanner onBillingPage={onBillingPage} />}
+            {isPaymentFailed && <FailedPaymentBanner onFailedPaymentPage={onFailedPaymentPage} />}
             {usage !== undefined && usagePercentage > 0 && usagePercentage < 100 && (
               <SyncNotificationBanner usagePercentage={usagePercentage} onBillingPage={onBillingPage} />
             )}

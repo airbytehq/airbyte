@@ -45,8 +45,16 @@ export interface GetUpgradeSubscriptionDetail {
   expiresTime: number;
 }
 
+export interface GetFailedPaymentDetail extends GetUpgradeSubscriptionDetail {
+  paymentOrderId: string;
+}
+
 export interface UpgradeSubscription {
   data: GetUpgradeSubscriptionDetail;
+}
+
+export interface failedPaymentDetail {
+  data: GetFailedPaymentDetail;
 }
 
 export interface PauseSubscription {

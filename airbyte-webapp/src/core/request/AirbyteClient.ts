@@ -552,6 +552,7 @@ export interface HealthCheckRead {
   syncFail?: string[];
   syncSuccess?: string[];
   usage?: number;
+  isPaymentFailed?: boolean;
 }
 
 export interface Pagination {
