@@ -826,3 +826,17 @@ class TopUps(StripeStream):
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
         return next_page_token or {}
+
+
+class Files(StripeStream):
+    """
+    API docs: https://stripe.com/docs/api/files/list
+    """
+
+    name = "files"
+
+    def path(self, **kwargs) -> str:
+        return "files"
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+        return next_page_token or {}
