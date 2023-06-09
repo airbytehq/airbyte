@@ -1680,24 +1680,25 @@ class ContactsMergedAudit(CRMSearchStream):
     entity = "contact"
     last_modified_field = "lastmodifieddate"
     associations = []
+    data_field = "results"
     primary_key = "vid-to-merge"
     scopes = {"crm.objects.contacts.read"}
 
     @property
-    def url(self):
+    def url_search(self):
         return f"/crm/v3/objects/{self.entity}/search"
 
     @property
-    def url_audit(self):
-        """ Get batch Contacts Endpoint, API v1
+    def url(self):
+        """Get batch Contacts Endpoint, API v1
         Is used to get merge-audits field for all contacts with merge history
         Note: CRM API V3 do not return this field
         Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_batch_by_vid
         """
-        return f"/contacts/v1/contact/vids/batch/"
+        return "/contacts/v1/contact/vids/batch/"
 
     def __init__(self, **kwargs):
-        """ Override Stream init function
+        """Override Stream init function
         To use read_records from CRMSearchStream with Search endpoint only, we define _state value
         """
         super().__init__(**kwargs)
@@ -1705,7 +1706,7 @@ class ContactsMergedAudit(CRMSearchStream):
         self._state = self.state if self.state else self._start_date
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        """ Override get_json_schema defined in Stream class
+        """Override get_json_schema defined in Stream class
         Final object does not have properties field
         We return JSON schema as defined in :
         source_hubspot/schemas/contacts_merged_audit.json
@@ -1713,7 +1714,7 @@ class ContactsMergedAudit(CRMSearchStream):
         return super(Stream, self).get_json_schema()
 
     def _get_search_payload(self, next_page_token: Mapping[str, Any] = None):
-        """ Create payload for CRM Search API
+        """Create payload for CRM Search API
         Filter contacts with hs_merged_object_ids is not null
         and last_modified_field > state
         """
@@ -1735,7 +1736,7 @@ class ContactsMergedAudit(CRMSearchStream):
     def _get_contact_merge_audit(
         self, contacts_ids: List[str]
     ) -> Tuple[Union[Mapping[str, Any], List[Mapping[str, Any]]], requests.Response]:
-        return self._api.get(url=self.url_audit, params={"vid": contacts_ids})
+        return self._api.get(url=self.url, params={"vid": contacts_ids})
 
     def _process_search(
         self,
@@ -1747,16 +1748,16 @@ class ContactsMergedAudit(CRMSearchStream):
 
         # Get contacts with a merge history using CRM Search endpoint API V3
         search_payload = self._get_search_payload(next_page_token=next_page_token)
-        response_search, raw_response = self.search(url=self.url, data=search_payload)
+        response_search, raw_response = self.search(url=self.url_search, data=search_payload)
 
-        if len(response_search.get("results", [])) == 0:
+        if len(response_search.get(self.data_field, [])) == 0:
             return [], raw_response
 
         # Get merge-audit details using Contact API V1
-        contact_ids = list(map(lambda d: d["id"], response_search["results"]))
+        contact_ids = list(map(lambda d: d["id"], response_search[self.data_field]))
         response, _ = self._get_contact_merge_audit(contacts_ids=contact_ids)
 
-        for record in response_search["results"]:
+        for record in response_search[self.data_field]:
             hs_object_id = record["id"]
             for merge_audit in response[hs_object_id]["merge-audits"]:
                 primary_key = merge_audit["vid-to-merge"]
