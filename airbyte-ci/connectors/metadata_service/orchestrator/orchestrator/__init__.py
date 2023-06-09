@@ -7,8 +7,8 @@ from orchestrator.resources.gcp import gcp_gcs_client, gcs_directory_blobs, gcs_
 from orchestrator.resources.github import github_client, github_connector_repo, github_connectors_directory, github_workflow_runs
 
 from orchestrator.assets import (
+    connector_test_report,
     github,
-    connector_nightly_report,
     specs_secrets_mask,
     spec_cache,
     registry,
@@ -40,7 +40,7 @@ ASSETS = load_assets_from_modules(
         metadata,
         registry,
         registry_report,
-        connector_nightly_report,
+        connector_test_report,
     ]
 )
 

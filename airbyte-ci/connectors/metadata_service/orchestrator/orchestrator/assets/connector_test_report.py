@@ -146,3 +146,7 @@ def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]
         nightly_report_connector_matrix_df,
         metadata={"count": len(nightly_report_connector_matrix_df), "preview": MetadataValue.md(nightly_report_complete_md)},
     )
+
+@asset(required_resource_keys={"latest_nightly_complete_file_blobs", "latest_nightly_test_output_file_blobs"}, group_name=GROUP_NAME)
+def generate_connector_test_summary_and_badges(context: OpExecutionContext) -> Output[pd.DataFrame]:
+    pass

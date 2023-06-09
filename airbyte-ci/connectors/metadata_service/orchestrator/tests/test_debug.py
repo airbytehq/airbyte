@@ -2,7 +2,7 @@ from dagster import build_op_context
 
 from orchestrator.resources.gcp import gcp_gcs_client, gcs_directory_blobs
 
-from orchestrator.assets.connector_nightly_report import (
+from orchestrator.assets.connector_test_report import (
     generate_nightly_report,
 )
 
