@@ -68,7 +68,7 @@ def get_modified_files(
 @click.option("--pull-request-number", envvar="PULL_REQUEST_NUMBER", type=int)
 @click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str)
 @click.option("--ci-report-bucket-name", envvar="CI_REPORT_BUCKET_NAME", type=str)
-@click.option("--ci-job-key", envvar="CI_JOB_KEY", type=str, default=None)
+@click.option("--ci-job-key", envvar="CI_JOB_KEY", type=str)
 @click.pass_context
 def airbyte_ci(
     ctx: click.Context,
