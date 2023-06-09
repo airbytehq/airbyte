@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.40.2
+Add a metadata field to the declarative component schema
+
+## 0.40.1
+make DatetimeBasedCursor.end_datetime optional
+
 ## 0.40.0
 Remove SingleUseRefreshTokenOAuthAuthenticator from low code CDK and add generic injection capabilities to ApiKeyAuthenticator
 

@@ -5,10 +5,16 @@
     "id": {
       "type": ["null", "integer"]
     },
+    "iid": {
+      "type": ["null", "integer"]
+    },
     "project_id": {
       "type": ["null", "integer"]
     },
     "sha": {
+      "type": ["null", "string"]
+    },
+    "source": {
       "type": ["null", "string"]
     },
     "ref": {
