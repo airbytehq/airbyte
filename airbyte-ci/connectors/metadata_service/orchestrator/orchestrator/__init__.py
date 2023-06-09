@@ -79,10 +79,14 @@ RESOURCES = {
         {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": NIGHTLY_FOLDER, "match_regex": f".*{NIGHTLY_COMPLETE_REPORT_FILE_NAME}$"}
     ),
     "latest_nightly_test_output_file_blobs": gcs_directory_blobs.configured(
-        {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": NIGHTLY_FOLDER, "match_regex": f".*{NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME}$"}
+        {
+            "gcs_bucket": {"env": "CI_REPORT_BUCKET"},
+            "prefix": NIGHTLY_FOLDER,
+            "match_regex": f".*{NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME}$",
+        }
     ),
     "all_connector_test_output_file_blobs": gcs_directory_blobs.configured(
-        {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": CI_TEST_REPORT_PREFIX, "match_regex": CI_MASTER_TEST_OUTPUT_REGEX }
+        {"gcs_bucket": {"env": "CI_REPORT_BUCKET"}, "prefix": CI_TEST_REPORT_PREFIX, "match_regex": CI_MASTER_TEST_OUTPUT_REGEX}
     ),
 }
 
@@ -102,12 +106,7 @@ SENSORS = [
     ),
 ]
 
-SCHEDULES = [
-    ScheduleDefinition(
-        job=generate_connector_test_summary_reports,
-        cron_schedule="@hourly"
-    )
-]
+SCHEDULES = [ScheduleDefinition(job=generate_connector_test_summary_reports, cron_schedule="@hourly")]
 
 JOBS = [generate_registry_reports, generate_registry]
 

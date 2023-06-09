@@ -15,6 +15,7 @@ CONNECTOR_REPO_NAME = "airbytehq/airbyte"
 CONNECTORS_PATH = "airbyte-integrations/connectors"
 CONNECTOR_TEST_SUMMARY_FOLDER = "test_summary"
 
+
 def get_public_url_for_gcs_file(bucket_name: str, file_path: str, cdn_url: Optional[str] = None) -> str:
     """Get the public URL to a file in the GCS bucket.
 
@@ -27,6 +28,7 @@ def get_public_url_for_gcs_file(bucket_name: str, file_path: str, cdn_url: Optio
         The public URL to the file.
     """
     return f"{cdn_url}/{file_path}" if cdn_url else f"https://storage.googleapis.com/{bucket_name}/{file_path}"
+
 
 def get_public_metadata_service_url(file_path: str) -> str:
     metadata_bucket = os.getenv("METADATA_BUCKET")

@@ -66,14 +66,14 @@ def test_fetch_adoption_metrics_per_connector_version(mocker):
                     "connector_version": "0.3.0",
                     "success": True,
                     "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5222619538",
-                    "date": "2023-06-09T06:50:04"
+                    "date": "2023-06-09T06:50:04",
                 },
                 {
                     "connector_version": "0.3.0",
                     "success": False,
                     "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5220000547",
-                    "date": "2023-06-09T01:42:46"
-                }
+                    "date": "2023-06-09T01:42:46",
+                },
             ],
             200,
             inputs.BUILD_STATUSES.SUCCESS,
@@ -85,14 +85,14 @@ def test_fetch_adoption_metrics_per_connector_version(mocker):
                     "connector_version": "0.3.0",
                     "success": False,
                     "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5222619538",
-                    "date": "2023-06-09T06:50:04"
+                    "date": "2023-06-09T06:50:04",
                 },
                 {
                     "connector_version": "0.3.0",
                     "success": True,
                     "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5220000547",
-                    "date": "2023-06-09T01:42:46"
-                }
+                    "date": "2023-06-09T01:42:46",
+                },
             ],
             200,
             inputs.BUILD_STATUSES.FAILURE,
@@ -105,7 +105,7 @@ def test_fetch_adoption_metrics_per_connector_version(mocker):
                     "connector_version": "0.3.0",
                     "success": None,
                     "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5222619538",
-                    "date": "2023-06-09T06:50:04"
+                    "date": "2023-06-09T06:50:04",
                 }
             ],
             200,
@@ -114,9 +114,7 @@ def test_fetch_adoption_metrics_per_connector_version(mocker):
         ("connectors/source-pokeapi", None, 404, inputs.BUILD_STATUSES.NOT_FOUND),
     ],
 )
-def test_fetch_latest_build_status_for_connector(
-    mocker, connector_name, mocked_json_payload, mocked_status_code, expected_status
-):
+def test_fetch_latest_build_status_for_connector(mocker, connector_name, mocked_json_payload, mocked_status_code, expected_status):
     # Mock the api call to get the latest build status for a connector version
     mock_response = MagicMock()
     mock_response.json.return_value = mocked_json_payload
@@ -135,26 +133,26 @@ def test_fetch_latest_build_status_for_connector_invalid_status(mocker, caplog):
             "connector_version": "0.3.0",
             "success": "unknown_outcome_123",
             "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5222619538",
-            "date": "2023-06-09T06:50:04"
+            "date": "2023-06-09T06:50:04",
         },
         {
             "connector_version": "0.3.0",
             "success": False,
             "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5220000547",
-            "date": "2023-06-09T01:42:46"
+            "date": "2023-06-09T01:42:46",
         },
         {
             "connector_version": "0.3.0",
             "success": True,
             "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5212578854",
-            "date": "2023-06-08T07:46:37"
+            "date": "2023-06-08T07:46:37",
         },
         {
             "connector_version": "0.3.0",
             "success": True,
             "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5198665885",
-            "date": "2023-06-07T03:05:40"
-        }
+            "date": "2023-06-07T03:05:40",
+        },
     ]
     # Mock the api call to get the latest build status for a connector version
     mock_response = MagicMock()

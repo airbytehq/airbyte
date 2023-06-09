@@ -2,9 +2,7 @@ from dagster import build_op_context
 
 from orchestrator.resources.gcp import gcp_gcs_client, gcs_directory_blobs
 
-from orchestrator.assets.connector_test_report import (
-    generate_nightly_report, generate_connector_test_summary_and_badges
-)
+from orchestrator.assets.connector_test_report import generate_nightly_report, generate_connector_test_summary_and_badges
 
 
 from orchestrator.config import NIGHTLY_INDIVIDUAL_TEST_REPORT_FILE_NAME, NIGHTLY_FOLDER, NIGHTLY_COMPLETE_REPORT_FILE_NAME
@@ -29,7 +27,7 @@ def debug_nightly_report():
     generate_nightly_report(context).value
 
 
-def test_debug_badges():
+def debug_badges():
     resources = {
         "gcp_gcs_client": gcp_gcs_client.configured(
             {

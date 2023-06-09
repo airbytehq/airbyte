@@ -122,9 +122,6 @@ def compute_connector_nightly_report_history(
     return matrix_df
 
 
-
-
-
 # ASSETS
 
 
@@ -156,6 +153,7 @@ def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]
         nightly_report_connector_matrix_df,
         metadata={"count": len(nightly_report_connector_matrix_df), "preview": MetadataValue.md(nightly_report_complete_md)},
     )
+
 
 @asset(required_resource_keys={"all_connector_test_output_file_blobs"}, group_name=GROUP_NAME)
 def last_10_connector_test_results(context: OpExecutionContext) -> OutputDataFrame:
@@ -195,6 +193,7 @@ def last_10_connector_test_results(context: OpExecutionContext) -> OutputDataFra
 
     return output_dataframe(report_status)
 
+
 @asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
 def persist_connectors_test_summary_files(context: OpExecutionContext, last_10_connector_test_results: OutputDataFrame) -> OutputDataFrame:
     registry_report_directory_manager = context.resources.registry_report_directory_manager
@@ -209,7 +208,9 @@ def persist_connectors_test_summary_files(context: OpExecutionContext, last_10_c
         connector_test_summary = connector_test_summary.sort_values("timestamp", ascending=False)
 
         # convert unix timestamp to iso date
-        connector_test_summary["date"] = connector_test_summary["timestamp"].apply(lambda timestamp: datetime.fromtimestamp(int(timestamp)).isoformat())
+        connector_test_summary["date"] = connector_test_summary["timestamp"].apply(
+            lambda timestamp: datetime.fromtimestamp(int(timestamp)).isoformat()
+        )
 
         # drop the timestamp column
         connector_test_summary = connector_test_summary.drop(columns=["timestamp"])
@@ -236,4 +237,3 @@ def persist_connectors_test_summary_files(context: OpExecutionContext, last_10_c
         value=last_10_connector_test_results,
         metadata=metadata,
     )
-
