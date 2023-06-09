@@ -143,7 +143,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
                 for d in self.config["dimensions"]
             }
         )
-
+        # skipping startDate and endDate fields for cohort stream, because it doesn't support startDate and endDate fields
         if "cohort_spec" not in self.config and "date" not in self.config["dimensions"]:
             schema["properties"].update(
                 {
