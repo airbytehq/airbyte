@@ -4,18 +4,25 @@
 """This module groups the functions to run full pipelines for connector testing."""
 
 import sys
-from typing import Callable, List, Optional, TYPE_CHECKING
+from typing import Callable, List, Optional
 
 import anyio
 import dagger
-from dagger import Config
-
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import Report, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import ConnectorContext, ContextState
+from ci_connector_ops.utils import ConnectorLanguage
+from dagger import Config
 
 GITHUB_GLOBAL_CONTEXT = "[POC please ignore] Connectors CI"
 GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
+
+
+CONNECTOR_LANGUAGE_TO_FORCED_CONCURRENCY_MAPPING = {
+    # We run the Java connectors tests sequentially because we currently have memory issues when Java integration tests are run in parallel.
+    # See https://github.com/airbytehq/airbyte/issues/27168
+    ConnectorLanguage.JAVA: anyio.Semaphore(1),
+}
 
 
 def context_state_to_step_result(state: ContextState) -> StepResult:
@@ -69,14 +76,19 @@ async def run_connectors_pipelines(
 ) -> List[ConnectorContext]:
     """Run a connector pipeline for all the connector contexts."""
 
-    semaphore = anyio.Semaphore(concurrency)
+    default_connectors_semaphore = anyio.Semaphore(concurrency)
     async with dagger.Connection(Config(log_output=sys.stderr, execute_timeout=execute_timeout)) as dagger_client:
         dockerd_service = environments.with_global_dockerd_service(dagger_client)
         async with anyio.create_task_group() as tg:
             for context in contexts:
                 context.dagger_client = dagger_client.pipeline(f"{pipeline_name} - {context.connector.technical_name}")
                 context.dockerd_service = dockerd_service
-                tg.start_soon(connector_pipeline, context, semaphore, *args)
+                tg.start_soon(
+                    connector_pipeline,
+                    context,
+                    CONNECTOR_LANGUAGE_TO_FORCED_CONCURRENCY_MAPPING.get(context.connector.language, default_connectors_semaphore),
+                    *args,
+                )
 
         await run_report_complete_pipeline(dagger_client, contexts)
 

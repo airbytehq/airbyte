@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.5
   dockerRepository: airbyte/source-google-analytics-data-api
   githubIssueLabel: source-google-analytics-data-api
   icon: google-analytics.svg
