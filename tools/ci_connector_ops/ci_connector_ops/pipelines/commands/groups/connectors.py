@@ -229,12 +229,13 @@ def test(
     try:
         anyio.run(
             run_connectors_pipelines,
-            connectors_tests_contexts,
+            [connector_context for connector_context in connectors_tests_contexts],
             run_connector_test_pipeline,
             "Test Pipeline",
             ctx.obj["concurrency"],
             ctx.obj["execute_timeout"],
         )
+
     except Exception as e:
         click.secho(str(e), err=True, fg="red")
         update_global_commit_status_check_for_tests(ctx.obj, "failure")
