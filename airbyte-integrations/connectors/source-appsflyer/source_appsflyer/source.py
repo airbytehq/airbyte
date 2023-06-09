@@ -50,7 +50,7 @@ class AppsflyerStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return f"https://hq1.appsflyer.com/api/"
+        return "https://hq1.appsflyer.com/api/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -70,12 +70,12 @@ class AppsflyerStream(HttpStream, ABC):
             params["additional_fields"] = additional_fields
 
         return params
-    
+
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        return {'authorization': f"Bearer {self.api_token}"}
-    
+        return {"authorization": f"Bearer {self.api_token}"}
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         fields = add(self.main_fields, self.additional_fields) if self.additional_fields else self.main_fields
         csv_data = map(lambda x: x.decode("utf-8"), response.iter_lines())
@@ -188,7 +188,7 @@ class RawDataMixin:
         params["currency"] = "preferred"
 
         return params
-    
+
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
@@ -212,6 +212,7 @@ class AggregateDataMixin:
     ) -> Mapping[str, Any]:
         return super().request_headers(stream_state, stream_slice, next_page_token)
 
+
 class RetargetingMixin:
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -225,6 +226,7 @@ class RetargetingMixin:
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         return super().request_headers(stream_state, stream_slice, next_page_token)
+
 
 class InAppEvents(RawDataMixin, IncrementalAppsflyerStream):
     intervals = 31
@@ -313,17 +315,10 @@ class SourceAppsflyer(AbstractSource):
             app_id = config["app_id"]
             api_token = config["api_token"]
             dates = pendulum.now("UTC").to_date_string()
-            test_url = (
-                f"https://hq1.appsflyer.com/api/agg-data/export/app/{app_id}/partners_report/v5?from={dates}&to={dates}"
-            )
-            test_url_2 = (
-                f"https://hq1.appsflyer.com/api/raw-data/export/app/{app_id}/in_app_events_report/v5?from={dates}&to={dates}"
-            )
-            headers = {
-                "accept": "text/csv",
-                "authorization": f"Bearer {api_token}"
-            }
-            response = requests.request("GET", url=test_url,headers=headers)
+            test_url = f"https://hq1.appsflyer.com/api/agg-data/export/app/{app_id}/partners_report/v5?from={dates}&to={dates}"
+            test_url_2 = f"https://hq1.appsflyer.com/api/raw-data/export/app/{app_id}/in_app_events_report/v5?from={dates}&to={dates}"
+            headers = {"accept": "text/csv", "authorization": f"Bearer {api_token}"}
+            response = requests.request("GET", url=test_url, headers=headers)
 
             if response.status_code != 200:
                 error_message = "The supplied APP ID is invalid" if response.status_code == 404 else response.text.rstrip("\n")
@@ -331,7 +326,7 @@ class SourceAppsflyer(AbstractSource):
                     return False, error_message
                 response.raise_for_status()
 
-            response2 = requests.request("GET", url=test_url_2,headers=headers)
+            response2 = requests.request("GET", url=test_url_2, headers=headers)
 
             if response2.status_code != 200:
                 error_message = "The supplied APP ID is invalid" if response2.status_code == 404 else response2.text.rstrip("\n")

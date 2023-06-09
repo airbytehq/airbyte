@@ -89,7 +89,6 @@ def test_request_params(mocker, class_, cursor_field, date_only, additional_fiel
     inputs["next_page_token"] = None
     inputs["stream_state"] = None
     expected_params = dict()
-    expected_params["api_token"] = "secret"
     expected_params["timezone"] = timezone
     expected_params["maximum_rows"] = 1_000_000
     expected_params["from"] = start.to_datetime_string()
