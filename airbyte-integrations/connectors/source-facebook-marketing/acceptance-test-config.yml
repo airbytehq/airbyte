@@ -21,7 +21,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         empty_streams:
-          - name: "ad_account"
+          - name: "ad_accounts"
             bypass_reason: "Cannot populate"
           - name: "ad_sets"
             bypass_reason: "Thumbnail urls changes permanently"
