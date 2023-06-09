@@ -4,8 +4,6 @@ from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegis
 from orchestrator.assets.registry_report import (
     all_sources_dataframe,
     all_destinations_dataframe,
-)
-from orchestrator.assets.registry_report import (
     oss_destinations_dataframe,
     cloud_destinations_dataframe,
     oss_sources_dataframe,
@@ -52,3 +50,37 @@ def test_merged_registry_dataframes(oss_registry_dict, cloud_registry_dict):
     all_destination_definition_ids = set(all_destinations_df["definitionId"])
 
     assert all_destination_definition_ids == oss_destination_definition_ids.union(cloud_destination_definition_ids)
+
+import pytest
+from unittest.mock import Mock
+from orchestrator.assets.registry import metadata_to_registry_entry, apply_overrides_from_registry
+
+@pytest.mark.parametrize("registry_type, connector_type, expected_id_field",
+                         [("cloud", "source", "sourceDefinitionId"),
+                          ("cloud", "destination", "destinationDefinitionId"),
+                          ("oss", "source", "sourceDefinitionId"),
+                          ("oss", "destination", "destinationDefinitionId")])
+def test_definition_id_conversion(registry_type, connector_type, expected_id_field):
+    """
+    Test if the definitionId in the metadata is successfully converted to
+    destinationDefinitionId or sourceDefinitionId in the registry entry.
+    """
+    metadata = {
+        "data": {
+            "connectorType": connector_type,
+            "definitionId": "test-id",
+            "registries": {
+                registry_type: {
+                    "enabled": True
+                }
+            }
+        }
+    }
+
+    mock_metadata_entry = Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = metadata
+    mock_metadata_entry.icon_url = "test-icon-url"
+
+    result = metadata_to_registry_entry(mock_metadata_entry, connector_type, registry_type)
+    assert "definitionId" not in result
+    assert result[expected_id_field] == "test-id"

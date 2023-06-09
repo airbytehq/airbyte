@@ -3,7 +3,7 @@
 #
 import copy
 import json
-from typing import List
+from typing import List, Optional
 from pydash.objects import get
 
 import pandas as pd
@@ -53,6 +53,46 @@ def apply_overrides_from_registry(metadata_data: dict, override_registry_key: st
 
     return metadata_data
 
+def calculate_migration_documentation_url(releases_or_breaking_change: pd.DataFrame, documentation_url: str, version: Optional[str] = None) -> str:
+    """Calculate the migration documentation url for the connector releases.
+
+    Args:
+        metadata_releases (pd.DataFrame): The connector releases.
+
+    Returns:
+        str: The migration documentation url.
+    """
+
+    # set migrationDocumentationUrl to {documentationUrl}/migration_guide if it is not set
+
+    migrationDocumentationUrl = releases_or_breaking_change["migrationDocumentationUrl"]
+
+    # if migrationDocumentationUrl jhas a value, return it
+    if migrationDocumentationUrl is not None:
+        return migrationDocumentationUrl
+
+    # Return the documentation url with the migration guide path and the version as a hash link if it is set
+    base_url = f"{documentation_url}/migration_guide"
+    return f"{base_url}#{version}" if version is not None else base_url
+
+@deep_copy_params
+def apply_connector_release_defaults(metadata: dict) -> Optional[pd.DataFrame]:
+    metadata_releases = metadata.get("releases")
+    documentation_url = metadata.get("documentationUrl")
+    if metadata_releases is None:
+        return None
+
+    # apply defaults for connector releases
+    metadata_releases["migrationDocumentationUrl"] = calculate_migration_documentation_url(metadata_releases, documentation_url)
+
+    # releases has a dictionary field called breakingChanges, where the key is the version and the value is the data for the breaking change
+    # each breaking change has a migrationDocumentationUrl field that is optional, so we need to apply defaults to it
+    breaking_changes = metadata_releases["breakingChanges"]
+    if breaking_changes is not None:
+        for version, breaking_change in breaking_changes.items():
+            breaking_change["migrationDocumentationUrl"] = calculate_migration_documentation_url(breaking_change, documentation_url, version)
+
+    return metadata_releases
 
 @deep_copy_params
 def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, connector_type: str, override_registry_key: str) -> dict:
@@ -99,7 +139,7 @@ def metadata_to_registry_entry(metadata_entry: LatestMetadataEntry, connector_ty
 
     # apply generated fields
     overrode_metadata_data["iconUrl"] = metadata_entry.icon_url
-    # overrode_metadata_data["releases"] =
+    overrode_metadata_data["releases"] = apply_connector_release_defaults(overrode_metadata_data)
 
 
     return overrode_metadata_data
