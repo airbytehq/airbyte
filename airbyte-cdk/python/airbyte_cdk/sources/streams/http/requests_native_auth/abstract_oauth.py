@@ -30,7 +30,10 @@ class AbstractOauth2Authenticator(AuthBase):
 
     def get_auth_header(self) -> Mapping[str, Any]:
         """HTTP header to set on the requests"""
-        return {"Authorization": f"Bearer {self.get_access_token()}"}
+        return {
+            "Authorization": f"Bearer {self.get_access_token()}",
+            "Content-Type": "application/json",
+        }
 
     def get_access_token(self) -> str:
         """Returns the access token"""
