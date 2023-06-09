@@ -94,7 +94,8 @@ def test_get_grouped_messages(mock_entrypoint_read):
         "body": {"custom": "field"},
     }
     response = {"status_code": 200, "headers": {"field": "value"}, "body": '{"name": "field"}', "http_method": "GET"}
-    expected_schema = {"$schema": "http://json-schema.org/schema#", "properties": {"name": {"type": "string"}}, "type": "object"}
+    expected_schema = {"$schema": "http://json-schema.org/schema#", "properties": {"name": {"type": "string"}, "date": {"type": "string"}}, "type": "object"}
+    expected_datetime_fields = {"date":"%Y-%m-%d"}
     expected_pages = [
         StreamReadPages(
             request=HttpRequest(
@@ -105,7 +106,7 @@ def test_get_grouped_messages(mock_entrypoint_read):
                 http_method="GET",
             ),
             response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
-            records=[{"name": "Shinobu Kocho"}, {"name": "Muichiro Tokito"}],
+            records=[{"name": "Shinobu Kocho", "date": "2023-03-03"}, {"name": "Muichiro Tokito", "date": "2023-03-04"}],
         ),
         StreamReadPages(
             request=HttpRequest(
@@ -116,7 +117,7 @@ def test_get_grouped_messages(mock_entrypoint_read):
                 http_method="GET",
             ),
             response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
-            records=[{"name": "Mitsuri Kanroji"}],
+            records=[{"name": "Mitsuri Kanroji", "date": "2023-03-05"}],
         ),
     ]
 
@@ -124,11 +125,11 @@ def test_get_grouped_messages(mock_entrypoint_read):
         [
             request_log_message(request),
             response_log_message(response),
-            record_message("hashiras", {"name": "Shinobu Kocho"}),
-            record_message("hashiras", {"name": "Muichiro Tokito"}),
+            record_message("hashiras", {"name": "Shinobu Kocho", "date": "2023-03-03"}),
+            record_message("hashiras", {"name": "Muichiro Tokito", "date": "2023-03-04"}),
             request_log_message(request),
             response_log_message(response),
-            record_message("hashiras", {"name": "Mitsuri Kanroji"}),
+            record_message("hashiras", {"name": "Mitsuri Kanroji", "date": "2023-03-05"}),
         ]
     ))
 
@@ -138,6 +139,7 @@ def test_get_grouped_messages(mock_entrypoint_read):
     )
 
     assert actual_response.inferred_schema == expected_schema
+    assert actual_response.inferred_datetime_formats == expected_datetime_fields
 
     single_slice = actual_response.slices[0]
     for i, actual_page in enumerate(single_slice.pages):
