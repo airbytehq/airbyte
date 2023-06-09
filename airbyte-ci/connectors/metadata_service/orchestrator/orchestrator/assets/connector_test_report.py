@@ -151,7 +151,7 @@ def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]
     )
 
 @asset(required_resource_keys={"gcp_gcs_client"}, group_name=GROUP_NAME)
-def generate_connector_test_summary_and_badges(context: OpExecutionContext) -> OutputDataFrame:
+def last_10_connector_test_results(context: OpExecutionContext) -> OutputDataFrame:
     gcp_gcs_client = context.resources.gcp_gcs_client
     ci_report_bucket = os.getenv("CI_REPORT_BUCKET")
 
@@ -185,11 +185,27 @@ def generate_connector_test_summary_and_badges(context: OpExecutionContext) -> O
             "connector_name": blob.name.split("/")[-3],
             "connector_version": blob.name.split("/")[-2],
             "timestamp": blob.name.split("/")[-5],
-            "success": json_blob_to_model(blob, ConnectorPipelineReport).success,
+            "blob": blob,
+            # "success": json_blob_to_model(blob, ConnectorPipelineReport).success,
         }
         for blob in gcs_file_blobs
     ]
 
-    output_df = pd.DataFrame(report_status)
-    return output_dataframe(output_df)
+    # group by connector name and only keep the latest 10 timestamps
+    report_status = (
+        pd.DataFrame(report_status)
+        .groupby("connector_name")
+        .apply(lambda x: x.sort_values("timestamp", ascending=False).head(10))
+        .reset_index(drop=True)
+    )
+
+    # add an entry for each connectors timestamp that is whether the test passed or failed
+    report_status["model"] = report_status["blob"].apply(lambda blob: json_blob_to_model(blob, ConnectorPipelineReport))
+    report_status["success"] = report_status["model"].apply(lambda model: model.success)
+    report_status["gha_workflow_run_url"] = report_status["model"].apply(lambda model: model.gha_workflow_run_url)
+
+    # Drop the blob column
+    report_status = report_status.drop(columns=["blob", "model"])
+
+    return output_dataframe(report_status)
 

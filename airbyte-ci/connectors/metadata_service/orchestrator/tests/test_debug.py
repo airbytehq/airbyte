@@ -3,7 +3,7 @@ from dagster import build_op_context
 from orchestrator.resources.gcp import gcp_gcs_client, gcs_directory_blobs
 
 from orchestrator.assets.connector_test_report import (
-    generate_nightly_report,
+    generate_nightly_report, generate_connector_test_summary_and_badges
 )
 
 
@@ -27,3 +27,16 @@ def debug_nightly_report():
 
     context = build_op_context(resources=resources)
     generate_nightly_report(context).value
+
+
+def test_debug_badges():
+    resources = {
+        "gcp_gcs_client": gcp_gcs_client.configured(
+            {
+                "gcp_gcs_cred_string": {"env": "GCS_CREDENTIALS"},
+            }
+        ),
+    }
+
+    context = build_op_context(resources=resources)
+    generate_connector_test_summary_and_badges(context).value
