@@ -124,8 +124,16 @@ class ConvexStream(HttpStream, IncrementalMixin):
         self._delta_cursor_value = value["delta_cursor"]
 
     def next_page_token(self, response: requests.Response) -> Optional[ConvexState]:
-        # Inner level of pagination shares the same state as outer,
-        # and returns None to indicate that we're done.
+        if response.status_code != 200:
+            raise Exception(format_http_error("Failed request", response))
+        resp_json = response.json()
+        if self._snapshot_has_more:
+            self._snapshot_cursor_value = resp_json["cursor"]
+            self._snapshot_has_more = resp_json["hasMore"]
+            self._delta_cursor_value = resp_json["snapshot"]
+        else:
+            self._delta_cursor_value = resp_json["cursor"]
+            self._delta_has_more = resp_json["hasMore"]
         return self.state if self._delta_has_more else None
 
     def path(
@@ -135,7 +143,8 @@ class ConvexStream(HttpStream, IncrementalMixin):
         next_page_token: Optional[ConvexState] = None,
     ) -> str:
         # https://docs.convex.dev/http-api/#sync
-        if self._snapshot_has_more:
+        state = next_page_token or stream_state or self.state
+        if state["snapshot_has_more"]:
             return "/api/list_snapshot"
         else:
             return "/api/document_deltas"
@@ -150,13 +159,6 @@ class ConvexStream(HttpStream, IncrementalMixin):
         if response.status_code != 200:
             raise Exception(format_http_error("Failed request", response))
         resp_json = response.json()
-        if self._snapshot_has_more:
-            self._snapshot_cursor_value = resp_json["cursor"]
-            self._snapshot_has_more = resp_json["hasMore"]
-            self._delta_cursor_value = resp_json["snapshot"]
-        else:
-            self._delta_cursor_value = resp_json["cursor"]
-            self._delta_has_more = resp_json["hasMore"]
         return list(resp_json["values"])
 
     def request_params(
@@ -165,16 +167,25 @@ class ConvexStream(HttpStream, IncrementalMixin):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[ConvexState] = None,
     ) -> MutableMapping[str, Any]:
+        state = next_page_token or stream_state or self.state
         params: Dict[str, Any] = {"tableName": self.table_name, "format": "convex_json"}
-        if self._snapshot_has_more:
-            if self._snapshot_cursor_value:
+        if state["snapshot_has_more"]:
+            if state["snapshot_cursor"]:
                 params["cursor"] = self._snapshot_cursor_value
-            if self._delta_cursor_value:
+            if state["delta_cursor_value"]:
                 params["snapshot"] = self._delta_cursor_value
         else:
-            if self._delta_cursor_value:
+            if state["delta_cursor"]:
                 params["cursor"] = self._delta_cursor_value
         return params
+
+    def request_headers(self, stream_state: ConvexState, stream_slice: Optional[Mapping[str, Any]] = None, next_page_token: Optional[ConvexState] = None) -> Dict[str, str]:
+        """
+        Custom headers for each HTTP request, not including Authorization.
+        """
+        return {
+            "Convex-Client": "streaming-export-0.2.0",
+        }
 
     def get_updated_state(self, current_stream_state: ConvexState, latest_record: Mapping[str, Any]) -> ConvexState:
         """
