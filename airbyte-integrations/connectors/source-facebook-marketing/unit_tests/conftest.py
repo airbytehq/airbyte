@@ -73,19 +73,10 @@ def second_fb_account_response_fixture(second_account_id):
 
 @fixture(name="api")
 def api_fixture(some_config, some_second_config, requests_mock, fb_account_response, second_fb_account_response):
-    api = API(account_id=some_config["account_id"], access_token=some_config["access_token"])
+    api = API(account_ids=[some_config["account_id"], some_second_config["account_id"]], access_token=some_config["access_token"])
 
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/adaccounts", [fb_account_response])
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{some_config['account_id']}/", [fb_account_response])
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{some_second_config['account_id']}/", [second_fb_account_response])
     return api
 
-
-@fixture(name="accounts")
-def accounts_fixture(some_config, some_second_config, requests_mock, fb_account_response, second_fb_account_response):
-    api = API(account_id=some_config["account_id"], access_token=some_config["access_token"])
-
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/adaccounts", [fb_account_response])
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{some_config['account_id']}/", [fb_account_response])
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{some_second_config['account_id']}/", [second_fb_account_response])
-    return [api._find_account(some_config["account_id"]), api._find_account(some_second_config["account_id"])]

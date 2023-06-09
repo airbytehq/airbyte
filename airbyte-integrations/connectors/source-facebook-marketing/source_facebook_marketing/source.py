@@ -80,6 +80,8 @@ class SourceFacebookMarketing(AbstractSource):
 
             account_ids = config.account_ids.split(",") if config.account_ids else []
             api = API(account_ids=account_ids, access_token=config.access_token)
+            logger.info(f"Select accounts {account_ids}")
+
         except (requests.exceptions.RequestException, ValidationError, FacebookAPIException) as e:
             return False, e
 

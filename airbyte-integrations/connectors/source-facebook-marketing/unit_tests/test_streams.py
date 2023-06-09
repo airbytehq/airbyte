@@ -19,7 +19,7 @@ from source_facebook_marketing.streams.base_streams import FBMarketingStream
 from source_facebook_marketing.streams.streams import fetch_thumbnail_data_url
 
 
-def test_filter_all_statuses(api, accounts, mocker):
+def test_filter_all_statuses(api, mocker):
     mocker.patch.multiple(FBMarketingStream, __abstractmethods__=set())
     expected = {
         "filtering": [
@@ -45,7 +45,7 @@ def test_filter_all_statuses(api, accounts, mocker):
             }
         ]
     }
-    assert FBMarketingStream(api=api, accounts=accounts)._filter_all_statuses() == expected
+    assert FBMarketingStream(api=api)._filter_all_statuses() == expected
 
 
 @pytest.mark.parametrize(
@@ -77,14 +77,14 @@ def test_parse_call_rate_header():
     ],
 )
 def test_ads_insights_breakdowns(class_name, breakdowns, action_breakdowns):
-    kwargs = {"api": None, "accounts": None, "start_date": pendulum.now(), "end_date": pendulum.now(), "insights_lookback_window": 1}
+    kwargs = {"api": None, "start_date": pendulum.now(), "end_date": pendulum.now(), "insights_lookback_window": 1}
     stream = class_name(**kwargs)
     assert stream.breakdowns == breakdowns
     assert stream.action_breakdowns == action_breakdowns
 
 
 def test_custom_ads_insights_breakdowns():
-    kwargs = {"api": None, "accounts": None, "start_date": pendulum.now(), "end_date": pendulum.now(), "insights_lookback_window": 1}
+    kwargs = {"api": None, "start_date": pendulum.now(), "end_date": pendulum.now(), "insights_lookback_window": 1}
     stream = AdsInsights(breakdowns=["mmm"], action_breakdowns=["action_destination"], **kwargs)
     assert stream.breakdowns == ["mmm"]
     assert stream.action_breakdowns == ["action_destination"]
