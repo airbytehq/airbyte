@@ -461,7 +461,7 @@ class TestSourceZendeskSupportStream:
         "stream_cls, expected",
         [
             (Macros, None),
-            (Posts, None)
+            (Posts, None),
             (Organizations, None),
             (Groups, None),
             (TicketFields, None),
