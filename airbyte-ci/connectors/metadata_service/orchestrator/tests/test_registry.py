@@ -84,3 +84,138 @@ def test_definition_id_conversion(registry_type, connector_type, expected_id_fie
     result = metadata_to_registry_entry(mock_metadata_entry, connector_type, registry_type)
     assert "definitionId" not in result
     assert result[expected_id_field] == "test-id"
+
+def test_tombstone_custom_public_set():
+    """
+    Test if tombstone, custom and public are set correctly in the registry entry.
+    """
+    metadata = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "registries": {
+                "oss": {
+                    "enabled": True
+                }
+            }
+        }
+    }
+
+    mock_metadata_entry = Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = metadata
+    mock_metadata_entry.icon_url = "test-icon-url"
+
+    result = metadata_to_registry_entry(mock_metadata_entry, "source", "oss")
+    assert result["tombstone"] is False
+    assert result["custom"] is False
+    assert result["public"] is True
+
+
+def test_fields_deletion():
+    """
+    Test if registries, connectorType, and definitionId fields were deleted from the registry entry.
+    """
+    metadata = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "registries": {
+                "oss": {
+                    "enabled": True
+                }
+            }
+        }
+    }
+
+    mock_metadata_entry = Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = metadata
+    mock_metadata_entry.icon_url = "test-icon-url"
+
+    result = metadata_to_registry_entry(mock_metadata_entry, "source", "oss")
+    assert "registries" not in result
+    assert "connectorType" not in result
+    assert "definitionId" not in result
+
+@pytest.mark.parametrize("registry_type, expected_docker_image_tag, expected_additional_field",
+                         [("cloud", "cloud_tag", "cloud_value"),
+                          ("oss", "oss_tag", "oss_value")])
+def test_overrides_application(registry_type, expected_docker_image_tag, expected_additional_field):
+    """
+    Test if the overrides for cloud or oss are properly applied to the registry entry.
+    """
+    # Assuming 'overriddenField' is a field to be overridden in metadata for the sake of this test.
+    metadata = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "dockerImageTag": "base_tag",
+            "registries": {
+                "oss": {
+                    "enabled": True,
+                    "dockerImageTag": "oss_tag",
+                    "additionalField": "oss_value"
+                },
+                "cloud": {
+                    "enabled": True,
+                    "dockerImageTag": "cloud_tag",
+                    "additionalField": "cloud_value"
+                }
+            }
+        }
+    }
+
+    mock_metadata_entry = Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = metadata
+    mock_metadata_entry.icon_url = "test-icon-url"
+
+    result = metadata_to_registry_entry(mock_metadata_entry, "source", registry_type)
+    assert result["dockerImageTag"] == expected_docker_image_tag
+    assert result["additionalField"] == expected_additional_field
+
+def test_source_type_extraction():
+    """
+    Test if sourceType is successfully extracted from connectorSubtype in the registry entry.
+    """
+    metadata = {
+        "data": {
+            "connectorType": "source",
+            "connectorSubtype": "database",
+            "definitionId": "test-id",
+            "registries": {
+                "oss": {
+                    "enabled": True
+                }
+            }
+        }
+    }
+
+    mock_metadata_entry = Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = metadata
+    mock_metadata_entry.icon_url = "test-icon-url"
+
+    result = metadata_to_registry_entry(mock_metadata_entry, "source", "oss")
+    assert result["sourceType"] == "database"
+
+
+def test_release_stage_default():
+    """
+    Test if releaseStage is defaulted to alpha in the registry entry.
+    """
+    metadata = {
+        "data": {
+            "connectorType": "source",
+            "definitionId": "test-id",
+            "registries": {
+                "oss": {
+                    "enabled": True
+                }
+            }
+        }
+    }
+
+    mock_metadata_entry = Mock()
+    mock_metadata_entry.metadata_definition.dict.return_value = metadata
+    mock_metadata_entry.icon_url = "test-icon-url"
+
+    result = metadata_to_registry_entry(mock_metadata_entry, "source", "oss")
+    assert result["releaseStage"] == "alpha"
