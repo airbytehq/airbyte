@@ -281,11 +281,12 @@ async def with_ci_connector_ops(context: PipelineContext) -> Container:
     return await with_installed_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH, exclude=["pipelines"])
 
 
-def with_global_dockerd_service(dagger_client: Client) -> Container:
+def with_global_dockerd_service(dagger_client: Client, git_revision: str) -> Container:
     """Create a container with a docker daemon running.
     We expose its 2375 port to use it as a docker host for docker-in-docker use cases.
     Args:
         dagger_client (Client): The dagger client used to create the container.
+        git_revision (str): The git revision of the current test run.
     Returns:
         Container: The container running dockerd as a service
     """
@@ -294,7 +295,7 @@ def with_global_dockerd_service(dagger_client: Client) -> Container:
         .from_(consts.DOCKER_DIND_IMAGE)
         .with_mounted_cache(
             "/var/lib/docker",
-            dagger_client.cache_volume("docker-lib"),
+            dagger_client.cache_volume(f"docker-lib-{git_revision}"),
             sharing=CacheSharingMode.SHARED,
         )
         .with_mounted_cache(
