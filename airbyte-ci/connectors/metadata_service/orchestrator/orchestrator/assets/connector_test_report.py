@@ -2,6 +2,7 @@ import pandas as pd
 import json
 import os
 import re
+from datetime import datetime
 
 from dagster import Output, asset, OpExecutionContext, MetadataValue
 from google.cloud import storage
@@ -152,6 +153,7 @@ def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]
 
 @asset(required_resource_keys={"gcp_gcs_client"}, group_name=GROUP_NAME)
 def last_10_connector_test_results(context: OpExecutionContext) -> OutputDataFrame:
+    # TODO pull into resources
     gcp_gcs_client = context.resources.gcp_gcs_client
     ci_report_bucket = os.getenv("CI_REPORT_BUCKET")
 
@@ -164,6 +166,7 @@ def last_10_connector_test_results(context: OpExecutionContext) -> OutputDataFra
 
     # regex that matches any path that contains the branch name and ends with output.json
     # e.g. airbyte-ci/connectors/test/somerandomfoler/master/connectorname/connectorversion/gitsha/output.json
+    # TODO make all work off regex
     regex = f".*{branch}.*{suffix}$"
 
 
@@ -179,7 +182,6 @@ def last_10_connector_test_results(context: OpExecutionContext) -> OutputDataFra
     # And add them as columns to the dataframe
     # note that we should only pay attention to the end of the file path, not the beginning
     # because the beginning of the file path is not consistent 1686249301/61a6f8ed68cbeaa8b8b1ff4e64496d989826fd5e/source-strava/0.1.4/output.json
-
     report_status = [
         {
             "connector_name": blob.name.split("/")[-3],
@@ -207,5 +209,46 @@ def last_10_connector_test_results(context: OpExecutionContext) -> OutputDataFra
     # Drop the blob column
     report_status = report_status.drop(columns=["blob", "model"])
 
+    # TODO
+    # 1. add a persist summary asset (we will need the connectors icon url for this)
+    # 2. add a persist badge asset (we will need the connectors icon url for this)
+
     return output_dataframe(report_status)
+
+@asset(required_resource_keys={"registry_report_directory_manager"}, group_name=GROUP_NAME)
+def persist_connectors_test_summary_files(context: OpExecutionContext, last_10_connector_test_results: OutputDataFrame) -> OutputDataFrame:
+    registry_report_directory_manager = context.resources.registry_report_directory_manager
+
+    # We want to create a dataframe per connector_name that contains the following columns
+    # 1. date
+    # 2. connector_version
+    # 3. success
+    # 4. gha_workflow_run_url
+    # so that we can create a summary file for each connector
+    # for connector_name, connector_df in last_10_connector_test_results.items():
+    metadata = {}
+    all_connector_names = last_10_connector_test_results["connector_name"].unique()
+    for connector_name in all_connector_names:
+        all_connector_test_results = last_10_connector_test_results[last_10_connector_test_results["connector_name"] == connector_name]
+        connector_test_summary = all_connector_test_results[["timestamp", "connector_version", "success", "gha_workflow_run_url"]]
+
+        # Order by timestamp descending
+        connector_test_summary = connector_test_summary.sort_values("timestamp", ascending=False)
+
+        # convert unix timestamp to iso date
+        connector_test_summary["date"] = connector_test_summary["timestamp"].apply(lambda timestamp: datetime.fromtimestamp(int(timestamp)).isoformat())
+
+        # drop the timestamp column
+        connector_test_summary = connector_test_summary.drop(columns=["timestamp"])
+        report_file_name = f"test_summary/{connector_name}"
+        markdown_string = connector_test_summary.to_markdown()
+
+        # add to metadata
+        metadata[report_file_name] = MetadataValue.md(markdown_string)
+        # json_file_handle = registry_report_directory_manager.write_data(json_string.encode(), ext="json", key=report_file_name)
+
+    return Output(
+        value=last_10_connector_test_results,
+        metadata=metadata,
+    )
 
