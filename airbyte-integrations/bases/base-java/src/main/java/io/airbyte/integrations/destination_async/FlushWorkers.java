@@ -175,6 +175,7 @@ public class FlushWorkers implements AutoCloseable {
   }
 
   @Override
+  @SuppressWarnings("BusyWait")
   public void close() throws Exception {
     log.info("Closing flush workers -- waiting for all buffers to flush");
     isClosing.set(true);
@@ -217,7 +218,7 @@ public class FlushWorkers implements AutoCloseable {
     workerPool.shutdown();
     final var workersShut = workerPool.awaitTermination(5L, TimeUnit.MINUTES);
     log.info("Closing flush workers -- Workers shutdown status: {}", workersShut);
-
+    runningFlushWorkers.close();
     debugLoop.shutdownNow();
   }
 

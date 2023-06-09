@@ -10,6 +10,7 @@ import io.airbyte.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
+import io.airbyte.integrations.destination_async.AirbyteFileUtils;
 import io.airbyte.integrations.destination_async.DestinationFlushFunction;
 import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -46,7 +47,7 @@ class AsyncFlush implements DestinationFlushFunction {
   public void flush(final StreamDescriptor decs, final Stream<PartialAirbyteMessage> stream) throws Exception {
     final CsvSerializedBuffer writer;
     try {
-      log.info("Free memory before: {}", Runtime.getRuntime().freeMemory() / 1024 / 1024);
+      log.info("Free memory before: {}", AirbyteFileUtils.byteCountToDisplaySize(Runtime.getRuntime().freeMemory()));
       writer = new CsvSerializedBuffer(
           new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
           new StagingDatabaseCsvSheetGenerator(),
@@ -67,7 +68,7 @@ class AsyncFlush implements DestinationFlushFunction {
       throw new RuntimeException(e);
     }
 
-    log.info("Free memory after deserializing: {}", Runtime.getRuntime().freeMemory() / 1024 / 1024);
+    log.info("Free memory after deserializing: {}", AirbyteFileUtils.byteCountToDisplaySize(Runtime.getRuntime().freeMemory()));
     log.info("Total memory used: {}", (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024);
 
     writer.flush();

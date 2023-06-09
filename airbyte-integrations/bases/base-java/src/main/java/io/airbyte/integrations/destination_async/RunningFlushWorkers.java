@@ -25,10 +25,11 @@ import java.util.concurrent.TimeUnit;
 public class RunningFlushWorkers {
 
   private final ConcurrentMap<StreamDescriptor, ConcurrentMap<UUID, Optional<Long>>> streamToFlushWorkerToBatchSize;
+  private final ScheduledExecutorService debugLoop;
 
   public RunningFlushWorkers() {
     streamToFlushWorkerToBatchSize = new ConcurrentHashMap<>();
-    final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
+    debugLoop = Executors.newSingleThreadScheduledExecutor();
     debugLoop.scheduleAtFixedRate(this::printRunningWorkerInfo, 0, 500, TimeUnit.MILLISECONDS);
   }
 
@@ -87,6 +88,9 @@ public class RunningFlushWorkers {
 
   private void printRunningWorkerInfo() {
     final var workerInfo = new StringBuilder().append("FLUSH WORKER INFO").append(System.lineSeparator());
+    if (streamToFlushWorkerToBatchSize.isEmpty()) {
+      return;
+    }
 
     for (final var entry : streamToFlushWorkerToBatchSize.entrySet()) {
       final var workerToBatchSize = entry.getValue();
@@ -99,6 +103,13 @@ public class RunningFlushWorkers {
               .append(System.lineSeparator());
     }
     log.info(workerInfo.toString());
+  }
+
+  /**
+   * Closes the debug loop for printing all in-flight workers and memory that is still pending
+   */
+  public void close() throws Exception {
+    debugLoop.shutdownNow();
   }
 
 }

@@ -24,7 +24,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 @Slf4j
 public class DetectStreamToFlush {
 
-  private static final double EAGER_FLUSH_THRESHOLD = 0.90;
+  private static final double EAGER_FLUSH_THRESHOLD = 0.70;
   private static final long QUEUE_FLUSH_THRESHOLD_BYTES = 10 * 1024 * 1024; // 10MB
   private static final long MAX_TIME_BETWEEN_REC_MIN = 5L;
   private final BufferDequeue bufferDequeue;

@@ -53,7 +53,6 @@ public class MemoryAwareMessageBatch implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    LOGGER.info("Closing batch of size {}", sizeInBytes);
     memoryManager.free(sizeInBytes);
   }
 

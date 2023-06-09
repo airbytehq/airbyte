@@ -56,7 +56,6 @@ public class BufferEnqueue {
   private void handleRecord(final PartialAirbyteMessage message, final Integer sizeInBytes) {
     final StreamDescriptor streamDescriptor = extractStreamDescriptorFromRecord(message);
     if (streamDescriptor != null && !buffers.containsKey(streamDescriptor)) {
-      // we can get a message that is greater than 10 MB so pass this into memoryManager.requestMemory
       buffers.put(streamDescriptor, new StreamAwareQueue(memoryManager.requestMemory()));
     }
     final long stateId = stateManager.getStateIdAndIncrementCounter(streamDescriptor);

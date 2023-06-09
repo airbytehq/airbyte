@@ -81,7 +81,7 @@ public class BufferManager {
     final var queueInfo = new StringBuilder().append("QUEUE INFO").append(System.lineSeparator());
 
     queueInfo
-        .append(String.format("  Global Mem Manager -- max: %s, allocated: %s (MB), %% used max: %s, used total: %s, RT used: %s (MB), free: %s (MB), %% used: %s",
+        .append(String.format("  Global Mem Manager -- max: %s, allocated: %s, %% used max: %s, %% used total: %s, RT used: %s (MB), free: %s (MB), %% used: %s",
             AirbyteFileUtils.byteCountToDisplaySize(memoryManager.getMaxMemoryBytes()),
             AirbyteFileUtils.byteCountToDisplaySize(memoryManager.getCurrentMemoryBytes()),
             (double) memoryManager.getCurrentMemoryBytes() / memoryManager.getMaxMemoryBytes() * 100,
