@@ -10,7 +10,7 @@ from typing import Optional
 import pandas as pd
 import requests
 
-from .constants import CONNECTOR_BUILD_OUTPUT_URL
+from .constants import CONNECTOR_TEST_SUMMARY_URL
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,29 +28,32 @@ class BUILD_STATUSES(str, Enum):
         return BUILD_STATUSES[string_value.upper()]
 
 
-def get_connector_build_output_url(connector_technical_name: str, connector_version: str) -> str:
+def get_connector_build_output_url(connector_technical_name: str) -> str:
     """
     Get the connector build output url.
-    Documentation of the larger build output system can be found here: https://internal-docs.airbyte.io/Generated-Reports/Build-Status-Reports
     """
-    return f"{CONNECTOR_BUILD_OUTPUT_URL}/{connector_technical_name}/version-{connector_version}.json"
+    return f"{CONNECTOR_TEST_SUMMARY_URL}/{connector_technical_name}/index.json"
 
 
-def fetch_latest_build_status_for_connector_version(connector_technical_name: str, connector_version: str) -> BUILD_STATUSES:
+def fetch_latest_build_status_for_connector(connector_technical_name: str) -> BUILD_STATUSES:
     """Fetch the latest build status for a given connector version."""
-    connector_build_output_url = get_connector_build_output_url(connector_technical_name, connector_version)
+    connector_build_output_url = get_connector_build_output_url(connector_technical_name)
     connector_build_output_response = requests.get(connector_build_output_url)
 
     # if the connector returned successfully, return the outcome
     if connector_build_output_response.status_code == 200:
         connector_build_output = connector_build_output_response.json()
-        outcome = connector_build_output.get("outcome")
 
-        try:
-            return BUILD_STATUSES.from_string(outcome)
-        except KeyError:
-            LOGGER.error(f"Error: Unexpected build status value: {outcome} for connector {connector_technical_name}:{connector_version}")
+        # we want to get the latest build status
+        # sort by date and get the first element
+        latest_connector_run = sorted(connector_build_output, key=lambda x: x["date"], reverse=True)[0]
+
+        outcome = latest_connector_run.get("outcome")
+        if outcome is None:
+            LOGGER.error(f"Error: No outcome value for connector {connector_technical_name}:{latest_connector_run['connector_version']}")
             return BUILD_STATUSES.NOT_FOUND
+
+        return BUILD_STATUSES.SUCCESS if outcome else BUILD_STATUSES.FAILURE
 
     else:
         return BUILD_STATUSES.NOT_FOUND

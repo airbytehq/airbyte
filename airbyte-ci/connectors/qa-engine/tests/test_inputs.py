@@ -101,7 +101,7 @@ def test_fetch_adoption_metrics_per_connector_version(mocker):
         ("connectors/source-pokeapi", "0.1.5", None, 404, inputs.BUILD_STATUSES.NOT_FOUND),
     ],
 )
-def test_fetch_latest_build_status_for_connector_version(
+def test_fetch_latest_build_status_for_connector(
     mocker, connector_name, connector_version, mocked_json_payload, mocked_status_code, expected_status
 ):
     # Mock the api call to get the latest build status for a connector version
@@ -110,11 +110,11 @@ def test_fetch_latest_build_status_for_connector_version(
     mock_response.status_code = mocked_status_code
     mock_get = mocker.patch.object(requests, "get", return_value=mock_response)
 
-    assert inputs.fetch_latest_build_status_for_connector_version(connector_name, connector_version) == expected_status
-    assert mock_get.call_args == call(f"{constants.CONNECTOR_BUILD_OUTPUT_URL}/{connector_name}/version-{connector_version}.json")
+    assert inputs.fetch_latest_build_status_for_connector(connector_name, connector_version) == expected_status
+    assert mock_get.call_args == call(f"{constants.CONNECTOR_TEST_SUMMARY_URL}/{connector_name}/index.json")
 
 
-def test_fetch_latest_build_status_for_connector_version_invalid_status(mocker, caplog):
+def test_fetch_latest_build_status_for_connector_invalid_status(mocker, caplog):
     connector_name = "connectors/source-pokeapi"
     connector_version = "0.1.5"
     mocked_json_payload = {
@@ -130,5 +130,5 @@ def test_fetch_latest_build_status_for_connector_version_invalid_status(mocker, 
     mock_response.status_code = 200
     mocker.patch.object(requests, "get", return_value=mock_response)
 
-    assert inputs.fetch_latest_build_status_for_connector_version(connector_name, connector_version) == inputs.BUILD_STATUSES.NOT_FOUND
+    assert inputs.fetch_latest_build_status_for_connector(connector_name, connector_version) == inputs.BUILD_STATUSES.NOT_FOUND
     assert "Error: Unexpected build status value: unknown_outcome_123 for connector connectors/source-pokeapi:0.1.5" in caplog.text

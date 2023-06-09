@@ -6,6 +6,7 @@ from jinja2 import Environment, PackageLoader
 from typing import List, Optional, Callable, Any
 from dataclasses import dataclass
 from datetime import timedelta
+from orchestrator.utils.object_helpers import deep_copy_params
 
 
 # 🔗 HTML Renderers
@@ -190,6 +191,7 @@ def render_connector_nightly_report_md(nightly_report_connector_matrix_df: pd.Da
         failed_last_build_two_builds_count=len(failed_last_build_two_builds_df),
     )
 
+@deep_copy_params
 def render_connector_test_summary_html(connector_name: str, connector_test_summary_df: pd.DataFrame) -> str:
     env = Environment(loader=PackageLoader("orchestrator", "templates"))
     template = env.get_template("connector_test_summary.html")
@@ -221,6 +223,7 @@ def render_connector_test_summary_html(connector_name: str, connector_test_summa
         connector_test_summary_html=connector_test_summary_html
     )
 
+@deep_copy_params
 def render_connector_test_badge(test_summary: pd.DataFrame) -> str:
     number_of_passes = len(test_summary[test_summary["success"] == True])
     number_of_fails = len(test_summary[test_summary["success"] == False])
