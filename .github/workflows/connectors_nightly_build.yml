@@ -11,7 +11,7 @@ on:
         default: dev-large-runner
         required: true
       test-connectors-options:
-        default: --concurrency=8 --release-stage=generally_available --release-stage=beta
+        default: --concurrency=5 --release-stage=generally_available --release-stage=beta
         required: true
 
 run-name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build for GA and Beta connectors' }} - on ${{ inputs.runs-on || 'dev-large-runner' }}"

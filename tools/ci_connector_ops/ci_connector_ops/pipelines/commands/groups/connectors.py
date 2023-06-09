@@ -223,10 +223,28 @@ def test(
     try:
         anyio.run(
             run_connectors_pipelines,
-            connectors_tests_contexts,
+            [
+                connector_context
+                for connector_context in connectors_tests_contexts
+                if connector_context.connector.language != ConnectorLanguage.JAVA
+            ],
             run_connector_test_pipeline,
             "Test Pipeline",
             ctx.obj["concurrency"],
+            ctx.obj["execute_timeout"],
+        )
+        # We run the Java connectors tests sequentially because we currently have memory issues when Java integration tests are run in parallel.
+        # See https://github.com/airbytehq/airbyte/issues/27168
+        anyio.run(
+            run_connectors_pipelines,
+            [
+                connector_context
+                for connector_context in connectors_tests_contexts
+                if connector_context.connector.language == ConnectorLanguage.JAVA
+            ],
+            run_connector_test_pipeline,
+            "Test Pipeline",
+            1,
             ctx.obj["execute_timeout"],
         )
     except Exception as e:
