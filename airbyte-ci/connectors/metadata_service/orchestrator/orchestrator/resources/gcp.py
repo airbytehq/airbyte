@@ -133,7 +133,7 @@ def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
     config_schema={
         "gcs_bucket": StringSource,
         "prefix": StringSource,
-        "suffix": StringSource,
+        "match_regex": StringSource,
     },
 )
 def gcs_directory_blobs(resource_context: InitResourceContext) -> storage.Blob:

@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from dagster import Definitions, load_assets_from_modules
+from dagster import Definitions, ScheduleDefinition, load_assets_from_modules
 
 from orchestrator.resources.gcp import gcp_gcs_client, gcs_directory_blobs, gcs_file_blob, gcs_file_manager
 from orchestrator.resources.github import github_client, github_connector_repo, github_connectors_directory, github_workflow_runs
@@ -16,7 +16,8 @@ from orchestrator.assets import (
     metadata,
 )
 
-from orchestrator.jobs.registry import generate_registry_reports, generate_registry, generate_nightly_reports
+from orchestrator.jobs.registry import generate_registry_reports, generate_registry
+from orchestrator.jobs.connector_test_report import generate_nightly_reports, generate_connector_test_summary_reports
 from orchestrator.sensors.registry import registry_updated_sensor
 from orchestrator.sensors.gcs import new_gcs_blobs_sensor
 
@@ -101,7 +102,12 @@ SENSORS = [
     ),
 ]
 
-SCHEDULES = []
+SCHEDULES = [
+    ScheduleDefinition(
+        job=generate_connector_test_summary_reports,
+        cron_schedule="@hourly"
+    )
+]
 
 JOBS = [generate_registry_reports, generate_registry]
 
