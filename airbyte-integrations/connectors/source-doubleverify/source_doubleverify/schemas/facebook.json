@@ -1,0 +1,525 @@
+{
+  "schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "dimensions": {
+      "date": {
+        "id": 56819777,
+        "type": [
+          "date"
+        ]
+      },
+      "delivery_country": {
+        "id": 59341133,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "device_delivery_type": {
+        "id": 68351092,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "advertiser": {
+        "id": 15481682,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "brand": {
+        "id": 348137,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "brand_market": {
+        "id": 64455984,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "brand_region": {
+        "id": 64455983,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fb_account_id": {
+        "id": 39452465,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fb_account_name": {
+        "id": 1972719,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fb_ad_id": {
+        "id": 45704417,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fb_ad_name": {
+        "id": 27652963,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fb_ad_set_id": {
+        "id": 68809068,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fb_ad_set_name": {
+        "id": 31724323,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fb_campaign_id": {
+        "id": 71786681,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fb_campaign_name": {
+        "id": 10835795,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fb_campaign_objective": {
+        "id": 99281416,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fb_creative_id": {
+        "id": 54382014,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fb_creative_name": {
+        "id": 43203847,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fb_platform_type": {
+        "id": 46396043,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "inventory_type": {
+        "id": 36851603,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fb_mobile_device_type": {
+        "id": 64081146,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "fb_page_type": {
+        "id": 39145416,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "traffic_validity": {
+        "id": 48023071,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "media_type": {
+        "id": 11047811,
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "metrics": {
+      "video_viewable_impressions": {
+        "id": 6114850,
+        "type": "number"
+      },
+      "video_passthrough_measured_impressions": {
+        "id": 6369440,
+        "type": "number"
+      },
+      "total_time_hr_display_viewable_impressions": {
+        "id": 6989401,
+        "type": "number"
+      },
+      "q1_completed_impressions": {
+        "id": 8708935,
+        "type": "number"
+      },
+      "audible_impressions": {
+        "id": 14782119,
+        "type": "number"
+      },
+      "midpoint_50_on_screen_passthrough_impressions": {
+        "id": 16278432,
+        "type": "number"
+      },
+      "q2_completed_impressions": {
+        "id": 16577906,
+        "type": "number"
+      },
+      "total_time_hr_display_creative_on_page": {
+        "id": 18232064,
+        "type": "number"
+      },
+      "audible_measured_impressions": {
+        "id": 19918628,
+        "type": "number"
+      },
+      "midpoint_50_on_screen_passthrough_measured_impressions": {
+        "id": 20833742,
+        "type": "number"
+      },
+      "video_3_second_viewable_impressions": {
+        "id": 24360120,
+        "type": "number"
+      },
+      "display_eligible_impressions": {
+        "id": 26123624,
+        "type": "number"
+      },
+      "display_passthrough_impressions": {
+        "id": 29554399,
+        "type": "number"
+      },
+      "one_second_on_screen_passthrough_impressions": {
+        "id": 39424189,
+        "type": "number"
+      },
+      "q3_completed_impressions": {
+        "id": 40980036,
+        "type": "number"
+      },
+      "video_passthrough_impressions": {
+        "id": 44864139,
+        "type": "number"
+      },
+      "display_passthrough_measured_impressions": {
+        "id": 45258418,
+        "type": "number"
+      },
+      "fb_standard_video_ads_net": {
+        "id": 46392854,
+        "type": "number"
+      },
+      "passthrough_measured_impressions": {
+        "id": 52168910,
+        "type": "number"
+      },
+      "passthrough_impressions": {
+        "id": 52554590,
+        "type": "number"
+      },
+      "fb_standard_display_ads_net": {
+        "id": 53298431,
+        "type": "number"
+      },
+      "display_3_second_viewable_impressions": {
+        "id": 53370197,
+        "type": "number"
+      },
+      "fraud_sivt_free_impressions": {
+        "id": 54395605,
+        "type": "number"
+      },
+      "average_time_s_display_creative_on_page": {
+        "id": 55785135,
+        "type": "number"
+      },
+      "display_2_second_viewable_impressions": {
+        "id": 55822894,
+        "type": "number"
+      },
+      "audible_viewable_impressions": {
+        "id": 57003523,
+        "type": "number"
+      },
+      "audible_and_in_view_on_completion_impressions": {
+        "id": 59168274,
+        "type": "number"
+      },
+      "video_measured_impressions": {
+        "id": 60800497,
+        "type": "number"
+      },
+      "50_viewable_15_secs_impressions": {
+        "id": 62081197,
+        "type": "number"
+      },
+      "midpoint_50_on_screen_passthrough_audible_impressions_fraud_sivt_free": {
+        "id": 62154040,
+        "type": "number"
+      },
+      "completed_impressions": {
+        "id": 63929155,
+        "type": "number"
+      },
+      "100_display_viewable_impressions": {
+        "id": 70723958,
+        "type": "number"
+      },
+      "fraud_sivt_incidents": {
+        "id": 71483969,
+        "type": "number"
+      },
+      "midpoint_50_on_screen_passthrough_impressions_fraud_sivt_free": {
+        "id": 72875334,
+        "type": "number"
+      },
+      "50_viewable_5_15_secs_impressions": {
+        "id": 73772902,
+        "type": "number"
+      },
+      "monitored_impressions": {
+        "id": 76388228,
+        "type": "number"
+      },
+      "display_measured_impressions": {
+        "id": 76431248,
+        "type": "number"
+      },
+      "video_monitored_impressions": {
+        "id": 80875834,
+        "type": "number"
+      },
+      "display_monitored_impressions": {
+        "id": 81112196,
+        "type": "number"
+      },
+      "fb_standard_ads_net": {
+        "id": 82669909,
+        "type": "number"
+      },
+      "one_second_on_screen_passthrough_measured_impressions": {
+        "id": 84290699,
+        "type": "number"
+      },
+      "50_viewable_1_5_secs_impressions": {
+        "id": 87047841,
+        "type": "number"
+      },
+      "average_time_s_display_viewable_impressions": {
+        "id": 87591084,
+        "type": "number"
+      },
+      "midpoint_50_on_screen_passthrough_audible_impressions": {
+        "id": 87902798,
+        "type": "number"
+      },
+      "measured_impressions": {
+        "id": 88318928,
+        "type": "number"
+      },
+      "video_eligible_impressions": {
+        "id": 89547967,
+        "type": "number"
+      },
+      "display_viewable_impressions": {
+        "id": 90638416,
+        "type": "number"
+      },
+      "eligible_impressions": {
+        "id": 94120692,
+        "type": "number"
+      },
+      "unique_incidents": {
+        "id": 97580207,
+        "type": "number"
+      },
+      "total_net_impressions": {
+        "id": 99940332,
+        "type": "number"
+      },
+      "total_net_display_impressions": {
+        "id": 99940334,
+        "type": "number"
+      },
+      "total_net_display_viewable_impressions": {
+        "id": 99940336,
+        "type": "number"
+      },
+      "total_time_hr_display_total_net_viewable": {
+        "id": 99940338,
+        "type": "number"
+      },
+      "average_time_s_display_total_net_viewable": {
+        "id": 99940339,
+        "type": "number"
+      },
+      "total_net_video_impressions": {
+        "id": 99940340,
+        "type": "number"
+      },
+      "total_net_video_viewable_impressions": {
+        "id": 99940342,
+        "type": "number"
+      },
+      "midpoint_50_on_screen_passthrough_audible_rate": {
+        "id": 4180022,
+        "type": "numeric"
+      },
+      "passthrough_rate": {
+        "id": 11359176,
+        "type": "numeric"
+      },
+      "unique_incident_rate": {
+        "id": 11770395,
+        "type": "numeric"
+      },
+      "midpoint_50_on_screen_passthrough_fraud_sivt_free_rate": {
+        "id": 13021695,
+        "type": "numeric"
+      },
+      "measurement_rate": {
+        "id": 14117940,
+        "type": "numeric"
+      },
+      "display_passthrough_rate": {
+        "id": 18780061,
+        "type": "numeric"
+      },
+      "audible_rate": {
+        "id": 19761722,
+        "type": "numeric"
+      },
+      "50_viewable_15_secs_rate": {
+        "id": 21579661,
+        "type": "numeric"
+      },
+      "midpoint_50_on_screen_passthrough_audible_impressions_fraud_sivt_free_rate": {
+        "id": 23625378,
+        "type": "numeric"
+      },
+      "50_viewable_5_15_secs_rate": {
+        "id": 28854670,
+        "type": "numeric"
+      },
+      "video_passthrough_rate": {
+        "id": 29929457,
+        "type": "numeric"
+      },
+      "display_3_second_viewable_rate": {
+        "id": 37392856,
+        "type": "numeric"
+      },
+      "video_viewable_rate": {
+        "id": 39300449,
+        "type": "numeric"
+      },
+      "display_measurement_rate": {
+        "id": 39394618,
+        "type": "numeric"
+      },
+      "video_3_second_viewable_rate": {
+        "id": 44512449,
+        "type": "numeric"
+      },
+      "display_viewable_rate": {
+        "id": 47509843,
+        "type": "numeric"
+      },
+      "fraud_sivt_free_rate": {
+        "id": 49358156,
+        "type": "numeric"
+      },
+      "one_second_on_screen_passthrough_rate": {
+        "id": 56052565,
+        "type": "numeric"
+      },
+      "display_2_second_viewable_rate": {
+        "id": 56660141,
+        "type": "numeric"
+      },
+      "video_measurement_rate": {
+        "id": 66982801,
+        "type": "numeric"
+      },
+      "fraud_sivt_rate": {
+        "id": 69437271,
+        "type": "numeric"
+      },
+      "midpoint_50_on_screen_passthrough_rate": {
+        "id": 72512421,
+        "type": "numeric"
+      },
+      "audible_and_in_view_on_completion_rate": {
+        "id": 75029445,
+        "type": "numeric"
+      },
+      "100_display_viewable_rate": {
+        "id": 76132111,
+        "type": "numeric"
+      },
+      "audible_viewable_rate": {
+        "id": 80022790,
+        "type": "numeric"
+      },
+      "50_viewable_1_5_secs_rate": {
+        "id": 85977190,
+        "type": "numeric"
+      },
+      "total_net_rate": {
+        "id": 99940333,
+        "type": "numeric"
+      },
+      "total_net_display_rate": {
+        "id": 99940335,
+        "type": "numeric"
+      },
+      "total_net_display_viewable_rate": {
+        "id": 99940337,
+        "type": "numeric"
+      },
+      "total_net_video_rate": {
+        "id": 99940341,
+        "type": "numeric"
+      },
+      "total_net_video_viewable_rate": {
+        "id": 99940343,
+        "type": "numeric"
+      }
+    }
+  }
+}

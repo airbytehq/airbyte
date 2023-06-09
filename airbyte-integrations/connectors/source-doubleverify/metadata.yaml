@@ -1,0 +1,20 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 73f4300a-7432-49ee-99b7-64cdaec496b9
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-doubleverify
+  githubIssueLabel: source-doubleverify
+  icon: doubleverify.svg
+  license: MIT
+  name: Doubleverify
+  releaseDate: TODO
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/doubleverify
+metadataSpecVersion: "1.0"

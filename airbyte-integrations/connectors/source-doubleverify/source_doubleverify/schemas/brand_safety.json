@@ -1,0 +1,126 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "dimensions": {
+      "advertiser_name": {
+        "id": 74370077,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "campaign": {
+        "id": 41496607,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "date": {
+        "id": 56819777,
+        "type": [
+          "date"
+        ]
+      },
+      "delivery_site": {
+        "id": 40760332,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "media_property": {
+        "id": 37005885,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "placement_code": {
+        "id": 3440670,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "placement_name": {
+        "id": 60025853,
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "metrics": {
+      "monitored_ads": {
+        "id": 76388229,
+        "type": "number"
+      },
+      "brand_suitable_ads": {
+        "id": 59059021,
+        "type": "number"
+      },
+      "brand_suitability_blocks": {
+        "id": 68766554,
+        "type": "number"
+      },
+      "brand_suitability_incidents": {
+        "id": 25318618,
+        "type": "number"
+      },
+      "uc_blocks": {
+        "id": 99940206,
+        "type": "number"
+      },
+      "uc_incidents": {
+        "id": 99940207,
+        "type": "number"
+      },
+      "uc_page_blocks": {
+        "id": 99940226,
+        "type": "number"
+      },
+      "uc_page_incidents": {
+        "id": 99940227,
+        "type": "number"
+      },
+      "uc_site_incidents": {
+        "id": 99940229,
+        "type": "number"
+      },
+      "on_app_el_blocks": {
+        "id": 7125058,
+        "type": "number"
+      },
+      "on_app_el_incidents": {
+        "id": 47553526,
+        "type": "number"
+      },
+      "on_site_el_blocks": {
+        "id": 6617540,
+        "type": "number"
+      },
+      "on_site_el_incidents": {
+        "id": 64576236,
+        "type": "number"
+      },
+      "out_of_age_blocks": {
+        "id": 87080430,
+        "type": "number"
+      },
+      "out_of_age_incidents": {
+        "id": 63104608,
+        "type": "number"
+      },
+      "out_of_star_blocks": {
+        "id": 95190821,
+        "type": "number"
+      },
+      "out_of_star_incidents": {
+        "id": 31087864,
+        "type": "number"
+      }
+    }
+  }
+}

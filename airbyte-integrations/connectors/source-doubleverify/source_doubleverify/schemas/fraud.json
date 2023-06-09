@@ -1,0 +1,136 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "dimensions": {
+      "advertiser_name": {
+        "id": 74370077,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "app_id": {
+        "id": 55695754,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "app_name": {
+        "id": 77658917,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "campaign": {
+        "id": 41496607,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "date": {
+        "id": 56819777,
+        "type": [
+          "date"
+        ]
+      },
+      "device_delivery_type": {
+        "id": 68351092,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "media_property": {
+        "id": 37005885,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "placement_code": {
+        "id": 3440670,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "placement_name": {
+        "id": 60025853,
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "metrics": {
+      "adware_malware_incidents": {
+        "id": 87461414,
+        "type": "number"
+      },
+      "app_fraud_ivt_blocks": {
+        "id": 55453731,
+        "type": "number"
+      },
+      "app_fraud_ivt_incidents": {
+        "id": 43459239,
+        "type": "number"
+      },
+      "bot_fraud_blocks": {
+        "id": 44650316,
+        "type": "number"
+      },
+      "bot_fraud_incidents": {
+        "id": 50411140,
+        "type": "number"
+      },
+      "data_center_traffic_blocks": {
+        "id": 61495712,
+        "type": "number"
+      },
+      "data_center_traffic_incidents": {
+        "id": 1506826,
+        "type": "number"
+      },
+      "emulator_incidents": {
+        "id": 75378234,
+        "type": "number"
+      },
+      "fraud_blocks": {
+        "id": 52218216,
+        "type": "number"
+      },
+      "fraud_incidents": {
+        "id": 97582739,
+        "type": "number"
+      },
+      "fraud_sivt_blocks": {
+        "id": 93651947,
+        "type": "number"
+      },
+      "fraud_sivt_incidents": {
+        "id": 71483969,
+        "type": "number"
+      },
+      "hijacked_devices_blocks": {
+        "id": 12063862,
+        "type": "number"
+      },
+      "hijacked_devices_incidents": {
+        "id": 25254768,
+        "type": "number"
+      },
+      "injected_ads_blocks": {
+        "id": 56356734,
+        "type": "number"
+      },
+      "injected_ads_incidents": {
+        "id": 45333794,
+        "type": "number"
+      }
+    }
+  }
+}

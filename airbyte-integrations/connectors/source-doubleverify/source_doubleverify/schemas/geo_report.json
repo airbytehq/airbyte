@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "dimensions": {
+      "advertiser_name": {
+        "id": 74370077,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "campaign": {
+        "id": 41496607,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "date": {
+        "id": 56819777,
+        "type": [
+          "date"
+        ]
+      },
+      "device_delivery_type": {
+        "id": 68351092,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "media_property": {
+        "id": 37005885,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "placement_code": {
+        "id": 3440670,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "placement_name": {
+        "id": 60025853,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "state_region": {
+        "id": 7440297,
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "metrics": {
+      "monitored_ads": {
+        "id": 76388229,
+        "type": "number"
+      },
+      "in_geo_ads": {
+        "id": 65270244,
+        "type": "number"
+      },
+      "out_of_geo_blocks": {
+        "id": 39966565,
+        "type": "number"
+      },
+      "out_of_geo_incidents": {
+        "id": 33663864,
+        "type": "number"
+      },
+      "out_of_geo_rate": {
+        "id": 40990402,
+        "type": "numeric"
+      }
+    }
+  }
+}

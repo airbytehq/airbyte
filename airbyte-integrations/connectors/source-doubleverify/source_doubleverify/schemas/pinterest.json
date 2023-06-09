@@ -1,0 +1,330 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "dimensions": {
+      "date": {
+        "id": 56819777,
+        "type": [
+          "date"
+        ]
+      },
+      "pinterest_account_region": {
+        "id": 99281375,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "device_delivery_type": {
+        "id": 68351092,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "advertiser": {
+        "id": 15481682,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "brand": {
+        "id": 348137,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pinterest_campaign_name": {
+        "id": 99281368,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "brand_market": {
+        "id": 64455984,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "brand_region": {
+        "id": 64455983,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pinterest_ad_group_id": {
+        "id": 99281370,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pinterest_ad_group_name": {
+        "id": 99281371,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pinterest_advertiser_id": {
+        "id": 99281365,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pinterest_advertiser_name": {
+        "id": 99281366,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pinterest_campaign_id": {
+        "id": 99281367,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pinterest_campaign_objective": {
+        "id": 99281369,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pinterest_ad_id": {
+        "id": 99281372,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pinterest_ad_name": {
+        "id": 99281373,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "pinterest_ad_format_name": {
+        "id": 99281374,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "traffic_validity": {
+        "id": 48023071,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "media_type": {
+        "id": 11047811,
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "metrics": {
+      "pinterest_standard_display_impressions": {
+        "id": 99940029,
+        "type": "number"
+      },
+      "pinterest_standard_display_viewable_impressions": {
+        "id": 99940031,
+        "type": "number"
+      },
+      "pinterest_standard_100_display_viewable_impressions": {
+        "id": 99940032,
+        "type": "number"
+      },
+      "pinterest_standard_display_passthrough_measured_impressions": {
+        "id": 99940033,
+        "type": "number"
+      },
+      "pinterest_standard_display_passthrough_impressions": {
+        "id": 99940034,
+        "type": "number"
+      },
+      "pinterest_standard_50_viewable_1_5_secs_impressions": {
+        "id": 99940035,
+        "type": "number"
+      },
+      "pinterest_standard_50_viewable_5_15_secs_impressions": {
+        "id": 99940036,
+        "type": "number"
+      },
+      "pinterest_standard_50_viewable__15_secs_impressions": {
+        "id": 99940037,
+        "type": "number"
+      },
+      "pinterest_standard_average_time_s_display_viewable_impressions": {
+        "id": 99940038,
+        "type": "number"
+      },
+      "pinterest_standard_total_time_hr_display_viewable_impressions": {
+        "id": 99940039,
+        "type": "number"
+      },
+      "pinterest_standard_video_impressions": {
+        "id": 99940046,
+        "type": "number"
+      },
+      "pinterest_standard_video_viewable_impressions": {
+        "id": 99940047,
+        "type": "number"
+      },
+      "pinterest_standard_100_video_viewable_impressions": {
+        "id": 99940048,
+        "type": "number"
+      },
+      "pinterest_standard_audible_measured_impressions": {
+        "id": 99940049,
+        "type": "number"
+      },
+      "pinterest_standard_audible_impressions": {
+        "id": 99940050,
+        "type": "number"
+      },
+      "pinterest_standard_audible_viewable_impressions": {
+        "id": 99940051,
+        "type": "number"
+      },
+      "pinterest_standard_audible_and_in_view_on_completion_impressions": {
+        "id": 99940052,
+        "type": "number"
+      },
+      "pinterest_standard_q1_completed_impressions": {
+        "id": 99940053,
+        "type": "number"
+      },
+      "pinterest_standard_q2_completed_impressions": {
+        "id": 99940054,
+        "type": "number"
+      },
+      "pinterest_standard_q3_completed_impressions": {
+        "id": 99940055,
+        "type": "number"
+      },
+      "pinterest_standard_completed_impressions": {
+        "id": 99940056,
+        "type": "number"
+      },
+      "pinterest_standard_video_passthrough_measured_impressions": {
+        "id": 99940074,
+        "type": "number"
+      },
+      "pinterest_standard_video_passthrough_impressions": {
+        "id": 99940075,
+        "type": "number"
+      },
+      "pinterest_standard_authentic_display_viewable_impressions": {
+        "id": 99940077,
+        "type": "number"
+      },
+      "pinterest_standard_authentic_display_impressions": {
+        "id": 99940079,
+        "type": "number"
+      },
+      "pinterest_standard_fraud_sivt_incidents": {
+        "id": 99940081,
+        "type": "number"
+      },
+      "pinterest_standard_fraud_sivt_free_impressions": {
+        "id": 99940083,
+        "type": "number"
+      },
+      "pinterest_standard_authentic_video_impressions": {
+        "id": 99940085,
+        "type": "number"
+      },
+      "pinterest_standard_authentic_video_viewable_impressions": {
+        "id": 99940087,
+        "type": "number"
+      },
+      "pinterest_standard_display_passthrough_rate": {
+        "id": 99940040,
+        "type": "numeric"
+      },
+      "pinterest_standard_50_viewable_1_5_secs_rate": {
+        "id": 99940041,
+        "type": "numeric"
+      },
+      "pinterest_standard_50_viewable_5_15_secs_rate": {
+        "id": 99940042,
+        "type": "numeric"
+      },
+      "pinterest_standard_50_viewable_15_secs_rate": {
+        "id": 99940043,
+        "type": "numeric"
+      },
+      "pinterest_standard_display_viewable_rate": {
+        "id": 99940044,
+        "type": "numeric"
+      },
+      "pinterest_standard_100_display_viewable_rate": {
+        "id": 99940045,
+        "type": "numeric"
+      },
+      "pinterest_standard_audible_rate": {
+        "id": 99940057,
+        "type": "numeric"
+      },
+      "pinterest_standard_audible_viewable_rate": {
+        "id": 99940058,
+        "type": "numeric"
+      },
+      "pinterest_standard_audible_and_in_view_on_completion_rate": {
+        "id": 99940059,
+        "type": "numeric"
+      },
+      "pinterest_standard_video_viewable_rate": {
+        "id": 99940060,
+        "type": "numeric"
+      },
+      "pinterest_standard_100_video_viewable_rate": {
+        "id": 99940062,
+        "type": "numeric"
+      },
+      "pinterest_standard_video_passthrough_rate": {
+        "id": 99940076,
+        "type": "numeric"
+      },
+      "pinterest_standard_authentic_display_viewable_rate": {
+        "id": 99940078,
+        "type": "numeric"
+      },
+      "pinterest_standard_authentic_display_rate": {
+        "id": 99940080,
+        "type": "numeric"
+      },
+      "pinterest_standard_fraud_sivt_rate": {
+        "id": 99940082,
+        "type": "numeric"
+      },
+      "pinterest_standard_fraud_sivt_free_rate": {
+        "id": 99940084,
+        "type": "numeric"
+      },
+      "pinterest_standard_authentic_video_rate": {
+        "id": 99940086,
+        "type": "numeric"
+      },
+      "pinterest_standard_authentic_video_viewable_rate": {
+        "id": 99940088,
+        "type": "numeric"
+      }
+    }
+  }
+}
