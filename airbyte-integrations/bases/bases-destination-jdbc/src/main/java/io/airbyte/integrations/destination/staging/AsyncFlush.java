@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 
 /**
  * Async flushing logic. Flushing async prevents backpressure and is the superior flushing strategy.
@@ -47,7 +46,6 @@ class AsyncFlush implements DestinationFlushFunction {
   public void flush(final StreamDescriptor decs, final Stream<PartialAirbyteMessage> stream) throws Exception {
     final CsvSerializedBuffer writer;
     try {
-      log.info("Free memory before: {}", AirbyteFileUtils.byteCountToDisplaySize(Runtime.getRuntime().freeMemory()));
       writer = new CsvSerializedBuffer(
           new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
           new StagingDatabaseCsvSheetGenerator(),
@@ -68,11 +66,8 @@ class AsyncFlush implements DestinationFlushFunction {
       throw new RuntimeException(e);
     }
 
-    log.info("Free memory after deserializing: {}", AirbyteFileUtils.byteCountToDisplaySize(Runtime.getRuntime().freeMemory()));
-    log.info("Total memory used: {}", (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024);
-
     writer.flush();
-    log.info("Flushing CSV buffer for stream {} ({}) to staging", decs.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
+    log.info("Flushing CSV buffer for stream {} ({}) to staging", decs.getName(), AirbyteFileUtils.byteCountToDisplaySize(writer.getByteCount()));
     if (!streamDescToWriteConfig.containsKey(decs)) {
       throw new IllegalArgumentException(
           String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));

@@ -66,7 +66,6 @@ public class GlobalMemoryManager {
     final var freeMem = maxMemoryBytes - currentMemoryBytes.get();
     // Never allocate more than free memory size.
     final var toAllocateBytes = Math.min(freeMem, BLOCK_SIZE_BYTES);
-    // this could mean that freeMem is single bytes but the record size needs to be greater than available memory
     currentMemoryBytes.addAndGet(toAllocateBytes);
 
     log.debug("Memory Requested: max: {}, allocated: {}, allocated in this request: {}",

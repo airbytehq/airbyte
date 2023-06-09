@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination_async.state;
 import static java.lang.Thread.sleep;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.integrations.destination_async.AirbyteFileUtils;
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteStreamState;
@@ -25,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.mina.util.ConcurrentHashSet;
 import org.slf4j.Logger;
@@ -203,15 +203,15 @@ public class GlobalAsyncStateManager {
    */
   private void freeBytes(final long bytesFlushed) {
     LOGGER.debug("Bytes flushed memory to store state message. Allocated: {}, Used: {}, Flushed: {}, % Used: {}",
-        FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
-        FileUtils.byteCountToDisplaySize(memoryUsed.get()),
-        FileUtils.byteCountToDisplaySize(bytesFlushed),
+        AirbyteFileUtils.byteCountToDisplaySize(memoryAllocated.get()),
+        AirbyteFileUtils.byteCountToDisplaySize(memoryUsed.get()),
+        AirbyteFileUtils.byteCountToDisplaySize(bytesFlushed),
         (double) memoryUsed.get() / memoryAllocated.get());
 
     memoryManager.free(bytesFlushed);
     memoryAllocated.addAndGet(-bytesFlushed);
     memoryUsed.addAndGet(-bytesFlushed);
-    LOGGER.debug("Returned {} of memory back to the memory manager.", FileUtils.byteCountToDisplaySize(bytesFlushed));
+    LOGGER.debug("Returned {} of memory back to the memory manager.", AirbyteFileUtils.byteCountToDisplaySize(bytesFlushed));
   }
 
   private void convertToGlobalIfNeeded(final PartialAirbyteMessage message) {
@@ -272,10 +272,10 @@ public class GlobalAsyncStateManager {
         memoryAllocated.addAndGet(memoryManager.requestMemory());
         try {
           LOGGER.debug("Insufficient memory to store state message. Allocated: {}, Used: {}, Size of State Msg: {}, Needed: {}",
-              FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
-              FileUtils.byteCountToDisplaySize(memoryUsed.get()),
-              FileUtils.byteCountToDisplaySize(sizeInBytes),
-              FileUtils.byteCountToDisplaySize(sizeInBytes - (memoryAllocated.get() - memoryUsed.get())));
+              AirbyteFileUtils.byteCountToDisplaySize(memoryAllocated.get()),
+              AirbyteFileUtils.byteCountToDisplaySize(memoryUsed.get()),
+              AirbyteFileUtils.byteCountToDisplaySize(sizeInBytes),
+              AirbyteFileUtils.byteCountToDisplaySize(sizeInBytes - (memoryAllocated.get() - memoryUsed.get())));
           sleep(1000);
         } catch (final InterruptedException e) {
           throw new RuntimeException(e);
@@ -284,8 +284,8 @@ public class GlobalAsyncStateManager {
     }
     memoryUsed.addAndGet(sizeInBytes);
     LOGGER.debug("State Manager memory usage: Allocated: {}, Used: {}, % Used {}",
-        FileUtils.byteCountToDisplaySize(memoryAllocated.get()),
-        FileUtils.byteCountToDisplaySize(memoryUsed.get()),
+        AirbyteFileUtils.byteCountToDisplaySize(memoryAllocated.get()),
+        AirbyteFileUtils.byteCountToDisplaySize(memoryUsed.get()),
         (double) memoryUsed.get() / memoryAllocated.get());
   }
 

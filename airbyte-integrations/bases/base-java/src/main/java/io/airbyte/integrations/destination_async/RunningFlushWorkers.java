@@ -30,7 +30,7 @@ public class RunningFlushWorkers {
   public RunningFlushWorkers() {
     streamToFlushWorkerToBatchSize = new ConcurrentHashMap<>();
     debugLoop = Executors.newSingleThreadScheduledExecutor();
-    debugLoop.scheduleAtFixedRate(this::printRunningWorkerInfo, 0, 500, TimeUnit.MILLISECONDS);
+    debugLoop.scheduleAtFixedRate(this::printRunningWorkerInfo, 0, 5, TimeUnit.SECONDS);
   }
 
   /**
