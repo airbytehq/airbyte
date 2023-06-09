@@ -72,7 +72,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
     Files.deleteIfExists(bufferFile);
     avroRecordFactory = new AvroRecordFactory(schema, AvroConstants.JSON_CONVERTER);
     final S3ParquetFormatConfig formatConfig = (S3ParquetFormatConfig) config.getFormatConfig();
-    Configuration avroConfig = new Configuration();
+    final Configuration avroConfig = new Configuration();
     avroConfig.setBoolean(WRITE_OLD_LIST_STRUCTURE, false);
     parquetWriter = AvroParquetWriter.<Record>builder(HadoopOutputFile
         .fromPath(new org.apache.hadoop.fs.Path(bufferFile.toUri()), avroConfig))
@@ -99,6 +99,11 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
     } else {
       throw new IllegalCallerException("Buffer is already closed, it cannot accept more messages");
     }
+  }
+
+  @Override
+  public long accept(final String recordString) throws Exception {
+    return 0;
   }
 
   @Override

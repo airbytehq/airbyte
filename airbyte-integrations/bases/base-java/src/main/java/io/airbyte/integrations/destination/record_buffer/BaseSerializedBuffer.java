@@ -59,6 +59,8 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
    */
   protected abstract void writeRecord(AirbyteRecordMessage record) throws IOException;
 
+  protected abstract void writeRecord(String recordString) throws IOException;
+
   /**
    * Stops the writer from receiving new data and prepares it for being finalized and converted into
    * an InputStream to read from instead. This is used when flushing the buffer into some other
@@ -90,6 +92,27 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
     if (inputStream == null && !isClosed) {
       final long startCount = byteCounter.getCount();
       writeRecord(record);
+      return byteCounter.getCount() - startCount;
+    } else {
+      throw new IllegalCallerException("Buffer is already closed, it cannot accept more messages");
+    }
+  }
+
+
+  @Override
+  public long accept(final String recordString) throws Exception {
+    if (!isStarted) {
+      if (useCompression) {
+        compressedBuffer = new GzipCompressorOutputStream(byteCounter);
+        initWriter(compressedBuffer);
+      } else {
+        initWriter(byteCounter);
+      }
+      isStarted = true;
+    }
+    if (inputStream == null && !isClosed) {
+      final long startCount = byteCounter.getCount();
+      writeRecord(recordString);
       return byteCounter.getCount() - startCount;
     } else {
       throw new IllegalCallerException("Buffer is already closed, it cannot accept more messages");

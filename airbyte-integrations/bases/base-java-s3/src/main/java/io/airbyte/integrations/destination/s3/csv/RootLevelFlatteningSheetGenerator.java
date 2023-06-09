@@ -11,6 +11,7 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class RootLevelFlatteningSheetGenerator extends BaseSheetGenerator implements CsvSheetGenerator {
@@ -31,6 +32,11 @@ public class RootLevelFlatteningSheetGenerator extends BaseSheetGenerator implem
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
     headers.addAll(recordHeaders);
     return headers;
+  }
+
+  @Override
+  public List<Object> getDataRow(final UUID id, final String formattedString, final long emittedAt) {
+    return null;
   }
 
   /**

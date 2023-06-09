@@ -37,6 +37,8 @@ public interface SerializableBuffer extends AutoCloseable {
    */
   long accept(AirbyteRecordMessage record) throws Exception;
 
+  long accept(String recordString) throws Exception;
+
   /**
    * Flush a buffer implementation.
    */

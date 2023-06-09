@@ -57,7 +57,7 @@ class AsyncFlush implements DestinationFlushFunction {
           // todo (cgardens) - most writers just go ahead and re-serialize the contents of the record message.
           // we should either just pass the raw string or at least have a way to do that and create a default
           // impl that maintains backwards compatible behavior.
-          writer.accept(Jsons.deserialize(record.getSerialized(), AirbyteMessage.class).getRecord());
+          writer.accept(record.getSerialized());
         } catch (final Exception e) {
           throw new RuntimeException(e);
         }

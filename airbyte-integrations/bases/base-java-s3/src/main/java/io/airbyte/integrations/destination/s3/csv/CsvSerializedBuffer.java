@@ -31,6 +31,7 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
@@ -81,6 +82,11 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
   }
 
   @Override
+  protected void writeRecord(final String recordString) throws IOException {
+    csvPrinter.printRecord(csvSheetGenerator.getDataRow(UUID.randomUUID(), recordString, Instant.now().toEpochMilli()));
+  }
+
+  @Override
   protected void flushWriter() throws IOException {
     // in an async world, it is possible that flush writer gets called even if no records were accepted.
     if (csvPrinter != null) {
@@ -125,7 +131,7 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
 
   public static void main (final String[] args) throws Exception {
     final CsvSerializedBuffer writer;
-    final var list = generateRecords(100_000L);
+    final var list = generateRecords(1024 * 1024 * 200);
     log.info("RT mem before processing CSV writer {}", AirbyteFileUtils.byteCountToDisplaySize(
             Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));
     try {
@@ -159,6 +165,7 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
     final List<PartialAirbyteMessage> output = Lists.newArrayList();
     final String SCHEMA_NAME = "schema";
     final String STREAM_NAME = "stream_name";
+    final Long now = Instant.now().toEpochMilli();
     long bytesCounter = 0;
     for (int i = 0;; i++) {
       final JsonNode payload =
@@ -176,7 +183,7 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
                               .withStream(STREAM_NAME)
                               .withNamespace(SCHEMA_NAME)
                               .withData(payload)
-                              .withEmittedAt(Instant.now().toEpochMilli()))));
+                              .withEmittedAt(now))));
       if (bytesCounter > targetSizeInBytes) {
         break;
       } else {

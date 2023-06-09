@@ -20,6 +20,8 @@ import io.airbyte.integrations.destination.s3.util.Flattening;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -53,12 +55,17 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
     json.put(JavaBaseConstants.COLUMN_NAME_AB_ID, UUID.randomUUID().toString());
     json.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, record.getEmittedAt());
     if (flattenData) {
-      Map<String, JsonNode> data = MAPPER.convertValue(record.getData(), new TypeReference<>() {});
+      final Map<String, JsonNode> data = MAPPER.convertValue(record.getData(), new TypeReference<>() {});
       json.setAll(data);
     } else {
       json.set(JavaBaseConstants.COLUMN_NAME_DATA, record.getData());
     }
     printWriter.println(Jsons.serialize(json));
+  }
+
+  @Override
+  protected void writeRecord(final String recordString) throws IOException {
+    // No op
   }
 
   @Override
