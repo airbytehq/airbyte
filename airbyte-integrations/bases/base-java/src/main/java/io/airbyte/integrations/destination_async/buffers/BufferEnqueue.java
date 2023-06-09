@@ -46,9 +46,17 @@ public class BufferEnqueue {
     }
   }
 
+  /**
+   * Enqueues the record if available memory exists. When unsuccessful, this method will apply back-pressure
+   * to avoid enqueue more records than available memory. This method presumes each message is less than 10 MB
+   *
+   * @param message partially deserialized AirbyteMessage
+   * @param sizeInBytes estimated size of the message in bytes
+   */
   private void handleRecord(final PartialAirbyteMessage message, final Integer sizeInBytes) {
-    final StreamDescriptor streamDescriptor = extractStateFromRecord(message);
+    final StreamDescriptor streamDescriptor = extractStreamDescriptorFromRecord(message);
     if (streamDescriptor != null && !buffers.containsKey(streamDescriptor)) {
+      // we can get a message that is greater than 10 MB so pass this into memoryManager.requestMemory
       buffers.put(streamDescriptor, new StreamAwareQueue(memoryManager.requestMemory()));
     }
     final long stateId = stateManager.getStateIdAndIncrementCounter(streamDescriptor);
@@ -74,7 +82,7 @@ public class BufferEnqueue {
     }
   }
 
-  private static StreamDescriptor extractStateFromRecord(final PartialAirbyteMessage message) {
+  private static StreamDescriptor extractStreamDescriptorFromRecord(final PartialAirbyteMessage message) {
     return new StreamDescriptor()
         .withNamespace(message.getRecord().getNamespace())
         .withName(message.getRecord().getStream());

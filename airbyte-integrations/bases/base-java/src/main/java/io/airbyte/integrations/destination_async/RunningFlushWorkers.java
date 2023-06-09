@@ -6,22 +6,30 @@ package io.airbyte.integrations.destination_async;
 
 import com.google.common.base.Preconditions;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Track the number of flush workers (and their size) that are currently running for a given stream.
  */
+@Slf4j
 public class RunningFlushWorkers {
 
   private final ConcurrentMap<StreamDescriptor, ConcurrentMap<UUID, Optional<Long>>> streamToFlushWorkerToBatchSize;
 
   public RunningFlushWorkers() {
     streamToFlushWorkerToBatchSize = new ConcurrentHashMap<>();
+    final ScheduledExecutorService debugLoop = Executors.newSingleThreadScheduledExecutor();
+    debugLoop.scheduleAtFixedRate(this::printRunningWorkerInfo, 0, 500, TimeUnit.MILLISECONDS);
   }
 
   /**
@@ -75,6 +83,22 @@ public class RunningFlushWorkers {
    */
   public List<Optional<Long>> getSizesOfRunningWorkerBatches(final StreamDescriptor stream) {
     return new ArrayList<>(streamToFlushWorkerToBatchSize.getOrDefault(stream, new ConcurrentHashMap<>()).values());
+  }
+
+  private void printRunningWorkerInfo() {
+    final var workerInfo = new StringBuilder().append("FLUSH WORKER INFO").append(System.lineSeparator());
+
+    for (final var entry : streamToFlushWorkerToBatchSize.entrySet()) {
+      final var workerToBatchSize = entry.getValue();
+      workerInfo.append(
+          String.format("  Stream name: %s, num of in-flight workers: %d, num bytes: %s",
+              entry.getKey().getName(), workerToBatchSize.size(), AirbyteFileUtils.byteCountToDisplaySize(workerToBatchSize.values().stream()
+                  .filter(Optional::isPresent)
+                  .map(Optional::get)
+                  .reduce(0L, Long::sum))))
+              .append(System.lineSeparator());
+    }
+    log.info(workerInfo.toString());
   }
 
 }

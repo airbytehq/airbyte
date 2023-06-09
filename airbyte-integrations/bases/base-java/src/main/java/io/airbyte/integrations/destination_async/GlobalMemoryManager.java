@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination_async;
 
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 
 /**
  * Responsible for managing global memory across multiple queues in a thread-safe way.
@@ -70,9 +69,9 @@ public class GlobalMemoryManager {
     currentMemoryBytes.addAndGet(toAllocateBytes);
 
     log.debug("Memory Requested: max: {}, allocated: {}, allocated in this request: {}",
-        FileUtils.byteCountToDisplaySize(maxMemoryBytes),
-        FileUtils.byteCountToDisplaySize(currentMemoryBytes.get()),
-        FileUtils.byteCountToDisplaySize(toAllocateBytes));
+        AirbyteFileUtils.byteCountToDisplaySize(maxMemoryBytes),
+        AirbyteFileUtils.byteCountToDisplaySize(currentMemoryBytes.get()),
+        AirbyteFileUtils.byteCountToDisplaySize(toAllocateBytes));
     return toAllocateBytes;
   }
 

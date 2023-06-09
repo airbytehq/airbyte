@@ -20,6 +20,10 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class serves as the conductor of the buffer system. It provides separation of concerns for how buffers enqueue and dequeue items. It also provides
+ * an overview into available memory across all buffers
+ */
 @Slf4j
 public class BufferManager {
 
@@ -77,13 +81,14 @@ public class BufferManager {
     final var queueInfo = new StringBuilder().append("QUEUE INFO").append(System.lineSeparator());
 
     queueInfo
-        .append(String.format("  Global Mem Manager -- max: %s, allocated: %s (%s MB), %% used: %s, used: %s (MB, free: %s (MB)",
+        .append(String.format("  Global Mem Manager -- max: %s, allocated: %s (MB), %% used max: %s, used total: %s, RT used: %s (MB), free: %s (MB), %% used: %s",
             AirbyteFileUtils.byteCountToDisplaySize(memoryManager.getMaxMemoryBytes()),
             AirbyteFileUtils.byteCountToDisplaySize(memoryManager.getCurrentMemoryBytes()),
-            (double) memoryManager.getCurrentMemoryBytes() / 1024 / 1024,
-            (double) memoryManager.getCurrentMemoryBytes() / memoryManager.getMaxMemoryBytes(),
+            (double) memoryManager.getCurrentMemoryBytes() / memoryManager.getMaxMemoryBytes() * 100,
+            (double) memoryManager.getCurrentMemoryBytes() / Runtime.getRuntime().totalMemory() * 100,
             (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 / 1024,
-            (double) Runtime.getRuntime().freeMemory() / 1024 / 1024))
+            (double) Runtime.getRuntime().freeMemory() / 1024 / 1024,
+            (double) (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / Runtime.getRuntime().totalMemory() * 100))
         .append(System.lineSeparator());
 
     for (final var entry : buffers.entrySet()) {

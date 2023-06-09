@@ -53,12 +53,13 @@ public class MemoryAwareMessageBatch implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
+    LOGGER.info("Closing batch of size {}", sizeInBytes);
     memoryManager.free(sizeInBytes);
   }
 
   /**
    * For the batch, marks all the states that have now been flushed. Also returns states that can be
-   * flushed. This method is descriptrive, it assumes that whatever consumes the state messages emits
+   * flushed. This method is descriptive, it assumes that whatever consumes the state messages emits
    * them, internally it purges the states it returns. message that it can.
    * <p>
    *
