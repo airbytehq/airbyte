@@ -31,8 +31,6 @@ acceptance_tests:
           extra_records: yes
         # TODO: Add records for empty streams - https://github.com/airbytehq/airbyte/issues/21555
         empty_streams:
-          - name: Orders
-            bypass_reason: "no records"
           - name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
             bypass_reason: "no records"
           - name: GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL
