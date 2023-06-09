@@ -219,7 +219,3 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 | `0.1.1`  | 2021-06-23 | [4288](https://github.com/airbytehq/airbyte/pull/4288)   | Fix `Bugfix: Correctly declare required parameters`                                                                                  |
 
 <!-- /env:oss -->
-
-<!-- env:cloud -->
-For detailed information on supported sync modes, supported streams, performance considerations, refer to the full documentation for [Google Ads](https://docs.airbyte.com/integrations/sources/google-ads/).
-<!-- /env:cloud -->
