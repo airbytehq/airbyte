@@ -32,6 +32,8 @@ def get_connector_build_output_url(connector_technical_name: str) -> str:
     """
     Get the connector build output url.
     """
+    # remove connectors/ prefix from connector_technical_name
+    connector_technical_name = connector_technical_name.replace("connectors/", "")
     return f"{CONNECTOR_TEST_SUMMARY_URL}/{connector_technical_name}/index.json"
 
 
@@ -48,12 +50,22 @@ def fetch_latest_build_status_for_connector(connector_technical_name: str) -> BU
         # sort by date and get the first element
         latest_connector_run = sorted(connector_build_output, key=lambda x: x["date"], reverse=True)[0]
 
-        outcome = latest_connector_run.get("outcome")
+        outcome = latest_connector_run.get("success")
         if outcome is None:
-            LOGGER.error(f"Error: No outcome value for connector {connector_technical_name}:{latest_connector_run['connector_version']}")
+            LOGGER.error(f"Error: No outcome value for connector {connector_technical_name}")
             return BUILD_STATUSES.NOT_FOUND
 
-        return BUILD_STATUSES.SUCCESS if outcome else BUILD_STATUSES.FAILURE
+        if outcome == True:
+            return BUILD_STATUSES.SUCCESS
+
+        if outcome == False:
+            return BUILD_STATUSES.FAILURE
+
+        try:
+            return BUILD_STATUSES.from_string(outcome)
+        except KeyError:
+            LOGGER.error(f"Error: Unexpected build status value: {outcome} for connector {connector_technical_name}")
+            return BUILD_STATUSES.NOT_FOUND
 
     else:
         return BUILD_STATUSES.NOT_FOUND
