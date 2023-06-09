@@ -30,11 +30,12 @@ def test_badge_html(test_summary_url: str) -> str:
     if not test_summary_url:
         return None
 
+    report_url = f"{test_summary_url}/index.html"
     image_shield_base = "https://img.shields.io/endpoint"
     icon_url = f"{test_summary_url}/badge.json"
     icon_url_encoded = urllib.parse.quote(icon_url)
     icon_image = f'<img src="{image_shield_base}?url={icon_url_encoded}">'
-    return f'<a href="{test_summary_url}" target="_blank">{icon_image}</a>'
+    return f'<a href="{report_url}" target="_blank">{icon_image}</a>'
 
 
 # Dataframe to HTML
