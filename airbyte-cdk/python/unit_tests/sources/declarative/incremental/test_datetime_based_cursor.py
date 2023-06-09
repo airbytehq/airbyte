@@ -589,7 +589,6 @@ def test_step_but_no_cursor_granularity():
             step="P1D",
             cursor_field=InterpolatedString(cursor_field, parameters={}),
             datetime_format="%Y-%m-%d",
-            lookback_window=InterpolatedString("P0D", parameters={}),
             config=config,
             parameters={},
         )
@@ -603,7 +602,6 @@ def test_cursor_granularity_but_no_step():
             cursor_granularity="P1D",
             cursor_field=InterpolatedString(cursor_field, parameters={}),
             datetime_format="%Y-%m-%d",
-            lookback_window=InterpolatedString("P0D", parameters={}),
             config=config,
             parameters={},
         )
@@ -615,12 +613,23 @@ def test_no_cursor_granularity_and_no_step_then_only_return_one_slice():
         end_datetime=MinMaxDatetime("2023-01-01", parameters={}),
         cursor_field=InterpolatedString(cursor_field, parameters={}),
         datetime_format="%Y-%m-%d",
-        lookback_window=InterpolatedString("P0D", parameters={}),
         config=config,
         parameters={},
     )
     stream_slices = cursor.stream_slices(SyncMode.incremental, {})
     assert stream_slices == [{"start_time": "2021-01-01", "end_time": "2023-01-01"}]
+
+
+def test_no_end_datetime(mock_datetime_now):
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2021-01-01", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    stream_slices = cursor.stream_slices(SyncMode.incremental, {})
+    assert stream_slices == [{"start_time": "2021-01-01", "end_time": FAKE_NOW.strftime("%Y-%m-%d")}]
 
 
 if __name__ == "__main__":
