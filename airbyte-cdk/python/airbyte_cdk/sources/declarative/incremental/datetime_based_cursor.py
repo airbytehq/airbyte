@@ -33,7 +33,7 @@ class DatetimeBasedCursor(StreamSlicer):
 
     Attributes:
         start_datetime (Union[MinMaxDatetime, str]): the datetime that determines the earliest record that should be synced
-        end_datetime (Union[MinMaxDatetime, str]): the datetime that determines the last record that should be synced
+        end_datetime (Optional[Union[MinMaxDatetime, str]]): the datetime that determines the last record that should be synced
         step (str): size of the timewindow (ISO8601 duration)
         cursor_field (Union[InterpolatedString, str]): record's cursor field
         datetime_format (str): format of the datetime
@@ -47,13 +47,13 @@ class DatetimeBasedCursor(StreamSlicer):
     """
 
     start_datetime: Union[MinMaxDatetime, str]
-    end_datetime: Union[MinMaxDatetime, str]
     cursor_field: Union[InterpolatedString, str]
     datetime_format: str
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     _cursor: dict = field(repr=False, default=None)  # tracks current datetime
     _cursor_end: dict = field(repr=False, default=None)  # tracks end of current stream slice
+    end_datetime: Optional[Union[MinMaxDatetime, str]] = None
     step: Optional[Union[InterpolatedString, str]] = None
     cursor_granularity: Optional[str] = None
     start_time_option: Optional[RequestOption] = None
@@ -70,7 +70,7 @@ class DatetimeBasedCursor(StreamSlicer):
             )
         if not isinstance(self.start_datetime, MinMaxDatetime):
             self.start_datetime = MinMaxDatetime(self.start_datetime, parameters)
-        if not isinstance(self.end_datetime, MinMaxDatetime):
+        if self.end_datetime and not isinstance(self.end_datetime, MinMaxDatetime):
             self.end_datetime = MinMaxDatetime(self.end_datetime, parameters)
 
         self._timezone = datetime.timezone.utc
@@ -91,7 +91,7 @@ class DatetimeBasedCursor(StreamSlicer):
         # If datetime format is not specified then start/end datetime should inherit it from the stream slicer
         if not self.start_datetime.datetime_format:
             self.start_datetime.datetime_format = self.datetime_format
-        if not self.end_datetime.datetime_format:
+        if self.end_datetime and not self.end_datetime.datetime_format:
             self.end_datetime.datetime_format = self.datetime_format
 
     def get_stream_state(self) -> StreamState:
@@ -136,7 +136,7 @@ class DatetimeBasedCursor(StreamSlicer):
         """
         stream_state = stream_state or {}
         kwargs = {"stream_state": stream_state}
-        end_datetime = min(self.end_datetime.get_datetime(self.config, **kwargs), datetime.datetime.now(tz=self._timezone))
+        end_datetime = self._select_best_end_datetime(kwargs)
         lookback_delta = self._parse_timedelta(self.lookback_window.eval(self.config, **kwargs) if self.lookback_window else "P0D")
 
         earliest_possible_start_datetime = min(self.start_datetime.get_datetime(self.config, **kwargs), end_datetime)
@@ -144,6 +144,12 @@ class DatetimeBasedCursor(StreamSlicer):
         start_datetime = max(earliest_possible_start_datetime, cursor_datetime) - lookback_delta
 
         return self._partition_daterange(start_datetime, end_datetime, self._step)
+
+    def _select_best_end_datetime(self, kwargs):
+        now = datetime.datetime.now(tz=self._timezone)
+        if not self.end_datetime:
+            return now
+        return min(self.end_datetime.get_datetime(self.config, **kwargs), now)
 
     def _calculate_cursor_datetime_from_state(self, stream_state: Mapping[str, Any]) -> datetime.datetime:
         if self.cursor_field.eval(self.config, stream_state=stream_state) in stream_state:

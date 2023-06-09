@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import re
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.models import SyncMode
@@ -21,7 +22,15 @@ class SourceKlaviyo(AbstractSource):
             # we use metrics endpoint because it never returns an error
             _ = list(Metrics(api_key=config["api_key"]).read_records(sync_mode=SyncMode.full_refresh))
         except Exception as e:
-            return False, repr(e)
+            original_error_message = repr(e)
+
+            # Regular expression pattern to match the API key
+            pattern = r'api_key=\b\w+\b'
+
+            # Remove the API key from the error message
+            error_message = re.sub(pattern, 'api_key=***', original_error_message)
+
+            return False, error_message
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

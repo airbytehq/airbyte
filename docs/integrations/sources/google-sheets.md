@@ -42,8 +42,6 @@ To set up Google Sheets as a source in Airbyte Open Source:
     - To authenticate your Google account via OAuth, enter your Google application's [client ID, client secret, and refresh token](https://developers.google.com/identity/protocols/oauth2).
     - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Make sure the Service Account has the Project Viewer permission. If your spreadsheet is viewable by anyone with its link, no further action is needed. If not, [give your Service account access to your spreadsheet](https://youtu.be/GyomEw5a2NQ%22).
 6. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.
-<!-- /env:oss -->
-   
 
 ### Output schema
 
@@ -53,6 +51,7 @@ Each sheet in the selected spreadsheet is synced as a separate stream. Each sele
 
 Airbyte only supports replicating [Grid](https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/sheets#SheetType) sheets.
 
+<!-- env:oss -->
 ## Supported sync modes
 
 The Google Sheets source connector supports the following sync modes:
@@ -110,3 +109,6 @@ The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 
 | 0.1.6   | 2021-01-27 | [1668](https://github.com/airbytehq/airbyte/pull/1668)   | Adopt connector best practices                                                |
 | 0.1.5   | 2020-12-30 | [1438](https://github.com/airbytehq/airbyte/pull/1438)   | Implement backoff                                                             |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)   | Add connectors using an index YAML file                                       |
+
+<!-- /env:oss -->
+
