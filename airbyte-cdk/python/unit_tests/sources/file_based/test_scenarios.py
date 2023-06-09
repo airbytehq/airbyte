@@ -10,14 +10,14 @@ from unittest import mock
 import pytest
 from airbyte_cdk.entrypoint import launch
 from unit_tests.sources.file_based.scenarios.csv_scenarios import (
-    MultiCsvNFilesExceedsLimitForSchemaInferenceTestScenario,
-    MultiCsvTestScenario,
-    SingleCsvTestScenario,
+    multi_csv_scenario,
+    multi_csv_stream_n_file_exceeds_limit_for_inference,
+    single_csv_scenario,
 )
 
 scenarios = [
-    SingleCsvTestScenario(),
-    MultiCsvTestScenario(),
+    multi_csv_scenario,
+    single_csv_scenario,
 ]
 
 
@@ -36,10 +36,10 @@ def test_read(capsys, tmp_path, json_spec, scenario):
 
 
 def test_discover_with_n_files_exceeding_limit(capsys, tmp_path, json_spec):
-    scenario = MultiCsvNFilesExceedsLimitForSchemaInferenceTestScenario()
+    scenario = multi_csv_stream_n_file_exceeds_limit_for_inference
     with mock.patch(
         "airbyte_cdk.sources.file_based.file_based_stream.MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE",
-        scenario.schema_inference_limit,
+        scenario.kwargs["schema_inference_limit"],
     ):
         assert discover(capsys, tmp_path, scenario) == scenario.expected_catalog
 
