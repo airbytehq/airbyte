@@ -88,6 +88,16 @@ class SourceAirtable(AbstractSource):
                         ),
                     }
                 )
+        # Add AirtableCollaborators stream to the streams catalog
+        self.streams_catalog.append(
+            {
+                "stream_path": "collaborators",
+                "stream": SchemaHelpers.get_airbyte_stream(
+                    "collaborators",
+                    SchemaHelpers.get_json_schema({}),
+                ),
+            }
+        )
         return AirbyteCatalog(streams=[stream["stream"] for stream in self.streams_catalog])
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -97,9 +107,17 @@ class SourceAirtable(AbstractSource):
             self.discover(None, config)
         # build the stream class from prepared streams_catalog
         for stream in self.streams_catalog:
-            yield AirtableStream(
-                stream_path=stream["stream_path"],
-                stream_name=stream["stream"].name,
-                stream_schema=stream["stream"].json_schema,
-                authenticator=self._auth,
-            )
+            if stream["stream_path"] == "collaborators":
+                yield AirtableCollaborators(
+                    base_id=stream["stream_path"],
+                    stream_name=stream["stream"].name,
+                    stream_schema=stream["stream"].json_schema,
+                    authenticator=self._auth,
+                )
+            else:
+                yield AirtableStream(
+                    stream_path=stream["stream_path"],
+                    stream_name=stream["stream"].name,
+                    stream_schema=stream["stream"].json_schema,
+                    authenticator=self._auth,
+                )

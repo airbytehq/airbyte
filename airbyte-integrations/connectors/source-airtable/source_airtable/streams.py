@@ -88,6 +88,25 @@ class AirtableTables(AirtableBases):
         return f"{super().path()}/{self.base_id}/tables"
 
 
+class AirtableCollaborators(AirtableBases):
+    name = "collaborators"
+
+    def __init__(self, base_id: str, **kwargs):
+        super().__init__(**kwargs)
+        self.base_id = base_id
+
+    def path(self, **kwargs) -> str:
+        return f"meta/bases/{self.base_id}"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping[str, Any]]:
+        data = response.json()
+        collaborators = data.get("collaborators", {})
+        base_collaborators = collaborators.get("baseCollaborators", [])
+        workspace_collaborators = collaborators.get("workspaceCollaborators", [])
+        yield from base_collaborators
+        yield from workspace_collaborators
+
+
 class AirtableStream(HttpStream, ABC):
     def __init__(self, stream_path: str, stream_name: str, stream_schema, **kwargs):
         super().__init__(**kwargs)
@@ -155,3 +174,12 @@ class AirtableStream(HttpStream, ABC):
 
     def path(self, **kwargs) -> str:
         return self.stream_path
+
+
+class AirtableStreamFactory:
+    @staticmethod
+    def get_stream(stream_path: str, stream_name: str, stream_schema, authenticator) -> AirtableStream:
+        if stream_name == "collaborators":
+            return AirtableCollaborators(stream_path=stream_path, stream_name=stream_name, stream_schema=stream_schema, authenticator=authenticator)
+        else:
+            return AirtableStream(stream_path=stream_path, stream_name=stream_name, stream_schema=stream_schema, authenticator=authenticator)
