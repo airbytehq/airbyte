@@ -54,7 +54,7 @@ public class AvroSerializedBuffer extends BaseSerializedBuffer {
 
   @Override
   protected void writeRecord(final String recordString) throws IOException {
-    // NO op
+    // no op
   }
 
   @Override

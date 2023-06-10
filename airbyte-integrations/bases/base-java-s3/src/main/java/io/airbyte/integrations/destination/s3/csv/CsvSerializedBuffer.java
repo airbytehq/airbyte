@@ -31,7 +31,6 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;

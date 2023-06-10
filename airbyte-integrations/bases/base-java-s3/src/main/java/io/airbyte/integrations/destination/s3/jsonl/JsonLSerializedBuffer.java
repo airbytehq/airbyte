@@ -65,7 +65,7 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
 
   @Override
   protected void writeRecord(final String recordString) throws IOException {
-    // No op
+    // no op
   }
 
   @Override
