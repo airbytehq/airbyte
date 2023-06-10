@@ -1,0 +1,22 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/rippling
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Rippling Spec
+  type: object
+  required:
+    - api_key
+  additionalProperties: true
+  properties:
+    api_key:
+      title: Rippling API Key
+      type: string
+      description: Your Rippling API key
+      airbyte_secret: true
+    employee_filters:
+      title: Employees fields to filter out of the sync
+      type: string
+      description: Comma separated list of senstive employee fields to exclude from the sync in a comma separated string
+      examples:
+        - compensation
+        - compensation,employmentType
+

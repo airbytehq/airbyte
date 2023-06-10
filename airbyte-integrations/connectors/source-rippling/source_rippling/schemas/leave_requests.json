@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "comments": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "dates": {
+      "items": {
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "numMinutes": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "endDate": {
+      "type": "string"
+    },
+    "endDateEndTime": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "externalId": {
+      "type": "null"
+    },
+    "id": {
+      "type": "string"
+    },
+    "isPaid": {
+      "type": "boolean"
+    },
+    "leavePolicy": {
+      "type": "string"
+    },
+    "leaveType": {
+      "type": "string"
+    },
+    "leaveTypeUniqueId": {
+      "type": "string"
+    },
+    "managedBy": {
+      "type": "string"
+    },
+    "numHours": {
+      "type": "string"
+    },
+    "numMinutes": {
+      "type": "string"
+    },
+    "partialDays": {
+      "type": "array"
+    },
+    "policyDisplayName": {
+      "type": "string"
+    },
+    "processedAt": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "processedBy": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "processedByName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "reasonForLeave": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "requestedBy": {
+      "type": "string"
+    },
+    "requestedByName": {
+      "type": "string"
+    },
+    "role": {
+      "type": "string"
+    },
+    "roleName": {
+      "type": "string"
+    },
+    "roleTimezone": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "startDate": {
+      "type": "string"
+    },
+    "startDateStartTime": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "status": {
+      "type": "string"
+    },
+    "updatedAt": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

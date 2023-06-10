@@ -1,0 +1,571 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "address": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "properties": {
+            "_smartystreets_validity": {
+              "type": ["null","string"]
+            },
+            "city": {
+              "type": ["null","string"]
+            },
+            "country": {
+              "type": ["null","string"]
+            },
+            "observable_cache_dont_use": {
+              "properties": {
+                "__dynamic_cache_fullAddress": {
+                  "type": ["null","string"]
+                },
+                "__dynamic_cache_get_state_name": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "__dynamic_cache_plain_country_code": {
+                  "type": ["null","string"]
+                },
+                "__dynamic_cache_street_lines_custom_delimiter": {
+                  "type": ["null","string"]
+                }
+              },
+              "type": "object"
+            },
+            "state": {
+              "type": ["null","string"]
+            },
+            "steLocationCode": {
+              "properties": {
+                "cityCode": {
+                  "type": ["null","string"]
+                },
+                "countyCode": {
+                  "type": ["null","string"]
+                },
+                "isOverridden": {
+                  "type": "boolean"
+                },
+                "locationCode": {
+                  "type": ["null","string"]
+                },
+                "municipalityCode": {
+                  "type": ["null","string"]
+                },
+                "psdCode": {
+                  "type": ["null","string"]
+                },
+                "schoolCode": {
+                  "type": ["null","string"]
+                },
+                "stateCode": {
+                  "type": ["null","string"]
+                },
+                "transitDistrictCode": {
+                  "type": ["null","string"]
+                }
+              },
+              "type": "object"
+            },
+            "streetLine1": {
+              "type": ["null","string"]
+            },
+            "streetLine2": {
+              "type": ["null","string"]
+            },
+            "streetLine3": {
+              "type": ["null","string"]
+            },
+            "streetLine4": {
+              "type": ["null","string"]
+            },
+            "zip": {
+              "type": ["null","string"]
+            }
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "companyEmploymentType": {
+      "properties": {
+        "company": {
+          "type": ["null","string"]
+        },
+        "country": {
+          "type": "null"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "external_on_changes": {
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "isContractor": {
+          "type": "boolean"
+        },
+        "isDeleted": {
+          "type": "boolean"
+        },
+        "isEOR": {
+          "type": "null"
+        },
+        "isFullTime": {
+          "type": "boolean"
+        },
+        "isHourly": {
+          "type": "boolean"
+        },
+        "isPartTime": {
+          "type": "boolean"
+        },
+        "isSalaried": {
+          "type": "boolean"
+        },
+        "isTemporary": {
+          "type": "boolean"
+        },
+        "label": {
+          "type": ["null","string"]
+        },
+        "lock": {
+          "type": "null"
+        },
+        "possible_new_employment_types": {
+          "items": {
+            "type": ["null","string"]
+          },
+          "type": "array"
+        },
+        "updatedAt": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "createdAt": {
+      "type": "string"
+    },
+    "customFields": {
+      "type": ["null","object"]
+    },
+    "department": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "departmentId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "dob": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ein": {
+      "type": ["null","string"]
+    },
+    "compensation":{
+      "type": ["null","object"]
+    },
+    "employeeNumber": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "employmentType": {
+      "type": ["null","string"]
+    },
+    "endDate": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "gender": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "hsaCompatiblePlanStatus": {
+      "properties": {
+        "annualLimit": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "effectiveDate": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "expirationDate": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "status": {
+          "type": ["null","string"]
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "identifiedGender": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "internationalBankAccount": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "properties": {
+            "accountName": {
+              "type": ["null","string"]
+            },
+            "accountNumber": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "bankCode": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "bankName": {
+              "type": ["null","string"]
+            },
+            "branchCode": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "branchName": {
+              "type": [
+                "null",
+                "string"
+              ]
+            },
+            "paymentMethod": {
+              "type": ["null","string"]
+            },
+            "transitNumber": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "isInternational": {
+      "type": "boolean"
+    },
+    "isManager": {
+      "type": "boolean"
+    },
+    "isRemote": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "level": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "manager": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "offerAcceptedDate": {
+      "type": ["null","string"]
+    },
+    "payScheduleId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "personalEmail": {
+      "type": "string"
+    },
+    "photo": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "preferredFirstName": {
+      "type": "string"
+    },
+    "preferredLastName": {
+      "type": "string"
+    },
+    "roleState": {
+      "type": "string"
+    },
+    "salaryUnit": {
+      "type": ["null","string"]
+    },
+    "smallPhoto": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "spokeId": {
+      "type": "null"
+    },
+    "startDate": {
+      "type": "string"
+    },
+    "teams": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "title": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "updatedAt": {
+      "type": "string"
+    },
+    "userId": {
+      "type": "string"
+    },
+    "w2EndDate": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "w2StartDate": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "workEmail": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "workLocation": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "properties": {
+            "_smartystreets_validity": {
+              "type": ["null","string"]
+            },
+            "city": {
+              "type": ["null","string"]
+            },
+            "country": {
+              "type": ["null","string"]
+            },
+            "observable_cache_dont_use": {
+              "properties": {
+                "__dynamic_cache_fullAddress": {
+                  "type": ["null","string"]
+                },
+                "__dynamic_cache_get_state_name": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "__dynamic_cache_plain_country_code": {
+                  "type": ["null","string"]
+                },
+                "__dynamic_cache_street_lines_custom_delimiter": {
+                  "type": ["null","string"]
+                }
+              },
+              "type": "object"
+            },
+            "state": {
+              "type": ["null","string"]
+            },
+            "steLocationCode": {
+              "properties": {
+                "cityCode": {
+                  "type": ["null","string"]
+                },
+                "countyCode": {
+                  "type": ["null","string"]
+                },
+                "isOverridden": {
+                  "type": "boolean"
+                },
+                "locationCode": {
+                  "type": ["null","string"]
+                },
+                "municipalityCode": {
+                  "type": ["null","string"]
+                },
+                "psdCode": {
+                  "type": ["null","string"]
+                },
+                "schoolCode": {
+                  "type": ["null","string"]
+                },
+                "stateCode": {
+                  "type": ["null","string"]
+                },
+                "transitDistrictCode": {
+                  "type": ["null","string"]
+                }
+              },
+              "type": "object"
+            },
+            "streetLine1": {
+              "type": ["null","string"]
+            },
+            "streetLine2": {
+              "type": ["null","string"]
+            },
+            "streetLine3": {
+              "type": ["null","string"]
+            },
+            "zip": {
+              "type": ["null","string"]
+            }
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "workLocationId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "workLocationNickname": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "workSchedule": {
+      "properties": {
+        "FRIDAY": {
+          "properties": {
+            "hours": {
+              "type": ["null","string"]
+            }
+          },
+          "type": "object"
+        },
+        "MONDAY": {
+          "properties": {
+            "hours": {
+              "type": ["null","string"]
+            }
+          },
+          "type": "object"
+        },
+        "SATURDAY": {
+          "properties": {
+            "hours": {
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "SUNDAY": {
+          "properties": {
+            "hours": {
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        },
+        "THURSDAY": {
+          "properties": {
+            "hours": {
+              "type": ["null","string"]
+            }
+          },
+          "type": "object"
+        },
+        "TUESDAY": {
+          "properties": {
+            "hours": {
+              "type": ["null","string"]
+            }
+          },
+          "type": "object"
+        },
+        "WEDNESDAY": {
+          "properties": {
+            "hours": {
+              "type": ["null","string"]
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "type": "object"
+}
