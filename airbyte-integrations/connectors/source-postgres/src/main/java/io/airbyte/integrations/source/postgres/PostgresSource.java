@@ -56,6 +56,8 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
+import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
+import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.integrations.source.postgres.xmin.PostgresXminHandler;
 import io.airbyte.integrations.source.postgres.xmin.XminStateManager;
@@ -456,7 +458,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final PostgresXminHandler handler = new PostgresXminHandler(database, sourceOperations, getQuoteString(), xminStatus, xminStateManager);
       return handler.getIncrementalIterators(catalog, tableNameToTable, emittedAt);
     } else {
-      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+      final CtidStateManager ctidStateManager = new CtidStateManager(stateManager.getRawStateMessages());
+      final PostgresCtidHandler handler = new PostgresCtidHandler(database, sourceOperations, getQuoteString(), null, ctidStateManager);
+      return handler.getIncrementalIterators(catalog, tableNameToTable, emittedAt);
+//      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
   }
 

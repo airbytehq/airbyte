@@ -1,0 +1,15 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+title: Postgres Models
+type: object
+description: Postgres Models
+properties:
+  state:
+    "$ref": "#/definitions/CtidStatus"
+definitions:
+  CtidStatus:
+    type: object
+    properties:
+      ctid:
+        description: ctid bookmark
+        type: string
