@@ -13,3 +13,7 @@ class MissingSchemaError(Exception):
 
 class SchemaInferenceError(Exception):
     pass
+
+
+class UndefinedParserError(Exception):
+    pass

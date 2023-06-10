@@ -5,12 +5,23 @@
 import logging
 import traceback
 from abc import ABC
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Type
 
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
-from airbyte_cdk.sources.file_based.file_based_stream import FileBasedStream
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
+from airbyte_cdk.sources.file_based.file_types import AvroParser, CsvParser, JsonlParser, ParquetParser
+from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
+from airbyte_cdk.sources.file_based.remote_file import FileType
+from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, DefaultFileBasedStream
+
+default_parsers = {
+    FileType.Avro: AvroParser(),
+    FileType.Csv: CsvParser(),
+    FileType.Jsonl: JsonlParser(),
+    FileType.Parquet: ParquetParser(),
+}
 
 
 class FileBasedSource(AbstractSource, ABC):
@@ -18,15 +29,19 @@ class FileBasedSource(AbstractSource, ABC):
     All file-based sources must provide a `stream_reader`.
     """
 
-    def __init__(self, stream_reader: AbstractFileBasedStreamReader):
+    def __init__(
+        self,
+        stream_reader: AbstractFileBasedStreamReader,
+        availability_strategy: AbstractFileBasedAvailabilityStrategy,
+        discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
+        parsers: Dict[FileType, FileTypeParser] = None,
+        stream_cls: Type[AbstractFileBasedStream] = DefaultFileBasedStream,
+    ):
         self.stream_reader = stream_reader
-
-    @property
-    def discovery_policy(self) -> AbstractDiscoveryPolicy:
-        """
-        Override to specify a non-default discovery concurrency policy
-        """
-        return DefaultDiscoveryPolicy()
+        self.stream_cls = stream_cls
+        self.availability_strategy = availability_strategy
+        self.parsers = parsers or default_parsers
+        self.discovery_policy = discovery_policy
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
@@ -60,15 +75,17 @@ class FileBasedSource(AbstractSource, ABC):
 
         return not bool(errors), (errors or None)
 
-    def streams(self, config: Mapping[str, Any]) -> List[FileBasedStream]:
+    def streams(self, config: Mapping[str, Any]) -> List[AbstractFileBasedStream]:
         """
         Return a list of this source's streams.
         """
         return [
-            FileBasedStream(
+            self.stream_cls(
                 raw_config=stream,
                 stream_reader=self.stream_reader,
+                availability_strategy=self.availability_strategy,
                 discovery_policy=self.discovery_policy,
+                parsers=self.parsers,
             )
             for stream in config["streams"]
         ]

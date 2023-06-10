@@ -10,7 +10,8 @@ DEFAULT_MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE = 10
 
 class DefaultDiscoveryPolicy(AbstractDiscoveryPolicy):
     """
-    Default number of concurrent requests to send to the source.
+    Default number of concurrent requests to send to the source on discover, and number
+    of files to use for schema inference.
     """
 
     @property

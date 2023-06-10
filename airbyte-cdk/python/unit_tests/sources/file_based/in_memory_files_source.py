@@ -6,23 +6,37 @@ import csv
 import io
 from datetime import datetime
 from io import IOBase
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Type
 
+from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
+from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
+from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import FileType, RemoteFile
+from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 
 
 class InMemoryFilesSource(FileBasedSource):
-    def __init__(self, files, file_type, discovery_policy=None):
-        super().__init__(InMemoryFilesStreamReader(files=files, file_type=file_type))
+    def __init__(
+            self,
+            files,
+            file_type,
+            availability_strategy: AbstractFileBasedAvailabilityStrategy,
+            discovery_policy: AbstractDiscoveryPolicy,
+            parsers: Dict[FileType, FileTypeParser],
+            stream_cls: Type[AbstractFileBasedStream],
+    ):
+        super().__init__(
+            InMemoryFilesStreamReader(files=files, file_type=file_type),
+            availability_strategy=availability_strategy,
+            discovery_policy=discovery_policy,
+            parsers=parsers,
+            stream_cls=stream_cls,
+        )
         self.files = files
         self.file_type = file_type
-        self._discovery_policy = discovery_policy
-
-    @property
-    def discovery_policy(self):
-        return self._discovery_policy
+        self.discovery_policy = discovery_policy
 
 
 class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):

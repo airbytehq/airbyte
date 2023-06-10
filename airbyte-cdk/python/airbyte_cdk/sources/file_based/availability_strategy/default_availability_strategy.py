@@ -6,12 +6,12 @@ import logging
 from typing import Optional, Tuple
 
 from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 
-class FileBasedAvailabilityStrategy(AvailabilityStrategy):
+class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy):
     def __init__(self, stream_reader: AbstractFileBasedStreamReader):
         self.stream_reader = stream_reader
 
@@ -32,4 +32,5 @@ class FileBasedAvailabilityStrategy(AvailabilityStrategy):
         - If the user provided a schema in the config, check that a subset of records in
           one file conform to the schema via a call to stream.conforms_to_schema(schema).
         """
+        # TODO: implement this
         return True, None

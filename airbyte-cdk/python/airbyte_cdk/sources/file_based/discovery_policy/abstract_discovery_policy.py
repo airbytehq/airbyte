@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 class AbstractDiscoveryPolicy(ABC):
     """
     Used during discovery; allows the developer to configure the number of concurrent
-    requests to send to the source.
+    requests to send to the source, and the number of files to use for schema discovery.
     """
 
     @property

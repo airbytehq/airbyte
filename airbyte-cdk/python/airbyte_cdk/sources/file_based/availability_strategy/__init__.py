@@ -1,0 +1,4 @@
+from airbyte_cdk.sources.file_based.availability_strategy.abstract_availability_strategy import AbstractFileBasedAvailabilityStrategy
+from airbyte_cdk.sources.file_based.availability_strategy.default_availability_strategy import DefaultFileBasedAvailabilityStrategy
+
+__all__ = ["AbstractFileBasedAvailabilityStrategy", "DefaultFileBasedAvailabilityStrategy"]

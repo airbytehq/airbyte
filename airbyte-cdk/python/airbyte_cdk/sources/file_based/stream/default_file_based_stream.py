@@ -5,48 +5,21 @@
 import asyncio
 import logging
 from datetime import datetime
-from functools import cache, cached_property
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
+from functools import cache
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.file_based.availability_strategy import FileBasedAvailabilityStrategy
-from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, MissingSchemaError, SchemaInferenceError
-from airbyte_cdk.sources.file_based.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
-from airbyte_cdk.sources.file_based.file_types import AvroParser, CsvParser, JsonlParser, ParquetParser
-from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
-from airbyte_cdk.sources.file_based.remote_file import FileType, RemoteFile
+from airbyte_cdk.sources.file_based.exceptions import MissingSchemaError, SchemaInferenceError
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, type_mapping_to_jsonschema
 from airbyte_cdk.sources.file_based.schema_validation_policies import record_passes_validation_policy
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 
 
-class FileBasedStream(Stream):
+class DefaultFileBasedStream(AbstractFileBasedStream):
     """
-    A file-based stream in an Airbyte source.
-
-    In addition to the base Stream attributes, a file-based stream has
-    - A config object (derived from the corresponding stream section in source config).
-      This contains the globs defining the stream's files.
-    - A StreamReader, which knows how to list and open files in the stream.
-    - An AvailabilityStrategy, which knows how to verify that we can list and open
-      files in the stream.
+    The default file-based stream.
     """
-
-    def __init__(
-        self,
-        raw_config: Dict[str, Any],
-        stream_reader: AbstractFileBasedStreamReader,
-        discovery_policy: AbstractDiscoveryPolicy,
-    ):
-        try:
-            self.config = FileBasedStreamConfig(**raw_config)
-        except Exception as exc:
-            raise ConfigValidationError("Error creating stream config object.") from exc
-        self._catalog_schema = {}  # TODO: wire through configured catalog
-        self._stream_reader = stream_reader
-        self._discovery_policy = discovery_policy
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -66,21 +39,13 @@ class FileBasedStream(Stream):
         if schema is None:
             # On read requests we should always have the catalog available
             raise MissingSchemaError("Expected `json_schema` in the configured catalog but it is missing.")
-        parser = self._get_parser(self.config.file_type)
+        parser = self.get_parser(self.config.file_type)
         for file in self.list_files_for_this_sync(stream_state):
             for record in parser.parse_records(file, self._stream_reader):
                 if not record_passes_validation_policy(self.config.validation_policy, record, schema):
                     logging.warning(f"Record did not pass validation policy: {record}")
                     continue
                 yield record
-
-    @cached_property
-    def availability_strategy(self):
-        return FileBasedAvailabilityStrategy(self._stream_reader)
-
-    @property
-    def name(self) -> str:
-        return self.config.name
 
     @cache
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -105,8 +70,7 @@ class FileBasedStream(Stream):
     @cache
     def list_files(self) -> List[RemoteFile]:
         """
-        List all files that belong to the stream as defined by the stream's
-        globs.
+        List all files that belong to the stream as defined by the stream's globs.
         """
         return list(self._stream_reader.list_matching_files(self.config.globs))
 
@@ -156,15 +120,6 @@ class FileBasedStream(Stream):
 
     async def _infer_file_schema(self, file: RemoteFile) -> Mapping[str, Any]:
         try:
-            return await self._get_parser(self.config.file_type).infer_schema(file, self._stream_reader)
+            return await self.get_parser(self.config.file_type).infer_schema(file, self._stream_reader)
         except Exception as exc:
             raise SchemaInferenceError(f"Error inferring schema for file: {file.uri}") from exc
-
-    @staticmethod
-    def _get_parser(file_type: FileType) -> FileTypeParser:
-        return {
-            FileType.Avro: AvroParser(),
-            FileType.Csv: CsvParser(),
-            FileType.Jsonl: JsonlParser(),
-            FileType.Parquet: ParquetParser(),
-        }[file_type]

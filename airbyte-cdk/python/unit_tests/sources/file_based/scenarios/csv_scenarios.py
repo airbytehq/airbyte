@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.file_based.discovery_policy import DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.remote_file import FileType
+from unit_tests.sources.file_based.helpers import LowInferenceLimitDiscoveryPolicy
 from unit_tests.sources.file_based.scenarios._scenario_builder import TestScenarioBuilder
 
 single_csv_scenario = (
@@ -51,7 +51,6 @@ single_csv_scenario = (
             {"col1": "val21", "col2": "val22"},
         ]
     )
-    .set_discovery_policy(DefaultDiscoveryPolicy())
 ).build()
 
 
@@ -114,14 +113,7 @@ multi_csv_scenario = (
             {"col1": "val21b", "col2": "val22b", "col3": "val23b"},
         ]
     )
-    .set_discovery_policy(DefaultDiscoveryPolicy())
 ).build()
-
-
-class LowInferenceLimitDiscoveryPolicy(DefaultDiscoveryPolicy):
-    @property
-    def max_n_files_for_schema_inference(self):
-        return 1
 
 
 multi_csv_stream_n_file_exceeds_limit_for_inference = (
