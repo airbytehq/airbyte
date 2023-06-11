@@ -308,7 +308,6 @@ class RetargetingGeoReport(RetargetingMixin, GeoReport):
 class SourceAppsflyer(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            AirbyteLogger().log("reached here to check connection")
             timezone = config.get("timezone", "UTC")
             if timezone not in pendulum.timezones:
                 return False, "The supplied timezone is invalid."
