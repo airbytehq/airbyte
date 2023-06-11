@@ -2,40 +2,41 @@
   "$schema" : "http://json-schema.org/draft-04/schema#",
   "type" : "array",
   "contains" : {
-    "type" : "object",
+    "type" : ["null", "object"],
+    "additionalProperties": true,
     "properties" : {
       "blockNumber" : {
-        "type" : "integer"
+        "type" : ["null", "integer"]
       },
       "blockHash" : {
-        "type" : "string"
+        "type" : ["null", "string"]
       },
       "transactionIndex" : {
-        "type" : "integer"
+        "type" : ["null", "integer"]
       },
       "removed" : {
-        "type" : "boolean"
+        "type" : ["null", "boolean"]
       },
       "address" : {
-        "type" : "string"
+        "type" : ["null", "string"]
       },
       "data" : {
-        "type" : "string"
+        "type" : ["null", "string"]
       },
       "topics" : {
-        "type" : "array",
+        "type" : ["null", "array"],
         "items" : {
-          "type" : "string"
+          "type" : ["null", "string"]
         }
       },
       "transactionHash" : {
-        "type" : "string"
+        "type" : ["null", "string"]
       },
       "logIndex" : {
-        "type" : "integer"
+        "type" : ["null", "integer"]
       },
       "parsedEvent" : {
-        "type" : "object"
+        "type" : ["null", "object"]
       }
     },
     "required" : [

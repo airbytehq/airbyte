@@ -1,24 +1,25 @@
 {
   "$schema" : "http://json-schema.org/draft-04/schema#",
   "type" : "object",
+  "additionalProperties": true,
   "properties" : {
     "hash" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "miner" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "number" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "gasUsed" : {
-      "type" : "object",
+      "type" : ["null", "object"],
       "properties" : {
         "hex" : {
-          "type" : "string"
+          "type" : ["null", "string"]
         },
         "type" : {
-          "type" : "string"
+          "type" : ["null", "string"]
         }
       },
       "required" : [
@@ -27,13 +28,13 @@
       ]
     },
     "gasLimit" : {
-      "type" : "object",
+      "type" : ["null", "object"],
       "properties" : {
         "hex" : {
-          "type" : "string"
+          "type" : ["null", "string"]
         },
         "type" : {
-          "type" : "string"
+          "type" : ["null", "string"]
         }
       },
       "required" : [
@@ -42,25 +43,25 @@
       ]
     },
     "extraData" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "timestamp" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "difficulty" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "parentHash" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "_difficulty" : {
-      "type" : "object",
+      "type" : ["null", "object"],
       "properties" : {
         "hex" : {
-          "type" : "string"
+          "type" : ["null", "string"]
         },
         "type" : {
-          "type" : "string"
+          "type" : ["null", "string"]
         }
       },
       "required" : [
@@ -69,7 +70,7 @@
       ]
     },
     "transactions" : {
-      "type" : "array",
+      "type" : ["null", "array"],
       "items" : {
         "$ref" : "evm/transaction.json"
       }

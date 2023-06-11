@@ -1,63 +1,64 @@
 {
   "$schema" : "http://json-schema.org/draft-04/schema#",
   "type" : "object",
+  "additionalProperties": true,
   "properties" : {
     "height" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "txhash" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "codespace" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "code" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "data" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "raw_log" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "logs" : {
-      "type" : "array",
+      "type" : ["null", "array"],
       "items" : {}
     },
     "info" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "gas_wanted" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "gas_used" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "tx" : {
-      "type" : "object",
+      "type" : ["null", "object"],
       "properties" : {
         "@type" : {
-          "type" : "string"
+          "type" : ["null", "string"]
         },
         "body" : {
-          "type" : "object",
+          "type" : ["null", "object"],
           "properties" : {
             "messages" : {
-              "type" : "array",
+              "type" : ["null", "array"],
               "items" : {}
             },
             "memo" : {
-              "type" : "string"
+              "type" : ["null", "string"]
             },
             "timeout_height" : {
-              "type" : "string"
+              "type" : ["null", "string"]
             },
             "extension_options" : {
-              "type" : "array",
+              "type" : ["null", "array"],
               "items" : {}
             },
             "non_critical_extension_options" : {
-              "type" : "array",
+              "type" : ["null", "array"],
               "items" : {}
             }
           },
@@ -70,27 +71,27 @@
           ]
         },
         "auth_info" : {
-          "type" : "object",
+          "type" : ["null", "object"],
           "properties" : {
             "signer_infos" : {
-              "type" : "array",
+              "type" : ["null", "array"],
               "items" : {}
             },
             "fee" : {
-              "type" : "object",
+              "type" : ["null", "object"],
               "properties" : {
                 "amount" : {
-                  "type" : "array",
+                  "type" : ["null", "array"],
                   "items" : {}
                 },
                 "gas_limit" : {
-                  "type" : "string"
+                  "type" : ["null", "string"]
                 },
                 "payer" : {
-                  "type" : "string"
+                  "type" : ["null", "string"]
                 },
                 "granter" : {
-                  "type" : "string"
+                  "type" : ["null", "string"]
                 }
               },
               "required" : [
@@ -119,10 +120,10 @@
       ]
     },
     "timestamp" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "events" : {
-      "type" : "array",
+      "type" : ["null", "array"],
       "items" : {}
     }
   },

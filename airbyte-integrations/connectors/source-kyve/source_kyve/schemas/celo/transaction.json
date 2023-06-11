@@ -1,36 +1,37 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "hash": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "type": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "accessList": {
       "type": "null"
     },
     "blockHash": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "blockNumber": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "transactionIndex": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "from": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "gasPrice": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "type": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "hex": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       },
       "required": [
@@ -39,13 +40,13 @@
       ]
     },
     "gasLimit": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "type": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "hex": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       },
       "required": [
@@ -54,16 +55,16 @@
       ]
     },
     "to": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "value": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "type": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "hex": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       },
       "required": [
@@ -72,25 +73,25 @@
       ]
     },
     "nonce": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "data": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "r": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "s": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "v": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "creates": {
       "type": "null"
     },
     "chainId": {
-      "type": "integer"
+      "type": ["null", "integer"]
     }
   },
   "required": [

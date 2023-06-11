@@ -1,47 +1,48 @@
 {
   "$schema" : "http://json-schema.org/draft-04/schema#",
   "type" : "object",
+  "additionalProperties": true,
   "properties" : {
     "txid" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "hash" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "version" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "size" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "vsize" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "weight" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "locktime" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "vin" : {
-      "type" : "array",
+      "type" : ["null", "array"],
       "items" : {
-        "type" : "object",
+        "type" : ["null", "object"],
         "properties" : {
           "txid" : {
-            "type" : "string"
+            "type" : ["null", "string"]
           },
           "vout" : {
-            "type" : "integer"
+            "type" : ["null", "integer"]
           },
           "scriptSig" : {
-            "type" : "object",
+            "type" : ["null", "object"],
             "properties" : {
               "asm" : {
-                "type" : "string"
+                "type" : ["null", "string"]
               },
               "hex" : {
-                "type" : "string"
+                "type" : ["null", "string"]
               }
             },
             "required" : [
@@ -50,7 +51,7 @@
             ]
           },
           "sequence" : {
-            "type" : "integer"
+            "type" : ["null", "integer"]
           }
         },
         "required" : [
@@ -62,33 +63,33 @@
       }
     },
     "vout" : {
-      "type" : "array",
+      "type" : ["null", "array"],
       "items" : {
-        "type" : "object",
+        "type" : ["null", "object"],
         "properties" : {
           "value" : {
-            "type" : "number"
+            "type" : ["null", "number"]
           },
           "n" : {
-            "type" : "integer"
+            "type" : ["null", "integer"]
           },
           "scriptPubKey" : {
-            "type" : "object",
+            "type" : ["null", "object"],
             "properties" : {
               "asm" : {
-                "type" : "string"
+                "type" : ["null", "string"]
               },
               "desc" : {
-                "type" : "string"
+                "type" : ["null", "string"]
               },
               "hex" : {
-                "type" : "string"
+                "type" : ["null", "string"]
               },
               "address" : {
-                "type" : "string"
+                "type" : ["null", "string"]
               },
               "type" : {
-                "type" : "string"
+                "type" : ["null", "string"]
               }
             },
             "required" : [
@@ -108,10 +109,10 @@
       }
     },
     "fee" : {
-      "type" : "number"
+      "type" : ["null", "number"]
     },
     "hex" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     }
   },
   "required" : [

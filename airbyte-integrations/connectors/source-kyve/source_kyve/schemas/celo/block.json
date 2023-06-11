@@ -1,33 +1,34 @@
 {
   "$schema" : "http://json-schema.org/draft-04/schema#",
   "type" : "object",
+  "additionalProperties": true,
   "properties" : {
     "hash" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "parentHash" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "number" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "timestamp" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "nonce" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "difficulty" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "gasLimit" : {
-      "type" : "object",
+      "type" : ["null", "object"],
       "properties" : {
         "type" : {
-          "type" : "string"
+          "type" : ["null", "string"]
         },
         "hex" : {
-          "type" : "string"
+          "type" : ["null", "string"]
         }
       },
       "required" : [
@@ -36,13 +37,13 @@
       ]
     },
     "gasUsed" : {
-      "type" : "object",
+      "type" : ["null", "object"],
       "properties" : {
         "type" : {
-          "type" : "string"
+          "type" : ["null", "string"]
         },
         "hex" : {
-          "type" : "string"
+          "type" : ["null", "string"]
         }
       },
       "required" : [
@@ -51,10 +52,10 @@
       ]
     },
     "miner" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "transactions" : {
-      "type" : "array",
+      "type" : ["null", "array"],
       "items" : {
         "$ref" : "celo/transaction.json"
       }

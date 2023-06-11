@@ -1,21 +1,22 @@
 {
   "$schema" : "http://json-schema.org/draft-04/schema#",
   "type" : "object",
+  "additionalProperties": true,
   "properties" : {
     "block_id" : {
-      "type" : "object",
+      "type" : ["null", "object"],
       "properties" : {
         "hash" : {
-          "type" : "string"
+          "type" : ["null", "string"]
         },
         "part_set_header" : {
-          "type" : "object",
+          "type" : ["null", "object"],
           "properties" : {
             "total" : {
-              "type" : "integer"
+              "type" : ["null", "integer"]
             },
             "hash" : {
-              "type" : "string"
+              "type" : ["null", "string"]
             }
           },
           "required" : [
@@ -30,19 +31,19 @@
       ]
     },
     "block" : {
-      "type" : "object",
+      "type" : ["null", "object"],
       "properties" : {
         "header" : {
-          "type" : "object",
+          "type" : ["null", "object"],
           "properties" : {
             "version" : {
-              "type" : "object",
+              "type" : ["null", "object"],
               "properties" : {
                 "block" : {
-                  "type" : "string"
+                  "type" : ["null", "string"]
                 },
                 "app" : {
-                  "type" : "string"
+                  "type" : ["null", "string"]
                 }
               },
               "required" : [
@@ -51,28 +52,28 @@
               ]
             },
             "chain_id" : {
-              "type" : "string"
+              "type" : ["null", "string"]
             },
             "height" : {
-              "type" : "string"
+              "type" : ["null", "string"]
             },
             "time" : {
-              "type" : "string"
+              "type" : ["null", "string"]
             },
             "last_block_id" : {
-              "type" : "object",
+              "type" : ["null", "object"],
               "properties" : {
                 "hash" : {
-                  "type" : "string"
+                  "type" : ["null", "string"]
                 },
                 "part_set_header" : {
-                  "type" : "object",
+                  "type" : ["null", "object"],
                   "properties" : {
                     "total" : {
-                      "type" : "integer"
+                      "type" : ["null", "integer"]
                     },
                     "hash" : {
-                      "type" : "string"
+                      "type" : ["null", "string"]
                     }
                   },
                   "required" : [
@@ -87,31 +88,31 @@
               ]
             },
             "last_commit_hash" : {
-              "type" : "string"
+              "type" : ["null", "string"]
             },
             "data_hash" : {
-              "type" : "string"
+              "type" : ["null", "string"]
             },
             "validators_hash" : {
-              "type" : "string"
+              "type" : ["null", "string"]
             },
             "next_validators_hash" : {
-              "type" : "string"
+              "type" : ["null", "string"]
             },
             "consensus_hash" : {
-              "type" : "string"
+              "type" : ["null", "string"]
             },
             "app_hash" : {
-              "type" : "string"
+              "type" : ["null", "string"]
             },
             "last_results_hash" : {
-              "type" : "string"
+              "type" : ["null", "string"]
             },
             "evidence_hash" : {
-              "type" : "string"
+              "type" : ["null", "string"]
             },
             "proposer_address" : {
-              "type" : "string"
+              "type" : ["null", "string"]
             }
           },
           "required" : [
@@ -132,12 +133,12 @@
           ]
         },
         "data" : {
-          "type" : "object",
+          "type" : ["null", "object"],
           "properties" : {
             "txs" : {
-              "type" : "array",
+              "type" : ["null", "array"],
               "items" : {
-                "type" : "string"
+                "type" : ["null", "string"]
               }
             }
           },
@@ -146,10 +147,10 @@
           ]
         },
         "evidence" : {
-          "type" : "object",
+          "type" : ["null", "object"],
           "properties" : {
             "evidence" : {
-              "type" : "array",
+              "type" : ["null", "array"],
               "items" : {
                 "items" : {}
               }
@@ -160,28 +161,28 @@
           ]
         },
         "last_commit" : {
-          "type" : "object",
+          "type" : ["null", "object"],
           "properties" : {
             "height" : {
-              "type" : "string"
+              "type" : ["null", "string"]
             },
             "round" : {
-              "type" : "integer"
+              "type" : ["null", "integer"]
             },
             "block_id" : {
-              "type" : "object",
+              "type" : ["null", "object"],
               "properties" : {
                 "hash" : {
-                  "type" : "string"
+                  "type" : ["null", "string"]
                 },
                 "part_set_header" : {
-                  "type" : "object",
+                  "type" : ["null", "object"],
                   "properties" : {
                     "total" : {
-                      "type" : "integer"
+                      "type" : ["null", "integer"]
                     },
                     "hash" : {
-                      "type" : "string"
+                      "type" : ["null", "string"]
                     }
                   },
                   "required" : [
@@ -196,21 +197,21 @@
               ]
             },
             "signatures" : {
-              "type" : "array",
+              "type" : ["null", "array"],
               "items" : {
-                "type" : "object",
+                "type" : ["null", "object"],
                 "properties" : {
                   "block_id_flag" : {
-                    "type" : "string"
+                    "type" : ["null", "string"]
                   },
                   "validator_address" : {
-                    "type" : "string"
+                    "type" : ["null", "string"]
                   },
                   "timestamp" : {
-                    "type" : "string"
+                    "type" : ["null", "string"]
                   },
                   "signature" : {
-                    "type" : "string"
+                    "type" : ["null", "string"]
                   }
                 },
                 "required" : [
@@ -238,16 +239,16 @@
       ]
     },
     "__kyve" : {
-      "type" : "object",
+      "type" : ["null", "object"],
       "properties" : {
         "block" : {
-          "type" : "object",
+          "type" : ["null", "object"],
           "properties" : {
             "data" : {
-              "type" : "object",
+              "type" : ["null", "object"],
               "properties" : {
                 "parsed_txs" : {
-                  "type" : "array",
+                  "type" : ["null", "array"],
                   "items" : {
                     "$ref" : "cosmos/parsedtxs.json"
                   }

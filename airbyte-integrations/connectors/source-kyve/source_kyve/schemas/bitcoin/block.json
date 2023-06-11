@@ -1,60 +1,61 @@
 {
   "$schema" : "http://json-schema.org/draft-04/schema#",
   "type" : "object",
+  "additionalProperties": true,
   "properties" : {
     "hash" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "height" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "version" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "versionHex" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "merkleroot" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "time" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "mediantime" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "nonce" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "bits" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "difficulty" : {
-      "type" : "number"
+      "type" : ["null", "number"]
     },
     "chainwork" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "nTx" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "previousblockhash" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "nextblockhash" : {
-      "type" : "string"
+      "type" : ["null", "string"]
     },
     "strippedsize" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "size" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "weight" : {
-      "type" : "integer"
+      "type" : ["null", "integer"]
     },
     "tx" : {
-      "type" : "array",
+      "type" : ["null", "array"],
       "items" : {
         "$ref" : "bitcoin/transaction.json"
       }
