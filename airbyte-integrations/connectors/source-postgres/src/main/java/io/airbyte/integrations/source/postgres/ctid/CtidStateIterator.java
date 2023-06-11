@@ -40,7 +40,7 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
     }
 
     if (messageIterator.hasNext()) {
-      if (count % 10_000 == 0 && StringUtils.isNotBlank(lastCtid)) {
+      if (count % 1_000_000 == 0 && StringUtils.isNotBlank(lastCtid)) {
         LOGGER.info("saving ctid state with {}", this.lastCtid);
         return CtidStateManager.createStateMessage(pair, new CtidStatus().withCtid(lastCtid));
       }
