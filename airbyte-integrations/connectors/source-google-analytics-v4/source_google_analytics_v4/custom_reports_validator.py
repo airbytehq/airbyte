@@ -7,7 +7,9 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, ValidationError, validator
+from pydantic.class_validators import root_validator
 
+ERROR_MSG_MISSING_SEGMENT_DIMENSION = "errors: `ga:segment` is required"
 
 class Model(BaseModel):
     class Config:
@@ -28,6 +30,17 @@ class Model(BaseModel):
         for v in value:
             if "ga:" not in v:
                 raise ValueError(v)
+
+
+    @classmethod
+    @root_validator(pre=True)
+    def check_segment_included_in_dimension(cls, values):
+        dimensions = values.get("dimensions")
+        segments = values.get("segments")
+        print(segments, dimensions)
+        if segments and "ga:segment" not in dimensions:
+            raise ValueError(ERROR_MSG_MISSING_SEGMENT_DIMENSION)
+        return values
 
 
 class Explainer:
@@ -104,8 +117,6 @@ class CustomReportsValidator:
         try:
             for report in self.reports:
                 self.model.parse_obj(report)
-                if "segments" in report and "ga:segment" not in report["dimensions"]:
-                    raise ValueError("ga:segment is required in dimensions if segments are provided")
         except ValidationError as e:
             raise AirbyteTracedException(
                 message=None,
