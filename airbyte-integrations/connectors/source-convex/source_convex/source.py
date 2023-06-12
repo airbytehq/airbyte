@@ -205,7 +205,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
     def read_records(self, sync_mode: SyncMode, *args: Any, **kwargs: Any) -> Iterator[Any]:
         if sync_mode != SyncMode.incremental:
             self._delta_has_more = False
-        for record in super().read_records(*args, **kwargs):
+        for record in super().read_records(sync_mode, *args, **kwargs):
             ts_ns = record["_ts"]
             ts_seconds = ts_ns / 1e9  # convert from nanoseconds.
             # equivalent of java's `new Timestamp(transactionMillis).toInstant().toString()`
