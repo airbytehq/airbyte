@@ -103,6 +103,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
         CREATE TABLE ${final_table_id} (
         _airbyte_raw_id STRING,
         _airbyte_extracted_at TIMESTAMP,
+        _airbyte_meta JSON,
         ${column_declarations}
         )
         """);

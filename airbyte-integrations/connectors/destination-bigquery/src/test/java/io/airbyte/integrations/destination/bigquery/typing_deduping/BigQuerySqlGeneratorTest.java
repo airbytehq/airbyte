@@ -46,6 +46,7 @@ class BigQuerySqlGeneratorTest {
             CREATE TABLE public.users (
             _airbyte_raw_id STRING,
             _airbyte_extracted_at TIMESTAMP,
+            _airbyte_meta JSON,
             id INT64,
             updated_at TIMESTAMP,
             name STRING
