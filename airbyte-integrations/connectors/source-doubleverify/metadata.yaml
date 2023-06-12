@@ -1,7 +1,4 @@
 data:
-  allowedHosts:
-    hosts:
-      - TODO # Please change to the hostname of the source.
   registries:
     oss:
       enabled: false
@@ -14,7 +11,6 @@ data:
   icon: doubleverify.svg
   license: MIT
   name: Doubleverify
-  releaseDate: TODO
   releaseStage: alpha
   supportUrl: https://docs.airbyte.com/integrations/sources/doubleverify
 metadataSpecVersion: "1.0"
