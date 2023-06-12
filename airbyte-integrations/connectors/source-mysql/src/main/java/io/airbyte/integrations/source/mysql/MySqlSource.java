@@ -192,8 +192,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   public Collection<AutoCloseableIterator<AirbyteMessage>> readStreams(final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final JsonNode state)
+                                                                       final ConfiguredAirbyteCatalog catalog,
+                                                                       final JsonNode state)
       throws Exception {
     final AirbyteStateType supportedStateType = getSupportedStateType(config);
     final StateManager stateManager =
@@ -504,4 +504,5 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     STANDARD,
     CDC
   }
+
 }

@@ -227,7 +227,7 @@ public class IntegrationRunner {
 
   private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator, final Consumer<AirbyteMessage> recordCollector)
       throws Exception {
-    messageIterator.getAirbyteStream().ifPresent(s ->  LOGGER.debug("Producing messages for stream {}...", s));
+    messageIterator.getAirbyteStream().ifPresent(s -> LOGGER.debug("Producing messages for stream {}...", s));
     watchForOrphanThreads(
         () -> messageIterator.forEachRemaining(recordCollector),
         () -> System.exit(FORCED_EXIT_CODE),

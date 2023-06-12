@@ -177,9 +177,9 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   protected void validateCursorFieldForIncrementalTables(
-                                                       final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
-                                                       final ConfiguredAirbyteCatalog catalog,
-                                                       final Database database)
+                                                         final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
+                                                         final ConfiguredAirbyteCatalog catalog,
+                                                         final Database database)
       throws SQLException {
     final List<InvalidCursorInfo> tablesWithInvalidCursor = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
@@ -262,11 +262,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   protected List<AutoCloseableIterator<AirbyteMessage>> getFullRefreshIterators(
-                                                                              final Database database,
-                                                                              final ConfiguredAirbyteCatalog catalog,
-                                                                              final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
-                                                                              final StateManager stateManager,
-                                                                              final Instant emittedAt) {
+                                                                                final Database database,
+                                                                                final ConfiguredAirbyteCatalog catalog,
+                                                                                final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
+                                                                                final StateManager stateManager,
+                                                                                final Instant emittedAt) {
     return getSelectedIterators(
         database,
         catalog,
