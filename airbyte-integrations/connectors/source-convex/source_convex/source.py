@@ -8,6 +8,7 @@ from json import JSONDecodeError
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, TypedDict
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -196,7 +197,9 @@ class ConvexStream(HttpStream, IncrementalMixin):
         """
         return self.state
 
-    def read_records(self, *args: Any, **kwargs: Any) -> Iterator[Any]:
+    def read_records(self, sync_mode: SyncMode, *args: Any, **kwargs: Any) -> Iterator[Any]:
+        if sync_mode != SyncMode.incremental:
+            self._delta_has_more = False
         for record in super().read_records(*args, **kwargs):
             ts_ns = record["_ts"]
             ts_seconds = ts_ns / 1e9  # convert from nanoseconds.
@@ -217,5 +220,5 @@ def format_http_error(context: str, resp: requests.Response) -> str:
     try:
         err = resp.json()
         return f"{context}: {resp.status_code}: {err['code']}: {err['message']}"
-    except JSONDecodeError or KeyError:
+    except (JSONDecodeError, KeyError):
         return f"{context}: {resp.text}"
