@@ -79,7 +79,12 @@ class AbstractOauth2Authenticator(AuthBase):
     )
     def _get_refresh_access_token_response(self):
         try:
-            response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
+            response = requests.request(
+                method="POST",
+                url=self.get_token_refresh_endpoint(),
+                data=self.build_refresh_request_body(),
+                headers={"Content-Type": "application/json"},
+            )
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
