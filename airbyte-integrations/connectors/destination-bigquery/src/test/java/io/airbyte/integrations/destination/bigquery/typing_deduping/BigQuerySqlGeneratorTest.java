@@ -39,13 +39,15 @@ class BigQuerySqlGeneratorTest {
     assertEquals(
         """
             CREATE TABLE public.users (
-            _airbyte_raw_id STRING,
-            _airbyte_extracted_at TIMESTAMP,
-            _airbyte_meta JSON,
+            _airbyte_raw_id STRING NOT NULL,
+            _airbyte_extracted_at TIMESTAMP NOT NULL,
+            _airbyte_meta JSON NOT NULL,
             id INT64,
             updated_at TIMESTAMP,
             name STRING
             )
+            PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
+            CLUSTER BY id, _airbyte_extracted_at
             """,
         sql
     );

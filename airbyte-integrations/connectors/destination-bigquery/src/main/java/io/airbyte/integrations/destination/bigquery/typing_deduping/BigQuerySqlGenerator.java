@@ -91,21 +91,32 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   @Override
   public String createTable(final StreamConfig<StandardSQLTypeName> stream) {
-    // TODO generate these from the stream columns
     String columnDeclarations = stream.columns().entrySet().stream()
         .map(column -> column.getKey().name() + " " + column.getValue().name())
         .collect(joining(",\n"));
+    String clusterConfig;
+    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+      // We're doing deduping, therefore we have a primary key.
+      // Cluster on all the PK columns, and also extracted_at.
+      clusterConfig = stream.primaryKey().stream().map(QuotedColumnId::name).collect(joining(",")) + ", _airbyte_extracted_at";
+    } else {
+      // Otherwise just cluser on extracted_at.
+      clusterConfig = "_airbyte_extracted_at";
+    }
 
     return new StringSubstitutor(Map.of(
         "final_table_id", stream.id().finalTableId(),
-        "column_declarations", columnDeclarations
+        "column_declarations", columnDeclarations,
+        "cluster_config", clusterConfig
     )).replace("""
         CREATE TABLE ${final_table_id} (
-        _airbyte_raw_id STRING,
-        _airbyte_extracted_at TIMESTAMP,
-        _airbyte_meta JSON,
+        _airbyte_raw_id STRING NOT NULL,
+        _airbyte_extracted_at TIMESTAMP NOT NULL,
+        _airbyte_meta JSON NOT NULL,
         ${column_declarations}
         )
+        PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
+        CLUSTER BY ${cluster_config}
         """);
   }
 
