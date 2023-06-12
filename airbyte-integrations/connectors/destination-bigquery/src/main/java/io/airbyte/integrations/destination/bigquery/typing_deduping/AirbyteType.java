@@ -1,6 +1,8 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Array;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.OneOf;
@@ -8,6 +10,7 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.UnsupportedOneOf;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public sealed interface AirbyteType permits Array, OneOf, Struct, UnsupportedOneOf, AirbyteProtocolType {
 
@@ -18,9 +21,58 @@ public sealed interface AirbyteType permits Array, OneOf, Struct, UnsupportedOne
    * If the top-level schema is not an object, then we can't really do anything with it, and should probably fail the sync. (but see also
    * {@link OneOf#asColumns()}).
    */
-  static AirbyteType fromJsonSchema(JsonNode schema) {
+  static AirbyteType fromJsonSchema(final JsonNode schema) {
     // TODO
+
+    final JsonNode type = schema.get("type");
+    if (matchesType(type, "object")) {
+      final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
+      final JsonNode properties = schema.get("properties");
+      properties.fields().forEachRemaining(property -> {
+        final String propertyKey = property.getKey();
+        final JsonNode propertyValue = property.getValue();
+        final JsonNode propertyType = propertyValue.get("type");
+        final JsonNode propertyFormat = propertyValue.get("format");
+        if (matchesType(propertyType, "boolean")) {
+          propertiesMap.put(propertyKey, AirbyteProtocolType.STRING);
+        } else if (matchesType(propertyType, "number")) {
+          propertiesMap.put(propertyKey, AirbyteProtocolType.NUMBER);
+        } else {
+          // TODO add more types
+          propertiesMap.put(propertyKey, AirbyteProtocolType.UNKNOWN);
+        }
+      });
+      return new Struct(propertiesMap);
+    } else if (matchesType(type, "array")) {
+      // TODO parse items
+    } else {
+      // TODO
+    }
+
     return new Struct(new LinkedHashMap<>());
+  }
+
+  // Map from a type to what other types should take precedence over it if present
+  Map<String, List> EXCLUDED_TYPES_MAP = ImmutableMap.of(
+      // Handle union type, give priority to wider scope types
+      "number", ImmutableList.of("string")
+  );
+
+  private static boolean matchesType(final JsonNode value, final String type) {
+    if (value.isTextual()) {
+      return value.toString().equals(type);
+    } else if (value.isArray()) {
+      final List<String> excludedOtherTypes = EXCLUDED_TYPES_MAP.get(type);
+      for (final JsonNode node : value) {
+        if (excludedOtherTypes.contains(node.toString())) {
+          return false;
+        }
+        if (node.toString().equals(type)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   enum AirbyteProtocolType implements AirbyteType {
