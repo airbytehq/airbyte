@@ -135,10 +135,13 @@ class TestBackoff:
         ],
         ids=["server_error", "connection_reset_error", "temporary_oauth_error"],
     )
-    def test_common_error_retry(self, error_response, requests_mock, api, account_id, second_account_id):
+    def test_common_error_retry(self, mocker, error_response, requests_mock, api, account_id, second_account_id):
         """Error once, check that we retry and not fail"""
         account_data = {"id": 1, "updated_time": "2020-09-25T00:00:00Z", "name": "Some name"}
         second_account_data = {"id": 2, "updated_time": "2020-09-25T00:00:00Z", "name": "Some second name"}
+        # do not test batch logic
+        mocker.patch.object(AdAccounts, "use_batch", new_callable=mocker.PropertyMock, return_value=False)
+
         responses = [
             error_response,
             {

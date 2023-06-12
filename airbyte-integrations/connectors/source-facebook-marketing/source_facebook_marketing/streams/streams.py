@@ -12,6 +12,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
+from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
 
