@@ -51,18 +51,18 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   @Override
   public StandardSQLTypeName toDialectType(final AirbyteType type) {
     // switch pattern-matching is still in preview at language level 17 :(
-    if (type instanceof Primitive p) {
+    if (type instanceof final Primitive p) {
       return toDialectType(p);
-    } else if (type instanceof Object o) {
+    } else if (type instanceof final Object o) {
       // eventually this should be JSON; keep STRING for now as legacy compatibility
       return StandardSQLTypeName.STRING;
-    } else if (type instanceof Array a) {
+    } else if (type instanceof final Array a) {
       // eventually this should be JSON; keep STRING for now as legacy compatibility
       return StandardSQLTypeName.STRING;
-    } else if (type instanceof UnsupportedOneOf u) {
+    } else if (type instanceof final UnsupportedOneOf u) {
       // eventually this should be JSON; keep STRING for now as legacy compatibility
       return StandardSQLTypeName.STRING;
-    } else if (type instanceof OneOf o) {
+    } else if (type instanceof final OneOf o) {
       // TODO choose the best data type + map to bigquery type
       return null;
     }
@@ -91,10 +91,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   @Override
   public String createTable(final StreamConfig<StandardSQLTypeName> stream) {
-    String columnDeclarations = stream.columns().entrySet().stream()
+    final String columnDeclarations = stream.columns().entrySet().stream()
         .map(column -> column.getKey().name() + " " + column.getValue().name())
         .collect(joining(",\n"));
-    String clusterConfig;
+    final String clusterConfig;
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       // We're doing deduping, therefore we have a primary key.
       // Cluster on all the PK columns, and also extracted_at.
@@ -123,7 +123,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   @Override
   public String alterTable(final StreamConfig<StandardSQLTypeName> stream,
                            final TableDefinition existingTable) {
-    if (existingTable instanceof StandardTableDefinition s) {
+    if (existingTable instanceof final StandardTableDefinition s) {
       // TODO check if clustering/partitioning config is different from what we want, do something to handle it
       // iirc this will depend on the stream (destination?) sync mode + cursor + pk name
       if (s.getClustering() != null) {
@@ -137,44 +137,44 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   // We need the configuredairbytestream for the sync mode + cursor name
   @Override
-  public String updateTable(String finalSuffix, final StreamConfig<StandardSQLTypeName> stream) {
+  public String updateTable(final String finalSuffix, final StreamConfig<StandardSQLTypeName> stream) {
     // TODO this method needs to handle all the sync modes
     // do the stuff that evan figured out how to do https://github.com/airbytehq/typing-and-deduping-sql/blob/main/one-table.postgres.sql#L153
     // TODO use a better string templating thing
-    return String.format(
-        """
-             BEGIN;
-                     
-             INSERT INTO %s.%s
-             SELECT
-               TODO....
-             FROM %s;
-             
-             DELETE from <final>
-             WHERE <raw_id> IN (
-              SELECT `_airbyte_raw_id` FROM (
-                SELECT `_airbyte_raw_id`, row_number() OVER (
-                  PARTITION BY `id` ORDER BY `updated_at` DESC, `_airbyte_extracted_at` DESC
-                ) as row_number FROM evan.users
-              )
-              WHERE row_number != 1
-            )
-            OR
-            -- Delete rows that have been CDC deleted
-            `id` IN (
-              SELECT
-                SAFE_CAST(JSON_EXTRACT_SCALAR(`_airbyte_data`, '$.id') as INT64) as id -- based on the PK which we know from the connector catalog
-              FROM evan.users_raw
-              WHERE JSON_EXTRACT_SCALAR(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
-            )
-                     
-             COMMIT;
-             """,
-        stream.id().finalNamespace(),
+
+    return new StringSubstitutor(Map.of(
+        "final_namespace", stream.id().finalNamespace(),
         // TODO this is wrong, we can't just do "`foo`.`bar`" + "_tmp"
-        finalSuffix.length() > 0 ? stream.id().finalName() + "_" + finalSuffix : stream.id().finalName(),
-        stream.id().rawTableId()
-    );
+        "final_table_name", finalSuffix.length() > 0 ? stream.id().finalName() + "_" + finalSuffix : stream.id().finalName(),
+        "raw_table_id", stream.id().rawTableId()
+    )).replace("""
+        BEGIN;
+
+        INSERT INTO ${final_namespace}.${final_table_name}
+         SELECT
+           TODO....
+         FROM ${raw_table_id};
+
+        DELETE from <final>
+         WHERE <raw_id> IN (
+          SELECT `_airbyte_raw_id` FROM (
+            SELECT `_airbyte_raw_id`, row_number() OVER (
+              PARTITION BY `id` ORDER BY `updated_at` DESC, `_airbyte_extracted_at` DESC
+            ) as row_number FROM evan.users
+          )
+          WHERE row_number != 1
+         )
+         OR
+         -- Delete rows that have been CDC deleted
+         `id` IN (
+          SELECT
+            SAFE_CAST(JSON_EXTRACT_SCALAR(`_airbyte_data`, '$.id') as INT64) as id -- based on the PK which we know from the connector catalog
+          FROM evan.users_raw
+          WHERE JSON_EXTRACT_SCALAR(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+         )
+
+        COMMIT;
+        """);
   }
 
   @Override
@@ -182,16 +182,15 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       // TODO maybe this should have an extracted_at / loaded_at condition for efficiency
       // We don't need to filter out `_airbyte_data ->> '_ab_cdc_deleted_at' IS NULL` because we can run this sql before executing CDC deletes
-      return """
-          DELETE FROM %s WHERE %s NOT IN (
-            SELECT %s FROM %s
-          )
-          """.formatted(
-          stream.id().rawTableId(),
-          RAW_ID,
-          RAW_ID,
-          stream.id().finalTableId()
-      );
+      return new StringSubstitutor(Map.of(
+          "raw_table_id", stream.id().rawTableId(),
+          "airbyte_raw_id", RAW_ID,
+          "final_table_id", stream.id().finalTableId()
+      )).replace("""
+        DELETE FROM ${raw_table_id} WHERE ${airbyte_raw_id} NOT IN (
+          SELECT ${airbyte_raw_id} FROM ${final_table_id}
+        )
+        """);
     } else {
       return "";
     }
@@ -200,14 +199,14 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   @Override
   public String overwriteFinalTable(final String finalSuffix, final StreamConfig<StandardSQLTypeName> stream) {
     if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE && finalSuffix.length() > 0) {
-      return """
-          DROP TABLE %s;
-          ALTER TABLE %s RENAME TO %s;
-          """.formatted(
-          stream.id().finalTableId(),
-          stream.id().rawTableId() + "_" + finalSuffix,
-          stream.id().finalName()
-      );
+      return new StringSubstitutor(Map.of(
+          "final_table_id", stream.id().finalTableId(),
+          "raw_table_id", stream.id().rawTableId() + "_" + finalSuffix,
+          "final_table_name", stream.id().finalName()
+      )).replace("""
+        DROP TABLE ${final_table_id};
+        ALTER TABLE ${raw_table_id} RENAME TO ${final_table_name};
+        """);
     } else {
       return "";
     }
