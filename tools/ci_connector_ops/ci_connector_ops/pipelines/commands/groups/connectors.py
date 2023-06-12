@@ -66,11 +66,7 @@ def render_report_output_prefix(ctx: click.Context) -> str:
     git_revision = ctx.obj["git_revision"]
     pipeline_start_timestamp = ctx.obj["pipeline_start_timestamp"]
     ci_context = ctx.obj["ci_context"]
-    ci_job_key = ctx.obj["ci_job_key"]
-
-    # get ci_job_key from ctx, if not defined then use ci_context
-    if ci_job_key is None:
-        ci_job_key = ci_context
+    ci_job_key = ctx.obj["ci_job_key"] if ctx.obj.get("ci_job_key") else ci_context
 
     sanitized_branch = git_branch.replace("/", "_")
 
