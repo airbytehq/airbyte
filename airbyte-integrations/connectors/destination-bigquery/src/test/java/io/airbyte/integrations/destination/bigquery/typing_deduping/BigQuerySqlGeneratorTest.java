@@ -86,7 +86,7 @@ class BigQuerySqlGeneratorTest {
               ELSE []
             END,
             CASE
-              WHEN (JSON_VALUE(`_airbyte_data`, '$.address') IS NOT NULL) AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.address') as STRING) IS NULL) THEN ["Problem with `address`"]
+              WHEN (JSON_QUERY(`_airbyte_data`, '$.address') IS NOT NULL) AND (SAFE_CAST(JSON_QUERY(`_airbyte_data`, '$.address') as STRING) IS NULL) THEN ["Problem with `address`"]
               ELSE []
             END
             ) as errors)) as _airbyte_meta,

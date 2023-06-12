@@ -74,6 +74,15 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
   }
 
+  private String jsonExtract(final AirbyteType type) {
+    // TODO also handle oneOf types
+    if (type instanceof Struct || type instanceof Array || type instanceof UnsupportedOneOf || type == AirbyteProtocolType.UNKNOWN) {
+      return "JSON_QUERY";
+    } else {
+      return "JSON_VALUE";
+    }
+  }
+
   public StandardSQLTypeName toDialectType(final AirbyteProtocolType airbyteProtocolType) {
     // TODO maybe this should be in the interface? unclear if that has value, but I expect every implementation to have this method
     return switch (airbyteProtocolType) {
@@ -178,7 +187,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     // TODO this method needs to handle all the sync modes
     // e.g. this pk null check should only happen for incremental dedup
     String pkNullChecks = primaryKeys.stream().map(
-        pk -> "AND SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$." + pk.originalName() + "') as " + streamColumns.get(pk).dialectType().name() + ") IS NULL"
+        pk -> {
+          String jsonExtract = jsonExtract(streamColumns.get(pk).airbyteType());
+          return "AND SAFE_CAST(" + jsonExtract + "(`_airbyte_data`, '$." + pk.originalName() + "') as " + streamColumns.get(pk).dialectType().name() + ") IS NULL";
+        }
     ).collect(joining("\n"));
 
     return new StringSubstitutor(Map.of(
@@ -203,19 +215,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   @VisibleForTesting
   String insertNewRecords(final QuotedStreamId id, final LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
-    // TODO - this needs the original AirbyteType so that we can recognize which columns need JSON_QUERY vs JSON_VALUE
     String columnCasts = streamColumns.entrySet().stream().map(
         col -> {
-          final AirbyteType airbyteType = col.getValue().airbyteType();
-          String jsonExtract;
-          // TODO this logic should be the same as toDialectType, probably need to build on top of that piece
-          if (airbyteType instanceof Struct) {
-            jsonExtract = "JSON_QUERY";
-          } else if (airbyteType instanceof Array) {
-            jsonExtract = "JSON_QUERY";
-          } else {
-            jsonExtract = "JSON_VALUE";
-          }
+          String jsonExtract = jsonExtract(col.getValue().airbyteType());
           return "SAFE_CAST(" + jsonExtract + "(`_airbyte_data`, '$." + col.getKey().originalName() + "') as " + col.getValue().dialectType().name() + ") as " + col.getKey()
               .name() + ",";
         }
@@ -223,11 +225,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     String columnErrors = streamColumns.entrySet().stream().map(
         col -> new StringSubstitutor(Map.of(
             "raw_col_name", col.getKey().originalName(),
-            "col_type", col.getValue().dialectType().name()
+            "col_type", col.getValue().dialectType().name(),
+            "json_extract", jsonExtract(col.getValue().airbyteType())
         )).replace(
             """
                 CASE
-                  WHEN (JSON_VALUE(`_airbyte_data`, '$.${raw_col_name}') IS NOT NULL) AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.${raw_col_name}') as ${col_type}) IS NULL) THEN ["Problem with `${raw_col_name}`"]
+                  WHEN (${json_extract}(`_airbyte_data`, '$.${raw_col_name}') IS NOT NULL) AND (SAFE_CAST(${json_extract}(`_airbyte_data`, '$.${raw_col_name}') as ${col_type}) IS NULL) THEN ["Problem with `${raw_col_name}`"]
                   ELSE []
                 END"""
         )
@@ -259,20 +262,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   @VisibleForTesting
   String dedupFinalTable(QuotedStreamId id, final List<QuotedColumnId> primaryKey, final LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
     String pkList = primaryKey.stream().map(QuotedColumnId::name).collect(joining(","));
-    // TODO - this needs the original AirbyteType so that we can recognize which columns need JSON_QUERY vs JSON_VALUE
     String pkEqualityChecks = streamColumns.entrySet().stream()
         .filter(e -> primaryKey.contains(e.getKey()))
         .map(
             col -> new StringSubstitutor(Map.of(
                 "raw_table_id", id.rawTableId(),
                 "raw_col_name", col.getKey().originalName(),
-                "col_type", col.getValue().dialectType().name()
+                "col_type", col.getValue().dialectType().name(),
+                "json_extract", jsonExtract(col.getValue().airbyteType())
             )).replace("""
                 `id` IN (
                   SELECT
-                    SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.${raw_col_name}') as ${col_type}) as id
+                    SAFE_CAST(${json_extract}(`_airbyte_data`, '$.${raw_col_name}') as ${col_type}) as id
                   FROM ${raw_table_id}
-                  WHERE JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+                  WHERE ${json_extract}(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
                 )""")
         ).collect(joining("\nAND "));
 
@@ -305,6 +308,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
         "raw_table_id", id.rawTableId(),
         "final_table_id", id.finalTableId()
     )).replace(
+        // TODO remove the deleted_at clause if we don't have the cdc columns
         """
               DELETE FROM
                 ${raw_table_id}
