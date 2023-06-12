@@ -84,6 +84,15 @@ class Users(ShipstationAbstractStream):
 class Carriers(ShipstationAbstractStream):
     def path(self, **kwargs) -> str:
         return self.url_base + "carriers"
+
+class Stores(ShipstationAbstractStream):
+    def path(self, **kwargs) -> str:
+        return self.url_base + "stores"
+    
+class MarketPlaces(ShipstationAbstractStream):
+    def path(self, **kwargs) -> str:
+        return self.url_base + "stores/marketplaces"
+    
     
 # class Fulfillments(ShipstationAbstractStream):
 #     def path(self, **kwargs) -> str:

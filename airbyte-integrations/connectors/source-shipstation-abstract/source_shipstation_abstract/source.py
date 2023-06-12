@@ -19,6 +19,8 @@ from .streams import (
     ShipstationAbstractStream,
     Users, 
     Carriers,
+    MarketPlaces,
+    Stores
     # Fulfillments
     )
 
@@ -90,4 +92,6 @@ class SourceShipstationAbstract(AbstractSource):
 
         auth = BasicAuthenticator(base64_auth_token)
         return [Carriers(authenticator=auth),
-                Users(authenticator=auth),]
+                Users(authenticator=auth),
+                Stores(authenticator=auth),
+                MarketPlaces(authenticator=auth)]
