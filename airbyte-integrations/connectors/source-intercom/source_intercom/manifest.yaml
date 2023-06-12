@@ -90,6 +90,14 @@ definitions:
       name: "tags"
       primary_key: "name"
       path: "tags"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["tag_id"]
+            value: "'{{ record.id }}'"
+      - type: RemoveFields
+        field_pointers:
+          - ["id"]
   teams:
     description: "https://developers.intercom.com/intercom-api-reference/reference#list-teams"
     $ref: "#/definitions/stream_full_refresh"
