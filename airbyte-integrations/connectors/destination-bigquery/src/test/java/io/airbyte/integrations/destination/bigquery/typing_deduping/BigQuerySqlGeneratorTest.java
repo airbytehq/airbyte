@@ -27,7 +27,6 @@ class BigQuerySqlGeneratorTest {
         DestinationSyncMode.APPEND_DEDUP,
         List.of(generator.quoteColumnId("id")),
         Optional.of(generator.quoteColumnId("updated_at")),
-        // TODO build a LinkedHashMap
         Map.of(
             generator.quoteColumnId("id"), StandardSQLTypeName.INT64,
             generator.quoteColumnId("updated_at"), StandardSQLTypeName.TIMESTAMP,
