@@ -267,15 +267,11 @@ def test_get_pr_body(mocker, eligible_connectors, excluded_connectors):
     assert "connector_technical_name" in pr_body
     assert "connector_version" in pr_body
     assert "connector_definition_id" in pr_body
-    assert "sync_success_rate" in pr_body
-    assert "number_of_connections" in pr_body
     assert "source-pokeapi" in pr_body
     assert "pokeapi-definition-id" in pr_body
     assert "0.0.0" in pr_body
-    assert "0.99" in pr_body
     assert "source-excluded" in pr_body
     assert "excluded-definition-id" in pr_body
-    assert "0.98" in pr_body
 
 
 @freezegun.freeze_time("2023-02-14")

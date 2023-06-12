@@ -54,7 +54,7 @@ async def upload_to_gcs(
     """Upload a local file to GCS using the AWS CLI docker image and running aws s3 cp command.
     Args:
         dagger_client (Client): The dagger client.
-        file_to_upload_path (File): The dagger File to upload.
+        file_to_upload (File): The dagger File to upload.
         key (str): The key that will be written on the S3 bucket.
         bucket (str): The S3 bucket name.
         gcs_credentials (Secret): The dagger secret holding the credentials to get and upload the targeted GCS bucket.
