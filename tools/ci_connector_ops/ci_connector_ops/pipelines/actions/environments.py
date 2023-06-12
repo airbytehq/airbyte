@@ -305,6 +305,7 @@ def with_global_dockerd_service(dagger_client: Client, git_revision: str) -> Con
             dagger_client.cache_volume("shared-tmp"),
         )
         .with_exposed_port(2375)
+        .with_env_variable("DOCKER_BUILDKIT", "0")
         .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
     )
 
@@ -326,11 +327,10 @@ def with_bound_docker_host(
     """
     dockerd = context.dockerd_service
     docker_hostname = "global-docker-host"
-    container = container.pipeline(f"docker-host-{context.connector.technical_name}")
     bound = (
         container.with_env_variable("DOCKER_HOST", f"tcp://{docker_hostname}:2375")
         .with_service_binding(docker_hostname, dockerd)
-        .with_mounted_cache("/tmp", context.dagger_client.cache_volume("shared-tmp"), sharing=CacheSharingMode.PRIVATE)
+        .with_mounted_cache("/tmp", context.dagger_client.cache_volume("shared-tmp"))
     )
 
     return bound
