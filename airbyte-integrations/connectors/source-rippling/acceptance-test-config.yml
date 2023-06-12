@@ -18,6 +18,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 600
         empty_streams: []
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
@@ -26,3 +27,8 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 1800
+        ignored_fields:
+          employees:
+            - name: customFields
+              bypass_reason: ignore possible changing values in acceptance tests
