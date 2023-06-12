@@ -59,8 +59,7 @@ public class SnowflakeDatabase {
   public static HikariDataSource createDataSource(final JsonNode config, final String airbyteEnvironment) {
     final HikariDataSource dataSource = new HikariDataSource();
 
-    // abc123.eu-central-1.snowflakecomputing.com/?user=peter&warehouse=mywh&db=mydb&schema=public&tracing=ALL
-    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?&tracing=ALL",
+    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
         config.get(JdbcUtils.HOST_KEY).asText()));
     final String username = config.get(JdbcUtils.USERNAME_KEY).asText();
 

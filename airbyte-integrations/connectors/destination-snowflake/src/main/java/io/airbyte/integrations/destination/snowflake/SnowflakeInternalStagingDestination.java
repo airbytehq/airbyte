@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.snowflake;
 
 import static io.airbyte.integrations.destination.snowflake.SnowflakeDestinationResolver.getNumberOfFileBuffers;
 
-import com.amazonaws.util.IOUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -22,7 +21,6 @@ import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import java.io.FileInputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -142,12 +140,4 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         true);
   }
 
-  public static void main(String[] args) throws Exception {
-    SnowflakeInternalStagingDestination destination = new SnowflakeInternalStagingDestination(OssCloudEnvVarConsts.AIRBYTE_OSS);
-    JsonNode config = Jsons.deserialize(IOUtils.toString(new FileInputStream("/Users/edgao/Desktop/snowflake_creds.json")));
-
-    LOGGER.info("Logging to {}", System.getProperty("java.io.tmpdir"));
-    final JdbcDatabase database = destination.getDatabase(destination.getDataSource(config));
-    database.execute("PUT file:///Users/edgao/Desktop/test.csv @AIRBYTE_SCHEMA.EDGAO_TEST");
-  }
 }
