@@ -134,8 +134,8 @@ class SourceAmazonSellerPartner(AbstractSource):
         """
         try:
             stream_kwargs = self._get_stream_kwargs(config)
-            orders_stream = VendorSalesReports(**stream_kwargs)
-            next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
+            stream_to_check = VendorSalesReports(**stream_kwargs)
+            next(stream_to_check.read_records(sync_mode=SyncMode.full_refresh))
 
             return True, None
         except Exception as e:
