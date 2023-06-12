@@ -102,7 +102,7 @@ public class ParquetSerializedBuffer implements SerializableBuffer {
   }
 
   @Override
-  public long accept(final String recordString) throws Exception {
+  public long accept(final String recordString, final long emittedAt) throws Exception {
     return 0;
   }
 

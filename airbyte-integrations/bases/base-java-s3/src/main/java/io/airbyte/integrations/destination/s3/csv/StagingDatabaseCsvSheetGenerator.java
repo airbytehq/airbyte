@@ -52,9 +52,9 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
   @Override
   public List<Object> getDataRow(final UUID id, final String formattedString, final long emittedAt) {
     return List.of(
-            id,
-            formattedString,
-            Timestamp.from(Instant.ofEpochMilli(emittedAt)));
+        id,
+        formattedString,
+        Timestamp.from(Instant.ofEpochMilli(emittedAt)));
   }
 
 }

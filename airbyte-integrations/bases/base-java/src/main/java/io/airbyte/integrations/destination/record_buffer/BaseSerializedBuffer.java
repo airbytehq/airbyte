@@ -59,7 +59,7 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
    */
   protected abstract void writeRecord(AirbyteRecordMessage record) throws IOException;
 
-  protected abstract void writeRecord(String recordString) throws IOException;
+  protected abstract void writeRecord(String recordString, long emittedAt) throws IOException;
 
   /**
    * Stops the writer from receiving new data and prepares it for being finalized and converted into
@@ -98,9 +98,8 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
     }
   }
 
-
   @Override
-  public long accept(final String recordString) throws Exception {
+  public long accept(final String recordString, final long emittedAt) throws Exception {
     if (!isStarted) {
       if (useCompression) {
         compressedBuffer = new GzipCompressorOutputStream(byteCounter);
@@ -112,7 +111,7 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
     }
     if (inputStream == null && !isClosed) {
       final long startCount = byteCounter.getCount();
-      writeRecord(recordString);
+      writeRecord(recordString, emittedAt);
       return byteCounter.getCount() - startCount;
     } else {
       throw new IllegalCallerException("Buffer is already closed, it cannot accept more messages");

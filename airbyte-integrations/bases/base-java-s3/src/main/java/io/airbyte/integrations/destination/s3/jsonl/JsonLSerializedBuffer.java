@@ -20,7 +20,6 @@ import io.airbyte.integrations.destination.s3.util.Flattening;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -64,7 +63,7 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
   }
 
   @Override
-  protected void writeRecord(final String recordString) throws IOException {
+  protected void writeRecord(final String recordString, final long emittedAt) throws IOException {
     // no op
   }
 
