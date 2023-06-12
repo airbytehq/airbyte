@@ -11,6 +11,7 @@ from pydantic.class_validators import root_validator
 
 ERROR_MSG_MISSING_SEGMENT_DIMENSION = "errors: `ga:segment` is required"
 
+
 class Model(BaseModel):
     class Config:
         extra = "forbid"
@@ -30,7 +31,6 @@ class Model(BaseModel):
         for v in value:
             if "ga:" not in v:
                 raise ValueError(v)
-
 
     @classmethod
     @root_validator(pre=True)

@@ -27,5 +27,5 @@ from source_google_analytics_v4.custom_reports_validator import CustomReportsVal
 def test_custom_reports_validator(custom_reports, expected):
     try:
         CustomReportsValidator(custom_reports).validate()
-    except (AirbyteTracedException, ValueError) as e:
+    except AirbyteTracedException as e:
         assert expected in str(e)
