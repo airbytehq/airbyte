@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -90,8 +91,11 @@ public class ConcurrentStreamConsumer implements Consumer<AutoCloseableIterator<
 
   /**
    * Waits for each submitted stream to complete execution.
+   *
+   * @throws ExecutionException if unable to wait for the execution to complete.
+   * @throws InterruptedException if the wait for the exectuion to complete is interrupted.
    */
-  public void waitFor() {
+  public void waitFor() throws ExecutionException, InterruptedException {
     // Wait for all threads to run before closing
     if (!futures.isEmpty()) {
       CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).get();
