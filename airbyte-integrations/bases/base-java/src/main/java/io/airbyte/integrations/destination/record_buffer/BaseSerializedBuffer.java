@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Base implementation of a {@link SerializableBuffer}. It is composed of a {@link BufferStorage}
  * where the actual data is being stored in a serialized format.
- *<p>
+ * <p>
  * Such data format is defined by concrete implementation inheriting from this base abstract class.
  * To do so, necessary methods on handling "writer" methods should be defined. This writer would
  * take care of converting {@link AirbyteRecordMessage} into the serialized form of the data such as
