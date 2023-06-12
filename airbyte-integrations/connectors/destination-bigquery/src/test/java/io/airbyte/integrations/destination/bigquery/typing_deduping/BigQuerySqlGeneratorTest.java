@@ -150,7 +150,7 @@ class BigQuerySqlGeneratorTest {
     addressProperties.put("state", AirbyteProtocolType.STRING);
     columns.put(generator.quoteColumnId("address"), new ParsedType<>(StandardSQLTypeName.STRING, new Struct(addressProperties)));
 
-    StreamConfig<StandardSQLTypeName> stream = new StreamConfig<>(
+    return new StreamConfig<>(
         new SqlGenerator.QuotedStreamId("public", "users", "airbyte", "public_users", "public", "users"),
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
@@ -158,6 +158,5 @@ class BigQuerySqlGeneratorTest {
         Optional.of(generator.quoteColumnId("updated_at")),
         columns
     );
-    return stream;
   }
 }
