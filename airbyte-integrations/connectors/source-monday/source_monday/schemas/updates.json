@@ -23,8 +23,8 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "integer"] },
-          "creator_id": { "type": ["null", "integer"] },
+          "id": { "type": ["null", "string"] },
+          "creator_id": { "type": ["null", "string"] },
           "created_at": { "type": ["null", "string"], "format": "date-time" },
           "text_body": { "type": ["null", "string"] },
           "updated_at": { "type": ["null", "string"], "format": "date-time" },

@@ -18,7 +18,7 @@
         }
       }
     },
-    "communication": { "type": ["null", "object"] },
+    "communication": { "type": ["null", "string"] },
     "description": { "type": ["null", "string"] },
     "groups": {
       "type": ["null", "array"],
@@ -48,8 +48,12 @@
     "state": { "type": ["null", "string"] },
     "subscribers": {
       "type": ["null", "array"],
-      "properties": {
-        "id": { "type": ["null", "integer"] }
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": ["null", "integer"] }
+        }
       }
     },
     "tags": {
@@ -75,7 +79,7 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "integer"] }
+          "id": { "type": ["null", "string"] }
         }
       }
     },
@@ -85,7 +89,7 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "integer"] }
+          "id": { "type": ["null", "string"] }
         }
       }
     },
