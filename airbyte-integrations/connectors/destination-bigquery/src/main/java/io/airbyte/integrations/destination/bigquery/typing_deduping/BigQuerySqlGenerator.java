@@ -146,7 +146,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
         "final_namespace", stream.id().finalNamespace(),
         // TODO this is wrong, we can't just do "`foo`.`bar`" + "_tmp"
         "final_table_name", finalSuffix.length() > 0 ? stream.id().finalName() + "_" + finalSuffix : stream.id().finalName(),
-        "raw_table_id", stream.id().rawTableId()
+        "raw_table_id", stream.id().rawTableId(),
+        "airbyte_raw_id", RAW_ID
     )).replace("""
         BEGIN;
 
@@ -155,12 +156,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
            TODO....
          FROM ${raw_table_id};
 
-        DELETE from <final>
-         WHERE <raw_id> IN (
-          SELECT `_airbyte_raw_id` FROM (
-            SELECT `_airbyte_raw_id`, row_number() OVER (
+        DELETE FROM ${final_namespace}.${final_table_name}
+         WHERE ${airbyte_raw_id} IN (
+          SELECT ${airbyte_raw_id} FROM (
+            SELECT ${airbyte_raw_id}, row_number() OVER (
               PARTITION BY `id` ORDER BY `updated_at` DESC, `_airbyte_extracted_at` DESC
-            ) as row_number FROM evan.users
+            ) as row_number FROM ${final_namespace}.${final_table_name}
           )
           WHERE row_number != 1
          )
@@ -169,7 +170,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
          `id` IN (
           SELECT
             SAFE_CAST(JSON_EXTRACT_SCALAR(`_airbyte_data`, '$.id') as INT64) as id -- based on the PK which we know from the connector catalog
-          FROM evan.users_raw
+          FROM ${raw_table_id}
           WHERE JSON_EXTRACT_SCALAR(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
          )
 
