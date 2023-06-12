@@ -357,45 +357,32 @@ class SeriesStream(IncrementalSearchableStream, ABC):
         else:
             start_date = int((datetime.now() - timedelta(hours=24)).timestamp()) * 1000
 
+        payload = {
+            "data": {
+                "type": "timeseries_request",
+                "attributes": {
+                    "to": end_date,
+                    "from": start_date,
+                    "queries": [
+                        {
+                            "data_source": self.data_source,
+                            "name": self.name,
+                        }
+                    ],
+                },
+            }
+        }
+
         if self.data_source in ["metrics", "cloud_cost"]:
-            payload = {
-                "data": {
-                    "type": "timeseries_request",
-                    "attributes": {
-                        "to": end_date,
-                        "from": start_date,
-                        "queries": [
-                            {
-                                "data_source": self.data_source,
-                                "query": self.query_string,
-                                "name": self.name,
-                            }
-                        ],
-                    },
-                }
-            }
+            payload["data"]["attributes"]["queries"][0]["query"] = self.query_string
         elif self.data_source in ["logs", "rum"]:
-            payload = {
-                "data": {
-                    "type": "timeseries_request",
-                    "attributes": {
-                        "to": end_date,
-                        "from": start_date,
-                        "queries": [
-                            {
-                                "data_source": self.data_source,
-                                "name": self.name,
-                                "search": {
-                                    "query": self.query_string
-                                },
-                                "compute": {
-                                    "aggregation": "count"
-                                },
-                            }
-                        ],
-                    },
-                }
+            payload["data"]["attributes"]["queries"][0]["search"] = {
+                "query": self.query_string
             }
+            payload["data"]["attributes"]["queries"][0]["compute"] = {
+                "aggregation": "count"
+            }
+            print(payload)
         return payload
 
     def get_json_schema(self) -> Mapping[str, Any]:

@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests
+import logging
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -53,25 +54,26 @@ class SourceDatadog(AbstractSource):
             SyntheticTests(**args),
             Users(**args),
         ]
-
-        # Get the list of queries from the config
         queries = config.get("queries", [])
 
         # Create a stream for each query in the list
         query_streams = []
         for query in queries:
-            name = query["name"]
-            data_source = query["data_source"]
-            query_string = query["query"]
+            if all(field in query and query[field] for field in ["name", "data_source", "query"]):
+                name = query["name"]
+                data_source = query["data_source"]
+                query_string = query["query"]
 
-            # Create a new stream using the query name, data source, and query string
-            new_stream = SeriesStream(
-                name=name,
-                data_source=data_source,
-                query_string=query_string,
-                **args,
-            )
-            query_streams.append(new_stream)
+                # Create a new stream using the query name, data source, and query string
+                new_stream = SeriesStream(
+                    name=name,
+                    data_source=data_source,
+                    query_string=query_string,
+                    **args,
+                )
+                query_streams.append(new_stream)
+            else:
+                logging.info(f"Query fields are missing, Streams not created")
 
         # Combine the base streams and query streams
         return base_streams + query_streams
