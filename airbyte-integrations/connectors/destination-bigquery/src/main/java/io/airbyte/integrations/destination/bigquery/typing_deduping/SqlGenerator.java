@@ -75,7 +75,7 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
    *   <li>Extracting the JSON fields and casting to the appropriate types</li>
    *   <li>Handling errors in those casts</li>
    *   <li>Merging those typed records into an existing table</li>
-   *   <li>When reading from a tmp table, copying the new raw records into the real raw table</li>
+   *   <li>Updating the raw records with SET _airbyte_loaded_at = now()</li>
    * </ul>
    *
    * @param finalSuffix the suffix of the final table to write to. If empty string, writes to the final table directly. Useful for full refresh overwrite
