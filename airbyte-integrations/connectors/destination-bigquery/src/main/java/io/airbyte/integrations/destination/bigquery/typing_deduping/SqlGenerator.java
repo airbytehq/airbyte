@@ -1,5 +1,6 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
+import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
 import java.util.UUID;
 
@@ -46,7 +47,7 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
 
   QuotedColumnId quoteColumnId(String name);
 
-  DialectType toDialectType(AirbyteType type);
+  ParsedType<DialectType> toDialectType(AirbyteType type);
 
   /**
    * Generate a SQL statement to create a fresh table to match the given stream.

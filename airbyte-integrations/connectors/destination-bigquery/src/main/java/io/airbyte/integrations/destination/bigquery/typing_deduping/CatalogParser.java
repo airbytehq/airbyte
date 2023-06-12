@@ -22,12 +22,16 @@ public class CatalogParser<DialectType> {
 
   }
 
+  public record ParsedType<DialectType>(DialectType dialectType, AirbyteType airbyteType) {
+
+  }
+
   public record StreamConfig<DialectType>(QuotedStreamId id,
                                           SyncMode syncMode,
                                           DestinationSyncMode destinationSyncMode,
                                           List<QuotedColumnId> primaryKey,
                                           Optional<QuotedColumnId> cursor,
-                                          LinkedHashMap<QuotedColumnId, DialectType> columns) {
+                                          LinkedHashMap<QuotedColumnId, ParsedType<DialectType>> columns) {
 
   }
 

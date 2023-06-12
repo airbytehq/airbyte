@@ -12,6 +12,7 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.OneOf;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Primitive;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.UnsupportedOneOf;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.LinkedHashMap;
@@ -51,19 +52,19 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @Override
-  public StandardSQLTypeName toDialectType(final AirbyteType type) {
+  public ParsedType<StandardSQLTypeName> toDialectType(final AirbyteType type) {
     // switch pattern-matching is still in preview at language level 17 :(
     if (type instanceof final Primitive p) {
-      return toDialectType(p);
+      return new ParsedType<>(toDialectType(p), type);
     } else if (type instanceof final Object o) {
       // eventually this should be JSON; keep STRING for now as legacy compatibility
-      return StandardSQLTypeName.STRING;
+      return new ParsedType<>(StandardSQLTypeName.STRING, type);
     } else if (type instanceof final Array a) {
       // eventually this should be JSON; keep STRING for now as legacy compatibility
-      return StandardSQLTypeName.STRING;
+      return new ParsedType<>(StandardSQLTypeName.STRING, type);
     } else if (type instanceof final UnsupportedOneOf u) {
       // eventually this should be JSON; keep STRING for now as legacy compatibility
-      return StandardSQLTypeName.STRING;
+      return new ParsedType<>(StandardSQLTypeName.STRING, type);
     } else if (type instanceof final OneOf o) {
       // TODO choose the best data type + map to bigquery type
       return null;
@@ -94,7 +95,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   @Override
   public String createTable(final StreamConfig<StandardSQLTypeName> stream) {
     final String columnDeclarations = stream.columns().entrySet().stream()
-        .map(column -> column.getKey().name() + " " + column.getValue().name())
+        .map(column -> column.getKey().name() + " " + column.getValue().dialectType().name())
         .collect(joining(",\n"));
     final String clusterConfig;
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
@@ -173,11 +174,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @VisibleForTesting
-  String validatePrimaryKeys(QuotedStreamId id, List<QuotedColumnId> primaryKeys, LinkedHashMap<QuotedColumnId, StandardSQLTypeName> streamColumns) {
+  String validatePrimaryKeys(QuotedStreamId id, List<QuotedColumnId> primaryKeys, LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
     // TODO this method needs to handle all the sync modes
     // e.g. this pk null check should only happen for incremental dedup
     String pkNullChecks = primaryKeys.stream().map(
-        pk -> "AND SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$." + pk.originalName() + "') as " + streamColumns.get(pk).name() + ") IS NULL"
+        pk -> "AND SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$." + pk.originalName() + "') as " + streamColumns.get(pk).dialectType().name() + ") IS NULL"
     ).collect(joining("\n"));
 
     return new StringSubstitutor(Map.of(
@@ -201,16 +202,28 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @VisibleForTesting
-  String insertNewRecords(final QuotedStreamId id, final LinkedHashMap<QuotedColumnId, StandardSQLTypeName> streamColumns) {
+  String insertNewRecords(final QuotedStreamId id, final LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
     // TODO - this needs the original AirbyteType so that we can recognize which columns need JSON_QUERY vs JSON_VALUE
     String columnCasts = streamColumns.entrySet().stream().map(
-        col -> "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$." + col.getKey().originalName() + "') as " + col.getValue().name() + ") as " + col.getKey()
-            .name() + ","
+        col -> {
+          final AirbyteType airbyteType = col.getValue().airbyteType();
+          String jsonExtract;
+          // TODO this logic should be the same as toDialectType, probably need to build on top of that piece
+          if (airbyteType instanceof Object) {
+            jsonExtract = "JSON_QUERY";
+          } else if (airbyteType instanceof Array) {
+            jsonExtract = "JSON_QUERY";
+          } else {
+            jsonExtract = "JSON_VALUE";
+          }
+          return "SAFE_CAST(" + jsonExtract + "(`_airbyte_data`, '$." + col.getKey().originalName() + "') as " + col.getValue().dialectType().name() + ") as " + col.getKey()
+              .name() + ",";
+        }
     ).collect(joining("\n"));
     String columnErrors = streamColumns.entrySet().stream().map(
         col -> new StringSubstitutor(Map.of(
             "raw_col_name", col.getKey().originalName(),
-            "col_type", col.getValue().name()
+            "col_type", col.getValue().dialectType().name()
         )).replace(
             """
                 CASE
@@ -244,7 +257,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @VisibleForTesting
-  String dedupFinalTable(QuotedStreamId id, final List<QuotedColumnId> primaryKey, final LinkedHashMap<QuotedColumnId, StandardSQLTypeName> streamColumns) {
+  String dedupFinalTable(QuotedStreamId id, final List<QuotedColumnId> primaryKey, final LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
     String pkList = primaryKey.stream().map(QuotedColumnId::name).collect(joining(","));
     // TODO - this needs the original AirbyteType so that we can recognize which columns need JSON_QUERY vs JSON_VALUE
     String pkEqualityChecks = streamColumns.entrySet().stream()
@@ -253,7 +266,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
             col -> new StringSubstitutor(Map.of(
                 "raw_table_id", id.rawTableId(),
                 "raw_col_name", col.getKey().originalName(),
-                "col_type", col.getValue().name()
+                "col_type", col.getValue().dialectType().name()
             )).replace("""
                 `id` IN (
                   SELECT

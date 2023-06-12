@@ -3,6 +3,9 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.cloud.bigquery.StandardSQLTypeName;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Object;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Primitive;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.QuotedColumnId;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
@@ -18,18 +21,7 @@ class BigQuerySqlGeneratorTest {
 
   @Test
   public void basicCreateTable() {
-    LinkedHashMap<QuotedColumnId, StandardSQLTypeName> columns = new LinkedHashMap<>();
-    columns.put(generator.quoteColumnId("id"), StandardSQLTypeName.INT64);
-    columns.put(generator.quoteColumnId("updated_at"), StandardSQLTypeName.TIMESTAMP);
-    columns.put(generator.quoteColumnId("name"), StandardSQLTypeName.STRING);
-    StreamConfig<StandardSQLTypeName> stream = new StreamConfig<>(
-        new SqlGenerator.QuotedStreamId("public", "users", "airbyte", "public_users", "public", "users"),
-        SyncMode.INCREMENTAL,
-        DestinationSyncMode.APPEND_DEDUP,
-        List.of(generator.quoteColumnId("id")),
-        Optional.of(generator.quoteColumnId("updated_at")),
-        columns
-    );
+    StreamConfig<StandardSQLTypeName> stream = incrementalDedupStreamConfig();
 
     final String sql = generator.createTable(stream);
 
@@ -41,7 +33,8 @@ class BigQuerySqlGeneratorTest {
             _airbyte_meta JSON NOT NULL,
             id INT64,
             updated_at TIMESTAMP,
-            name STRING
+            name STRING,
+            address STRING
             )
             PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
             CLUSTER BY id, _airbyte_extracted_at
@@ -52,18 +45,7 @@ class BigQuerySqlGeneratorTest {
 
   @Test
   public void basicIncrementalDedupUpdateTable() {
-    LinkedHashMap<QuotedColumnId, StandardSQLTypeName> columns = new LinkedHashMap<>();
-    columns.put(generator.quoteColumnId("id"), StandardSQLTypeName.INT64);
-    columns.put(generator.quoteColumnId("updated_at"), StandardSQLTypeName.TIMESTAMP);
-    columns.put(generator.quoteColumnId("name"), StandardSQLTypeName.STRING);
-    StreamConfig<StandardSQLTypeName> stream = new StreamConfig<>(
-        new SqlGenerator.QuotedStreamId("public", "users", "airbyte", "public_users", "public", "users"),
-        SyncMode.INCREMENTAL,
-        DestinationSyncMode.APPEND_DEDUP,
-        List.of(generator.quoteColumnId("id")),
-        Optional.of(generator.quoteColumnId("updated_at")),
-        columns
-    );
+    StreamConfig<StandardSQLTypeName> stream = incrementalDedupStreamConfig();
 
     final String sql = generator.updateTable("", stream);
 
@@ -89,6 +71,7 @@ class BigQuerySqlGeneratorTest {
             SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.id') as INT64) as id,
             SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.updated_at') as TIMESTAMP) as updated_at,
             SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.name') as STRING) as name,
+            SAFE_CAST(JSON_QUERY(`_airbyte_data`, '$.address') as STRING) as address,
             to_json(struct(array_concat(
             CASE
               WHEN (JSON_VALUE(`_airbyte_data`, '$.id') IS NOT NULL) AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.id') as INT64) IS NULL) THEN ["Problem with `id`"]
@@ -100,6 +83,10 @@ class BigQuerySqlGeneratorTest {
             END,
             CASE
               WHEN (JSON_VALUE(`_airbyte_data`, '$.name') IS NOT NULL) AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.name') as STRING) IS NULL) THEN ["Problem with `name`"]
+              ELSE []
+            END,
+            CASE
+              WHEN (JSON_VALUE(`_airbyte_data`, '$.address') IS NOT NULL) AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.address') as STRING) IS NULL) THEN ["Problem with `address`"]
               ELSE []
             END
             ) as errors)) as _airbyte_meta,
@@ -150,5 +137,27 @@ class BigQuerySqlGeneratorTest {
             """,
         sql
     );
+  }
+
+  private StreamConfig<StandardSQLTypeName> incrementalDedupStreamConfig() {
+    LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> columns = new LinkedHashMap<>();
+    columns.put(generator.quoteColumnId("id"), new ParsedType<>(StandardSQLTypeName.INT64, Primitive.INTEGER));
+    columns.put(generator.quoteColumnId("updated_at"), new ParsedType<>(StandardSQLTypeName.TIMESTAMP, Primitive.TIMESTAMP_WITH_TIMEZONE));
+    columns.put(generator.quoteColumnId("name"), new ParsedType<>(StandardSQLTypeName.STRING, Primitive.STRING));
+
+    LinkedHashMap<String, AirbyteType> addressProperties = new LinkedHashMap<>();
+    addressProperties.put("city", Primitive.STRING);
+    addressProperties.put("state", Primitive.STRING);
+    columns.put(generator.quoteColumnId("address"), new ParsedType<>(StandardSQLTypeName.STRING, new Object(addressProperties)));
+
+    StreamConfig<StandardSQLTypeName> stream = new StreamConfig<>(
+        new SqlGenerator.QuotedStreamId("public", "users", "airbyte", "public_users", "public", "users"),
+        SyncMode.INCREMENTAL,
+        DestinationSyncMode.APPEND_DEDUP,
+        List.of(generator.quoteColumnId("id")),
+        Optional.of(generator.quoteColumnId("updated_at")),
+        columns
+    );
+    return stream;
   }
 }
