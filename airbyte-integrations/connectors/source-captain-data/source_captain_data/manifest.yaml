@@ -100,7 +100,7 @@ definitions:
           type: DpathExtractor
           field_path: []
         record_filter:
-          condition: "{{ record['total_row_count'] > 0 }}"
+          condition: "{{ record['total_row_count'] > 0 and record['status'] == 'finished' }}"
 
   job_results_stream:
     $ref: "#/definitions/base_stream"
