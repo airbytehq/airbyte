@@ -11,6 +11,7 @@ from abc import ABC
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple
 
+import dpath
 import jsonschema
 import requests
 from airbyte_cdk.models import FailureType, SyncMode
@@ -20,14 +21,25 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.utils import AirbyteTracedException
 from requests import HTTPError
 from source_google_analytics_data_api import utils
-from source_google_analytics_data_api.utils import DATE_FORMAT
+from source_google_analytics_data_api.utils import DATE_FORMAT, WRONG_DIMENSIONS, WRONG_JSON_SYNTAX, WRONG_METRICS
 
 from .api_quota import GoogleAnalyticsApiQuota
-from .utils import authenticator_class_map, get_dimensions_type, get_metrics_type, metrics_type_to_python
+from .utils import (
+    authenticator_class_map,
+    check_invalid_property_error,
+    check_no_property_error,
+    get_dimensions_type,
+    get_metrics_type,
+    metrics_type_to_python,
+)
 
 # set the quota handler globaly since limitations are the same for all streams
 # the initial values should be saved once and tracked for each stream, inclusivelly.
 GoogleAnalyticsQuotaHandler: GoogleAnalyticsApiQuota = GoogleAnalyticsApiQuota()
+
+# set page_size to 100000 due to determination of maximum limit value in official documentation
+# https://developers.google.com/analytics/devguides/reporting/data/v1/basics#pagination
+PAGE_SIZE = 100000
 
 
 class ConfigurationError(Exception):
@@ -90,6 +102,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
     _record_date_format = "%Y%m%d"
     primary_key = "uuid"
+    offset = 0
 
     metadata = MetadataDescriptor()
 
@@ -154,13 +167,19 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         r = response.json()
 
-        if all(key in r for key in ["limit", "offset", "rowCount"]):
-            limit, offset, total_rows = r["limit"], r["offset"], r["rowCount"]
+        if "rowCount" in r:
+            total_rows = r["rowCount"]
 
-            if total_rows <= offset:
-                return None
+            if self.offset == 0:
+                self.offset = PAGE_SIZE
+            else:
+                self.offset += PAGE_SIZE
 
-            return {"limit": limit, "offset": offset + limit}
+            if total_rows <= self.offset:
+                self.offset = 0
+                return
+
+            return {"offset": self.offset}
 
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -201,12 +220,17 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
+
         payload = {
             "metrics": [{"name": m} for m in self.config["metrics"]],
             "dimensions": [{"name": d} for d in self.config["dimensions"]],
             "dateRanges": [stream_slice],
             "returnPropertyQuota": True,
+            "offset": str(0),
+            "limit": str(PAGE_SIZE),
         }
+        if next_page_token and next_page_token.get("offset") is not None:
+            payload.update({"offset": str(next_page_token["offset"])})
         return payload
 
     def stream_slices(
@@ -243,6 +267,11 @@ class PivotReport(GoogleAnalyticsDataApiBaseStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
         payload = super().request_body_json(stream_state, stream_slice, next_page_token)
+
+        # remove offset and limit fields according to their absence in
+        # https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runPivotReport
+        payload.pop("offset", None)
+        payload.pop("limit", None)
         payload["pivots"] = self.config["pivots"]
         return payload
 
@@ -301,8 +330,10 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             if isinstance(config["custom_reports"], str):
                 try:
                     config["custom_reports"] = json.loads(config["custom_reports"])
+                    if not isinstance(config["custom_reports"], list):
+                        raise ValueError
                 except ValueError:
-                    raise ConfigurationError("custom_reports is not valid JSON")
+                    raise ConfigurationError(WRONG_JSON_SYNTAX)
         else:
             config["custom_reports"] = []
 
@@ -310,6 +341,12 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         try:
             jsonschema.validate(instance=config["custom_reports"], schema=schema)
         except jsonschema.ValidationError as e:
+            if message := check_no_property_error(e):
+                raise ConfigurationError(message)
+            if message := check_invalid_property_error(e):
+                report_name = dpath.util.get(config["custom_reports"], str(e.absolute_path[0])).get("name")
+                raise ConfigurationError(message.format(fields=e.message, report_name=report_name))
+
             key_path = "custom_reports"
             if e.path:
                 key_path += "." + ".".join(map(str, e.path))
@@ -377,11 +414,11 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             invalid_dimensions = set(report["dimensions"]) - dimensions
             if invalid_dimensions:
                 invalid_dimensions = ", ".join(invalid_dimensions)
-                return False, f"custom_reports: invalid dimension(s): {invalid_dimensions} for the custom report: {report['name']}"
+                return False, WRONG_DIMENSIONS.format(fields=invalid_dimensions, report_name=report["name"])
             invalid_metrics = set(report["metrics"]) - metrics
             if invalid_metrics:
                 invalid_metrics = ", ".join(invalid_metrics)
-                return False, f"custom_reports: invalid metric(s): {invalid_metrics} for the custom report: {report['name']}"
+                return False, WRONG_METRICS.format(fields=invalid_metrics, report_name=report["name"])
             report_stream = self.instantiate_report_class(report, config)
             # check if custom_report dimensions + metrics can be combined and report generated
             stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))

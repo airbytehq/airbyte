@@ -71,7 +71,7 @@ Instagram limits the number of requests that can be made at a time, but the Inst
 AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyte.com/understanding-airbyte/supported-data-types/) system. This means that all sources must produce schemas and records within these types and all destinations must handle records that conform to this type system.
 
 | Integration Type | Airbyte Type |
-| :--------------- | :----------- |
+|:-----------------|:-------------|
 | `string`         | `string`     |
 | `number`         | `number`     |
 | `array`          | `array`      |
@@ -82,6 +82,9 @@ AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyt
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 1.0.8   | 2023-05-26 | [26767](https://github.com/airbytehq/airbyte/pull/26767) | Handle permission error for insights                                                                            |
+| 1.0.7   | 2023-05-26 | [26656](https://github.com/airbytehq/airbyte/pull/26656) | Remove authSpecification from connector specification in favour of advancedAuth                                 |
+| 1.0.6   | 2023-03-28 | [26599](https://github.com/airbytehq/airbyte/pull/26599) | Handle error for Media posted before business account conversion                                                |
 | 1.0.5   | 2023-03-28 | [24634](https://github.com/airbytehq/airbyte/pull/24634) | Add user-friendly message for no instagram_business_accounts case                                               |
 | 1.0.4   | 2023-03-15 | [23671](https://github.com/airbytehq/airbyte/pull/23671) | Add info about main permissions in spec and doc links in error message to navigate user                         |
 | 1.0.3   | 2023-03-14 | [24043](https://github.com/airbytehq/airbyte/pull/24043) | Do not emit incomplete records for `user_insights` stream                                                       |

@@ -91,6 +91,11 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
   }
 
   @Override
+  public List<AirbyteStateMessage> getRawStateMessages() {
+    throw new UnsupportedOperationException("Raw state retrieval not supported by global state manager.");
+  }
+
+  @Override
   public AirbyteStateMessage toState(final Optional<AirbyteStreamNameNamespacePair> pair) {
     final DbState dbState = StateGeneratorUtils.generateDbState(getPairToCursorInfoMap())
         .withCdc(isCdc)

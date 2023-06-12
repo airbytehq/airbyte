@@ -31,6 +31,7 @@ N.B: This project will eventually be moved to `airbyte-ci` root directory.
   * [Options](#options)
 - [`connectors` command subgroup](#connectors-command-subgroup)
   * [Options](#options-1)
+- [`connectors list` command](#connectors-list-command)
 - [`connectors test` command](#connectors-test-command)
   * [Examples](#examples-)
   * [What it runs](#what-it-runs-)
@@ -88,6 +89,30 @@ Available commands:
 | `--modified`           | False    | False         | Run the pipeline on only the modified connectors on the branch or previous commit (depends on the pipeline implementation).                                                                                                                                                                           |
 | `--concurrency`        | False    | 5             | Control the number of connector pipelines that can run in parallel. Useful to speed up pipelines or control their resource usage.                                                                                                                                                                     |
 
+### <a id="connectors-list-command"></a>`connectors list` command
+Retrieve the list of connectors satisfying the provided filters.
+
+#### Examples
+List all connectors:
+
+`airbyte-ci connectors list`
+
+List generally available connectors:
+
+`airbyte-ci connectors --release-stage=generally_available list`
+
+List connectors changed on the current branch:
+
+`airbyte-ci connectors --modified list`
+
+List connectors with a specific language:
+
+`airbyte-ci connectors --language=python list`
+
+List connectors with multiple filters:
+
+`airbyte-ci connectors --language=low-code --release-stage=generally_available list`
+
 ### <a id="connectors-test-command"></a>`connectors test` command
 Run a test pipeline for one or multiple connectors.
 
@@ -109,14 +134,13 @@ Test connectors changed on the current branch:
 ```mermaid
 flowchart TD
     entrypoint[[For each selected connector]]
-    subgraph version ["Connector version checks"]
-        sem["Check version follows semantic versionning"]
-        incr["Check version is incremented"]
-        sem --> incr
-    end
     subgraph static ["Static code analysis"]
       qa[Run QA checks]
       fmt[Run code format checks]
+      sem["Check version follows semantic versionning"]
+      incr["Check version is incremented"]
+      metadata_validation["Run metadata validation on metadata.yaml"]
+      sem --> incr
     end
     subgraph tests ["Tests"]
         build[Build connector docker image]
@@ -132,9 +156,8 @@ flowchart TD
         build-->integration
         build-->cat
     end
-    entrypoint-->version
-    version-->static
-    version-->tests
+    entrypoint-->static
+    entrypoint-->tests
     report["Build test report"]
     tests-->report
     static-->report

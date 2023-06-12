@@ -51,6 +51,7 @@ PIPELINES_REQUIREMENTS = [
     "requests",
     "semver",
     "airbyte-protocol-models",
+    "tabulate",
 ]
 
 setup(

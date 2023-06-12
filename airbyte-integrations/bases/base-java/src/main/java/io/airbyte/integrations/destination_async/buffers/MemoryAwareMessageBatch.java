@@ -5,8 +5,13 @@
 package io.airbyte.integrations.destination_async.buffers;
 
 import io.airbyte.integrations.destination_async.GlobalMemoryManager;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import java.util.stream.Stream;
+import io.airbyte.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
+import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.integrations.destination_async.state.GlobalAsyncStateManager;
+import java.util.List;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * POJO abstraction representing one discrete buffer read. This allows ergonomics dequeues by
@@ -21,24 +26,47 @@ import java.util.stream.Stream;
  */
 public class MemoryAwareMessageBatch implements AutoCloseable {
 
-  private Stream<AirbyteMessage> batch;
+  private static final Logger LOGGER = LoggerFactory.getLogger(MemoryAwareMessageBatch.class);
+  private final List<MessageWithMeta> batch;
+
   private final long sizeInBytes;
   private final GlobalMemoryManager memoryManager;
+  private final GlobalAsyncStateManager stateManager;
 
-  public MemoryAwareMessageBatch(final Stream<AirbyteMessage> batch, final long sizeInBytes, final GlobalMemoryManager memoryManager) {
+  public MemoryAwareMessageBatch(final List<MessageWithMeta> batch,
+                                 final long sizeInBytes,
+                                 final GlobalMemoryManager memoryManager,
+                                 final GlobalAsyncStateManager stateManager) {
     this.batch = batch;
     this.sizeInBytes = sizeInBytes;
     this.memoryManager = memoryManager;
+    this.stateManager = stateManager;
   }
 
-  public Stream<AirbyteMessage> getData() {
+  public long getSizeInBytes() {
+    return sizeInBytes;
+  }
+
+  public List<MessageWithMeta> getData() {
     return batch;
   }
 
   @Override
   public void close() throws Exception {
-    batch = null;
     memoryManager.free(sizeInBytes);
+  }
+
+  /**
+   * For the batch, marks all the states that have now been flushed. Also returns states that can be
+   * flushed. This method is descriptrive, it assumes that whatever consumes the state messages emits
+   * them, internally it purges the states it returns. message that it can.
+   * <p>
+   *
+   * @return list of states that can be flushed
+   */
+  public List<PartialAirbyteMessage> flushStates(final Map<Long, Long> stateIdToCount) {
+    stateIdToCount.forEach(stateManager::decrement);
+    return stateManager.flushStates();
   }
 
 }

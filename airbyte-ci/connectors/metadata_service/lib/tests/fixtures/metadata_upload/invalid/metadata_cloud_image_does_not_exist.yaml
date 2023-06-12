@@ -23,3 +23,5 @@ data:
       enabled: true
       dockerRepository: airbyte/image-exists-3
       dockerImageTag: 0.0.1-exists
+  tags:
+    - language:java

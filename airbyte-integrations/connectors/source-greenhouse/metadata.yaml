@@ -17,5 +17,8 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/greenhouse
+  documentationUrl: https://docs.airbyte.com/integrations/sources/greenhouse
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

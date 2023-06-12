@@ -6,7 +6,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.1
   dockerRepository: airbyte/source-klaviyo
   githubIssueLabel: source-klaviyo
   icon: klaviyo.svg
@@ -18,5 +18,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/klaviyo
+  documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

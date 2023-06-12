@@ -76,9 +76,10 @@ jobs:
         with:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            #### Note: The following `dataset=` values are supported: `1m`<sub>(default)</sub>, `10m`, `20m`, `bottleneck_stream1`.
-            For destinations only: you can also use `stream-numbers=N` to simulate N number of parallel streams. Additionally, 
-            `sync-mode=incremental` is supported for destinations. For example: `dataset=1m stream-numbers=2 sync-mode=incremental`
+            #### Note: The following `dataset=` values are supported: `1m`<sub>(default)</sub>, `10m`, `20m`, 
+            `bottleneck_stream1`, `bottleneck_stream_randomseed. For destinations only: you can also use `stream-numbers=N` 
+            to simulate N number of parallel streams. Additionally, `sync-mode=incremental` is supported for destinations. 
+            For example: `dataset=1m stream-numbers=2 sync-mode=incremental`
             > :runner: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}.
       - name: Search for valid connector name format
         id: regex

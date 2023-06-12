@@ -13,8 +13,7 @@ import requests
 import semver
 import yaml
 from ci_connector_ops.pipelines.actions import environments
-from ci_connector_ops.pipelines.bases import PytestStep, Step, StepResult, StepStatus
-from ci_connector_ops.pipelines.contexts import CIContext
+from ci_connector_ops.pipelines.bases import CIContext, PytestStep, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.utils import METADATA_FILE_NAME
 from ci_connector_ops.utils import Connector
 from dagger import File
@@ -61,7 +60,7 @@ class VersionCheck(Step, ABC):
     async def _run(self) -> StepResult:
         if not self.should_run:
             return StepResult(self, status=StepStatus.SKIPPED, stdout="No modified files required a version bump.")
-        if self.context.ci_context is CIContext.MASTER:
+        if self.context.ci_context in [CIContext.MASTER, CIContext.NIGHTLY_BUILDS]:
             return StepResult(self, status=StepStatus.SKIPPED, stdout="Version check are not running in master context.")
         try:
             return self.validate()
@@ -156,12 +155,14 @@ class QaChecks(Step):
         filtered_repo = self.context.get_repo_dir(
             include=include,
         )
+        ci_connector_ops = ci_connector_ops.with_mounted_directory("/airbyte", filtered_repo).with_workdir("/airbyte").with_exec(["ls"])
 
         qa_checks = (
             ci_connector_ops.with_mounted_directory("/airbyte", filtered_repo)
             .with_workdir("/airbyte")
             .with_exec(["run-qa-checks", f"connectors/{self.context.connector.technical_name}"])
         )
+
         return await self.get_step_result(qa_checks)
 
 
@@ -194,5 +195,7 @@ class AcceptanceTests(PytestStep):
                 if file_path.startswith("updated_configurations"):
                     self.context.updated_secrets_dir = secret_dir
                     break
-
-        return self.pytest_logs_to_step_result(soon_cat_container_stdout.value)
+        logs = soon_cat_container_stdout.value
+        if self.context.is_local:
+            await self.write_log_file(logs)
+        return self.pytest_logs_to_step_result(logs)
