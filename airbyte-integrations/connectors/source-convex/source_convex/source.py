@@ -31,6 +31,8 @@ ConvexState = TypedDict(
     },
 )
 
+CONVEX_CLIENT_VERSION = "0.2.0"
+
 
 # Source
 class SourceConvex(AbstractSource):
@@ -38,7 +40,10 @@ class SourceConvex(AbstractSource):
         deployment_url = config["deployment_url"]
         access_key = config["access_key"]
         url = f"{deployment_url}/api/json_schemas?deltaSchema=true&format=convex_json"
-        headers = {"Authorization": f"Convex {access_key}"}
+        headers = {
+            "Authorization": f"Convex {access_key}",
+            "Convex-Client": f"airbyte-export-f{CONVEX_CLIENT_VERSION}",
+        }
         return requests.get(url, headers=headers)
 
     def check_connection(self, logger: Any, config: ConvexConfig) -> Tuple[bool, Any]:
