@@ -10,7 +10,7 @@ data:
   dockerRepository: airbyte/source-jira
   githubIssueLabel: source-jira
   icon: jira.svg
-  license: MIT
+  license: ELv2
   name: Jira
   registries:
     cloud:

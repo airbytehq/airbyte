@@ -12,7 +12,7 @@ data:
   dockerRepository: airbyte/source-amazon-ads
   githubIssueLabel: source-amazon-ads
   icon: amazonads.svg
-  license: MIT
+  license: ELv2
   name: Amazon Ads
   registries:
     cloud:

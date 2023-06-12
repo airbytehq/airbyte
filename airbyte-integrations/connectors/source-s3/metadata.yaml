@@ -9,7 +9,7 @@ data:
   dockerRepository: airbyte/source-s3
   githubIssueLabel: source-s3
   icon: s3.svg
-  license: MIT
+  license: ELv2
   name: S3
   registries:
     cloud:

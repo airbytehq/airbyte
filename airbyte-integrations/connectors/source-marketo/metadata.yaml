@@ -9,7 +9,7 @@ data:
   dockerRepository: airbyte/source-marketo
   githubIssueLabel: source-marketo
   icon: marketo.svg
-  license: MIT
+  license: ELv2
   name: Marketo
   registries:
     cloud:

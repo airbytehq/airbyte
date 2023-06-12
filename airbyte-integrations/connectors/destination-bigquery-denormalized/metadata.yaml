@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/destination-bigquery-denormalized
   githubIssueLabel: destination-bigquery-denormalized
   icon: bigquery.svg
-  license: MIT
+  license: ELv2
   name: BigQuery (denormalized typed struct)
   registries:
     cloud:

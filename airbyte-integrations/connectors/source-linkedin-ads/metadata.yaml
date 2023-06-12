@@ -10,7 +10,7 @@ data:
   dockerRepository: airbyte/source-linkedin-ads
   githubIssueLabel: source-linkedin-ads
   icon: linkedin.svg
-  license: MIT
+  license: ELv2
   name: LinkedIn Ads
   registries:
     cloud:

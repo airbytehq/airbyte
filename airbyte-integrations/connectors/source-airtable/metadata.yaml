@@ -10,7 +10,7 @@ data:
   dockerRepository: airbyte/source-airtable
   githubIssueLabel: source-airtable
   icon: airtable.svg
-  license: MIT
+  license: ELv2
   name: Airtable
   registries:
     cloud:

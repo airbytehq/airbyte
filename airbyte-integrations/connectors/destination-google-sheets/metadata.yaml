@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/destination-google-sheets
   githubIssueLabel: destination-google-sheets
   icon: google-sheets.svg
-  license: MIT
+  license: ELv2
   name: Google Sheets
   registries:
     cloud:

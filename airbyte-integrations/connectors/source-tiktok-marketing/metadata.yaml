@@ -10,7 +10,7 @@ data:
   dockerRepository: airbyte/source-tiktok-marketing
   githubIssueLabel: source-tiktok-marketing
   icon: tiktok.svg
-  license: MIT
+  license: ELv2
   name: TikTok Marketing
   registries:
     cloud:

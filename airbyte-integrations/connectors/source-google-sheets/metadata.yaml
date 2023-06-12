@@ -9,7 +9,7 @@ data:
   dockerRepository: airbyte/source-google-sheets
   githubIssueLabel: source-google-sheets
   icon: google-sheets.svg
-  license: MIT
+  license: ELv2
   name: Google Sheets
   registries:
     cloud:

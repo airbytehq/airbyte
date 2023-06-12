@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/destination-oracle
   githubIssueLabel: destination-oracle
   icon: oracle.svg
-  license: MIT
+  license: ELv2
   name: Oracle
   normalizationConfig:
     normalizationIntegrationType: oracle
