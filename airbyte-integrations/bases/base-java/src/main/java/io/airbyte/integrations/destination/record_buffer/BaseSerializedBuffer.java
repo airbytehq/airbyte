@@ -58,8 +58,17 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
    * Transform the @param record into a serialized form of the data and writes it to the registered
    * OutputStream provided when {@link BaseSerializedBuffer#initWriter} was called.
    */
+  @Deprecated
   protected abstract void writeRecord(AirbyteRecordMessage record) throws IOException;
 
+  /**
+   * TODO: (ryankfu) move destination to use serialized record string instead of passing entire
+   * AirbyteRecord
+   *
+   * @param recordString serialized record
+   * @param emittedAt timestamp of the record in milliseconds
+   * @throws IOException
+   */
   protected void writeRecord(final String recordString, final long emittedAt) throws IOException {
     writeRecord(Jsons.deserialize(recordString, AirbyteRecordMessage.class).withEmittedAt(emittedAt));
   }

@@ -59,6 +59,13 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
     csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), csvFormat);
   }
 
+  /**
+   * TODO: (ryankfu) remove this call within {@link SerializedBufferingStrategy} and move to use
+   * recordString
+   *
+   * @param record AirbyteRecordMessage to be written
+   * @throws IOException
+   */
   @Override
   protected void writeRecord(final AirbyteRecordMessage record) throws IOException {
     csvPrinter.printRecord(csvSheetGenerator.getDataRow(UUID.randomUUID(), record));
