@@ -13,7 +13,7 @@
     },
     {
       "stream": {
-        "name": "fulfillments",
+        "name": "users",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,

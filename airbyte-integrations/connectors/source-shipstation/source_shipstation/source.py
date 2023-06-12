@@ -82,7 +82,7 @@ class SourceShipstation(Source):
                     # Define the json_schema for the stream (example schema provided)
                     json_schema = {
                         "$schema": "http://json-schema.org/draft-07/schema#",
-                        "type": "object",
+                        "type": "list",
                         "properties": {"columnName": {"type": "string"}},
                     }
                     # Define the supported sync modes for the stream
@@ -126,9 +126,14 @@ class SourceShipstation(Source):
                 if response.status_code == 200:
                     # Parse the response to get the data records
                     data = response.json()
-                    for record in data:
-                        emitted_at = int(time.mktime(datetime.datetime.now().timetuple()))
-                        yield AirbyteRecordMessage(stream=stream_name, data=record, emitted_at=emitted_at)
+                    print(data, "----")
+                    if isinstance(data, list):
+                        
+                        for record in data:
+                            print(record, type(record),  "---------")
+                            emitted_at = int(time.mktime(datetime.datetime.now().timetuple()))
+                            yield AirbyteRecordMessage(stream=stream_name, data=record, emitted_at=emitted_at)
+                    yield AirbyteRecordMessage(stream=stream_name, data={"msg":"not list"}, emitted_at=emitted_at)
         except Exception as e:
             # Handle any exceptions that occurred during the read process
             logger.error(f"Error during read: {str(e)}")
