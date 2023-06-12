@@ -7,8 +7,10 @@
 from __future__ import annotations
 
 import importlib.util
+import re
 import uuid
-from typing import TYPE_CHECKING, List, Optional
+from pathlib import Path
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from ci_connector_ops.pipelines import consts
 from ci_connector_ops.pipelines.consts import (
@@ -48,7 +50,7 @@ def with_python_base(context: PipelineContext, python_image_name: str = "python:
         .from_(python_image_name)
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_mounted_directory("/tools", context.get_repo_dir("tools", include=["ci_credentials", "ci_common_utils"]))
-        .with_exec(["pip", "install", "--upgrade", "pip"])
+        .with_exec(["pip", "install", "pip==23.1.2"])
     )
 
     return base_container
@@ -99,6 +101,47 @@ def with_python_package(
     return container
 
 
+async def find_local_python_dependencies(context: PipelineContext, package_source_code_path: str) -> Tuple[List[str], List[str]]:
+    """Retrieve the list of local dependencies of a python package source code.
+    Returns both the list of local dependencies found in setup.py and requirements.txt.
+
+    Args:
+        context (PipelineContext): The current pipeline context.
+        package_source_code_path (str): Path to the package source code in airbyte repo .
+
+    Returns:
+        Tuple[List[str], List[str]]: A tuple containing the list of local dependencies found in setup.py and requirements.txt.
+    """
+    python_environment = with_python_base(context)
+    container = with_python_package(context, python_environment, package_source_code_path)
+
+    # Find local dependencies in setup.py
+    setup_dependency_paths = []
+    if await get_file_contents(container, "setup.py"):
+        container_with_egg_info = container.with_exec(["python", "setup.py", "egg_info"])
+        egg_info_output = await container_with_egg_info.stdout()
+        for line in egg_info_output.split("\n"):
+            if line.startswith("writing requirements to"):
+                requires_txt_path = line.replace("writing requirements to", "").strip()
+                requires_txt = await container_with_egg_info.file(requires_txt_path).contents()
+                for line in requires_txt.split("\n"):
+                    if "file://" in line:
+                        match = re.search(r"file:///(.+)", line)
+                        if match:
+                            setup_dependency_paths.append(match.group(1))
+                break
+
+    # Find local dependencies in requirements.txt
+    requirements_dependency_paths = []
+    if requirements_txt := await get_file_contents(container, "requirements.txt"):
+        for line in requirements_txt.split("\n"):
+            if line.startswith("-e ."):
+                local_dependency_path = Path(package_source_code_path + "/" + line[3:]).resolve()
+                local_dependency_path = str(local_dependency_path.relative_to(Path.cwd()))
+                requirements_dependency_paths.append(local_dependency_path)
+    return setup_dependency_paths, requirements_dependency_paths
+
+
 async def with_installed_python_package(
     context: PipelineContext,
     python_environment: Container,
@@ -118,20 +161,19 @@ async def with_installed_python_package(
     Returns:
         Container: A python environment container with the python package installed.
     """
-    install_local_requirements_cmd = ["python", "-m", "pip", "install", "-r", "requirements.txt"]
+    install_requirements_cmd = ["python", "-m", "pip", "install", "-r", "requirements.txt"]
     install_connector_package_cmd = ["python", "-m", "pip", "install", "."]
 
     container = with_python_package(context, python_environment, package_source_code_path, exclude=exclude)
-    if requirements_txt := await get_file_contents(container, "requirements.txt"):
-        for line in requirements_txt.split("\n"):
-            if line.startswith("-e ."):
-                local_dependency_path = package_source_code_path + "/" + line[3:]
-                container = container.with_mounted_directory(
-                    "/" + local_dependency_path, context.get_repo_dir(local_dependency_path, exclude=DEFAULT_PYTHON_EXCLUDE)
-                )
-        container = container.with_exec(install_local_requirements_cmd)
 
-    container = container.with_exec(install_connector_package_cmd)
+    setup_dependencies, requirements_dependencies = await find_local_python_dependencies(context, package_source_code_path)
+    for dependency_directory in setup_dependencies + requirements_dependencies:
+        container = container.with_mounted_directory("/" + dependency_directory, context.get_repo_dir(dependency_directory))
+
+    if await get_file_contents(container, "setup.py"):
+        container = container.with_exec(install_connector_package_cmd)
+    if await get_file_contents(container, "requirements.txt"):
+        container = container.with_exec(install_requirements_cmd)
 
     if additional_dependency_groups:
         container = container.with_exec(
@@ -677,6 +719,9 @@ async def get_cdk_version_from_python_connector(python_connector: Container) -> 
 
 
 async def with_airbyte_python_connector(context: ConnectorContext, build_platform: Platform) -> Container:
+    if context.connector.technical_name == "source-file-secure":
+        return await with_airbyte_python_connector_full_dagger(context, build_platform)
+
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
     connector_container = (
         context.dagger_client.container(platform=build_platform)
@@ -732,28 +777,35 @@ async def finalize_build(context: ConnectorContext, connector_container: Contain
     return connector_container.with_entrypoint(original_entrypoint)
 
 
-# This function is not used at the moment as we decided to use Python connectors dockerfile instead of building it with dagger.
-# Some python connectors use alpine base image, other use debian... We should unify this.
-def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_platform: Platform) -> Container:
+async def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_platform: Platform) -> Container:
+    setup_dependencies_to_mount, _ = await find_local_python_dependencies(context, str(context.connector.code_directory))
+
     pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
-    base = context.dagger_client.container(platform=build_platform).from_("python:3.9.11-alpine3.15")
+    base = context.dagger_client.container(platform=build_platform).from_("python:3.9-slim")
     snake_case_name = context.connector.technical_name.replace("-", "_")
     entrypoint = ["python", "/airbyte/integration_code/main.py"]
     builder = (
         base.with_workdir("/airbyte/integration_code")
-        .with_exec(["apk", "--no-cache", "upgrade"])
+        .with_env_variable("DAGGER_BUILD", "True")
+        .with_exec(["apt-get", "update"])
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(["pip", "install", "--upgrade", "pip"])
-        .with_exec(["apk", "--no-cache", "add", "tzdata", "build-base"])
+        .with_exec(["apt-get", "install", "-y", "tzdata"])
         .with_file("setup.py", context.get_connector_dir(include="setup.py").file("setup.py"))
-        .with_exec(["pip", "install", "--prefix=/install", "."])
     )
-    return (
+
+    for dependency_path in setup_dependencies_to_mount:
+        in_container_dependency_path = f"/local_dependencies/{Path(dependency_path).name}"
+        builder = builder.with_mounted_directory(in_container_dependency_path, context.get_repo_dir(dependency_path))
+
+    builder = builder.with_exec(["pip", "install", "--prefix=/install", "."])
+
+    connector_container = (
         base.with_workdir("/airbyte/integration_code")
         .with_directory("/usr/local", builder.directory("/install"))
         .with_file("/usr/localtime", builder.file("/usr/share/zoneinfo/Etc/UTC"))
         .with_new_file("/etc/timezone", "Etc/UTC")
-        .with_exec(["apk", "--no-cache", "add", "bash"])
+        .with_exec(["apt-get", "install", "-y", "bash"])
         .with_file("main.py", context.get_connector_dir(include="main.py").file("main.py"))
         .with_directory(snake_case_name, context.get_connector_dir(include=snake_case_name).directory(snake_case_name))
         .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
@@ -761,6 +813,7 @@ def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_p
         .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
     )
+    return await finalize_build(context, connector_container)
 
 
 def with_crane(
