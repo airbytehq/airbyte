@@ -5,6 +5,8 @@ import {
   getUpgradeSubscription,
   upgradeSubscription,
   pauseSubscription,
+  failedPaymentDetails,
+  updatePaymentMethod,
 } from "../../request/DaspireClient";
 import { GetUpgradeSubscriptionParams } from "./Payment";
 
@@ -27,5 +29,13 @@ export class PaymentService extends AirbyteRequestService {
 
   public pauseSubscription() {
     return pauseSubscription(this.requestOptions);
+  }
+
+  public failedPaymentDetails() {
+    return failedPaymentDetails(this.requestOptions);
+  }
+
+  public updatePaymentMethod(paymentOrderId: string) {
+    return updatePaymentMethod(paymentOrderId, this.requestOptions);
   }
 }

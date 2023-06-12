@@ -13,6 +13,7 @@ export enum RoutePaths {
 
   Payment = "payment",
   PaymentError = "payment_error",
+  FailedPayment = "failed-payment",
 
   Connection = "connection",
   ConnectionNew = "new-connection",

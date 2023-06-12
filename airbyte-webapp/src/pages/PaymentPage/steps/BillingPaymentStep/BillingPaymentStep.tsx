@@ -8,8 +8,8 @@ import { GetUpgradeSubscriptionDetail } from "core/domain/payment";
 import { convert_M_To_Million } from "pages/SettingsPage/pages/PlansBillingPage/PlansBillingPage";
 
 interface IProps {
-  productPrice: number;
-  selectedProductPrice: number;
+  productPrice?: number;
+  selectedProductPrice?: number;
   planDetail?: GetUpgradeSubscriptionDetail;
 }
 
@@ -67,7 +67,7 @@ const ContentText = styled.div`
   color: ${({ theme }) => theme.black300};
 `;
 
-const BillingPaymentStep: React.FC<IProps> = ({ productPrice, selectedProductPrice, planDetail }) => {
+const BillingPaymentStep: React.FC<IProps> = ({ productPrice = 0, selectedProductPrice = 0, planDetail }) => {
   const { formatMessage } = useIntl();
   const seperatorHeight = "47px";
 
