@@ -99,7 +99,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
     final String sql = generator.createTable(incrementalDedupStreamConfig());
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
-    final Table table = bq.getTable(testDataset, "users");
+    final Table table = bq.getTable(testDataset, "users_final");
+    // TODO this should assert table schema + partitioning/clustering configs
     assertNotNull(table);
   }
 
@@ -108,10 +109,10 @@ public class BigQuerySqlGeneratorIntegrationTest {
     createRawTable();
     bq.query(QueryJobConfiguration.newBuilder(
         new StringSubstitutor(Map.of(
-            "raw_table_id", streamId.rawTableId()
+            "dataset", testDataset
         )).replace("""
-            INSERT INTO ${raw_table_id} (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{}', GENERATE_UUID(), CURRENT_TIMESTAMP());
-            INSERT INTO ${raw_table_id} (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1}', GENERATE_UUID(), CURRENT_TIMESTAMP());
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{}', GENERATE_UUID(), CURRENT_TIMESTAMP());
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1}', GENERATE_UUID(), CURRENT_TIMESTAMP());
             """)
     ).build());
 
@@ -134,10 +135,10 @@ public class BigQuerySqlGeneratorIntegrationTest {
     createFinalTable();
     bq.query(QueryJobConfiguration.newBuilder(
         new StringSubstitutor(Map.of(
-            "raw_table_id", streamId.rawTableId()
+            "dataset", testDataset
         )).replace("""
-            INSERT INTO ${raw_table_id} (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}, "updated_at": "2023-01-01T01:00:00Z"}', GENERATE_UUID(), CURRENT_TIMESTAMP());
-            INSERT INTO ${raw_table_id} (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Diego", "state": "CA"}, "updated_at": "2023-01-01T02:00:00Z"}', GENERATE_UUID(), CURRENT_TIMESTAMP());
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}, "updated_at": "2023-01-01T01:00:00Z"}', GENERATE_UUID(), CURRENT_TIMESTAMP());
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Diego", "state": "CA"}, "updated_at": "2023-01-01T02:00:00Z"}', GENERATE_UUID(), CURRENT_TIMESTAMP());
             """)
     ).build());
 
