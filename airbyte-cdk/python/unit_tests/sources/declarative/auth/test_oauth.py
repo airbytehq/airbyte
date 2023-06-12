@@ -203,7 +203,7 @@ class TestOauth2Authenticator:
             assert oauth.get_token_expiry_date() == pendulum.parse(next_day)
 
 
-def mock_request(method, url, data):
+def mock_request(method, url, data, headers):
     if url == "refresh_end":
         return resp
-    raise Exception(f"Error while refreshing access token with request: {method}, {url}, {data}")
+    raise Exception(f"Error while refreshing access token with request: {method}, {url}, {data}, {headers}")
