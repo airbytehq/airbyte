@@ -1,5 +1,6 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
+import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.QuotedColumnId;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.QuotedStreamId;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -43,7 +44,7 @@ public class CatalogParser<DialectType> {
   private StreamConfig<DialectType> toStreamConfig(ConfiguredAirbyteStream stream) {
     AirbyteType schema = AirbyteType.fromJsonSchema(stream.getStream().getJsonSchema());
     final LinkedHashMap<String, AirbyteType> airbyteColumns;
-    if (schema instanceof AirbyteType.Object o) {
+    if (schema instanceof Struct o) {
       airbyteColumns = o.properties();
     } else if (schema instanceof AirbyteType.OneOf o) {
       airbyteColumns = o.asColumns();

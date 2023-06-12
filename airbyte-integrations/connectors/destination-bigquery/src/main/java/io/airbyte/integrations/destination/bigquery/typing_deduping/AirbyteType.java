@@ -1,31 +1,29 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Array;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.OneOf;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Object;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.UnsupportedOneOf;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Primitive;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
-public sealed interface AirbyteType permits Array, OneOf, Object, UnsupportedOneOf, Primitive {
+public sealed interface AirbyteType permits Array, OneOf, Struct, UnsupportedOneOf, AirbyteProtocolType {
 
   /**
-   * The most common call pattern is probably to use this method on the stream schema, verify that it's an {@link Object} schema, and then call
-   * {@link Object#properties()} to get the columns.
+   * The most common call pattern is probably to use this method on the stream schema, verify that it's an {@link Struct} schema, and then call
+   * {@link Struct#properties()} to get the columns.
    * <p>
    * If the top-level schema is not an object, then we can't really do anything with it, and should probably fail the sync. (but see also
    * {@link OneOf#asColumns()}).
    */
   static AirbyteType fromJsonSchema(JsonNode schema) {
     // TODO
-    return new Object(new LinkedHashMap<>());
+    return new Struct(new LinkedHashMap<>());
   }
 
-  enum Primitive implements AirbyteType {
+  enum AirbyteProtocolType implements AirbyteType {
     STRING,
     NUMBER,
     INTEGER,
@@ -42,7 +40,7 @@ public sealed interface AirbyteType permits Array, OneOf, Object, UnsupportedOne
    * @param properties Use LinkedHashMap to preserve insertion order.
    */
   // TODO maybe we shouldn't call this thing Object, since java.lang.Object also exists?
-  record Object(LinkedHashMap<String, AirbyteType> properties) implements AirbyteType {
+  record Struct(LinkedHashMap<String, AirbyteType> properties) implements AirbyteType {
 
   }
 
@@ -80,13 +78,13 @@ public sealed interface AirbyteType permits Array, OneOf, Object, UnsupportedOne
      * @throws IllegalArgumentException if we cannot extract columns from this schema
      */
     public LinkedHashMap<String, AirbyteType> asColumns() {
-      final long numObjectOptions = options.stream().filter(o -> o instanceof Object).count();
+      final long numObjectOptions = options.stream().filter(o -> o instanceof Struct).count();
       if (numObjectOptions > 1) {
         throw new IllegalArgumentException("Can't extract columns from a schema with multiple object options");
       }
 
-      return (options.stream().filter(o -> o instanceof Object).findFirst())
-          .map(o -> ((Object) o).properties())
+      return (options.stream().filter(o -> o instanceof Struct).findFirst())
+          .map(o -> ((Struct) o).properties())
           .orElseThrow(() -> new IllegalArgumentException("Can't extract columns from a schema with no object options"));
     }
   }

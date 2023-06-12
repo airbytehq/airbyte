@@ -7,10 +7,10 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Array;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Object;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.OneOf;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Primitive;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.UnsupportedOneOf;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
@@ -54,9 +54,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   @Override
   public ParsedType<StandardSQLTypeName> toDialectType(final AirbyteType type) {
     // switch pattern-matching is still in preview at language level 17 :(
-    if (type instanceof final Primitive p) {
+    if (type instanceof final AirbyteProtocolType p) {
       return new ParsedType<>(toDialectType(p), type);
-    } else if (type instanceof final Object o) {
+    } else if (type instanceof final Struct o) {
       // eventually this should be JSON; keep STRING for now as legacy compatibility
       return new ParsedType<>(StandardSQLTypeName.STRING, type);
     } else if (type instanceof final Array a) {
@@ -74,9 +74,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
   }
 
-  public StandardSQLTypeName toDialectType(final Primitive primitive) {
+  public StandardSQLTypeName toDialectType(final AirbyteProtocolType airbyteProtocolType) {
     // TODO maybe this should be in the interface? unclear if that has value, but I expect every implementation to have this method
-    return switch (primitive) {
+    return switch (airbyteProtocolType) {
       // TODO doublecheck these
       case STRING -> StandardSQLTypeName.STRING;
       case NUMBER -> StandardSQLTypeName.NUMERIC;
@@ -209,7 +209,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
           final AirbyteType airbyteType = col.getValue().airbyteType();
           String jsonExtract;
           // TODO this logic should be the same as toDialectType, probably need to build on top of that piece
-          if (airbyteType instanceof Object) {
+          if (airbyteType instanceof Struct) {
             jsonExtract = "JSON_QUERY";
           } else if (airbyteType instanceof Array) {
             jsonExtract = "JSON_QUERY";
