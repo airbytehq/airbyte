@@ -5,7 +5,8 @@ from typing import List, Tuple, Optional, Mapping, Any, Generic, TypeVar
 
 from pydantic import BaseModel, Field
 
-from airbyte_cdk.v2.state import State, DatetimeRangeTracker
+from .state import State
+from .datetime_range_tracker import DatetimeRangeTracker
 from airbyte_cdk.v2.concurrency.partitioned_stream import PartitionDescriptor
 
 # TODO fix the generics. The class itself should be generic, not just the method parameters
@@ -19,7 +20,7 @@ class StateManager(ABC, Generic[StateType, PartitionType]):
         pass
 
     @abstractmethod
-    def notify_partition_complete(self, partition_descriptor: PartitionType):
+    def notify_partition_complete(self, partition_descriptor: PartitionType) -> StateType:
         """ Called when a partition has successfully synced"""
 
     @abstractmethod

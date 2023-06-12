@@ -2,6 +2,8 @@ from abc import abstractmethod, ABC
 from dataclasses import dataclass, field
 from typing import Mapping, Any, Iterable, TypeVar, Union, Generic, Optional
 
+from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
+
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
 
@@ -33,7 +35,7 @@ class PartitionGenerator(ABC, Generic[PartitionType]):
         """ Generates partitions """
 
 
-class PartitionedStream(Stream, ABC):
+class PartitionedStream(Stream, ABC, Generic[PartitionType]):
     """
     TL;DR this class is most useful for incremental syncs and high performance syncs e.g via concurrency.
 
@@ -63,12 +65,12 @@ class PartitionedStream(Stream, ABC):
 
     def read_stream(self, config, catalog, state) -> Iterable[StreamData]:
         # TODO read the partitions according to the stream's concurrency policy
-        for part in self.get_partition_descriptors(state, catalog):
-            for record_or_message in await self.read_partition(catalog, part):
-                yield record_or_message
-                if isinstance(record_or_message, dict):
-                    self.state_manager.observe(record_or_message)
-            self.state_manager.notify_partition_complete(part)
+        # for part in self.get_partition_descriptors(state, catalog):
+        #     for record_or_message in await self.read_partition(catalog, part):
+        #         yield record_or_message
+        #         if isinstance(record_or_message, dict):
+        #             self.state_manager.observe(record_or_message)
+        #     self.state_manager.notify_partition_complete(part)
 
         pass
 

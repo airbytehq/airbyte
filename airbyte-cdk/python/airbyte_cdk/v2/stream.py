@@ -2,6 +2,8 @@ from abc import abstractmethod, ABC
 from functools import lru_cache
 from typing import Mapping, Any, List
 
+from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
+
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 from airbyte_cdk.sources.streams.core import StreamData, package_name_from_class
@@ -17,7 +19,7 @@ class Stream(ABC):
     name: str
     primary_key: List[List[str]]
 
-    # @abstractmethod
+    @abstractmethod
     def read_stream(self, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: StateType) -> StreamData:
         """
         :raises
@@ -34,10 +36,9 @@ class Stream(ABC):
         The default implementation of this method looks for a JSONSchema file with the same name as this stream's "name" property.
         Override as needed.
         """
-        # TODO show an example of using pydantic to define the JSON schema, or reading an OpenAPI spec
-        # TODO usage package_name_from_class might be wrong here since it might
+        # TODO usage package_name_from_class might be wrong here, not sure
         return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(self.name)
 
-
-print(package_name_from_class(Stream.__class__))
+    def get_stream_descriptor(self) -> HashableStreamDescriptor:
+        return HashableStreamDescriptor(name=self.name, namespace=self.namespace)
 
