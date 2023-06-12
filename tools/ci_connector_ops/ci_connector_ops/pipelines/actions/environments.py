@@ -9,7 +9,6 @@ from __future__ import annotations
 import importlib.util
 import re
 import uuid
-from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
@@ -291,14 +290,14 @@ def with_global_dockerd_service(dagger_client: Client, git_revision: str) -> Con
     Returns:
         Container: The container running dockerd as a service
     """
-    today = datetime.now().strftime("%Y-%m-%d")
+
     return (
         dagger_client.container()
         .from_(consts.DOCKER_DIND_IMAGE)
         .with_mounted_cache(
             "/var/lib/docker",
-            dagger_client.cache_volume(f"docker-lib-{today}"),
-            sharing=CacheSharingMode.SHARED,
+            dagger_client.cache_volume("docker-lib"),
+            sharing=CacheSharingMode.PRIVATE,
         )
         .with_mounted_cache(
             "/tmp",
