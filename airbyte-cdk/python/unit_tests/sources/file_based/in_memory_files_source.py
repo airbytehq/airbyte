@@ -47,10 +47,10 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
         globs: List[str],
         from_date: Optional[datetime] = None,
     ) -> List[RemoteFile]:
-        return [
+        return AbstractFileBasedStreamReader.filter_files_by_globs([
             RemoteFile(f, datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"), self.file_type)
             for f, data in self.files.items()
-        ]
+        ], globs)
 
     def open_file(self, file: RemoteFile) -> IOBase:
         return io.StringIO(self._make_file_contents(file.uri))

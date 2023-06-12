@@ -4,12 +4,12 @@
 
 from abc import abstractmethod
 from datetime import datetime
-from fnmatch import fnmatch
 from io import IOBase
 from typing import List, Optional
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from pydantic import BaseModel
+from wcmatch.glob import GLOBSTAR, globmatch
 
 
 class AbstractFileBasedStreamReader(BaseModel):
@@ -54,11 +54,22 @@ class AbstractFileBasedStreamReader(BaseModel):
         """
         Utility method for filtering files based on globs.
         """
-        return [file for file in files if any(fnmatch(file.uri, glob) for glob in globs)]
+        if not globs:
+            return files
+
+        matches = {}
+
+        for file in files:
+            for g in globs:
+                if globmatch(file.uri, g, flags=GLOBSTAR):
+                    matches[file.uri] = file
+
+        return list(matches.values())
 
     @staticmethod
-    def get_prefixes_from_globs(files: List[RemoteFile], globs: List[str]) -> List[str]:
+    def get_prefixes_from_globs(globs: List[str]) -> List[str]:
         """
         Utility method for extracting prefixes from the globs.
         """
-        ...
+        prefixes = {glob.split("*")[0].rstrip("/") for glob in globs}
+        return list(filter(lambda x: bool(x), prefixes))
