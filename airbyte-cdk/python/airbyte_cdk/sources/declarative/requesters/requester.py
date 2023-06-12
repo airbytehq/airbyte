@@ -7,10 +7,10 @@ from enum import Enum
 from typing import Any, Mapping, MutableMapping, Optional
 
 import requests
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from requests.auth import AuthBase
 
 
 class HttpMethod(Enum):
@@ -24,7 +24,7 @@ class HttpMethod(Enum):
 
 class Requester(RequestOptionsProvider):
     @abstractmethod
-    def get_authenticator(self) -> AuthBase:
+    def get_authenticator(self) -> DeclarativeAuthenticator:
         """
         Specifies the authenticator to use when submitting requests
         """

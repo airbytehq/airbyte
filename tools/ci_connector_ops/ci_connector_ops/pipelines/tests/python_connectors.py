@@ -7,7 +7,8 @@
 from typing import List
 
 import asyncer
-from ci_connector_ops.pipelines.actions import environments, run_steps, secrets
+from ci_connector_ops.pipelines.helpers.steps import run_steps
+from ci_connector_ops.pipelines.actions import environments, secrets
 from ci_connector_ops.pipelines.bases import Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.builds import LOCAL_BUILD_PLATFORM
 from ci_connector_ops.pipelines.builds.python_connectors import BuildConnectorImage
@@ -100,6 +101,7 @@ class IntegrationTests(PytestStep):
         Returns:
             StepResult: Failure or success of the integration tests with stdout and stdout.
         """
+        connector_under_test = environments.with_bound_docker_host(self.context, connector_under_test)
         connector_under_test_with_secrets = connector_under_test.with_directory("secrets", self.context.secrets_dir)
 
         return await self._run_tests_in_directory(connector_under_test_with_secrets, "integration_tests")
