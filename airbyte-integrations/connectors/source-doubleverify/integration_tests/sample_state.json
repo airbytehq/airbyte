@@ -1,5 +1,29 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "value"
+  "brand_safety": {
+    "date": "2023-04-10"
+  },
+  "facebook": {
+    "date": "2023-04-10"
+  },
+  "fraud": {
+    "date": "2023-04-10"
+  },
+  "geo_report": {
+    "date": "2023-04-10"
+  },
+  "pinterest": {
+    "date": "2023-04-10"
+  },
+  "snapchat": {
+    "date": "2023-04-10"
+  },
+  "twitter": {
+    "date": "2023-04-10"
+  },
+  "viewability": {
+    "date": "2023-04-10"
+  },
+  "youtube": {
+    "date": "2023-04-10"
   }
 }

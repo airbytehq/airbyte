@@ -6,6 +6,7 @@
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_doubleverify.source import IncrementalDoubleverifyStream
+from unittest.mock import MagicMock
 
 
 @fixture
@@ -17,43 +18,49 @@ def patch_incremental_base_class(mocker):
 
 
 def test_cursor_field(patch_incremental_base_class):
-    stream = IncrementalDoubleverifyStream()
-    # TODO: replace this with your expected cursor field
+    config_mock = MagicMock()
+    config_catalog = './integration_tests/configured_catalog.json'
+    stream = IncrementalDoubleverifyStream(config=config_mock, catalog_stream=config_catalog)
     expected_cursor_field = []
     assert stream.cursor_field == expected_cursor_field
 
 
 def test_get_updated_state(patch_incremental_base_class):
-    stream = IncrementalDoubleverifyStream()
-    # TODO: replace this with your input parameters
+    config_mock = MagicMock()
+    config_catalog = './integration_tests/configured_catalog.json'
+    stream = IncrementalDoubleverifyStream(config=config_mock, catalog_stream=config_catalog)
     inputs = {"current_stream_state": None, "latest_record": None}
-    # TODO: replace this with your expected updated stream state
     expected_state = {}
     assert stream.get_updated_state(**inputs) == expected_state
 
 
 def test_stream_slices(patch_incremental_base_class):
-    stream = IncrementalDoubleverifyStream()
-    # TODO: replace this with your input parameters
+    config_mock = MagicMock()
+    config_catalog = './integration_tests/configured_catalog.json'
+    stream = IncrementalDoubleverifyStream(config=config_mock, catalog_stream=config_catalog)
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
-    # TODO: replace this with your expected stream slices list
     expected_stream_slice = [None]
     assert stream.stream_slices(**inputs) == expected_stream_slice
 
 
 def test_supports_incremental(patch_incremental_base_class, mocker):
     mocker.patch.object(IncrementalDoubleverifyStream, "cursor_field", "dummy_field")
-    stream = IncrementalDoubleverifyStream()
+    config_mock = MagicMock()
+    config_catalog = './integration_tests/configured_catalog.json'
+    stream = IncrementalDoubleverifyStream(config=config_mock, catalog_stream=config_catalog)
     assert stream.supports_incremental
 
 
 def test_source_defined_cursor(patch_incremental_base_class):
-    stream = IncrementalDoubleverifyStream()
+    config_mock = MagicMock()
+    config_catalog = './integration_tests/configured_catalog.json'
+    stream = IncrementalDoubleverifyStream(config=config_mock, catalog_stream=config_catalog)
     assert stream.source_defined_cursor
 
 
 def test_stream_checkpoint_interval(patch_incremental_base_class):
-    stream = IncrementalDoubleverifyStream()
-    # TODO: replace this with your expected checkpoint interval
+    config_mock = MagicMock()
+    config_catalog = './integration_tests/configured_catalog.json'
+    stream = IncrementalDoubleverifyStream(config=config_mock, catalog_stream=config_catalog)
     expected_checkpoint_interval = None
     assert stream.state_checkpoint_interval == expected_checkpoint_interval

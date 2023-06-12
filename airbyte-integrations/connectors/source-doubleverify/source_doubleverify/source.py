@@ -149,7 +149,7 @@ class DoubleverifyStream(HttpStream, ABC):
                     yield row
 
 
-class DoubleverifyIncrementalStream(DoubleverifyStream):
+class IncrementalDoubleverifyStream(DoubleverifyStream):
     state_checkpoint_interval = None
 
     @property
@@ -171,8 +171,7 @@ class DoubleverifyIncrementalStream(DoubleverifyStream):
         return {}
 
 
-class Youtube(DoubleverifyIncrementalStream):
-    cursor_field = "date"
+class Youtube(IncrementalDoubleverifyStream):
     primary_key = ""
     request_type = 2
     catalog = json.load(open("./source_doubleverify/schemas/youtube.json"))
@@ -180,9 +179,7 @@ class Youtube(DoubleverifyIncrementalStream):
         super().__init__(config=config, catalog_stream=self.catalog)
 
 
-class Pinterest(DoubleverifyIncrementalStream):
-    cursor_field = "date"
-    cursor_field = "date"
+class Pinterest(IncrementalDoubleverifyStream):
     primary_key = ""
     request_type = 3
     catalog = json.load(open("./source_doubleverify/schemas/pinterest.json"))
@@ -190,8 +187,7 @@ class Pinterest(DoubleverifyIncrementalStream):
         super().__init__(config=config, catalog_stream=self.catalog)
 
 
-class Facebook(DoubleverifyIncrementalStream):
-    cursor_field = "date"
+class Facebook(IncrementalDoubleverifyStream):
     primary_key = ""
     request_type = 4
     catalog = json.load(open("./source_doubleverify/schemas/facebook.json"))
@@ -199,8 +195,7 @@ class Facebook(DoubleverifyIncrementalStream):
         super().__init__(config=config, catalog_stream=self.catalog)
 
 
-class Twitter(DoubleverifyIncrementalStream):
-    cursor_field = "date"
+class Twitter(IncrementalDoubleverifyStream):
     primary_key = ""
     request_type = 6
     catalog = json.load(open("./source_doubleverify/schemas/twitter.json"))
@@ -208,40 +203,35 @@ class Twitter(DoubleverifyIncrementalStream):
         super().__init__(config=config, catalog_stream=self.catalog)
 
 
-class Snapchat(DoubleverifyIncrementalStream):
-    cursor_field = "date"
+class Snapchat(IncrementalDoubleverifyStream):
     primary_key = ""
     request_type = 9
     catalog = json.load(open("./source_doubleverify/schemas/snapchat.json"))
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config=config, catalog_stream=self.catalog)
         
-class BrandSafety(DoubleverifyIncrementalStream):
-    cursor_field = "date"
+class BrandSafety(IncrementalDoubleverifyStream):
     primary_key = ""
     request_type = 1
     catalog = json.load(open("./source_doubleverify/schemas/brand_safety.json"))
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config=config, catalog_stream=self.catalog)
         
-class Fraud(DoubleverifyIncrementalStream):
-    cursor_field = "date"
+class Fraud(IncrementalDoubleverifyStream):
     primary_key = ""
     request_type = 1
     catalog = json.load(open("./source_doubleverify/schemas/fraud.json"))
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config=config, catalog_stream=self.catalog)
         
-class GeoReport(DoubleverifyIncrementalStream):
-    cursor_field = "date"
+class GeoReport(IncrementalDoubleverifyStream):
     primary_key = ""
     request_type = 1
     catalog = json.load(open("./source_doubleverify/schemas/geo_report.json"))
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config=config, catalog_stream=self.catalog)
         
-class Viewability(DoubleverifyIncrementalStream):
-    cursor_field = "date"
+class Viewability(IncrementalDoubleverifyStream):
     primary_key = ""
     request_type = 1
     catalog = json.load(open("./source_doubleverify/schemas/viewability.json"))
