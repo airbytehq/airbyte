@@ -21,22 +21,17 @@ class BigQuerySqlGeneratorTest {
 
   @Test
   public void basicCreateTable() {
+    LinkedHashMap<QuotedColumnId, StandardSQLTypeName> columns = new LinkedHashMap<>();
+    columns.put(generator.quoteColumnId("id"), StandardSQLTypeName.INT64);
+    columns.put(generator.quoteColumnId("updated_at"), StandardSQLTypeName.TIMESTAMP);
+    columns.put(generator.quoteColumnId("name"), StandardSQLTypeName.STRING);
     StreamConfig<StandardSQLTypeName> stream = new StreamConfig<>(
         new SqlGenerator.QuotedStreamId("public", "users", "airbyte", "public_users", "public", "users"),
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
         List.of(generator.quoteColumnId("id")),
         Optional.of(generator.quoteColumnId("updated_at")),
-        Map.of(
-            generator.quoteColumnId("id"), StandardSQLTypeName.INT64,
-            generator.quoteColumnId("updated_at"), StandardSQLTypeName.TIMESTAMP,
-            generator.quoteColumnId("name"), StandardSQLTypeName.STRING
-        ).entrySet().stream().collect(Collectors.toMap(
-            Entry::getKey,
-            Entry::getValue,
-            (a, b) -> a,
-            LinkedHashMap::new
-        ))
+        columns
     );
 
     final String sql = generator.createTable(stream);
