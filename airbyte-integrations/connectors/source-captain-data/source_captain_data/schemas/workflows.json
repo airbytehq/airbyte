@@ -16,13 +16,13 @@
       "items": {
         "properties": {
           "name": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "step_uid": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "uid": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         },
         "type": "object"
