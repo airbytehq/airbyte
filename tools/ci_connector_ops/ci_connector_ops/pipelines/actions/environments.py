@@ -320,7 +320,6 @@ def with_bound_docker_host(
         context (ConnectorContext): The current connector context.
         container (Container): The container to bind to the docker host.
         shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be both mounted to the container and the dockerd container. Defaults to None.
-        docker_service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to None.
 
     Returns:
         Container: The container bound to the docker host.
@@ -342,7 +341,6 @@ def with_docker_cli(context: ConnectorContext) -> Container:
     Args:
         context (ConnectorContext): The current connector context.
         shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be both mounted to the container and the dockerd container. Defaults to None.
-        docker_service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to None.
 
     Returns:
         Container: A docker cli container bound to a docker host.
@@ -361,7 +359,7 @@ async def with_connector_acceptance_test(context: ConnectorContext, connector_un
         Container: A container with connector acceptance tests installed.
     """
     connector_under_test_image_name = context.connector.acceptance_test_config["connector_image"]
-    await load_image_to_docker_host(context, connector_under_test_image_tar, connector_under_test_image_name, docker_service_name="cat")
+    await load_image_to_docker_host(context, connector_under_test_image_tar, connector_under_test_image_name)
 
     if context.connector_acceptance_test_image.endswith(":dev"):
         cat_container = context.connector_acceptance_test_source_dir.docker_build()
@@ -385,7 +383,6 @@ def with_gradle(
     context: ConnectorContext,
     sources_to_include: List[str] = None,
     bind_to_docker_host: bool = True,
-    docker_service_name: Optional[str] = "gradle",
 ) -> Container:
     """Create a container with Gradle installed and bound to a persistent docker host.
 
@@ -393,7 +390,6 @@ def with_gradle(
         context (ConnectorContext): The current connector context.
         sources_to_include (List[str], optional): List of additional source path to mount to the container. Defaults to None.
         bind_to_docker_host (bool): Whether to bind the gradle container to a docker host.
-        docker_service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to "gradle".
 
     Returns:
         Container: A container with Gradle installed and Java sources from the repository.
@@ -447,14 +443,13 @@ def with_gradle(
         return openjdk_with_docker
 
 
-async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str, docker_service_name: Optional[str] = None):
+async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str):
     """Load a docker image tar archive to the docker host.
 
     Args:
         context (ConnectorContext): The current connector context.
         tar_file (File): The file object holding the docker image tar archive.
         image_tag (str): The tag to create on the image if it has no tag.
-        docker_service_name (str): Name of the docker service, useful for context isolation.
     """
     # Hacky way to make sure the image is always loaded
     tar_name = f"{str(uuid.uuid4())}.tar"
