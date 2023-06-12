@@ -42,7 +42,7 @@ class SourceConvex(AbstractSource):
         url = f"{deployment_url}/api/json_schemas?deltaSchema=true&format=convex_json"
         headers = {
             "Authorization": f"Convex {access_key}",
-            "Convex-Client": f"airbyte-export-f{CONVEX_CLIENT_VERSION}",
+            "Convex-Client": f"airbyte-export-{CONVEX_CLIENT_VERSION}",
         }
         return requests.get(url, headers=headers)
 
@@ -193,7 +193,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
         Custom headers for each HTTP request, not including Authorization.
         """
         return {
-            "Convex-Client": "airbyte-export-0.2.0",
+            "Convex-Client": f"airbyte-export-{CONVEX_CLIENT_VERSION}",
         }
 
     def get_updated_state(self, current_stream_state: ConvexState, latest_record: Mapping[str, Any]) -> ConvexState:
