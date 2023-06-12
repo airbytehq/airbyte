@@ -11,7 +11,8 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.UnsupportedOneOf;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import java.util.UUID;
+import java.util.Map;
+import org.apache.commons.text.StringSubstitutor;
 
 public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, StandardSQLTypeName> {
 
@@ -87,7 +88,15 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   @Override
   public String createTable(final StreamConfig<StandardSQLTypeName> stream) {
-    return "CREATE TABLE " + stream.id().finalTableId();
+    // TODO generate these from the stream columns
+    String columnDeclarations = """
+        id integer primary key,
+        name string
+        """;
+    return new StringSubstitutor(Map.of(
+        "final_table_id", stream.id().finalTableId(),
+        "column_declarations", columnDeclarations
+    )).replace("CREATE TABLE ${final_table_id} (${column_declarations})");
   }
 
   @Override
@@ -113,33 +122,33 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     // TODO use a better string templating thing
     return String.format(
         """
-            BEGIN;
-                    
-            INSERT INTO %s.%s
-            SELECT
-              TODO....
-            FROM %s;
-            
-            DELETE from <final>
-            WHERE <raw_id> IN (
-             SELECT `_airbyte_raw_id` FROM (
-               SELECT `_airbyte_raw_id`, row_number() OVER (
-                 PARTITION BY `id` ORDER BY `updated_at` DESC, `_airbyte_extracted_at` DESC
-               ) as row_number FROM evan.users
-             )
-             WHERE row_number != 1
-           )
-           OR
-           -- Delete rows that have been CDC deleted
-           `id` IN (
+             BEGIN;
+                     
+             INSERT INTO %s.%s
              SELECT
-               SAFE_CAST(JSON_EXTRACT_SCALAR(`_airbyte_data`, '$.id') as INT64) as id -- based on the PK which we know from the connector catalog
-             FROM evan.users_raw
-             WHERE JSON_EXTRACT_SCALAR(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
-           )
-                    
-            COMMIT;
-            """,
+               TODO....
+             FROM %s;
+             
+             DELETE from <final>
+             WHERE <raw_id> IN (
+              SELECT `_airbyte_raw_id` FROM (
+                SELECT `_airbyte_raw_id`, row_number() OVER (
+                  PARTITION BY `id` ORDER BY `updated_at` DESC, `_airbyte_extracted_at` DESC
+                ) as row_number FROM evan.users
+              )
+              WHERE row_number != 1
+            )
+            OR
+            -- Delete rows that have been CDC deleted
+            `id` IN (
+              SELECT
+                SAFE_CAST(JSON_EXTRACT_SCALAR(`_airbyte_data`, '$.id') as INT64) as id -- based on the PK which we know from the connector catalog
+              FROM evan.users_raw
+              WHERE JSON_EXTRACT_SCALAR(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+            )
+                     
+             COMMIT;
+             """,
         stream.id().finalNamespace(),
         // TODO this is wrong, we can't just do "`foo`.`bar`" + "_tmp"
         finalSuffix.length() > 0 ? stream.id().finalName() + "_" + finalSuffix : stream.id().finalName(),
