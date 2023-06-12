@@ -67,7 +67,7 @@ public class StreamStatusUtils {
   public static void emitRunningStreamStatus(final AutoCloseableIterator<AirbyteMessage> airbyteStream,
                                              final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
     if (airbyteStream instanceof AirbyteStreamAware) {
-      emitRunningStreamStatus(AirbyteStreamAware.class.cast(airbyteStream), statusEmitter);
+      emitRunningStreamStatus((AirbyteStreamAware) airbyteStream, statusEmitter);
     }
   }
 
@@ -105,7 +105,7 @@ public class StreamStatusUtils {
   public static void emitStartStreamStatus(final AutoCloseableIterator<AirbyteMessage> airbyteStream,
                                            final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
     if (airbyteStream instanceof AirbyteStreamAware) {
-      emitStartStreamStatus(AirbyteStreamAware.class.cast(airbyteStream), statusEmitter);
+      emitStartStreamStatus((AirbyteStreamAware) airbyteStream, statusEmitter);
     }
   }
 
@@ -143,7 +143,7 @@ public class StreamStatusUtils {
   public static void emitCompleteStreamStatus(final AutoCloseableIterator<AirbyteMessage> airbyteStream,
                                               final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
     if (airbyteStream instanceof AirbyteStreamAware) {
-      emitCompleteStreamStatus(AirbyteStreamAware.class.cast(airbyteStream), statusEmitter);
+      emitCompleteStreamStatus((AirbyteStreamAware) airbyteStream, statusEmitter);
     }
   }
 
@@ -181,7 +181,7 @@ public class StreamStatusUtils {
   public static void emitIncompleteStreamStatus(final AutoCloseableIterator<AirbyteMessage> airbyteStream,
                                                 final Optional<Consumer<AirbyteStreamStatusHolder>> statusEmitter) {
     if (airbyteStream instanceof AirbyteStreamAware) {
-      emitIncompleteStreamStatus(AirbyteStreamAware.class.cast(airbyteStream), statusEmitter);
+      emitIncompleteStreamStatus((AirbyteStreamAware) airbyteStream, statusEmitter);
     }
   }
 

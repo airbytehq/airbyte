@@ -166,7 +166,7 @@ public class IntegrationRunner {
             }
           } finally {
             if (source instanceof AutoCloseable) {
-              AutoCloseable.class.cast(source).close();
+              ((AutoCloseable) source).close();
             }
           }
         }
@@ -227,6 +227,7 @@ public class IntegrationRunner {
 
   private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator, final Consumer<AirbyteMessage> recordCollector)
       throws Exception {
+    messageIterator.getAirbyteStream().ifPresent(s ->  LOGGER.debug("Producing messages for stream {}...", s));
     watchForOrphanThreads(
         () -> messageIterator.forEachRemaining(recordCollector),
         () -> System.exit(FORCED_EXIT_CODE),
@@ -238,19 +239,12 @@ public class IntegrationRunner {
 
   private void readConcurrent(final JsonNode config, ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
     final Collection<AutoCloseableIterator<AirbyteMessage>> streams = source.readStreams(config, catalog, stateOptional.orElse(null));
-    final Consumer<AutoCloseableIterator<AirbyteMessage>> outputConsumer = (stream) -> {
-      try {
-        final Consumer<AirbyteMessage> streamStatusTrackingRecordConsumer = StreamStatusUtils.statusTrackingRecordCollector(stream,
-            outputRecordCollector, Optional.of(AirbyteTraceMessageUtility::emitStreamStatusTrace));
-        produceMessages(stream, streamStatusTrackingRecordConsumer);
-      } catch (final Exception e) {
-        throw new RuntimeException(e);
-      }
-    };
-
-    try (final ConcurrentStreamConsumer streamConsumer = new ConcurrentStreamConsumer(outputConsumer, streams.size())) {
+    try (final ConcurrentStreamConsumer streamConsumer = new ConcurrentStreamConsumer(this::consumeFromStream, streams.size())) {
+      // Submit each stream for concurrent execution
       streams.forEach(streamConsumer);
-
+      // Wait for the streams to complete before checking for exceptions
+      streamConsumer.waitFor();
+      // Check for any exceptions that were raised during the concurrent execution
       if (streamConsumer.getException().isPresent()) {
         throw streamConsumer.getException().get();
       }
@@ -260,6 +254,17 @@ public class IntegrationRunner {
   private void readSerial(final JsonNode config, ConfiguredAirbyteCatalog catalog, final Optional<JsonNode> stateOptional) throws Exception {
     try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
       produceMessages(messageIterator, outputRecordCollector);
+    }
+  }
+
+  private void consumeFromStream(final AutoCloseableIterator<AirbyteMessage> stream) {
+    try {
+      final Consumer<AirbyteMessage> streamStatusTrackingRecordConsumer = StreamStatusUtils.statusTrackingRecordCollector(stream,
+          outputRecordCollector, Optional.of(AirbyteTraceMessageUtility::emitStreamStatusTrace));
+      produceMessages(stream, streamStatusTrackingRecordConsumer);
+    } catch (final Exception e) {
+      stream.getAirbyteStream().ifPresent(s -> LOGGER.error("Failed to consume from stream {}.", s));
+      throw new RuntimeException(e);
     }
   }
 

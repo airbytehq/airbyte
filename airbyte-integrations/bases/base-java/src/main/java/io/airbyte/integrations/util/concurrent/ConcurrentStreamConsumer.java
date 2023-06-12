@@ -10,13 +10,17 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link Consumer} implementation that consumes {@link AirbyteMessage} records from each provided
@@ -35,14 +39,18 @@ import java.util.function.Consumer;
  */
 public class ConcurrentStreamConsumer implements Consumer<AutoCloseableIterator<AirbyteMessage>>, AutoCloseable {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConcurrentStreamConsumer.class);
+
   private final ExecutorService executorService;
   private final List<Exception> exceptions;
+  private final Collection<CompletableFuture> futures;
   private final Consumer<AutoCloseableIterator<AirbyteMessage>> streamConsumer;
   private final Optional<Consumer<AirbyteStreamStatusHolder>> streamStatusEmitter = Optional.of(AirbyteTraceMessageUtility::emitStreamStatusTrace);
 
   public ConcurrentStreamConsumer(final Consumer<AutoCloseableIterator<AirbyteMessage>> streamConsumer, final Integer requestedParallelism) {
     this.executorService = Executors.newFixedThreadPool(computeParallelism(requestedParallelism));
     this.exceptions = new ArrayList<>();
+    this.futures = new ArrayList<>();
     this.streamConsumer = streamConsumer;
   }
 
@@ -54,16 +62,7 @@ public class ConcurrentStreamConsumer implements Consumer<AutoCloseableIterator<
      * passing them to the provided message consumer for further processing. Any exceptions raised
      * within the thread will be captured and exposed to the caller.
      */
-    executorService.submit(() -> {
-      try (stream) {
-        StreamStatusUtils.emitStartStreamStatus(stream, streamStatusEmitter);
-        streamConsumer.accept(stream);
-        StreamStatusUtils.emitCompleteStreamStatus(stream, streamStatusEmitter);
-      } catch (final Exception e) {
-        StreamStatusUtils.emitIncompleteStreamStatus(stream, streamStatusEmitter);
-        exceptions.add(e);
-      }
-    });
+    futures.add(CompletableFuture.runAsync(() -> executeStream(stream), executorService));
   }
 
   /**
@@ -80,8 +79,23 @@ public class ConcurrentStreamConsumer implements Consumer<AutoCloseableIterator<
     }
   }
 
+  /**
+   * Returns the list of exceptions captured during execution of the streams, if any.
+   *
+   * @return The collection of captured exceptions or an empty list.
+   */
   public List<Exception> getExceptions() {
     return Collections.unmodifiableList(exceptions);
+  }
+
+  /**
+   * Waits for each submitted stream to complete execution.
+   */
+  public void waitFor() {
+    // Wait for all threads to run before closing
+    if (!futures.isEmpty()) {
+      CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).get();
+    }
   }
 
   /**
@@ -103,7 +117,28 @@ public class ConcurrentStreamConsumer implements Consumer<AutoCloseableIterator<
      * connectors, this should be the maximum number of concurrent connections from one host/IP address
      * that the API supports.
      */
-    return Math.min(10, requestedParallelism > 0 ? requestedParallelism : 1);
+    final Integer parallelism = Math.min(10, requestedParallelism > 0 ? requestedParallelism : 1);
+    LOGGER.debug("Computed concurrent stream parallelism: {}", parallelism);
+    return parallelism;
+  }
+
+  /**
+   * Executes the stream by providing it to the configured {@link #streamConsumer}.
+   *
+   * @param stream The stream to be executed.
+   */
+  private void executeStream(final AutoCloseableIterator<AirbyteMessage> stream) {
+    try (stream) {
+      stream.getAirbyteStream().ifPresent(s -> LOGGER.debug("Consuming from stream {}...", s));
+      StreamStatusUtils.emitStartStreamStatus(stream, streamStatusEmitter);
+      streamConsumer.accept(stream);
+      StreamStatusUtils.emitCompleteStreamStatus(stream, streamStatusEmitter);
+      stream.getAirbyteStream().ifPresent(s -> LOGGER.debug("Consumption from stream {} complete.", s));
+    } catch (final Exception e) {
+      stream.getAirbyteStream().ifPresent(s -> LOGGER.error("Unable to consume from stream {}.", s));
+      StreamStatusUtils.emitIncompleteStreamStatus(stream, streamStatusEmitter);
+      exceptions.add(e);
+    }
   }
 
   @Override
