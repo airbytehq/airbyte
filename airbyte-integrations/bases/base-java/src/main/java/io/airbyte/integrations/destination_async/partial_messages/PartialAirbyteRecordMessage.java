@@ -6,6 +6,8 @@ package io.airbyte.integrations.destination_async.partial_messages;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.util.Objects;
 
 public class PartialAirbyteRecordMessage {
@@ -14,6 +16,10 @@ public class PartialAirbyteRecordMessage {
   private String namespace;
   @JsonProperty("stream")
   private String stream;
+
+  @JsonProperty("data")
+  @JsonPropertyDescription("record data")
+  private JsonNode data;
 
   @JsonProperty("emitted_at")
   @JsonPropertyDescription("when the data was emitted from the source. epoch in millisecond.")
@@ -51,6 +57,21 @@ public class PartialAirbyteRecordMessage {
     return this;
   }
 
+  @JsonProperty("data")
+  public JsonNode getData() {
+    return data;
+  }
+
+  @JsonProperty("data")
+  public void setData(final JsonNode data) {
+    this.data = data;
+  }
+
+  public PartialAirbyteRecordMessage withData(final JsonNode data) {
+    this.data = data;
+    return this;
+  }
+
   @JsonProperty("emitted_at")
   public Long getEmittedAt() {
     return this.emittedAt;
@@ -75,12 +96,15 @@ public class PartialAirbyteRecordMessage {
       return false;
     }
     final PartialAirbyteRecordMessage that = (PartialAirbyteRecordMessage) o;
-    return Objects.equals(namespace, that.namespace) && Objects.equals(stream, that.stream);
+    return Objects.equals(namespace, that.namespace)
+            && Objects.equals(stream, that.stream)
+            && Objects.equals(emittedAt, that.emittedAt)
+            && Objects.equals(data, that.data);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(namespace, stream);
+    return Objects.hash(namespace, stream, emittedAt, data);
   }
 
   @Override
@@ -88,6 +112,8 @@ public class PartialAirbyteRecordMessage {
     return "PartialAirbyteRecordMessage{" +
         "namespace='" + namespace + '\'' +
         ", stream='" + stream + '\'' +
+        ", emittedAt='" + emittedAt + '\'' +
+        ", data='" + data + '\'' +
         '}';
   }
 

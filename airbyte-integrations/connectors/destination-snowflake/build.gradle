@@ -9,7 +9,7 @@ application {
 // enable when profiling
     applicationDefaultJvmArgs = [
             '-XX:+ExitOnOutOfMemoryError',
-            '-XX:MaxRAMPercentage=80.0',
+            '-XX:MaxRAMPercentage=75.0',
 //            '-Xmx2000m',
             '-XX:NativeMemoryTracking=detail',
             "-Djava.rmi.server.hostname=localhost",

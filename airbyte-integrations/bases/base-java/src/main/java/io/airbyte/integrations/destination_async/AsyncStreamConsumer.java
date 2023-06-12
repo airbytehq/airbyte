@@ -107,6 +107,8 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
             validateRecord(message);
           }
 
+          // The offset is to compensate for the overhead of PartialAirbyteMessage references
+          // which is 8 bytes per reference.
           bufferEnqueue.addRecord(message, sizeInBytes + 100);
         });
   }
@@ -114,13 +116,15 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
   /**
    * Deserializes to a {@link PartialAirbyteMessage} which can represent both a Record or a State
    * Message
+   * <p>
+   * Pass the serialized data to avoid unnecessary serializing and deserializing of the data
    *
    * @param messageString the string to deserialize
    * @return PartialAirbyteMessage if the message is valid, empty otherwise
    */
   private Optional<PartialAirbyteMessage> deserializeAirbyteMessage(final String messageString) {
     final Optional<PartialAirbyteMessage> messageOptional = Jsons.tryDeserialize(messageString, PartialAirbyteMessage.class)
-        .map(partial -> partial.withSerialized(messageString));
+        .map(partial -> partial.withSerialized(Jsons.serialize(partial.getRecord().getData())));
     if (messageOptional.isPresent()) {
       return messageOptional;
     } else {
