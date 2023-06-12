@@ -164,11 +164,6 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         throwUnrecognizedStream(catalog, message);
       }
 
-      if (!isValidRecord.apply(record.getData())) {
-        streamToIgnoredRecordCount.put(stream, streamToIgnoredRecordCount.getOrDefault(stream, 0L) + 1L);
-        return;
-      }
-
       final Optional<BufferFlushType> flushType = bufferingStrategy.addRecord(stream, message);
       // if present means that a flush occurred
       if (flushType.isPresent()) {
@@ -247,8 +242,6 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     Preconditions.checkState(!hasClosed, "Has already closed.");
     hasClosed = true;
 
-    streamToIgnoredRecordCount
-        .forEach((pair, count) -> LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
     if (hasFailed) {
       LOGGER.error("executing on failed close procedure.");
     } else {

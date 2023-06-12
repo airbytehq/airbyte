@@ -53,6 +53,7 @@ public class CopyConsumerFactory {
         database,
         sqlOperations);
 
+    // TODO: (ryankfu) remove this once we have a better way to handle this
     final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount = new HashMap<>();
     return new BufferedStreamConsumer(
         outputRecordCollector,
@@ -93,23 +94,18 @@ public class CopyConsumerFactory {
   private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier,
                                                                          final SqlOperations sqlOperations,
                                                                          final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount) {
-    return (AirbyteStreamNameNamespacePair pair, List<AirbyteRecordMessage> records) -> {
+    return (final AirbyteStreamNameNamespacePair pair, final List<AirbyteRecordMessage> records) -> {
       final var fileName = pairToCopier.get(pair).prepareStagingFile();
       for (final AirbyteRecordMessage recordMessage : records) {
         final var id = UUID.randomUUID();
-        if (sqlOperations.isValidData(recordMessage.getData())) {
-          // TODO Truncate json data instead of throwing whole record away?
-          // or should we upload it into a special rejected record folder in s3 instead?
-          pairToCopier.get(pair).write(id, recordMessage, fileName);
-        } else {
-          pairToIgnoredRecordCount.put(pair, pairToIgnoredRecordCount.getOrDefault(pair, 0L) + 1L);
-        }
+        // 1s1t provides a framework in which we can handle this record (i.e. alerting via the airbyte_meta column)
+        pairToCopier.get(pair).write(id, recordMessage, fileName);
       }
     };
   }
 
   private static CheckAndRemoveRecordWriter removeStagingFilePrinter(final Map<AirbyteStreamNameNamespacePair, StreamCopier> pairToCopier) {
-    return (AirbyteStreamNameNamespacePair pair, String stagingFileName) -> {
+    return (final AirbyteStreamNameNamespacePair pair, final String stagingFileName) -> {
       final String currentFileName = pairToCopier.get(pair).getCurrentFile();
       if (stagingFileName != null && currentFileName != null && !stagingFileName.equals(currentFileName)) {
         pairToCopier.get(pair).closeNonCurrentStagingFileWriters();
@@ -124,8 +120,6 @@ public class CopyConsumerFactory {
                                                  final Map<AirbyteStreamNameNamespacePair, Long> pairToIgnoredRecordCount,
                                                  final DataSource dataSource) {
     return (hasFailed) -> {
-      pairToIgnoredRecordCount
-          .forEach((pair, count) -> LOGGER.warn("A total of {} record(s) of data from stream {} were invalid and were ignored.", count, pair));
       closeAsOneTransaction(pairToCopier, hasFailed, database, sqlOperations, dataSource);
     };
   }
