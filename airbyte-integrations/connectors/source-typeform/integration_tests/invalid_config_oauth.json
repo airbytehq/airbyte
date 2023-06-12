@@ -1,0 +1,8 @@
+{
+  "credentials": {
+    "token": "fake-token",
+    "client_id": "fake_client_id",
+    "client_secret": "fake_client_secret"
+  },
+  "start_date": "2021-06-27T15:32:38Z"
+}

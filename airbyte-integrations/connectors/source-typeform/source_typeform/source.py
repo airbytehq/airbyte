@@ -15,7 +15,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, SingleUseRefreshTokenOauth2Authenticator, AuthBase
 from pendulum.datetime import DateTime
 
 
@@ -245,6 +245,11 @@ class Themes(PaginatedStream):
 
 
 class SourceTypeform(AbstractSource):
+    def get_auth(config: MutableMapping) -> AuthBase:
+        if config.get("token"):
+            return TokenAuthenticator(token=config["token"])
+        return SingleUseRefreshTokenOauth2Authenticator(config, token_refresh_endpoint=f"https://{config['api_url']}/oauth/token")
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             form_ids = config.get("form_ids", []).copy()
@@ -276,7 +281,7 @@ class SourceTypeform(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = TokenAuthenticator(token=config["token"])
+        auth = self.get_auth(config)
         return [
             Forms(authenticator=auth, **config),
             Responses(authenticator=auth, **config),
