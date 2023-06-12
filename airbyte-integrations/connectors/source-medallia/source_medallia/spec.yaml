@@ -1,0 +1,27 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Medallia Spec
+  type: object
+  required:
+    - client-id
+    - client-secret
+    - token-endpoint
+    - query-endpoint
+  properties:
+    client-id:
+      type: string
+      title: Client ID
+      description: Your OAuth user Client ID
+      airbyte_secret: True
+    client-secret:
+      type: string
+      title: Client Secret
+      description: Your OAuth user Client Secret
+      airbyte_secret: True
+    token-endpoint:
+      type: string
+      description: OAuth Token Endpoint eg. https://<sandbox-name>-<company>.sbx.sea1.medallia.com/oauth/<company>/token
+    query-endpoint:
+      type: string
+      description: GraphQL Query Endpoint eg. https://<sandbox-name>-<company>.apis.sbx.sea1.medallia.com/data/v0/query

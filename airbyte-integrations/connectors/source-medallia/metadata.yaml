@@ -1,0 +1,22 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*.medallia.com"
+  registries:
+    oss:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 0bcce091-b93a-4a80-a42e-7d3670bb9599
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-medallia
+  githubIssueLabel: source-medallia
+  icon: medallia.svg
+  license: MIT
+  name: Medallia
+  releaseDate: TODO
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/medallia
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

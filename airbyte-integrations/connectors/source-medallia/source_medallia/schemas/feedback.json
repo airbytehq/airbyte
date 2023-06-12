@@ -1,0 +1,104 @@
+{
+   "$schema": "http://json-schema.org/schema#",
+   "properties": {
+     "id": {
+       "type": "string"
+     },
+     "a_initial_finish_timestamp": {
+       "type": "string"
+     },
+     "metaData": {
+       "items": {
+         "properties": {
+           "__typename": {
+             "type": "string"
+           },
+           "field": {
+             "properties": {
+               "id": {
+                 "type": "string"
+               },
+               "name": {
+                 "type": "string"
+               }
+             },
+             "type": "object"
+           },
+           "options": {
+             "items": {
+               "properties": {
+                 "id": {
+                   "type": "string"
+                 },
+                 "name": {
+                   "type": "string"
+                 }
+               },
+               "type": "object"
+             },
+             "type": "array"
+           },
+           "units": {
+             "items": {
+               "properties": {
+                 "id": {
+                   "type": "string"
+                 }
+               },
+               "type": "object"
+             },
+             "type": "array"
+           },
+           "values": {
+             "items": {
+               "type": "string"
+             },
+             "type": "array"
+           }
+         },
+         "type": "object"
+       },
+       "type": "array"
+     },
+     "questionData": {
+       "items": {
+         "properties": {
+           "__typename": {
+             "type": "string"
+           },
+           "field": {
+             "properties": {
+               "id": {
+                 "type": "string"
+               },
+               "name": {
+                 "type": "string"
+               }
+             },
+             "type": "object"
+           },
+           "options": {
+             "items": {
+               "properties": {
+                 "id": {
+                   "type": "string"
+                 },
+                 "name": {
+                   "type": "string"
+                 },
+                 "numericValue": {
+                   "type": "number"
+                 }
+               },
+               "type": "object"
+             },
+             "type": "array"
+           }
+         },
+         "type": "object"
+       },
+       "type": "array"
+     }
+   },
+   "type": "object"
+ }
