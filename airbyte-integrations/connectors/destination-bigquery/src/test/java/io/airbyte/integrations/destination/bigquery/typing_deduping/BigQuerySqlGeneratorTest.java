@@ -1,18 +1,15 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.QuotedColumnId;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
-import java.util.List;
 import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 class BigQuerySqlGeneratorTest {
@@ -72,23 +69,21 @@ class BigQuerySqlGeneratorTest {
 
     assertEquals(
         """
-            DECLARE missing_pk_count INT64;
-                        
             BEGIN TRANSACTION;
-              -- Step 1: Validate the incoming data
-              SET missing_pk_count = (
-                SELECT COUNT(1)
-                FROM airbyte.public_users
-                WHERE
-                  `_airbyte_loaded_at` IS NULL
-                  AND SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.id') as INT64) IS NULL
-                );
+            DECLARE missing_pk_count INT64;
+
+            SET missing_pk_count = (
+              SELECT COUNT(1)
+              FROM airbyte.public_users
+              WHERE
+                `_airbyte_loaded_at` IS NULL
+                AND SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.id') as INT64) IS NULL
+              );
                         
-              IF missing_pk_count > 0 THEN
-                RAISE USING message = FORMAT("Raw table has %s rows missing a primary key", CAST(missing_pk_count AS STRING));
-              END IF;
+            IF missing_pk_count > 0 THEN
+              RAISE USING message = FORMAT("Raw table has %s rows missing a primary key", CAST(missing_pk_count AS STRING));
+            END IF;
                         
-              -- Step 2: Move the new data to the typed table
               INSERT INTO public.users
               SELECT
             SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.id') as INT64) as id,
@@ -116,8 +111,7 @@ class BigQuerySqlGeneratorTest {
                 AND JSON_EXTRACT(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
               ;
                       
-              -- Step 3: Dedupe and clean the typed table
-              DELETE FROM testing_evan_2052.users
+              DELETE FROM public.users
               WHERE
                 `_airbyte_raw_id` IN (
                   SELECT `_airbyte_raw_id` FROM (
@@ -137,22 +131,20 @@ class BigQuerySqlGeneratorTest {
                 )
               ;
                       
-              -- Step 4: Remove old entries from Raw table
-              DELETE FROM
-                airbyte.public_users
-              WHERE
-                `_airbyte_raw_id` NOT IN (
-                  SELECT `_airbyte_raw_id` FROM public.users
-                )
-                AND
-                JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
-              ;
+            DELETE FROM
+              airbyte.public_users
+            WHERE
+              `_airbyte_raw_id` NOT IN (
+                SELECT `_airbyte_raw_id` FROM public.users
+              )
+              AND
+              JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
+            ;
                       
-              -- Step 5: Apply typed_at timestamp where needed
-              UPDATE airbyte.public_users
-              SET `_airbyte_loaded_at` = CURRENT_TIMESTAMP()
-              WHERE `_airbyte_loaded_at` IS NULL
-              ;
+            UPDATE airbyte.public_users
+            SET `_airbyte_loaded_at` = CURRENT_TIMESTAMP()
+            WHERE `_airbyte_loaded_at` IS NULL
+            ;
                       
             COMMIT TRANSACTION;
             """,

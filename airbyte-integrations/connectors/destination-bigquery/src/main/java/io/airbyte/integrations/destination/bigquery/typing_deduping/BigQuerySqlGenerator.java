@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.joining;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Array;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Object;
@@ -13,8 +14,9 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.UnsupportedOneOf;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.commons.text.StringSubstitutor;
 
 public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, StandardSQLTypeName> {
@@ -139,58 +141,52 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   public String updateTable(final String finalSuffix, final StreamConfig<StandardSQLTypeName> stream) {
     // TODO this method needs to handle all the sync modes
     // e.g. this pk null check should only happen for incremental dedup
-    String pkNullChecks = stream.primaryKey().stream().map(
-        pk -> "AND SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$." + pk.originalName() + "') as " + stream.columns().get(pk).name() + ") IS NULL"
-    ).collect(joining("\n"));
-    // TODO - this needs the original AirbyteType so that we can recognize which columns need JSON_QUERY vs JSON_VALUE
-    String columnCasts = stream.columns().entrySet().stream().map(
-        col -> "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$." + col.getKey().originalName() + "') as " + col.getValue().name() + ") as " + col.getKey()
-            .name() + ","
-    ).collect(joining("\n"));
-    String columnErrors = stream.columns().entrySet().stream().map(
-        col -> new StringSubstitutor(Map.of(
-          "raw_col_name", col.getKey().originalName(),
-            "col_type", col.getValue().name()
-        )).replace(
-            """
-                CASE
-                  WHEN (JSON_VALUE(`_airbyte_data`, '$.${raw_col_name}') IS NOT NULL) AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.${raw_col_name}') as ${col_type}) IS NULL) THEN ["Problem with `${raw_col_name}`"]
-                  ELSE []
-                END"""
-        )
-    ).collect(joining(",\n"));
-    String pkList = stream.primaryKey().stream().map(QuotedColumnId::name).collect(joining(","));
-    // TODO - this needs the original AirbyteType so that we can recognize which columns need JSON_QUERY vs JSON_VALUE
-    String pkEqualityChecks = stream.columns().entrySet().stream()
-        .filter(e -> stream.primaryKey().contains(e.getKey()))
-        .map(
-        col -> new StringSubstitutor(Map.of(
-            "raw_col_name", col.getKey().originalName(),
-            "col_type", col.getValue().name()
-        )).replace("""
-            `id` IN (
-              SELECT
-                SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.${raw_col_name}') as ${col_type}) as id
-              FROM ${raw_table_id}
-              WHERE JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
-            )""")
-    ).collect(joining("\nAND "));
+
+    String validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
+    String insertNewRecords = insertNewRecords(stream.id(), stream.columns());
+    String dedupFinalTable = dedupFinalTable(stream.id(), stream.primaryKey(), stream.columns());
+    String dedupRawTable = dedupRawTable(stream.id());
+    String commitRawTable = commitRawTable(stream.id());
 
     return new StringSubstitutor(Map.of(
-        "raw_table_id", stream.id().rawTableId(),
-        // TODO handle final suffix
-        "final_table_id", stream.id().finalTableId(),
-        "pk_null_checks", pkNullChecks,
-        "column_casts", columnCasts,
-        "column_errors", columnErrors,
-        "pk_list", pkList,
-        "pk_equality_checks", pkEqualityChecks
+        "validate_primary_keys", validatePrimaryKeys,
+        "insert_new_records", insertNewRecords,
+        "dedup_final_table", dedupFinalTable,
+        "dedupe_raw_table", dedupRawTable,
+        "commit_raw_table", commitRawTable
     )).replace(
         """
-            DECLARE missing_pk_count INT64;
-                        
             BEGIN TRANSACTION;
-              -- Step 1: Validate the incoming data
+            ${validate_primary_keys}
+                      
+            ${insert_new_records}
+                      
+            ${dedup_final_table}
+                      
+            ${dedupe_raw_table}
+                      
+            ${commit_raw_table}
+                      
+            COMMIT TRANSACTION;
+            """
+    );
+  }
+
+  @VisibleForTesting
+  String validatePrimaryKeys(QuotedStreamId id, List<QuotedColumnId> primaryKeys, LinkedHashMap<QuotedColumnId, StandardSQLTypeName> streamColumns) {
+    // TODO this method needs to handle all the sync modes
+    // e.g. this pk null check should only happen for incremental dedup
+    String pkNullChecks = primaryKeys.stream().map(
+        pk -> "AND SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$." + pk.originalName() + "') as " + streamColumns.get(pk).name() + ") IS NULL"
+    ).collect(joining("\n"));
+
+    return new StringSubstitutor(Map.of(
+        "raw_table_id", id.rawTableId(),
+        "pk_null_checks", pkNullChecks
+    )).replace(
+        """
+              DECLARE missing_pk_count INT64;
+
               SET missing_pk_count = (
                 SELECT COUNT(1)
                 FROM ${raw_table_id}
@@ -201,9 +197,36 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
                       
               IF missing_pk_count > 0 THEN
                 RAISE USING message = FORMAT("Raw table has %s rows missing a primary key", CAST(missing_pk_count AS STRING));
-              END IF;
-                      
-              -- Step 2: Move the new data to the typed table
+              END IF;""");
+  }
+
+  @VisibleForTesting
+  String insertNewRecords(final QuotedStreamId id, final LinkedHashMap<QuotedColumnId, StandardSQLTypeName> streamColumns) {
+    // TODO - this needs the original AirbyteType so that we can recognize which columns need JSON_QUERY vs JSON_VALUE
+    String columnCasts = streamColumns.entrySet().stream().map(
+        col -> "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$." + col.getKey().originalName() + "') as " + col.getValue().name() + ") as " + col.getKey()
+            .name() + ","
+    ).collect(joining("\n"));
+    String columnErrors = streamColumns.entrySet().stream().map(
+        col -> new StringSubstitutor(Map.of(
+            "raw_col_name", col.getKey().originalName(),
+            "col_type", col.getValue().name()
+        )).replace(
+            """
+                CASE
+                  WHEN (JSON_VALUE(`_airbyte_data`, '$.${raw_col_name}') IS NOT NULL) AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.${raw_col_name}') as ${col_type}) IS NULL) THEN ["Problem with `${raw_col_name}`"]
+                  ELSE []
+                END"""
+        )
+    ).collect(joining(",\n"));
+
+    return new StringSubstitutor(Map.of(
+        "raw_table_id", id.rawTableId(),
+        "final_table_id", id.finalTableId(),
+        "column_casts", columnCasts,
+        "column_errors", columnErrors
+    )).replace(
+        """
               INSERT INTO ${final_table_id}
               SELECT
             ${column_casts}
@@ -216,10 +239,37 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
               WHERE
                 _airbyte_loaded_at IS NULL
                 AND JSON_EXTRACT(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
-              ;
-                      
-              -- Step 3: Dedupe and clean the typed table
-              DELETE FROM testing_evan_2052.users
+              ;"""
+    );
+  }
+
+  @VisibleForTesting
+  String dedupFinalTable(QuotedStreamId id, final List<QuotedColumnId> primaryKey, final LinkedHashMap<QuotedColumnId, StandardSQLTypeName> streamColumns) {
+    String pkList = primaryKey.stream().map(QuotedColumnId::name).collect(joining(","));
+    // TODO - this needs the original AirbyteType so that we can recognize which columns need JSON_QUERY vs JSON_VALUE
+    String pkEqualityChecks = streamColumns.entrySet().stream()
+        .filter(e -> primaryKey.contains(e.getKey()))
+        .map(
+            col -> new StringSubstitutor(Map.of(
+                "raw_table_id", id.rawTableId(),
+                "raw_col_name", col.getKey().originalName(),
+                "col_type", col.getValue().name()
+            )).replace("""
+                `id` IN (
+                  SELECT
+                    SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.${raw_col_name}') as ${col_type}) as id
+                  FROM ${raw_table_id}
+                  WHERE JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+                )""")
+        ).collect(joining("\nAND "));
+
+    return new StringSubstitutor(Map.of(
+        "final_table_id", id.finalTableId(),
+        "pk_list", pkList,
+        "pk_equality_checks", pkEqualityChecks
+    )).replace(
+        """
+              DELETE FROM ${final_table_id}
               WHERE
                 `_airbyte_raw_id` IN (
                   SELECT `_airbyte_raw_id` FROM (
@@ -232,9 +282,17 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
                 OR (
             ${pk_equality_checks}
                 )
-              ;
-                      
-              -- Step 4: Remove old entries from Raw table
+              ;"""
+    );
+  }
+
+  @VisibleForTesting
+  String dedupRawTable(final QuotedStreamId id) {
+    return new StringSubstitutor(Map.of(
+        "raw_table_id", id.rawTableId(),
+        "final_table_id", id.finalTableId()
+    )).replace(
+        """
               DELETE FROM
                 ${raw_table_id}
               WHERE
@@ -243,16 +301,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
                 )
                 AND
                 JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
-              ;
-                      
-              -- Step 5: Apply typed_at timestamp where needed
+              ;"""
+    );
+  }
+
+  @VisibleForTesting
+  String commitRawTable(final QuotedStreamId id) {
+    return new StringSubstitutor(Map.of(
+        "raw_table_id", id.rawTableId()
+    )).replace(
+        """
               UPDATE ${raw_table_id}
               SET `_airbyte_loaded_at` = CURRENT_TIMESTAMP()
               WHERE `_airbyte_loaded_at` IS NULL
-              ;
-                      
-            COMMIT TRANSACTION;
-            """
+              ;"""
     );
   }
 
@@ -266,10 +328,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
           "airbyte_raw_id", RAW_ID,
           "final_table_id", stream.id().finalTableId()
       )).replace("""
-        DELETE FROM ${raw_table_id} WHERE ${airbyte_raw_id} NOT IN (
-          SELECT ${airbyte_raw_id} FROM ${final_table_id}
-        )
-        """);
+          DELETE FROM ${raw_table_id} WHERE ${airbyte_raw_id} NOT IN (
+            SELECT ${airbyte_raw_id} FROM ${final_table_id}
+          )
+          """);
     } else {
       return "";
     }
@@ -283,9 +345,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
           "raw_table_id", stream.id().rawTableId() + "_" + finalSuffix,
           "final_table_name", stream.id().finalName()
       )).replace("""
-        DROP TABLE ${final_table_id};
-        ALTER TABLE ${raw_table_id} RENAME TO ${final_table_name};
-        """);
+          DROP TABLE ${final_table_id};
+          ALTER TABLE ${raw_table_id} RENAME TO ${final_table_name};
+          """);
     } else {
       return "";
     }
