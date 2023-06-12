@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": "string"
+    },
+    "accountNumber": {
+      "type": "string"
+    },
+    "requiresFundedAccount": {
+      "type": "string"
+    },
+    "balance": {
+      "type": "number"
+    },
+    "nickname": {
+      "type": ["null", "string"]
+    },
+    "shippingProviderId": {
+      "type": "integer"
+    },
+    "primary": {
+      "type": "boolean"
+    }
+  }
+}

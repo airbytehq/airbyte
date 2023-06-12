@@ -1,9 +1,11 @@
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from airbyte_cdk.sources.streams.core import SyncMode
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+from requests.auth import AuthBase
 
 
 class ShipstationAbstractStream(HttpStream, ABC):
@@ -13,7 +15,24 @@ class ShipstationAbstractStream(HttpStream, ABC):
     data_field = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        pass
+        json_response = response.json()
+        if "page" in json_response and "pages" in json_response:
+            current_page = json_response["page"]
+            total_pages = json_response["pages"]
+            if current_page < total_pages:
+                return {"page": current_page + 1}
+        return None
+    
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {}
+        if next_page_token:
+            params["page"] = next_page_token.get("page")
+        return params
 
     def parse_response(
         self,
@@ -87,27 +106,152 @@ class Carriers(ShipstationAbstractStream):
 
 class Stores(ShipstationAbstractStream):
     def path(self, **kwargs) -> str:
-        return self.url_base + "stores"
+        return self.url_base + f"stores"
     
 class MarketPlaces(ShipstationAbstractStream):
     def path(self, **kwargs) -> str:
         return self.url_base + "stores/marketplaces"
     
     
-# class Fulfillments(ShipstationAbstractStream):
-#     def path(self, **kwargs) -> str:
-#         return self.url_base + "fulfillments"
+# incremental stream
+class IncrementalShipstationAbstractStream(ShipstationAbstractStream, ABC):
+    """
+    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
+         if you do not need to implement incremental sync for any streams, remove this class.
+    """
+
+    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
+    state_checkpoint_interval = None
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.page = 1
+        self.current_page = 1
+
+    @property
+    def cursor_field(self) -> str:
+        """
+        TODO
+        Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
+        usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
+
+        :return str: The name of the cursor field.
+        """
+        return []
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
+        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
+        """
+        return {}
     
-#     def read_records(self, sync_mode: SyncMode, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-#         response = self._send_request("GET", self.path())
-#         json_response = response.json()
-#         fulfillments = json_response.get("fulfillments", [])
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self.page > self.current_page:
+            self.current_page += 1
+            return {"page": 1}
+        return None
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        pass
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        pass
+
+
+MAX_PAGE_SIZE = 10
+
+class Shipments(IncrementalShipstationAbstractStream):
+    primary_key = None
+
+    @property
+    def http_method(self) -> str:
+        return "GET"
+
+    def path(self, **kwargs) -> str:
+        return self.url_base + "shipments"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        if "shipments" in response_json:
+            count = response_json.get("info", {}).get("count")
+            if count is not None and count > (MAX_PAGE_SIZE * self.current_page):
+                self.page += 1
+            results = response_json["shipments"]
+            if results is None:
+                return []
+            return results
+        else:
+            raise Exception([{"message": "Failed to obtain data.", "msg": response.text}])
         
-#         if not fulfillments:
-#             # No fulfillments available, return an empty list
-#             return []
+class Fulfillments(IncrementalShipstationAbstractStream):
+    primary_key = None
+
+    @property
+    def http_method(self) -> str:
+        return "GET"
+
+    def path(self, **kwargs) -> str:
+        return self.url_base + "fulfillments"
+
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        if "fulfillments" in response_json:
+            count = response_json.get("info", {}).get("count")
+            if count is not None and count > (MAX_PAGE_SIZE * self.current_page):
+                self.page += 1
+            results = response_json["fulfillments"]
+            if results is None:
+                return []
+            return results
+        else:
+            raise Exception([{"message": "Failed to obtain data.", "msg": response.text}])
         
-#         # Process the fulfillments and yield them as records
-#         for fulfillment in fulfillments:
-#             # Process fulfillment and yield it as a record
-#             yield fulfillment
+class Customers(IncrementalShipstationAbstractStream):
+    primary_key = None
+
+    @property
+    def http_method(self) -> str:
+        return "GET"
+
+    def path(self, **kwargs) -> str:
+        return self.url_base + "customers"
+
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        if "customers" in response_json:
+            count = response_json.get("info", {}).get("count")
+            if count is not None and count > (MAX_PAGE_SIZE * self.current_page):
+                self.page += 1
+            results = response_json["customers"]
+            if results is None:
+                return []
+            return results
+        else:
+            raise Exception([{"message": "Failed to obtain data.", "msg": response.text}])
+        
+class Products(IncrementalShipstationAbstractStream):
+    primary_key = None
+
+    @property
+    def http_method(self) -> str:
+        return "GET"
+
+    def path(self, **kwargs) -> str:
+        return self.url_base + "products"
+
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        if "products" in response_json:
+            count = response_json.get("info", {}).get("count")
+            if count is not None and count > (MAX_PAGE_SIZE * self.current_page):
+                self.page += 1
+            results = response_json["products"]
+            if results is None:
+                return []
+            return results
+        else:
+            raise Exception([{"message": "Failed to obtain data.", "msg": response.text}])
