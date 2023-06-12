@@ -995,8 +995,13 @@ class CRMSearchStream(IncrementalStream, ABC):
     associations: List[str] = None
 
     @property
+    def custom_object_name(self) -> Optional[str]:
+        return None
+
+    @property
     def url(self):
-        return f"/crm/v3/objects/{self.entity}/search" if self.state else f"/crm/v3/objects/{self.entity}"
+        objectType = self.custom_object_name if self.custom_object_name else self.entity
+        return f"/crm/v3/objects/{objectType}/search" if self.state else f"/crm/v3/objects/{objectType}"
 
     def __init__(
         self,
@@ -1899,6 +1904,7 @@ class CustomObject(CRMSearchStream, ABC):
     last_modified_field = "hs_lastmodifieddate"
     associations = []
     primary_key = "id"
+    custom_object_id = None
     scopes = {"crm.schemas.custom.read", "crm.objects.custom.read"}
 
     def __init__(self, entity: str, schema: Mapping[str, Any], **kwargs):
@@ -1909,6 +1915,64 @@ class CustomObject(CRMSearchStream, ABC):
     @property
     def name(self) -> str:
         return self.entity
+
+    @property
+    @lru_cache()
+    def custom_object_name(self) -> Optional[str]:
+        if self.custom_object_id:
+            return self.custom_object_id
+
+        """Some entities has dynamic set of properties, so we trying to resolve those at runtime"""
+        props = {}
+        if not self.entity:
+            return props
+        if not self.properties_scope_is_granted():
+            logger.warning(
+                f"Check your API key has the following permissions granted: {self.properties_scopes}, "
+                f"to be able to fetch all properties available."
+            )
+            return props
+        data, response = self._api.get("/crm/v3/schemas")
+        qualifiedName = None
+        if response.ok and "results" in data:
+            for raw_schema in data["results"]:
+                if raw_schema["name"] == self.entity:
+                    qualifiedName = raw_schema["fullyQualifiedName"]
+                    break
+        if qualifiedName is None:
+            raise Exception(f"failed to get properties for custom object {self.entity}")
+
+        # setup for use
+        self.custom_object_id = qualifiedName
+        return self.custom_object_id
+
+    @property
+    @lru_cache()
+    def properties(self) -> Mapping[str, Any]:
+        """Some entities has dynamic set of properties, so we trying to resolve those at runtime"""
+        props = {}
+        if not self.entity:
+            return props
+        if not self.properties_scope_is_granted():
+            logger.warning(
+                f"Check your API key has the following permissions granted: {self.properties_scopes}, "
+                f"to be able to fetch all properties available."
+            )
+            return props
+        data, response = self._api.get("/crm/v3/schemas")
+        propsdata = None
+        if response.ok and "results" in data:
+            for raw_schema in data["results"]:
+                if raw_schema["name"] == self.entity:
+                    propsdata = raw_schema["properties"]
+                    break
+        if propsdata is None:
+            raise Exception(f"failed to get properties for custom object {self.entity}")
+
+        for row in propsdata:
+            props[row["name"]] = self._get_field_props(row["type"])
+
+        return props
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if not self.schema:
