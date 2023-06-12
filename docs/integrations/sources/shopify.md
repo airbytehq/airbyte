@@ -5,80 +5,15 @@ description: >-
 
 # Shopify
 
-
 :::note
 
 Our Shopify Source Connector does not support OAuth at this time due to limitations outside of our control. If OAuth for Shopify is critical to your business, [please reach out to us](mailto:product@airbyte.io) to discuss how we may be able to partner on this effort.
 
 :::
 
-## Sync overview
-
-The Shopify source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
-
-This source can sync data for the [Shopify REST API](https://shopify.dev/api/admin-rest) and the [Shopify GraphQl API](https://shopify.dev/api/admin-graphql).
-
-## Troubleshooting
-
-Check out common troubleshooting issues for the Shopify source connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-shopify).
-
-### Output schema
-
-This Source is capable of syncing the following core Streams:
-
-* [Abandoned Checkouts](https://help.shopify.com/en/api/reference/orders/abandoned_checkouts)
-* [Collects](https://help.shopify.com/en/api/reference/products/collect)
-* [Custom Collections](https://help.shopify.com/en/api/reference/products/customcollection)
-* [Customers](https://help.shopify.com/en/api/reference/customers)
-* [Draft Orders](https://help.shopify.com/en/api/reference/orders/draftorder)
-* [Discount Codes](https://shopify.dev/docs/admin-api/rest/reference/discounts/discountcode)
-* [Metafields](https://help.shopify.com/en/api/reference/metafield)
-* [Orders](https://help.shopify.com/en/api/reference/order)
-* [Orders Refunds](https://shopify.dev/api/admin/rest/reference/orders/refund)
-* [Orders Risks](https://shopify.dev/api/admin/rest/reference/orders/order-risk)
-* [Products](https://help.shopify.com/en/api/reference/products)
-* [Products (GraphQL)](https://shopify.dev/api/admin-graphql/2022-10/queries/products)
-* [Transactions](https://help.shopify.com/en/api/reference/orders/transaction)
-* [Balance Transactions](https://shopify.dev/api/admin-rest/2021-07/resources/transactions)
-* [Pages](https://help.shopify.com/en/api/reference/online-store/page)
-* [Price Rules](https://help.shopify.com/en/api/reference/discounts/pricerule)
-* [Locations](https://shopify.dev/api/admin-rest/2021-10/resources/location)
-* [InventoryItems](https://shopify.dev/api/admin-rest/2021-10/resources/inventoryItem)
-* [InventoryLevels](https://shopify.dev/api/admin-rest/2021-10/resources/inventorylevel)
-* [Fulfillment Orders](https://shopify.dev/api/admin-rest/2021-07/resources/fulfillmentorder)
-* [Fulfillments](https://shopify.dev/api/admin-rest/2021-07/resources/fulfillment)
-* [Shop](https://shopify.dev/api/admin-rest/2021-07/resources/shop)
-
-#### NOTE
-
-For better experience with `Incremental Refresh` the following is recommended:
-
-* `Order Refunds`, `Order Risks`, `Transactions` should be synced along with `Orders` stream.
-* `Discount Codes` should be synced along with `Price Rules` stream.
-
-If child streams are synced alone from the parent stream - the full sync will take place, and the records are filtered out afterwards.
-
-### Data type mapping
-
-| Integration Type | Airbyte Type |
-| :--- | :--- |
-| `string` | `string` |
-| `number` | `number` |
-| `array` | `array` |
-| `object` | `object` |
-| `boolean` | `boolean` |
-
-### Features
-
-| Feature | Supported?\(Yes/No\) |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | Yes |
-| Namespaces | No |
-
 ## Getting started
 
-This connector support both: `OAuth 2.0` and `API PASSWORD` (for private applications) athentication methods.
+This connector supports the `API PASSWORD` (for private applications) athentication methods.
 
 ### Connect using `API PASSWORD` option
 
@@ -90,7 +25,52 @@ This connector support both: `OAuth 2.0` and `API PASSWORD` (for private applica
 5. The password under the `Admin API` section is what you'll use as the `API PASSWORD` for the integration.
 6. You're ready to set up Shopify in Airbyte!
 
-### Output Streams Schemas
+### Scopes Required for Custom App
+Add the following scopes to your custom app to ensure Airbyte can sync all available data. To see a list of streams this source supports, see our full [Shopify documentation](https://docs.airbyte.com/integrations/sources/shopify/).
+* `read_analytics`
+* `read_assigned_fulfillment_orders`
+* `read_gdpr_data_request`
+* `read_locations`
+* `read_price_rules` 
+* `read_product_listings` 
+* `read_products` 
+* `read_reports` 
+* `read_resource_feedbacks` 
+* `read_script_tags` 
+* `read_shipping`
+* `read_locales`
+* `read_shopify_payments_accounts` 
+* `read_shopify_payments_bank_accounts` 
+* `read_shopify_payments_disputes`
+* `read_shopify_payments_payouts`
+* `read_content`
+* `read_themes`
+* `read_third_party_fulfillment_orders`
+* `read_translations`
+* `read_customers`
+* `read_discounts` 
+* `read_draft_orders` 
+* `read_fulfillments` 
+* `read_gift_cards`
+* `read_inventory`
+* `read_legal_policies` 
+* `read_marketing_events` 
+* `read_merchant_managed_fulfillment_orders` 
+* `read_online_store_pages`
+* `read_order_edits`
+* `read_orders`
+
+## Supported sync modes
+
+The Shopify source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+
+This source can sync data for the [Shopify REST API](https://shopify.dev/api/admin-rest) and the [Shopify GraphQl API](https://shopify.dev/api/admin-graphql).
+
+## Troubleshooting tips
+
+Check out common troubleshooting issues for the Shopify source connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-shopify).
+
+## Supported Streams
 
 This Source is capable of syncing the following core Streams:
 
@@ -123,7 +103,7 @@ This Source is capable of syncing the following core Streams:
 * [Fulfillments](https://shopify.dev/api/admin-rest/2022-01/resources/fulfillment)
 * [Shop](https://shopify.dev/api/admin-rest/2022-01/resources/shop)
 
-#### Notes
+### Stream sync recommendations
 
 For better experience with `Incremental Refresh` the following is recommended:
 
@@ -132,7 +112,25 @@ For better experience with `Incremental Refresh` the following is recommended:
 
 If child streams are synced alone from the parent stream - the full sync will take place, and the records are filtered out afterwards.
 
-### Performance considerations
+## Data type mapping
+
+| Integration Type | Airbyte Type |
+| :--- | :--- |
+| `string` | `string` |
+| `number` | `number` |
+| `array` | `array` |
+| `object` | `object` |
+| `boolean` | `boolean` |
+
+## Features
+
+| Feature | Supported?\(Yes/No\) |
+| :--- | :--- |
+| Full Refresh Sync | Yes |
+| Incremental - Append Sync | Yes |
+| Namespaces | No |
+
+## Performance considerations
 
 Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but in some edge cases, user can receive the warning message as follows:
 
@@ -146,7 +144,8 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                   |
 |:--------|:-----------|:----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
-| 0.3.3   | 2023-04-12 | [25110](https://github.com/airbytehq/airbyte/pull/25110)  | Fix issue when `cursor_field` is `"None"`, added missing properties to stream schemas, fixed `access_scopes` validation error                                                           |
+| 0.3.4   | 2023-05-10 | [25961](https://github.com/airbytehq/airbyte/pull/25961)  | Added validation for `shop` in input configuration (accepts non-url-like inputs) |
+| 0.3.3   | 2023-04-12 | [25110](https://github.com/airbytehq/airbyte/pull/25110)  | Fix issue when `cursor_field` is `"None"`, added missing properties to stream schemas, fixed `access_scopes` validation error |
 | 0.3.2   | 2023-02-27 | [23473](https://github.com/airbytehq/airbyte/pull/23473)  | Fixed OOM / Memory leak issue for Airbyte Cloud                                                           |
 | 0.3.1   | 2023-01-16 | [21461](https://github.com/airbytehq/airbyte/pull/21461)  | Add `discount_applications` to `orders` stream                                                            |
 | 0.3.0   | 2022-11-16 | [19492](https://github.com/airbytehq/airbyte/pull/19492)  | Add support for graphql and add a graphql products stream                                                 |

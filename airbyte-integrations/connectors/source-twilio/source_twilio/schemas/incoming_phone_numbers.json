@@ -118,6 +118,15 @@
     },
     "status": {
       "type": ["null", "string"]
+    },
+    "subresource_uris": {
+      "properties": {
+        "assigned_add_ons": {
+          "type": ["null", "string"]
+        }
+      },
+      "type": ["null", "object"],
+      "additionalProperties": true
     }
   },
   "type": "object",

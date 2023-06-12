@@ -171,3 +171,5 @@ class User(BaseSchemaModel):
     deactivatedAt: int
     externalDirectoryId: str
     linkedContactIds: List[str]
+    jobTitle: str
+    managerId: str

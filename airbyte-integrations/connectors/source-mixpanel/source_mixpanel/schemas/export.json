@@ -8,6 +8,9 @@
     "distinct_id": {
       "type": ["null", "string"]
     },
+    "insert_id": {
+      "type": ["null", "string"]
+    },
     "time": {
       "type": ["null", "string"],
       "format": "date-time"

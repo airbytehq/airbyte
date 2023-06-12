@@ -5,6 +5,10 @@
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
+from airbyte_cdk.sources.declarative.interpolation.interpolated_nested_mapping import NestedMapping
+from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_nested_request_input_provider import (
+    InterpolatedNestedRequestInputProvider,
+)
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
@@ -30,7 +34,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
     request_parameters: Optional[RequestInput] = None
     request_headers: Optional[RequestInput] = None
     request_body_data: Optional[RequestInput] = None
-    request_body_json: Optional[RequestInput] = None
+    request_body_json: Optional[NestedMapping] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         if self.request_parameters is None:
@@ -54,7 +58,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         self._body_data_interpolator = InterpolatedRequestInputProvider(
             config=self.config, request_inputs=self.request_body_data, parameters=parameters
         )
-        self._body_json_interpolator = InterpolatedRequestInputProvider(
+        self._body_json_interpolator = InterpolatedNestedRequestInputProvider(
             config=self.config, request_inputs=self.request_body_json, parameters=parameters
         )
 

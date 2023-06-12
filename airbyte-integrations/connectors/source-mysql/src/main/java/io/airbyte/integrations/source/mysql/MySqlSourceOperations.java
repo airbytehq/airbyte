@@ -34,6 +34,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_DECIMAL_DIGITS;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 
@@ -106,19 +107,18 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       case BIGINT, BIGINT_UNSIGNED -> putBigInt(json, columnName, resultSet, colIndex);
       case FLOAT, FLOAT_UNSIGNED -> putFloat(json, columnName, resultSet, colIndex);
       case DOUBLE, DOUBLE_UNSIGNED -> putDouble(json, columnName, resultSet, colIndex);
-      case DECIMAL, DECIMAL_UNSIGNED -> putBigDecimal(json, columnName, resultSet, colIndex);
+      case DECIMAL, DECIMAL_UNSIGNED -> {
+        if (field.getDecimals() == 0) {
+          putBigInt(json, columnName, resultSet, colIndex);
+        } else {
+          putBigDecimal(json, columnName, resultSet, colIndex);
+        }
+      }
       case DATE -> putDate(json, columnName, resultSet, colIndex);
       case DATETIME -> putTimestamp(json, columnName, resultSet, colIndex);
       case TIMESTAMP -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
       case TIME -> putTime(json, columnName, resultSet, colIndex);
-      case CHAR, VARCHAR -> {
-        if (field.isBinary()) {
-          // when character set is binary, the returned value is binary
-          putBinary(json, columnName, resultSet, colIndex);
-        } else {
-          putString(json, columnName, resultSet, colIndex);
-        }
-      }
+      case CHAR, VARCHAR -> putString(json, columnName, resultSet, colIndex);
       case TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY, GEOMETRY -> putBinary(json, columnName, resultSet, colIndex);
       case TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, JSON, ENUM, SET -> putString(json, columnName, resultSet, colIndex);
       case NULL -> json.set(columnName, NullNode.instance);
@@ -143,7 +143,8 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     switch (cursorFieldType) {
       case BIT -> setBit(preparedStatement, parameterIndex, value);
       case BOOLEAN -> setBoolean(preparedStatement, parameterIndex, value);
-      case YEAR, TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED -> setInteger(preparedStatement, parameterIndex,
+      case YEAR, TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED -> setInteger(preparedStatement,
+          parameterIndex,
           value);
       case INT, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED -> setBigInteger(preparedStatement, parameterIndex, value);
       case FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED -> setDouble(preparedStatement, parameterIndex, value);
@@ -180,8 +181,17 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
         // When CHAR[N] and VARCHAR[N] columns have binary character set, the returned
         // types are BINARY[N] and VARBINARY[N], respectively. So we don't need to
         // convert them here. This is verified in MySqlSourceDatatypeTest.
+        case DECIMAL -> {
+          if (field.get(INTERNAL_DECIMAL_DIGITS) != null && field.get(INTERNAL_DECIMAL_DIGITS).asInt() == 0) {
+            return BIGINT;
+          }
+        }
+        case DECIMAL_UNSIGNED -> {
+          if (field.get(INTERNAL_DECIMAL_DIGITS) != null && field.get(INTERNAL_DECIMAL_DIGITS).asInt() == 0) {
+            return BIGINT_UNSIGNED;
+          }
+        }
       }
-
       return literalType;
     } catch (final IllegalArgumentException ex) {
       LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s (type name: %s). Casting to VARCHAR.",

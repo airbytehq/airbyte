@@ -128,7 +128,7 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
     if (inputStream == null && !isClosed) {
       flushWriter();
       if (compressedBuffer != null) {
-        LOGGER.info("Wrapping up compression and write GZIP trailer data.");
+        LOGGER.debug("Wrapping up compression and write GZIP trailer data.");
         compressedBuffer.flush();
         compressedBuffer.close();
       }

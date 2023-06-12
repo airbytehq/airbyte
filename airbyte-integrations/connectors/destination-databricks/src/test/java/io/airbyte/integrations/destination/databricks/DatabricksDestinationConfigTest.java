@@ -44,10 +44,11 @@ class DatabricksDestinationConfigTest {
     assertEquals(DatabricksDestinationConfig.DEFAULT_DATABRICKS_PORT, config1.port());
     assertEquals(DatabricksDestinationConfig.DEFAULT_DATABASE_SCHEMA, config1.schema());
 
-    databricksConfig.put("databricks_port", "1000").put("schema", "testing_schema");
+    databricksConfig.put("databricks_port", "1000").put("schema", "testing_schema").put("enable_schema_evolution", true);
     final DatabricksDestinationConfig config2 = DatabricksDestinationConfig.get(databricksConfig);
     assertEquals("1000", config2.port());
     assertEquals("testing_schema", config2.schema());
+    assertEquals(true, config2.enableSchemaEvolution());
 
     assertEquals(DatabricksS3StorageConfigProvider.class, config2.storageConfig().getClass());
   }
@@ -76,11 +77,12 @@ class DatabricksDestinationConfigTest {
     assertEquals(DatabricksDestinationConfig.DEFAULT_DATABRICKS_PORT, config1.port());
     assertEquals(DatabricksDestinationConfig.DEFAULT_DATABASE_SCHEMA, config1.schema());
 
-    databricksConfig.put("databricks_port", "1000").put("schema", "testing_schema");
+    databricksConfig.put("databricks_port", "1000").put("schema", "testing_schema").put("enable_schema_evolution", true);
     final DatabricksDestinationConfig config2 = DatabricksDestinationConfig.get(databricksConfig);
     assertEquals("1000", config2.port());
     assertEquals("testing_schema", config2.schema());
-
+    assertEquals(true, config2.enableSchemaEvolution());
+    
     assertEquals(DatabricksAzureBlobStorageConfigProvider.class, config2.storageConfig().getClass());
   }
 
@@ -88,24 +90,23 @@ class DatabricksDestinationConfigTest {
   public void testDefaultCatalog() {
     final DatabricksDestinationConfig databricksDestinationConfig = DatabricksDestinationConfig.get(Jsons.deserialize(
         """
-            {
-              "accept_terms": true,
-              "databricks_server_hostname": "abc-12345678-wxyz.cloud.databricks.com",
-              "databricks_http_path": "sql/protocolvx/o/1234567489/0000-1111111-abcd90",
-              "databricks_port": "443",
-              "databricks_personal_access_token": "dapi0123456789abcdefghij0123456789AB",
-              "database_schema": "public",
-              "data_source": {
-                "data_source_type": "S3_STORAGE",
-                "s3_bucket_name": "required",
-                "s3_bucket_path": "required",
-                "s3_bucket_region": "required",
-                "s3_access_key_id": "required",
-                "s3_secret_access_key": "required"
-              }
-            }
-            """
-    ));
+        {
+          "accept_terms": true,
+          "databricks_server_hostname": "abc-12345678-wxyz.cloud.databricks.com",
+          "databricks_http_path": "sql/protocolvx/o/1234567489/0000-1111111-abcd90",
+          "databricks_port": "443",
+          "databricks_personal_access_token": "dapi0123456789abcdefghij0123456789AB",
+          "database_schema": "public",
+          "data_source": {
+            "data_source_type": "S3_STORAGE",
+            "s3_bucket_name": "required",
+            "s3_bucket_path": "required",
+            "s3_bucket_region": "required",
+            "s3_access_key_id": "required",
+            "s3_secret_access_key": "required"
+          }
+        }
+        """));
 
     assertEquals("hive_metastore", databricksDestinationConfig.catalog());
   }

@@ -5,7 +5,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
-  dockerImageTag: 0.2.37
+  dockerImageTag: 0.2.39
   dockerRepository: airbyte/source-google-sheets
   githubIssueLabel: source-google-sheets
   icon: google-sheets.svg
@@ -18,5 +18,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/google-sheets
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

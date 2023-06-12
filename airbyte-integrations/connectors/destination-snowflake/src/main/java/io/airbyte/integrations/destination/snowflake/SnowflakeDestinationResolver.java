@@ -40,7 +40,6 @@ public class SnowflakeDestinationResolver {
     return Math.max(numOfFileBuffers, FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
   }
 
-
   public static Map<DestinationType, Destination> getTypeToDestination(
                                                                        final String airbyteEnvironment) {
     final SnowflakeS3StagingDestination s3StagingDestination = new SnowflakeS3StagingDestination(airbyteEnvironment);
