@@ -28,7 +28,7 @@ class VersionBreakingChange(BaseModel):
 
 class ConnectorBreakingChanges(BaseModel):
     class Config:
-        extra = Extra.allow
+        extra = Extra.forbid
 
     __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+$"), VersionBreakingChange] = Field(
         ...,

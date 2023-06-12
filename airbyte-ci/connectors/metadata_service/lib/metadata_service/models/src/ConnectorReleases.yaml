@@ -18,7 +18,7 @@ definitions:
   ConnectorBreakingChanges:
     description: Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.
     type: object
-    additionalProperties: true
+    additionalProperties: false
     minProperties: 1
     patternProperties:
       "^\\d+\\.\\d+\\.\\d+$":
