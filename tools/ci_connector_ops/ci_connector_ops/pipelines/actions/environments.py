@@ -297,15 +297,13 @@ def with_global_dockerd_service(dagger_client: Client, git_revision: str) -> Con
         .with_mounted_cache(
             "/var/lib/docker",
             dagger_client.cache_volume("docker-lib"),
-            sharing=CacheSharingMode.PRIVATE,
         )
         .with_mounted_cache(
             "/tmp",
             dagger_client.cache_volume("shared-tmp"),
         )
         .with_exposed_port(2375)
-        .with_env_variable("DOCKER_BUILDKIT", "0")
-        .with_exec(["dockerd", "--log-level=error", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
+        .with_exec(["dockerd", "--log-level=debug", "--host=tcp://0.0.0.0:2375", "--tls=false"], insecure_root_capabilities=True)
     )
 
 
