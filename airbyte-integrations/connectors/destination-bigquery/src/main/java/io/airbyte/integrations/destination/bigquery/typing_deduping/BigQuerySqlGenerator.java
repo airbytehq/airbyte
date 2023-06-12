@@ -1,5 +1,7 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
+import static java.util.stream.Collectors.joining;
+
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
@@ -12,6 +14,7 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.commons.text.StringSubstitutor;
 
 public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, StandardSQLTypeName> {
@@ -89,14 +92,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   @Override
   public String createTable(final StreamConfig<StandardSQLTypeName> stream) {
     // TODO generate these from the stream columns
-    String columnDeclarations = """
-        id integer primary key,
-        name string
-        """;
+    String columnDeclarations = stream.columns().entrySet().stream()
+        .map(column -> column.getKey().name() + " " + column.getValue().name())
+        .collect(joining(",\n"));
+
     return new StringSubstitutor(Map.of(
         "final_table_id", stream.id().finalTableId(),
         "column_declarations", columnDeclarations
-    )).replace("CREATE TABLE ${final_table_id} (${column_declarations})");
+    )).replace("""
+        CREATE TABLE ${final_table_id} (
+        _airbyte_raw_id STRING,
+        _airbyte_extracted_at TIMESTAMP,
+        ${column_declarations}
+        )
+        """);
   }
 
   @Override

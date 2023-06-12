@@ -45,10 +45,11 @@ class BigQuerySqlGeneratorTest {
     assertEquals(
         """
             CREATE TABLE public.users (
-                id INT64 PRIMARY KEY,
-                updated_at TIMESTAMP,
-                name STRING
-              )
+            _airbyte_raw_id STRING,
+            _airbyte_extracted_at TIMESTAMP,
+            id INT64,
+            updated_at TIMESTAMP,
+            name STRING
             )
             """,
         sql
