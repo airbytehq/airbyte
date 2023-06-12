@@ -193,7 +193,7 @@ public class PerformanceHarness {
     // TODO: (ryankfu) when incremental syncs are supported, add a tearDown method to clear table
   }
 
-  // TODO: (ryankfu) generate records for each stream
+  // TODO: (ryankfu) get less hacky way to generate multiple streams
   @VisibleForTesting
   static String getStreamName(final List<String> listOfStreamNames, final Random random) {
     return listOfStreamNames.get(random.nextInt(listOfStreamNames.size()));

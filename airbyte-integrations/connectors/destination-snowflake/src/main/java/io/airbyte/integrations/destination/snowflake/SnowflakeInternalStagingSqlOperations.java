@@ -164,10 +164,8 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
       LOGGER.debug("Executing query: {}", query);
       database.execute(query);
     } catch (final SQLException e) {
-      LOGGER.info("==== Are we here?");
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     } catch (final Exception e) {
-      LOGGER.info("==== or we here?");
       throw e;
     }
   }
@@ -197,7 +195,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
       final String query = getDropQuery(stageName);
       LOGGER.debug("Executing query: {}", query);
       database.execute(query);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }
@@ -218,7 +216,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
       final String query = getRemoveQuery(stageName);
       LOGGER.debug("Executing query: {}", query);
       database.execute(query);
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
   }
