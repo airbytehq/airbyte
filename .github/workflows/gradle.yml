@@ -251,11 +251,10 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      # Commenting this out fixes the build, and I don't know wny - https://github.com/airbytehq/airbyte/pull/27262
-      # - name: Cache Build Artifacts
-      #   uses: ./.github/actions/cache-build-artifacts
-      #   with:
-      #     cache-key: ${{ secrets.CACHE_VERSION }}-connectors
+       - name: Cache Build Artifacts
+          uses: ./.github/actions/cache-build-artifacts
+          with:
+            cache-key: ${{ secrets.CACHE_VERSION }}-connectors-gradle-build
 
       - uses: actions/setup-java@v3
         with:
