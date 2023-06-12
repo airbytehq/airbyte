@@ -251,10 +251,10 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}-connectors
+      # - name: Cache Build Artifacts
+      #   uses: ./.github/actions/cache-build-artifacts
+      #   with:
+      #     cache-key: ${{ secrets.CACHE_VERSION }}-connectors
 
       - uses: actions/setup-java@v3
         with:
@@ -267,7 +267,7 @@ jobs:
 
       - uses: actions/setup-python@v4
         with:
-          python-version: "3"
+          python-version: "3.9"
 
       - name: Install Pyenv
         run: python3 -m pip install virtualenv --user
