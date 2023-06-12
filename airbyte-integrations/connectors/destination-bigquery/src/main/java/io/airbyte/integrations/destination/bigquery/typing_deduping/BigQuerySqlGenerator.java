@@ -19,7 +19,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   // metadata columns
   private final String RAW_ID = quoteColumnId("_airbyte_raw_id").name();
-  private final String SYNC_ID = quoteColumnId("_airbyte_sync_id").name();
 
 
   // hardcoded CDC column name for deletions
@@ -70,7 +69,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   public StandardSQLTypeName toDialectType(final Primitive primitive) {
     // TODO maybe this should be in the interface? unclear if that has value, but I expect every implementation to have this method
-    return null;
+    return switch (primitive) {
+      // TODO doublecheck these
+      case STRING -> StandardSQLTypeName.STRING;
+      case NUMBER -> StandardSQLTypeName.NUMERIC;
+      case INTEGER -> StandardSQLTypeName.INT64;
+      case BOOLEAN -> StandardSQLTypeName.BOOL;
+      case TIMESTAMP_WITH_TIMEZONE -> StandardSQLTypeName.TIMESTAMP;
+      case TIMESTAMP_WITHOUT_TIMEZONE -> StandardSQLTypeName.DATETIME;
+      case TIME_WITH_TIMEZONE -> StandardSQLTypeName.STRING;
+      case TIME_WITHOUT_TIMEZONE -> StandardSQLTypeName.TIME;
+      case DATE -> StandardSQLTypeName.DATE;
+      // eventually this should be JSON; keep STRING for now as legacy compatibility
+      case UNKNOWN -> StandardSQLTypeName.STRING;
+    };
   }
 
   @Override
@@ -95,7 +107,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   // We need the configuredairbytestream for the sync mode + cursor name
   @Override
-  public String updateTable(String rawSuffix, final StreamConfig<StandardSQLTypeName> stream) {
+  public String updateTable(String finalSuffix, final StreamConfig<StandardSQLTypeName> stream) {
     // TODO this method needs to handle all the sync modes
     // do the stuff that evan figured out how to do https://github.com/airbytehq/typing-and-deduping-sql/blob/main/one-table.postgres.sql#L153
     // TODO use a better string templating thing
@@ -106,25 +118,33 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
             INSERT INTO %s.%s
             SELECT
               TODO....
-            FROM %s
+            FROM %s;
+            
+            DELETE from <final>
+            WHERE <raw_id> IN (
+             SELECT `_airbyte_raw_id` FROM (
+               SELECT `_airbyte_raw_id`, row_number() OVER (
+                 PARTITION BY `id` ORDER BY `updated_at` DESC, `_airbyte_extracted_at` DESC
+               ) as row_number FROM evan.users
+             )
+             WHERE row_number != 1
+           )
+           OR
+           -- Delete rows that have been CDC deleted
+           `id` IN (
+             SELECT
+               SAFE_CAST(JSON_EXTRACT_SCALAR(`_airbyte_data`, '$.id') as INT64) as id -- based on the PK which we know from the connector catalog
+             FROM evan.users_raw
+             WHERE JSON_EXTRACT_SCALAR(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+           )
                     
             COMMIT;
             """,
-        stream.id().namespace(),
-        stream.id().name(),
-        rawSuffix.length() > 0 ? stream.id().rawTableId() + "_" + rawSuffix : stream.id().rawTableId()
+        stream.id().finalNamespace(),
+        // TODO this is wrong, we can't just do "`foo`.`bar`" + "_tmp"
+        finalSuffix.length() > 0 ? stream.id().finalName() + "_" + finalSuffix : stream.id().finalName(),
+        stream.id().rawTableId()
     );
-  }
-
-  @Override
-  public String executeCdcDeletions(final StreamConfig<StandardSQLTypeName> stream) {
-    // CDC is always incremental dedup, and we only need to do this query if there's actually a deleted_at column
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && stream.columns().containsKey(DELETED_AT)) {
-      // TODO maybe this should have an extracted_at / loaded_at condition for efficiency
-      return "DELETE FROM " + stream.id().finalTableId() + " WHERE " + DELETED_AT.name() + " IS NOT NULL";
-    } else {
-      return "";
-    }
   }
 
   @Override
@@ -148,10 +168,16 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @Override
-  public String deletePreviousSyncRecords(final StreamConfig<StandardSQLTypeName> stream, final UUID syncId) {
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      // TODO maybe this should have an extracted_at / loaded_at condition for efficiency
-      return "DELETE FROM " + stream.id().finalTableId() + " WHERE " + SYNC_ID + " != " + syncId;
+  public String overwriteFinalTable(final String finalSuffix, final StreamConfig<StandardSQLTypeName> stream) {
+    if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE && finalSuffix.length() > 0) {
+      return """
+          DROP TABLE %s;
+          ALTER TABLE %s RENAME TO %s;
+          """.formatted(
+          stream.id().finalTableId(),
+          stream.id().rawTableId() + "_" + finalSuffix,
+          stream.id().finalName()
+      );
     } else {
       return "";
     }

@@ -18,7 +18,7 @@ public class BigQueryDestinationInteractorThing implements DestinationInteractor
 
   @Override
   public Optional<TableDefinition> findExistingTable(QuotedStreamId id) {
-    final Table table = bq.getTable(id.namespace(), id.name());
+    final Table table = bq.getTable(id.finalNamespace(), id.finalName());
     return Optional.ofNullable(table).map(Table::getDefinition);
   }
 

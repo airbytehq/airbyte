@@ -8,6 +8,8 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Primitive;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public sealed interface AirbyteType permits Array, OneOf, Object, UnsupportedOneOf, Primitive {
 

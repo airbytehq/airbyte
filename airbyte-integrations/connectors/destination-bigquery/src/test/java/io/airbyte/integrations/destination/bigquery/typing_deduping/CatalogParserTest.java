@@ -16,7 +16,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class CatalogParserTest {
 
@@ -79,8 +78,8 @@ class CatalogParserTest {
     final ParsedCatalog<?> parsedCatalog = parser.parseCatalog(catalog);
 
     assertNotEquals(
-        parsedCatalog.streams().get(0).id().name(),
-        parsedCatalog.streams().get(1).id().name()
+        parsedCatalog.streams().get(0).id().finalName(),
+        parsedCatalog.streams().get(1).id().finalName()
     );
   }
 

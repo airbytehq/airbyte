@@ -8,20 +8,21 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
   /**
    * In general, callers should not directly instantiate this class. Use {@link #quoteStreamId(String, String)} instead.
    *
-   * @param namespace         the namespace where the final table will be created
-   * @param name              the name of the final table
+   * @param finalNamespace    the namespace where the final table will be created
+   * @param finalName         the name of the final table
+   * @param rawNamespace      the namespace where the raw table will be created (typically "airbyte")
    * @param rawName           the name of the raw table (typically namespace_name, but may be different if there are collisions). There is no
    *                          rawNamespace because we assume that we're writing raw tables to the airbyte namespace.
    * @param originalNamespace the namespace of the stream according to the Airbyte catalog
    * @param originalName      the name of the stream according to the Airbyte catalog
    */
-  record QuotedStreamId(String namespace, String name, String rawNamespace, String rawName, String originalNamespace, String originalName) {
+  record QuotedStreamId(String finalNamespace, String finalName, String rawNamespace, String rawName, String originalNamespace, String originalName) {
 
     /**
      * Most databases/warehouses use a `schema.name` syntax to identify tables. This is a convenience method to generate that syntax.
      */
     public String finalTableId() {
-      return namespace + "." + name;
+      return finalNamespace + "." + finalName;
     }
 
     public String rawTableId() {
@@ -74,19 +75,14 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
    *   <li>Extracting the JSON fields and casting to the appropriate types</li>
    *   <li>Handling errors in those casts</li>
    *   <li>Merging those typed records into an existing table</li>
-   *   <li>(maybe) When reading from a tmp table, copying the new raw records into the real raw table</li>
+   *   <li>When reading from a tmp table, copying the new raw records into the real raw table</li>
    * </ul>
    *
-   * @param rawSuffix the suffix of the raw table to read from. If empty string, reads from the raw table directly. Useful for incremental syncs,
-   *                  where we load batches of records into special temporary raw tables.
+   * @param finalSuffix the suffix of the final table to write to. If empty string, writes to the final table directly. Useful for full refresh overwrite
+   *                    syncs, where we write the entire sync to a temp table and then swap it into the final table at the end.
    */
   // TODO maybe this should be broken into smaller methods, idk
-  String updateTable(String rawSuffix, final StreamConfig<DialectType> stream);
-
-  /**
-   * Delete records from the final table with a non-null _ab_cdc_deleted_at column.
-   */
-  String executeCdcDeletions(final StreamConfig<DialectType> stream);
+  String updateTable(String finalSuffix, final StreamConfig<DialectType> stream);
 
   /**
    * Delete outdated raw records from the raw table.
@@ -94,11 +90,8 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
   String deleteOldRawRecords(final StreamConfig<DialectType> stream);
 
   /**
-   * Generate a SQL statement to delete records from the final table that were not emitted in the current sync.
-   * <p>
-   * Useful for full-refresh overwrite syncs, where we need to delete records that from the previous sync and which weren't re-emitted in the current
-   * sync.
+   * Drop the previous final table, and rename the new final table to match the old final table.
    */
-  String deletePreviousSyncRecords(StreamConfig<DialectType> stream, UUID syncId);
+  String overwriteFinalTable(String finalSuffix, StreamConfig<DialectType> stream);
 
 }
