@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.record_buffer;
 
 import com.google.common.io.CountingOutputStream;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +19,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Base implementation of a {@link SerializableBuffer}. It is composed of a {@link BufferStorage}
  * where the actual data is being stored in a serialized format.
- *
+ *<p>
  * Such data format is defined by concrete implementation inheriting from this base abstract class.
  * To do so, necessary methods on handling "writer" methods should be defined. This writer would
  * take care of converting {@link AirbyteRecordMessage} into the serialized form of the data such as
@@ -59,7 +60,9 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
    */
   protected abstract void writeRecord(AirbyteRecordMessage record) throws IOException;
 
-  protected abstract void writeRecord(String recordString, long emittedAt) throws IOException;
+  protected void writeRecord(final String recordString, final long emittedAt) throws IOException {
+    writeRecord(Jsons.deserialize(recordString, AirbyteRecordMessage.class).withEmittedAt(emittedAt));
+  }
 
   /**
    * Stops the writer from receiving new data and prepares it for being finalized and converted into

@@ -10,7 +10,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 public class NoFlatteningSheetGenerator extends BaseSheetGenerator implements CsvSheetGenerator {
 
@@ -20,11 +19,6 @@ public class NoFlatteningSheetGenerator extends BaseSheetGenerator implements Cs
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
         JavaBaseConstants.COLUMN_NAME_DATA);
-  }
-
-  @Override
-  public List<Object> getDataRow(final UUID id, final String formattedString, final long emittedAt) {
-    return null;
   }
 
   /**
