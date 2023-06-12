@@ -288,7 +288,7 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         assert authenticator.refresh_access_token() == ("new_access_token", "42", "new_refresh_token")
 
 
-def mock_request(method, url, data):
-    if url == "refresh_end":
+def mock_request(method, url, data, headers):
+    if url == "refresh_end" and headers == {"Content-Type": "application/json"}:
         return resp
-    raise Exception(f"Error while refreshing access token with request: {method}, {url}, {data}")
+    raise Exception(f"Error while refreshing access token with request: {method}, {url}, {data}, {headers}")
