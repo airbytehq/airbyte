@@ -47,6 +47,13 @@ class GoogleAnalyticsApiQuotaBase:
             "raise_on_http_errors": False,
             "stop_iter": False,
         },
+        'serverErrorsPerProjectPerHour': {
+             'error_pattern': "Exhausted server errors quota.",
+             "backoff": 3600,
+             "should_retry": True,
+             "raise_on_http_errors": False,
+             "stop_iter": False,
+        },
         # TODO: The next scenarious are commented out for now.
         # When we face with one of these at least 1 time,
         # we should be able to uncomment the one matches the criteria
@@ -62,13 +69,6 @@ class GoogleAnalyticsApiQuotaBase:
         # 'tokensPerHour': {
         #     'error_pattern': "___",
         #     "backoff": 1800,
-        #     "should_retry": True,
-        #     "raise_on_http_errors": False,
-        #     "stop_iter": False,
-        # },
-        # 'serverErrorsPerProjectPerHour': {
-        #     'error_pattern': "___",
-        #     "backoff": 3600,
         #     "should_retry": True,
         #     "raise_on_http_errors": False,
         #     "stop_iter": False,
