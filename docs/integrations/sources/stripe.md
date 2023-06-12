@@ -46,6 +46,7 @@ The Stripe source connector supports the following streams:
 
 - [Application Fees](https://stripe.com/docs/api/application_fees) \(Incremental\)
 - [Application Fee Refunds](https://stripe.com/docs/api/fee_refunds/list)
+- [Authorizations](https://stripe.com/docs/api/issuing/authorizations/list) \(Incremental\)
 - [Balance Transactions](https://stripe.com/docs/api/balance_transactions/list) \(Incremental\)
 - [Bank accounts](https://stripe.com/docs/api/customer_bank_accounts/list)
 - [Cardholders](https://stripe.com/docs/api/issuing/cardholders/list) \(Incremental\)
@@ -92,7 +93,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.7.0   | 2023-06-06 | [27083](https://github.com/airbytehq/airbyte/pull/27083) | Add new Streams: Cardholders, Cards, Payment Methods; Reviews                                                                                        |
+| 3.7.0   | 2023-06-06 | [27083](https://github.com/airbytehq/airbyte/pull/27083) | Add new Streams: Authorizations, Cardholders, Cards, Payment Methods, Reviews                                                                        |
 | 3.6.0   | 2023-05-24 | [25893](https://github.com/airbytehq/airbyte/pull/25893) | Add `ApplicationFeesRefunds` stream with parent `ApplicationFees`                                                                                    |
 | 3.5.0   | 2023-05-20 | [22859](https://github.com/airbytehq/airbyte/pull/22859) | Add stream `Early Fraud Warnings`                                                                                                                    |
 | 3.4.3   | 2023-05-10 | [25965](https://github.com/airbytehq/airbyte/pull/25965) | Fix Airbyte date-time data-types                                                                                                                     |

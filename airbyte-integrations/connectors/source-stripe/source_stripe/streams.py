@@ -87,7 +87,6 @@ class StripeStream(HttpStream, ABC):
 
 
 class BasePaginationStripeStream(StripeStream, ABC):
-
     def request_params(
         self,
         stream_state: Mapping[str, Any],
@@ -173,6 +172,17 @@ class IncrementalStripeStream(BasePaginationStripeStream, ABC):
             start_point = int(pendulum.from_timestamp(start_point).subtract(days=abs(self.lookback_window_days)).timestamp())
 
         return start_point
+
+
+class Authorizations(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/issuing/authorizations/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "issuing/authorizations"
 
 
 class Customers(IncrementalStripeStream):
@@ -603,6 +613,7 @@ class PaymentMethods(StripeStream):
     """
     API docs: https://stripe.com/docs/api/payment_methods/list
     """
+
     def path(self, **kwargs):
         return "payment_methods"
 

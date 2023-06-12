@@ -15,6 +15,7 @@ from source_stripe.streams import (
     Accounts,
     ApplicationFees,
     ApplicationFeesRefunds,
+    Authorizations,
     BalanceTransactions,
     BankAccounts,
     Cardholders,
@@ -45,7 +46,7 @@ from source_stripe.streams import (
     SubscriptionItems,
     Subscriptions,
     SubscriptionSchedule,
-    Transfers
+    Transfers,
 )
 
 
@@ -72,6 +73,7 @@ class SourceStripe(AbstractSource):
             Accounts(**args),
             ApplicationFees(**incremental_args),
             ApplicationFeesRefunds(**args),
+            Authorizations(**incremental_args),
             BalanceTransactions(**incremental_args),
             BankAccounts(**args),
             Cards(**incremental_args),

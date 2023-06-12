@@ -1,0 +1,101 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "brand": {
+      "type": ["null", "string"]
+    },
+    "cancellation_reason": {
+      "type": ["null", "string"]
+    },
+    "cardholder": {
+      "$ref": "cardholder.json"
+    },
+    "created": {
+      "type": ["null", "integer"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "cvc": {
+      "type": ["null", "string"]
+    },
+    "exp_month": {
+      "type": ["null", "integer"]
+    },
+    "exp_year": {
+      "type": ["null", "integer"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "last4": {
+      "type": ["null", "string"]
+    },
+    "livemode": {
+      "type": ["null", "boolean"]
+    },
+    "metadata": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "number": {
+      "type": ["null", "string"]
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "replaced_by": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "replacement_for": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "replacement_reason": {
+      "type": ["null", "string"]
+    },
+    "shipping": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "address": {
+          "$ref": "address.json"
+        },
+        "carrier": {
+          "type": ["null", "string"]
+        },
+        "eta": {
+          "type": ["null", "integer"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "service": {
+          "type": ["null", "string"]
+        },
+        "status": {
+          "type": ["null", "string"]
+        },
+        "tracking_number": {
+          "type": ["null", "string"]
+        },
+        "tracking_url": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "spending_controls": {
+      "$ref": "spending_controls.json"
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    }
+  }
+}
