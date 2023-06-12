@@ -15,13 +15,13 @@ class BuildConnectorDistributionTar(GradleTask):
 
     title = "Build connector tar"
     gradle_task_name = "distTar"
+    BIND_TO_DOCKER_HOST = False
 
     async def _run(self) -> StepResult:
         with_built_tar = (
             environments.with_gradle(
                 self.context,
                 self.build_include,
-                docker_service_name=self.docker_service_name,
             )
             .with_mounted_directory(str(self.context.connector.code_directory), await self._get_patched_connector_dir())
             .with_exec(self._get_gradle_command())
