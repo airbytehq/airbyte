@@ -6,6 +6,7 @@ from typing import Any, List, Mapping, Tuple
 
 import boto3
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from source_amazon_seller_partner.auth import AWSAuthenticator, AWSSignature
@@ -134,7 +135,7 @@ class SourceAmazonSellerPartner(AbstractSource):
         try:
             stream_kwargs = self._get_stream_kwargs(config)
             orders_stream = VendorSalesReports(**stream_kwargs)
-            next(orders_stream.read_records(None))
+            next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
 
             return True, None
         except Exception as e:
