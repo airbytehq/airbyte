@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from airbyte_cdk.sources.file_based.exceptions import RecordParseError, SchemaInferenceError
 from airbyte_cdk.sources.file_based.remote_file import FileType
 from unit_tests.sources.file_based.helpers import LowInferenceLimitDiscoveryPolicy
 from unit_tests.sources.file_based.scenarios._scenario_builder import TestScenarioBuilder
@@ -172,4 +173,54 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
         ]
     )
     .set_discovery_policy(LowInferenceLimitDiscoveryPolicy())
+).build()
+
+
+invalid_csv_scenario = (
+    TestScenarioBuilder()
+    .set_name("invalid_csv_stream")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*.csv"],
+                    "validation_policy": "emit_record_on_schema_mismatch",
+                }
+            ]
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    (),
+                    ("val11", "val12"),
+                    ("val21", "val22"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
+            }
+        }
+    )
+    .set_file_type(FileType.Csv)
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "json_schema": {"col1": "string", "col2": "string"},
+                    "name": "stream1",
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"col1": "val11", "col2": "val12"},
+            {"col1": "val21", "col2": "val22"},
+        ]
+    )
+    .set_expected_discover_error(SchemaInferenceError)
+    .set_expected_read_error(RecordParseError)
 ).build()
