@@ -17,7 +17,6 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
@@ -25,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class CsvSerializedBuffer extends BaseSerializedBuffer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CsvSerializedBuffer.class);

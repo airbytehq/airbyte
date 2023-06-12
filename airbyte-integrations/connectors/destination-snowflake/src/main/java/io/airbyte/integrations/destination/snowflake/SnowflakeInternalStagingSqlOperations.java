@@ -165,8 +165,6 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
       database.execute(query);
     } catch (final SQLException e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
-    } catch (final Exception e) {
-      throw e;
     }
   }
 

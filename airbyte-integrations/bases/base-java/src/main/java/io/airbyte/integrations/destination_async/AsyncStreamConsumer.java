@@ -108,8 +108,8 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
           }
 
           // The offset is to compensate for the overhead of PartialAirbyteMessage references
-          // which is 8 bytes per reference.
-          bufferEnqueue.addRecord(message, sizeInBytes + 100);
+          // which is 8 bytes per reference (64 bit JVM) and the size of the object size in bytes
+          bufferEnqueue.addRecord(message, sizeInBytes + 104);
         });
   }
 

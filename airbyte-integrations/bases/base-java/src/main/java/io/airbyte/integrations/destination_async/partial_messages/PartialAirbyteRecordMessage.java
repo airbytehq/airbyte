@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination_async.partial_messages;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-
 import java.util.Objects;
 
 public class PartialAirbyteRecordMessage {
@@ -77,8 +76,8 @@ public class PartialAirbyteRecordMessage {
     }
     final PartialAirbyteRecordMessage that = (PartialAirbyteRecordMessage) o;
     return Objects.equals(namespace, that.namespace)
-            && Objects.equals(stream, that.stream)
-            && Objects.equals(emittedAt, that.emittedAt);
+        && Objects.equals(stream, that.stream)
+        && Objects.equals(emittedAt, that.emittedAt);
   }
 
   @Override
