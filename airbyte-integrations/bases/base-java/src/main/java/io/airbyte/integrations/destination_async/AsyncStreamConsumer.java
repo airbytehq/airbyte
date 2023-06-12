@@ -50,6 +50,10 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
 
   private boolean hasStarted;
   private boolean hasClosed;
+  // This is to account for the references when deserialization to a PartialAirbyteMessage. The calculation is as follows:
+  // PartialAirbyteMessage (4) + Max( PartialRecordMessage(4), PartialStateMessage(6)) with PartialStateMessage being larger
+  // with more nested objects within it
+  final int PARTIAL_DESERIALIZE_REF_BYTES = 80;
 
   public AsyncStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                              final OnStartFunction onStart,
@@ -107,9 +111,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
             validateRecord(message);
           }
 
-          // The offset is to compensate for the overhead of PartialAirbyteMessage references
-          // which is 8 bytes per reference (64 bit JVM) and the size of the object size in bytes
-          bufferEnqueue.addRecord(message, sizeInBytes + 104);
+          bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
         });
   }
 
