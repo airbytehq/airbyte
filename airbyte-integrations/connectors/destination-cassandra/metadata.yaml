@@ -10,7 +10,7 @@ data:
   name: Cassandra
   registries:
     cloud:
-      enabled: true
+      enabled: false
     oss:
       enabled: true
   releaseStage: alpha

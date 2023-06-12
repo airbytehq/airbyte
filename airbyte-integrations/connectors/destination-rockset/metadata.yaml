@@ -9,7 +9,7 @@ data:
   name: Rockset
   registries:
     cloud:
-      enabled: true
+      enabled: false
     oss:
       enabled: true
   releaseStage: alpha
