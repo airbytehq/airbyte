@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, Mapping, Optional, Tuple
+from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionStreamSlice
@@ -32,7 +32,8 @@ class MigratingPerPartitionCursor(StreamSlicer):
     ]}
     ```
 
-    Given this, we can
+    Once all connections are executed at least once using this class, the state should be using the new format and this class isn't
+    necessary anymore.
     """
 
     _NO_STATE = {}
@@ -60,7 +61,9 @@ class MigratingPerPartitionCursor(StreamSlicer):
     def select(
         self, stream_slice: Optional[PerPartitionStreamSlice] = None, stream_state: Optional[StreamState] = None
     ) -> Optional[StreamState]:
-        if self._requires_migration(stream_state):
+        if not stream_state:
+            return self._decorated.select(stream_slice, stream_state)
+        elif self._requires_migration(stream_state):
             return stream_state
         return self._decorated.select(stream_slice, stream_state)
 
@@ -101,4 +104,4 @@ class MigratingPerPartitionCursor(StreamSlicer):
         return self._decorated.get_request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
     def _requires_migration(self, stream_state: StreamState) -> bool:
-        return "states" not in stream_state
+        return stream_state and "states" not in stream_state
