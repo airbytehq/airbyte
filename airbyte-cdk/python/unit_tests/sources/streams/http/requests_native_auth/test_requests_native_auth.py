@@ -96,7 +96,7 @@ class TestOauth2Authenticator:
 
         mocker.patch.object(Oauth2Authenticator, "refresh_access_token", return_value=("access_token", 1000))
         header = oauth.get_auth_header()
-        assert {"Authorization": "Bearer access_token", "Content-Type": "application/json"} == header
+        assert {"Authorization": "Bearer access_token"} == header
 
     def test_get_auth_header_expired(self, mocker):
         """
@@ -116,7 +116,7 @@ class TestOauth2Authenticator:
         valid_100_secs = 100
         mocker.patch.object(Oauth2Authenticator, "refresh_access_token", return_value=("access_token_2", valid_100_secs))
         header = oauth.get_auth_header()
-        assert {"Authorization": "Bearer access_token_2", "Content-Type": "application/json"} == header
+        assert {"Authorization": "Bearer access_token_2"} == header
 
     def test_refresh_request_body(self):
         """
@@ -203,7 +203,7 @@ class TestOauth2Authenticator:
         prepared_request.headers = {}
         oauth(prepared_request)
 
-        assert {"Authorization": "Bearer access_token", "Content-Type": "application/json"} == prepared_request.headers
+        assert {"Authorization": "Bearer access_token"} == prepared_request.headers
 
 
 class TestSingleUseRefreshTokenOauth2Authenticator:

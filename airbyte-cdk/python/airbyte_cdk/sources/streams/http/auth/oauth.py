@@ -46,7 +46,7 @@ class Oauth2Authenticator(HttpAuthenticator):
         self._access_token = None
 
     def get_auth_header(self) -> Mapping[str, Any]:
-        return {"Authorization": f"Bearer {self.get_access_token()}", "Content-Type": "application/json"}
+        return {"Authorization": f"Bearer {self.get_access_token()}"}
 
     def get_access_token(self):
         if self.token_has_expired():
