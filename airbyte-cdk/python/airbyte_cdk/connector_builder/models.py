@@ -48,6 +48,7 @@ class StreamRead(object):
     slices: List[StreamReadSlices]
     test_read_limit_reached: bool
     inferred_schema: Optional[Dict[str, Any]]
+    inferred_datetime_formats: Optional[Dict[str, str]]
     latest_config_update: Optional[Dict[str, Any]]
 
 
