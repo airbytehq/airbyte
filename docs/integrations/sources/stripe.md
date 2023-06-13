@@ -53,6 +53,7 @@ The Stripe source connector supports the following streams:
 - [Checkout Sessions](https://stripe.com/docs/api/checkout/sessions/list)
 - [Checkout Sessions Line Items](https://stripe.com/docs/api/checkout/sessions/line_items)
 - [Coupons](https://stripe.com/docs/api/coupons/list) \(Incremental\)
+- [CreditNotes](https://stripe.com/docs/api/credit_notes/list) \(Full Refresh\)
 - [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list)
 - [Customers](https://stripe.com/docs/api/customers/list) \(Incremental\)
   - This endpoint does not include deleted customers
