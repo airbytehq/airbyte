@@ -1,16 +1,14 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Array;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.OneOf;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.UnsupportedOneOf;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteTypeUtils.JsonSchemaDefinition;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public sealed interface AirbyteType permits Array, OneOf, Struct, UnsupportedOneOf, AirbyteProtocolType {
 
@@ -22,88 +20,49 @@ public sealed interface AirbyteType permits Array, OneOf, Struct, UnsupportedOne
    * {@link OneOf#asColumns()}).
    */
   static AirbyteType fromJsonSchema(final JsonNode schema) {
-    // TODO
-
     final JsonNode topLevelType = schema.get("type");
-    if (nodeMatchesType(topLevelType, "object")) {
+    if (AirbyteTypeUtils.isObject(topLevelType)) {
       final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
       final JsonNode properties = schema.get("properties");
       properties.fields().forEachRemaining(property -> {
         final String key = property.getKey();
         final JsonNode value = property.getValue();
-        final JsonNode type = value.get("type");
-        final JsonNode airbyteType = value.get("airbyte_type");
+        final JsonSchemaDefinition definition = new JsonSchemaDefinition(
+            value.get("type"), value.get("airbyte_type"), value.get("format"));
+
         // Treat simple types from narrower to wider scope type: boolean < integer < number < string
-        if (nodeMatchesType(type, "boolean")) {
+        if (AirbyteTypeUtils.isBoolean(definition)) {
           propertiesMap.put(key, AirbyteProtocolType.BOOLEAN);
-        } else if (nodeMatchesType(airbyteType, "big_integer")) {
+        } else if (AirbyteTypeUtils.isBigInteger(definition)) {
           propertiesMap.put(key, AirbyteProtocolType.INTEGER);
-        } else if (nodeMatchesType(type, "number")) {
+        } else if (AirbyteTypeUtils.isLong(definition)) {
+          propertiesMap.put(key, AirbyteProtocolType.INTEGER);
+        } else if (AirbyteTypeUtils.isNumber(definition)) {
           propertiesMap.put(key, AirbyteProtocolType.NUMBER);
-        } else if (nodeMatchesType(type, "string")) {
-          final JsonNode format = value.get("format");
-          if (nodeMatchesType(format, "date-time")) {
-            if (airbyteType == null || nodeMatchesType(airbyteType, "timestamp_with_timezone")) {
-              propertiesMap.put(key, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-            } else if (nodeMatchesType(airbyteType, "timestamp_without_timezone")) {
-              propertiesMap.put(key, AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE);
-            }
-          } else if (nodeMatchesType(format, "date")) {
-            propertiesMap.put(key, AirbyteProtocolType.DATE);
-          } else if (nodeMatchesType(format, "time")) {
-            if (nodeMatchesType(airbyteType, "time_with_timezone")) {
-              propertiesMap.put(key, AirbyteProtocolType.TIME_WITH_TIMEZONE);
-            } else if (nodeMatchesType(airbyteType, "time_without_timezone")) {
-              propertiesMap.put(key, AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
-            }
-          } else {
-            propertiesMap.put(key, AirbyteProtocolType.STRING);
-          }
+        } else if (AirbyteTypeUtils.isDatetimeWithoutTimezone(definition)) {
+          propertiesMap.put(key, AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE);
+        } else if (AirbyteTypeUtils.isDatetimeWithTimezone(definition)) {
+          propertiesMap.put(key, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+        } else if (AirbyteTypeUtils.isDate(definition)) {
+          propertiesMap.put(key, AirbyteProtocolType.DATE);
+        } else if (AirbyteTypeUtils.isTimeWithTimezone(definition)) {
+          propertiesMap.put(key, AirbyteProtocolType.TIME_WITH_TIMEZONE);
+        } else if (AirbyteTypeUtils.isTimeWithoutTimezone(definition)) {
+          propertiesMap.put(key, AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
+        } else if (AirbyteTypeUtils.isString(definition)) {
+          propertiesMap.put(key, AirbyteProtocolType.STRING);
         } else {
-          // TODO add more types
           propertiesMap.put(key, AirbyteProtocolType.UNKNOWN);
         }
       });
       return new Struct(propertiesMap);
-    } else if (nodeMatchesType(topLevelType, "array")) {
+    } else if (AirbyteTypeUtils.isArray(topLevelType)) {
       // TODO parse items
     } else {
       // TODO handle oneOf, etc.
     }
 
     return new Struct(new LinkedHashMap<>());
-  }
-
-  // Map from a type to what other types should take precedence over it if present
-  Map<String, List> EXCLUDED_TYPES_MAP = ImmutableMap.of(
-      // Give priority to wider scope types
-      "number", ImmutableList.of("string"),
-      // TODO fix bigint and long
-      "boolean", ImmutableList.of("string", "number", "bigint", "long")
-  );
-
-  // String node matches the type, or array node contains the type
-  private static boolean nodeMatchesType(final JsonNode node, final String type) {
-    if (node == null) {
-      return false;
-    } else if (node.isTextual()) {
-      return node.toString().equals(type);
-    } else if (node.isArray()) {
-      final List<String> excludedOtherTypes = EXCLUDED_TYPES_MAP.get(type);
-      boolean foundExcludedTypes = false;
-      boolean foundType = false;
-      for (final JsonNode itemNode : node) {
-        if (excludedOtherTypes != null && excludedOtherTypes.contains(itemNode.toString())) {
-          foundExcludedTypes = true;
-          break; // no need to continue
-        }
-        if (itemNode.toString().equals(type)) {
-          foundType = true;
-        }
-      }
-      return foundType && !foundExcludedTypes;
-    }
-    return false;
   }
 
   enum AirbyteProtocolType implements AirbyteType {
