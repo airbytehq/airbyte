@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-openweather
   githubIssueLabel: source-openweather
   icon: openweather.svg
-  license: MIT
+  license: MITO
   name: OpenWeather
   registries:
     cloud:
