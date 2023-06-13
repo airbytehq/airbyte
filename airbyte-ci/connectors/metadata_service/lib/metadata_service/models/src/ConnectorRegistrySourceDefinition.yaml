@@ -69,4 +69,4 @@ properties:
     description: Number of seconds allowed between 2 airbyte protocol messages. The source will timeout if this delay is reach
     type: integer
   releases:
-      "$ref": ConnectorReleases.yaml
+    "$ref": ConnectorReleases.yaml
