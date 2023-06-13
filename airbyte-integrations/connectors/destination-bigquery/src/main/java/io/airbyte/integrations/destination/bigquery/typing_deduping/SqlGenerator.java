@@ -13,8 +13,6 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
    * @param rawNamespace      the namespace where the raw table will be created (typically "airbyte")
    * @param rawName           the name of the raw table (typically namespace_name, but may be different if there are collisions). There is no
    *                          rawNamespace because we assume that we're writing raw tables to the airbyte namespace.
-   * @param originalNamespace the namespace of the stream according to the Airbyte catalog
-   * @param originalName      the name of the stream according to the Airbyte catalog
    */
   record QuotedStreamId(String finalNamespace, String finalName, String rawNamespace, String rawName) {
 
