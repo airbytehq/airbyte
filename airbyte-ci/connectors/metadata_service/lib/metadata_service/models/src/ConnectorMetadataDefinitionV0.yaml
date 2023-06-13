@@ -21,7 +21,7 @@ properties:
       - dockerRepository
       - dockerImageTag
       - license
-      - supportUrl
+      - documentationUrl
       - githubIssueLabel
       - connectorSubtype
       - releaseStage
@@ -98,6 +98,8 @@ properties:
 
       allowedHosts:
         "$ref": AllowedHosts.yaml
+      releases:
+        "$ref": ConnectorReleases.yaml
       normalizationConfig:
         "$ref": NormalizationDestinationDefinitionConfig.yaml
       suggestedStreams:
