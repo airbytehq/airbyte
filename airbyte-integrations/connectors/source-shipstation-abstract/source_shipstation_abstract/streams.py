@@ -6,11 +6,23 @@ from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests.auth import AuthBase
+from airbyte_cdk.models import (
+    AirbyteCatalog,
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    Status,
+    Type,
+)
+import datetime
+import time
 
 
 class ShipstationAbstractStream(HttpStream, ABC):
     url_base = "https://ssapi.shipstation.com/"
-    primary_key = "userId"
+    primary_key = "id"
     limit = 50
     data_field = None
 
@@ -178,8 +190,8 @@ class Shipments(IncrementalShipstationAbstractStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         if "shipments" in response_json:
-            count = response_json.get("info", {}).get("count")
-            if count is not None and count > (MAX_PAGE_SIZE * self.current_page):
+            total = response_json['total']
+            if total is not None and total > (MAX_PAGE_SIZE * self.current_page):
                 self.page += 1
             results = response_json["shipments"]
             if results is None:
@@ -202,8 +214,8 @@ class Fulfillments(IncrementalShipstationAbstractStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         if "fulfillments" in response_json:
-            count = response_json.get("info", {}).get("count")
-            if count is not None and count > (MAX_PAGE_SIZE * self.current_page):
+            total = response_json['total']
+            if total is not None and total > (MAX_PAGE_SIZE * self.current_page):
                 self.page += 1
             results = response_json["fulfillments"]
             if results is None:
@@ -226,8 +238,8 @@ class Customers(IncrementalShipstationAbstractStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         if "customers" in response_json:
-            count = response_json.get("info", {}).get("count")
-            if count is not None and count > (MAX_PAGE_SIZE * self.current_page):
+            total = response_json['total']
+            if total is not None and total > (MAX_PAGE_SIZE * self.current_page):
                 self.page += 1
             results = response_json["customers"]
             if results is None:
@@ -250,8 +262,8 @@ class Products(IncrementalShipstationAbstractStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         if "products" in response_json:
-            count = response_json.get("info", {}).get("count")
-            if count is not None and count > (MAX_PAGE_SIZE * self.current_page):
+            total = response_json['total']
+            if total is not None and total > (MAX_PAGE_SIZE * self.current_page):
                 self.page += 1
             results = response_json["products"]
             if results is None:
@@ -261,3 +273,64 @@ class Products(IncrementalShipstationAbstractStream):
             raise Exception([{"message": "Failed to obtain data.", "msg": response.text}])
         
 
+
+class Orders(IncrementalShipstationAbstractStream):
+    primary_key = None
+
+    @property
+    def http_method(self) -> str:
+        return "GET"
+
+    def path(self, **kwargs) -> str:
+        return self.url_base + "orders"
+
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        if "orders" in response_json:
+            total = response_json['total']
+            if total is not None and total > (MAX_PAGE_SIZE * self.current_page):
+                self.page += 1
+            results = response_json["orders"]
+            if results is None:
+                return []
+            return results
+        else:
+            raise Exception([{"message": "Failed to obtain data.", "msg": response.text}])
+        
+        
+        
+class GetStore(ShipstationAbstractStream):
+    def __init__(self, authenticator, config):
+        super().__init__(authenticator=authenticator)
+        self.config = config
+        # self.authenticator = authenticator
+
+    def path(self, **kwargs) -> str:
+        return self.url_base + "stores/" + kwargs.get("stores_id")
+    
+
+    def read_records(self, sync_mode, **kwargs):
+        api_key = self.config["api_key"]
+        api_secret = self.config["api_secret"]
+        payload = {}
+        stores_id = self.config.get("stores_id", None)
+        if stores_id is None:
+            raise Exception("Missing stores_id in kwargs.")
+        
+        url = self.path(stores_id=stores_id)
+        response = requests.get(url, auth=(api_key, api_secret), params=payload)
+        
+        if response.status_code == 200:
+            data = []
+            store_data = response.json()
+            data.append(store_data)
+            for record in data:
+                emitted_at = int(time.mktime(datetime.datetime.now().timetuple()))
+                yield AirbyteRecordMessage(stream="get_store", data=record, emitted_at=emitted_at)
+        else:
+            raise Exception("Failed to retrieve get_store data.")
+
+
+
+    
