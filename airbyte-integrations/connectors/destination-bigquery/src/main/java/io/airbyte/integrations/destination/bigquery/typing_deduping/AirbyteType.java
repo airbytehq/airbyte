@@ -24,29 +24,51 @@ public sealed interface AirbyteType permits Array, OneOf, Struct, UnsupportedOne
   static AirbyteType fromJsonSchema(final JsonNode schema) {
     // TODO
 
-    final JsonNode type = schema.get("type");
-    if (matchesType(type, "object")) {
+    final JsonNode topLevelType = schema.get("type");
+    if (nodeMatchesType(topLevelType, "object")) {
       final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
       final JsonNode properties = schema.get("properties");
       properties.fields().forEachRemaining(property -> {
-        final String propertyKey = property.getKey();
-        final JsonNode propertyValue = property.getValue();
-        final JsonNode propertyType = propertyValue.get("type");
-        final JsonNode propertyFormat = propertyValue.get("format");
-        if (matchesType(propertyType, "boolean")) {
-          propertiesMap.put(propertyKey, AirbyteProtocolType.STRING);
-        } else if (matchesType(propertyType, "number")) {
-          propertiesMap.put(propertyKey, AirbyteProtocolType.NUMBER);
+        final String key = property.getKey();
+        final JsonNode value = property.getValue();
+        final JsonNode type = value.get("type");
+        final JsonNode airbyteType = value.get("airbyte_type");
+        // Treat simple types from narrower to wider scope type: boolean < integer < number < string
+        if (nodeMatchesType(type, "boolean")) {
+          propertiesMap.put(key, AirbyteProtocolType.BOOLEAN);
+        } else if (nodeMatchesType(airbyteType, "big_integer")) {
+          propertiesMap.put(key, AirbyteProtocolType.INTEGER);
+        } else if (nodeMatchesType(type, "number")) {
+          propertiesMap.put(key, AirbyteProtocolType.NUMBER);
+        } else if (nodeMatchesType(type, "string")) {
+          final JsonNode format = value.get("format");
+          if (nodeMatchesType(format, "date-time")) {
+            if (airbyteType == null || nodeMatchesType(airbyteType, "timestamp_with_timezone")) {
+              propertiesMap.put(key, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+            } else if (nodeMatchesType(airbyteType, "timestamp_without_timezone")) {
+              propertiesMap.put(key, AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE);
+            }
+          } else if (nodeMatchesType(format, "date")) {
+            propertiesMap.put(key, AirbyteProtocolType.DATE);
+          } else if (nodeMatchesType(format, "time")) {
+            if (nodeMatchesType(airbyteType, "time_with_timezone")) {
+              propertiesMap.put(key, AirbyteProtocolType.TIME_WITH_TIMEZONE);
+            } else if (nodeMatchesType(airbyteType, "time_without_timezone")) {
+              propertiesMap.put(key, AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
+            }
+          } else {
+            propertiesMap.put(key, AirbyteProtocolType.STRING);
+          }
         } else {
           // TODO add more types
-          propertiesMap.put(propertyKey, AirbyteProtocolType.UNKNOWN);
+          propertiesMap.put(key, AirbyteProtocolType.UNKNOWN);
         }
       });
       return new Struct(propertiesMap);
-    } else if (matchesType(type, "array")) {
+    } else if (nodeMatchesType(topLevelType, "array")) {
       // TODO parse items
     } else {
-      // TODO
+      // TODO handle oneOf, etc.
     }
 
     return new Struct(new LinkedHashMap<>());
@@ -54,23 +76,32 @@ public sealed interface AirbyteType permits Array, OneOf, Struct, UnsupportedOne
 
   // Map from a type to what other types should take precedence over it if present
   Map<String, List> EXCLUDED_TYPES_MAP = ImmutableMap.of(
-      // Handle union type, give priority to wider scope types
-      "number", ImmutableList.of("string")
+      // Give priority to wider scope types
+      "number", ImmutableList.of("string"),
+      // TODO fix bigint and long
+      "boolean", ImmutableList.of("string", "number", "bigint", "long")
   );
 
-  private static boolean matchesType(final JsonNode value, final String type) {
-    if (value.isTextual()) {
-      return value.toString().equals(type);
-    } else if (value.isArray()) {
+  // String node matches the type, or array node contains the type
+  private static boolean nodeMatchesType(final JsonNode node, final String type) {
+    if (node == null) {
+      return false;
+    } else if (node.isTextual()) {
+      return node.toString().equals(type);
+    } else if (node.isArray()) {
       final List<String> excludedOtherTypes = EXCLUDED_TYPES_MAP.get(type);
-      for (final JsonNode node : value) {
-        if (excludedOtherTypes.contains(node.toString())) {
-          return false;
+      boolean foundExcludedTypes = false;
+      boolean foundType = false;
+      for (final JsonNode itemNode : node) {
+        if (excludedOtherTypes != null && excludedOtherTypes.contains(itemNode.toString())) {
+          foundExcludedTypes = true;
+          break; // no need to continue
         }
-        if (node.toString().equals(type)) {
-          return true;
+        if (itemNode.toString().equals(type)) {
+          foundType = true;
         }
       }
+      return foundType && !foundExcludedTypes;
     }
     return false;
   }
