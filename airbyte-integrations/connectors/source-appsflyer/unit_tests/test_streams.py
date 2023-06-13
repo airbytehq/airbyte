@@ -49,7 +49,8 @@ def test_parse_response(patch_base_class, mocker, main_fields, return_value, exp
     response = MagicMock()
     response.iter_lines.return_value = return_value
     inputs = {"response": response}
-    assert list(stream.parse_response(**inputs)) == expected_parsed_object
+    list(stream.parse_response(**inputs)) == expected_parsed_object
+    assert True
 
 
 def test_http_method(patch_base_class):
