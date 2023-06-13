@@ -814,49 +814,37 @@ class Cards(IncrementalStripeStream):
         return "issuing/cards"
 
 
-class TopUps(StripeStream):
+class TopUps(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/topups/list
     """
 
     name = "top_ups"
+    cursor_field = "created"
 
     def path(self, **kwargs) -> str:
         return "topups"
 
-    def request_params(
-        self, 
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None, 
-        next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return next_page_token or {}
-    
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from [{}]
 
-
-class Files(StripeStream):
+class Files(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/files/list
     """
 
     name = "files"
+    cursor_field = "created"
 
     def path(self, **kwargs) -> str:
         return "files"
 
-    def request_params(
-        self, 
-        stream_state: Mapping[str, Any], 
-        stream_slice: Mapping[str, Any] = None, 
-        next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return next_page_token or {}
 
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from [{}]
+class FileLinks(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/file_links/list
+    """
+
+    name = "file_links"
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "file_links"
