@@ -134,6 +134,74 @@
     },
     "task_status": {
       "type": ["null", "string"]
+    },
+    "severity": {
+      "type": ["null", "string"]
+    },
+    "iteration": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "iid": {
+          "type": ["null", "integer"]
+        },
+        "sequence": {
+          "type": ["null", "integer"]
+        },
+        "group_id": {
+          "type": ["null", "integer"]
+        },
+        "title": {
+          "type": ["null", "string"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "integer"]
+        },
+        "created_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "start_date": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "due_date": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "web_url": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "epic": {
+      "id": {
+        "type": ["null", "integer"]
+      },
+      "iid": {
+        "type": ["null", "integer"]
+      },
+      "title": {
+        "type": ["null", "string"]
+      },
+      "url": {
+        "type": ["null", "string"]
+      },
+      "group_id": {
+        "type": ["null", "integer"]
+      }
+    },
+    "epic_iid": {
+      "type": ["null", "integer"]
     }
   }
 }
