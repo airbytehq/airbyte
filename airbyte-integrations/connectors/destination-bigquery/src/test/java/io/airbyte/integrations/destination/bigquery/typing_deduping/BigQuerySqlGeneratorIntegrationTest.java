@@ -277,6 +277,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
     assertEquals(0, rawUntypedRows);
   }
 
+  // This is also effectively the full refresh overwrite test case.
+  // In the overwrite case, we rely on the destination connector to tell us to write to a final table with a _tmp suffix, and then call overwriteFinalTable at the end of the sync.
   @Test
   public void testFullUpdateFullRefreshAppend() throws InterruptedException {
     createRawTable();
