@@ -49,6 +49,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------| :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| 0.2.1   | 2023-06-13 | [27332](https://github.com/airbytehq/airbyte/pull/27332) | Fix data loss in contacts stream by reverting migration to low-code
 | 0.2.1   | 2023-05-25 | [26571](https://github.com/airbytehq/airbyte/pull/26571) | Remove authSpecification from spec.json in favour of advancedAuth                             |
 | 0.2.0   | 2023-04-05 | [23013](https://github.com/airbytehq/airbyte/pull/23013) | Migrated to Low-code (YAML Frramework)                                                        |
 | 0.1.33  | 2023-03-20 | [22980](https://github.com/airbytehq/airbyte/pull/22980) | Specified date formatting in specification                                                    |
