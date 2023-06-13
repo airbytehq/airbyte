@@ -69,6 +69,7 @@ import org.slf4j.LoggerFactory;
 
 public class BigQueryDestination extends BaseConnector implements Destination {
 
+  public static final String USE_1S1T_FORMAT = "use_1s1t_format";
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
   private static final List<String> REQUIRED_PERMISSIONS = List.of(
       "storage.multipartUploads.abort",
@@ -291,7 +292,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         BigQueryUtils.getDatasetId(config),
         sqlGenerator,
         new BigQueryDestinationHandler(bigquery),
-        new CatalogParser<>(sqlGenerator).parseCatalog(catalog));
+        new CatalogParser<>(sqlGenerator).parseCatalog(catalog),
+        config.get(USE_1S1T_FORMAT).asBoolean());
   }
 
   public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,
