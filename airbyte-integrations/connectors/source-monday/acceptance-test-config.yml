@@ -18,14 +18,17 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        # `boards`, `items`, `updates` streams schemas were modified
+        # when `type: array` is used, the `items` should be set, instead of `properties`.
+        # this change applies for all configs bellow.
         backward_compatibility_tests_config:
-          disable_for_version: "0.1.4"
+          disable_for_version: "0.2.5"
       - config_path: "secrets/config_api_token.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.1.4"
+          disable_for_version: "0.2.5"
       - config_path: "secrets/config_oauth.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.1.4"
+          disable_for_version: "0.2.5"
   basic_read:
     tests:
       - config_path: "secrets/config_api_token.json"
