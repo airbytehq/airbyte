@@ -3,12 +3,18 @@ package io.airbyte.integrations.source.postgres.ctid;
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.CTID_STATUS_TYPE;
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.CTID_STATUS_VERSION;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.annotation.CheckForNull;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -22,11 +28,18 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
   private boolean hasEmittedFinalState;
   private boolean hasCaughtException = false;
   private String lastCtid;
+  private final JsonNode streamStateForIncrementalRun;
+  final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier;
   final AtomicLong recordCount = new AtomicLong();
+
   public CtidStateIterator(final Iterator<AirbyteMessage> messageIterator,
-      final AirbyteStreamNameNamespacePair pair) {
+      final AirbyteStreamNameNamespacePair pair,
+      final JsonNode streamStateForIncrementalRun,
+      final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier) {
     this.messageIterator = messageIterator;
     this.pair = pair;
+    this.streamStateForIncrementalRun = streamStateForIncrementalRun;
+    this.finalStateMessageSupplier = finalStateMessageSupplier;
   }
 
   @CheckForNull
@@ -49,7 +62,8 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
             new CtidStatus()
                 .withVer(CTID_STATUS_VERSION)
                 .withType(CTID_STATUS_TYPE)
-                .withCtid(lastCtid));
+                .withCtid(lastCtid)
+                .withIncrementalState(streamStateForIncrementalRun));
       }
       // Use try-catch to catch Exception that could occur when connection to the database fails
       try {
@@ -68,11 +82,9 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
-      return CtidStateManager.createStateMessage(pair,
-          new CtidStatus()
-              .withVer(CTID_STATUS_VERSION)
-              .withType(CTID_STATUS_TYPE)
-              .withCtid(lastCtid));
+      return new AirbyteMessage()
+          .withType(Type.STATE)
+          .withState(finalStateMessageSupplier.apply(pair, streamStateForIncrementalRun));
     } else {
       return endOfData();
     }

@@ -73,6 +73,14 @@ public class XminStateManager {
    * @return AirbyteMessage which includes information on state of records read so far
    */
   public static AirbyteMessage createStateMessage(final AirbyteStreamNameNamespacePair pair, final XminStatus xminStatus) {
+    final AirbyteStateMessage stateMessage = getAirbyteStateMessage(pair, xminStatus);
+
+    return new AirbyteMessage()
+        .withType(Type.STATE)
+        .withState(stateMessage);
+  }
+
+  public static AirbyteStateMessage getAirbyteStateMessage(final AirbyteStreamNameNamespacePair pair, final XminStatus xminStatus) {
     final AirbyteStreamState airbyteStreamState =
         new AirbyteStreamState()
             .withStreamDescriptor(
@@ -86,10 +94,7 @@ public class XminStateManager {
         new AirbyteStateMessage()
             .withType(AirbyteStateType.STREAM)
             .withStream(airbyteStreamState);
-
-    return new AirbyteMessage()
-        .withType(Type.STATE)
-        .withState(stateMessage);
+    return stateMessage;
   }
 
 }

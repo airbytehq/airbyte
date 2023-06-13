@@ -27,10 +27,12 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
@@ -70,11 +72,13 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteEstimateTraceMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -85,7 +89,9 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -94,6 +100,7 @@ import java.util.OptionalLong;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -455,16 +462,77 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)));
 
     } else if (PostgresUtils.isXmin(sourceConfig) && isIncrementalSyncMode(catalog)) {
-      final XminStateManager xminStateManager = new XminStateManager(stateManager.getRawStateMessages());
-      final PostgresXminHandler handler = new PostgresXminHandler(database, sourceOperations, getQuoteString(), xminStatus, xminStateManager);
-      return handler.getIncrementalIterators(catalog, tableNameToTable, emittedAt);
+      final List<AirbyteStateMessage> rawStateMessages = stateManager.getRawStateMessages();
+
+      final List<AirbyteStateMessage> statesFromCtidSync = new ArrayList<>();
+      final List<AirbyteStateMessage> statesFromXminSync = new ArrayList<>();
+
+      final Set<AirbyteStreamNameNamespacePair> alreadySeenStreams = new HashSet<>();
+      final Set<AirbyteStreamNameNamespacePair> streamsStillInCtidSync = new HashSet<>();
+      rawStateMessages.forEach(s -> {
+        final JsonNode streamState = s.getStream().getStreamState();
+        final StreamDescriptor streamDescriptor = s.getStream().getStreamDescriptor();
+        final AirbyteStateMessage clonedState = Jsons.clone(s);
+        if (streamState.has("type") && streamState.get("type").asText().equalsIgnoreCase("ctid")) {
+          statesFromCtidSync.add(clonedState);
+          streamsStillInCtidSync.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
+        } else {
+          statesFromXminSync.add(clonedState);
+        }
+        alreadySeenStreams.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
+      });
+
+      final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyNewlyAddedStreams(catalog, alreadySeenStreams);
+
+      final List<ConfiguredAirbyteStream> configuredStreamsStillInCtidSync = catalog.getStreams().stream()
+          .filter(stream -> streamsStillInCtidSync.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
+          .map(Jsons::clone)
+          .toList();
+
+      configuredStreamsStillInCtidSync.addAll(newlyAddedStreams);
+
+      final List<ConfiguredAirbyteStream> streamsInXminSync = catalog.getStreams().stream()
+          .filter(stream -> !configuredStreamsStillInCtidSync.contains(stream))
+          .map(Jsons::clone)
+          .toList();
+
+      final XminStateManager xminStateManager = new XminStateManager(statesFromXminSync);
+      final PostgresXminHandler xminHandler = new PostgresXminHandler(database, sourceOperations, getQuoteString(), xminStatus, xminStateManager);
+
+      final List<AutoCloseableIterator<AirbyteMessage>> xminIterator = xminHandler.getIncrementalIterators(
+          new ConfiguredAirbyteCatalog().withStreams(streamsInXminSync), tableNameToTable, emittedAt);
+
+      if (configuredStreamsStillInCtidSync.isEmpty()) {
+        return xminIterator;
+      }
+
+      final CtidStateManager ctidStateManager = new CtidStateManager(statesFromCtidSync);
+      final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(database, sourceOperations, getQuoteString(), ctidStateManager,
+          x -> new ObjectMapper().valueToTree(xminStatus),
+          (pair, jsonState) -> XminStateManager.getAirbyteStateMessage(pair, Jsons.object(jsonState, XminStatus.class)));
+      final List<AutoCloseableIterator<AirbyteMessage>> ctidIterator = ctidHandler.getIncrementalIterators(
+          new ConfiguredAirbyteCatalog().withStreams(configuredStreamsStillInCtidSync), tableNameToTable, emittedAt);
+      return Stream
+          .of(ctidIterator, xminIterator)
+          .flatMap(Collection::stream)
+          .collect(Collectors.toList());
     } else {
-      final CtidStateManager ctidStateManager = new CtidStateManager(stateManager.getRawStateMessages());
-      final PostgresCtidHandler handler = new PostgresCtidHandler(database, sourceOperations, getQuoteString(), null, ctidStateManager);
-      return handler.getIncrementalIterators(catalog, tableNameToTable, emittedAt);
-//      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
   }
+
+  protected List<ConfiguredAirbyteStream> identifyNewlyAddedStreams(final ConfiguredAirbyteCatalog catalog, final Set<AirbyteStreamNameNamespacePair> alreadySeenStreams) {
+    final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
+
+    final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySeenStreams));
+
+    return catalog.getStreams().stream()
+        .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
+        .map(Jsons::clone)
+        .collect(Collectors.toList());
+  }
+
+
 
   @Override
   public Set<JdbcPrivilegeDto> getPrivilegesTableForCurrentUser(final JdbcDatabase database,

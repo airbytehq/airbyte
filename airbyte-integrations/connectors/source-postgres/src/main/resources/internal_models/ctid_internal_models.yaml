@@ -19,3 +19,7 @@ definitions:
       ctid:
         description: ctid bookmark
         type: string
+      incremental_state:
+        description: "State to switch to after completion of ctid snapsho"
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode

@@ -19,6 +19,7 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -32,6 +33,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,18 +46,22 @@ public class PostgresCtidHandler {
   private final JdbcDatabase database;
   private final JdbcCompatibleSourceOperations<?> sourceOperations;
   private final String quoteString;
-  private final CtidStatus ctidStatus;
   private final CtidStateManager ctidStateManager;
+  private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
+  private final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier;
+
   public PostgresCtidHandler(final JdbcDatabase database,
       final JdbcCompatibleSourceOperations<?> sourceOperations,
       final String quoteString,
-      final CtidStatus ctidStatus,
-      final CtidStateManager ctidStateManager) {
+      final CtidStateManager ctidStateManager,
+      final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
+      final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier) {
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
-    this.ctidStatus = ctidStatus;
     this.ctidStateManager = ctidStateManager;
+    this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
+    this.finalStateMessageSupplier = finalStateMessageSupplier;
   }
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
       final ConfiguredAirbyteCatalog catalog,
@@ -174,8 +182,13 @@ public class PostgresCtidHandler {
 
   private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessage> recordIterator,
       final AirbyteStreamNameNamespacePair pair) {
+
+    final CtidStatus currentCtidStatus = ctidStateManager.getCtidStatus(pair);
+    final JsonNode incrementalState = currentCtidStatus.getIncrementalState() != null ? currentCtidStatus.getIncrementalState() : streamStateForIncrementalRunSupplier.apply(pair);
+
+
     return AutoCloseableIterators.transform(
-        autoClosableIterator -> new CtidStateIterator(recordIterator, pair), recordIterator, pair);
+        autoClosableIterator -> new CtidStateIterator(recordIterator, pair, incrementalState, finalStateMessageSupplier ), recordIterator, pair);
   }
 
   private AutoCloseableIterator<AirbyteMessage> swallowCtid(final AutoCloseableIterator<AirbyteMessage> iterator,
