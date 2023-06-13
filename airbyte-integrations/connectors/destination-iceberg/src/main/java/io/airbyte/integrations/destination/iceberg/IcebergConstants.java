@@ -39,6 +39,9 @@ public class IcebergConstants {
   public static final String S3_ENDPOINT_CONFIG_KEY = "s3_endpoint";
   public static final String S3_PATH_STYLE_ACCESS_CONFIG_KEY = "s3_path_style_access";
 
+  public static final String GCS_BUCKET_LOCATION_CONFIG_KEY = "gcs_bucket_location";
+  public static final String GCS_WAREHOUSE_URI_CONFIG_KEY = "gcs_warehouse_uri";
+
   /**
    * Format Config keys
    */

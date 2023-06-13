@@ -1,22 +1,13 @@
 package io.airbyte.integrations.destination.iceberg.config.storage;
 
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_ACCESS_KEY_ID_CONFIG_KEY;
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_BUCKET_REGION_CONFIG_KEY;
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_ENDPOINT_CONFIG_KEY;
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_PATH_STYLE_ACCESS_CONFIG_KEY;
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_SECRET_KEY_CONFIG_KEY;
-import static io.airbyte.integrations.destination.iceberg.IcebergConstants.S3_WAREHOUSE_URI_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.GCS_BUCKET_LOCATION_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.GCS_WAREHOUSE_URI_CONFIG_KEY;
+
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import com.google.cloud.storage.Storage;
-// import com.amazonaws.ClientConfiguration;
-// import com.amazonaws.Protocol;
-// import com.amazonaws.auth.AWSCredentialsProvider;
-// import com.amazonaws.client.builder.AwsClientBuilder;
-// import com.amazonaws.services.s3.AmazonS3;
-// import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-// import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.google.cloud.storage.StorageOptions;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.iceberg.config.storage.credential.S3AWSDefaultProfileCredentialConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.credential.S3AccessKeyCredentialConfig;
@@ -46,6 +37,14 @@ public class GCSConfig implements StorageConfig {
    * Lock
    */
   private final Object lock = new Object();
+
+  /**
+    * Properties from Destination Config
+    */
+  private final String warehouseUri;
+  private final String bucketLocation;
+
+  private Storage gcsClient;
 
   public static GCSConfig fromDestinationConfig(@Nonnull final JsonNode config) {
     GCSConfigBuilder builder = new GCSConfigBuilder().bucketLocation(getProperty(config, GCS_BUCKET_LOCATION_CONFIG_KEY));
@@ -100,6 +99,49 @@ public class GCSConfig implements StorageConfig {
 
   public void check() {
     final Storage gcsClient = this.getGCSClient();
+    String prefix = this.warehouseUri.replaceAll("^s3[an]?://.+?/(.+?)/?$", "$1/");
+    String tempObjectName = prefix + "_airbyte_connection_test_" +
+        UUID.randomUUID().toString().replaceAll("-", "");
+    String bucket = this.warehouseUri.replaceAll("^s3[an]?://(.+?)/.+$", "$1");
+
+    log.error(prefix);
+    log.info(tempObjectName);
+
+    log.info(gcsClient.get(bucket).toString());
+
+  }
+
+
+  @Override
+  public Map<String, String> sparkConfigMap(String catalogName) {
+    Map<String, String> sparkConfig = new HashMap<>();
+    // sparkConfig.put("spark.sql.catalog." + catalogName + ".io-impl", "org.apache.iceberg.aws.s3.S3FileIO");
+    // sparkConfig.put("spark.sql.catalog." + catalogName + ".warehouse", this.warehouseUri);
+    // sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.endpoint", this.endpointWithSchema);
+    // sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.access-key-id", this.accessKeyId);
+    // sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.secret-access-key", this.secretKey);
+    // sparkConfig.put("spark.sql.catalog." + catalogName + ".s3.path-style-access",
+    //     String.valueOf(this.pathStyleAccess));
+    // sparkConfig.put("spark.hadoop.fs.s3a.access.key", this.accessKeyId);
+    // sparkConfig.put("spark.hadoop.fs.s3a.secret.key", this.secretKey);
+    // sparkConfig.put("spark.hadoop.fs.s3a.path.style.access", String.valueOf(this.pathStyleAccess));
+    // sparkConfig.put("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem");
+    // sparkConfig.put("spark.hadoop.fs.s3a.endpoint", this.endpoint);
+    // sparkConfig.put("spark.hadoop.fs.s3a.connection.ssl.enabled", String.valueOf(this.sslEnabled));
+    // sparkConfig.put("spark.hadoop.fs.s3a.aws.credentials.provider",
+    //     "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider");
+    return sparkConfig;
+  }
+
+  @Override
+  public Map<String, String> catalogInitializeProperties() {
+    Map<String, String> properties = new HashMap<>();
+    // properties.put(CatalogProperties.FILE_IO_IMPL, "org.apache.iceberg.aws.s3.S3FileIO");
+    // properties.put("s3.endpoint", this.endpointWithSchema);
+    // properties.put("s3.access-key-id", this.accessKeyId);
+    // properties.put("s3.secret-access-key", this.secretKey);
+    // properties.put("s3.path-style-access", String.valueOf(this.pathStyleAccess));
+    return properties;
   }
 
 }
