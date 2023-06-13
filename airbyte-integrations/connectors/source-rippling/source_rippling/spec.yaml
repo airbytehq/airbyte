@@ -11,12 +11,21 @@ connectionSpecification:
       title: Rippling API Key
       type: string
       description: Your Rippling API key
+      group: auth
+      order: 1
       airbyte_secret: true
     employee_filters:
       title: Employees fields to filter out of the sync
       type: string
+      group: options
+      order: 2
       description: Comma separated list of senstive employee fields to exclude from the sync in a comma separated string
       examples:
         - compensation
         - compensation,employmentType
+  groups:
+    - id: auth
+      title: Authentication
+    - id: options
+      title: Options
 
