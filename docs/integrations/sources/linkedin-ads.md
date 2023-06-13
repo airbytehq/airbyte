@@ -185,7 +185,7 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
-| 0.2.2   | 2023-06-01 | [27288](https://github.com/airbytehq/airbyte/pull/27288) | Change to ELv2 License                                                                                          |
+| 0.2.2   | 2023-06-13 | [27288](https://github.com/airbytehq/airbyte/pull/27288) | Change to ELv2 License                                                                                          |
 | 0.2.1   | 2023-05-30 | [26780](https://github.com/airbytehq/airbyte/pull/26780) | Reduce records limit for Creatives Stream                                                                       |
 | 0.2.0   | 2023-05-23 | [26372](https://github.com/airbytehq/airbyte/pull/26372) | Migrate to LinkedIn API version: May 2023                                                                       |
 | 0.1.16  | 2023-05-24 | [26512](https://github.com/airbytehq/airbyte/pull/26512) | Removed authSpecification from spec.json in favour of advancedAuth                                              |

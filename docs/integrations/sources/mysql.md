@@ -264,7 +264,7 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 | :------ | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2.0.25  | 2023-06-01 | [27288](https://github.com/airbytehq/airbyte/pull/27288)   | Change to ELv2 License                                                                                                                          |
+| 2.0.25  | 2023-06-13 | [27288](https://github.com/airbytehq/airbyte/pull/27288)   | Change to ELv2 License                                                                                                                          |
 | 2.0.24  | 2023-05-25 | [26473](https://github.com/airbytehq/airbyte/pull/26473)   | CDC : Limit queue size                                                                                                                          |
 | 2.0.23  | 2023-05-24 | [25586](https://github.com/airbytehq/airbyte/pull/25586)   | No need to base64 encode strings on databases sorted with binary collation                                                                      |
 | 2.0.22  | 2023-05-22 | [25859](https://github.com/airbytehq/airbyte/pull/25859)   | Allow adding sessionVariables JDBC parameters                                                                                                   |

@@ -116,7 +116,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                             |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
-| 0.1.25  | 2023-06-01 | [27288](https://github.com/airbytehq/airbyte/pull/27288)   | Change to ELv2 License                                                                              |
+| 0.1.25  | 2023-06-13 | [27288](https://github.com/airbytehq/airbyte/pull/27288)   | Change to ELv2 License                                                                              |
 | 0.1.24  | 2023-06-05 | [\#27034](https://github.com/airbytehq/airbyte/pull/27034) | Internal code change for future development (install normalization packages inside connector)       |
 | 0.1.23  | 2023-04-04 | [\#24604](https://github.com/airbytehq/airbyte/pull/24604) | Support for destination checkpointing                                                               |
 | 0.1.22  | 2022-10-21 | [\#18275](https://github.com/airbytehq/airbyte/pull/18275) | Upgrade commons-text for CVE 2022-42889                                                             |

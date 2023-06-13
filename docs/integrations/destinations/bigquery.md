@@ -135,7 +135,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                  |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
-| 1.4.5   | 2023-06-01 | [27288](https://github.com/airbytehq/airbyte/pull/27288)   | Change to ELv2 License                                                                                                   |
+| 1.4.5   | 2023-06-13 | [27288](https://github.com/airbytehq/airbyte/pull/27288)   | Change to ELv2 License                                                                                                   |
 | 1.4.4   | 2023-05-25 | [\#26585](https://github.com/airbytehq/airbyte/pull/26585) | Small tweak in logs for clarity                                                                                          |
 | 1.4.3   | 2023-05-17 | [\#26213](https://github.com/airbytehq/airbyte/pull/26213) | Fix bug in parsing file buffer config count                                                                              |
 | 1.4.2   | 2023-05-10 | [\#25925](https://github.com/airbytehq/airbyte/pull/25925) | Testing update. Normalization tests are now done in the destination container.                                           |

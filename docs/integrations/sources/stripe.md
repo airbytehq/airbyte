@@ -88,7 +88,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3.6.1   | 2023-06-01 | [27288](https://github.com/airbytehq/airbyte/pull/27288) | Change to ELv2 License                                                                                                                               |
+| 3.6.1   | 2023-06-13 | [27288](https://github.com/airbytehq/airbyte/pull/27288) | Change to ELv2 License                                                                                                                               |
 | 3.6.0   | 2023-05-24 | [23963](https://github.com/airbytehq/airbyte/pull/)      | Add `ApplicationFeesRefunds` stream with parent `ApplicationFees`                                                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 3.5.0   | 2023-05-20 | [22859](https://github.com/airbytehq/airbyte/pull/22859) | Add stream `Early Fraud Warnings`                                                                                                                    |

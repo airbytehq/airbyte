@@ -22,5 +22,5 @@ This page contains the setup guide and reference information for the SAP Fieldgl
 
 | Version | Date       | Pull Request                                             | Subject                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------- |
-| 0.1.1   | 2023-06-01 | [27288](https://github.com/airbytehq/airbyte/pull/27288) | Change to ELv2 License |
+| 0.1.1   | 2023-06-13 | [27288](https://github.com/airbytehq/airbyte/pull/27288) | Change to ELv2 License |
 | 0.1.0   | 2022-10-22 | https://github.com/airbytehq/airbyte/pull/18656          | Initial commit         |

@@ -92,7 +92,7 @@ Airbyte has the ability to connect to the Oracle source with 3 network connectiv
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                             |
 | :---------- | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- |
-| 0.1.20      | 2023-06-01 | [27288](https://github.com/airbytehq/airbyte/pull/27288)   | Change to ELv2 License                                                                              |
+| 0.1.20      | 2023-06-13 | [27288](https://github.com/airbytehq/airbyte/pull/27288)   | Change to ELv2 License                                                                              |
 | 0.1.19      | 2022-07-26 | [\#10719](https://github.com/airbytehq/airbyte/pull/)      | Destination Oracle: added custom JDBC parameters support.                                           |
 | 0.1.18      | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618) | Removed additionalProperties: false from JDBC destination connectors                                |
 | unpublished | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820)   | Improved 'check' operation performance                                                              |

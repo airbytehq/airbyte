@@ -130,7 +130,7 @@ You cannot create more than 200 worksheets within single spreadsheet.
 
 | Version | Date       | Pull Request                                             | Subject                             |
 | ------- | ---------- | -------------------------------------------------------- | ----------------------------------- |
-| 0.1.3   | 2023-06-01 | [27288](https://github.com/airbytehq/airbyte/pull/27288) | Change to ELv2 License              |
+| 0.1.3   | 2023-06-13 | [27288](https://github.com/airbytehq/airbyte/pull/27288) | Change to ELv2 License              |
 | 0.1.2   | 2022-10-31 | [18729](https://github.com/airbytehq/airbyte/pull/18729) | Fix empty headers list              |
 | 0.1.1   | 2022-06-15 | [14751](https://github.com/airbytehq/airbyte/pull/14751) | Yield state only when records saved |
 | 0.1.0   | 2022-04-26 | [12135](https://github.com/airbytehq/airbyte/pull/12135) | Initial Release                     |

@@ -245,7 +245,7 @@ Output files can be compressed. The default option is GZIP compression. If compr
 
 | Version | Date       | Pull Request                                             | Subject                                                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
-| 0.1.8   | 2023-06-01 | [27288](https://github.com/airbytehq/airbyte/pull/27288) | Change to ELv2 License                                                                  |
+| 0.1.8   | 2023-06-13 | [27288](https://github.com/airbytehq/airbyte/pull/27288) | Change to ELv2 License                                                                  |
 | 0.1.7   | 2023-05-01 | [25724](https://github.com/airbytehq/airbyte/pull/25724) | Fix decimal type creation syntax to avoid overflow                                      |
 | 0.1.6   | 2023-04-13 | [25178](https://github.com/airbytehq/airbyte/pull/25178) | Fix decimal precision and scale to allow for a wider range of numeric values            |
 | 0.1.5   | 2023-04-11 | [25048](https://github.com/airbytehq/airbyte/pull/25048) | Fix config schema to support new JSONL flattening configuration interface               |

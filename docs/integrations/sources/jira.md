@@ -126,7 +126,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 | :------ | :--------- | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------- |
-| 0.3.13  | 2023-06-01 | [27288](https://github.com/airbytehq/airbyte/pull/27288)   | Change to ELv2 License                                                                                                  |
+| 0.3.13  | 2023-06-13 | [27288](https://github.com/airbytehq/airbyte/pull/27288)   | Change to ELv2 License                                                                                                  |
 | 0.3.12  | 2023-06-01 | [\#26652](https://github.com/airbytehq/airbyte/pull/26652) | Expand on `leads` for `projects` stream                                                                                 |
 | 0.3.11  | 2023-06-01 | [\#26906](https://github.com/airbytehq/airbyte/pull/26906) | Handle project permissions error                                                                                        |
 | 0.3.10  | 2023-05-26 | [\#26652](https://github.com/airbytehq/airbyte/pull/26652) | Fixed bug when `board` doesn't support `sprints`                                                                        |
