@@ -69,7 +69,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     // switch pattern-matching is still in preview at language level 17 :(
     if (type instanceof final AirbyteProtocolType p) {
       return new ParsedType<>(toDialectType(p), type);
-    } else if (type instanceof final Struct o) {
+    } else if (type instanceof final Struct s) {
       // eventually this should be JSON; keep STRING for now as legacy compatibility
       return new ParsedType<>(StandardSQLTypeName.STRING, type);
     } else if (type instanceof final Array a) {
@@ -87,7 +87,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
   }
 
-  private String extractAndCast(QuotedColumnId column, AirbyteType airbyteType, StandardSQLTypeName dialectType) {
+  private String extractAndCast(final QuotedColumnId column, final AirbyteType airbyteType, final StandardSQLTypeName dialectType) {
     // TODO also handle oneOf types
     if (airbyteType instanceof Struct || airbyteType instanceof Array || airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
       // TODO handle null better (don't stringify it)
@@ -168,14 +168,14 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
     }
-    String insertNewRecords = insertNewRecords(stream.id(), stream.columns());
+    final String insertNewRecords = insertNewRecords(stream.id(), stream.columns());
     String dedupFinalTable = "";
     String dedupRawTable = "";
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       dedupRawTable = dedupRawTable(stream.id());
       dedupFinalTable = dedupFinalTable(stream.id(), stream.primaryKey(), stream.columns());
     }
-    String commitRawTable = commitRawTable(stream.id());
+    final String commitRawTable = commitRawTable(stream.id());
 
     return new StringSubstitutor(Map.of(
         "validate_primary_keys", validatePrimaryKeys,
@@ -204,12 +204,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @VisibleForTesting
-  String validatePrimaryKeys(QuotedStreamId id, List<QuotedColumnId> primaryKeys, LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
+  String validatePrimaryKeys(final QuotedStreamId id, final List<QuotedColumnId> primaryKeys, final LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
     // TODO this method needs to handle all the sync modes
     // e.g. this pk null check should only happen for incremental dedup
-    String pkNullChecks = primaryKeys.stream().map(
+    final String pkNullChecks = primaryKeys.stream().map(
         pk -> {
-          String jsonExtract = extractAndCast(pk, streamColumns.get(pk).airbyteType(), streamColumns.get(pk).dialectType());
+          final String jsonExtract = extractAndCast(pk, streamColumns.get(pk).airbyteType(), streamColumns.get(pk).dialectType());
           return "AND " + jsonExtract + " IS NULL";
         }
     ).collect(joining("\n"));
@@ -234,10 +234,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   @VisibleForTesting
   String insertNewRecords(final QuotedStreamId id, final LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
-    String columnCasts = streamColumns.entrySet().stream().map(
+    final String columnCasts = streamColumns.entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue().airbyteType(), col.getValue().dialectType()) + " as " + col.getKey().name() + ","
     ).collect(joining("\n"));
-    String columnErrors = streamColumns.entrySet().stream().map(
+    final String columnErrors = streamColumns.entrySet().stream().map(
         col -> new StringSubstitutor(Map.of(
             "raw_col_name", col.getKey().originalName(),
             "col_type", col.getValue().dialectType().name(),
@@ -251,7 +251,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
                 END"""
         )
     ).collect(joining(",\n"));
-    String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name() + ",").collect(joining("\n"));
+    final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name() + ",").collect(joining("\n"));
 
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(),
@@ -284,9 +284,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @VisibleForTesting
-  String dedupFinalTable(QuotedStreamId id, final List<QuotedColumnId> primaryKey, final LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
-    String pkList = primaryKey.stream().map(QuotedColumnId::name).collect(joining(","));
-    String pkCastList = streamColumns.entrySet().stream()
+  String dedupFinalTable(final QuotedStreamId id, final List<QuotedColumnId> primaryKey, final LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
+    final String pkList = primaryKey.stream().map(QuotedColumnId::name).collect(joining(","));
+    final String pkCastList = streamColumns.entrySet().stream()
         .filter(e -> primaryKey.contains(e.getKey()))
         .map(e -> extractAndCast(e.getKey(), e.getValue().airbyteType(), e.getValue().dialectType()))
         .collect(joining(",\n "));

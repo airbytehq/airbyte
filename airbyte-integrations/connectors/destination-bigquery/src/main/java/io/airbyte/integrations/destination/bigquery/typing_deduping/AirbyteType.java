@@ -6,7 +6,7 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.OneOf;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.UnsupportedOneOf;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteTypeUtils.JsonSchemaDefinition;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -21,17 +21,41 @@ public sealed interface AirbyteType permits Array, OneOf, Struct, UnsupportedOne
    */
   static AirbyteType fromJsonSchema(final JsonNode schema) {
     final JsonNode topLevelType = schema.get("type");
-    if (AirbyteTypeUtils.nodeMatchesTextualType(topLevelType, "object")) {
-      final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
-      final JsonNode properties = schema.get("properties");
-      properties.fields().forEachRemaining(property -> {
-        final String key = property.getKey();
-        final JsonNode value = property.getValue();
-        final JsonSchemaDefinition definition = new JsonSchemaDefinition(value);
-        propertiesMap.put(key, AirbyteTypeUtils.getAirbyteType(definition));
-      });
-      return new Struct(propertiesMap);
+    if (topLevelType != null) {
+      if (topLevelType.isTextual()) {
+        if (AirbyteTypeUtils.nodeIsType(topLevelType, "object")) {
+          final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
+          final JsonNode properties = schema.get("properties");
+          properties.fields().forEachRemaining(property -> {
+            final String key = property.getKey();
+            final JsonNode value = property.getValue();
+            propertiesMap.put(key, fromJsonSchema(value));
+          });
+          return new Struct(propertiesMap);
+        } else if (AirbyteTypeUtils.nodeIsType(topLevelType, "array")) {
+          final JsonNode items = schema.get("items");
+          return new Array(fromJsonSchema(items));
+        } else {
+          return AirbyteTypeUtils.getAirbyteProtocolType(schema);
+        }
+      } else if (topLevelType.isArray()) {
+        final List<AirbyteType> options = new ArrayList<>();
+        topLevelType.elements().forEachRemaining(element -> {
+          options.add(fromJsonSchema(element));
+        });
+        return new OneOf(options);
+      }
+    } else {
+      final JsonNode oneOf = schema.get("oneOf");
+      if (oneOf != null) {
+        final List<AirbyteType> options = new ArrayList<>();
+        oneOf.elements().forEachRemaining(element -> {
+          options.add(fromJsonSchema(element));
+        });
+        return new UnsupportedOneOf(options);
+      }
     }
+
     // TODO error case
     return null;
   }
