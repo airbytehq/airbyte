@@ -64,12 +64,16 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   @Override
   protected void startTracked() throws InterruptedException {
     // todo (cgardens) - move contents of #write into this method.
-    for (StreamConfig<StandardSQLTypeName> stream : catalog.streams()) {
-      final Optional<TableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
-      if (existingTable.isEmpty()) {
-        destinationHandler.execute(sqlGenerator.createTable(stream));
-      } else {
-        destinationHandler.execute(sqlGenerator.alterTable(stream, existingTable.get()));
+
+    // For each stream, make sure that its corresponding final table exists.
+    if (use1s1t) {
+      for (StreamConfig<StandardSQLTypeName> stream : catalog.streams()) {
+        final Optional<TableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
+        if (existingTable.isEmpty()) {
+          destinationHandler.execute(sqlGenerator.createTable(stream));
+        } else {
+          destinationHandler.execute(sqlGenerator.alterTable(stream, existingTable.get()));
+        }
       }
     }
   }
@@ -109,7 +113,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     uploaderMap.get(pair).upload(message);
 
     // This is just modular arithmetic written in a complicated way. We want to run T+D every RECORDS_PER_TYPING_AND_DEDUPING_BATCH records.
-    if (use1s1t && recordsSinceLastTDRun.getAndUpdate(l -> (l + 1) % RECORDS_PER_TYPING_AND_DEDUPING_BATCH) == RECORDS_PER_TYPING_AND_DEDUPING_BATCH - 1) {
+    if (recordsSinceLastTDRun.getAndUpdate(l -> (l + 1) % RECORDS_PER_TYPING_AND_DEDUPING_BATCH) == RECORDS_PER_TYPING_AND_DEDUPING_BATCH - 1) {
       doTypingAndDeduping(pair);
     }
   }
@@ -133,15 +137,17 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   private void doTypingAndDeduping(final AirbyteStreamNameNamespacePair pair) throws InterruptedException {
-    final StreamConfig<StandardSQLTypeName> stream = catalog.streams()
-        .stream()
-        .filter(s -> s.id().originalName().equals(pair.getName()) && s.id().originalName().equals(pair.getNamespace()))
-        .findFirst()
-        // Assume that if we're trying to do T+D on a stream, that stream exists in the catalog.
-        .get();
-    // TODO generate a suffix for full refresh overwrite syncs
-    final String sql = sqlGenerator.updateTable("", stream);
-    destinationHandler.execute(sql);
+    if (use1s1t) {
+      final StreamConfig<StandardSQLTypeName> stream = catalog.streams()
+          .stream()
+          .filter(s -> s.id().originalName().equals(pair.getName()) && s.id().originalName().equals(pair.getNamespace()))
+          .findFirst()
+          // Assume that if we're trying to do T+D on a stream, that stream exists in the catalog.
+          .get();
+      // TODO generate a suffix for full refresh overwrite syncs
+      final String sql = sqlGenerator.updateTable("", stream);
+      destinationHandler.execute(sql);
+    }
   }
 
 }
