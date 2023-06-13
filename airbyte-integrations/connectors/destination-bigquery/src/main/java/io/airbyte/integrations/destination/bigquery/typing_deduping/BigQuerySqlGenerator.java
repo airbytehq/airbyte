@@ -118,6 +118,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   @Override
   public String createTable(final StreamConfig<StandardSQLTypeName> stream) {
     // TODO this should also create the dataset if needed
+    // TODO this should accept a table suffix for full refresh overwrite
     final String columnDeclarations = stream.columns().entrySet().stream()
         .map(column -> column.getKey().name() + " " + column.getValue().dialectType().name())
         .collect(joining(",\n"));
