@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: bfd1ddf8-ae8a-4620-b1d7-55597d2ba08c
-  dockerImageTag: 0.2.3
+  dockerImageTag: 0.2.4
   dockerRepository: airbyte/source-bigquery
   githubIssueLabel: source-bigquery
   icon: bigquery.svg

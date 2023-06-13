@@ -5,45 +5,47 @@ This page guides you through the process of setting up the LinkedIn Ads source c
 ## Prerequisites
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
-* The LinkedIn Ads account with permission to access data from accounts you want to sync.
+- The LinkedIn Ads account with permission to access data from accounts you want to sync.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
-* The LinkedIn Ads account with permission to access data from accounts you want to sync.
-* Authentication Options:
-   * OAuth2.0:
-      * `Client ID` from your `Developer Application`
-      * `Client Secret` from your `Developer Application`
-      * `Refresh Token` obtained from successful authorization with `Client ID` + `Client Secret`
-   * Access Token:
-      * `Access Token` obtained from successful authorization with `Client ID` + `Client Secret`
-<!-- /env:oss -->
+- The LinkedIn Ads account with permission to access data from accounts you want to sync.
+- Authentication Options:
+  - OAuth2.0:
+    - `Client ID` from your `Developer Application`
+    - `Client Secret` from your `Developer Application`
+    - `Refresh Token` obtained from successful authorization with `Client ID` + `Client Secret`
+  - Access Token: \* `Access Token` obtained from successful authorization with `Client ID` + `Client Secret`
+  <!-- /env:oss -->
 
 ## Step 1: Set up LinkedIn Ads
 
 1. [Login to LinkedIn](https://developer.linkedin.com/) with a developer account.
-2. Click the **Create App** icon on the center of the page or [use here](https://www.linkedin.com/developers/apps). Fill in the required fields:  
-    1. For **App Name**, enter a name.
-    2. For **LinkedIn Page**, enter your company's name or LinkedIn Company Page URL.
-    3. For **Privacy policy URL**, enter the link to your company's privacy policy.
-    4. For **App logo**, upload your company's logo.
-    5. For **Legal Agreement**, select **I have read and agree to these terms**.
-    6. Click **Create App**, on the bottom right of the screen. LinkedIn redirects you to a page showing the details of your application.
+2. Click the **Create App** icon on the center of the page or [use here](https://www.linkedin.com/developers/apps). Fill in the required fields:
+
+   1. For **App Name**, enter a name.
+   2. For **LinkedIn Page**, enter your company's name or LinkedIn Company Page URL.
+   3. For **Privacy policy URL**, enter the link to your company's privacy policy.
+   4. For **App logo**, upload your company's logo.
+   5. For **Legal Agreement**, select **I have read and agree to these terms**.
+   6. Click **Create App**, on the bottom right of the screen. LinkedIn redirects you to a page showing the details of your application.
 
 3. Verify your app. You can verify your app using the following steps:
-    1. To display the settings page, click the **Settings** tab. On the **App Settings** section, click **Verify** under **Company**. A popup window will be displayed. To generate the verification URL, click on **Generate URL**, then copy and send the URL to the Page Admin (this may be you). Click on **I'm done**.
-    If you are the administrator of your Page, simply run the URL in a new tab (if not, an administrator will have to do the next step). Click on **Verify**. Finally, Refresh the tab of app creation, the app should now be associated with your Page.
 
-    2.  To display the Products page, click the **Product** tab. For **Marketing Developer Platform** click on the **Request access**. A popup window will be displayed. Review and Select **I have read and agree to these terms**. Finally, click **Request access**. 
-    
-    3. To authorize your application, click the **Auth** tab. The authentication page is displayed. Copy the **client_id** and **client_secret** (for later steps). For **Oauth 2.0 settings**, Provide a **redirect_uri** (for later steps).
-    
-    4. Click and review the **Analytics** tab. This page shows the daily application and user/member limits with the percent used for each resource endpoint.
+   1. To display the settings page, click the **Settings** tab. On the **App Settings** section, click **Verify** under **Company**. A popup window will be displayed. To generate the verification URL, click on **Generate URL**, then copy and send the URL to the Page Admin (this may be you). Click on **I'm done**.
+      If you are the administrator of your Page, simply run the URL in a new tab (if not, an administrator will have to do the next step). Click on **Verify**. Finally, Refresh the tab of app creation, the app should now be associated with your Page.
 
+   2. To display the Products page, click the **Product** tab. For **Marketing Developer Platform** click on the **Request access**. A popup window will be displayed. Review and Select **I have read and agree to these terms**. Finally, click **Request access**.
+
+   3. To authorize your application, click the **Auth** tab. The authentication page is displayed. Copy the **client_id** and **client_secret** (for later steps). For **Oauth 2.0 settings**, Provide a **redirect_uri** (for later steps).
+
+   4. Click and review the **Analytics** tab. This page shows the daily application and user/member limits with the percent used for each resource endpoint.
 
 4. (Optional for Airbyte Cloud) Authorize your app. In case your authorization expires:
 
@@ -59,7 +61,7 @@ This page guides you through the process of setting up the LinkedIn Ads source c
    4. To authorize the app, click **Allow**.
 
    5. Copy the `code` parameter listed in the redirect URL in the Browser header URL.
-   
+
 5. (Optional for Airbyte Cloud) Run the following curl command using `Terminal` or `Command line` with the parameters replaced to return your `access_token`. The `access_token` expires in 2-months.
 
    ```text
@@ -73,8 +75,7 @@ This page guides you through the process of setting up the LinkedIn Ads source c
     -d "redirect_uri=YOUR_REDIRECT_URI"
    ```
 
-6. (Optional for Airbyte Cloud) Use the `access_token`. Same as the approach in  `Step 5` to authorize LinkedIn Ads connector.
-
+6. (Optional for Airbyte Cloud) Use the `access_token`. Same as the approach in `Step 5` to authorize LinkedIn Ads connector.
 
 ### Notes:
 
@@ -100,6 +101,7 @@ To edit these roles, sign in to Campaign Manager and follow [these instructions]
 ## Step 2: Set up the source connector in Airbyte
 
 <!-- env:cloud -->
+
 **For Airbyte Cloud:**
 
 1. [Login to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
@@ -112,6 +114,7 @@ To edit these roles, sign in to Campaign Manager and follow [these instructions]
 8. Click **Set up source**.
 
 <!-- env:oss -->
+
 **For Airbyte Open Source:**
 
 1. Go to the local Airbyte page.
@@ -120,8 +123,8 @@ To edit these roles, sign in to Campaign Manager and follow [these instructions]
 4. Add `Start Date` - the starting point for your data replication.
 5. Add your `Account IDs (Optional)` if required.
 6. Choose between Authentication Options:
-    1. For **OAuth2.0:** Copy and paste info (**Client ID**, **Client Secret**) from your **LinkedIn Ads developer application**, and obtain the **Refresh Token** using **Set up LinkedIn Ads**  guide steps and paste it into the corresponding field.
-    2. For **Access Token:** Obtain the **Access Token** using **Set up LinkedIn Ads**  guide steps and paste it into the corresponding field.
+   1. For **OAuth2.0:** Copy and paste info (**Client ID**, **Client Secret**) from your **LinkedIn Ads developer application**, and obtain the **Refresh Token** using **Set up LinkedIn Ads** guide steps and paste it into the corresponding field.
+   2. For **Access Token:** Obtain the **Access Token** using **Set up LinkedIn Ads** guide steps and paste it into the corresponding field.
 7. Click **Set up source**.
 <!-- /env:oss -->
 
@@ -138,7 +141,7 @@ This Source is capable of syncing the following data as streams:
 - [Ad Analytics by Creative](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 
 | Sync Mode                                 | Supported?\(Yes/No\) |
-|:------------------------------------------|:---------------------|
+| :---------------------------------------- | :------------------- |
 | Full Refresh Overwrite Sync               | Yes                  |
 | Full Refresh Append Sync                  | Yes                  |
 | Incremental - Append Sync                 | Yes                  |
@@ -153,7 +156,7 @@ For Analytics Streams such as `Ad Analytics by Campaign` and `Ad Analytics by Cr
 ### Data type mapping
 
 | Integration Type | Airbyte Type | Notes                       |
-|:-----------------|:-------------|:----------------------------|
+| :--------------- | :----------- | :-------------------------- |
 | `number`         | `number`     | float number                |
 | `integer`        | `integer`    | whole number                |
 | `date`           | `string`     | FORMAT YYYY-MM-DD           |
@@ -181,7 +184,8 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| 0.2.2   | 2023-06-01 | [27288](https://github.com/airbytehq/airbyte/pull/27288) | Change to ELv2 License                                                                                          |
 | 0.2.1   | 2023-05-30 | [26780](https://github.com/airbytehq/airbyte/pull/26780) | Reduce records limit for Creatives Stream                                                                       |
 | 0.2.0   | 2023-05-23 | [26372](https://github.com/airbytehq/airbyte/pull/26372) | Migrate to LinkedIn API version: May 2023                                                                       |
 | 0.1.16  | 2023-05-24 | [26512](https://github.com/airbytehq/airbyte/pull/26512) | Removed authSpecification from spec.json in favour of advancedAuth                                              |

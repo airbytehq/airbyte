@@ -5,7 +5,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
-  dockerImageTag: 3.0.0
+  dockerImageTag: 3.0.1
   dockerRepository: airbyte/source-s3
   githubIssueLabel: source-s3
   icon: s3.svg

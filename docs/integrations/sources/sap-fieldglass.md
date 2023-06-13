@@ -9,17 +9,18 @@ This page contains the setup guide and reference information for the SAP Fieldgl
 
 ## Supported sync modes
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
 
 ## Supported Streams
 
-* [Active Worker Download](https://api.sap.com/api/activeWorkerDownload/resource)
+- [Active Worker Download](https://api.sap.com/api/activeWorkerDownload/resource)
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                                                    |
-|:--------|:-----------| :----------- |:-----------------------------------------------------------|
-| 0.1.0   | 2022-10-22 | https://github.com/airbytehq/airbyte/pull/18656 | Initial commit |
+| Version | Date       | Pull Request                                             | Subject                |
+| :------ | :--------- | :------------------------------------------------------- | :--------------------- |
+| 0.1.1   | 2023-06-01 | [27288](https://github.com/airbytehq/airbyte/pull/27288) | Change to ELv2 License |
+| 0.1.0   | 2022-10-22 | https://github.com/airbytehq/airbyte/pull/18656          | Initial commit         |

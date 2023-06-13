@@ -7,7 +7,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
-  dockerImageTag: 0.1.24
+  dockerImageTag: 0.1.25
   dockerRepository: airbyte/destination-mssql-strict-encrypt
   githubIssueLabel: destination-mssql
   icon: mssql.svg
