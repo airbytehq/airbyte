@@ -116,7 +116,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
             """)
     ).build());
 
-    final String sql = GENERATOR.validatePrimaryKeys(streamId, List.of(new QuotedColumnId("id", "id", "id")), columns);
+    // This variable is declared outside of the transaction, so we need to do it manually here
+    final String sql = "DECLARE missing_pk_count INT64;" + GENERATOR.validatePrimaryKeys(streamId, List.of(new QuotedColumnId("id", "id", "id")), columns);
     final BigQueryException e = assertThrows(
         BigQueryException.class,
         () -> bq.query(QueryJobConfiguration.newBuilder(sql).build())
@@ -124,7 +125,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
     // TODO this is super fragile
     assertEquals(
-        "Raw table has 1 rows missing a primary key at [12:3]",
+        "Raw table has 1 rows missing a primary key at [10:3]",
         e.getError().getMessage()
     );
   }
@@ -250,6 +251,18 @@ public class BigQuerySqlGeneratorIntegrationTest {
     assertEquals(0, rawUntypedRows);
   }
 
+  @Test
+  public void testRenameFinalTable() throws InterruptedException {
+    createFinalTable("_tmp");
+
+    final String sql = GENERATOR.overwriteFinalTable("_tmp", overwriteDedupStreamConfig());
+    bq.query(QueryJobConfiguration.newBuilder(sql).build());
+
+    final Table table = bq.getTable(testDataset, "users_final");
+    // TODO this should assert table schema + partitioning/clustering configs
+    assertNotNull(table);
+  }
+
   private StreamConfig<StandardSQLTypeName> incrementalDedupStreamConfig() {
     return new StreamConfig<>(
         streamId,
@@ -257,6 +270,17 @@ public class BigQuerySqlGeneratorIntegrationTest {
         DestinationSyncMode.APPEND_DEDUP,
         PRIMARY_KEY,
         Optional.of(GENERATOR.quoteColumnId("updated_at")),
+        columns
+    );
+  }
+
+  private StreamConfig<StandardSQLTypeName> overwriteDedupStreamConfig() {
+    return new StreamConfig<>(
+        streamId,
+        SyncMode.FULL_REFRESH,
+        DestinationSyncMode.OVERWRITE,
+        null,
+        Optional.empty(),
         columns
     );
   }
@@ -281,11 +305,16 @@ public class BigQuerySqlGeneratorIntegrationTest {
   }
 
   private void createFinalTable() throws InterruptedException {
+    createFinalTable("");
+  }
+
+  private void createFinalTable(String suffix) throws InterruptedException {
     bq.query(QueryJobConfiguration.newBuilder(
         new StringSubstitutor(Map.of(
-            "dataset", testDataset
+            "dataset", testDataset,
+            "suffix", suffix
         )).replace("""
-            CREATE TABLE ${dataset}.users_final (
+            CREATE TABLE ${dataset}.users_final${suffix} (
               _airbyte_raw_id STRING NOT NULL,
               _airbyte_extracted_at TIMESTAMP NOT NULL,
               _airbyte_meta JSON NOT NULL,

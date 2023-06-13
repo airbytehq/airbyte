@@ -23,6 +23,11 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
       return finalNamespace + "." + finalName;
     }
 
+    public String finalTableId(String suffix) {
+      // TODO this won't work if the finalName is quoted, e.g. "`foo bar`". In that case we need to unquote, add the suffix, and requote.
+      return finalNamespace + "." + finalName + suffix;
+    }
+
     public String rawTableId() {
       return rawNamespace + "." + rawName;
     }

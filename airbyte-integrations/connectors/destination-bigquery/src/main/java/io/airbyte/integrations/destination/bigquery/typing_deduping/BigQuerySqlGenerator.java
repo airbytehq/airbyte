@@ -352,11 +352,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE && finalSuffix.length() > 0) {
       return new StringSubstitutor(Map.of(
           "final_table_id", stream.id().finalTableId(),
-          "raw_table_id", stream.id().rawTableId() + "_" + finalSuffix,
-          "final_table_name", stream.id().finalName()
+          "tmp_final_table", stream.id().finalTableId(finalSuffix),
+          "real_final_table", stream.id().finalName()
       )).replace("""
-          DROP TABLE ${final_table_id};
-          ALTER TABLE ${raw_table_id} RENAME TO ${final_table_name};
+          DROP TABLE IF EXISTS ${final_table_id};
+          ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
           """);
     } else {
       return "";
