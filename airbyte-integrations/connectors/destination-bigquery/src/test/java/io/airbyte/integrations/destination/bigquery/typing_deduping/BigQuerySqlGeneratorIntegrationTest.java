@@ -278,10 +278,39 @@ public class BigQuerySqlGeneratorIntegrationTest {
   }
 
   @Test
+  public void testFullUpdateFullRefreshAppend() throws InterruptedException {
+    createRawTable();
+    createFinalTable();
+    bq.query(QueryJobConfiguration.newBuilder(
+        new StringSubstitutor(Map.of(
+            "dataset", testDataset
+        )).replace("""
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}, "age": 42, "updated_at": "2023-01-01T01:00:00Z"}', 'd7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z');
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Diego", "state": "CA"}, "age": 84, "updated_at": "2023-01-01T02:00:00Z"}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z');
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 2, "name": "Bob", "age": "oops", "updated_at": "2023-01-01T03:00:00Z"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
+            
+            INSERT INTO ${dataset}.users_final (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, id, updated_at, name, address, age) values
+              ('64f4390f-3da1-4b65-b64a-a6c67497f18d', '2022-12-31T00:00:00Z', JSON'{"errors": []}', 1, '2022-12-31T00:00:00Z', 'Alice', NULL, NULL);
+            """)
+    ).build());
+
+    final String updateSql = GENERATOR.updateTable("", incrementalAppendStreamConfig());
+    bq.query(QueryJobConfiguration.newBuilder(updateSql).build());
+
+    // TODO
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId()).build()).getTotalRows();
+    assertEquals(4, finalRows);
+    final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId()).build()).getTotalRows();
+    assertEquals(3, rawRows);
+    final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId() + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
+    assertEquals(0, rawUntypedRows);
+  }
+
+  @Test
   public void testRenameFinalTable() throws InterruptedException {
     createFinalTable("_tmp");
 
-    final String sql = GENERATOR.overwriteFinalTable("_tmp", overwriteDedupStreamConfig());
+    final String sql = GENERATOR.overwriteFinalTable("_tmp", fullRefreshOverwriteStreamConfig());
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     final Table table = bq.getTable(testDataset, "users_final");
@@ -311,7 +340,18 @@ public class BigQuerySqlGeneratorIntegrationTest {
     );
   }
 
-  private StreamConfig<StandardSQLTypeName> overwriteDedupStreamConfig() {
+  private StreamConfig<StandardSQLTypeName> fullRefreshAppendStreamConfig() {
+    return new StreamConfig<>(
+        streamId,
+        SyncMode.FULL_REFRESH,
+        DestinationSyncMode.APPEND,
+        null,
+        Optional.empty(),
+        columns
+    );
+  }
+
+  private StreamConfig<StandardSQLTypeName> fullRefreshOverwriteStreamConfig() {
     return new StreamConfig<>(
         streamId,
         SyncMode.FULL_REFRESH,
