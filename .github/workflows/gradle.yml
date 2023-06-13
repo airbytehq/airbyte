@@ -254,7 +254,7 @@ jobs:
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
         with:
-          cache-key: ${{ secrets.CACHE_VERSION }}-connectors
+          cache-key: ${{ secrets.CACHE_VERSION }}-connectors-gradle-build
 
       - uses: actions/setup-java@v3
         with:
@@ -270,7 +270,7 @@ jobs:
           python-version: "3.9"
 
       - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
+        run: python3 -m pip install virtualenv --user
 
       - name: Install automake
         run: apt-get update && apt-get install -y automake build-essential libtool libtool-bin autoconf
@@ -321,10 +321,14 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
+      # This is helpful in the case that we change a previously commited generated file to be ignored by git.
+      - name: Remove any files that have been gitignored
+        run: git ls-files -i -c --exclude-from=.gitignore | xargs -r git rm --cached
+
       - name: Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: Automated Change
+          commit_message: Automated Commit - Format and Process Resources Changes
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
 

@@ -13,9 +13,13 @@ from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 
+import anyio
 import asyncer
-from ci_connector_ops.pipelines.consts import PYPROJECT_TOML_FILE_PATH
-from ci_connector_ops.pipelines.utils import check_path_in_workdir, with_exit_code, with_stderr, with_stdout
+from anyio import Path
+from ci_connector_ops.pipelines.consts import PYPROJECT_TOML_FILE_PATH, LOCAL_REPORTS_PATH_ROOT
+from ci_connector_ops.pipelines.actions import remote_storage
+from ci_connector_ops.pipelines.utils import check_path_in_workdir, slugify, with_exit_code, with_stderr, with_stdout
+
 from ci_connector_ops.utils import console
 from dagger import Container, QueryError
 from rich.console import Group
@@ -36,6 +40,9 @@ class CIContext(str, Enum):
     PULL_REQUEST = "pull_request"
     NIGHTLY_BUILDS = "nightly_builds"
     MASTER = "master"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 class StepStatus(Enum):
@@ -92,9 +99,11 @@ class Step(ABC):
 
     title: ClassVar[str]
     started_at: ClassVar[datetime]
+    max_retries: ClassVar[int] = 0
 
     def __init__(self, context: ConnectorContext) -> None:  # noqa D107
         self.context = context
+        self.retry_count = 0
 
     async def run(self, *args, **kwargs) -> StepResult:
         """Public method to run the step. It output a step result.
@@ -106,7 +115,15 @@ class Step(ABC):
         """
         self.started_at = datetime.utcnow()
         try:
-            return await self._run(*args, **kwargs)
+            result = await self._run(*args, **kwargs)
+            if result.status is StepStatus.FAILURE and self.retry_count <= self.max_retries and self.max_retries > 0:
+                self.retry_count += 1
+                await anyio.sleep(10)
+                self.context.logger.warn(
+                    f"Retry #{self.retry_count} for {self.title} step on connector {self.context.connector.technical_name}"
+                )
+                return await self.run(*args, **kwargs)
+            return result
         except QueryError as e:
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
@@ -157,6 +174,13 @@ class Step(ABC):
 class PytestStep(Step, ABC):
     """An abstract class to run pytest tests and evaluate success or failure according to pytest logs."""
 
+    async def write_log_file(self, logs) -> str:
+        """Return the path to the pytest log file."""
+        log_directory = Path(f"{self.context.connector.code_directory}/airbyte_ci_logs")
+        await log_directory.mkdir(exist_ok=True)
+        await Path(f"{log_directory}/{slugify(self.title).replace('-', '_')}.log").write_text(logs)
+        self.context.logger.info(f"Pytest logs written to {log_directory}/{slugify(self.title)}.log")
+
     # TODO this is not very robust if pytest crashes and does not outputs its expected last log line.
     def pytest_logs_to_step_result(self, logs: str) -> StepResult:
         """Parse pytest log and infer failure, success or skipping.
@@ -202,7 +226,10 @@ class PytestStep(Step, ABC):
                     test_config,
                 ]
             )
-            return self.pytest_logs_to_step_result(await tester.stdout())
+            logs = await tester.stdout()
+            if self.context.is_local:
+                await self.write_log_file(logs)
+            return self.pytest_logs_to_step_result(logs)
 
         else:
             return StepResult(self, StepStatus.SKIPPED)
@@ -231,6 +258,15 @@ class Report:
     steps_results: List[StepResult]
     created_at: datetime = field(default_factory=datetime.utcnow)
     name: str = "REPORT"
+    _file_path_key: str = "report.json"
+
+    @property
+    def file_path_key(self) -> str:
+        return self._file_path_key
+
+    @file_path_key.setter
+    def file_path_key(self, v: str) -> None:
+        self._file_path_key = v
 
     @property
     def failed_steps(self) -> List[StepResult]:  # noqa D102
@@ -251,6 +287,30 @@ class Report:
     @property
     def run_duration(self) -> int:  # noqa D102
         return (self.created_at - self.pipeline_context.created_at).total_seconds()
+
+    @property
+    def remote_storage_enabled(self) -> bool:  # noqa D102
+        return self.pipeline_context.is_ci
+
+    async def save(self) -> None:
+        """Save the report as a JSON file."""
+        local_report_path = anyio.Path(LOCAL_REPORTS_PATH_ROOT + self.file_path_key)
+        await local_report_path.parents[0].mkdir(parents=True, exist_ok=True)
+        await local_report_path.write_text(self.to_json())
+
+        if self.remote_storage_enabled:
+            local_report_dagger_file = (
+                self.pipeline_context.dagger_client.host().directory(".", include=[str(local_report_path)]).file(str(local_report_path))
+            )
+            report_upload_exit_code, _stdout, _stderr = await remote_storage.upload_to_gcs(
+                dagger_client=self.pipeline_context.dagger_client,
+                file_to_upload=local_report_dagger_file,
+                key=self.file_path_key,
+                bucket=self.pipeline_context.ci_report_bucket,
+                gcs_credentials=self.pipeline_context.ci_gcs_credentials_secret,
+            )
+            if report_upload_exit_code != 0:
+                self.pipeline_context.logger.error(f"Uploading the report to GCS Bucket: {self.pipeline_context.ci_report_bucket} failed.")
 
     def to_json(self) -> str:
         """Create a JSON representation of the report.
@@ -322,8 +382,13 @@ class ConnectorReport(Report):
     """A dataclass to build connector test reports to share pipelines executions results with the user."""
 
     @property
-    def should_be_saved(self) -> bool:  # noqa D102
-        return self.pipeline_context.is_ci
+    def file_path_key(self) -> str:  # noqa D102
+        connector_name = self.pipeline_context.connector.technical_name
+        connector_version = self.pipeline_context.connector.version
+
+        suffix = f"{connector_name}/{connector_version}/output.json"
+        file_path_key = f"{self.pipeline_context.report_output_prefix}/{suffix}"
+        return file_path_key
 
     @property
     def should_be_commented_on_pr(self) -> bool:  # noqa D102
