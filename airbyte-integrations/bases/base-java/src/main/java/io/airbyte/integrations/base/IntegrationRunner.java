@@ -63,7 +63,9 @@ public class IntegrationRunner {
    */
   @VisibleForTesting
   static final Predicate<Thread> ORPHANED_THREAD_FILTER = runningThread -> !runningThread.getName().equals(Thread.currentThread().getName())
-      && !runningThread.isDaemon() && !runningThread.getName().startsWith("pool-");
+      && !runningThread.isDaemon()
+      && !runningThread.getName().startsWith("pool-")
+      && !runningThread.getName().startsWith(ConcurrentStreamConsumer.CONCURRENT_STREAM_THREAD_NAME);
 
   public static final int INTERRUPT_THREAD_DELAY_MINUTES = 60;
   public static final int EXIT_THREAD_DELAY_MINUTES = 70;
