@@ -74,10 +74,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
   }
 
-  private String extractJson(QuotedColumnId column, AirbyteType airbyteType, StandardSQLTypeName dialectType) {
+  private String extractAndCast(QuotedColumnId column, AirbyteType airbyteType, StandardSQLTypeName dialectType) {
     // TODO also handle oneOf types
     if (airbyteType instanceof Struct || airbyteType instanceof Array || airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
-      return "JSON_QUERY(`_airbyte_data`, '$." + column.originalName() + "')";
+      return "TO_JSON_STRING(JSON_QUERY(`_airbyte_data`, '$." + column.originalName() + "'))";
     } else {
       return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$." + column.originalName() + "') as " + dialectType.name() + ")";
     }
@@ -188,7 +188,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     // e.g. this pk null check should only happen for incremental dedup
     String pkNullChecks = primaryKeys.stream().map(
         pk -> {
-          String jsonExtract = extractJson(pk, streamColumns.get(pk).airbyteType(), streamColumns.get(pk).dialectType());
+          String jsonExtract = extractAndCast(pk, streamColumns.get(pk).airbyteType(), streamColumns.get(pk).dialectType());
           return "AND " + jsonExtract + " IS NULL";
         }
     ).collect(joining("\n"));
@@ -216,13 +216,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   @VisibleForTesting
   String insertNewRecords(final QuotedStreamId id, final LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
     String columnCasts = streamColumns.entrySet().stream().map(
-        col -> extractJson(col.getKey(), col.getValue().airbyteType(), col.getValue().dialectType()) + " as " + col.getKey().name() + ","
+        col -> extractAndCast(col.getKey(), col.getValue().airbyteType(), col.getValue().dialectType()) + " as " + col.getKey().name() + ","
     ).collect(joining("\n"));
     String columnErrors = streamColumns.entrySet().stream().map(
         col -> new StringSubstitutor(Map.of(
             "raw_col_name", col.getKey().originalName(),
             "col_type", col.getValue().dialectType().name(),
-            "json_extract", extractJson(col.getKey(), col.getValue().airbyteType(), col.getValue().dialectType())
+            "json_extract", extractAndCast(col.getKey(), col.getValue().airbyteType(), col.getValue().dialectType())
         )).replace(
             // TODO check that json_extract is an object/array
             """
@@ -232,15 +232,23 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
                 END"""
         )
     ).collect(joining(",\n"));
+    String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name() + ",").collect(joining("\n"));
 
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(),
         "final_table_id", id.finalTableId(),
         "column_casts", columnCasts,
-        "column_errors", columnErrors
+        "column_errors", columnErrors,
+        "column_list", columnList
     )).replace(
         """
               INSERT INTO ${final_table_id}
+              (
+            ${column_list}
+            _airbyte_meta,
+            _airbyte_raw_id,
+            _airbyte_extracted_at
+              )
               SELECT
             ${column_casts}
             to_json(struct(array_concat(
@@ -266,7 +274,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
                 "raw_table_id", id.rawTableId(),
                 "raw_col_name", col.getKey().originalName(),
                 "col_type", col.getValue().dialectType().name(),
-                "json_extract", extractJson(col.getKey(), col.getValue().airbyteType(), col.getValue().dialectType())
+                "json_extract", extractAndCast(col.getKey(), col.getValue().airbyteType(), col.getValue().dialectType())
             )).replace("""
                 `id` IN (
                   SELECT

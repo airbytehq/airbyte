@@ -67,11 +67,20 @@ class BigQuerySqlGeneratorTest {
             END IF;
                         
               INSERT INTO public.users
+              (
+            id,
+            updated_at,
+            name,
+            address,
+            _airbyte_meta,
+            _airbyte_raw_id,
+            _airbyte_extracted_at
+              )
               SELECT
             SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.id') as INT64) as id,
             SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.updated_at') as TIMESTAMP) as updated_at,
             SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.name') as STRING) as name,
-            JSON_QUERY(`_airbyte_data`, '$.address') as address,
+            TO_JSON_STRING(JSON_QUERY(`_airbyte_data`, '$.address')) as address,
             to_json(struct(array_concat(
             CASE
               WHEN (JSON_VALUE(`_airbyte_data`, '$.id') IS NOT NULL) AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.id') as INT64) IS NULL) THEN ["Problem with `id`"]
@@ -86,7 +95,7 @@ class BigQuerySqlGeneratorTest {
               ELSE []
             END,
             CASE
-              WHEN (JSON_VALUE(`_airbyte_data`, '$.address') IS NOT NULL) AND (JSON_QUERY(`_airbyte_data`, '$.address') IS NULL) THEN ["Problem with `address`"]
+              WHEN (JSON_VALUE(`_airbyte_data`, '$.address') IS NOT NULL) AND (TO_JSON_STRING(JSON_QUERY(`_airbyte_data`, '$.address')) IS NULL) THEN ["Problem with `address`"]
               ELSE []
             END
             ) as errors)) as _airbyte_meta,

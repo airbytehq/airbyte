@@ -79,6 +79,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
     addressProperties.put("city", AirbyteProtocolType.STRING);
     addressProperties.put("state", AirbyteProtocolType.STRING);
     columns.put(generator.quoteColumnId("address"), new ParsedType<>(StandardSQLTypeName.STRING, new Struct(addressProperties)));
+
+    columns.put(generator.quoteColumnId("age"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
   }
 
   @BeforeEach
@@ -139,6 +141,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
         )).replace("""
             INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}, "updated_at": "2023-01-01T01:00:00Z"}', GENERATE_UUID(), CURRENT_TIMESTAMP());
             INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Diego", "state": "CA"}, "updated_at": "2023-01-01T02:00:00Z"}', GENERATE_UUID(), CURRENT_TIMESTAMP());
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 2, "name": "Bob", "age": "oops", "updated_at": "2023-01-01T03:00:00Z"}', GENERATE_UUID(), CURRENT_TIMESTAMP());
             """)
     ).build());
 
@@ -146,8 +149,9 @@ public class BigQuerySqlGeneratorIntegrationTest {
     LOGGER.info("Generated sql: {}", sql);
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
+    // TODO more stringent asserts
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId()).build()).getTotalRows();
-    assertEquals(2, finalRows);
+    assertEquals(3, finalRows);
   }
 
   private StreamConfig<StandardSQLTypeName> incrementalDedupStreamConfig() {
@@ -192,7 +196,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
               id INT64,
               updated_at TIMESTAMP,
               name STRING,
-              address STRING
+              address STRING,
+              age INT64
             )
             PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
             CLUSTER BY id, _airbyte_extracted_at;
