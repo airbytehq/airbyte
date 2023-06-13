@@ -8,7 +8,7 @@ import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from source_mixpanel.source import SourceMixpanel, TokenAuthenticatorBase64
-from source_mixpanel.streams import Annotations
+from source_mixpanel.streams import Annotations, Cohorts
 
 from .utils import command_check, get_url_to_mock, setup_response
 
@@ -36,6 +36,16 @@ def test_check_connection(requests_mock, check_connection_url, config_raw, respo
     expected_error = response_json.get("error")
     if expected_error:
         assert error == expected_error
+
+
+def test_check_connection_402_error_on_first_stream(requests_mock, check_connection_url, config, config_raw):
+    auth = TokenAuthenticatorBase64(token=config["api_secret"])
+    requests_mock.register_uri("GET", get_url_to_mock(Cohorts(authenticator=auth, **config)), setup_response(200, {}))
+    requests_mock.register_uri("GET", get_url_to_mock(Annotations(authenticator=auth, **config)), setup_response(402, {"error": "Payment required"}))
+
+    ok, error = SourceMixpanel().check_connection(logger, config_raw)
+    assert ok is True
+    assert error is None
 
 
 def test_check_connection_bad_config():

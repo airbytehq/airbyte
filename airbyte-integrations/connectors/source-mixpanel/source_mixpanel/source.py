@@ -79,13 +79,25 @@ class SourceMixpanel(AbstractSource):
         try:
             config = self._validate_and_transform(config)
             auth = self.get_authenticator(config)
-            annotations = Annotations(authenticator=auth, **config)
-            annotations.reqs_per_hour_limit = 0
-            next(read_full_refresh(annotations), None)
-        except requests.HTTPError as e:
-            return False, e.response.json()["error"]
         except Exception as e:
             return False, e
+
+        # https://github.com/airbytehq/airbyte/pull/27252#discussion_r1228356872
+        # temporary solution, testing access for all streams to avoid 402 error
+        streams = [Annotations, Cohorts, Engage, Export, Revenue]
+        for stream_class in streams:
+            try:
+                stream = stream_class(authenticator=auth, **config)
+                stream.reqs_per_hour_limit = 0
+                next(read_full_refresh(stream), None)
+                break
+            except requests.HTTPError as e:
+                if e.response.status_code == 402:
+                    logger.info(f"Stream {stream_class.__name__}: {e.response.json()['error']}")
+                else:
+                    return False, e.response.json()["error"]
+            except Exception as e:
+                return False, e
 
         return True, None
 
