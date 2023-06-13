@@ -770,6 +770,8 @@
   "ignore.notification.modal.checkboxText": "Do not remind me again during this billing cycle",
   "billing.warning.banner.text1": "You have reached your data processing limit for this billing cycle.",
   "billing.warning.banner.text2": "Data streaming is paused until you upgrade, or when next billing cycle starts.",
+  "billing.warning.banner.text3": "The payment for your subscription has failed. Update your payment details now to avoid disruptions in your data pipeline.",
+  "update.payment.button": "Update Payment",
   "verifyEmail.title": "Please Verify Your Email",
   "verifyEmail.text1": "Thank you for signing up for Daspire.\nAn email with a verification link has been sent to the email you provided during the registration process. Please use the the link to verify your email, and access your account.",
   "verifyEmail.text2": "Didn’t receive an email? {resentText} or check your spam folder. \nAlready verified? {clickHereText} to sign in to your account.",

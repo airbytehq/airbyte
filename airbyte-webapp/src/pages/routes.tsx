@@ -24,6 +24,7 @@ import ConnectionPage from "./ConnectionPage";
 import DestinationPage from "./DestinationPage";
 import PaymentErrorPage from "./PaymentErrorPage";
 import PaymentPage from "./PaymentPage";
+import FailedPaymentPage from "./PaymentPage/FailedPaymentPage";
 import PreferencesPage from "./PreferencesPage";
 import { RoutePaths } from "./routePaths";
 import { SettingsPage } from "./SettingsPage";
@@ -40,6 +41,7 @@ const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = () => {
           <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
           <Route path={`${RoutePaths.Payment}/*`} element={<PaymentPage />} />
           <Route path={`${RoutePaths.PaymentError}/*`} element={<PaymentErrorPage />} />
+          <Route path={`${RoutePaths.FailedPayment}/*`} element={<FailedPaymentPage />} />
           <Route path="*" element={<Navigate to={RoutePaths.Connections} />} />
         </Routes>
       </ApiErrorBoundary>

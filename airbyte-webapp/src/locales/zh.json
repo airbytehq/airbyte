@@ -770,6 +770,8 @@
   "ignore.notification.modal.checkboxText": "在此结算周期内不再提醒",
   "billing.warning.banner.text1": "您已达到此计费周期的数据处理限制。",
   "billing.warning.banner.text2": "数据同步直到您升级方案或下一个计费周期开始前已暂停。",
+  "billing.warning.banner.text3": "您的订阅付款失败了。立即更新您的付款信息以避免数据同步中断。",
+  "update.payment.button": "更新付款信息",
   "verifyEmail.title": "请验证您的邮箱",
   "verifyEmail.text1": "感谢您注册Daspire。 \n我们已经向您在注册过程中提供的邮箱发送了一封验证邮件。请使用邮箱中的链接验证您的邮箱，以正常访问您的账号。",
   "verifyEmail.text2": "没有收到邮件？{resentText}或检查您的垃圾邮件文件夹。 \n已经验证您的邮箱？{clickHereText}登录您的帐号。",
