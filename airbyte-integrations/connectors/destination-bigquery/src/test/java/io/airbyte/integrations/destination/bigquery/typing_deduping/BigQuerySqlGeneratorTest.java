@@ -51,8 +51,9 @@ class BigQuerySqlGeneratorTest {
 
     assertEquals(
         """
-            BEGIN TRANSACTION;
             DECLARE missing_pk_count INT64;
+            
+            BEGIN TRANSACTION;
 
             SET missing_pk_count = (
               SELECT COUNT(1)

@@ -73,6 +73,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   private String extractAndCast(QuotedColumnId column, AirbyteType airbyteType, StandardSQLTypeName dialectType) {
     // TODO also handle oneOf types
     if (airbyteType instanceof Struct || airbyteType instanceof Array || airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
+      // TODO handle null better (don't stringify it)
       return "TO_JSON_STRING(JSON_QUERY(`_airbyte_data`, '$." + column.originalName() + "'))";
     } else {
       return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$." + column.originalName() + "') as " + dialectType.name() + ")";
@@ -162,6 +163,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
         "commit_raw_table", commitRawTable
     )).replace(
         """
+            DECLARE missing_pk_count INT64;
+            
             BEGIN TRANSACTION;
             ${validate_primary_keys}
                       
@@ -194,8 +197,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
         "pk_null_checks", pkNullChecks
     )).replace(
         """
-              DECLARE missing_pk_count INT64;
-
               SET missing_pk_count = (
                 SELECT COUNT(1)
                 FROM ${raw_table_id}
