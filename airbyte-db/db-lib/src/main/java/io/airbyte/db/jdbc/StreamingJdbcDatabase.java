@@ -4,8 +4,6 @@
 
 package io.airbyte.db.jdbc;
 
-import static java.lang.Thread.sleep;
-
 import com.google.errorprone.annotations.MustBeClosed;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
@@ -14,7 +12,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
@@ -98,19 +95,19 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
       @Override
       public boolean tryAdvance(final Consumer<? super T> action) {
         try {
-//          LOGGER.info("tryAdvance");
-//          sleep(3000);
+          // LOGGER.info("tryAdvance");
+          // sleep(3000);
           if (!resultSet.next()) {
-//            LOGGER.error("exiting tryAdvance");
-//            LOGGER.error("stacktrace: \n{}", Arrays.toString(Thread.currentThread().getStackTrace()));
+            // LOGGER.error("exiting tryAdvance");
+            // LOGGER.error("stacktrace: \n{}", Arrays.toString(Thread.currentThread().getStackTrace()));
             resultSet.close();
-//            LOGGER.info("return f1");
+            // LOGGER.info("return f1");
             return false;
           }
           final T dataRow = mapper.apply(resultSet);
           streamingConfig.accept(resultSet, dataRow);
           action.accept(dataRow);
-//          LOGGER.info("return t2 {}", dataRow.toString());
+          // LOGGER.info("return t2 {}", dataRow.toString());
           return true;
         } catch (final SQLException e) {
           LOGGER.error("SQLState: {}, Message: {}", e.getSQLState(), e.getMessage());
@@ -118,13 +115,13 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
           isStreamFailed = true;
           // throwing an exception in tryAdvance() method lead to the endless loop in Spliterator and stream
           // will never close
-//          LOGGER.info("return f3");
+          // LOGGER.info("return f3");
           return false;
         } catch (final Exception e) {
           LOGGER.error("General exception", e);
           streamException = e;
           isStreamFailed = true;
-//          LOGGER.info("return f4");
+          // LOGGER.info("return f4");
           return false;
         }
       }
