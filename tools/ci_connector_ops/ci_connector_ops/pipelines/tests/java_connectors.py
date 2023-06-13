@@ -7,7 +7,6 @@
 from typing import List, Optional
 
 import anyio
-from ci_connector_ops.pipelines.helpers.steps import run_steps
 from ci_connector_ops.pipelines.actions import environments, secrets
 from ci_connector_ops.pipelines.bases import StepResult, StepStatus
 from ci_connector_ops.pipelines.builds import LOCAL_BUILD_PLATFORM
@@ -15,6 +14,7 @@ from ci_connector_ops.pipelines.builds.java_connectors import BuildConnectorDist
 from ci_connector_ops.pipelines.builds.normalization import BuildOrPullNormalization
 from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.gradle import GradleTask
+from ci_connector_ops.pipelines.helpers.steps import run_steps
 from ci_connector_ops.pipelines.tests.common import AcceptanceTests
 from ci_connector_ops.pipelines.utils import export_container_to_tarball
 from dagger import File, QueryError
@@ -34,17 +34,13 @@ class IntegrationTestJava(GradleTask):
     async def _load_normalization_image(self, normalization_tar_file: File):
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
         self.context.logger.info("Load the normalization image to the docker host.")
-        await environments.load_image_to_docker_host(
-            self.context, normalization_tar_file, normalization_image_tag, docker_service_name=self.docker_service_name
-        )
+        await environments.load_image_to_docker_host(self.context, normalization_tar_file, normalization_image_tag)
         self.context.logger.info("Successfully loaded the normalization image to the docker host.")
 
     async def _load_connector_image(self, connector_tar_file: File):
         connector_image_tag = f"airbyte/{self.context.connector.technical_name}:dev"
         self.context.logger.info("Load the connector image to the docker host")
-        await environments.load_image_to_docker_host(
-            self.context, connector_tar_file, connector_image_tag, docker_service_name=self.docker_service_name
-        )
+        await environments.load_image_to_docker_host(self.context, connector_tar_file, connector_image_tag)
         self.context.logger.info("Successfully loaded the connector image to the docker host.")
 
     async def _run(self, connector_tar_file: File, normalization_tar_file: Optional[File]) -> StepResult:
