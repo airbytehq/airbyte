@@ -111,12 +111,22 @@ class SourceMixpanel(AbstractSource):
         logger.info(f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
 
         auth = self.get_authenticator(config)
-        streams = [
+        streams = []
+        for stream in [
             Annotations(authenticator=auth, **config),
             Cohorts(authenticator=auth, **config),
             Funnels(authenticator=auth, **config),
             Revenue(authenticator=auth, **config),
-        ]
+        ]:
+            try:
+                next(read_full_refresh(stream), None)
+            except requests.HTTPError as e:
+                if e.response.status_code != 402:
+                    raise e
+                logger.warning("Stream '%s' - is disabled, reason: 402 Payment Required", stream.name)
+            else:
+                streams.append(stream)
+
 
         # streams with dynamically generated schema
         for stream in [

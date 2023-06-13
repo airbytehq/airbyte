@@ -63,23 +63,36 @@ def test_check_connection_incomplete(config_raw):
 def test_streams(requests_mock, config_raw):
     requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/properties", setup_response(200, {}))
     requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/annotations", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/cohorts/list", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/revenue", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/funnels/list", setup_response(402, {"error": "Payment required"}))
     streams = SourceMixpanel().streams(config_raw)
-    assert len(streams) == 7
+    assert len(streams) == 6
 
 
 def test_streams_string_date(requests_mock, config_raw):
     requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/properties", setup_response(200, {}))
     requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/annotations", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/cohorts/list", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/revenue", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/funnels/list", setup_response(402, {"error": "Payment required"}))
     config = copy.deepcopy(config_raw)
     config["start_date"] = "2020-01-01"
     config["end_date"] = "2020-01-02"
     streams = SourceMixpanel().streams(config)
-    assert len(streams) == 7
+    assert len(streams) == 6
 
 
 def test_streams_disabled_402(requests_mock, config_raw):
     json_response = {"error": "Your plan does not allow API calls. Upgrade at mixpanel.com/pricing"}
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/properties", setup_response(402, json_response))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(402, json_response))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/properties", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/annotations", setup_response(200, {}))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/cohorts/list", setup_response(402, json_response))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/revenue", setup_response(402, json_response))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/funnels/list", setup_response(402, json_response))
     streams = SourceMixpanel().streams(config_raw)
-    assert {s.name for s in streams} == {"funnels", "revenue", "annotations", "cohorts"}
+    assert {s.name for s in streams} == {'annotations', 'export', 'engage', 'cohort_members'}
