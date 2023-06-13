@@ -37,7 +37,7 @@ class StripeStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
-        if bool(decoded_response.get("has_more", "False")) and decoded_response.get("data", []):
+        if "has_more" in decoded_response and decoded_response["has_more"] and decoded_response.get("data", []):
             last_object_id = decoded_response["data"][-1]["id"]
             return {"starting_after": last_object_id}
 
@@ -824,8 +824,18 @@ class TopUps(StripeStream):
     def path(self, **kwargs) -> str:
         return "topups"
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+    def request_params(
+        self, 
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None, 
+        next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
         return next_page_token or {}
+    
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from [{}]
 
 
 class Files(StripeStream):
@@ -838,5 +848,15 @@ class Files(StripeStream):
     def path(self, **kwargs) -> str:
         return "files"
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+    def request_params(
+        self, 
+        stream_state: Mapping[str, Any], 
+        stream_slice: Mapping[str, Any] = None, 
+        next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
         return next_page_token or {}
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from [{}]
