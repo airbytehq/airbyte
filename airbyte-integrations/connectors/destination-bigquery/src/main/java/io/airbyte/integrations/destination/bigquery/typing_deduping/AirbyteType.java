@@ -21,48 +21,19 @@ public sealed interface AirbyteType permits Array, OneOf, Struct, UnsupportedOne
    */
   static AirbyteType fromJsonSchema(final JsonNode schema) {
     final JsonNode topLevelType = schema.get("type");
-    if (AirbyteTypeUtils.isObject(topLevelType)) {
+    if (AirbyteTypeUtils.nodeMatchesTextualType(topLevelType, "object")) {
       final LinkedHashMap<String, AirbyteType> propertiesMap = new LinkedHashMap<>();
       final JsonNode properties = schema.get("properties");
       properties.fields().forEachRemaining(property -> {
         final String key = property.getKey();
         final JsonNode value = property.getValue();
-        final JsonSchemaDefinition definition = new JsonSchemaDefinition(
-            value.get("type"), value.get("airbyte_type"), value.get("format"));
-
-        // Treat simple types from narrower to wider scope type: boolean < integer < number < string
-        if (AirbyteTypeUtils.isBoolean(definition)) {
-          propertiesMap.put(key, AirbyteProtocolType.BOOLEAN);
-        } else if (AirbyteTypeUtils.isBigInteger(definition)) {
-          propertiesMap.put(key, AirbyteProtocolType.INTEGER);
-        } else if (AirbyteTypeUtils.isLong(definition)) {
-          propertiesMap.put(key, AirbyteProtocolType.INTEGER);
-        } else if (AirbyteTypeUtils.isNumber(definition)) {
-          propertiesMap.put(key, AirbyteProtocolType.NUMBER);
-        } else if (AirbyteTypeUtils.isDatetimeWithoutTimezone(definition)) {
-          propertiesMap.put(key, AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE);
-        } else if (AirbyteTypeUtils.isDatetimeWithTimezone(definition)) {
-          propertiesMap.put(key, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-        } else if (AirbyteTypeUtils.isDate(definition)) {
-          propertiesMap.put(key, AirbyteProtocolType.DATE);
-        } else if (AirbyteTypeUtils.isTimeWithTimezone(definition)) {
-          propertiesMap.put(key, AirbyteProtocolType.TIME_WITH_TIMEZONE);
-        } else if (AirbyteTypeUtils.isTimeWithoutTimezone(definition)) {
-          propertiesMap.put(key, AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
-        } else if (AirbyteTypeUtils.isString(definition)) {
-          propertiesMap.put(key, AirbyteProtocolType.STRING);
-        } else {
-          propertiesMap.put(key, AirbyteProtocolType.UNKNOWN);
-        }
+        final JsonSchemaDefinition definition = new JsonSchemaDefinition(value);
+        propertiesMap.put(key, AirbyteTypeUtils.getAirbyteType(definition));
       });
       return new Struct(propertiesMap);
-    } else if (AirbyteTypeUtils.isArray(topLevelType)) {
-      // TODO parse items
-    } else {
-      // TODO handle oneOf, etc.
     }
-
-    return new Struct(new LinkedHashMap<>());
+    // TODO error case
+    return null;
   }
 
   enum AirbyteProtocolType implements AirbyteType {
