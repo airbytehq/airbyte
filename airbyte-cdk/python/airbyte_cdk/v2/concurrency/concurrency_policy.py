@@ -10,9 +10,5 @@ class ConcurrencyPolicy(ABC):
     def __init__(self, max_concurrent_requests: int = 1):
         self.max_concurrent_requests = max_concurrent_requests
 
-    @abstractmethod
-    def inspect_response(self):
-        """ Gets the latest response"""
-
     def maximum_number_of_concurrent_requests(self) -> int:
         return self.max_concurrent_requests

@@ -17,23 +17,23 @@ class DatetimeRangeTracker:
     def __init__(self, copied_ranges: List[Tuple[datetime, datetime]] = None):
         self.copied_ranges = copied_ranges or []
 
-    def add_copied_range(self, start: datetime, end: datetime):
+    def mark_range_as_copied(self, start: datetime, end: datetime):
         """Inform the tracker that the input date range has been copied"""
         # TODO make this more efficient by adding to the correct place in the sorted list
         self.copied_ranges.append((start, end))
         self.copied_ranges.sort(key=lambda x: x[0])  # Always keep the list sorted
-        self.merge_contiguous()
-
-    def check_if_copied(self, start: datetime, end: datetime) -> bool:
-        for copied_start, copied_end in self.copied_ranges:
-            if copied_start <= start and copied_end >= end:
-                return True
-        return False
+        self._merge_contiguous()
 
     def get_copied_ranges(self) -> List[Tuple[datetime, datetime]]:
         return self.copied_ranges
 
-    def get_uncopied_ranges(self, start: datetime, end: datetime, preferred_range_size: timedelta, descending: bool) -> List[Tuple[datetime, datetime]]:
+    def get_uncopied_ranges(
+            self,
+            start: datetime,
+            end: datetime = None,
+            preferred_range_size: timedelta = None,
+            descending: bool = False
+    ) -> List[Tuple[datetime, datetime]]:
         """
         Returns a list of date ranges within the given range that haven't been copied. The returned ranges will be at most as large as
         preferred_range_size. A range may be smaller than preferred_range_size if no adjacent uncopied range was found.
@@ -41,9 +41,12 @@ class DatetimeRangeTracker:
         :param end
         :param start
         :param preferred_range_size: the preferred size of the returned ranges
+        @param descending:
         """
         uncopied_ranges = []
         current_start = start
+        end = end or datetime.now()
+        preferred_range_size = preferred_range_size or timedelta(days=10_000)
 
         for copied_start, copied_end in self.copied_ranges:
             if current_start < copied_start:
@@ -69,7 +72,7 @@ class DatetimeRangeTracker:
 
         return uncopied_ranges
 
-    def merge_contiguous(self):
+    def _merge_contiguous(self):
         merged = []
         for start, end in self.copied_ranges:
             if not merged or merged[-1][1] < start:

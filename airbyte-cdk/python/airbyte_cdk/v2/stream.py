@@ -9,13 +9,13 @@ from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.streams.core import StreamData, package_name_from_class
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
 
-from airbyte_cdk.v2.state import StateType
+from airbyte_cdk.v2 import StateType
 
 
 class Stream(ABC):
     # TODO we might want to have a concept of a partitioned stream be separate from a stream in case that makes the UX easier for
     #  non-partitioned concurrency
-    namespace: str
+    namespace: str = None
     name: str
     primary_key: List[List[str]]
 

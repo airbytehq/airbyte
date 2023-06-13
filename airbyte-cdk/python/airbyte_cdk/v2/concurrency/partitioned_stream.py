@@ -1,38 +1,22 @@
 from abc import abstractmethod, ABC
+from collections.abc import AsyncIterable
 from dataclasses import dataclass, field
-from typing import Mapping, Any, Iterable, TypeVar, Union, Generic, Optional
+from typing import Mapping, Any, Iterable, TypeVar, Union, Generic
+
+from airbyte_cdk.v2.concurrency import PartitionDescriptor, PartitionGenerator
 
 from airbyte_cdk.sources.connector_state_manager import HashableStreamDescriptor
 
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_protocol.models import ConfiguredAirbyteCatalog
 
-from airbyte_cdk.v2.state import StateType, StateManager
-from airbyte_cdk.v2.concurrency import Stream, ConcurrencyPolicy
+from airbyte_cdk.v2 import Stream, State
+from airbyte_cdk.v2.state import StateManager
+
+# from airbyte_cdk.v2.state import StateManager
 
 PartitionType = TypeVar('PartitionType', bound='PartitionDescriptor')
-
-
-@dataclass
-class PartitionDescriptor:
-    """
-        TODO: A partition could be described by more than one thing e.g: date range and a configuration setting, for example:
-            sync_deleted_records(bool) or lookback_window
-            those are two examples of configurations which, if changed, the existing stream state is no longer correct, and the stream
-            needs to be recomputed.
-            Should we try to solve this as part of partition descriptors?
-
-            Alternatively we could just not bother with this.
-    """
-    partition_id: str
-    metadata: Mapping[str, Any]
-
-
-class PartitionGenerator(ABC, Generic[PartitionType]):
-    @abstractmethod
-    def generate_partitions(self, state: StateType, catalog: ConfiguredAirbyteCatalog, config: Mapping[str, Any]) -> Iterable[
-            PartitionType]:
-        """ Generates partitions """
+StateType = TypeVar('StateType', bound=State)
 
 
 class PartitionedStream(Stream, ABC, Generic[PartitionType]):
@@ -43,11 +27,26 @@ class PartitionedStream(Stream, ABC, Generic[PartitionType]):
     This stream contains utilities for state management
     """
     state_manager: StateManager
-    concurrency_policy: Optional[ConcurrencyPolicy]
+    # concurrency_policy: Optional[ConcurrencyPolicy] TODO probably?
+
+    def __init__(self, state_manager: StateManager[StateType, PartitionType]):
+        self.state_manager = state_manager
 
     @abstractmethod
     def get_partition_descriptors(self, stream_state: StateType, catalog: ConfiguredAirbyteCatalog) -> Iterable[PartitionType]:
         """ Return the partition descriptors """
+
+    @abstractmethod
+    async def parse_response(self, response: Any) -> AsyncIterable[StreamData]:
+        """
+        TODO this feels like a weird place to put this. A stream has no obligation to outside objects to provide
+            a method for parsing output, it feels like an intrusion on this abstraction. Either this is not a stream
+            (e.g when using with a ConcurrentStreamGroup it's a StreamInfoProvider or something) and it makes sense
+            to provide this method, or it's a stream and it doesn't make sense to expose such a low level implementation
+            detail. But this method and read_partition/read_stream don't really coexist I think.
+        @param response:
+        @return:
+        """
 
     # Is the stream making each request, or is it essentially asking the source to make the request, and the source
     # makes the request on its behalf? This allows the source to coordinate requests to minimize rate limit issues
@@ -74,70 +73,4 @@ class PartitionedStream(Stream, ABC, Generic[PartitionType]):
 
         pass
 
-
 # HTTP
-class ErrorHandler:
-    pass
-
-
-class Paginator:
-    pass
-
-
-class ResponseParser:
-    pass
-
-
-@dataclass
-class HttpRequestDescriptor:
-    base_url: str
-    path: str
-    method: str
-    headers: Mapping[str, Any] = field(default_factory=dict)
-    cookies: Mapping[str, Any] = field(default_factory=dict)
-    follow_redirects: bool = True
-
-
-@dataclass
-class GetRequest(HttpRequestDescriptor):
-    request_parameters: Mapping[str, Any] = field(default_factory=dict)
-    method: str = field(default="GET", init=False)
-
-
-@dataclass
-class PostRequest(HttpRequestDescriptor):
-    body_data: Union[str, Mapping[str, Any]] = None
-    body_json: Mapping[str, Any] = None
-    method: str = field(default="POST", init=False)
-
-    def __post_init__(self):
-        num_input_body_params = sum(x is not None for x in [self.body_json, self.body_data])
-        if num_input_body_params != 1:
-            raise ValueError("Exactly one of of body_text, body_json, or body_urlencoded_params must be set")
-
-
-@dataclass
-class HttpPartitionDescriptor(PartitionDescriptor):
-    request_descriptor: HttpRequestDescriptor
-
-
-class SimpleHttpClient(ABC):
-    # TODO
-    pagination_policy: Paginator
-    error_handling_policy: ErrorHandler
-
-    def __init__(self):
-        pass
-
-    @abstractmethod
-    async def request_async(self, descriptor: HttpRequestDescriptor):
-        """"""
-
-    @abstractmethod
-    def request(self, descriptor: HttpRequestDescriptor):
-        """"""
-
-
-class HttpStream(Stream, ABC):
-    def __init__(self, partition_generator: PartitionGenerator):
-        pass
