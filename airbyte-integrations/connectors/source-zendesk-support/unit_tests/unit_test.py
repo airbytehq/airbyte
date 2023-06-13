@@ -358,8 +358,6 @@ class TestSourceZendeskSupportStream:
             (SlaPolicies),
             (CustomRoles),
             (Schedules),
-            (Tickets),
-            (Users)
         ],
         ids=[
             "Macros",
@@ -371,8 +369,6 @@ class TestSourceZendeskSupportStream:
             "SlaPolicies",
             "CustomRoles",
             "Schedules",
-            "Tickets",
-            "Users"
         ],
     )
     def test_parse_response(self, requests_mock, stream_cls):
@@ -464,9 +460,6 @@ class TestSourceZendeskSupportStream:
             (Organizations, None),
             (Groups, None),
             (TicketFields, None),
-            (SlaPolicies, None),
-            (CustomRoles, None),
-            (Schedules, None),
             (Tickets, None),
             (Users, None)
         ],
@@ -475,9 +468,6 @@ class TestSourceZendeskSupportStream:
             "Organizations",
             "Groups",
             "TicketFields",
-            "SlaPolicies",
-            "CustomRoles",
-            "Schedules",
             "Tickets",
             "Users"
         ],
@@ -494,22 +484,12 @@ class TestSourceZendeskSupportStream:
             (Organizations, {"start_time": 1622505600}),
             (Groups, {"start_time": 1622505600}),
             (TicketFields, {"start_time": 1622505600}),
-            (SlaPolicies, {"start_time": 1622505600}),
-            (CustomRoles, {"start_time": 1622505600}),
-            (Schedules, {"start_time": 1622505600}),
-            (Tickets, {"start_time": 1622505600}),
-            (Users, {"start_time": 1622505600})
         ],
         ids=[
             "Macros",
             "Organizations",
             "Groups",
             "TicketFields",
-            "SlaPolicies",
-            "CustomRoles",
-            "Schedules",
-            "Tickets",
-            "Users"
         ],
     )
     def test_request_params(self, stream_cls, expected):
@@ -523,18 +503,12 @@ class TestSourceZendeskSupportFullRefreshStream:
         "stream_cls",
         [
             (Tags),
-            (SlaPolicies),
             (Brands),
-            (CustomRoles),
-            (Schedules),
             (UserSettingsStream),
         ],
         ids=[
             "Tags",
-            "SlaPolicies",
             "Brands",
-            "CustomRoles",
-            "Schedules",
             "UserSettingsStream",
         ],
     )
