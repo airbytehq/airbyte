@@ -1,6 +1,5 @@
 package io.airbyte.integrations.source.postgres.ctid;
 
-import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.CTID_STATUS_TYPE;
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.CTID_STATUS_VERSION;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,8 +12,6 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import javax.annotation.CheckForNull;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -61,7 +58,7 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
         return CtidStateManager.createStateMessage(pair,
             new CtidStatus()
                 .withVer(CTID_STATUS_VERSION)
-                .withType(CTID_STATUS_TYPE)
+                .withType(CtidStatus.Type.CTID)
                 .withCtid(lastCtid)
                 .withIncrementalState(streamStateForIncrementalRun));
       }

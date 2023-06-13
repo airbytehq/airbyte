@@ -16,10 +16,12 @@ definitions:
       type:
         description: state type
         type: string
+        enum:
+          - ctid
       ctid:
         description: ctid bookmark
         type: string
       incremental_state:
-        description: "State to switch to after completion of ctid snapsho"
+        description: "State to switch to after completion of ctid initial sync"
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
