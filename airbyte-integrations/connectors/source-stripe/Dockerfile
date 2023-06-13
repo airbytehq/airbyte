@@ -9,7 +9,7 @@ ENTRYPOINT ["/airbyte/integration_code/airbyte-to-flow", "--connector-entrypoint
 COPY *.json ./
 COPY streams/* ./streams/
 
-LABEL io.airbyte.version=v2
+LABEL io.airbyte.version=v3
 LABEL io.airbyte.name=airbyte/source-stripe
 LABEL FLOW_RUNTIME_PROTOCOL=capture
 LABEL CONNECTOR_PROTOCOL=flow-capture
