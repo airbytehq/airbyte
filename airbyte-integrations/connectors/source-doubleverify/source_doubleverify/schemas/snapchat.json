@@ -2,384 +2,459 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "dimensions": {
-      "date": {
-        "id": 56819777,
-        "type": [
-          "date"
-        ]
-      },
-      "snap_ad_format": {
-        "id": 96321557,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "delivery_country": {
-        "id": 59341133,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "device_delivery_type": {
-        "id": 68351092,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "advertiser": {
-        "id": 15481682,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "brand": {
-        "id": 348137,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "brand_market": {
-        "id": 64455984,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "brand_region": {
-        "id": 64455983,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "snap_impression_type": {
-        "id": 58780721,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "traffic_validity": {
-        "id": 48023071,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "snap_account_id": {
-        "id": 91069731,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "snap_account_name": {
-        "id": 51465711,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "snap_ad_id": {
-        "id": 47909565,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "snap_ad_name": {
-        "id": 99281364,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "snap_ad_set_id": {
-        "id": 24378211,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "snap_ad_set_name": {
-        "id": 88748130,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "snap_campaign_id": {
-        "id": 99086685,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "snap_campaign_name": {
-        "id": 48684319,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "snap_campaign_objective": {
-        "id": 9708710,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "media_type": {
-        "id": 11047811,
-        "type": [
-          "string",
-          "null"
-        ]
-      }
+    "date": {
+      "id": 56819777,
+      "type": [
+        "string"
+      ],
+      "field_type": "dimension"
     },
-    "metrics": {
-      "display_authentic_viewable_impressions": {
-        "id": 4661060,
-        "type": "number"
-      },
-      "video_viewable_impressions": {
-        "id": 6114850,
-        "type": "number"
-      },
-      "q1_completed_impressions": {
-        "id": 8708935,
-        "type": "number"
-      },
-      "display_fraud_sivt_free_impressions": {
-        "id": 12324187,
-        "type": "number"
-      },
-      "audible_impressions": {
-        "id": 14782119,
-        "type": "number"
-      },
-      "q2_completed_impressions": {
-        "id": 16577906,
-        "type": "number"
-      },
-      "audible_measured_impressions": {
-        "id": 19918628,
-        "type": "number"
-      },
-      "display_eligible_impressions": {
-        "id": 26123624,
-        "type": "number"
-      },
-      "video_viewable_engaged_impressions": {
-        "id": 29489600,
-        "type": "number"
-      },
-      "video_authentic_viewable_impressions": {
-        "id": 29906046,
-        "type": "number"
-      },
-      "video_full_screen_impressions": {
-        "id": 37439405,
-        "type": "number"
-      },
-      "q3_completed_impressions": {
-        "id": 40980036,
-        "type": "number"
-      },
-      "display_authentic_impressions": {
-        "id": 49125224,
-        "type": "number"
-      },
-      "video_fraud_sivt_free_impressions": {
-        "id": 49654735,
-        "type": "number"
-      },
-      "video_authentic_impressions": {
-        "id": 50490110,
-        "type": "number"
-      },
-      "fraud_sivt_free_impressions": {
-        "id": 54395605,
-        "type": "number"
-      },
-      "audible_viewable_impressions": {
-        "id": 57003523,
-        "type": "number"
-      },
-      "audible_and_in_view_on_completion_impressions": {
-        "id": 59168274,
-        "type": "number"
-      },
-      "video_measured_impressions": {
-        "id": 60800497,
-        "type": "number"
-      },
-      "100_video_viewable_impressions": {
-        "id": 63777139,
-        "type": "number"
-      },
-      "completed_impressions": {
-        "id": 63929155,
-        "type": "number"
-      },
-      "video_fraud_sivt_incidents": {
-        "id": 64128353,
-        "type": "number"
-      },
-      "display_viewable_engaged_impressions": {
-        "id": 65572487,
-        "type": "number"
-      },
-      "fraud_sivt_incidents": {
-        "id": 71483969,
-        "type": "number"
-      },
-      "monitored_impressions": {
-        "id": 76388228,
-        "type": "number"
-      },
-      "display_measured_impressions": {
-        "id": 76431248,
-        "type": "number"
-      },
-      "video_monitored_impressions": {
-        "id": 80875834,
-        "type": "number"
-      },
-      "display_monitored_impressions": {
-        "id": 81112196,
-        "type": "number"
-      },
-      "display_fraud_sivt_incidents": {
-        "id": 83526970,
-        "type": "number"
-      },
-      "authentic_impressions": {
-        "id": 88237187,
-        "type": "number"
-      },
-      "measured_impressions": {
-        "id": 88318928,
-        "type": "number"
-      },
-      "video_eligible_impressions": {
-        "id": 89547967,
-        "type": "number"
-      },
-      "display_viewable_impressions": {
-        "id": 90638416,
-        "type": "number"
-      },
-      "eligible_impressions": {
-        "id": 94120692,
-        "type": "number"
-      },
-      "unique_incidents": {
-        "id": 97580207,
-        "type": "number"
-      },
-      "display_viewable_engaged_rate": {
-        "id": 2295895,
-        "type": "numeric"
-      },
-      "display_authentic_rate": {
-        "id": 3516317,
-        "type": "numeric"
-      },
-      "unique_incident_rate": {
-        "id": 11770395,
-        "type": "numeric"
-      },
-      "measurement_rate": {
-        "id": 14117940,
-        "type": "numeric"
-      },
-      "video_authentic_viewable_rate": {
-        "id": 14637091,
-        "type": "numeric"
-      },
-      "display_fraud_sivt_rate": {
-        "id": 18536658,
-        "type": "numeric"
-      },
-      "audible_rate": {
-        "id": 19761722,
-        "type": "numeric"
-      },
-      "100_video_viewable_rate": {
-        "id": 25537563,
-        "type": "numeric"
-      },
-      "authentic_rate": {
-        "id": 31045065,
-        "type": "numeric"
-      },
-      "video_viewable_rate": {
-        "id": 39300449,
-        "type": "numeric"
-      },
-      "display_measurement_rate": {
-        "id": 39394618,
-        "type": "numeric"
-      },
-      "display_viewable_rate": {
-        "id": 47509843,
-        "type": "numeric"
-      },
-      "fraud_sivt_free_rate": {
-        "id": 49358156,
-        "type": "numeric"
-      },
-      "display_fraud_sivt_free_rate": {
-        "id": 49973563,
-        "type": "numeric"
-      },
-      "video_authentic_rate": {
-        "id": 52855529,
-        "type": "numeric"
-      },
-      "video_fraud_sivt_free_rate": {
-        "id": 65390928,
-        "type": "numeric"
-      },
-      "video_measurement_rate": {
-        "id": 66982801,
-        "type": "numeric"
-      },
-      "fraud_sivt_rate": {
-        "id": 69437271,
-        "type": "numeric"
-      },
-      "audible_and_in_view_on_completion_rate": {
-        "id": 75029445,
-        "type": "numeric"
-      },
-      "video_fraud_sivt_rate": {
-        "id": 77795620,
-        "type": "numeric"
-      },
-      "audible_viewable_rate": {
-        "id": 80022790,
-        "type": "numeric"
-      },
-      "display_authentic_viewable_rate": {
-        "id": 83505365,
-        "type": "numeric"
-      },
-      "video_full_screen_rate": {
-        "id": 84302387,
-        "type": "numeric"
-      },
-      "video_viewable_engaged_rate": {
-        "id": 94050174,
-        "type": "numeric"
-      }
+    "snap_ad_format": {
+      "id": 96321557,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "delivery_country": {
+      "id": 59341133,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "device_delivery_type": {
+      "id": 68351092,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "advertiser": {
+      "id": 15481682,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "brand": {
+      "id": 348137,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "brand_market": {
+      "id": 64455984,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "brand_region": {
+      "id": 64455983,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "snap_impression_type": {
+      "id": 58780721,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "traffic_validity": {
+      "id": 48023071,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "snap_account_id": {
+      "id": 91069731,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "snap_account_name": {
+      "id": 51465711,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "snap_ad_id": {
+      "id": 47909565,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "snap_ad_name": {
+      "id": 99281364,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "snap_ad_set_id": {
+      "id": 24378211,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "snap_ad_set_name": {
+      "id": 88748130,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "snap_campaign_id": {
+      "id": 99086685,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "snap_campaign_name": {
+      "id": 48684319,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "snap_campaign_objective": {
+      "id": 9708710,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "media_type": {
+      "id": 11047811,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "display_authentic_viewable_impressions": {
+      "id": 4661060,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_viewable_impressions": {
+      "id": 6114850,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "q1_completed_impressions": {
+      "id": 8708935,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "display_fraud_sivt_free_impressions": {
+      "id": 12324187,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "audible_impressions": {
+      "id": 14782119,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "q2_completed_impressions": {
+      "id": 16577906,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "audible_measured_impressions": {
+      "id": 19918628,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "display_eligible_impressions": {
+      "id": 26123624,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_viewable_engaged_impressions": {
+      "id": 29489600,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_authentic_viewable_impressions": {
+      "id": 29906046,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_full_screen_impressions": {
+      "id": 37439405,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "q3_completed_impressions": {
+      "id": 40980036,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "display_authentic_impressions": {
+      "id": 49125224,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_fraud_sivt_free_impressions": {
+      "id": 49654735,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_authentic_impressions": {
+      "id": 50490110,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "fraud_sivt_free_impressions": {
+      "id": 54395605,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "audible_viewable_impressions": {
+      "id": 57003523,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "audible_and_in_view_on_completion_impressions": {
+      "id": 59168274,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_measured_impressions": {
+      "id": 60800497,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "100_video_viewable_impressions": {
+      "id": 63777139,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "completed_impressions": {
+      "id": 63929155,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_fraud_sivt_incidents": {
+      "id": 64128353,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "display_viewable_engaged_impressions": {
+      "id": 65572487,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "fraud_sivt_incidents": {
+      "id": 71483969,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "monitored_impressions": {
+      "id": 76388228,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "display_measured_impressions": {
+      "id": 76431248,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_monitored_impressions": {
+      "id": 80875834,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "display_monitored_impressions": {
+      "id": 81112196,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "display_fraud_sivt_incidents": {
+      "id": 83526970,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "authentic_impressions": {
+      "id": 88237187,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "measured_impressions": {
+      "id": 88318928,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_eligible_impressions": {
+      "id": 89547967,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "display_viewable_impressions": {
+      "id": 90638416,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "eligible_impressions": {
+      "id": 94120692,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "unique_incidents": {
+      "id": 97580207,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "display_viewable_engaged_rate": {
+      "id": 2295895,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "display_authentic_rate": {
+      "id": 3516317,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "unique_incident_rate": {
+      "id": 11770395,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "measurement_rate": {
+      "id": 14117940,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_authentic_viewable_rate": {
+      "id": 14637091,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "display_fraud_sivt_rate": {
+      "id": 18536658,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "audible_rate": {
+      "id": 19761722,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "100_video_viewable_rate": {
+      "id": 25537563,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "authentic_rate": {
+      "id": 31045065,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_viewable_rate": {
+      "id": 39300449,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "display_measurement_rate": {
+      "id": 39394618,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "display_viewable_rate": {
+      "id": 47509843,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "fraud_sivt_free_rate": {
+      "id": 49358156,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "display_fraud_sivt_free_rate": {
+      "id": 49973563,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_authentic_rate": {
+      "id": 52855529,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_fraud_sivt_free_rate": {
+      "id": 65390928,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_measurement_rate": {
+      "id": 66982801,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "fraud_sivt_rate": {
+      "id": 69437271,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "audible_and_in_view_on_completion_rate": {
+      "id": 75029445,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_fraud_sivt_rate": {
+      "id": 77795620,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "audible_viewable_rate": {
+      "id": 80022790,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "display_authentic_viewable_rate": {
+      "id": 83505365,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_full_screen_rate": {
+      "id": 84302387,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_viewable_engaged_rate": {
+      "id": 94050174,
+      "type": "number",
+      "field_type": "metric"
     }
   }
 }

@@ -2,335 +2,397 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "dimensions": {
-      "date": {
-        "id": 56819777,
-        "type": [
-          "date"
-        ]
-      },
-      "device_delivery_type": {
-        "id": 68351092,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "advertiser_name": {
-        "id": 74370077,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "brand": {
-        "id": 348137,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "campaign": {
-        "id": 41496607,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "brand_market": {
-        "id": 64455984,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "brand_region": {
-        "id": 64455983,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "traffic_validity": {
-        "id": 48023071,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "buying_platform": {
-        "id": 99281395,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "campaign_id": {
-        "id": 37836060,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "ad_group_id": {
-        "id": 99281393,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "ad_group_name": {
-        "id": 99281394,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "creative_id": {
-        "id": 52048214,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "creative_name": {
-        "id": 99281396,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "insertion_order_id": {
-        "id": 99281391,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "insertion_order_name": {
-        "id": 99281392,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "line_item_id": {
-        "id": 99281389,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "line_item_name": {
-        "id": 99281390,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "account_id": {
-        "id": 99281397,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "account_name": {
-        "id": 99281402,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "vendor_client_id": {
-        "id": 99281404,
-        "type": [
-          "string",
-          "null"
-        ]
-      }
+    "date": {
+      "id": 56819777,
+      "type": [
+        "string"
+      ],
+      "field_type": "dimension"
     },
-    "metrics": {
-      "video_viewable_impressions": {
-        "id": 6114850,
-        "type": "number"
-      },
-      "q1_completed_impressions": {
-        "id": 8708935,
-        "type": "number"
-      },
-      "audible_impressions": {
-        "id": 14782119,
-        "type": "number"
-      },
-      "q2_completed_impressions": {
-        "id": 16577906,
-        "type": "number"
-      },
-      "audible_measured_impressions": {
-        "id": 19918628,
-        "type": "number"
-      },
-      "q3_completed_and_viewable_impressions": {
-        "id": 25809769,
-        "type": "number"
-      },
-      "q2_completed_and_viewable_impressions": {
-        "id": 29341818,
-        "type": "number"
-      },
-      "yt_unsuitable_incidents": {
-        "id": 35256710,
-        "type": "number"
-      },
-      "q3_completed_impressions": {
-        "id": 40980036,
-        "type": "number"
-      },
-      "q1_completed_and_viewable_impressions": {
-        "id": 52849291,
-        "type": "number"
-      },
-      "fraud_sivt_free_impressions": {
-        "id": 54395605,
-        "type": "number"
-      },
-      "audible_viewable_impressions": {
-        "id": 57003523,
-        "type": "number"
-      },
-      "audible_and_in_view_on_completion_impressions": {
-        "id": 59168274,
-        "type": "number"
-      },
-      "video_measured_impressions": {
-        "id": 60800497,
-        "type": "number"
-      },
-      "completed_impressions": {
-        "id": 63929155,
-        "type": "number"
-      },
-      "q4_completed_and_viewable_impressions": {
-        "id": 65659581,
-        "type": "number"
-      },
-      "fraud_sivt_incidents": {
-        "id": 71483969,
-        "type": "number"
-      },
-      "monitored_impressions": {
-        "id": 76388228,
-        "type": "number"
-      },
-      "authentic_video_viewable_impressions": {
-        "id": 85431110,
-        "type": "number"
-      },
-      "authentic_impressions": {
-        "id": 88237187,
-        "type": "number"
-      },
-      "video_eligible_impressions": {
-        "id": 89547967,
-        "type": "number"
-      },
-      "viewability_monitored_impressions": {
-        "id": 99531285,
-        "type": "number"
-      },
-      "yt_unique_incidents": {
-        "id": 99940007,
-        "type": "number"
-      },
-      "audible_viewable_measured_impressions": {
-        "id": 99940168,
-        "type": "number"
-      },
-      "yt_s_s_monitored_impressions": {
-        "id": 99940170,
-        "type": "number"
-      },
-      "yt_s_s_unmeasured_impressions": {
-        "id": 99940171,
-        "type": "number"
-      },
-      "yt_brand_safety_incidents": {
-        "id": 99940172,
-        "type": "number"
-      },
-      "yt_suitable_impressions": {
-        "id": 99940174,
-        "type": "number"
-      },
-      "yt_s_s_measured_impressions": {
-        "id": 99940176,
-        "type": "number"
-      },
-      "yt_brand_safe_impressions": {
-        "id": 99940179,
-        "type": "number"
-      },
-      "authentic_video_viewable_rate": {
-        "id": 3350956,
-        "type": "numeric"
-      },
-      "audible_rate": {
-        "id": 19761722,
-        "type": "numeric"
-      },
-      "authentic_rate": {
-        "id": 31045065,
-        "type": "numeric"
-      },
-      "video_viewable_rate": {
-        "id": 39300449,
-        "type": "numeric"
-      },
-      "fraud_sivt_free_rate": {
-        "id": 49358156,
-        "type": "numeric"
-      },
-      "video_measurement_rate": {
-        "id": 66982801,
-        "type": "numeric"
-      },
-      "fraud_sivt_rate": {
-        "id": 69437271,
-        "type": "numeric"
-      },
-      "audible_and_in_view_on_completion_rate": {
-        "id": 75029445,
-        "type": "numeric"
-      },
-      "audible_viewable_rate": {
-        "id": 80022790,
-        "type": "numeric"
-      },
-      "yt_unique_incident_rate": {
-        "id": 99940008,
-        "type": "numeric"
-      },
-      "yt_unsuitable_incident_rate": {
-        "id": 99940173,
-        "type": "numeric"
-      },
-      "yt_suitable_rate": {
-        "id": 99940175,
-        "type": "numeric"
-      },
-      "yt_s_s_measurement_rate": {
-        "id": 99940177,
-        "type": "numeric"
-      },
-      "yt_brand_safe_rate": {
-        "id": 99940178,
-        "type": "numeric"
-      },
-      "yt_brand_safety_incident_rate": {
-        "id": 99940180,
-        "type": "numeric"
-      }
+    "device_delivery_type": {
+      "id": 68351092,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "advertiser_name": {
+      "id": 74370077,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "brand": {
+      "id": 348137,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "campaign": {
+      "id": 41496607,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "brand_market": {
+      "id": 64455984,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "brand_region": {
+      "id": 64455983,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "traffic_validity": {
+      "id": 48023071,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "buying_platform": {
+      "id": 99281395,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "campaign_id": {
+      "id": 37836060,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "ad_group_id": {
+      "id": 99281393,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "ad_group_name": {
+      "id": 99281394,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "creative_id": {
+      "id": 52048214,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "creative_name": {
+      "id": 99281396,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "insertion_order_id": {
+      "id": 99281391,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "insertion_order_name": {
+      "id": 99281392,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "line_item_id": {
+      "id": 99281389,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "line_item_name": {
+      "id": 99281390,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "account_id": {
+      "id": 99281397,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "account_name": {
+      "id": 99281402,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "vendor_client_id": {
+      "id": 99281404,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "video_viewable_impressions": {
+      "id": 6114850,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "q1_completed_impressions": {
+      "id": 8708935,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "audible_impressions": {
+      "id": 14782119,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "q2_completed_impressions": {
+      "id": 16577906,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "audible_measured_impressions": {
+      "id": 19918628,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "q3_completed_and_viewable_impressions": {
+      "id": 25809769,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "q2_completed_and_viewable_impressions": {
+      "id": 29341818,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "yt_unsuitable_incidents": {
+      "id": 35256710,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "q3_completed_impressions": {
+      "id": 40980036,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "q1_completed_and_viewable_impressions": {
+      "id": 52849291,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "fraud_sivt_free_impressions": {
+      "id": 54395605,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "audible_viewable_impressions": {
+      "id": 57003523,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "audible_and_in_view_on_completion_impressions": {
+      "id": 59168274,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_measured_impressions": {
+      "id": 60800497,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "completed_impressions": {
+      "id": 63929155,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "q4_completed_and_viewable_impressions": {
+      "id": 65659581,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "fraud_sivt_incidents": {
+      "id": 71483969,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "monitored_impressions": {
+      "id": 76388228,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "authentic_video_viewable_impressions": {
+      "id": 85431110,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "authentic_impressions": {
+      "id": 88237187,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_eligible_impressions": {
+      "id": 89547967,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "viewability_monitored_impressions": {
+      "id": 99531285,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "yt_unique_incidents": {
+      "id": 99940007,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "audible_viewable_measured_impressions": {
+      "id": 99940168,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "yt_s_s_monitored_impressions": {
+      "id": 99940170,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "yt_s_s_unmeasured_impressions": {
+      "id": 99940171,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "yt_brand_safety_incidents": {
+      "id": 99940172,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "yt_suitable_impressions": {
+      "id": 99940174,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "yt_s_s_measured_impressions": {
+      "id": 99940176,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "yt_brand_safe_impressions": {
+      "id": 99940179,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "authentic_video_viewable_rate": {
+      "id": 3350956,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "audible_rate": {
+      "id": 19761722,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "authentic_rate": {
+      "id": 31045065,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_viewable_rate": {
+      "id": 39300449,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "fraud_sivt_free_rate": {
+      "id": 49358156,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "video_measurement_rate": {
+      "id": 66982801,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "fraud_sivt_rate": {
+      "id": 69437271,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "audible_and_in_view_on_completion_rate": {
+      "id": 75029445,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "audible_viewable_rate": {
+      "id": 80022790,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "yt_unique_incident_rate": {
+      "id": 99940008,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "yt_unsuitable_incident_rate": {
+      "id": 99940173,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "yt_suitable_rate": {
+      "id": 99940175,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "yt_s_s_measurement_rate": {
+      "id": 99940177,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "yt_brand_safe_rate": {
+      "id": 99940178,
+      "type": "number",
+      "field_type": "metric"
+    },
+    "yt_brand_safety_incident_rate": {
+      "id": 99940180,
+      "type": "number",
+      "field_type": "metric"
     }
   }
 }

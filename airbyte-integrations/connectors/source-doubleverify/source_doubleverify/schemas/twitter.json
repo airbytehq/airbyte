@@ -2,401 +2,484 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "dimensions": {
-      "date": {
-        "id": 56819777,
-        "type": [
-          "date"
-        ]
-      },
-      "delivery_country": {
-        "id": 59341133,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "device_delivery_type": {
-        "id": 68351092,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "advertiser_name": {
-        "id": 74370077,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "brand": {
-        "id": 348137,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "twitter_campaign": {
-        "id": 49923136,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "brand_market": {
-        "id": 64455984,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "brand_region": {
-        "id": 64455983,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "twitter_creative_id": {
-        "id": 80313470,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "twitter_creative_media_id": {
-        "id": 72798949,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "twitter_objective": {
-        "id": 1953759,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "traffic_validity": {
-        "id": 48023071,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "twitter_account_id": {
-        "id": 27608120,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "twitter_campaign_id": {
-        "id": 65747629,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "twitter_account_name": {
-        "id": 29214249,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "twitter_line_item_id": {
-        "id": 70683272,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "twitter_line_item": {
-        "id": 49288694,
-        "type": [
-          "string",
-          "null"
-        ]
-      },
-      "media_type": {
-        "id": 11047811,
-        "type": [
-          "string",
-          "null"
-        ]
-      }
+    "date": {
+      "id": 56819777,
+      "type": [
+        "string"
+      ],
+      "field_type": "dimension"
+    },
+    "delivery_country": {
+      "id": 59341133,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "device_delivery_type": {
+      "id": 68351092,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "advertiser_name": {
+      "id": 74370077,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "brand": {
+      "id": 348137,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "twitter_campaign": {
+      "id": 49923136,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "brand_market": {
+      "id": 64455984,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "brand_region": {
+      "id": 64455983,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "twitter_creative_id": {
+      "id": 80313470,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "twitter_creative_media_id": {
+      "id": 72798949,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "twitter_objective": {
+      "id": 1953759,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "traffic_validity": {
+      "id": 48023071,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "twitter_account_id": {
+      "id": 27608120,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "twitter_campaign_id": {
+      "id": 65747629,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "twitter_account_name": {
+      "id": 29214249,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "twitter_line_item_id": {
+      "id": 70683272,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "twitter_line_item": {
+      "id": 49288694,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
+    },
+    "media_type": {
+      "id": 11047811,
+      "type": [
+        "string",
+        "null"
+      ],
+      "field_type": "dimension"
     },
     "metrics": {
       "video_viewable_impressions": {
         "id": 6114850,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "total_time_hr_display_viewable_impressions": {
         "id": 6989401,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "q1_completed_impressions": {
         "id": 8708935,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "authentic_display_viewable_impressions": {
         "id": 13351707,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "audible_impressions": {
         "id": 14782119,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "q2_completed_impressions": {
         "id": 16577906,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "total_time_hr_display_creative_on_page": {
         "id": 18232064,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "audible_measured_impressions": {
         "id": 19918628,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "authentic_viewable_impressions": {
         "id": 23077222,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "display_eligible_impressions": {
         "id": 26123624,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "video_full_screen_impressions": {
         "id": 37439405,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "q3_completed_impressions": {
         "id": 40980036,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "display_authentic_impressions": {
         "id": 49125224,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "display_3_second_viewable_impressions": {
         "id": 53370197,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "fraud_sivt_free_impressions": {
         "id": 54395605,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "average_time_s_display_creative_on_page": {
         "id": 55785135,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "display_2_second_viewable_impressions": {
         "id": 55822894,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "audible_viewable_impressions": {
         "id": 57003523,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "audible_and_in_view_on_completion_impressions": {
         "id": 59168274,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "50_viewable_15_secs_impressions": {
         "id": 62081197,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "100_video_viewable_impressions": {
         "id": 63777139,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "completed_impressions": {
         "id": 63929155,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "100_display_viewable_impressions": {
         "id": 70723958,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "fraud_sivt_incidents": {
         "id": 71483969,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "50_viewable_5_15_secs_impressions": {
         "id": 73772902,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "monitored_impressions": {
         "id": 76388228,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "display_measured_impressions": {
         "id": 76431248,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "display_monitored_impressions": {
         "id": 81112196,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "authentic_video_viewable_impressions": {
         "id": 85431110,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "50_viewable_1_5_secs_impressions": {
         "id": 87047841,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "average_time_s_display_viewable_impressions": {
         "id": 87591084,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "authentic_impressions": {
         "id": 88237187,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "measured_impressions": {
         "id": 88318928,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "display_viewable_impressions": {
         "id": 90638416,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "eligible_impressions": {
         "id": 94120692,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "twitter_viewable_impressions": {
         "id": 94440310,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "unique_incidents": {
         "id": 97580207,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "viewable_impressions": {
         "id": 99940181,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "100_viewable_impressions": {
         "id": 99940359,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "average_time_s_display_authentic_viewable_impressions": {
         "id": 99940361,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "total_time_hr_display_authentic_viewable_impressions": {
         "id": 99940362,
-        "type": "number"
+        "type": "number",
+        "field_type": "metric"
       },
       "authentic_video_viewable_rate": {
         "id": 3350956,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "display_authentic_rate": {
         "id": 3516317,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "authentic_viewable_rate": {
         "id": 7099362,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "unique_incident_rate": {
         "id": 11770395,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "measurement_rate": {
         "id": 14117940,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "audible_rate": {
         "id": 19761722,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "50_viewable_15_secs_rate": {
         "id": 21579661,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "100_video_viewable_rate": {
         "id": 25537563,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "50_viewable_5_15_secs_rate": {
         "id": 28854670,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "authentic_rate": {
         "id": 31045065,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "display_3_second_viewable_rate": {
         "id": 37392856,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "video_viewable_rate": {
         "id": 39300449,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "display_measurement_rate": {
         "id": 39394618,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "display_viewable_rate": {
         "id": 47509843,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "fraud_sivt_free_rate": {
         "id": 49358156,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "display_2_second_viewable_rate": {
         "id": 56660141,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "twitter_viewable_rate": {
         "id": 62688238,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "authentic_display_viewable_rate": {
         "id": 65672394,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "fraud_sivt_rate": {
         "id": 69437271,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "audible_and_in_view_on_completion_rate": {
         "id": 75029445,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "100_display_viewable_rate": {
         "id": 76132111,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "audible_viewable_rate": {
         "id": 80022790,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "video_full_screen_rate": {
         "id": 84302387,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "50_viewable_1_5_secs_rate": {
         "id": 85977190,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "viewable_rate": {
         "id": 99940182,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       },
       "100_viewable_rate": {
         "id": 99940360,
-        "type": "numeric"
+        "type": "numeric",
+        "field_type": "metric"
       }
     }
   }

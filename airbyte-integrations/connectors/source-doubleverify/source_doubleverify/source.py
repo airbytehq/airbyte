@@ -90,16 +90,20 @@ class DoubleverifyStream(HttpStream, ABC):
 
 
     def get_dimensions(self, catalog_stream: Mapping[str, any]):
-        # Get the dimensions object from the stream
-        dimensions = catalog_stream.get("properties").get("dimensions")
+        # Get the fields object from the stream, then the dimensions based on the fields type
+        fields = catalog_stream.get("properties")
+        dim_keys = [k for k in fields.keys() if fields.get(k).get("field_type")=="dimension"]
+        dimensions = {k:v for k,v in fields.items() if k in dim_keys}
         # Loop over all the elements in dimensions and get a list of their ids and
         # return a list of mapping
         return [{"id": dimensions.get(dimension).get("id")} for dimension in dimensions.keys()]
 
 
     def get_metrics(self, catalog_stream: Mapping[str, any]):
-        # Get the metrics object from the stream
-        metrics = catalog_stream.get("properties").get("metrics")
+        # Get the fields object from the stream, then the dimensions based on the fields type
+        fields = catalog_stream.get("properties")
+        metric_keys = [k for k in fields.keys() if fields.get(k).get("field_type")=="metric"]
+        metrics = {k:v for k,v in fields.items() if k in metric_keys}
         # Loop over all the elements in metrics and get a list of their ids and
         # return a list of mapping
         return [{"id": metrics.get(metric).get("id")} for metric in metrics.keys()]
