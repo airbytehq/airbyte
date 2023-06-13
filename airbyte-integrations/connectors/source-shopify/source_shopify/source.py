@@ -103,7 +103,6 @@ class ShopifyStream(HttpStream, ABC):
             # extend the mapping with more handable errors, if needed.
         }
         status = response.status_code
-        print(response.text)
         if status in error_mapping.keys():
             setattr(self, "raise_on_http_errors", False)
             self.logger.warn(error_mapping.get(status))

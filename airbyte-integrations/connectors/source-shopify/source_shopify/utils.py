@@ -51,10 +51,6 @@ SCOPES_MAPPING = {
     "read_merchant_managed_fulfillment_orders": ["FulfillmentOrders"],
     "read_shopify_payments_payouts": ["BalanceTransactions"],
     "read_online_store_pages": ["Articles", "MetafieldArticles", "Blogs", "MetafieldBlogs"],
-    "read_users": ["Users"],
-    "read_checkouts": ["Checkouts"],
-    "read_gift_cards": ["GiftCards"],
-    "read_product_listings": ["CollectionListing"],
 }
 
 
