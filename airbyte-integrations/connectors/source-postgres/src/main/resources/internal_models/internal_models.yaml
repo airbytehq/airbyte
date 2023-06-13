@@ -10,6 +10,14 @@ definitions:
   XminStatus:
     type: object
     properties:
+      version:
+        description: Version of state.
+        type: integer
+      state_type:
+        description: Enum to define the sync mode of state.
+        type: string
+        enum:
+          - xmin
       num_wraparound:
         description: Number of times the Xmin value has wrapped around.
         type: integer

@@ -11,6 +11,7 @@ import com.google.common.base.Preconditions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
+import io.airbyte.integrations.source.postgres.internal.models.XminStatus.StateType;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.sql.SQLException;
 import java.util.List;
@@ -89,7 +90,9 @@ public class PostgresQueryUtils {
     return new XminStatus()
         .withNumWraparound(result.get(NUM_WRAPAROUND_COL).asLong())
         .withXminXidValue(result.get(XMIN_XID_VALUE_COL).asLong())
-        .withXminRawValue(result.get(XMIN_RAW_VALUE_COL).asLong());
+        .withXminRawValue(result.get(XMIN_RAW_VALUE_COL).asLong())
+        .withVersion(2L)
+        .withStateType(StateType.XMIN);
   }
 
   public static void logFullVacuumStatus(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final String quoteString) {
