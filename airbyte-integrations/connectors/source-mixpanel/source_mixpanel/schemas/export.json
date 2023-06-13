@@ -237,9 +237,6 @@
     "URL": {
       "type": ["null", "string"]
     },
-    "insert_id": {
-      "type": ["null", "string"]
-    },
     "mp_api_timestamp_ms": {
       "type": ["null", "string"]
     },
@@ -247,6 +244,21 @@
       "type": ["null", "string"]
     },
     "mp_processing_time_ms": {
+      "type": ["null", "string"]
+    },
+    "region": {
+      "type": ["null", "string"]
+    },
+    "mp_country_code": {
+      "type": ["null", "string"]
+    },
+    "Share Item Count": {
+      "type": ["null", "string"]
+    },
+    "city": {
+      "type": ["null", "string"]
+    },
+    "Last Share": {
       "type": ["null", "string"]
     }
   }

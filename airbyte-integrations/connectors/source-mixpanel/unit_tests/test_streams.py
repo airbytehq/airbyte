@@ -479,7 +479,7 @@ def test_export_iter_dicts(config):
 def test_should_retry_payment_required(http_status_code, should_retry, log_message, config, caplog):
     response_mock = MagicMock()
     response_mock.status_code = http_status_code
-    response_mock.text = "Your plan does not allow API calls. Upgrade at mixpanel.com/pricing"
+    response_mock.json = MagicMock(return_value={"error": "Your plan does not allow API calls. Upgrade at mixpanel.com/pricing"})
     streams = [Annotations, CohortMembers, Cohorts, Engage, EngageSchema, Export, ExportSchema, Funnels, FunnelsList, Revenue]
     for stream_class in streams:
         stream = stream_class(authenticator=MagicMock(), **config)

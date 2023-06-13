@@ -108,7 +108,7 @@ class MixpanelStream(HttpStream, ABC):
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 402:
-            self.logger.warning(f"Unable to perform a request. Payment Required: {response.text}")
+            self.logger.warning(f"Unable to perform a request. Payment Required: {response.json()['error']}")
             return False
         return super().should_retry(response)
 
