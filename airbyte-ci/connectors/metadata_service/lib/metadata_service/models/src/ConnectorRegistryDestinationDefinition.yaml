@@ -67,4 +67,4 @@ properties:
   allowedHosts:
     "$ref": AllowedHosts.yaml
   releases:
-      "$ref": ConnectorReleases.yaml
+    "$ref": ConnectorReleases.yaml
