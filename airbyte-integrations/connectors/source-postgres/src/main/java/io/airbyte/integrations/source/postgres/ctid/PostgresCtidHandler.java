@@ -184,7 +184,9 @@ public class PostgresCtidHandler {
       final AirbyteStreamNameNamespacePair pair) {
 
     final CtidStatus currentCtidStatus = ctidStateManager.getCtidStatus(pair);
-    final JsonNode incrementalState = currentCtidStatus.getIncrementalState() != null ? currentCtidStatus.getIncrementalState() : streamStateForIncrementalRunSupplier.apply(pair);
+    final JsonNode incrementalState =
+        (currentCtidStatus == null || currentCtidStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
+            : currentCtidStatus.getIncrementalState();
 
 
     return AutoCloseableIterators.transform(

@@ -469,49 +469,62 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       final Set<AirbyteStreamNameNamespacePair> alreadySeenStreams = new HashSet<>();
       final Set<AirbyteStreamNameNamespacePair> streamsStillInCtidSync = new HashSet<>();
-      rawStateMessages.forEach(s -> {
-        final JsonNode streamState = s.getStream().getStreamState();
-        final StreamDescriptor streamDescriptor = s.getStream().getStreamDescriptor();
-        final AirbyteStateMessage clonedState = Jsons.clone(s);
-        if (streamState.has("type") && streamState.get("type").asText().equalsIgnoreCase("ctid")) {
-          statesFromCtidSync.add(clonedState);
-          streamsStillInCtidSync.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
-        } else {
-          statesFromXminSync.add(clonedState);
-        }
-        alreadySeenStreams.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
-      });
 
-      final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyNewlyAddedStreams(catalog, alreadySeenStreams);
-
-      final List<ConfiguredAirbyteStream> configuredStreamsStillInCtidSync = catalog.getStreams().stream()
-          .filter(stream -> streamsStillInCtidSync.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
-          .map(Jsons::clone)
-          .toList();
-
-      configuredStreamsStillInCtidSync.addAll(newlyAddedStreams);
-
-      final List<ConfiguredAirbyteStream> streamsInXminSync = catalog.getStreams().stream()
-          .filter(stream -> !configuredStreamsStillInCtidSync.contains(stream))
-          .map(Jsons::clone)
-          .toList();
-
-      final XminStateManager xminStateManager = new XminStateManager(statesFromXminSync);
-      final PostgresXminHandler xminHandler = new PostgresXminHandler(database, sourceOperations, getQuoteString(), xminStatus, xminStateManager);
-
-      final List<AutoCloseableIterator<AirbyteMessage>> xminIterator = xminHandler.getIncrementalIterators(
-          new ConfiguredAirbyteCatalog().withStreams(streamsInXminSync), tableNameToTable, emittedAt);
-
-      if (configuredStreamsStillInCtidSync.isEmpty()) {
-        return xminIterator;
+      if (rawStateMessages != null) {
+        rawStateMessages.forEach(s -> {
+          final JsonNode streamState = s.getStream().getStreamState();
+          final StreamDescriptor streamDescriptor = s.getStream().getStreamDescriptor();
+          if (streamState == null || streamDescriptor == null) {
+            return;
+          }
+          final AirbyteStateMessage clonedState = Jsons.clone(s);
+          if (streamState.has("type") && streamState.get("type").asText().equalsIgnoreCase("ctid")) {
+            statesFromCtidSync.add(clonedState);
+            streamsStillInCtidSync.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
+          } else {
+            statesFromXminSync.add(clonedState);
+          }
+          alreadySeenStreams.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
+        });
       }
 
-      final CtidStateManager ctidStateManager = new CtidStateManager(statesFromCtidSync);
-      final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(database, sourceOperations, getQuoteString(), ctidStateManager,
-          x -> new ObjectMapper().valueToTree(xminStatus),
-          (pair, jsonState) -> XminStateManager.getAirbyteStateMessage(pair, Jsons.object(jsonState, XminStatus.class)));
-      final List<AutoCloseableIterator<AirbyteMessage>> ctidIterator = ctidHandler.getIncrementalIterators(
-          new ConfiguredAirbyteCatalog().withStreams(configuredStreamsStillInCtidSync), tableNameToTable, emittedAt);
+      final List<ConfiguredAirbyteStream> newlyAddedStreams = identifyNewlyAddedStreams(catalog, alreadySeenStreams);
+      final List<ConfiguredAirbyteStream> streamsForCtidSync = new ArrayList<>();
+      catalog.getStreams().stream()
+          .filter(stream -> streamsStillInCtidSync.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
+          .map(Jsons::clone)
+          .forEach(streamsForCtidSync::add);
+
+      streamsForCtidSync.addAll(newlyAddedStreams);
+
+      final List<ConfiguredAirbyteStream> streamsForXminSync = catalog.getStreams().stream()
+          .filter(stream -> !streamsForCtidSync.contains(stream))
+          .map(Jsons::clone)
+          .toList();
+
+      LOGGER.info("Streams to be synced via ctid : {}", streamsForCtidSync.size());
+      LOGGER.info("Streams to be synced via xmin : {}", streamsForXminSync.size());
+
+      final List<AutoCloseableIterator<AirbyteMessage>> ctidIterator = new ArrayList<>();
+      final List<AutoCloseableIterator<AirbyteMessage>> xminIterator = new ArrayList<>();
+
+      if (!streamsForCtidSync.isEmpty()) {
+        final CtidStateManager ctidStateManager = new CtidStateManager(statesFromCtidSync);
+        final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(database, sourceOperations, getQuoteString(), ctidStateManager,
+            x -> new ObjectMapper().valueToTree(xminStatus),
+            (pair, jsonState) -> XminStateManager.getAirbyteStateMessage(pair, Jsons.object(jsonState, XminStatus.class)));
+        ctidIterator.addAll(ctidHandler.getIncrementalIterators(
+            new ConfiguredAirbyteCatalog().withStreams(streamsForCtidSync), tableNameToTable, emittedAt));
+      }
+
+      if (!streamsForXminSync.isEmpty()) {
+        final XminStateManager xminStateManager = new XminStateManager(statesFromXminSync);
+        final PostgresXminHandler xminHandler = new PostgresXminHandler(database, sourceOperations, getQuoteString(), xminStatus, xminStateManager);
+
+        xminIterator.addAll(xminHandler.getIncrementalIterators(
+            new ConfiguredAirbyteCatalog().withStreams(streamsForXminSync), tableNameToTable, emittedAt));
+      }
+
       return Stream
           .of(ctidIterator, xminIterator)
           .flatMap(Collection::stream)
