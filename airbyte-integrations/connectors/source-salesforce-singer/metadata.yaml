@@ -9,7 +9,7 @@ data:
   name: Salesforce (Singer)
   registries:
     cloud:
-      enabled: true
+      enabled: false
     oss:
       enabled: false
   releaseStage: alpha
