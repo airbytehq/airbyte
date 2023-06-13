@@ -47,8 +47,6 @@ public class BigQuerySqlGeneratorIntegrationTest {
   public static final List<QuotedColumnId> PRIMARY_KEY = List.of(GENERATOR.quoteColumnId("id"));
 
   private String testDataset;
-  // This is not a typical stream ID would look like, but we're just using this to isolate our tests to a specific dataset.
-  // In practice, the final table would be TEST_DATASET.users, and the raw table would be airbyte.TEST_DATASET_users.
   private QuotedStreamId streamId;
 
   private static BigQuery bq;
@@ -84,6 +82,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
   @BeforeEach
   public void setupDataset() {
     testDataset = "bq_sql_generator_test_" + UUID.randomUUID().toString().replace("-", "_");
+    // This is not a typical stream ID would look like, but we're just using this to isolate our tests to a specific dataset.
+    // In practice, the final table would be testDataset.users, and the raw table would be airbyte.testDataset_users.
     streamId = new QuotedStreamId(testDataset, "users_final", testDataset, "users_raw", "public", "users");
     LOGGER.info("Running in dataset {}", testDataset);
     bq.create(DatasetInfo.newBuilder(testDataset).build());
