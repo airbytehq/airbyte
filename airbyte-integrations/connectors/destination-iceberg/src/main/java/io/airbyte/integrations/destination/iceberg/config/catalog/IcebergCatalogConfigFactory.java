@@ -52,8 +52,6 @@ public class IcebergCatalogConfigFactory {
     switch (storageType) {
       case S3:
         return S3Config.fromDestinationConfig(storageConfigJson);
-      case GCS:
-        throw new RuntimeException("GCS is not supported yet");
       case HDFS:
       default:
         throw new RuntimeException("Unexpected storage config: " + storageTypeStr);

@@ -23,8 +23,6 @@ dependencies {
     implementation 'org.apache.iceberg:iceberg-spark-runtime-3.3_2.13:1.0.0'
     implementation "software.amazon.awssdk:bundle:2.17.131"
     implementation "software.amazon.awssdk:url-connection-client:2.17.131"
-    implementation platform("com.google.cloud:libraries-bom:26.16.0")
-    implementation "com.google.cloud:google-cloud-storage"
     implementation "org.apache.hadoop:hadoop-aws:3.3.2"
     implementation "org.apache.hadoop:hadoop-client-api:3.3.2"
     implementation "org.apache.hadoop:hadoop-client-runtime:3.3.2"
