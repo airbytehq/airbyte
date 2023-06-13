@@ -24,7 +24,8 @@ from .streams import (
     Shipments,
     Fulfillments,
     Customers,
-    Products
+    Products,
+    Warehouses
     )
 
 
@@ -71,4 +72,5 @@ class SourceShipstationAbstract(AbstractSource):
                 Customers(authenticator=auth),
                 Products(authenticator=auth),
                 Stores(authenticator=auth),
+                Warehouses(authenticator=auth)
                 ]

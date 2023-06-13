@@ -112,6 +112,10 @@ class MarketPlaces(ShipstationAbstractStream):
     def path(self, **kwargs) -> str:
         return self.url_base + "stores/marketplaces"
     
+class Warehouses(ShipstationAbstractStream):
+    def path(self, **kwargs) -> str:
+        return self.url_base + "warehouses"
+    
     
 # incremental stream
 class IncrementalShipstationAbstractStream(ShipstationAbstractStream, ABC):
@@ -255,3 +259,5 @@ class Products(IncrementalShipstationAbstractStream):
             return results
         else:
             raise Exception([{"message": "Failed to obtain data.", "msg": response.text}])
+        
+
