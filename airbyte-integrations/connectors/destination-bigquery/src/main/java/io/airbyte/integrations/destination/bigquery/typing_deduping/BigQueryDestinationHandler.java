@@ -8,11 +8,11 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator
 import java.util.Optional;
 
 // TODO this stuff almost definitely exists somewhere else in our codebase.
-public class BigQueryDestinationInteractorThing implements DestinationInteractorThing<TableDefinition> {
+public class BigQueryDestinationHandler implements DestinationHandler<TableDefinition> {
 
   private final BigQuery bq;
 
-  public BigQueryDestinationInteractorThing(final BigQuery bq) {
+  public BigQueryDestinationHandler(final BigQuery bq) {
     this.bq = bq;
   }
 

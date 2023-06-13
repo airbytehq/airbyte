@@ -23,7 +23,7 @@ public class CatalogParser<DialectType> {
     this.sqlGenerator = sqlGenerator;
   }
 
-  record ParsedCatalog<DialectType>(List<StreamConfig<DialectType>> streams) {
+  public record ParsedCatalog<DialectType>(List<StreamConfig<DialectType>> streams) {
 
   }
 

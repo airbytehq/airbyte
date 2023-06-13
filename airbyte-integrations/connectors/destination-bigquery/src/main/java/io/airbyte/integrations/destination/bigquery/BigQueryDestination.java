@@ -27,6 +27,9 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsAvroBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
@@ -218,11 +221,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  protected Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(final JsonNode config,
+  protected Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(final BigQuery bigquery,
+                                                                                            final JsonNode config,
                                                                                             final ConfiguredAirbyteCatalog catalog)
       throws IOException {
-    final BigQuery bigquery = getBigQuery(config);
-
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final AirbyteStream stream = configStream.getStream();
@@ -280,8 +282,16 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                            final ConfiguredAirbyteCatalog catalog,
                                                            final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
-    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(config, catalog);
-    return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector, BigQueryUtils.getDatasetId(config));
+    final BigQuery bigquery = getBigQuery(config);
+    final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(bigquery, config, catalog);
+    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator();
+    return new BigQueryRecordConsumer(
+        writeConfigs,
+        outputRecordCollector,
+        BigQueryUtils.getDatasetId(config),
+        sqlGenerator,
+        new BigQueryDestinationHandler(bigquery),
+        new CatalogParser<>(sqlGenerator).parseCatalog(catalog));
   }
 
   public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,

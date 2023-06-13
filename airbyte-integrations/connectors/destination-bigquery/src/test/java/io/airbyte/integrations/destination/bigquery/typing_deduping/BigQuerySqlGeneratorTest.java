@@ -161,7 +161,7 @@ class BigQuerySqlGeneratorTest {
     columns.put(generator.quoteColumnId("address"), new ParsedType<>(StandardSQLTypeName.STRING, new Struct(addressProperties)));
 
     return new StreamConfig<>(
-        new SqlGenerator.QuotedStreamId("public", "users", "airbyte", "public_users"),
+        new SqlGenerator.QuotedStreamId("public", "users", "airbyte", "public_users", "public", "users"),
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
         List.of(generator.quoteColumnId("id")),

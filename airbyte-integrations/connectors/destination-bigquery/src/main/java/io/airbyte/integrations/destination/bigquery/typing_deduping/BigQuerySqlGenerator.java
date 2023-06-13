@@ -36,7 +36,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
         // TODO constant
         nameTransformer.getNamespace("airbyte"),
         // TODO maybe do something with #getRawTableName?
-        nameTransformer.convertStreamName(namespace + "_" + name));
+        nameTransformer.convertStreamName(namespace + "_" + name),
+        namespace,
+        name);
   }
 
   @Override

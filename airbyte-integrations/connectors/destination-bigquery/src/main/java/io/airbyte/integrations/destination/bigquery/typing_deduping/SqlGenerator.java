@@ -14,7 +14,7 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
    * @param rawName           the name of the raw table (typically namespace_name, but may be different if there are collisions). There is no
    *                          rawNamespace because we assume that we're writing raw tables to the airbyte namespace.
    */
-  record QuotedStreamId(String finalNamespace, String finalName, String rawNamespace, String rawName) {
+  record QuotedStreamId(String finalNamespace, String finalName, String rawNamespace, String rawName, String originalNamespace, String originalName) {
 
     /**
      * Most databases/warehouses use a `schema.name` syntax to identify tables. This is a convenience method to generate that syntax.
