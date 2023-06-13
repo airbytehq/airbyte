@@ -1,6 +1,6 @@
 FROM python:3.9.11-alpine3.15 as base
 
-# build and load all requirements 
+# build and load all requirements
 FROM base as builder
 WORKDIR /airbyte/integration_code
 
@@ -10,10 +10,10 @@ RUN apk --no-cache upgrade \
     && apk --no-cache add tzdata build-base
 
 COPY setup.py ./
-# install necessary packages to a temporary folder 
+# install necessary packages to a temporary folder
 RUN pip install --prefix=/install .
 
-# build a clean environment  
+# build a clean environment
 FROM base
 WORKDIR /airbyte/integration_code
 
@@ -33,5 +33,5 @@ COPY source_linkedin_ads ./source_linkedin_ads
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.2.1
+LABEL io.airbyte.version=0.2.2
 LABEL io.airbyte.name=airbyte/source-linkedin-ads
