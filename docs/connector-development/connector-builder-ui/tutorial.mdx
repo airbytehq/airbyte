@@ -104,17 +104,7 @@ In a real sync, this record will be passed on to a destination like a warehouse.
 
 The request/response tabs are helpful during development to see which requests and responses your connector will send and receive from the API.
 
-### Declaring the record schema
-
-<div style={{ position: "relative", paddingBottom: "59.66850828729282%", height: 0 }}><iframe src="https://www.loom.com/embed/56899a92afe047eba461f32d19c8ca94" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%"}}></iframe></div>
-
-Each stream of a connector needs to declare how emitted records will look like (which properties do they have, what data types will be used, ...). During a sync, this information will be passed on to the destination to configure it correctly - for example a SQL database destination can use it to properly set up the destination table, assigning the right type to each column.
-
-By default, the stream schema is set to a simple object with unspecified properties. However, the connector builder can infer the schema based on the test read you just issued. To use the infered schema, switch to the "Detected schema" tab and click the "Import schema" button.
-
-The warning icon disappears indicating that the declared schema of your stream matches the test data.
-
-You can find more information about schema declaration on the [record processing concept page](./record-processing).
+The detected schema tab indicates the schema that was detected by analyzing the returned records; this detected schema is automatically set as the declared schema for this stream, which you can see by visiting the Declared schema tab in the center stream configuration view.
 
 ## Step 3 - Advanced configuration
 
@@ -179,21 +169,6 @@ When used in a connection, the connector will make sure exchange rates for the s
 
 You can find more information about incremental syncs on the [incremental sync concept page](./incremental-sync).
 
-### Adding transformations
-
-<div style={{ position: "relative", paddingBottom: "59.66850828729282%", height: 0 }}><iframe src="https://www.loom.com/embed/42ab3872c9284296b452a99e90b26738" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%"}}></iframe></div>
-
-Note that a warning icon should show next to the "Detected schema" tab - using the per-date endpoint instead of the latest endpoint slightly changed the shape of the records by adding a `historical` property. As we don't need this property in our destination, we can remove it using a transformation.
-
-To do so, follow these steps:
-* Enable the "Transformations" section
-* Set the "Path" to `historical`
-* Trigger a new test read
-
-The `historical` property in the records tab and the schema warning should disappear.
-
-You can find more information about incremental syncs on the [incremental sync concept page](./incremental-sync).
-
 ## Step 4 - Publishing and syncing
 
 <div style={{ position: "relative", paddingBottom: "59.66850828729282%", height: 0 }}><iframe src="https://www.loom.com/embed/a6896c6aa8f047f0aeefec08d37a1384" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%"}}></iframe></div>
@@ -226,8 +201,8 @@ This tutorial didn't go into depth about all features that can be used in the co
 * [Authentication](/connector-development/connector-builder-ui/authentication/)
 * [Record processing](/connector-development/connector-builder-ui/record-processing/)
 * [Pagination](/connector-development/connector-builder-ui/pagination/)
-* [Error handling](/connector-development/connector-builder-ui/error-handling/)
 * [Incremental sync](/connector-development/connector-builder-ui/incremental-sync/)
 * [Partitioning](/connector-development/connector-builder-ui/partitioning/)
+* [Error handling](/connector-development/connector-builder-ui/error-handling/)
 
 Not every possible API can be consumed by connectors configured in the connector builder. The [compatibility guide](/connector-development/connector-builder-ui/connector-builder-compatibility#oauth) can help determining whether another technology should be used to integrate an API with the Airbyte platform.

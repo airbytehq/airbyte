@@ -14,7 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/sources/hellobaton
+  documentationUrl: https://docs.airbyte.com/integrations/sources/baton
   tags:
     - language:python
 metadataSpecVersion: "1.0"
