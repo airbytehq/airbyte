@@ -161,13 +161,17 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   @Override
   public String updateTable(final String finalSuffix, final StreamConfig<StandardSQLTypeName> stream) {
-    // TODO this method needs to handle all the sync modes
-    // e.g. this pk null check should only happen for incremental dedup
-
-    String validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
+    String validatePrimaryKeys = "";
+    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+      validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
+    }
     String insertNewRecords = insertNewRecords(stream.id(), stream.columns());
-    String dedupFinalTable = dedupFinalTable(stream.id(), stream.primaryKey(), stream.columns());
-    String dedupRawTable = dedupRawTable(stream.id());
+    String dedupFinalTable = "";
+    String dedupRawTable = "";
+    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+      dedupRawTable = dedupRawTable(stream.id());
+      dedupFinalTable = dedupFinalTable(stream.id(), stream.primaryKey(), stream.columns());
+    }
     String commitRawTable = commitRawTable(stream.id());
 
     return new StringSubstitutor(Map.of(
