@@ -35,7 +35,19 @@ public interface SerializableBuffer extends AutoCloseable {
    * @param record {@link AirbyteRecordMessage} to be added to buffer
    * @return number of bytes written to the buffer
    */
+  @Deprecated
   long accept(AirbyteRecordMessage record) throws Exception;
+
+  /**
+   * TODO: (ryankfu) Move all destination connectors to pass the serialized record string instead of
+   * the entire AirbyteRecordMessage
+   *
+   * @param recordString serialized record
+   * @param emittedAt timestamp of the record in milliseconds
+   * @return number of bytes written to the buffer
+   * @throws Exception
+   */
+  long accept(String recordString, long emittedAt) throws Exception;
 
   /**
    * Flush a buffer implementation.
