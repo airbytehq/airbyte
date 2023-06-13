@@ -29,6 +29,7 @@ TWILIO_CONVERSATIONS_URL_BASE = "https://conversations.twilio.com/v1/"
 TWILIO_TRUNKING_URL_BASE = "https://trunking.twilio.com/v1/"
 TWILIO_VERIFY_BASE_V2 = "https://verify.twilio.com/v2/"
 
+
 class TwilioStream(HttpStream, ABC):
     url_base = TWILIO_API_URL_BASE
     primary_key = "sid"
@@ -466,6 +467,7 @@ class VerifyServices(TwilioStream):
 
     def path(self, **kwargs):
         return "Services"
+
 
 class Roles(TwilioNestedStream):
     """

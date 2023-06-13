@@ -120,6 +120,6 @@ class SourceTwilio(AbstractSource):
             Trunks(**full_refresh_stream_kwargs),
             UsageRecords(**incremental_stream_kwargs),
             UsageTriggers(**full_refresh_stream_kwargs),
-            VerifyServices(**full_refresh_stream_kwargs)
+            VerifyServices(**full_refresh_stream_kwargs),
         ]
         return streams
