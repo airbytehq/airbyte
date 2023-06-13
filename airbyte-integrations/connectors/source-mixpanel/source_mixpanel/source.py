@@ -79,10 +79,9 @@ class SourceMixpanel(AbstractSource):
         try:
             config = self._validate_and_transform(config)
             auth = self.get_authenticator(config)
-            FunnelsList.max_retries = 0
-            funnels = FunnelsList(authenticator=auth, **config)
-            funnels.reqs_per_hour_limit = 0
-            next(read_full_refresh(funnels), None)
+            annotations = Annotations(authenticator=auth, **config)
+            annotations.reqs_per_hour_limit = 0
+            next(read_full_refresh(annotations), None)
         except requests.HTTPError as e:
             return False, e.response.json()["error"]
         except Exception as e:
