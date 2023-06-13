@@ -41,7 +41,9 @@ public class CatalogParser<DialectType> {
   }
 
   public ParsedCatalog<DialectType> parseCatalog(ConfiguredAirbyteCatalog catalog) {
-    // TODO handle tablename collisions. final + raw
+    // this code is bad and I feel bad
+    // it's mostly a port of the old normalization logic to prevent tablename collisions.
+    // tbh I have no idea if it works correctly.
     final List<StreamConfig<DialectType>> streamConfigs = new ArrayList<>();
     for (ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final StreamConfig<DialectType> originalStreamConfig = toStreamConfig(stream);
@@ -94,6 +96,8 @@ public class CatalogParser<DialectType> {
       cursor = Optional.empty();
     }
 
+    // this code is really bad and I'm not convinced we need to preserve this behavior.
+    // as with the tablename collisions thing above - we're trying to preserve legacy normalization's naming conventions here.
     final LinkedHashMap<QuotedColumnId, ParsedType<DialectType>> columns = new LinkedHashMap<>();
     for (Entry<String, AirbyteType> entry : airbyteColumns.entrySet()) {
       final ParsedType<DialectType> dialectType = sqlGenerator.toDialectType(entry.getValue());

@@ -32,8 +32,6 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
 
   /**
    * In general, callers should not directly instantiate this class. Use {@link #quoteColumnId(String)} instead.
-   * <p>
-   * TODO maybe this needs a column_name_for_lookup, a la normalization?
    *
    * @param name          the name of the column in the final table. Usable directly in a SQL query. For example, "`foo`" or "foo".
    * @param originalName  the name of the field in the raw JSON blob
