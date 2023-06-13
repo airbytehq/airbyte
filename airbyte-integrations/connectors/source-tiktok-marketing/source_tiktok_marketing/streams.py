@@ -70,19 +70,28 @@ T = TypeVar("T")
 #       ├─AdvertisersReports                    (6 advertisers_reports)
 #       ├─CampaignsReports                      (7 campaigns_reports)
 #       ├─AdGroupsReports                       (8 ad_groups_reports)
-#       └─AudienceReport
-#         ├─AdGroupAudienceReports                 (9  ad_group_audience_reports)
-#         | ├─AdGroupAudienceReportsByCountry      (10 ad_group_audience_reports_by_country)
-#         | └─AdGroupAudienceReportsByPlatform     (11 ad_group_audience_reports_by_platform)
-#         ├─AdsAudienceReports                     (12 ads_audience_reports)
-#         | ├─AdsAudienceReportsByCountry          (13 ads_audience_reports_by_country)
-#         | └─AdsAudienceReportsByPlatform         (14 ads_audience_reports_by_platform)
-#         ├─AdvertisersAudienceReports             (15 advertisers_audience_reports)
-#         | ├─AdvertisersAudienceReportsByCountry  (16 advertisers_audience_reports_by_country)
-#         | └─AdvertisersAudienceReportsByPlatform (17 advertisers_audience_reports_by_platform)
-#         └─CampaignsAudienceReports               (18 campaigns_audience_reports)
-#           ├─CampaignsAudienceReportsByCountry    (19 campaigns_audience_reports_by_country)
-#           └─CampaignsAudienceReportsByPlatform   (20 campaigns_audience_reports_by_platform)
+#       ├─AudienceReport
+#       | ├─AdGroupAudienceReports                 (9  ad_group_audience_reports)
+#       | | ├─AdGroupAudienceReportsByCountry      (10 ad_group_audience_reports_by_country)
+#       | | └─AdGroupAudienceReportsByPlatform     (11 ad_group_audience_reports_by_platform)
+#       | ├─AdsAudienceReports                     (12 ads_audience_reports)
+#       | | ├─AdsAudienceReportsByCountry          (13 ads_audience_reports_by_country)
+#       | | └─AdsAudienceReportsByPlatform         (14 ads_audience_reports_by_platform)
+#       | ├─AdvertisersAudienceReports             (15 advertisers_audience_reports)
+#       | | ├─AdvertisersAudienceReportsByCountry  (16 advertisers_audience_reports_by_country)
+#       | | └─AdvertisersAudienceReportsByPlatform (17 advertisers_audience_reports_by_platform)
+#       | └─CampaignsAudienceReports               (18 campaigns_audience_reports)
+#       |   ├─CampaignsAudienceReportsByCountry    (19 campaigns_audience_reports_by_country)
+#       |   └─CampaignsAudienceReportsByPlatform   (20 campaigns_audience_reports_by_platform)
+#       └─ReservationAdsReports
+#         ├─AdGroupsReservationAdsReports               (21 ad_group_reservation_ads_reports)
+#         | └─AdGroupReservationAdsReportsByCountry     (22 ad_group_reservation_ads_reports_by_country)
+#         ├─AdsReservationAdsReports                    (23 ads_reservation_ads_reports)
+#         | └─AdsReservationAdsReportsByCountry         (24 ads_reservation_ads_reports_by_country)
+#         ├─AdvertisersReservationAdsReports            (25 advertisers_reservation_ads_reports)
+#         | └─AdvertisersReservationAdsReportsByCountry (26 advertisers_reservation_ads_reports_by_country)
+#         └─CampaignsReservationAdsReports              (27 campaigns_reservation_ads_reports)
+#           └─CampaignsReservationAdsReportsByCountry   (28 campaigns_reservation_ads_reports_by_country)
 
 
 @total_ordering
@@ -831,6 +840,18 @@ class AdvertisersAudienceReportsByPlatform(AdvertisersAudienceReports):
 class ReservationAdsReports(BasicReports, ABC):
     """Reports from which you can get spending and performance data of your reservation ads"""
 
+    schema_name = "reservation_ads"
+    location_dimensions = []
+
+    def _get_reporting_dimensions(self):
+        result = super()._get_reporting_dimensions()
+        result += self.location_dimensions
+        return result
+
+    def _get_metrics(self):
+        result = ["impressions", "clicks", "ctr", "reach", "frequency"]
+        return result
+
     def request_params(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
@@ -843,28 +864,52 @@ class ReservationAdsReports(BasicReports, ABC):
 
 
 class AdsReservationAdsReports(ReservationAdsReports):
-    """Custom reports for ads"""
+    """Reservation ad reports for ads"""
 
     ref_pk = "ad_id"
     report_level = ReportLevel.AD
 
 
 class AdvertisersReservationAdsReports(ReservationAdsReports):
-    """Custom reports for advertiser"""
+    """Reservation ad reports for advertiser"""
 
     ref_pk = "advertiser_id"
     report_level = ReportLevel.ADVERTISER
 
 
 class CampaignsReservationAdsReports(ReservationAdsReports):
-    """Custom reports for campaigns"""
+    """Reservation ad reports for campaigns"""
 
     ref_pk = "campaign_id"
     report_level = ReportLevel.CAMPAIGN
 
 
 class AdGroupsReservationAdsReports(ReservationAdsReports):
-    """Custom reports for adgroups"""
+    """Reservation ad reports for adgroups"""
 
     ref_pk = "adgroup_id"
     report_level = ReportLevel.ADGROUP
+
+
+class CampaignsReservationAdsReportsByCountry(CampaignsReservationAdsReports):
+    """Reservation ad reports for campaigns by country"""
+
+    location_dimensions = ["country_code"]
+
+
+class AdGroupReservationAdsReportsByCountry(AdGroupsReservationAdsReports):
+    """Reservation ad reports for adgroups by country"""
+
+    location_dimensions = ["country_code"]
+
+
+class AdsReservationAdsReportsByCountry(AdsReservationAdsReports):
+    """Reservation ad reports for ads by country"""
+
+    location_dimensions = ["country_code"]
+
+
+class AdvertisersReservationAdsReportsByCountry(AdvertisersReservationAdsReports):
+    """Reservation ad reports for advertisers by country"""
+
+    location_dimensions = ["country_code"]

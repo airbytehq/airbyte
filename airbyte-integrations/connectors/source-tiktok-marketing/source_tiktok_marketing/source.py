@@ -16,6 +16,7 @@ from .streams import (
     AdGroupAudienceReports,
     AdGroupAudienceReportsByCountry,
     AdGroupAudienceReportsByPlatform,
+    AdGroupReservationAdsReportsByCountry,
     AdGroups,
     AdGroupsReports,
     AdGroupsReservationAdsReports,
@@ -25,6 +26,7 @@ from .streams import (
     AdsAudienceReportsByPlatform,
     AdsReports,
     AdsReservationAdsReports,
+    AdsReservationAdsReportsByCountry,
     AdvertiserIds,
     Advertisers,
     AdvertisersAudienceReports,
@@ -32,6 +34,7 @@ from .streams import (
     AdvertisersAudienceReportsByPlatform,
     AdvertisersReports,
     AdvertisersReservationAdsReports,
+    AdvertisersReservationAdsReportsByCountry,
     BasicReports,
     Campaigns,
     CampaignsAudienceReports,
@@ -39,6 +42,7 @@ from .streams import (
     CampaignsAudienceReportsByPlatform,
     CampaignsReports,
     CampaignsReservationAdsReports,
+    CampaignsReservationAdsReportsByCountry,
     Daily,
     Hourly,
     Lifetime,
@@ -196,9 +200,13 @@ class SourceTiktokMarketing(AbstractSource):
             ]
             reservation_ads_reports = [
                 AdsReservationAdsReports,
+                AdsReservationAdsReportsByCountry,
                 AdvertisersReservationAdsReports,
+                AdvertisersReservationAdsReportsByCountry,
                 CampaignsReservationAdsReports,
+                CampaignsReservationAdsReportsByCountry,
                 AdGroupsReservationAdsReports,
+                AdGroupReservationAdsReportsByCountry,
             ]
             if is_production:
                 # 2.1 streams work only in prod env
@@ -225,6 +233,7 @@ class SourceTiktokMarketing(AbstractSource):
                 if Report == AdvertisersAudienceReports:
                     streams.append(get_report_stream(Report, Lifetime)(**args))
 
+            # 4. Reservation ads report streams:
             for Report in reservation_ads_reports:
                 for Granularity in [Hourly, Daily]:
                     streams.append(get_report_stream(Report, Granularity)(**args))
