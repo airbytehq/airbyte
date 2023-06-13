@@ -107,25 +107,26 @@ class BigQuerySqlGeneratorTest {
                 AND JSON_EXTRACT(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
               ;
                       
-              DELETE FROM public.users
-              WHERE
-                `_airbyte_raw_id` IN (
-                  SELECT `_airbyte_raw_id` FROM (
-                    SELECT `_airbyte_raw_id`, row_number() OVER (
-                      PARTITION BY id ORDER BY `updated_at` DESC, `_airbyte_extracted_at` DESC
-                    ) as row_number FROM public.users
+            DELETE FROM public.users
+            WHERE
+              `_airbyte_raw_id` IN (
+                SELECT `_airbyte_raw_id` FROM (
+                  SELECT `_airbyte_raw_id`, row_number() OVER (
+                    PARTITION BY id ORDER BY `updated_at` DESC, `_airbyte_extracted_at` DESC
+                  ) as row_number FROM public.users
+                )
+                WHERE row_number != 1
+              )
+              OR (
+                id IN (
+                  SELECT (
+            SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.id') as INT64)
                   )
-                  WHERE row_number != 1
+                  FROM airbyte.public_users
+                  WHERE JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
                 )
-                OR (
-            `id` IN (
-              SELECT
-                SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.id') as INT64) as id
-              FROM airbyte.public_users
-              WHERE SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.id') as INT64) IS NOT NULL
-            )
-                )
-              ;
+              )
+            ;
                       
             DELETE FROM
               airbyte.public_users

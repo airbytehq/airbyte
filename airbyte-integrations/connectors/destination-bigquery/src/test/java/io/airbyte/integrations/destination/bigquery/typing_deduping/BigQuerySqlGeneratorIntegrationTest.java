@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.text.StringSubstitutor;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +43,8 @@ import org.slf4j.LoggerFactory;
 public class BigQuerySqlGeneratorIntegrationTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest.class);
+  private final static BigQuerySqlGenerator GENERATOR = new BigQuerySqlGenerator();
+  public static final List<QuotedColumnId> PRIMARY_KEY = List.of(GENERATOR.quoteColumnId("id"));
 
   private String testDataset;
   // This is not a typical stream ID would look like, but we're just using this to isolate our tests to a specific dataset.
@@ -51,7 +52,6 @@ public class BigQuerySqlGeneratorIntegrationTest {
   private QuotedStreamId streamId;
 
   private static BigQuery bq;
-  private static BigQuerySqlGenerator generator;
   private static LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> columns;
 
   @BeforeAll
@@ -68,19 +68,17 @@ public class BigQuerySqlGeneratorIntegrationTest {
         .build()
         .getService();
 
-    generator = new BigQuerySqlGenerator();
-
     columns = new LinkedHashMap<>();
-    columns.put(generator.quoteColumnId("id"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
-    columns.put(generator.quoteColumnId("updated_at"), new ParsedType<>(StandardSQLTypeName.TIMESTAMP, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
-    columns.put(generator.quoteColumnId("name"), new ParsedType<>(StandardSQLTypeName.STRING, AirbyteProtocolType.STRING));
+    columns.put(GENERATOR.quoteColumnId("id"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
+    columns.put(GENERATOR.quoteColumnId("updated_at"), new ParsedType<>(StandardSQLTypeName.TIMESTAMP, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
+    columns.put(GENERATOR.quoteColumnId("name"), new ParsedType<>(StandardSQLTypeName.STRING, AirbyteProtocolType.STRING));
 
     LinkedHashMap<String, AirbyteType> addressProperties = new LinkedHashMap<>();
     addressProperties.put("city", AirbyteProtocolType.STRING);
     addressProperties.put("state", AirbyteProtocolType.STRING);
-    columns.put(generator.quoteColumnId("address"), new ParsedType<>(StandardSQLTypeName.STRING, new Struct(addressProperties)));
+    columns.put(GENERATOR.quoteColumnId("address"), new ParsedType<>(StandardSQLTypeName.STRING, new Struct(addressProperties)));
 
-    columns.put(generator.quoteColumnId("age"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
+    columns.put(GENERATOR.quoteColumnId("age"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
   }
 
   @BeforeEach
@@ -98,7 +96,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
   @Test
   public void testCreateTableIncremental() throws InterruptedException {
-    final String sql = generator.createTable(incrementalDedupStreamConfig());
+    final String sql = GENERATOR.createTable(incrementalDedupStreamConfig());
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     final Table table = bq.getTable(testDataset, "users_final");
@@ -113,12 +111,12 @@ public class BigQuerySqlGeneratorIntegrationTest {
         new StringSubstitutor(Map.of(
             "dataset", testDataset
         )).replace("""
-            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{}', GENERATE_UUID(), CURRENT_TIMESTAMP());
-            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1}', GENERATE_UUID(), CURRENT_TIMESTAMP());
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{}', '10d6e27d-ae7a-41b5-baf8-c4c277ef9c11', '2023-01-01T00:00:00Z');
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1}', '5ce60e70-98aa-4fe3-8159-67207352c4f0', '2023-01-01T00:00:00Z');
             """)
     ).build());
 
-    final String sql = generator.validatePrimaryKeys(streamId, List.of(new QuotedColumnId("id", "id")), columns);
+    final String sql = GENERATOR.validatePrimaryKeys(streamId, List.of(new QuotedColumnId("id", "id")), columns);
     final BigQueryException e = assertThrows(
         BigQueryException.class,
         () -> bq.query(QueryJobConfiguration.newBuilder(sql).build())
@@ -139,14 +137,13 @@ public class BigQuerySqlGeneratorIntegrationTest {
         new StringSubstitutor(Map.of(
             "dataset", testDataset
         )).replace("""
-            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}, "updated_at": "2023-01-01T01:00:00Z"}', GENERATE_UUID(), CURRENT_TIMESTAMP());
-            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Diego", "state": "CA"}, "updated_at": "2023-01-01T02:00:00Z"}', GENERATE_UUID(), CURRENT_TIMESTAMP());
-            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 2, "name": "Bob", "age": "oops", "updated_at": "2023-01-01T03:00:00Z"}', GENERATE_UUID(), CURRENT_TIMESTAMP());
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}, "updated_at": "2023-01-01T01:00:00Z"}', '972fa08a-aa06-4b91-a6af-a371aee4cb1c', '2023-01-01T00:00:00Z');
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Diego", "state": "CA"}, "updated_at": "2023-01-01T02:00:00Z"}', '233ad43d-de50-4a47-bbe6-7a417ce60d9d', '2023-01-01T00:00:00Z');
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 2, "name": "Bob", "age": "oops", "updated_at": "2023-01-01T03:00:00Z"}', 'd4aeb036-2d95-4880-acd2-dc69b42b03c6', '2023-01-01T00:00:00Z');
             """)
     ).build());
 
-    final String sql = generator.insertNewRecords(streamId, columns);
-    LOGGER.info("Generated sql: {}", sql);
+    final String sql = GENERATOR.insertNewRecords(streamId, columns);
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     // TODO more stringent asserts
@@ -154,13 +151,40 @@ public class BigQuerySqlGeneratorIntegrationTest {
     assertEquals(3, finalRows);
   }
 
+  @Test
+  public void testDedupFinalTable() throws InterruptedException {
+    createRawTable();
+    createFinalTable();
+    bq.query(QueryJobConfiguration.newBuilder(
+        new StringSubstitutor(Map.of(
+            "dataset", testDataset
+        )).replace("""
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}, "age": 42, "updated_at": "2023-01-01T01:00:00Z"}', 'd7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z');
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Diego", "state": "CA"}, "age": 84, "updated_at": "2023-01-01T02:00:00Z"}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z');
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 2, "name": "Bob", "age": "oops", "updated_at": "2023-01-01T03:00:00Z"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
+            
+            INSERT INTO ${dataset}.users_final (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, id, updated_at, name, address, age) values
+              ('d7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z', JSON'{"errors":[]}', 1, '2023-01-01T01:00:00Z', 'Alice', '{"city": "San Francisco", "state": "CA"}', 42),
+              ('80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z', JSON'{"errors":[]}', 1, '2023-01-01T02:00:00Z', 'Alice', '{"city": "San Diego", "state": "CA"}', 84),
+              ('ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z', JSON'{"errors": ["blah blah age"]}', 2, '2023-01-01T03:00:00Z', 'Bob', NULL, 126);
+            """)
+    ).build());
+
+    final String sql = GENERATOR.dedupFinalTable(streamId, PRIMARY_KEY, columns);
+    bq.query(QueryJobConfiguration.newBuilder(sql).build());
+
+    // TODO more stringent asserts
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId()).build()).getTotalRows();
+    assertEquals(2, finalRows);
+  }
+
   private StreamConfig<StandardSQLTypeName> incrementalDedupStreamConfig() {
     return new StreamConfig<>(
         streamId,
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
-        List.of(generator.quoteColumnId("id")),
-        Optional.of(generator.quoteColumnId("updated_at")),
+        PRIMARY_KEY,
+        Optional.of(GENERATOR.quoteColumnId("updated_at")),
         columns
     );
   }

@@ -27,10 +27,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   // metadata columns
   private final String RAW_ID = quoteColumnId("_airbyte_raw_id").name();
 
-
-  // hardcoded CDC column name for deletions
-  private final QuotedColumnId DELETED_AT = quoteColumnId("_ab_cdc_deleted_at");
-
   @Override
   public QuotedStreamId quoteStreamId(final String namespace, final String name) {
     return new QuotedStreamId(
@@ -267,43 +263,38 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   @VisibleForTesting
   String dedupFinalTable(QuotedStreamId id, final List<QuotedColumnId> primaryKey, final LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
     String pkList = primaryKey.stream().map(QuotedColumnId::name).collect(joining(","));
-    String pkEqualityChecks = streamColumns.entrySet().stream()
+    String pkCastList = streamColumns.entrySet().stream()
         .filter(e -> primaryKey.contains(e.getKey()))
-        .map(
-            col -> new StringSubstitutor(Map.of(
-                "raw_table_id", id.rawTableId(),
-                "raw_col_name", col.getKey().originalName(),
-                "col_type", col.getValue().dialectType().name(),
-                "json_extract", extractAndCast(col.getKey(), col.getValue().airbyteType(), col.getValue().dialectType())
-            )).replace("""
-                `id` IN (
-                  SELECT
-                    ${json_extract} as id
-                  FROM ${raw_table_id}
-                  WHERE ${json_extract} IS NOT NULL
-                )""")
-        ).collect(joining("\nAND "));
+        .map(e -> extractAndCast(e.getKey(), e.getValue().airbyteType(), e.getValue().dialectType()))
+        .collect(joining(",\n "));
 
     return new StringSubstitutor(Map.of(
+        "raw_table_id", id.rawTableId(),
         "final_table_id", id.finalTableId(),
         "pk_list", pkList,
-        "pk_equality_checks", pkEqualityChecks
+        "pk_cast_list", pkCastList
     )).replace(
         """
-              DELETE FROM ${final_table_id}
-              WHERE
-                `_airbyte_raw_id` IN (
-                  SELECT `_airbyte_raw_id` FROM (
-                    SELECT `_airbyte_raw_id`, row_number() OVER (
-                      PARTITION BY ${pk_list} ORDER BY `updated_at` DESC, `_airbyte_extracted_at` DESC
-                    ) as row_number FROM ${final_table_id}
+            DELETE FROM ${final_table_id}
+            WHERE
+              `_airbyte_raw_id` IN (
+                SELECT `_airbyte_raw_id` FROM (
+                  SELECT `_airbyte_raw_id`, row_number() OVER (
+                    PARTITION BY ${pk_list} ORDER BY `updated_at` DESC, `_airbyte_extracted_at` DESC
+                  ) as row_number FROM ${final_table_id}
+                )
+                WHERE row_number != 1
+              )
+              OR (
+                ${pk_list} IN (
+                  SELECT (
+            ${pk_cast_list}
                   )
-                  WHERE row_number != 1
+                  FROM ${raw_table_id}
+                  WHERE JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
                 )
-                OR (
-            ${pk_equality_checks}
-                )
-              ;"""
+              )
+            ;"""
     );
   }
 
