@@ -48,9 +48,9 @@ public class CatalogParser<DialectType> {
     for (ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final StreamConfig<DialectType> originalStreamConfig = toStreamConfig(stream);
       if (streamConfigs.stream().anyMatch(s -> s.id().finalTableId().equals(originalStreamConfig.id().finalTableId()))
-      || streamConfigs.stream().anyMatch(s -> s.id().rawTableId().equals(originalStreamConfig.id().rawTableId()))) {
-        String originalNamespace = originalStreamConfig.id().originalNamespace();
-        String originalName = originalStreamConfig.id().originalName();
+          || streamConfigs.stream().anyMatch(s -> s.id().rawTableId().equals(originalStreamConfig.id().rawTableId()))) {
+        String originalNamespace = stream.getStream().getNamespace();
+        String originalName = stream.getStream().getName();
         // ... this logic is ported from legacy normalization, and maybe should change?
         // We're taking a hash of the quoted namespace and the unquoted stream name
         final String hash = DigestUtils.sha1Hex(originalStreamConfig.id().finalNamespace() + "&airbyte&" + originalName).substring(0, 3);

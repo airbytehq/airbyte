@@ -33,7 +33,7 @@ class CatalogParserTest {
     when(sqlGenerator.quoteStreamId(any(), any())).thenAnswer(invocation -> {
       String namespace = invocation.getArgument(0);
       String name = invocation.getArgument(1);
-      return new QuotedStreamId(namespace, name, "airbyte", namespace + "_" + name, namespace, name);
+      return new QuotedStreamId(namespace, name, "airbyte", namespace + "_" + name);
     });
 
     parser = new CatalogParser<>(sqlGenerator);
@@ -68,7 +68,7 @@ class CatalogParserTest {
 
       // emulate quoting logic that causes a name collision
       String quotedName = originalName.replaceAll("bar", "");
-      return new QuotedStreamId(originalNamespace, quotedName, "airbyte", originalNamespace + "_" + quotedName, originalNamespace, originalName);
+      return new QuotedStreamId(originalNamespace, quotedName, "airbyte", originalNamespace + "_" + quotedName);
     });
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         stream("a", "foobarfoo"),

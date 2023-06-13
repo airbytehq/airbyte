@@ -16,7 +16,7 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
    * @param originalNamespace the namespace of the stream according to the Airbyte catalog
    * @param originalName      the name of the stream according to the Airbyte catalog
    */
-  record QuotedStreamId(String finalNamespace, String finalName, String rawNamespace, String rawName, String originalNamespace, String originalName) {
+  record QuotedStreamId(String finalNamespace, String finalName, String rawNamespace, String rawName) {
 
     /**
      * Most databases/warehouses use a `schema.name` syntax to identify tables. This is a convenience method to generate that syntax.

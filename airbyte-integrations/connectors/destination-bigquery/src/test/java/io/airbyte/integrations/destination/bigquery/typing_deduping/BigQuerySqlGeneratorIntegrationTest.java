@@ -84,7 +84,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     testDataset = "bq_sql_generator_test_" + UUID.randomUUID().toString().replace("-", "_");
     // This is not a typical stream ID would look like, but we're just using this to isolate our tests to a specific dataset.
     // In practice, the final table would be testDataset.users, and the raw table would be airbyte.testDataset_users.
-    streamId = new QuotedStreamId(testDataset, "users_final", testDataset, "users_raw", "public", "users");
+    streamId = new QuotedStreamId(testDataset, "users_final", testDataset, "users_raw");
     LOGGER.info("Running in dataset {}", testDataset);
     bq.create(DatasetInfo.newBuilder(testDataset).build());
   }

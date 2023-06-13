@@ -54,7 +54,6 @@ class BigQuerySqlGeneratorTest {
             DECLARE missing_pk_count INT64;
             
             BEGIN TRANSACTION;
-
             SET missing_pk_count = (
               SELECT COUNT(1)
               FROM airbyte.public_users
@@ -162,7 +161,7 @@ class BigQuerySqlGeneratorTest {
     columns.put(generator.quoteColumnId("address"), new ParsedType<>(StandardSQLTypeName.STRING, new Struct(addressProperties)));
 
     return new StreamConfig<>(
-        new SqlGenerator.QuotedStreamId("public", "users", "airbyte", "public_users", "public", "users"),
+        new SqlGenerator.QuotedStreamId("public", "users", "airbyte", "public_users"),
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
         List.of(generator.quoteColumnId("id")),
