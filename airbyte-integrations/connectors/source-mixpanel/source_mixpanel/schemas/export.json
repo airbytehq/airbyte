@@ -245,21 +245,6 @@
     },
     "mp_processing_time_ms": {
       "type": ["null", "string"]
-    },
-    "region": {
-      "type": ["null", "string"]
-    },
-    "mp_country_code": {
-      "type": ["null", "string"]
-    },
-    "Share Item Count": {
-      "type": ["null", "string"]
-    },
-    "city": {
-      "type": ["null", "string"]
-    },
-    "Last Share": {
-      "type": ["null", "string"]
     }
   }
 }
