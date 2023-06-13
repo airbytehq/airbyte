@@ -13,6 +13,8 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDest
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedCatalog;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
+import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -95,6 +97,9 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     } else if (message.getType() == Type.RECORD) {
       if (StringUtils.isEmpty(message.getRecord().getNamespace())) {
         message.getRecord().setNamespace(datasetId);
+      }
+      if (TypingAndDedupingFlag.isDestinationV2()) {
+        message.getRecord().setNamespace(JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA);
       }
       processRecord(message);
     } else {

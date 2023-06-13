@@ -22,6 +22,7 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
@@ -30,6 +31,7 @@ import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryReco
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
@@ -232,6 +234,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       if (StringUtils.isEmpty(stream.getNamespace())) {
         stream.setNamespace(BigQueryUtils.getDatasetId(config));
       }
+      if (TypingAndDedupingFlag.isDestinationV2()) {
+        stream.setNamespace(JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA);
+      }
       final String streamName = stream.getName();
       final UploaderConfig uploaderConfig = UploaderConfig
           .builder()
@@ -241,6 +246,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .formatterMap(getFormatterMap(stream.getJsonSchema()))
           .tmpTableName(namingResolver.getTmpTableName(streamName))
           .targetTableName(getTargetTableName(streamName))
+          // This refers to whether this is BQ denormalized or not
           .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
           .build();
 

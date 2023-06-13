@@ -9,7 +9,9 @@ import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
@@ -29,6 +31,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static io.airbyte.integrations.base.JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA;
 
 /**
  * This class mimics the same functionality as
@@ -79,9 +83,11 @@ public class BigQueryStagingConsumerFactory {
           final String streamName = stream.getName();
           final BigQueryRecordFormatter recordFormatter = recordFormatterCreator.apply(stream.getJsonSchema());
 
+          final var internalTableNamespace = TypingAndDedupingFlag.isDestinationV2() ? stream.getNamespace() : AIRBYTE_NAMESPACE_SCHEMA;
+
           final BigQueryWriteConfig writeConfig = new BigQueryWriteConfig(
               streamName,
-              stream.getNamespace(),
+              internalTableNamespace,
               BigQueryUtils.getSchema(config, configuredStream),
               BigQueryUtils.getDatasetLocation(config),
               tmpTableNameTransformer.apply(streamName),
@@ -116,15 +122,21 @@ public class BigQueryStagingConsumerFactory {
       for (final BigQueryWriteConfig writeConfig : writeConfigs.values()) {
         LOGGER.info("Preparing staging are in destination for schema: {}, stream: {}, target table: {}, stage: {}",
             writeConfig.tableSchema(), writeConfig.streamName(), writeConfig.targetTableId(), writeConfig.streamName());
-        final String datasetId = writeConfig.datasetId();
-        bigQueryGcsOperations.createSchemaIfNotExists(datasetId, writeConfig.datasetLocation());
+        // In Destinations V2, we will always use the 'airbyte' schema/namespace for raw tables
+        final String rawDatasetId = TypingAndDedupingFlag.isDestinationV2() ? AIRBYTE_NAMESPACE_SCHEMA : writeConfig.datasetId();
+        // Regardless, ensure the schema the customer wants to write to exists
+        bigQueryGcsOperations.createSchemaIfNotExists(writeConfig.datasetId(), writeConfig.datasetLocation());
+        // Schema used for raw and airbyte internal tables
+        bigQueryGcsOperations.createSchemaIfNotExists(rawDatasetId, writeConfig.datasetLocation());
+        // Customer's destination schema
         // With checkpointing, we will be creating the target table earlier in the setup such that
         // the data can be immediately loaded from the staging area
         bigQueryGcsOperations.createTableIfNotExists(writeConfig.targetTableId(), writeConfig.tableSchema());
-        bigQueryGcsOperations.createStageIfNotExists(datasetId, writeConfig.streamName());
+        bigQueryGcsOperations.createStageIfNotExists(rawDatasetId, writeConfig.streamName());
         // When OVERWRITE mode, truncate the destination's raw table prior to syncing data
         if (writeConfig.syncMode() == DestinationSyncMode.OVERWRITE) {
-          bigQueryGcsOperations.truncateTableIfExists(datasetId, writeConfig.targetTableId(), writeConfig.tableSchema());
+          // TODO: this might need special handling during the migration
+          bigQueryGcsOperations.truncateTableIfExists(rawDatasetId, writeConfig.targetTableId(), writeConfig.tableSchema());
         }
       }
       LOGGER.info("Preparing airbyte_raw tables in destination completed.");
