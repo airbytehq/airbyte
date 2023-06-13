@@ -20,7 +20,7 @@ To configure incremental syncs for a stream in the connector builder, you have t
 
 In the builder UI, these things are specified like this:
 * The "Cursor field" is the property in the record that defines the date and time when the record got changed. It's used to decide which records are synced already and which records are "new"
-* The "Datetime format" specifies the [format](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes) the cursor field is using to specify date and time,
+* The "Datetime format" specifies the format the cursor field is using to specify date and time. Check out the [YAML reference](/connector-development/config-based/understanding-the-yaml-file/reference#/definitions/DatetimeBasedCursor) for a full list of supported formats.
 * The "Cursor granularity" is the smallest time unit supported by the API to specify the time range to request records for expressed as [ISO 8601 duration](https://en.wikipedia.org/wiki/ISO_8601#Durations)
 * The "Start datetime" is the initial start date of the time range to fetch records for. When doing incremental syncs, the second sync will overwrite this date with the last record that got synced so far.
 * The "End datetime" is the end date of the time range to fetch records for. In most cases it's set to the current date and time when the sync is started to sync all changes that happened so far.
