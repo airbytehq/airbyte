@@ -13,7 +13,7 @@ data:
   name: Drift
   registries:
     cloud:
-      enabled: false
+      enabled: false # hide Source Drift https://github.com/airbytehq/airbyte/issues/24270
     oss:
       enabled: true
   releaseStage: alpha
