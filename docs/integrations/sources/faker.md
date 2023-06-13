@@ -10,27 +10,42 @@ This source will generate an "e-commerce-like" dataset with users, products, and
 
 ```sql
 CREATE TABLE "public"."users" (
-    "id" float8,
-    "age" int8,
-    "name" text,
-    "email" text,
-    "title" text,
+    "address" jsonb,
+    "occupation" text,
     "gender" text,
-    "height" text,
+    "academic_degree" text,
     "weight" int8,
+    "created_at" timestamptz,
     "language" text,
     "telephone" text,
-    "blood_type" text,
-    "created_at" timestamptz,
-    "occupation" text,
+    "title" text,
     "updated_at" timestamptz,
     "nationality" text,
-    "academic_degree" text,
+    "blood_type" text,
+    "name" text,
+    "id" float8,
+    "age" int8,
+    "email" text,
+    "height" text,
     -- "_airbyte_ab_id" varchar,
     -- "_airbyte_emitted_at" timestamptz,
     -- "_airbyte_normalized_at" timestamptz,
-    -- "_airbyte_dev_users_hashid" text,
-    -- "_airbyte_unique_key" text
+    -- "_airbyte_users_hashid" text
+);
+
+CREATE TABLE "public"."users_address" (
+    "_airbyte_users_hashid" text,
+    "country_code" text,
+    "province" text,
+    "city" text,
+    "street_number" text,
+    "state" text,
+    "postal_code" text,
+    "street_name" text,
+    -- "_airbyte_ab_id" varchar,
+    -- "_airbyte_emitted_at" timestamptz,
+    -- "_airbyte_normalized_at" timestamptz,
+    -- "_airbyte_address_hashid" text
 );
 
 CREATE TABLE "public"."products" (
@@ -44,21 +59,19 @@ CREATE TABLE "public"."products" (
     -- "_airbyte_emitted_at" timestamptz,
     -- "_airbyte_normalized_at" timestamptz,
     -- "_airbyte_dev_products_hashid" text,
-    -- "_airbyte_unique_key" text
 );
 
 CREATE TABLE "public"."purchases" (
     "id" float8,
     "user_id" float8,
     "product_id" float8,
-    "returned_at" timestamptz,
     "purchased_at" timestamptz,
     "added_to_cart_at" timestamptz,
+    "returned_at" timestamptz,
     -- "_airbyte_ab_id" varchar,
     -- "_airbyte_emitted_at" timestamptz,
     -- "_airbyte_normalized_at" timestamptz,
     -- "_airbyte_dev_purchases_hashid" text,
-    -- "_airbyte_unique_key" text
 );
 
 ```

@@ -580,10 +580,40 @@ definitions:
           - "{{ config['record_cursor'] }}"
       datetime_format:
         title: Cursor Field Datetime Format
-        description: The datetime format of the Cursor Field.
+        description: |
+          The datetime format of the Cursor Field. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:
+            * **%s**: Epoch unix timestamp - `1686218963`
+            * **%a**: Weekday (abbreviated) - `Sun`
+            * **%A**: Weekday (full) - `Sunday`
+            * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)
+            * **%d**: Day of the month (zero-padded) - `01`, `02`, ..., `31`
+            * **%b**: Month (abbreviated) - `Jan`
+            * **%B**: Month (full) - `January`
+            * **%m**: Month (zero-padded) - `01`, `02`, ..., `12`
+            * **%y**: Year (without century, zero-padded) - `00`, `01`, ..., `99`
+            * **%Y**: Year (with century) - `0001`, `0002`, ..., `9999`
+            * **%H**: Hour (24-hour, zero-padded) - `00`, `01`, ..., `23`
+            * **%I**: Hour (12-hour, zero-padded) - `01`, `02`, ..., `12`
+            * **%p**: AM/PM indicator
+            * **%M**: Minute (zero-padded) - `00`, `01`, ..., `59`
+            * **%S**: Second (zero-padded) - `00`, `01`, ..., `59`
+            * **%f**: Microsecond (zero-padded to 6 digits) - `000000`
+            * **%z**: UTC offset - `(empty)`, `+0000`, `-0400`
+            * **%Z**: Time zone name - `(empty)`, `UTC`, `GMT`
+            * **%j**: Day of the year (zero-padded) - `001`, `002`, ..., `366`
+            * **%U**: Week number of the year (starting Sunday) - `00`, ..., `53`
+            * **%W**: Week number of the year (starting Monday) - `00`, ..., `53`
+            * **%c**: Date and time - `Tue Aug 16 21:30:00 1988`
+            * **%x**: Date standard format - `08/16/1988`
+            * **%X**: Time standard format - `21:30:00`
+            * **%%**: Literal '%' character
+
+            Some placeholders depend on the locale of the underlying system - in most cases this locale is configured as en/US. For more information see the [Python documentation](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes).
         type: string
         examples:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
+          - "%Y-%m-%d"
+          - "%s"
       cursor_granularity:
         title: Cursor Granularity
         description:
@@ -1283,11 +1313,39 @@ definitions:
           - "{{ config['start_time'] }}"
       datetime_format:
         title: Datetime Format
-        description: Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use %s if the datetime value is in epoch time (Unix timestamp).
+        description: |
+          Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:
+            * **%s**: Epoch unix timestamp - `1686218963`
+            * **%a**: Weekday (abbreviated) - `Sun`
+            * **%A**: Weekday (full) - `Sunday`
+            * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)
+            * **%d**: Day of the month (zero-padded) - `01`, `02`, ..., `31`
+            * **%b**: Month (abbreviated) - `Jan`
+            * **%B**: Month (full) - `January`
+            * **%m**: Month (zero-padded) - `01`, `02`, ..., `12`
+            * **%y**: Year (without century, zero-padded) - `00`, `01`, ..., `99`
+            * **%Y**: Year (with century) - `0001`, `0002`, ..., `9999`
+            * **%H**: Hour (24-hour, zero-padded) - `00`, `01`, ..., `23`
+            * **%I**: Hour (12-hour, zero-padded) - `01`, `02`, ..., `12`
+            * **%p**: AM/PM indicator
+            * **%M**: Minute (zero-padded) - `00`, `01`, ..., `59`
+            * **%S**: Second (zero-padded) - `00`, `01`, ..., `59`
+            * **%f**: Microsecond (zero-padded to 6 digits) - `000000`, `000001`, ..., `999999`
+            * **%z**: UTC offset - `(empty)`, `+0000`, `-0400`, `+1030`, `+063415`, `-030712.345216`
+            * **%Z**: Time zone name - `(empty)`, `UTC`, `GMT`
+            * **%j**: Day of the year (zero-padded) - `001`, `002`, ..., `366`
+            * **%U**: Week number of the year (Sunday as first day) - `00`, `01`, ..., `53`
+            * **%W**: Week number of the year (Monday as first day) - `00`, `01`, ..., `53`
+            * **%c**: Date and time representation - `Tue Aug 16 21:30:00 1988`
+            * **%x**: Date representation - `08/16/1988`
+            * **%X**: Time representation - `21:30:00`
+            * **%%**: Literal '%' character
+
+            Some placeholders depend on the locale of the underlying system - in most cases this locale is configured as en/US. For more information see the [Python documentation](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes).
         type: string
         default: ""
         examples:
-          - "%Y-%m-%dT%H:%M:%S.%f%"
+          - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d"
           - "%s"
       max_datetime:
