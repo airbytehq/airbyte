@@ -66,3 +66,4 @@ jobs:
           CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
           CI_CONTEXT: "nightly_builds"
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
+          CI_JOB_KEY: "weekly_alpha_test"
