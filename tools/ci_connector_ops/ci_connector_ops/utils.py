@@ -44,6 +44,8 @@ def download_catalog(catalog_url):
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
 METADATA_FILE_NAME = "metadata.yaml"
 ICON_FILE_NAME = "icon.svg"
+README_FILE_NAME = "README.md"
+MIGRATION_FILE_NAME = "migration_guide.md"
 
 
 class ConnectorInvalidNameError(Exception):
@@ -198,8 +200,16 @@ class Connector:
         return self._get_type_and_name_from_technical_name()[0]
 
     @property
+    def documentation_directory(self) -> Path:
+        return Path(f"./docs/integrations/{self.connector_type}s/{self.name}")
+
+    @property
     def documentation_file_path(self) -> Path:
-        return Path(f"./docs/integrations/{self.connector_type}s/{self.name}.md")
+        return self.documentation_directory / README_FILE_NAME
+
+    @property
+    def migration_guide_file_path(self) -> Path:
+        return self.documentation_directory / MIGRATION_FILE_NAME
 
     @property
     def icon_path(self) -> Path:
