@@ -2,7 +2,6 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
-import java.util.UUID;
 
 public interface SqlGenerator<DialectTableDefinition, DialectType> {
 
@@ -36,10 +35,12 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
    * <p>
    * TODO maybe this needs a column_name_for_lookup, a la normalization?
    *
-   * @param name         the name of the column in the final table. Usable directly in a SQL query. For example, "`foo`" or "foo".
-   * @param originalName the name of the field in the raw JSON blob
+   * @param name          the name of the column in the final table. Usable directly in a SQL query. For example, "`foo`" or "foo".
+   * @param originalName  the name of the field in the raw JSON blob
+   * @param canonicalName the name of the field according to the destination. Used for deduping. Useful if a destination warehouse handles columns
+   *                      ignoring case, but preserves case in the table schema.
    */
-  record QuotedColumnId(String name, String originalName) {
+  record QuotedColumnId(String name, String originalName, String canonicalName) {
 
   }
 
@@ -79,8 +80,8 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
    *   <li>Updating the raw records with SET _airbyte_loaded_at = now()</li>
    * </ul>
    *
-   * @param finalSuffix the suffix of the final table to write to. If empty string, writes to the final table directly. Useful for full refresh overwrite
-   *                    syncs, where we write the entire sync to a temp table and then swap it into the final table at the end.
+   * @param finalSuffix the suffix of the final table to write to. If empty string, writes to the final table directly. Useful for full refresh
+   *                    overwrite syncs, where we write the entire sync to a temp table and then swap it into the final table at the end.
    */
   // TODO maybe this should be broken into smaller methods, idk
   String updateTable(String finalSuffix, final StreamConfig<DialectType> stream);

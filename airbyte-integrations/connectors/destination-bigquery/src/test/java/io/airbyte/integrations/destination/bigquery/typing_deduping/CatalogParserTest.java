@@ -28,7 +28,7 @@ class CatalogParserTest {
     // noop quoting logic
     when(sqlGenerator.quoteColumnId(any())).thenAnswer(invocation -> {
       String fieldName = invocation.getArgument(0);
-      return new QuotedColumnId(fieldName, fieldName);
+      return new QuotedColumnId(fieldName, fieldName, fieldName);
     });
     when(sqlGenerator.quoteStreamId(any(), any())).thenAnswer(invocation -> {
       String namespace = invocation.getArgument(0);
@@ -63,12 +63,12 @@ class CatalogParserTest {
   @Test
   public void finalNameCollision() {
     when(sqlGenerator.quoteStreamId(any(), any())).thenAnswer(invocation -> {
-      String namespace = invocation.getArgument(0);
-      String name = (invocation.getArgument(1));
+      String originalNamespace = invocation.getArgument(0);
+      String originalName = (invocation.getArgument(1));
 
       // emulate quoting logic that causes a name collision
-      name = name.replaceAll("bar", "");
-      return new QuotedStreamId(namespace, name, "airbyte", namespace + "_" + name, namespace, name);
+      String quotedName = originalName.replaceAll("bar", "");
+      return new QuotedStreamId(originalNamespace, quotedName, "airbyte", originalNamespace + "_" + quotedName, originalNamespace, originalName);
     });
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         stream("a", "foobarfoo"),
@@ -89,11 +89,11 @@ class CatalogParserTest {
   @Test
   public void columnNameCollision() {
     when(sqlGenerator.quoteColumnId(any())).thenAnswer(invocation -> {
-      String fieldName = invocation.getArgument(0);
+      String originalName = invocation.getArgument(0);
 
       // emulate quoting logic that causes a name collision
-      fieldName = fieldName.replaceAll("bar", "");
-      return new QuotedColumnId(fieldName, fieldName);
+      String quotedName = originalName.replaceAll("bar", "");
+      return new QuotedColumnId(quotedName, originalName, quotedName);
     });
     JsonNode schema = Jsons.deserialize("""
         {

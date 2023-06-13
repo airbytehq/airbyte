@@ -43,8 +43,25 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   @Override
   public QuotedColumnId quoteColumnId(final String name) {
+    String quotedName = name;
+
+    // Bigquery columns are case insensitive, so do all our validation on the lowercased name
+    String canonicalized = name.toLowerCase();
+
+    // Column names aren't allowed to start with certain strings. Prepend an underscore if this happens.
+    if (canonicalized.startsWith("_table_")
+        || canonicalized.startsWith("_file_")
+        || canonicalized.startsWith("_partition_")
+        || canonicalized.startsWith("_row_timestamp_")
+        // yes, there are two underscores here. That's intentional.
+        || canonicalized.startsWith("__root__")
+        || canonicalized.startsWith("_colidentifier_")) {
+      quotedName = "_" + quotedName;
+      canonicalized = "_" + canonicalized;
+    }
+
     // TODO this is probably wrong
-    return new QuotedColumnId(nameTransformer.getIdentifier(name), name);
+    return new QuotedColumnId(nameTransformer.getIdentifier(quotedName), name, canonicalized);
   }
 
   @Override

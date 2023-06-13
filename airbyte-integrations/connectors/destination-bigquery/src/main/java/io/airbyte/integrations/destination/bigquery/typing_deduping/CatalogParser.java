@@ -1,5 +1,6 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
+import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.QuotedColumnId;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.QuotedStreamId;
@@ -9,6 +10,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Optional;
 
 public class CatalogParser<DialectType> {
@@ -43,7 +45,7 @@ public class CatalogParser<DialectType> {
 
   private StreamConfig<DialectType> toStreamConfig(ConfiguredAirbyteStream stream) {
     AirbyteType schema = AirbyteType.fromJsonSchema(stream.getStream().getJsonSchema());
-    final LinkedHashMap<String, AirbyteType> airbyteColumns;
+    LinkedHashMap<String, AirbyteType> airbyteColumns;
     if (schema instanceof Struct o) {
       airbyteColumns = o.properties();
     } else if (schema instanceof AirbyteType.OneOf o) {
@@ -67,17 +69,45 @@ public class CatalogParser<DialectType> {
       cursor = Optional.empty();
     }
 
+    final LinkedHashMap<QuotedColumnId, ParsedType<DialectType>> columns = new LinkedHashMap<>();
+    for (Entry<String, AirbyteType> entry : airbyteColumns.entrySet()) {
+      final ParsedType<DialectType> dialectType = sqlGenerator.toDialectType(entry.getValue());
+      QuotedColumnId originalQuotedColumnId = sqlGenerator.quoteColumnId(entry.getKey());
+      QuotedColumnId quotedColumnId;
+      if (columns.keySet().stream().noneMatch(c -> c.canonicalName().equals(originalQuotedColumnId.canonicalName()))) {
+        // None of the existing columns have the same name. We can add this new column as-is.
+        quotedColumnId = originalQuotedColumnId;
+      } else {
+        // One of the existing columns has the same name. We need to handle this collision.
+        // Append _1, _2, _3, ... to the column name until we find one that doesn't collide.
+        int i = 1;
+        while (true) {
+          quotedColumnId = sqlGenerator.quoteColumnId(entry.getKey() + "_" + i);
+          String canonicalName = quotedColumnId.canonicalName();
+          if (columns.keySet().stream().noneMatch(c -> c.canonicalName().equals(canonicalName))) {
+            break;
+          } else {
+            i++;
+          }
+        }
+        // But we need to keep the original name so that we can still fetch it out of the JSON records.
+        quotedColumnId = new QuotedColumnId(
+            quotedColumnId.name(),
+            originalQuotedColumnId.originalName(),
+            quotedColumnId.canonicalName()
+        );
+      }
+
+      columns.put(quotedColumnId, dialectType);
+    }
+
     return new StreamConfig<>(
         sqlGenerator.quoteStreamId(stream.getStream().getNamespace(), stream.getStream().getName()),
         stream.getSyncMode(),
         stream.getDestinationSyncMode(),
         primaryKey,
         cursor,
-        airbyteColumns.entrySet().stream().collect(
-            LinkedHashMap::new,
-            // TODO handle column name collisions
-            (map, entry) -> map.put(sqlGenerator.quoteColumnId(entry.getKey()), sqlGenerator.toDialectType(entry.getValue())),
-            LinkedHashMap::putAll)
+        columns
     );
   }
 }

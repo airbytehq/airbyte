@@ -116,7 +116,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
             """)
     ).build());
 
-    final String sql = GENERATOR.validatePrimaryKeys(streamId, List.of(new QuotedColumnId("id", "id")), columns);
+    final String sql = GENERATOR.validatePrimaryKeys(streamId, List.of(new QuotedColumnId("id", "id", "id")), columns);
     final BigQueryException e = assertThrows(
         BigQueryException.class,
         () -> bq.query(QueryJobConfiguration.newBuilder(sql).build())
