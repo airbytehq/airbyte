@@ -4,6 +4,7 @@
 
 
 from datetime import datetime
+from functools import lru_cache
 from json import JSONDecodeError
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, TypedDict
 
@@ -106,6 +107,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
     def url_base(self) -> str:
         return self.deployment_url
 
+    @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         return self.json_schema
 
