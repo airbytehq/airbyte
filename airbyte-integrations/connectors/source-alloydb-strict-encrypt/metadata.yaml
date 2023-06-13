@@ -18,5 +18,7 @@ data:
   license: MIT
   name: AlloyDB for PostgreSQL
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/alloydb
+  documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
+  tags:
+    - language:java
 metadataSpecVersion: "1.0"

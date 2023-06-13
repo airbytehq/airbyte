@@ -240,7 +240,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   }
 
   // Ref :
-  // https://debezium.io/documentation/reference/2.1/connectors/postgresql.html#postgresql-temporal-types
+  // https://debezium.io/documentation/reference/2.2/connectors/postgresql.html#postgresql-temporal-types
   private void registerDate(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     final var fieldType = field.typeName();
 
