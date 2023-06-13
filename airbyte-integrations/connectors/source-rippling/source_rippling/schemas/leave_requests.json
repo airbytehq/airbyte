@@ -1,128 +1,105 @@
 {
   "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
   "properties": {
     "comments": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "createdAt": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "dates": {
       "items": {
         "properties": {
           "date": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "numMinutes": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         },
-        "type": "object"
+        "type": ["null", "object"]
       },
-      "type": "array"
+      "type": ["null", "array"]
     },
     "endDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "endDateEndTime": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "externalId": {
       "type": "null"
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "isPaid": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "leavePolicy": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "leaveType": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "leaveTypeUniqueId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "managedBy": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "numHours": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "numMinutes": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "partialDays": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "policyDisplayName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "processedAt": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "processedBy": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "processedByName": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "reasonForLeave": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "requestedBy": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "requestedByName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "role": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "roleName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "roleTimezone": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "startDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "startDateStartTime": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "status": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "updatedAt": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   },
-  "type": "object"
+  "type": ["null", "object"]
 }

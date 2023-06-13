@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
   "properties": {
     "address": {
       "anyOf": [
@@ -9,242 +10,206 @@
         {
           "properties": {
             "_smartystreets_validity": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "city": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "country": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "observable_cache_dont_use": {
               "properties": {
                 "__dynamic_cache_fullAddress": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "__dynamic_cache_get_state_name": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "__dynamic_cache_plain_country_code": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "__dynamic_cache_street_lines_custom_delimiter": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 }
               },
-              "type": "object"
+              "type": ["null", "object"]
             },
             "state": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "steLocationCode": {
               "properties": {
                 "cityCode": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "countyCode": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "isOverridden": {
-                  "type": "boolean"
+                  "type": ["null", "boolean"]
                 },
                 "locationCode": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "municipalityCode": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "psdCode": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "schoolCode": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "stateCode": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "transitDistrictCode": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 }
               },
-              "type": "object"
+              "type": ["null", "object"]
             },
             "streetLine1": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "streetLine2": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "streetLine3": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "streetLine4": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "zip": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             }
           },
-          "type": "object"
+          "type": ["null", "object"]
         }
       ]
     },
     "companyEmploymentType": {
       "properties": {
         "company": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         },
         "country": {
           "type": "null"
         },
         "createdAt": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "displayName": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "external_on_changes": {
-          "type": "array"
+          "type": ["null", "array"]
         },
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "isContractor": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "isDeleted": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "isEOR": {
           "type": "null"
         },
         "isFullTime": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "isHourly": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "isPartTime": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "isSalaried": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "isTemporary": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "label": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         },
         "lock": {
           "type": "null"
         },
         "possible_new_employment_types": {
           "items": {
-            "type": ["null","string"]
+            "type": ["null", "string"]
           },
-          "type": "array"
+          "type": ["null", "array"]
         },
         "updatedAt": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       },
-      "type": "object"
+      "type": ["null", "object"]
     },
     "createdAt": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "customFields": {
-      "type": ["null","object"]
+      "type": ["null", "object"]
     },
     "department": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "departmentId": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "dob": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "ein": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
-    "compensation":{
-      "type": ["null","object"]
+    "compensation": {
+      "type": ["null", "object"]
     },
     "employeeNumber": {
-      "type": [
-        "integer",
-        "null"
-      ]
+      "type": ["integer", "null"]
     },
     "employmentType": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "endDate": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "firstName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "gender": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "hsaCompatiblePlanStatus": {
       "properties": {
         "annualLimit": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "effectiveDate": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "expirationDate": {
-          "type": [
-            "null",
-            "string"
-          ]
+          "type": ["null", "string"]
         },
         "status": {
-          "type": ["null","string"]
+          "type": ["null", "string"]
         }
       },
-      "type": "object"
+      "type": ["null", "object"]
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "identifiedGender": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "internationalBankAccount": {
       "anyOf": [
@@ -254,156 +219,111 @@
         {
           "properties": {
             "accountName": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "accountNumber": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "bankCode": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "bankName": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "branchCode": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "branchName": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             },
             "paymentMethod": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "transitNumber": {
-              "type": [
-                "null",
-                "string"
-              ]
+              "type": ["null", "string"]
             }
           },
-          "type": "object"
+          "type": ["null", "object"]
         }
       ]
     },
     "isInternational": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "isManager": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "isRemote": {
-      "type": [
-        "boolean",
-        "null"
-      ]
+      "type": ["boolean", "null"]
     },
     "lastName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "level": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "manager": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "offerAcceptedDate": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "payScheduleId": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "personalEmail": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "photo": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "preferredFirstName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "preferredLastName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "roleState": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "salaryUnit": {
-      "type": ["null","string"]
+      "type": ["null", "string"]
     },
     "smallPhoto": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "spokeId": {
       "type": "null"
     },
     "startDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "teams": {
       "items": {
-        "type": "string"
+        "type": ["null", "string"]
       },
-      "type": "array"
+      "type": ["null", "array"]
     },
     "title": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "updatedAt": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "userId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "w2EndDate": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "w2StartDate": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "workEmail": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "workLocation": {
       "anyOf": [
@@ -413,115 +333,106 @@
         {
           "properties": {
             "_smartystreets_validity": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "city": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "country": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "observable_cache_dont_use": {
               "properties": {
                 "__dynamic_cache_fullAddress": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "__dynamic_cache_get_state_name": {
-                  "type": [
-                    "null",
-                    "string"
-                  ]
+                  "type": ["null", "string"]
                 },
                 "__dynamic_cache_plain_country_code": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "__dynamic_cache_street_lines_custom_delimiter": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 }
               },
-              "type": "object"
+              "type": ["null", "object"]
             },
             "state": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "steLocationCode": {
               "properties": {
                 "cityCode": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "countyCode": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "isOverridden": {
-                  "type": "boolean"
+                  "type": ["null", "boolean"]
                 },
                 "locationCode": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "municipalityCode": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "psdCode": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "schoolCode": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "stateCode": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 },
                 "transitDistrictCode": {
-                  "type": ["null","string"]
+                  "type": ["null", "string"]
                 }
               },
-              "type": "object"
+              "type": ["null", "object"]
             },
             "streetLine1": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "streetLine2": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "streetLine3": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             },
             "zip": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             }
           },
-          "type": "object"
+          "type": ["null", "object"]
         }
       ]
     },
     "workLocationId": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "workLocationNickname": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "workSchedule": {
       "properties": {
         "FRIDAY": {
           "properties": {
             "hours": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             }
           },
-          "type": "object"
+          "type": ["null", "object"]
         },
         "MONDAY": {
           "properties": {
             "hours": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             }
           },
-          "type": "object"
+          "type": ["null", "object"]
         },
         "SATURDAY": {
           "properties": {
@@ -529,7 +440,7 @@
               "type": "integer"
             }
           },
-          "type": "object"
+          "type": ["null", "object"]
         },
         "SUNDAY": {
           "properties": {
@@ -537,35 +448,35 @@
               "type": "integer"
             }
           },
-          "type": "object"
+          "type": ["null", "object"]
         },
         "THURSDAY": {
           "properties": {
             "hours": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             }
           },
-          "type": "object"
+          "type": ["null", "object"]
         },
         "TUESDAY": {
           "properties": {
             "hours": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             }
           },
-          "type": "object"
+          "type": ["null", "object"]
         },
         "WEDNESDAY": {
           "properties": {
             "hours": {
-              "type": ["null","string"]
+              "type": ["null", "string"]
             }
           },
-          "type": "object"
+          "type": ["null", "object"]
         }
       },
-      "type": "object"
+      "type": ["null", "object"]
     }
   },
-  "type": "object"
+  "type": ["null", "object"]
 }

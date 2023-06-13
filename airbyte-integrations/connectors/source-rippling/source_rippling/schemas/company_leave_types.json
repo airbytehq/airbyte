@@ -1,24 +1,22 @@
 {
   "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
   "properties": {
     "description": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "isUnpaid": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "leaveType": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   },
-  "type": "object"
+  "type": ["null", "object"]
 }

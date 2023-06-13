@@ -1,29 +1,30 @@
 {
   "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
   "properties": {
     "balances": {
       "items": {
         "properties": {
           "balanceWithFutureRequests": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "balanceWithoutFutureRequests": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "companyLeaveType": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "isBalanceUnlimited": {
-            "type": "boolean"
+            "type": ["null", "boolean"]
           }
         },
-        "type": "object"
+        "type": ["null", "object"]
       },
-      "type": "array"
+      "type": ["null", "array"]
     },
     "role": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   },
-  "type": "object"
+  "type": ["null", "object"]
 }
