@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.StandardSQLTypeName;
+import com.google.cloud.bigquery.TableDefinition;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
@@ -19,6 +20,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
@@ -42,23 +44,34 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   // This is super hacky, but in async land we don't need to make this decision at all. We just run T+D whenever we commit raw data.
   private final AtomicLong recordsSinceLastTDRun = new AtomicLong(0);
   private final ParsedCatalog<StandardSQLTypeName> catalog;
+  private final boolean use1s1t;
 
   public BigQueryRecordConsumer(final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
                                 final Consumer<AirbyteMessage> outputRecordCollector,
                                 final String datasetId,
                                 final BigQuerySqlGenerator sqlGenerator,
-                                final BigQueryDestinationHandler destinationHandler, final ParsedCatalog<StandardSQLTypeName> catalog) {
+                                final BigQueryDestinationHandler destinationHandler, final ParsedCatalog<StandardSQLTypeName> catalog,
+                                final boolean use1s1t) {
     this.uploaderMap = uploaderMap;
     this.outputRecordCollector = outputRecordCollector;
     this.datasetId = datasetId;
     this.sqlGenerator = sqlGenerator;
     this.destinationHandler = destinationHandler;
     this.catalog = catalog;
+    this.use1s1t = use1s1t;
   }
 
   @Override
-  protected void startTracked() {
+  protected void startTracked() throws InterruptedException {
     // todo (cgardens) - move contents of #write into this method.
+    for (StreamConfig<StandardSQLTypeName> stream : catalog.streams()) {
+      final Optional<TableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
+      if (existingTable.isEmpty()) {
+        destinationHandler.execute(sqlGenerator.createTable(stream));
+      } else {
+        destinationHandler.execute(sqlGenerator.alterTable(stream, existingTable.get()));
+      }
+    }
   }
 
   /**
@@ -96,7 +109,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     uploaderMap.get(pair).upload(message);
 
     // This is just modular arithmetic written in a complicated way. We want to run T+D every RECORDS_PER_TYPING_AND_DEDUPING_BATCH records.
-    if (recordsSinceLastTDRun.getAndUpdate(l -> (l + 1) % RECORDS_PER_TYPING_AND_DEDUPING_BATCH) == RECORDS_PER_TYPING_AND_DEDUPING_BATCH - 1) {
+    if (use1s1t && recordsSinceLastTDRun.getAndUpdate(l -> (l + 1) % RECORDS_PER_TYPING_AND_DEDUPING_BATCH) == RECORDS_PER_TYPING_AND_DEDUPING_BATCH - 1) {
       doTypingAndDeduping(pair);
     }
   }
