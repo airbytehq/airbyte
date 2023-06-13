@@ -41,4 +41,4 @@ As an optional field, you can also provide:
 
 | Version | Date       | Pull Request                                             | Subject    |
 | :------ | :--------- | :------------------------------------------------------- | :--------- |
-| 0.0.1   | 2023-06-12 | [27242](https://github.com/airbytehq/airbyte/pull/27242) | New source |
+| 0.1.0   | 2023-06-12 | [27242](https://github.com/airbytehq/airbyte/pull/27242) | New source |
