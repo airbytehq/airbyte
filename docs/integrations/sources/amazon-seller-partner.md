@@ -17,8 +17,10 @@ This page guides you through the process of setting up the Amazon Seller Partner
 
 ## Step 1: Set up Amazon Seller Partner
 
-[Register](https://developer-docs.amazon.com/sp-api/docs/registering-your-application) Amazon Seller Partner application.
-[Create](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html) IAM user.
+1. [Register](https://developer-docs.amazon.com/sp-api/docs/registering-your-application) Amazon Seller Partner application.
+    - The application must be published as Amazon does not allow external parties such as Airbyte to access draft applications.
+    - If using the connector on Airbyte Cloud, the Redirect URL must be set to `https://cloud.airbyte.com/auth_flow`
+2. [Create](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html) IAM user.
 
 ## Step 2: Set up the source connector in Airbyte
 

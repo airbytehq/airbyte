@@ -180,6 +180,8 @@ This produces the private key in pem format, and the public key remains in the s
 
 MySQL data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/MySqlSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
+Any database or table encoding combination of charset and collation is supported. Charset setting however will not be carried over to destination and data will be encoded with whatever is configured by the destination. 
+
 | MySQL Type                                | Resulting Type         | Notes                                                                                                          |
 |:------------------------------------------|:-----------------------|:---------------------------------------------------------------------------------------------------------------|
 | `bit(1)`                                  | boolean                |                                                                                                                |
@@ -202,7 +204,6 @@ MySQL data types are mapped to the following data types when synchronizing data.
 | `time`                                    | string                 | ISO 8601 time string. Values are in range between 00:00:00 and 23:59:59.                                       |
 | `year`                                    | year string            | [Doc](https://dev.mysql.com/doc/refman/8.0/en/year.html)                                                       |
 | `char`, `varchar` with non-binary charset | string                 |                                                                                                                |
-| `char`, `varchar` with binary charset     | base64 binary string   |                                                                                                                |
 | `tinyblob`                                | base64 binary string   |                                                                                                                |
 | `blob`                                    | base64 binary string   |                                                                                                                |
 | `mediumblob`                              | base64 binary string   |                                                                                                                |
@@ -261,6 +262,8 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 
 | Version | Date       | Pull Request                                                   | Subject                                                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.24  | 2023-05-25 | [26473](https://github.com/airbytehq/airbyte/pull/26473)       | CDC : Limit queue size                                                                                                                          |
+| 2.0.23  | 2023-05-24 | [25586](https://github.com/airbytehq/airbyte/pull/25586)       | No need to base64 encode strings on databases sorted with binary collation                                                                      |
 | 2.0.22  | 2023-05-22 | [25859](https://github.com/airbytehq/airbyte/pull/25859)       | Allow adding sessionVariables JDBC parameters                                                                                                   |
 | 2.0.21  | 2023-05-10 | [25460](https://github.com/airbytehq/airbyte/pull/25460)       | Handle a decimal number with 0 decimal points as an integer                                                                                     |
 | 2.0.20  | 2023-05-01 | [25740](https://github.com/airbytehq/airbyte/pull/25740)       | Disable index logging                                                                                                                           |

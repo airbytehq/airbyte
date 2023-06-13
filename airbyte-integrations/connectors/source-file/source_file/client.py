@@ -4,6 +4,7 @@
 
 
 import json
+import logging
 import sys
 import tempfile
 import traceback
@@ -30,6 +31,7 @@ from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
 from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
+from pandas.errors import ParserError
 from paramiko import SSHException
 from urllib3.exceptions import ProtocolError
 from yaml import safe_load
@@ -37,6 +39,9 @@ from yaml import safe_load
 from .utils import backoff_handler
 
 SSH_TIMEOUT = 60
+
+# Force the log level of the smart-open logger to ERROR - https://github.com/airbytehq/airbyte/pull/27157
+logging.getLogger("smart_open").setLevel(logging.ERROR)
 
 
 class ConfigurationError(Exception):
@@ -424,6 +429,10 @@ class Client:
                 error_msg = (
                     f"File {fp} can not be opened due to connection issues on provider side. Please check provided links and options"
                 )
+                logger.error(f"{error_msg}\n{traceback.format_exc()}")
+                raise ConfigurationError(error_msg) from err
+            except ParserError as err:
+                error_msg = f"File {fp} can not be parsed. Please check your reader_options. https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html"
                 logger.error(f"{error_msg}\n{traceback.format_exc()}")
                 raise ConfigurationError(error_msg) from err
 

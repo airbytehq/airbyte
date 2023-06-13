@@ -4,10 +4,10 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import List, Optional
+from typing import Dict, List, Optional
 from uuid import UUID
 
-from pydantic import AnyUrl, BaseModel, Extra, Field
+from pydantic import AnyUrl, BaseModel, Extra, Field, constr
 from typing_extensions import Literal
 
 
@@ -75,12 +75,39 @@ class JobType(BaseModel):
     )
 
 
+class VersionBreakingChange(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    upgradeDeadline: date = Field(
+        ...,
+        description="The deadline by which to upgrade before the breaking change takes effect.",
+    )
+    message: str = Field(
+        ..., description="Descriptive message detailing the breaking change."
+    )
+    migrationDocumentationUrl: Optional[AnyUrl] = Field(
+        None,
+        description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}/migration_guide#${version}",
+    )
+
+
 class JobTypeResourceLimit(BaseModel):
     class Config:
         extra = Extra.forbid
 
     jobType: JobType
     resourceRequirements: ResourceRequirements
+
+
+class ConnectorBreakingChanges(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    __root__: Dict[constr(regex=r"^\d+\.\d+\.\d+$"), VersionBreakingChange] = Field(
+        ...,
+        description="Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.",
+    )
 
 
 class ActorDefinitionResourceRequirements(BaseModel):
@@ -94,6 +121,17 @@ class ActorDefinitionResourceRequirements(BaseModel):
     jobSpecific: Optional[List[JobTypeResourceLimit]] = None
 
 
+class ConnectorReleases(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    breakingChanges: ConnectorBreakingChanges
+    migrationDocumentationUrl: Optional[AnyUrl] = Field(
+        None,
+        description="URL to documentation on how to migrate from the previous version to the current version. Defaults to ${documentationUrl}/migration_guide",
+    )
+
+
 class RegistryOverrides(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -105,7 +143,7 @@ class RegistryOverrides(BaseModel):
     supportsDbt: Optional[bool] = None
     supportsNormalization: Optional[bool] = None
     license: Optional[str] = None
-    supportUrl: Optional[AnyUrl] = None
+    documentationUrl: Optional[AnyUrl] = None
     connectorSubtype: Optional[str] = None
     allowedHosts: Optional[AllowedHosts] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
@@ -131,11 +169,11 @@ class Data(BaseModel):
     supportsDbt: Optional[bool] = None
     supportsNormalization: Optional[bool] = None
     license: str
-    supportUrl: AnyUrl
+    documentationUrl: AnyUrl
     githubIssueLabel: str
     maxSecondsBetweenMessages: Optional[int] = Field(
         None,
-        description="Number of seconds allowed between 2 airbyte protocol messages. The source will timeout if this delay is reach",
+        description="Maximum delay between 2 airbyte protocol messages, in second. The source will timeout if this delay is reached",
     )
     releaseDate: Optional[date] = Field(
         None,
@@ -148,8 +186,13 @@ class Data(BaseModel):
         "api", "database", "file", "custom", "message_queue", "unknown"
     ]
     releaseStage: Literal["alpha", "beta", "generally_available", "source"]
+    tags: Optional[List[str]] = Field(
+        None,
+        description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc.",
+    )
     registries: Optional[Registry] = None
     allowedHosts: Optional[AllowedHosts] = None
+    releases: Optional[ConnectorReleases] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
     suggestedStreams: Optional[SuggestedStreams] = None
     resourceRequirements: Optional[ActorDefinitionResourceRequirements] = None
