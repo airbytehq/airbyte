@@ -104,17 +104,7 @@ In a real sync, this record will be passed on to a destination like a warehouse.
 
 The request/response tabs are helpful during development to see which requests and responses your connector will send and receive from the API.
 
-### Declaring the record schema
-
-<div style={{ position: "relative", paddingBottom: "59.66850828729282%", height: 0 }}><iframe src="https://www.loom.com/embed/56899a92afe047eba461f32d19c8ca94" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%"}}></iframe></div>
-
-Each stream of a connector needs to declare how emitted records will look like (which properties do they have, what data types will be used, ...). During a sync, this information will be passed on to the destination to configure it correctly - for example a SQL database destination can use it to properly set up the destination table, assigning the right type to each column.
-
-By default, the stream schema is set to a simple object with unspecified properties. However, the connector builder can infer the schema based on the test read you just issued. To use the infered schema, switch to the "Detected schema" tab and click the "Import schema" button.
-
-The warning icon disappears indicating that the declared schema of your stream matches the test data.
-
-You can find more information about schema declaration on the [record processing concept page](./record-processing).
+The detected schema tab indicates the schema that was detected by analyzing the returned records; this detected schema is automatically set as the declared schema for this stream, which you can see by visiting the Declared schema tab in the center stream configuration view.
 
 ## Step 3 - Advanced configuration
 
@@ -153,7 +143,7 @@ The record should update to use USD as the base currency:
 
 ### Adding incremental reads
 
-<div style={{ position: "relative", paddingBottom: "59.66850828729282%", height: 0 }}><iframe src="https://www.loom.com/embed/223d28508682464481a433396cab2a3a" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%"}}></iframe></div>
+<div style={{ position: "relative", paddingBottom: "59.66850828729282%", height: 0 }}><iframe src="https://www.loom.com/embed/d52259513b664119a842809a4fd13c15" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%"}}></iframe></div>
 
 We now have a working implementation of a connector reading the latest exchange rates for a given currency.
 In this section, we'll update the source to read historical data instead of only reading the latest exchange rates.
@@ -163,34 +153,20 @@ According to the API documentation, we can read the exchange rate for a specific
 To configure your connector to request every day individually, follow these steps:
 * On top of the form, change the "Path URL" input to `/exchangerates_data/{{ stream_interval.start_time }}` to [inject](/connector-development/config-based/understanding-the-yaml-file/reference#variables) the date to fetch data for into the path of the request
 * Enable "Incremental sync" for the Rates stream
-* Set the "Cursor field" to `date` - this is the property in our records to check what date got synced last
-* Set the "Datetime format" to `%Y-%m-%d` to match the format of the date in the record returned from the API
-* Set the "Cursor granularity" to `P1D` to tell the connector the API only supports daily increments
+* Set the "Cursor Field" to `date` - this is the property in our records to check what date got synced last
+* Set the "Cursor Field Datetime Format" to `%Y-%m-%d` to match the format of the date in the record returned from the API
 * Leave start time to "User input" so the end user can set the desired start time for syncing data
 * Leave end time to "Now" to always sync exchange rates up to the current date
 * In a lot of cases the start and end date are injected into the request body or request parameters. However in the case of the exchange rate API it needs to be added to the path of the request, so disable the "Inject start/end time into outgoing HTTP request" options
-* Open the "Advanced" section and set "Step" to `P1D` to configure the connector to do one separate request per day by partitioning the dataset into daily intervals
-* Set a start date (like `2023-03-03`) in the "Testing values" menu
+* Open the "Advanced" section and enable "Split up interval" so that the connector will partition the dataset into chunks
+* Set "Step" to `P1D` to configure the connector to do one separate request per day
+* Set the "Cursor granularity" to `P1D` to tell the connector the API only supports daily increments
+* Set a start date (like `2023-06-11`) in the "Testing values" menu
 * Hit the "Test" button to trigger a new test read
 
 Now, you should see a dropdown above the records view that lets you step through the daily exchange rates along with the requests performed to fetch this data. Note that in the connector builder at most 5 partitions are requested to speed up testing. During a proper sync the full time range between your configured start date and the current day will be executed.
 
 When used in a connection, the connector will make sure exchange rates for the same day are not requested multiple times - the date of the last fetched record will be stored and the next scheduled sync will pick up from where the previous one stopped.
-
-You can find more information about incremental syncs on the [incremental sync concept page](./incremental-sync).
-
-### Adding transformations
-
-<div style={{ position: "relative", paddingBottom: "59.66850828729282%", height: 0 }}><iframe src="https://www.loom.com/embed/42ab3872c9284296b452a99e90b26738" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%"}}></iframe></div>
-
-Note that a warning icon should show next to the "Detected schema" tab - using the per-date endpoint instead of the latest endpoint slightly changed the shape of the records by adding a `historical` property. As we don't need this property in our destination, we can remove it using a transformation.
-
-To do so, follow these steps:
-* Enable the "Transformations" section
-* Set the "Path" to `historical`
-* Trigger a new test read
-
-The `historical` property in the records tab and the schema warning should disappear.
 
 You can find more information about incremental syncs on the [incremental sync concept page](./incremental-sync).
 
@@ -215,7 +191,6 @@ Congratulations! You just completed the following steps:
 * Configured a production-ready connector to extract currency exchange data from an HTTP-based API:
   * Configurable API key, start date and base currency
   * Incremental sync to keep the number of requests small
-  * Schema declaration to enable normalization in the destination
 * Tested whether the connector works correctly in the builder
 * Made the working connector available to configure sources in the workspace
 * Set up a connection using the published connector and synced data from the Exchange Rates API
@@ -226,8 +201,8 @@ This tutorial didn't go into depth about all features that can be used in the co
 * [Authentication](/connector-development/connector-builder-ui/authentication/)
 * [Record processing](/connector-development/connector-builder-ui/record-processing/)
 * [Pagination](/connector-development/connector-builder-ui/pagination/)
-* [Error handling](/connector-development/connector-builder-ui/error-handling/)
 * [Incremental sync](/connector-development/connector-builder-ui/incremental-sync/)
 * [Partitioning](/connector-development/connector-builder-ui/partitioning/)
+* [Error handling](/connector-development/connector-builder-ui/error-handling/)
 
 Not every possible API can be consumed by connectors configured in the connector builder. The [compatibility guide](/connector-development/connector-builder-ui/connector-builder-compatibility#oauth) can help determining whether another technology should be used to integrate an API with the Airbyte platform.

@@ -86,3 +86,15 @@ In the example above, the connector has three tags. Tags are used for two primar
 2. **Keywords for Searching**: Tags that begin with keyword: are used to make the connector more discoverable by adding searchable terms related to it. In the example above, the tags keyword:database and keyword:SQL can be used to find this connector when searching for `database` or `SQL`.
 
 These are just examples of how tags can be used. As a free-form field, the tags list can be customized as required for each connector. This flexibility allows tags to be a powerful tool for managing and discovering connectors.
+
+## The `icon` Field
+This denotes the name of the icon file for the connector. At this time the icon file is located in the `platform-internal` repository. So please ensure that the icon file is present in the `platform-internal` repository at [oss/airbyte-config/init/src/main/resources/icons](https://github.com/airbytehq/airbyte-platform-internal/tree/master/oss/airbyte-config/init/src/main/resources/icons) before adding the icon name to the `metadata.yaml` file.
+
+### Future Plans
+_⚠️ This property is in the process of being refactored to be a file in the connector folder_
+
+You may notice a `icon.svg` file in the connectors folder.
+
+This is because we are transitioning away from icons being stored in the `platform-internal` repository. Instead, we will be storing them in the connector folder itself. This will allow us to have a single source of truth for all connector-related information.
+
+This transition is currently in progress. Once it is complete, the `icon` field in the `metadata.yaml` file will be removed, and the `icon.svg` file will be used instead.
