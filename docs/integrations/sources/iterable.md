@@ -80,12 +80,13 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
+| 0.1.29  | 2023-05-24 | [26459](https://github.com/airbytehq/airbyte/pull/26459) | Added requests reading timeout 300 seconds                                 |
 | 0.1.28  | 2023-05-12 | [26014](https://github.com/airbytehq/airbyte/pull/26014) | Improve 500 handling for Events stream                                     |
 | 0.1.27  | 2023-04-06 | [24962](https://github.com/airbytehq/airbyte/pull/24962) | `UserList` stream when meet `500 - Generic Error` will skip a broken slice and keep going with the next one |
 | 0.1.26  | 2023-03-10 | [23938](https://github.com/airbytehq/airbyte/pull/23938) | Improve retry for `500 - Generic Error` |
 | 0.1.25  | 2023-03-07 | [23821](https://github.com/airbytehq/airbyte/pull/23821) | Added retry for `500 - Generic Error`, increased max attempts number to `6` to handle `ChunkedEncodingError` |
-| 0.1.24  | 2023-02-14 | [22979](https://github.com/airbytehq/airbyte/pull/22979) | Specified date formatting in specification  |
-| 0.1.23  | 2023-01-27 | [22011](https://github.com/airbytehq/airbyte/pull/22011) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
+| 0.1.24  | 2023-02-14 | [22979](https://github.com/airbytehq/airbyte/pull/22979) | Specified date formatting in specification                                 |
+| 0.1.23  | 2023-01-27 | [22011](https://github.com/airbytehq/airbyte/pull/22011) | Set `AvailabilityStrategy` for streams explicitly to `None`                |
 | 0.1.22  | 2022-11-30 | [19913](https://github.com/airbytehq/airbyte/pull/19913) | Replace pendulum.parse -> dateutil.parser.parse to avoid memory leak       |
 | 0.1.21  | 2022-10-27 | [18537](https://github.com/airbytehq/airbyte/pull/18537) | Improve streams discovery                                                  |
 | 0.1.20  | 2022-10-21 | [18292](https://github.com/airbytehq/airbyte/pull/18292) | Better processing of 401 and 429 errors                                    |

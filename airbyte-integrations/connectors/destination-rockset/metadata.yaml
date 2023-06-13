@@ -9,7 +9,7 @@ data:
   name: Rockset
   registries:
     cloud:
-      enabled: true
+      enabled: false # hide Rockset Destination https://github.com/airbytehq/airbyte-cloud/issues/2615
     oss:
       enabled: true
   releaseStage: alpha
