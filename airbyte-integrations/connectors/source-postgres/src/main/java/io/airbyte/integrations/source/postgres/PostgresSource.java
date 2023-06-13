@@ -56,6 +56,8 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
+import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
+import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.integrations.source.postgres.xmin.PostgresXminHandler;
 import io.airbyte.integrations.source.postgres.xmin.XminStateManager;
@@ -167,7 +169,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
     jdbcUrl.append(toJDBCQueryParams(sslParameters));
-    LOGGER.debug("jdbc url: {}", jdbcUrl.toString());
+//    jdbcUrl.append("&options=-c%20statement_timeout=15000");
+    LOGGER.info("jdbc url: {}", jdbcUrl.toString());
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
@@ -456,7 +459,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final PostgresXminHandler handler = new PostgresXminHandler(database, sourceOperations, getQuoteString(), xminStatus, xminStateManager);
       return handler.getIncrementalIterators(catalog, tableNameToTable, emittedAt);
     } else {
-      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
+      final CtidStateManager ctidStateManager = new CtidStateManager(stateManager.getRawStateMessages());
+      final PostgresCtidHandler handler = new PostgresCtidHandler(database, sourceOperations, getQuoteString(), null, ctidStateManager);
+      return handler.getIncrementalIterators(catalog, tableNameToTable, emittedAt);
+//      return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
   }
 
