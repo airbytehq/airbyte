@@ -181,3 +181,17 @@ def test_check_connector_https_url_only_all_connectors():
 def test_is_comment(tmp_path, file_name, line, expect_is_comment):
     file_path = tmp_path / file_name
     assert qa_checks.is_comment(line, file_path) is expect_is_comment
+
+def test_check_migration_guide(mocker, tmp_path):
+    # TODO
+    # mock metadata
+    # mock migration guide
+    # check that the expected errors occur
+    mock_metadata_file = Path(tmp_path / "doc.md")
+    with open(mock_documentation_file_path, "w") as f:
+        f.write("# Changelog\n0.0.0")
+
+    mocker.patch.object(qa_checks.Connector, "documentation_file_path", mock_documentation_file_path)
+
+    mocker.patch.object(qa_checks.Connector, "version", "0.0.0")
+    assert qa_checks.check_changelog_entry_is_updated(qa_checks.Connector("source-foobar"))
