@@ -254,7 +254,7 @@ jobs:
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
         with:
-          cache-key: ${{ secrets.CACHE_VERSION }}-connectors
+          cache-key: ${{ secrets.CACHE_VERSION }}-connectors-gradle-build
 
       - uses: actions/setup-java@v3
         with:
@@ -270,7 +270,7 @@ jobs:
           python-version: "3.9"
 
       - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
+        run: python3 -m pip install virtualenv --user
 
       - name: Install automake
         run: apt-get update && apt-get install -y automake build-essential libtool libtool-bin autoconf
