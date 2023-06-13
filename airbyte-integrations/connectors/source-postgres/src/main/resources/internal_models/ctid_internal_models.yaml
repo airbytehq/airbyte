@@ -10,6 +10,12 @@ definitions:
   CtidStatus:
     type: object
     properties:
+      ver:
+        description: version
+        type: integer
+      type:
+        description: state type
+        type: string
       ctid:
         description: ctid bookmark
         type: string

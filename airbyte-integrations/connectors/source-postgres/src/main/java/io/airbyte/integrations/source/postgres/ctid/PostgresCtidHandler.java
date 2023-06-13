@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.postgres.ctid;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -82,7 +83,9 @@ public class PostgresCtidHandler {
         final AutoCloseableIterator<JsonNode> queryStream = queryTableCtid(selectedDatabaseFields, table.getNameSpace(), table.getName());
         final AutoCloseableIterator<AirbyteMessage> recordIterator = getRecordIterator(queryStream, streamName, namespace, emmitedAt.toEpochMilli());
         final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
-        iteratorList.add(augmentWithLogs(recordAndMessageIterator, pair, streamName));
+        final AutoCloseableIterator<AirbyteMessage> logAugmented = augmentWithLogs(recordAndMessageIterator, pair, streamName);
+        iteratorList.add(swallowCtid(logAugmented, pair));
+
       }
     }
     return iteratorList;
@@ -169,8 +172,22 @@ public class PostgresCtidHandler {
         });
   }
 
-  private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessage> recordIterator, final AirbyteStreamNameNamespacePair pair) {
+  private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessage> recordIterator,
+      final AirbyteStreamNameNamespacePair pair) {
     return AutoCloseableIterators.transform(
         autoClosableIterator -> new CtidStateIterator(recordIterator, pair), recordIterator, pair);
   }
+
+  private AutoCloseableIterator<AirbyteMessage> swallowCtid(final AutoCloseableIterator<AirbyteMessage> iterator,
+      final AirbyteStreamNameNamespacePair pair) {
+    return AutoCloseableIterators.transform(iterator,
+        pair,
+        r -> {
+          if (r.getType() == Type.RECORD) {
+            ((ObjectNode) r.getRecord().getData()).remove("ctid");
+          }
+          return r;
+        });
+  }
+
 }

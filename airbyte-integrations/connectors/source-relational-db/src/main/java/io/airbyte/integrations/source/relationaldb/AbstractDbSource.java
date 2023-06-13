@@ -419,7 +419,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         r -> {
           final long count = recordCount.incrementAndGet();
           if (count % 1_000_000 == 0) {
-            LOGGER.info("Reading stream {}. Records read: {}", streamName, count);
+            LOGGER.info("Reading stream {}. /airbyte-config/init/: {}", streamName, count);
           }
           return r;
         });

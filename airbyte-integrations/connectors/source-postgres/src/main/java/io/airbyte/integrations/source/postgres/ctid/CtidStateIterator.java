@@ -1,5 +1,8 @@
 package io.airbyte.integrations.source.postgres.ctid;
 
+import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.CTID_STATUS_TYPE;
+import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.CTID_STATUS_VERSION;
+
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
@@ -42,7 +45,11 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
     if (messageIterator.hasNext()) {
       if (count % 1_000_000 == 0 && StringUtils.isNotBlank(lastCtid)) {
         LOGGER.info("saving ctid state with {}", this.lastCtid);
-        return CtidStateManager.createStateMessage(pair, new CtidStatus().withCtid(lastCtid));
+        return CtidStateManager.createStateMessage(pair,
+            new CtidStatus()
+                .withVer(CTID_STATUS_VERSION)
+                .withType(CTID_STATUS_TYPE)
+                .withCtid(lastCtid));
       }
       // Use try-catch to catch Exception that could occur when connection to the database fails
       try {
@@ -61,7 +68,11 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
-      return CtidStateManager.createStateMessage(pair, new CtidStatus().withCtid(lastCtid));
+      return CtidStateManager.createStateMessage(pair,
+          new CtidStatus()
+              .withVer(CTID_STATUS_VERSION)
+              .withType(CTID_STATUS_TYPE)
+              .withCtid(lastCtid));
     } else {
       return endOfData();
     }

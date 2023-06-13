@@ -18,9 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CtidStateManager {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(CtidStateManager.class);
-
+  public static final long CTID_STATUS_VERSION = 2;
+  public static final String CTID_STATUS_TYPE = "ctid";
   private final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus;
   private final static AirbyteStateMessage EMPTY_STATE = new AirbyteStateMessage()
       .withType(AirbyteStateType.STREAM)
@@ -41,6 +41,8 @@ public class CtidStateManager {
           final CtidStatus ctidStatus;
           try {
             ctidStatus = Jsons.object(stateMessage.getStream().getStreamState(), CtidStatus.class);
+            assert (ctidStatus.getVer() == CTID_STATUS_VERSION);
+            assert(ctidStatus.getType().equals(CTID_STATUS_TYPE)); // TODO: check here
           } catch (final IllegalArgumentException e) {
             throw new ConfigErrorException("Invalid per-stream state");
           }
