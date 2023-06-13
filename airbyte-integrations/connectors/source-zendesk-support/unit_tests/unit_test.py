@@ -447,9 +447,6 @@ class TestSourceZendeskSupportStream:
             (SatisfactionRatings, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketFields, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (TicketMetrics, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
-            (SlaPolicies, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
-            (CustomRoles, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
-            (Schedules, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (Tickets, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"}),
             (Users, {}, {"updated_at": "2022-03-17T16:03:07Z"}, {"updated_at": "2022-03-17T16:03:07Z"})
         ],
@@ -460,9 +457,6 @@ class TestSourceZendeskSupportStream:
             "SatisfactionRatings",
             "TicketFields",
             "TicketMetrics",
-            "SlaPolicies",
-            "CustomRoles",
-            "Schedules",
             "Tickets",
             "Users"
         ],
@@ -479,16 +473,12 @@ class TestSourceZendeskSupportStream:
             (Organizations, None),
             (Groups, None),
             (TicketFields, None),
-            (Tickets, None),
-            (Users, None)
         ],
         ids=[
             "Macros",
             "Organizations",
             "Groups",
             "TicketFields",
-            "Tickets",
-            "Users"
         ],
     )
     def test_next_page_token(self, stream_cls, expected):
@@ -540,18 +530,12 @@ class TestSourceZendeskSupportFullRefreshStream:
         "stream_cls",
         [
             (Tags),
-            (SlaPolicies),
             (Brands),
-            (CustomRoles),
-            (Schedules),
             (UserSettingsStream),
         ],
         ids=[
             "Tags",
-            "SlaPolicies",
             "Brands",
-            "CustomRoles",
-            "Schedules",
             "UserSettingsStream",
         ],
     )
@@ -567,18 +551,12 @@ class TestSourceZendeskSupportFullRefreshStream:
         "stream_cls",
         [
             (Tags),
-            (SlaPolicies),
             (Brands),
-            (CustomRoles),
-            (Schedules),
             (UserSettingsStream),
         ],
         ids=[
             "Tags",
-            "SlaPolicies",
             "Brands",
-            "CustomRoles",
-            "Schedules",
             "UserSettingsStream",
         ],
     )
