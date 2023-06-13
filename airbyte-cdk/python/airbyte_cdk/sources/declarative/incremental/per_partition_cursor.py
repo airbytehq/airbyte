@@ -157,8 +157,7 @@ class PerPartitionCursor(StreamSlicer):
                 )
         return {"states": states}
 
-    @staticmethod
-    def _get_state_for_partition(stream_state: StreamState, partition: StreamSlice) -> Any:
+    def _get_state_for_partition(self, stream_state: StreamState, partition: StreamSlice) -> Any:
         if PerPartitionCursor._is_new_state(stream_state):
             return None
         if "states" not in stream_state:
@@ -168,7 +167,7 @@ class PerPartitionCursor(StreamSlicer):
             if partition == state["partition"]:
                 return state["cursor"]
 
-        return None
+        return self._default_cursor_state
 
     @staticmethod
     def _is_new_state(stream_state):
