@@ -13,7 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator, TokenAuthenticator
 
-from .streams import Annotations, CohortMembers, Cohorts, Engage, Export, Funnels, FunnelsList, Revenue
+from .streams import Annotations, CohortMembers, Cohorts, Engage, Export, Funnels, Revenue
 from .testing import adapt_streams_if_testing, adapt_validate_if_testing
 from .utils import read_full_refresh
 

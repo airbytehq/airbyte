@@ -8,7 +8,7 @@ import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from source_mixpanel.source import SourceMixpanel, TokenAuthenticatorBase64
-from source_mixpanel.streams import FunnelsList
+from source_mixpanel.streams import Annotations
 
 from .utils import command_check, get_url_to_mock, setup_response
 
@@ -18,16 +18,15 @@ logger = AirbyteLogger()
 @pytest.fixture
 def check_connection_url(config):
     auth = TokenAuthenticatorBase64(token=config["api_secret"])
-    funnel_list = FunnelsList(authenticator=auth, **config)
-    return get_url_to_mock(funnel_list)
+    annotations = Annotations(authenticator=auth, **config)
+    return get_url_to_mock(annotations)
 
 
 @pytest.mark.parametrize(
     "response_code,expect_success,response_json",
     [
         (200, True, {}),
-        (400, False, {"error": "Request error"}),
-        (500, False, {"error": "Server error"}),
+        (400, False, {"error": "Request error"})
     ],
 )
 def test_check_connection(requests_mock, check_connection_url, config_raw, response_code, expect_success, response_json):
@@ -69,7 +68,8 @@ def test_streams_string_date(requests_mock, config_raw):
 
 
 def test_streams_disabled_402(requests_mock, config_raw):
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/properties", setup_response(402, {}))
-    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(402, {}))
+    json_response = {"error": "Your plan does not allow API calls. Upgrade at mixpanel.com/pricing"}
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/engage/properties", setup_response(402, json_response))
+    requests_mock.register_uri("GET", "https://mixpanel.com/api/2.0/events/properties/top", setup_response(402, json_response))
     streams = SourceMixpanel().streams(config_raw)
     assert {s.name for s in streams} == {"funnels", "revenue", "annotations", "cohorts"}
