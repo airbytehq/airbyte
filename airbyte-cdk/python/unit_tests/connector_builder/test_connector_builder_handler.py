@@ -354,6 +354,8 @@ def test_read():
         ],
         test_read_limit_reached=False,
         inferred_schema=None,
+        inferred_datetime_formats=None,
+        latest_config_update={}
     )
 
     expected_airbyte_message = AirbyteMessage(
@@ -367,6 +369,8 @@ def test_read():
                 ],
                 "test_read_limit_reached": False,
                 "inferred_schema": None,
+                "inferred_datetime_formats": None,
+                "latest_config_update": {}
             },
             emitted_at=1,
         ),
@@ -407,7 +411,9 @@ def test_read_returns_error_response(mock_from_exception):
                                           pages=[StreamReadPages(records=[], request=None, response=None)],
                                           slice_descriptor=None, state=None)],
                                       test_read_limit_reached=False,
-                                      inferred_schema=None)
+                                      inferred_schema=None,
+                                      inferred_datetime_formats={},
+                                      latest_config_update={})
 
     expected_message = AirbyteMessage(
         type=MessageType.RECORD,

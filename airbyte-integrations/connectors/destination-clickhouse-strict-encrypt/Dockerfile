@@ -8,6 +8,25 @@
 # Please reach out to the Connectors Operations team if you have any question.
 FROM airbyte/integration-base-java:dev AS build
 
+RUN yum install -y python3 python3-devel jq sshpass git && \
+  alternatives --install /usr/bin/python python /usr/bin/python3 60 && \
+  python -m ensurepip --upgrade && \
+  pip3 install dbt-clickhouse>=1.4.0
+
+# Luckily, none of normalization's files conflict with destination-clickhouse's files :)
+# We don't enforce that in any way, but hopefully we're only living in this state for a short time.
+COPY --from=airbyte/normalization-clickhouse:dev /airbyte /airbyte
+# Install python dependencies
+WORKDIR /airbyte/base_python_structs
+RUN pip3 install .
+WORKDIR /airbyte/normalization_code
+RUN pip3 install .
+WORKDIR /airbyte/normalization_code/dbt-template/
+# Download external dbt dependencies
+# amazon linux 2 isn't compatible with urllib3 2.x, so force 1.26.15
+RUN pip3 install "urllib3<2"
+RUN dbt deps
+
 WORKDIR /airbyte
 
 ENV APPLICATION destination-clickhouse-strict-encrypt
@@ -21,8 +40,12 @@ FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
 
 ENV APPLICATION destination-clickhouse-strict-encrypt
+ENV AIRBYTE_NORMALIZATION_INTEGRATION clickhouse
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.2.3
+LABEL io.airbyte.version=0.2.4
 LABEL io.airbyte.name=airbyte/destination-clickhouse-strict-encrypt
+
+ENV AIRBYTE_ENTRYPOINT "/airbyte/run_with_normalization.sh"
+ENTRYPOINT ["/airbyte/run_with_normalization.sh"]
