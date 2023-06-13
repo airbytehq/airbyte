@@ -74,12 +74,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
   }
 
-  private String jsonExtract(final AirbyteType type) {
+  private String extractJson(QuotedColumnId column, AirbyteType airbyteType, StandardSQLTypeName dialectType) {
     // TODO also handle oneOf types
-    if (type instanceof Struct || type instanceof Array || type instanceof UnsupportedOneOf || type == AirbyteProtocolType.UNKNOWN) {
-      return "JSON_QUERY";
+    if (airbyteType instanceof Struct || airbyteType instanceof Array || airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
+      return "JSON_QUERY(`_airbyte_data`, '$." + column.originalName() + "')";
     } else {
-      return "JSON_VALUE";
+      return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$." + column.originalName() + "') as " + dialectType.name() + ")";
     }
   }
 
@@ -188,8 +188,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     // e.g. this pk null check should only happen for incremental dedup
     String pkNullChecks = primaryKeys.stream().map(
         pk -> {
-          String jsonExtract = jsonExtract(streamColumns.get(pk).airbyteType());
-          return "AND SAFE_CAST(" + jsonExtract + "(`_airbyte_data`, '$." + pk.originalName() + "') as " + streamColumns.get(pk).dialectType().name() + ") IS NULL";
+          String jsonExtract = extractJson(pk, streamColumns.get(pk).airbyteType(), streamColumns.get(pk).dialectType());
+          return "AND " + jsonExtract + " IS NULL";
         }
     ).collect(joining("\n"));
 
@@ -216,21 +216,18 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   @VisibleForTesting
   String insertNewRecords(final QuotedStreamId id, final LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
     String columnCasts = streamColumns.entrySet().stream().map(
-        col -> {
-          String jsonExtract = jsonExtract(col.getValue().airbyteType());
-          return "SAFE_CAST(" + jsonExtract + "(`_airbyte_data`, '$." + col.getKey().originalName() + "') as " + col.getValue().dialectType().name() + ") as " + col.getKey()
-              .name() + ",";
-        }
+        col -> extractJson(col.getKey(), col.getValue().airbyteType(), col.getValue().dialectType()) + " as " + col.getKey().name() + ","
     ).collect(joining("\n"));
     String columnErrors = streamColumns.entrySet().stream().map(
         col -> new StringSubstitutor(Map.of(
             "raw_col_name", col.getKey().originalName(),
             "col_type", col.getValue().dialectType().name(),
-            "json_extract", jsonExtract(col.getValue().airbyteType())
+            "json_extract", extractJson(col.getKey(), col.getValue().airbyteType(), col.getValue().dialectType())
         )).replace(
+            // TODO check that json_extract is an object/array
             """
                 CASE
-                  WHEN (${json_extract}(`_airbyte_data`, '$.${raw_col_name}') IS NOT NULL) AND (SAFE_CAST(${json_extract}(`_airbyte_data`, '$.${raw_col_name}') as ${col_type}) IS NULL) THEN ["Problem with `${raw_col_name}`"]
+                  WHEN (JSON_VALUE(`_airbyte_data`, '$.${raw_col_name}') IS NOT NULL) AND (${json_extract} IS NULL) THEN ["Problem with `${raw_col_name}`"]
                   ELSE []
                 END"""
         )
@@ -269,13 +266,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
                 "raw_table_id", id.rawTableId(),
                 "raw_col_name", col.getKey().originalName(),
                 "col_type", col.getValue().dialectType().name(),
-                "json_extract", jsonExtract(col.getValue().airbyteType())
+                "json_extract", extractJson(col.getKey(), col.getValue().airbyteType(), col.getValue().dialectType())
             )).replace("""
                 `id` IN (
                   SELECT
-                    SAFE_CAST(${json_extract}(`_airbyte_data`, '$.${raw_col_name}') as ${col_type}) as id
+                    ${json_extract} as id
                   FROM ${raw_table_id}
-                  WHERE ${json_extract}(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+                  WHERE ${json_extract} IS NOT NULL
                 )""")
         ).collect(joining("\nAND "));
 
