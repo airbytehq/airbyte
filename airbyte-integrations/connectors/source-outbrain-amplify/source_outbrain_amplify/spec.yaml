@@ -1,4 +1,4 @@
-documentationUrl: 'https://amplifyv01.docs.apiary.io/#reference/performance-reporting'
+documentationUrl: 'https://docs.airbyte.com/integrations/sources/outbrain-amplify'
 connectionSpecification:
   $schema: 'http://json-schema.org/draft-07/schema#'
   title: Outbrain Amplify Spec
@@ -10,7 +10,6 @@ connectionSpecification:
       description: >-
         Credentials for making authenticated requests requires either
         username/password or access_token.
-      airbyte_secret: true
       default: {}
       order: 0
       type: object
@@ -40,7 +39,6 @@ connectionSpecification:
               type: string
               description: >-
                 Add Username for authentication.
-              airbyte_secret: true
             password:
               type: string
               description: >-
