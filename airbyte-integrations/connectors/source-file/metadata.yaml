@@ -5,7 +5,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
-  dockerImageTag: 0.3.10
+  dockerImageTag: 0.3.11
   dockerRepository: airbyte/source-file
   githubIssueLabel: source-file
   icon: file.svg
