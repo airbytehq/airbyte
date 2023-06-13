@@ -51,6 +51,7 @@ from .streams import (
     WorkflowJobs,
     WorkflowRuns,
     Workflows,
+    ContributorCommitActivity
 )
 from .utils import read_full_refresh
 
@@ -288,4 +289,5 @@ class SourceGithub(AbstractSource):
             workflow_runs_stream,
             WorkflowJobs(parent=workflow_runs_stream, **repository_args_with_start_date),
             TeamMemberships(parent=team_members_stream, **repository_args),
+            ContributorCommitActivity(**repository_args),
         ]

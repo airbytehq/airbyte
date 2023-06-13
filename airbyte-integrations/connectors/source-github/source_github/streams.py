@@ -360,6 +360,17 @@ class Collaborators(GithubStream):
     API docs: https://docs.github.com/en/rest/reference/repos#list-repository-collaborators
     """
 
+class ContributorCommitActivity(GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/metrics/statistics#get-all-contributor-commit-activity--status-codes
+    """
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/stats/contributors"
+    
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        for record in response.json():  # GitHub puts records in an array.
+            yield self.transform(record=record, stream_slice=stream_slice)
 
 class IssueLabels(GithubStream):
     """
