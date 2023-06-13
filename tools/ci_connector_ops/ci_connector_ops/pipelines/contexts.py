@@ -405,6 +405,7 @@ class ConnectorContext(PipelineContext):
         Returns:
             bool: Whether the teardown operation ran successfully.
         """
+        self.stopped_at = datetime.utcnow()
         self.state = self.determine_final_state(self.report, exception_value)
         if exception_value:
             self.logger.error("An error got handled by the ConnectorContext", exc_info=True)
