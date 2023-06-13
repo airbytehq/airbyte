@@ -83,11 +83,6 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
   String updateTable(String finalSuffix, final StreamConfig<DialectType> stream);
 
   /**
-   * Delete outdated raw records from the raw table.
-   */
-  String deleteOldRawRecords(final StreamConfig<DialectType> stream);
-
-  /**
    * Drop the previous final table, and rename the new final table to match the old final table.
    */
   String overwriteFinalTable(String finalSuffix, StreamConfig<DialectType> stream);

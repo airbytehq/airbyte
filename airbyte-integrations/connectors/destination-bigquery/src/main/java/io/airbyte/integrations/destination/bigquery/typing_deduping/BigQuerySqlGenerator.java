@@ -348,25 +348,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @Override
-  public String deleteOldRawRecords(final StreamConfig<StandardSQLTypeName> stream) {
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      // TODO maybe this should have an extracted_at / loaded_at condition for efficiency
-      // We don't need to filter out `_airbyte_data ->> '_ab_cdc_deleted_at' IS NULL` because we can run this sql before executing CDC deletes
-      return new StringSubstitutor(Map.of(
-          "raw_table_id", stream.id().rawTableId(),
-          "airbyte_raw_id", RAW_ID,
-          "final_table_id", stream.id().finalTableId()
-      )).replace("""
-          DELETE FROM ${raw_table_id} WHERE ${airbyte_raw_id} NOT IN (
-            SELECT ${airbyte_raw_id} FROM ${final_table_id}
-          )
-          """);
-    } else {
-      return "";
-    }
-  }
-
-  @Override
   public String overwriteFinalTable(final String finalSuffix, final StreamConfig<StandardSQLTypeName> stream) {
     if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE && finalSuffix.length() > 0) {
       return new StringSubstitutor(Map.of(
