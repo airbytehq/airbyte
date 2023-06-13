@@ -22,8 +22,9 @@ LANGUAGE_MAPPING = {
         ConnectorLanguage.JAVA: java_connectors.run_all_tests,
     },
     "run_code_format_checks": {
-        ConnectorLanguage.PYTHON: python_connectors.run_code_format_checks,
-        ConnectorLanguage.LOW_CODE: python_connectors.run_code_format_checks,
+        # TODO: re-enable when we have a code formatter
+        # ConnectorLanguage.PYTHON: python_connectors.run_code_format_checks,
+        # ConnectorLanguage.LOW_CODE: python_connectors.run_code_format_checks,
         # ConnectorLanguage.JAVA: java_connectors.run_code_format_checks
     },
 }
