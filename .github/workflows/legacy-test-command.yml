@@ -167,13 +167,6 @@ jobs:
         if: always()
         run: |
           run-qa-checks ${{ github.event.inputs.connector }}
-      - name: Report Status
-        if: github.event.inputs.gitref == 'master' && always()
-        run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}} ${{steps.qa_checks.outcome}}
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: "us-east-2"
       - name: Report Observability
         if: always()
         run: ./tools/status/report_observability.sh ${{ github.event.inputs.connector }} ${{github.run_id}} ${{ needs.start-test-runner.outputs.pipeline-start-timestamp }} ${{ github.event.inputs.gitref }} ${{ github.sha }} ${{steps.test.outcome}} ${{steps.qa_checks.outcome}}
