@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, Mapping, Optional, Tuple
+from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -17,6 +17,7 @@ class Hashabledict(dict):
     Note that those dicts shouldn't be modified has their hash would change. For our case, it should be fine as partitions can be seen as
     immutable.
     """
+
     def __hash__(self):
         return hash(self._to_hashable(self))
 
@@ -136,7 +137,9 @@ class PerPartitionCursor(StreamSlicer):
             self._init_state(stream_slice)
         else:
             try:
-                self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].update_cursor(stream_slice.cursor_slice, last_record)
+                self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].update_cursor(
+                    stream_slice.cursor_slice, last_record
+                )
             except KeyError as exception:
                 raise KeyError(
                     f"Partition {str(exception)} could not be found in current state based on the record. This is unexpected because "
