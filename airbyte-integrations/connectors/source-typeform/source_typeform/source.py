@@ -17,8 +17,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
-from requests.auth import AuthBase
 from pendulum.datetime import DateTime
+from requests.auth import AuthBase
 
 
 class TypeformStream(HttpStream, ABC):
@@ -250,7 +250,9 @@ class SourceTypeform(AbstractSource):
     def get_auth(self, config: MutableMapping) -> AuthBase:
         if config.get("access_token"):
             return TokenAuthenticator(token=config["access_token"])
-        return SingleUseRefreshTokenOauth2Authenticator(config, token_refresh_endpoint=f"https://api.typeform.com/oauth/token", scopes=["offline", "accounts:read", "forms:read"])
+        return SingleUseRefreshTokenOauth2Authenticator(
+            config, token_refresh_endpoint="https://api.typeform.com/oauth/token", scopes=["offline", "accounts:read", "forms:read"]
+        )
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
