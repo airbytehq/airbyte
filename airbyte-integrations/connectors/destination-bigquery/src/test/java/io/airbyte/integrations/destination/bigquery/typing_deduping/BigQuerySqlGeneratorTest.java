@@ -7,7 +7,8 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.QuotedColumnId;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.ColumnId;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.StreamId;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.LinkedHashMap;
@@ -150,22 +151,22 @@ class BigQuerySqlGeneratorTest {
   }
 
   private StreamConfig<StandardSQLTypeName> incrementalDedupStreamConfig() {
-    LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> columns = new LinkedHashMap<>();
-    columns.put(generator.quoteColumnId("id"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
-    columns.put(generator.quoteColumnId("updated_at"), new ParsedType<>(StandardSQLTypeName.TIMESTAMP, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
-    columns.put(generator.quoteColumnId("name"), new ParsedType<>(StandardSQLTypeName.STRING, AirbyteProtocolType.STRING));
+    LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> columns = new LinkedHashMap<>();
+    columns.put(generator.buildColumnId("id"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
+    columns.put(generator.buildColumnId("updated_at"), new ParsedType<>(StandardSQLTypeName.TIMESTAMP, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
+    columns.put(generator.buildColumnId("name"), new ParsedType<>(StandardSQLTypeName.STRING, AirbyteProtocolType.STRING));
 
     LinkedHashMap<String, AirbyteType> addressProperties = new LinkedHashMap<>();
     addressProperties.put("city", AirbyteProtocolType.STRING);
     addressProperties.put("state", AirbyteProtocolType.STRING);
-    columns.put(generator.quoteColumnId("address"), new ParsedType<>(StandardSQLTypeName.STRING, new Struct(addressProperties)));
+    columns.put(generator.buildColumnId("address"), new ParsedType<>(StandardSQLTypeName.STRING, new Struct(addressProperties)));
 
     return new StreamConfig<>(
-        new SqlGenerator.QuotedStreamId("public", "users", "airbyte", "public_users", "public", "users"),
+        new StreamId("public", "users", "airbyte", "public_users", "public", "users"),
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
-        List.of(generator.quoteColumnId("id")),
-        Optional.of(generator.quoteColumnId("updated_at")),
+        List.of(generator.buildColumnId("id")),
+        Optional.of(generator.buildColumnId("updated_at")),
         columns
     );
   }

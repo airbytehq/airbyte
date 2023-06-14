@@ -4,7 +4,7 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.QuotedStreamId;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.StreamId;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
   }
 
   @Override
-  public Optional<TableDefinition> findExistingTable(QuotedStreamId id) {
+  public Optional<TableDefinition> findExistingTable(StreamId id) {
     final Table table = bq.getTable(id.finalNamespace(), id.finalName());
     return Optional.ofNullable(table).map(Table::getDefinition);
   }

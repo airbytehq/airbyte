@@ -1,9 +1,8 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
-import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.QuotedColumnId;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.QuotedStreamId;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.ColumnId;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.StreamId;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
@@ -31,12 +30,12 @@ public class CatalogParser<DialectType> {
 
   }
 
-  public record StreamConfig<DialectType>(QuotedStreamId id,
+  public record StreamConfig<DialectType>(StreamId id,
                                           SyncMode syncMode,
                                           DestinationSyncMode destinationSyncMode,
-                                          List<QuotedColumnId> primaryKey,
-                                          Optional<QuotedColumnId> cursor,
-                                          LinkedHashMap<QuotedColumnId, ParsedType<DialectType>> columns) {
+                                          List<ColumnId> primaryKey,
+                                          Optional<ColumnId> cursor,
+                                          LinkedHashMap<ColumnId, ParsedType<DialectType>> columns) {
 
   }
 
@@ -56,7 +55,7 @@ public class CatalogParser<DialectType> {
         final String hash = DigestUtils.sha1Hex(originalStreamConfig.id().finalNamespace() + "&airbyte&" + originalName).substring(0, 3);
         final String newName = originalName + "_" + hash;
         streamConfigs.add(new StreamConfig<>(
-            sqlGenerator.quoteStreamId(originalNamespace, newName),
+            sqlGenerator.buildStreamId(originalNamespace, newName),
             originalStreamConfig.syncMode(),
             originalStreamConfig.destinationSyncMode(),
             originalStreamConfig.primaryKey(),
@@ -84,35 +83,35 @@ public class CatalogParser<DialectType> {
     if (stream.getPrimaryKey().stream().anyMatch(key -> key.size() > 1)) {
       throw new IllegalArgumentException("Only top-level primary keys are supported");
     }
-    final List<QuotedColumnId> primaryKey = stream.getPrimaryKey().stream().map(key -> sqlGenerator.quoteColumnId(key.get(0))).toList();
+    final List<ColumnId> primaryKey = stream.getPrimaryKey().stream().map(key -> sqlGenerator.buildColumnId(key.get(0))).toList();
 
     if (stream.getCursorField().size() > 1) {
       throw new IllegalArgumentException("Only top-level cursors are supported");
     }
-    final Optional<QuotedColumnId> cursor;
+    final Optional<ColumnId> cursor;
     if (stream.getCursorField().size() > 0) {
-      cursor = Optional.of(sqlGenerator.quoteColumnId(stream.getCursorField().get(0)));
+      cursor = Optional.of(sqlGenerator.buildColumnId(stream.getCursorField().get(0)));
     } else {
       cursor = Optional.empty();
     }
 
     // this code is really bad and I'm not convinced we need to preserve this behavior.
     // as with the tablename collisions thing above - we're trying to preserve legacy normalization's naming conventions here.
-    final LinkedHashMap<QuotedColumnId, ParsedType<DialectType>> columns = new LinkedHashMap<>();
+    final LinkedHashMap<ColumnId, ParsedType<DialectType>> columns = new LinkedHashMap<>();
     for (Entry<String, AirbyteType> entry : airbyteColumns.entrySet()) {
       final ParsedType<DialectType> dialectType = sqlGenerator.toDialectType(entry.getValue());
-      QuotedColumnId originalQuotedColumnId = sqlGenerator.quoteColumnId(entry.getKey());
-      QuotedColumnId quotedColumnId;
-      if (columns.keySet().stream().noneMatch(c -> c.canonicalName().equals(originalQuotedColumnId.canonicalName()))) {
+      ColumnId originalColumnId = sqlGenerator.buildColumnId(entry.getKey());
+      ColumnId columnId;
+      if (columns.keySet().stream().noneMatch(c -> c.canonicalName().equals(originalColumnId.canonicalName()))) {
         // None of the existing columns have the same name. We can add this new column as-is.
-        quotedColumnId = originalQuotedColumnId;
+        columnId = originalColumnId;
       } else {
         // One of the existing columns has the same name. We need to handle this collision.
         // Append _1, _2, _3, ... to the column name until we find one that doesn't collide.
         int i = 1;
         while (true) {
-          quotedColumnId = sqlGenerator.quoteColumnId(entry.getKey() + "_" + i);
-          String canonicalName = quotedColumnId.canonicalName();
+          columnId = sqlGenerator.buildColumnId(entry.getKey() + "_" + i);
+          String canonicalName = columnId.canonicalName();
           if (columns.keySet().stream().noneMatch(c -> c.canonicalName().equals(canonicalName))) {
             break;
           } else {
@@ -120,18 +119,18 @@ public class CatalogParser<DialectType> {
           }
         }
         // But we need to keep the original name so that we can still fetch it out of the JSON records.
-        quotedColumnId = new QuotedColumnId(
-            quotedColumnId.name(),
-            originalQuotedColumnId.originalName(),
-            quotedColumnId.canonicalName()
+        columnId = new ColumnId(
+            columnId.name(),
+            originalColumnId.originalName(),
+            columnId.canonicalName()
         );
       }
 
-      columns.put(quotedColumnId, dialectType);
+      columns.put(columnId, dialectType);
     }
 
     return new StreamConfig<>(
-        sqlGenerator.quoteStreamId(stream.getStream().getNamespace(), stream.getStream().getName()),
+        sqlGenerator.buildStreamId(stream.getStream().getNamespace(), stream.getStream().getName()),
         stream.getSyncMode(),
         stream.getDestinationSyncMode(),
         primaryKey,

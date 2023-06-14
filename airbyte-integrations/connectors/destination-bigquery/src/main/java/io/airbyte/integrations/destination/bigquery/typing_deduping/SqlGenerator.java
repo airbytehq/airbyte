@@ -6,15 +6,18 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParse
 public interface SqlGenerator<DialectTableDefinition, DialectType> {
 
   /**
-   * In general, callers should not directly instantiate this class. Use {@link #quoteStreamId(String, String)} instead.
+   * In general, callers should not directly instantiate this class. Use {@link #buildStreamId(String, String)} instead.
+   * <p>
+   * All names/namespaces are intended to be quoted, but do not explicitly contain quotes. For example, finalName might be "foo bar"; the caller is
+   * required to wrap that in quotes before using it in a query.
    *
-   * @param finalNamespace    the namespace where the final table will be created
-   * @param finalName         the name of the final table
-   * @param rawNamespace      the namespace where the raw table will be created (typically "airbyte")
-   * @param rawName           the name of the raw table (typically namespace_name, but may be different if there are collisions). There is no
-   *                          rawNamespace because we assume that we're writing raw tables to the airbyte namespace.
+   * @param finalNamespace the namespace where the final table will be created
+   * @param finalName      the name of the final table
+   * @param rawNamespace   the namespace where the raw table will be created (typically "airbyte")
+   * @param rawName        the name of the raw table (typically namespace_name, but may be different if there are collisions). There is no
+   *                       rawNamespace because we assume that we're writing raw tables to the airbyte namespace.
    */
-  record QuotedStreamId(String finalNamespace, String finalName, String rawNamespace, String rawName, String originalNamespace, String originalName) {
+  record StreamId(String finalNamespace, String finalName, String rawNamespace, String rawName, String originalNamespace, String originalName) {
 
     /**
      * Most databases/warehouses use a `schema.name` syntax to identify tables. This is a convenience method to generate that syntax.
@@ -34,20 +37,20 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
   }
 
   /**
-   * In general, callers should not directly instantiate this class. Use {@link #quoteColumnId(String)} instead.
+   * In general, callers should not directly instantiate this class. Use {@link #buildColumnId(String)} instead.
    *
    * @param name          the name of the column in the final table. Usable directly in a SQL query. For example, "`foo`" or "foo".
    * @param originalName  the name of the field in the raw JSON blob
    * @param canonicalName the name of the field according to the destination. Used for deduping. Useful if a destination warehouse handles columns
    *                      ignoring case, but preserves case in the table schema.
    */
-  record QuotedColumnId(String name, String originalName, String canonicalName) {
+  record ColumnId(String name, String originalName, String canonicalName) {
 
   }
 
-  QuotedStreamId quoteStreamId(String namespace, String name);
+  StreamId buildStreamId(String namespace, String name);
 
-  QuotedColumnId quoteColumnId(String name);
+  ColumnId buildColumnId(String name);
 
   ParsedType<DialectType> toDialectType(AirbyteType type);
 

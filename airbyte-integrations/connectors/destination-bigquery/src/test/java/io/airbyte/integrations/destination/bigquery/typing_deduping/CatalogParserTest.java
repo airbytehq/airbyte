@@ -8,8 +8,8 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedCatalog;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.QuotedColumnId;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.QuotedStreamId;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.ColumnId;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.StreamId;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -26,14 +26,14 @@ class CatalogParserTest {
   public void setup() {
     sqlGenerator = mock(SqlGenerator.class);
     // noop quoting logic
-    when(sqlGenerator.quoteColumnId(any())).thenAnswer(invocation -> {
+    when(sqlGenerator.buildColumnId(any())).thenAnswer(invocation -> {
       String fieldName = invocation.getArgument(0);
-      return new QuotedColumnId(fieldName, fieldName, fieldName);
+      return new ColumnId(fieldName, fieldName, fieldName);
     });
-    when(sqlGenerator.quoteStreamId(any(), any())).thenAnswer(invocation -> {
+    when(sqlGenerator.buildStreamId(any(), any())).thenAnswer(invocation -> {
       String namespace = invocation.getArgument(0);
       String name = invocation.getArgument(1);
-      return new QuotedStreamId(namespace, name, "airbyte", namespace + "_" + name, namespace, name);
+      return new StreamId(namespace, name, "airbyte", namespace + "_" + name, namespace, name);
     });
 
     parser = new CatalogParser<>(sqlGenerator);
@@ -62,13 +62,13 @@ class CatalogParserTest {
    */
   @Test
   public void finalNameCollision() {
-    when(sqlGenerator.quoteStreamId(any(), any())).thenAnswer(invocation -> {
+    when(sqlGenerator.buildStreamId(any(), any())).thenAnswer(invocation -> {
       String originalNamespace = invocation.getArgument(0);
       String originalName = (invocation.getArgument(1));
 
       // emulate quoting logic that causes a name collision
       String quotedName = originalName.replaceAll("bar", "");
-      return new QuotedStreamId(originalNamespace, quotedName, "airbyte", originalNamespace + "_" + quotedName, originalNamespace, originalName);
+      return new StreamId(originalNamespace, quotedName, "airbyte", originalNamespace + "_" + quotedName, originalNamespace, originalName);
     });
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         stream("a", "foobarfoo"),
@@ -88,12 +88,12 @@ class CatalogParserTest {
    */
   @Test
   public void columnNameCollision() {
-    when(sqlGenerator.quoteColumnId(any())).thenAnswer(invocation -> {
+    when(sqlGenerator.buildColumnId(any())).thenAnswer(invocation -> {
       String originalName = invocation.getArgument(0);
 
       // emulate quoting logic that causes a name collision
       String quotedName = originalName.replaceAll("bar", "");
-      return new QuotedColumnId(quotedName, originalName, quotedName);
+      return new ColumnId(quotedName, originalName, quotedName);
     });
     JsonNode schema = Jsons.deserialize("""
         {

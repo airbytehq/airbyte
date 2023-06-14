@@ -20,8 +20,8 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.QuotedColumnId;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.QuotedStreamId;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.ColumnId;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.StreamId;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.nio.file.Files;
@@ -44,14 +44,14 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest.class);
   private final static BigQuerySqlGenerator GENERATOR = new BigQuerySqlGenerator();
-  public static final Optional<QuotedColumnId> CURSOR = Optional.of(GENERATOR.quoteColumnId("updated_at"));
-  public static final List<QuotedColumnId> PRIMARY_KEY = List.of(GENERATOR.quoteColumnId("id"));
+  public static final Optional<ColumnId> CURSOR = Optional.of(GENERATOR.buildColumnId("updated_at"));
+  public static final List<ColumnId> PRIMARY_KEY = List.of(GENERATOR.buildColumnId("id"));
 
   private String testDataset;
-  private QuotedStreamId streamId;
+  private StreamId streamId;
 
   private static BigQuery bq;
-  private static LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> columns;
+  private static LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> columns;
 
   @BeforeAll
   public static void setup() throws Exception {
@@ -68,16 +68,16 @@ public class BigQuerySqlGeneratorIntegrationTest {
         .getService();
 
     columns = new LinkedHashMap<>();
-    columns.put(GENERATOR.quoteColumnId("id"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
-    columns.put(GENERATOR.quoteColumnId("updated_at"), new ParsedType<>(StandardSQLTypeName.TIMESTAMP, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
-    columns.put(GENERATOR.quoteColumnId("name"), new ParsedType<>(StandardSQLTypeName.STRING, AirbyteProtocolType.STRING));
+    columns.put(GENERATOR.buildColumnId("id"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
+    columns.put(GENERATOR.buildColumnId("updated_at"), new ParsedType<>(StandardSQLTypeName.TIMESTAMP, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
+    columns.put(GENERATOR.buildColumnId("name"), new ParsedType<>(StandardSQLTypeName.STRING, AirbyteProtocolType.STRING));
 
     LinkedHashMap<String, AirbyteType> addressProperties = new LinkedHashMap<>();
     addressProperties.put("city", AirbyteProtocolType.STRING);
     addressProperties.put("state", AirbyteProtocolType.STRING);
-    columns.put(GENERATOR.quoteColumnId("address"), new ParsedType<>(StandardSQLTypeName.STRING, new Struct(addressProperties)));
+    columns.put(GENERATOR.buildColumnId("address"), new ParsedType<>(StandardSQLTypeName.STRING, new Struct(addressProperties)));
 
-    columns.put(GENERATOR.quoteColumnId("age"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
+    columns.put(GENERATOR.buildColumnId("age"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
   }
 
   @BeforeEach
@@ -85,7 +85,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     testDataset = "bq_sql_generator_test_" + UUID.randomUUID().toString().replace("-", "_");
     // This is not a typical stream ID would look like, but we're just using this to isolate our tests to a specific dataset.
     // In practice, the final table would be testDataset.users, and the raw table would be airbyte.testDataset_users.
-    streamId = new QuotedStreamId(testDataset, "users_final", testDataset, "users_raw", testDataset, "users_final");
+    streamId = new StreamId(testDataset, "users_final", testDataset, "users_raw", testDataset, "users_final");
     LOGGER.info("Running in dataset {}", testDataset);
     bq.create(DatasetInfo.newBuilder(testDataset).build());
   }
@@ -118,7 +118,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     ).build());
 
     // This variable is declared outside of the transaction, so we need to do it manually here
-    final String sql = "DECLARE missing_pk_count INT64;" + GENERATOR.validatePrimaryKeys(streamId, List.of(new QuotedColumnId("id", "id", "id")), columns);
+    final String sql = "DECLARE missing_pk_count INT64;" + GENERATOR.validatePrimaryKeys(streamId, List.of(new ColumnId("id", "id", "id")), columns);
     final BigQueryException e = assertThrows(
         BigQueryException.class,
         () -> bq.query(QueryJobConfiguration.newBuilder(sql).build())
