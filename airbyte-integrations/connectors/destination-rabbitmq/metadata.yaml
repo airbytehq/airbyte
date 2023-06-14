@@ -10,9 +10,11 @@ data:
   name: RabbitMQ
   registries:
     cloud:
-      enabled: true
+      enabled: false # hide RabbitMQ Destination https://github.com/airbytehq/airbyte/issues/16315
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/destinations/rabbitmq
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/rabbitmq
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

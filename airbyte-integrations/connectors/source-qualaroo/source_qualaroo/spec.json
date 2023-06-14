@@ -36,13 +36,5 @@
         "description": "IDs of the surveys from which you'd like to replicate data. If left empty, data from all surveys to which you have access will be replicated."
       }
     }
-  },
-  "authSpecification": {
-    "auth_type": "oauth2.0",
-    "oauth2Specification": {
-      "rootObject": [],
-      "oauthFlowInitParameters": [],
-      "oauthFlowOutputParameters": [["token"], ["key"]]
-    }
   }
 }
