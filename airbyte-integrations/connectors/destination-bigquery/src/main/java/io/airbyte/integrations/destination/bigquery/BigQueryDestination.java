@@ -33,7 +33,8 @@ import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryReco
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.TypingAndDedupingFlag;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedCatalog;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.StreamId;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
@@ -228,7 +229,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   /**
-   * Duplicates the logic of setting a default namespace from {@link #getUploaderMap(BigQuery, JsonNode, ConfiguredAirbyteCatalog, String)}.
+   * Duplicates the logic of setting a default namespace from {@link #getUploaderMap(BigQuery, JsonNode, ConfiguredAirbyteCatalog, String, BigQuerySqlGenerator, boolean)}.
    */
   private ConfiguredAirbyteCatalog cloneAndModifyCatalogForFinalTables(final JsonNode config, final ConfiguredAirbyteCatalog catalog) {
     // Really hacky way to copy the catalog object, since we're mutating it here.
@@ -245,7 +246,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   protected Map<StreamWriteTargets, AbstractBigQueryUploader<?>> getUploaderMap(final BigQuery bigquery,
                                                                                 final JsonNode config,
                                                                                 final ConfiguredAirbyteCatalog catalog,
-                                                                                final String rawNamespaceOverride)
+                                                                                final String rawNamespaceOverride,
+                                                                                final BigQuerySqlGenerator sqlGenerator,
+                                                                                final boolean use1s1t)
       throws IOException {
     final Map<StreamWriteTargets, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
@@ -253,15 +256,27 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       if (StringUtils.isEmpty(stream.getNamespace())) {
         stream.setNamespace(BigQueryUtils.getDatasetId(config));
       }
+
+      final StreamId streamId1s1t = sqlGenerator.buildStreamId(stream.getNamespace(), stream.getName(), rawNamespaceOverride);
+
       String originalNamespace = stream.getNamespace();
-      if (TypingAndDedupingFlag.isDestinationV2()) {
+      if (use1s1t) {
+        // TODO this if-statement is probably redundant with streamId1s1t, i.e. we can just use streamId1s1t.rawNamespace()
         if (rawNamespaceOverride != null) {
           stream.setNamespace(rawNamespaceOverride);
         } else {
           stream.setNamespace(JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA);
         }
       }
+
       final String streamName = stream.getName();
+      String targetTableName;
+      if (use1s1t) {
+        targetTableName = streamId1s1t.rawName();
+      } else {
+        targetTableName = getTargetTableName(streamName);
+      }
+
       final UploaderConfig uploaderConfig = UploaderConfig
           .builder()
           .bigQuery(bigquery)
@@ -269,7 +284,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .config(config)
           .formatterMap(getFormatterMap(stream.getJsonSchema()))
           .tmpTableName(namingResolver.getTmpTableName(streamName))
-          .targetTableName(getTargetTableName(streamName))
+          .targetTableName(targetTableName)
           // This refers to whether this is BQ denormalized or not
           .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
           .build();
@@ -338,8 +353,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     } else {
       rawNamespaceOverride = null;
     }
-
-    final Map<StreamWriteTargets, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(bigquery, config, catalog, rawNamespaceOverride);
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator();
     LOGGER.info("Got raw catalog {}", catalogForTypingAndDeduping);
     final CatalogParser<StandardSQLTypeName> catalogParser;
@@ -348,13 +361,23 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     } else {
       catalogParser = new CatalogParser<>(sqlGenerator);
     }
+    final ParsedCatalog<StandardSQLTypeName> parsedCatalog = catalogParser.parseCatalog(catalogForTypingAndDeduping);
+
+    final Map<StreamWriteTargets, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(
+        bigquery,
+        config,
+        catalog,
+        rawNamespaceOverride,
+        sqlGenerator,
+        use1s1t);
+
     return new BigQueryRecordConsumer(
         writeConfigs,
         outputRecordCollector,
         BigQueryUtils.getDatasetId(config),
         sqlGenerator,
         new BigQueryDestinationHandler(bigquery),
-        catalogParser.parseCatalog(catalogForTypingAndDeduping),
+        parsedCatalog,
         use1s1t
     );
   }

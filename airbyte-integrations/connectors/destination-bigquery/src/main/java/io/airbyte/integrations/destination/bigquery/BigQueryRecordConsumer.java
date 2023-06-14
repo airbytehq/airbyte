@@ -37,6 +37,9 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   /**
    * Incredibly hacky record to get allow us to write raw tables to one namespace, and final tables to a different namespace.
+   * <p>
+   * This is effectively just {@link io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair} but with separate namespaces for raw and final.
+   * We're not adding a new field there because it's declared in protocol-models, and is painful to modify.
    */
   public record StreamWriteTargets(String finalNamespace, String rawNamespace, String name) {
 
