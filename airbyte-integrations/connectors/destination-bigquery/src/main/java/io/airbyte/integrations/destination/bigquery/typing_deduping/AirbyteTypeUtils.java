@@ -1,19 +1,26 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Array;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.OneOf;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
+import java.util.Objects;
+import java.util.Collections;
 
 public class AirbyteTypeUtils {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteTypeUtils.class);
   // Map from a protocol type to what other protocol types should take precedence over it if present in a OneOf
   private static final Map<AirbyteProtocolType, List<AirbyteProtocolType>> EXCLUDED_PROTOCOL_TYPES_MAP = ImmutableMap.of(
       AirbyteProtocolType.BOOLEAN, ImmutableList.of(AirbyteProtocolType.STRING, AirbyteProtocolType.NUMBER, AirbyteProtocolType.INTEGER),
@@ -38,17 +45,17 @@ public class AirbyteTypeUtils {
     if (node == null || !node.isTextual()) {
       return false;
     }
-    return node.toString().equals(type);
+    return node.equals(TextNode.valueOf(type));
   }
 
   private static boolean nodeIsOrContainsType(final JsonNode node, final String type) {
     if (node == null) {
       return false;
     } else if (node.isTextual()) {
-      return node.toString().equals(type);
+      return nodeIsType(node, type);
     } else if (node.isArray()) {
       for (final JsonNode element : node) {
-        if (element.toString().equals(type)) {
+        if (nodeIsType(element, type)) {
           return true;
         }
       }
@@ -60,6 +67,9 @@ public class AirbyteTypeUtils {
     final JsonNode propertyType = node.get("type");
     final JsonNode airbyteType = node.get("airbyte_type");
     final JsonNode format = node.get("format");
+    if (Stream.of(propertyType, airbyteType, format).allMatch(Objects::isNull)) {
+      return AirbyteProtocolType.matches(node.asText());
+    }
 
     if (nodeIsType(propertyType, "boolean")) {
       return AirbyteProtocolType.BOOLEAN;
@@ -121,9 +131,9 @@ public class AirbyteTypeUtils {
       return foundStructType;
     } else {
       for (final AirbyteProtocolType protocolType : ORDERED_PROTOCOL_TYPES) {
-        if (typePresenceMap.get(protocolType)) {
+        if (typePresenceMap.getOrDefault(protocolType, false)) {
           boolean foundExcludedTypes = false;
-          final List<AirbyteProtocolType> excludedTypes = EXCLUDED_PROTOCOL_TYPES_MAP.get(protocolType);
+          final List<AirbyteProtocolType> excludedTypes = EXCLUDED_PROTOCOL_TYPES_MAP.getOrDefault(protocolType, Collections.emptyList());
           for (final AirbyteProtocolType excludedType : excludedTypes) {
             if (typePresenceMap.get(excludedType)) {
               foundExcludedTypes = true;

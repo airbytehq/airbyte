@@ -45,19 +45,16 @@ public sealed interface AirbyteType permits Array, OneOf, Struct, UnsupportedOne
         });
         return new OneOf(options);
       }
-    } else {
-      final JsonNode oneOf = schema.get("oneOf");
-      if (oneOf != null) {
+    } else if (schema.get("oneOf") != null) {
         final List<AirbyteType> options = new ArrayList<>();
-        oneOf.elements().forEachRemaining(element -> {
+        schema.get("oneOf").elements().forEachRemaining(element -> {
           options.add(fromJsonSchema(element));
         });
         return new UnsupportedOneOf(options);
-      }
+      } else {
+      return AirbyteTypeUtils.getAirbyteProtocolType(schema);
     }
-
-    // TODO error case
-    return null;
+    return AirbyteTypeUtils.getAirbyteProtocolType(schema);
   }
 
   enum AirbyteProtocolType implements AirbyteType {
@@ -70,7 +67,16 @@ public sealed interface AirbyteType permits Array, OneOf, Struct, UnsupportedOne
     TIME_WITH_TIMEZONE,
     TIME_WITHOUT_TIMEZONE,
     DATE,
-    UNKNOWN
+    UNKNOWN;
+
+    public static AirbyteProtocolType matches(String type) {
+      try {
+        return AirbyteProtocolType.valueOf(type.toUpperCase());
+      } catch (IllegalArgumentException e) {
+        // TODO: Log exception
+        return UNKNOWN;
+      }
+    }
   }
 
   /**
