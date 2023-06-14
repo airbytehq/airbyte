@@ -137,6 +137,7 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                                  |
 |:---------|:-----------|:--------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------|
+| `1.0.2`  | 2023-06-13 | [27307](https://github.com/airbytehq/airbyte/pull/27307)                                                     | Fix `data_state` config typo |
 | `1.0.1`  | 2023-05-30 | [26746](https://github.com/airbytehq/airbyte/pull/26746)                                                      | Remove `authSpecification` from connector spec in favour of advancedAuth |
 | `1.0.0`  | 2023-05-24 | [26452](https://github.com/airbytehq/airbyte/pull/26452)                                                      | Add data_state parameter to specification                                |
 | `0.1.22` | 2023-03-20 | [22295](https://github.com/airbytehq/airbyte/pull/22295)                                                      | Update specification examples                                            |

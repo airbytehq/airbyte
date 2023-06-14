@@ -17,17 +17,19 @@ The Redshift source does not alter the schema present in your warehouse. Dependi
 | Feature | Supported | Notes |
 | :--- | :--- | :--- |
 | Full Refresh Sync | Yes |  |
-| Incremental Sync | Coming soon |  |
-| Replicate Incremental Deletes | Coming soon |  |
-| Logical Replication \(WAL\) | Coming soon |  |
+| Incremental Sync | Yes | Cursor-based, using `ORDER BY` on a user-defined cursor column |
+| Replicate Incremental Deletes | Not supported in Redshift |  |
+| Logical Replication \(WAL\) | Not supported in Redshift |  |
 | SSL Support | Yes |  |
-| SSH Tunnel Connection | Coming soon |  |
+| SSH Tunnel Connection | No |  |
 | Namespaces | Yes | Enabled by default |
 | Schema Selection | Yes | Multiple schemas may be used at one time. Keep empty to process all of existing schemas |
 
 #### Incremental Sync
 
-Incremental sync \(copying only the data that has changed\) for this source is coming soon.
+The Redshift source connector supports incremental syncs. To setup an incremental sync for a table in Redshift in the Airbyte UI, you must setup a [user-defined cursor field](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor) such as an `updated_at` column. The connector relies on this column to know which records were updated since the last sync it ran. See the [incremental sync docs](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history) for more information. 
+
+Defining a cursor field allows you to run incremental-append syncs. To run [incremental-dedupe](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history) syncs, you'll need to tell the connector which column(s) to use as a primary key. See the [incremental-dedupe sync docs](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history) for more information. 
 
 ## Getting started
 
