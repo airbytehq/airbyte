@@ -13,8 +13,6 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDest
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedCatalog;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -82,6 +80,9 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     this.catalog = catalog;
     this.use1s1t = use1s1t;
     this.rawNamespaceOverride = rawNamespaceOverride;
+
+    LOGGER.info("Got parsed catalog {}", catalog);
+    LOGGER.info("Got canonical stream IDs {}", uploaderMap.keySet());
   }
 
   @Override

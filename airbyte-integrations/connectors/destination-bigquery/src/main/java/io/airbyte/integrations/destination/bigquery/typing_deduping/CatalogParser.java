@@ -1,6 +1,5 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
-import com.google.cloud.bigquery.StandardSQLTypeName;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.ColumnId;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.StreamId;
