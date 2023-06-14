@@ -583,7 +583,7 @@ class Transfers(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/transfers/list
     """
-
+    use_cache = True
     cursor_field = "created"
 
     def path(self, **kwargs):
@@ -819,7 +819,7 @@ class Cards(IncrementalStripeStream):
 
 class SetupAttempts(IncrementalStripeStream, HttpSubStream):
     """
-    Docs: https://stripe.com/docs/api/setup_attempts/list?lang=curl
+    Docs: https://stripe.com/docs/api/setup_attempts/list
     """
 
     cursor_field = "created"
@@ -842,6 +842,7 @@ class SetupAttempts(IncrementalStripeStream, HttpSubStream):
             for rec in parent_records:
                 for slice in incremental_slices:
                     yield slice | rec
+            # yield from (slice | rec for rec in parent_records for slice in incremental_slices)
         else:
             yield None
 
@@ -862,6 +863,8 @@ class UsageRecords(StripeStream, HttpSubStream):
     Docs: https://stripe.com/docs/api/usage_records/subscription_item_summary_list
     """
 
+    primary_key = None
+
     def __init__(self, **kwargs):
         parent = SubscriptionItems(**kwargs)
         super().__init__(parent=parent, **kwargs)
@@ -875,3 +878,24 @@ class UsageRecords(StripeStream, HttpSubStream):
     ) -> str:
         subscription_item_id = stream_slice.get("parent", {}).get("id")
         return f"subscription_items/{subscription_item_id}/usage_record_summaries"
+
+
+class TransferReversals(StripeStream, HttpSubStream):
+    """
+    Docs: https://stripe.com/docs/api/transfer_reversals/list
+    """
+
+    def __init__(self, **kwargs):
+        parent = Transfers(**kwargs)
+        super().__init__(parent=parent, **kwargs)
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        transfer_id = stream_slice.get("parent", {}).get("id")
+        return f"transfers/{transfer_id}/reversals"
+

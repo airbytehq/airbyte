@@ -79,6 +79,7 @@ The Stripe source connector supports the following streams:
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
+- [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
 - [Accounts](https://stripe.com/docs/api/accounts/list) \(Incremental\)
 - [Setup Attempts](https://stripe.com/docs/api/setup_attempts/list) \(Incremental\)
 - [Usage Records](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)
