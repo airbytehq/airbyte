@@ -79,10 +79,12 @@ class AppsflyerStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         fields = add(self.main_fields, self.additional_fields) if self.additional_fields else self.main_fields
         csv_data = map(lambda x: x.decode("utf-8"), response.iter_lines())
+        header = next(csv_data, None)
         reader = csv.DictReader(csv_data, fields)
-
-        # Skip CSV Header
-        next(reader, {})
+        if header:
+            reader = csv.DictReader(csv_data, fieldnames=header.split(","))
+            # Skip CSV Header
+            next(reader, None)
 
         yield from reader
 
@@ -100,15 +102,23 @@ class AppsflyerStream(HttpStream, ABC):
 
         return is_bad_request and is_template_match
 
+    def is_app_event_report_limit_reached(self, response: requests.Response) -> bool:
+        template = "You've reached your maximum number"
+        is_bad_request = response.status_code == HTTPStatus.BAD_REQUEST
+        is_template_match = template in response.text
+
+        return is_bad_request and is_template_match
+
     def should_retry(self, response: requests.Response) -> bool:
         is_aggregate_reports_reached_limit = self.is_aggregate_reports_reached_limit(response)
         is_raw_data_reports_reached_limit = self.is_raw_data_reports_reached_limit(response)
-        is_rejected = is_aggregate_reports_reached_limit or is_raw_data_reports_reached_limit
+        is_app_event_report_limit_reached = self.is_app_event_report_limit_reached(response)
 
+        is_rejected = is_aggregate_reports_reached_limit or is_raw_data_reports_reached_limit or is_app_event_report_limit_reached
         return is_rejected or super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        if self.is_raw_data_reports_reached_limit(response):
+        if self.is_raw_data_reports_reached_limit(response) or self.is_app_event_report_limit_reached(response):
             now = pendulum.now("UTC")
             midnight = pendulum.tomorrow("UTC")
             wait_time = (midnight - now).seconds

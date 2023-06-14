@@ -30,8 +30,7 @@ def test_check_connection(mocker, timezone, http_status, response_text, expected
             "timezone": timezone,
         }
         logger_mock = MagicMock()
-        source.check_connection(logger_mock, config) == expected_result
-        assert True
+        assert source.check_connection(logger_mock, config) == expected_result
 
 
 def test_streams():
