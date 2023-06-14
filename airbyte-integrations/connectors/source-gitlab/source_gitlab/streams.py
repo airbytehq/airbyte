@@ -22,7 +22,7 @@ class GitlabStream(HttpStream, ABC):
     flatten_id_keys = []
     flatten_list_keys = []
     per_page = 50
-    non_retriable_codes: List[int] = (403,)
+    non_retriable_codes: List[int] = (403, 404)
 
     def __init__(self, api_url: str, **kwargs):
         super().__init__(**kwargs)
@@ -311,7 +311,6 @@ class Branches(GitlabChildStream):
     primary_key = "name"
     flatten_id_keys = ["commit"]
     flatten_parent_id = True
-    non_retriable_codes = (403, 404)
 
 
 class Commits(IncrementalGitlabChildStream):

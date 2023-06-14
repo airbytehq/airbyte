@@ -2,8 +2,8 @@ name: Connectors weekly build
 
 on:
   schedule:
-    # 3AM UTC on Sunday is 5AM EET, 4AM CET, 8PM PST.
-    - cron: "0 3 * * 0"
+    # 12PM UTC on Sunday is 2PM CEST, 3PM EEST, 5 PDT.
+    - cron: "0 12 * * 0"
   workflow_dispatch:
     inputs:
       runs-on:
@@ -65,5 +65,5 @@ jobs:
           CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
           CI_CONTEXT: "nightly_builds"
-          CI_JOB_KEY: "weekly_alpha_test"
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
+          CI_JOB_KEY: "weekly_alpha_test"

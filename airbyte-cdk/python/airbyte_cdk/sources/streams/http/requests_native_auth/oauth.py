@@ -6,7 +6,8 @@ from typing import Any, List, Mapping, Optional, Sequence, Tuple, Union
 
 import dpath
 import pendulum
-from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
+from airbyte_cdk.config_observation import create_connector_config_control_message, emit_configuration_as_airbyte_control_message
+from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
 
 
@@ -115,6 +116,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         refresh_token_config_path: Sequence[str] = ("credentials", "refresh_token"),
         token_expiry_date_config_path: Sequence[str] = ("credentials", "token_expiry_date"),
         token_expiry_date_format: Optional[str] = None,
+        message_repository: MessageRepository = None,
     ):
         """
 
@@ -144,6 +146,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         self._token_expiry_date_format = token_expiry_date_format
         self._refresh_token_name = refresh_token_name
         self._connector_config = connector_config
+        self._message_repository = message_repository
         super().__init__(
             token_refresh_endpoint,
             self.get_client_id(),
@@ -211,7 +214,11 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             self.access_token = new_access_token
             self.set_refresh_token(new_refresh_token)
             self.set_token_expiry_date(new_token_expiry_date)
-            emit_configuration_as_airbyte_control_message(self._connector_config)
+            if self._message_repository:
+                self._message_repository.emit_message(create_connector_config_control_message(self._connector_config))
+            else:
+                # FIXME emit_configuration_as_airbyte_control_message as been deprecated in favor of package airbyte_cdk.sources.message
+                emit_configuration_as_airbyte_control_message(self._connector_config)
         return self.access_token
 
     def refresh_access_token(self) -> Tuple[str, str, str]:
