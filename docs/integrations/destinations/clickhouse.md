@@ -80,6 +80,7 @@ Therefore, Airbyte ClickHouse destination will create tables and schemas using t
 
 | Version | Date       | Pull Request                                               | Subject                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------|
+| 0.2.4   | 2023-06-05 | [\#27036](https://github.com/airbytehq/airbyte/pull/27036) | Internal code change for future development (install normalization packages inside connector) |
 | 0.2.3   | 2023-04-04 | [\#24604](https://github.com/airbytehq/airbyte/pull/24604) | Support for destination checkpointing                               |
 | 0.2.2   | 2023-02-21 | [\#21509](https://github.com/airbytehq/airbyte/pull/21509) | Compatibility update with security patch for strict encrypt version |
 | 0.2.1   | 2022-12-06 | [\#19573](https://github.com/airbytehq/airbyte/pull/19573) | Update dbt version to 1.3.1                                         |

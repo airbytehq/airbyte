@@ -16,6 +16,27 @@
   {
     "type": "STREAM",
     "stream": {
+      "stream_state": { "date": 10000000000 },
+      "stream_descriptor": { "name": "authorizations" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "cards" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "cardholders" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
       "stream_state": { "created": 10000000000 },
       "stream_descriptor": { "name": "charges" }
     }
@@ -144,6 +165,13 @@
     "stream": {
       "stream_state": { "checkout_session_expires_at": 10000000000 },
       "stream_descriptor": { "name": "checkout_sessions_line_items" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "reviews" }
     }
   },
   {
