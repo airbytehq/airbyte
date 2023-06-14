@@ -372,16 +372,13 @@ class IntegrationRunnerTest {
   }
 
   @Test
-  void testInterruptOrphanThreadFailure() {
+  void testInterruptOrphanThread() {
     final List<Exception> caughtExceptions = new ArrayList<>();
     startSleepingThread(caughtExceptions, false);
-    assertThrows(IOException.class, () -> IntegrationRunner.watchForOrphanThreads(
-        () -> {
-          throw new IOException("random error");
-        },
+    IntegrationRunner.stopOrphanedThreads(
         Assertions::fail,
         3, TimeUnit.SECONDS,
-        10, TimeUnit.SECONDS));
+        10, TimeUnit.SECONDS);
     try {
       TimeUnit.SECONDS.sleep(15);
     } catch (final Exception e) {
@@ -396,17 +393,14 @@ class IntegrationRunnerTest {
   }
 
   @Test
-  void testNoInterruptOrphanThreadFailure() {
+  void testNoInterruptOrphanThread() {
     final List<Exception> caughtExceptions = new ArrayList<>();
     final AtomicBoolean exitCalled = new AtomicBoolean(false);
     startSleepingThread(caughtExceptions, true);
-    assertThrows(IOException.class, () -> IntegrationRunner.watchForOrphanThreads(
-        () -> {
-          throw new IOException("random error");
-        },
+    IntegrationRunner.stopOrphanedThreads(
         () -> exitCalled.set(true),
         3, TimeUnit.SECONDS,
-        10, TimeUnit.SECONDS));
+        10, TimeUnit.SECONDS);
     try {
       TimeUnit.SECONDS.sleep(15);
     } catch (final Exception e) {
