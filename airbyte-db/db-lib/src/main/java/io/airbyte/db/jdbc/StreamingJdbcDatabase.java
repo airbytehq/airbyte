@@ -103,8 +103,8 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
           streamingConfig.accept(resultSet, dataRow);
           action.accept(dataRow);
           return true;
-        } catch (final SQLException e) {
-          LOGGER.error("SQLState: {}, Message: {}", e.getSQLState(), e.getMessage());
+        } catch (final Exception e) {
+          LOGGER.error("SQLState: {}, Message: {}", e.getCause(), e.getMessage());
           streamException = e;
           isStreamFailed = true;
           // throwing an exception in tryAdvance() method lead to the endless loop in Spliterator and stream
