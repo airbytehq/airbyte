@@ -95,8 +95,9 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3.7.0   | 2023-06-12 | [27238](https://github.com/airbytehq/airbyte/pull/27238) | Add `Topups` stream; Add `Files` stream; Add `FileLinks` stream                                                                                      |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.8.0   | 2023-06-12 | [27238](https://github.com/airbytehq/airbyte/pull/27238) | Add `Topups` stream; Add `Files` stream; Add `FileLinks` stream                                                                                      |
+| 3.7.0   | 2023-06-06 | [27083](https://github.com/airbytehq/airbyte/pull/27083) | Add new Streams: Authorizations, Cardholders, Cards, Payment Methods, Reviews                                                                        |
 | 3.6.0   | 2023-05-24 | [23963](https://github.com/airbytehq/airbyte/pull/23963) | Add `ApplicationFeesRefunds` stream with parent `ApplicationFees`                                                                                    |
 | 3.5.0   | 2023-05-20 | [22859](https://github.com/airbytehq/airbyte/pull/22859) | Add stream `Early Fraud Warnings`                                                                                                                    |
 | 3.4.3   | 2023-05-10 | [25965](https://github.com/airbytehq/airbyte/pull/25965) | Fix Airbyte date-time data-types                                                                                                                     |
