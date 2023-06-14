@@ -22,6 +22,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import StreamData
@@ -130,6 +131,7 @@ class AbstractSource(Source, ABC):
                     yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.INCOMPLETE)
                     raise e
                 except Exception as e:
+                    yield from self._emit_queued_messages()
                     logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
                     logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
                     yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.INCOMPLETE)
@@ -198,6 +200,7 @@ class AbstractSource(Source, ABC):
                     logger.info(f"Marking stream {stream_name} as RUNNING")
                     # If we just read the first record of the stream, emit the transition to the RUNNING state
                     yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.RUNNING)
+            yield from self._emit_queued_messages()
             yield record
 
         logger.info(f"Read {record_counter} records from {stream_name} stream")
@@ -264,6 +267,7 @@ class AbstractSource(Source, ABC):
             record_counter = 0
             for message_counter, record_data_or_message in enumerate(records, start=1):
                 message = self._get_message(record_data_or_message, stream_instance)
+                yield from self._emit_queued_messages()
                 yield message
                 if message.type == MessageType.RECORD:
                     record = message.record
@@ -297,6 +301,11 @@ class AbstractSource(Source, ABC):
         :return:
         """
         return logger.isEnabledFor(logging.DEBUG)
+
+    def _emit_queued_messages(self):
+        if self.message_repository:
+            yield from self.message_repository.consume_queue()
+        return
 
     def _read_full_refresh(
         self,
@@ -357,3 +366,7 @@ class AbstractSource(Source, ABC):
             return record_data_or_message
         else:
             return stream_data_to_airbyte_message(stream.name, record_data_or_message, stream.transformer, stream.get_json_schema())
+
+    @property
+    def message_repository(self) -> Union[None, MessageRepository]:
+        return None
