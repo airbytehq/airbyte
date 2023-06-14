@@ -109,7 +109,7 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
           isStreamFailed = true;
           // throwing an exception in tryAdvance() method lead to the endless loop in Spliterator and stream
           // will never close
-          return false;
+          throw new RuntimeException(e);
         }
       }
 
