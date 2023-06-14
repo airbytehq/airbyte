@@ -81,7 +81,14 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
       return new ParsedType<>(StandardSQLTypeName.STRING, type);
     } else if (type instanceof final OneOf o) {
       // TODO choose the best data type + map to bigquery type
-      return null;
+      final AirbyteType typeWithPrecedence = AirbyteTypeUtils.chooseOneOfType(o);
+      final StandardSQLTypeName dialectType;
+      if ((typeWithPrecedence instanceof Struct) || (typeWithPrecedence instanceof Array)) {
+        dialectType = StandardSQLTypeName.STRING;
+      } else {
+        dialectType = toDialectType((AirbyteProtocolType) typeWithPrecedence);
+      }
+      return new ParsedType<>(dialectType, typeWithPrecedence);
     }
 
     // Literally impossible; AirbyteType is a sealed interface.
