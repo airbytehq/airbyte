@@ -70,7 +70,7 @@ These iterations are more conveniently achieved by remaining in the current dire
 10. Bump the acceptance test docker image version in `airbyte-integrations/bases/connector-acceptance-test/Dockerfile`
 11. Update the project changelog `airbyte-integrations/bases/connector-acceptance-test/CHANGELOG.md`
 12. Open a PR on our GitHub repository
-13. Run the unit test on the CI by running `/test connector=bases/connector-acceptance-test` in a GitHub comment
+13. Run the unit test on the CI by running `/legacy-test connector=bases/connector-acceptance-test` in a GitHub comment
 14. Publish the new acceptance test version if your PR is approved by running `/publish connector=bases/connector-acceptance-test auto-bump-version=false` in a GitHub comment
 15. Merge your PR
 
