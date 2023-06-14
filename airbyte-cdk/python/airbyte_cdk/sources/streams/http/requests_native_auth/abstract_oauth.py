@@ -82,7 +82,7 @@ class AbstractOauth2Authenticator(AuthBase):
             response = requests.request(
                 method="POST",
                 url=self.get_token_refresh_endpoint(),
-                data=self.build_refresh_request_body(),
+                json=self.build_refresh_request_body(),
                 headers={"Content-Type": "application/json"},
             )
             response.raise_for_status()
