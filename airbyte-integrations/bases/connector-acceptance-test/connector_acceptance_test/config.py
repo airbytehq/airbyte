@@ -175,7 +175,7 @@ class IncrementalConfig(BaseConfig):
     )
 
     class Config:
-       smart_union = True
+        smart_union = True
 
 
 class GenericTestConfig(GenericModel, Generic[TestConfigT]):
