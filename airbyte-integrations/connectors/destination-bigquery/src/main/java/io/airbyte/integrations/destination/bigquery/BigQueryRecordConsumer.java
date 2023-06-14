@@ -18,7 +18,8 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.TypingAndDed
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,21 +35,35 @@ import org.slf4j.LoggerFactory;
  */
 public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
 
+  /**
+   * Incredibly hacky record to get allow us to write raw tables to one namespace, and final tables to a different namespace.
+   */
+  public record StreamWriteTargets(String finalNamespace, String rawNamespace, String name) {
+
+    public static StreamWriteTargets fromRecordMessage(AirbyteRecordMessage msg, String finalNamespace) {
+      return new StreamWriteTargets(finalNamespace, msg.getNamespace(), msg.getStream());
+    }
+
+    public static StreamWriteTargets fromAirbyteStream(AirbyteStream stream, String finalNamespace) {
+      return new StreamWriteTargets(finalNamespace, stream.getNamespace(), stream.getName());
+    }
+  }
+
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordConsumer.class);
   public static final int RECORDS_PER_TYPING_AND_DEDUPING_BATCH = 10_000;
 
-  private final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap;
+  private final Map<StreamWriteTargets, AbstractBigQueryUploader<?>> uploaderMap;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final String datasetId;
   private final BigQuerySqlGenerator sqlGenerator;
   private final BigQueryDestinationHandler destinationHandler;
   private AirbyteMessage lastStateMessage = null;
-  // This is super hacky, but in async land we don't need to make this decision at all. We just run T+D whenever we commit raw data.
+  // This is super hacky, but in async land we don't need to make this decision at all. We'll just run T+D whenever we commit raw data.
   private final AtomicLong recordsSinceLastTDRun = new AtomicLong(0);
   private final ParsedCatalog<StandardSQLTypeName> catalog;
   private final boolean use1s1t;
 
-  public BigQueryRecordConsumer(final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
+  public BigQueryRecordConsumer(final Map<StreamWriteTargets, AbstractBigQueryUploader<?>> uploaderMap,
                                 final Consumer<AirbyteMessage> outputRecordCollector,
                                 final String datasetId,
                                 final BigQuerySqlGenerator sqlGenerator,
@@ -99,28 +114,28 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       if (StringUtils.isEmpty(message.getRecord().getNamespace())) {
         message.getRecord().setNamespace(datasetId);
       }
-      if (TypingAndDedupingFlag.isDestinationV2()) {
+      String finalNamespace = message.getRecord().getNamespace();
+      if (use1s1t) {
         message.getRecord().setNamespace(JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA);
       }
-      processRecord(message);
+      processRecord(finalNamespace, message);
     } else {
       LOGGER.warn("Unexpected message: {}", message.getType());
     }
   }
 
   /**
-   * Processes {@link io.airbyte.protocol.models.AirbyteRecordMessage} by writing Airbyte stream data
-   * to Big Query Writer
+   * Processes {@link io.airbyte.protocol.models.AirbyteRecordMessage} by writing Airbyte stream data to Big Query Writer
    *
    * @param message record to be written
    */
-  private void processRecord(final AirbyteMessage message) throws InterruptedException {
-    final var pair = AirbyteStreamNameNamespacePair.fromRecordMessage(message.getRecord());
-    uploaderMap.get(pair).upload(message);
+  private void processRecord(final String finalNamespace, final AirbyteMessage message) throws InterruptedException {
+    final var streamWriteTargets = StreamWriteTargets.fromRecordMessage(message.getRecord(), finalNamespace);
+    uploaderMap.get(streamWriteTargets).upload(message);
 
     // This is just modular arithmetic written in a complicated way. We want to run T+D every RECORDS_PER_TYPING_AND_DEDUPING_BATCH records.
     if (recordsSinceLastTDRun.getAndUpdate(l -> (l + 1) % RECORDS_PER_TYPING_AND_DEDUPING_BATCH) == RECORDS_PER_TYPING_AND_DEDUPING_BATCH - 1) {
-      doTypingAndDeduping(pair);
+      doTypingAndDeduping(streamWriteTargets);
     }
   }
 
@@ -128,10 +143,10 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   public void close(final boolean hasFailed) {
     LOGGER.info("Started closing all connections");
     final List<Exception> exceptionsThrown = new ArrayList<>();
-    uploaderMap.forEach((streamId, uploader) -> {
+    uploaderMap.forEach((streamWriteTargets, uploader) -> {
       try {
         uploader.close(hasFailed, outputRecordCollector, lastStateMessage);
-        doTypingAndDeduping(streamId);
+        doTypingAndDeduping(streamWriteTargets);
       } catch (final Exception e) {
         exceptionsThrown.add(e);
         LOGGER.error("Exception while closing uploader {}", uploader, e);
@@ -142,11 +157,14 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     }
   }
 
-  private void doTypingAndDeduping(final AirbyteStreamNameNamespacePair pair) throws InterruptedException {
+  private void doTypingAndDeduping(final StreamWriteTargets streamWriteTargets) throws InterruptedException {
     if (use1s1t) {
+      LOGGER.info("Attempting typing and deduping for {}", streamWriteTargets);
       final StreamConfig<StandardSQLTypeName> stream = catalog.streams()
           .stream()
-          .filter(s -> s.id().originalName().equals(pair.getName()) && s.id().originalNamespace().equals(pair.getNamespace()))
+          .filter(s -> s.id().originalName().equals(streamWriteTargets.name()) && s.id()
+              .originalNamespace()
+              .equals(streamWriteTargets.finalNamespace()))
           .findFirst()
           // Assume that if we're trying to do T+D on a stream, that stream exists in the catalog.
           .get();
