@@ -15,5 +15,5 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/kyve
+  documentationUrl: https://docs.airbyte.com/integrations/sources/kyve
 metadataSpecVersion: "1.0"
