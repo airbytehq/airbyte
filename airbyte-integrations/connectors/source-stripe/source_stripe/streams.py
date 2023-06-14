@@ -11,7 +11,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_stripe.availability_strategy import StripeSubStreamAvailabilityStrategy
 
@@ -532,6 +532,7 @@ class Subscriptions(IncrementalStripeStream):
     API docs: https://stripe.com/docs/api/subscriptions/list
     """
 
+    use_cache = True
     cursor_field = "created"
     status = "all"
 
@@ -549,6 +550,8 @@ class SubscriptionItems(StripeSubStream):
     """
     API docs: https://stripe.com/docs/api/subscription_items/list
     """
+
+    use_cache = True
 
     name = "subscription_items"
 
@@ -812,3 +815,63 @@ class Cards(IncrementalStripeStream):
 
     def path(self, **kwargs):
         return "issuing/cards"
+
+
+class SetupAttempts(IncrementalStripeStream, HttpSubStream):
+    """
+    Docs: https://stripe.com/docs/api/setup_attempts/list?lang=curl
+    """
+
+    cursor_field = "created"
+
+    def __init__(self, **kwargs):
+        parent = SetupIntents(**kwargs)
+        super().__init__(parent=parent, **kwargs)
+
+    def path(self, **kwargs) -> str:
+        return "setup_attempts"
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        incremental_slices = list(
+            IncrementalStripeStream.stream_slices(self, sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+        )
+        if incremental_slices:
+            parent_records = HttpSubStream.stream_slices(self, sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
+            for rec in parent_records:
+                for slice in incremental_slices:
+                    yield slice | rec
+        else:
+            yield None
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        setup_intent_id = stream_slice.get("parent", {}).get("id")
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params.update(setup_intent=setup_intent_id)
+        return params
+
+
+class UsageRecords(StripeStream, HttpSubStream):
+    """
+    Docs: https://stripe.com/docs/api/usage_records/subscription_item_summary_list
+    """
+
+    def __init__(self, **kwargs):
+        parent = SubscriptionItems(**kwargs)
+        super().__init__(parent=parent, **kwargs)
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        subscription_item_id = stream_slice.get("parent", {}).get("id")
+        return f"subscription_items/{subscription_item_id}/usage_record_summaries"
