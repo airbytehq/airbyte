@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.7
+Fix on supporting arrays in the state (ensure string are parsed as string and not int)
+
+## 0.10.6
+Supporting arrays in the state by allowing ints in cursor_paths
+
 ## 0.10.5
 Skipping test_catalog_has_supported_data_types as it is failing on too many connectors. Will first address globally the type/format problems at scale and then re-enable it.
 
