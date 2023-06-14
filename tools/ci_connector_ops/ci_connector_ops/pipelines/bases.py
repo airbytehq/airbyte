@@ -16,10 +16,9 @@ from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 import anyio
 import asyncer
 from anyio import Path
-from ci_connector_ops.pipelines.consts import PYPROJECT_TOML_FILE_PATH, LOCAL_REPORTS_PATH_ROOT
 from ci_connector_ops.pipelines.actions import remote_storage
+from ci_connector_ops.pipelines.consts import LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
 from ci_connector_ops.pipelines.utils import check_path_in_workdir, slugify, with_exit_code, with_stderr, with_stdout
-
 from ci_connector_ops.utils import console
 from dagger import Container, QueryError
 from rich.console import Group
@@ -286,7 +285,11 @@ class Report:
 
     @property
     def run_duration(self) -> int:  # noqa D102
-        return (self.created_at - self.pipeline_context.created_at).total_seconds()
+        return (self.pipeline_context.stopped_at - self.pipeline_context.started_at).total_seconds()
+
+    @property
+    def lead_duration(self) -> int:  # noqa D102
+        return (self.pipeline_context.stopped_at - self.pipeline_context.created_at).total_seconds()
 
     @property
     def remote_storage_enabled(self) -> bool:  # noqa D102
@@ -321,7 +324,7 @@ class Report:
         return json.dumps(
             {
                 "pipeline_name": self.pipeline_context.pipeline_name,
-                "run_timestamp": self.created_at.isoformat(),
+                "run_timestamp": self.pipeline_context.started_at.isoformat(),
                 "run_duration": self.run_duration,
                 "success": self.success,
                 "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
@@ -329,8 +332,8 @@ class Report:
                 "skipped_steps": [s.step.__class__.__name__ for s in self.skipped_steps],
                 "gha_workflow_run_url": self.pipeline_context.gha_workflow_run_url,
                 "pipeline_start_timestamp": self.pipeline_context.pipeline_start_timestamp,
-                "pipeline_end_timestamp": round(self.created_at.timestamp()),
-                "pipeline_duration": round(self.created_at.timestamp()) - self.pipeline_context.pipeline_start_timestamp,
+                "pipeline_end_timestamp": round(self.pipeline_context.stopped_at.timestamp()),
+                "pipeline_duration": round(self.pipeline_context.stopped_at.timestamp()) - self.pipeline_context.pipeline_start_timestamp,
                 "git_branch": self.pipeline_context.git_branch,
                 "git_revision": self.pipeline_context.git_revision,
                 "ci_context": self.pipeline_context.ci_context,
