@@ -52,7 +52,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
                                 final Consumer<AirbyteMessage> outputRecordCollector,
                                 final String datasetId,
                                 final BigQuerySqlGenerator sqlGenerator,
-                                final BigQueryDestinationHandler destinationHandler, final ParsedCatalog<StandardSQLTypeName> catalog,
+                                final BigQueryDestinationHandler destinationHandler,
+                                final ParsedCatalog<StandardSQLTypeName> catalog,
                                 final boolean use1s1t) {
     this.uploaderMap = uploaderMap;
     this.outputRecordCollector = outputRecordCollector;
@@ -145,7 +146,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     if (use1s1t) {
       final StreamConfig<StandardSQLTypeName> stream = catalog.streams()
           .stream()
-          .filter(s -> s.id().originalName().equals(pair.getName()) && s.id().originalName().equals(pair.getNamespace()))
+          .filter(s -> s.id().originalName().equals(pair.getName()) && s.id().originalNamespace().equals(pair.getNamespace()))
           .findFirst()
           // Assume that if we're trying to do T+D on a stream, that stream exists in the catalog.
           .get();

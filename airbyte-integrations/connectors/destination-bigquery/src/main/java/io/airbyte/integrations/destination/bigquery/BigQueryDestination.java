@@ -299,7 +299,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         sqlGenerator,
         new BigQueryDestinationHandler(bigquery),
         new CatalogParser<>(sqlGenerator).parseCatalog(catalog),
-        config.get(USE_1S1T_FORMAT).asBoolean());
+        config.hasNonNull(USE_1S1T_FORMAT) && config.get(USE_1S1T_FORMAT).asBoolean());
   }
 
   public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,

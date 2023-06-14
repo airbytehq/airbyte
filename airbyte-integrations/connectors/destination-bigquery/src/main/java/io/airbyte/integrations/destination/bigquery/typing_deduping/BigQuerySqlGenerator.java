@@ -18,6 +18,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.text.StringSubstitutor;
 
 public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, StandardSQLTypeName> {
@@ -174,7 +175,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     String dedupRawTable = "";
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       dedupRawTable = dedupRawTable(stream.id());
-      dedupFinalTable = dedupFinalTable(stream.id(), stream.primaryKey(), stream.columns());
+      dedupFinalTable = dedupFinalTable(stream.id(), stream.primaryKey(), stream.cursor(), stream.columns());
     }
     final String commitRawTable = commitRawTable(stream.id());
 
@@ -285,18 +286,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @VisibleForTesting
-  String dedupFinalTable(final QuotedStreamId id, final List<QuotedColumnId> primaryKey, final LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
+  String dedupFinalTable(final QuotedStreamId id, final List<QuotedColumnId> primaryKey, Optional<QuotedColumnId> cursor, final LinkedHashMap<QuotedColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
     final String pkList = primaryKey.stream().map(QuotedColumnId::name).collect(joining(","));
     final String pkCastList = streamColumns.entrySet().stream()
         .filter(e -> primaryKey.contains(e.getKey()))
         .map(e -> extractAndCast(e.getKey(), e.getValue().airbyteType(), e.getValue().dialectType()))
         .collect(joining(",\n "));
+    final String cursorOrdering = cursor.map(quotedColumnId -> quotedColumnId.name() + " DESC,").orElse("");
 
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(),
         "final_table_id", id.finalTableId(),
         "pk_list", pkList,
-        "pk_cast_list", pkCastList
+        "pk_cast_list", pkCastList,
+        "cursor_ordering", cursorOrdering
     )).replace(
         """
             DELETE FROM ${final_table_id}
@@ -304,7 +307,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
               `_airbyte_raw_id` IN (
                 SELECT `_airbyte_raw_id` FROM (
                   SELECT `_airbyte_raw_id`, row_number() OVER (
-                    PARTITION BY ${pk_list} ORDER BY `updated_at` DESC, `_airbyte_extracted_at` DESC
+                    PARTITION BY ${pk_list} ORDER BY ${cursor_ordering} `_airbyte_extracted_at` DESC
                   ) as row_number FROM ${final_table_id}
                 )
                 WHERE row_number != 1

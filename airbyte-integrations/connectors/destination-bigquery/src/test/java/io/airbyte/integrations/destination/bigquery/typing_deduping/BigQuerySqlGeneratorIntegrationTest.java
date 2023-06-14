@@ -44,6 +44,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest.class);
   private final static BigQuerySqlGenerator GENERATOR = new BigQuerySqlGenerator();
+  public static final Optional<QuotedColumnId> CURSOR = Optional.of(GENERATOR.quoteColumnId("updated_at"));
   public static final List<QuotedColumnId> PRIMARY_KEY = List.of(GENERATOR.quoteColumnId("id"));
 
   private String testDataset;
@@ -171,7 +172,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
             """)
     ).build());
 
-    final String sql = GENERATOR.dedupFinalTable(streamId, PRIMARY_KEY, columns);
+    final String sql = GENERATOR.dedupFinalTable(streamId, PRIMARY_KEY, CURSOR, columns);
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     // TODO more stringent asserts
@@ -296,7 +297,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
             """)
     ).build());
 
-    final String updateSql = GENERATOR.updateTable("", incrementalAppendStreamConfig());
+    final String updateSql = GENERATOR.updateTable("", fullRefreshAppendStreamConfig());
     bq.query(QueryJobConfiguration.newBuilder(updateSql).build());
 
     // TODO
@@ -326,7 +327,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
         PRIMARY_KEY,
-        Optional.of(GENERATOR.quoteColumnId("updated_at")),
+        CURSOR,
         columns
     );
   }
@@ -337,7 +338,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND,
         null,
-        Optional.of(GENERATOR.quoteColumnId("updated_at")),
+        CURSOR,
         columns
     );
   }

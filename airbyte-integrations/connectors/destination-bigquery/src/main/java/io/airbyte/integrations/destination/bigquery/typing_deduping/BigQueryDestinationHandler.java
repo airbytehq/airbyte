@@ -29,6 +29,9 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
 
   @Override
   public void execute(final String sql) throws InterruptedException {
+    if ("".equals(sql)) {
+      return;
+    }
     final UUID queryId = UUID.randomUUID();
     LOGGER.info("Executing sql {}: {}", queryId, sql);
     long start = System.currentTimeMillis();
