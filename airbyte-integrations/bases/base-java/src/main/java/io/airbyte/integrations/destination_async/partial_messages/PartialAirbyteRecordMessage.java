@@ -6,6 +6,8 @@ package io.airbyte.integrations.destination_async.partial_messages;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.util.Objects;
 
 public class PartialAirbyteRecordMessage {
@@ -16,7 +18,7 @@ public class PartialAirbyteRecordMessage {
   private String stream;
 
   @JsonProperty("data")
-  private Object data;
+  private JsonNode data;
 
   @JsonProperty("emitted_at")
   @JsonPropertyDescription("when the data was emitted from the source. epoch in millisecond.")
@@ -55,16 +57,16 @@ public class PartialAirbyteRecordMessage {
   }
 
   @JsonProperty("data")
-  public Object getData() {
+  public JsonNode getData() {
     return data;
   }
 
   @JsonProperty("data")
-  public void setData(final Object data) {
+  public void setData(final JsonNode data) {
     this.data = data;
   }
 
-  public PartialAirbyteRecordMessage withData(final Object data) {
+  public PartialAirbyteRecordMessage withData(final JsonNode data) {
     this.data = data;
     return this;
   }
