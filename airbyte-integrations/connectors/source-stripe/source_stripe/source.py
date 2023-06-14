@@ -93,7 +93,7 @@ class SourceStripe(AbstractSource):
             ExternalAccountBankAccounts(**args),
             ExternalAccountCards(**args),
             Files(**incremental_args),
-            FileLinks(**args),
+            FileLinks(**incremental_args),
             InvoiceItems(**incremental_args),
             InvoiceLineItems(**args),
             Invoices(**incremental_args),
