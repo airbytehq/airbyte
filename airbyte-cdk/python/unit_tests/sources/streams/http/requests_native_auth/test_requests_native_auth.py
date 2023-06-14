@@ -4,11 +4,13 @@
 
 import json
 import logging
+from unittest.mock import Mock
 
 import freezegun
 import pendulum
 import pytest
 import requests
+from airbyte_cdk.models import OrchestratorType, Type
 from airbyte_cdk.sources.streams.http.requests_native_auth import (
     BasicHttpAuthenticator,
     MultipleTokenAuthenticator,
@@ -243,7 +245,7 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
             ("date_format", "2023-04-04", "YYYY-MM-DD", "2023-04-04T00:00:00+00:00"),
         ]
     )
-    def test_get_access_token(self, test_name, expires_in_value, expiry_date_format, expected_expiry_date, capsys, mocker, connector_config):
+    def test_given_no_message_repository_get_access_token(self, test_name, expires_in_value, expiry_date_format, expected_expiry_date, capsys, mocker, connector_config):
         authenticator = SingleUseRefreshTokenOauth2Authenticator(
             connector_config,
             token_refresh_endpoint="foobar",
@@ -269,6 +271,30 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         captured = capsys.readouterr()
         assert not captured.out
         assert authenticator.access_token == access_token == "new_access_token"
+
+    def test_given_message_repository_when_get_access_token_emit_message(self, mocker, connector_config):
+        message_repository = Mock()
+        authenticator = SingleUseRefreshTokenOauth2Authenticator(
+            connector_config,
+            token_refresh_endpoint="foobar",
+            client_id=connector_config["credentials"]["client_id"],
+            client_secret=connector_config["credentials"]["client_secret"],
+            token_expiry_date_format="YYYY-MM-DD",
+            message_repository=message_repository,
+        )
+        authenticator.refresh_access_token = mocker.Mock(return_value=("new_access_token", "2023-04-04", "new_refresh_token"))
+        authenticator.token_has_expired = mocker.Mock(return_value=True)
+
+        authenticator.get_access_token()
+
+        emitted_message = message_repository.emit_message.call_args_list[0].args[0]
+        assert emitted_message.type == Type.CONTROL
+        assert emitted_message.control.type == OrchestratorType.CONNECTOR_CONFIG
+        assert emitted_message.control.connectorConfig.config["credentials"]["access_token"] == "new_access_token"
+        assert emitted_message.control.connectorConfig.config["credentials"]["refresh_token"] == "new_refresh_token"
+        assert emitted_message.control.connectorConfig.config["credentials"]["token_expiry_date"] == "2023-04-04T00:00:00+00:00"
+        assert emitted_message.control.connectorConfig.config["credentials"]["client_id"] == "my_client_id"
+        assert emitted_message.control.connectorConfig.config["credentials"]["client_secret"] == "my_client_secret"
 
     def test_refresh_access_token(self, mocker, connector_config):
         authenticator = SingleUseRefreshTokenOauth2Authenticator(
