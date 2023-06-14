@@ -33,5 +33,5 @@ You should now have all the requirements needed to configure Timeplus as a desti
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
-| 0.4.0   | 2023-06-08 | [21226](https://github.com/airbytehq/airbyte/pull/21226) | Destination Timeplus                            |
+| 0.1.0   | 2023-06-14 | [21226](https://github.com/airbytehq/airbyte/pull/21226) | Destination Timeplus                            |
 
