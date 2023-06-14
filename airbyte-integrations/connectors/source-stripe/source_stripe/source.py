@@ -47,9 +47,10 @@ from source_stripe.streams import (
     SubscriptionItems,
     Subscriptions,
     SubscriptionSchedule,
+    Transactions,
     Transfers,
     TransferReversals,
-    UsageRecords,
+    UsageRecords
 )
 
 
@@ -104,6 +105,7 @@ class SourceStripe(AbstractSource):
             SubscriptionItems(**args),
             Subscriptions(**incremental_args),
             SubscriptionSchedule(**incremental_args),
+            Transactions(**incremental_args),
             Transfers(**incremental_args),
             TransferReversals(**args),
             ExternalAccountBankAccounts(**args),

@@ -187,5 +187,12 @@
       "stream_state": { "created": 10000000000 },
       "stream_descriptor": { "name": "setup_attempts" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "transactions" }
+    }
   }
 ]

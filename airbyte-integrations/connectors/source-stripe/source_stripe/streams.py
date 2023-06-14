@@ -899,3 +899,13 @@ class TransferReversals(StripeStream, HttpSubStream):
         transfer_id = stream_slice.get("parent", {}).get("id")
         return f"transfers/{transfer_id}/reversals"
 
+
+class Transactions(IncrementalStripeStream):
+    """
+    Docs: https://stripe.com/docs/api/issuing/transactions/list
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "issuing/transactions"
