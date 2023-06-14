@@ -3,14 +3,15 @@
 #
 
 from http import HTTPStatus
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 import requests
-
 from source_kyve.source import KYVEStream as KyveStream
+
 from . import config, pool_data
 from .test_data import MOCK_RESPONSE_BINARY
+
 
 @pytest.fixture
 def patch_base_class(mocker):
@@ -18,6 +19,7 @@ def patch_base_class(mocker):
     mocker.patch.object(KyveStream, "path", "v0/example_endpoint")
     mocker.patch.object(KyveStream, "primary_key", "test_primary_key")
     mocker.patch.object(KyveStream, "__abstractmethods__", set())
+
 
 @pytest.mark.parametrize(
     'stream_offset,stream_offset_context,next_page_token_value',

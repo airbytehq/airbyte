@@ -5,6 +5,7 @@
 from unittest.mock import MagicMock
 
 from source_kyve.source import SourceKyve
+
 from . import config
 
 

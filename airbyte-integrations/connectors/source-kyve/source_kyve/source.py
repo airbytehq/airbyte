@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from copy import deepcopy
 from typing import Any, List, Mapping, Tuple
 
@@ -9,7 +13,6 @@ from .stream import KYVEStream
 
 
 class SourceKyve(AbstractSource):
-
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         # check that pools and bundles are the same length
         pools = config.get("pool_ids").split(",")

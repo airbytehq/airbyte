@@ -1,8 +1,12 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import importlib
 import os
 
 import jsonref
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader, JsonFileLoader, resolve_ref_links
+from airbyte_cdk.sources.utils.schema_helpers import JsonFileLoader, ResourceSchemaLoader, resolve_ref_links
 
 
 # We custom implemented the class to remove the requirement that $ref's have to be resolved from the 'shared folder'
