@@ -46,8 +46,11 @@ The Stripe source connector supports the following streams:
 
 - [Application Fees](https://stripe.com/docs/api/application_fees) \(Incremental\)
 - [Application Fee Refunds](https://stripe.com/docs/api/fee_refunds/list)
+- [Authorizations](https://stripe.com/docs/api/issuing/authorizations/list) \(Incremental\)
 - [Balance Transactions](https://stripe.com/docs/api/balance_transactions/list) \(Incremental\)
 - [Bank accounts](https://stripe.com/docs/api/customer_bank_accounts/list)
+- [Cardholders](https://stripe.com/docs/api/issuing/cardholders/list) \(Incremental\)
+- [Cards](https://stripe.com/docs/api/issuing/cards/list) \(Incremental\)
 - [Charges](https://stripe.com/docs/api/charges/list) \(Incremental\)
   - The `amount` column defaults to the smallest currency unit. (See [charge object](https://stripe.com/docs/api/charges/object) for more details)
 - [Checkout Sessions](https://stripe.com/docs/api/checkout/sessions/list)
@@ -63,12 +66,14 @@ The Stripe source connector supports the following streams:
 - [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
 - [Invoice Line Items](https://stripe.com/docs/api/invoices/invoice_lines)
 - [Invoices](https://stripe.com/docs/api/invoices/list) \(Incremental\)
-- [PaymentIntents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
+- [Payment Intents](https://stripe.com/docs/api/payment_intents/list) \(Incremental\)
+- [Payment Methods](https://stripe.com/docs/api/payment_methods/list)
 - [Payouts](https://stripe.com/docs/api/payouts/list) \(Incremental\)
 - [Promotion Code](https://stripe.com/docs/api/promotion_codes/list) \(Incremental\)
 - [Plans](https://stripe.com/docs/api/plans/list) \(Incremental\)
 - [Products](https://stripe.com/docs/api/products/list) \(Incremental\)
 - [Refunds](https://stripe.com/docs/api/refunds/list) \(Incremental\)
+- [Reviews](https://stripe.com/docs/api/radar/reviews/list) \(Incremental\)
 - [SetupIntents](https://stripe.com/docs/api/setup_intents/list) \(Incremental\)
 - [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
@@ -87,9 +92,9 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 3.6.0   | 2023-05-24 | [23963](https://github.com/airbytehq/airbyte/pull/)      | Add `ApplicationFeesRefunds` stream with parent `ApplicationFees`                                                                                    |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.7.0   | 2023-06-06 | [27083](https://github.com/airbytehq/airbyte/pull/27083) | Add new Streams: Authorizations, Cardholders, Cards, Payment Methods, Reviews                                                                        |
+| 3.6.0   | 2023-05-24 | [25893](https://github.com/airbytehq/airbyte/pull/25893) | Add `ApplicationFeesRefunds` stream with parent `ApplicationFees`                                                                                    |
 | 3.5.0   | 2023-05-20 | [22859](https://github.com/airbytehq/airbyte/pull/22859) | Add stream `Early Fraud Warnings`                                                                                                                    |
 | 3.4.3   | 2023-05-10 | [25965](https://github.com/airbytehq/airbyte/pull/25965) | Fix Airbyte date-time data-types                                                                                                                     |
 | 3.4.2   | 2023-05-04 | [25795](https://github.com/airbytehq/airbyte/pull/25795) | Added `CDK TypeTransformer` to guarantee declared JSON Schema data-types                                                                             |
