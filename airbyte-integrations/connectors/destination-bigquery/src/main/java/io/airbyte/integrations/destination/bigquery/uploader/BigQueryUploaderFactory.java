@@ -31,8 +31,12 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BigQueryUploaderFactory {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryUploaderFactory.class);
 
   private static final String CONFIG_ERROR_MSG = """
                                                     Failed to write to destination schema.
@@ -49,6 +53,11 @@ public class BigQueryUploaderFactory {
                                                    """;
 
   public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
+      throws IOException {
+    return getUploader(uploaderConfig, false);
+  }
+
+  public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig, boolean skipTmpRawTable)
       throws IOException {
     final String schemaName = BigQueryUtils.getSchema(uploaderConfig.getConfig(), uploaderConfig.getConfigStream());
     final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());
@@ -88,7 +97,8 @@ public class BigQueryUploaderFactory {
             uploaderConfig.getBigQuery(),
             syncMode,
             datasetLocation,
-            recordFormatter));
+            recordFormatter,
+            skipTmpRawTable));
   }
 
   private static AbstractGscBigQueryUploader<?> getGcsBigQueryUploader(
@@ -144,10 +154,13 @@ public class BigQueryUploaderFactory {
                                                                   final BigQuery bigQuery,
                                                                   final JobInfo.WriteDisposition syncMode,
                                                                   final String datasetLocation,
-                                                                  final BigQueryRecordFormatter formatter) {
+                                                                  final BigQueryRecordFormatter formatter,
+                                                                  final boolean skipTmpTable) {
     // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
+    final TableId tableToWriteRawData = skipTmpTable ? targetTable : tmpTable;
+    LOGGER.info("Will write raw data to {}", tableToWriteRawData);
     final WriteChannelConfiguration writeChannelConfiguration =
-        WriteChannelConfiguration.newBuilder(tmpTable)
+        WriteChannelConfiguration.newBuilder(tableToWriteRawData)
             .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
             .setSchema(formatter.getBigQuerySchema())
             .setFormatOptions(FormatOptions.json())

@@ -65,6 +65,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private final AtomicLong recordsSinceLastTDRun = new AtomicLong(0);
   private final ParsedCatalog<StandardSQLTypeName> catalog;
   private final boolean use1s1t;
+  private final String rawNamespaceOverride;
 
   public BigQueryRecordConsumer(final Map<StreamWriteTargets, AbstractBigQueryUploader<?>> uploaderMap,
                                 final Consumer<AirbyteMessage> outputRecordCollector,
@@ -72,7 +73,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
                                 final BigQuerySqlGenerator sqlGenerator,
                                 final BigQueryDestinationHandler destinationHandler,
                                 final ParsedCatalog<StandardSQLTypeName> catalog,
-                                final boolean use1s1t) {
+                                final boolean use1s1t, final String rawNamespaceOverride) {
     this.uploaderMap = uploaderMap;
     this.outputRecordCollector = outputRecordCollector;
     this.datasetId = datasetId;
@@ -80,6 +81,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     this.destinationHandler = destinationHandler;
     this.catalog = catalog;
     this.use1s1t = use1s1t;
+    this.rawNamespaceOverride = rawNamespaceOverride;
   }
 
   @Override
@@ -119,7 +121,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       }
       String finalNamespace = message.getRecord().getNamespace();
       if (use1s1t) {
-        message.getRecord().setNamespace(JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA);
+        message.getRecord().setNamespace(rawNamespaceOverride);
       }
       processRecord(finalNamespace, message);
     } else {

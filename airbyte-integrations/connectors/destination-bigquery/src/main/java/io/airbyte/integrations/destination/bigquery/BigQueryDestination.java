@@ -289,7 +289,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
           .build();
 
-      putStreamIntoUploaderMapWithRawNamespaceOverride(stream, uploaderConfig, uploaderMap, originalNamespace);
+      putStreamIntoUploaderMapWithRawNamespaceOverride(stream, uploaderConfig, uploaderMap, originalNamespace, use1s1t);
     }
     return uploaderMap;
   }
@@ -310,11 +310,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   protected void putStreamIntoUploaderMapWithRawNamespaceOverride(final AirbyteStream stream,
                                                                   final UploaderConfig uploaderConfig,
                                                                   final Map<StreamWriteTargets, AbstractBigQueryUploader<?>> uploaderMap,
-                                                                  final String finalNamespace)
+                                                                  final String finalNamespace,
+                                                                  final boolean use1s1t)
       throws IOException {
     uploaderMap.put(
         StreamWriteTargets.fromAirbyteStream(stream, finalNamespace),
-        BigQueryUploaderFactory.getUploader(uploaderConfig));
+        BigQueryUploaderFactory.getUploader(uploaderConfig, use1s1t));
   }
 
   /**
@@ -378,8 +379,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         sqlGenerator,
         new BigQueryDestinationHandler(bigquery),
         parsedCatalog,
-        use1s1t
-    );
+        use1s1t,
+        rawNamespaceOverride);
   }
 
   public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,
