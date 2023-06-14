@@ -1,0 +1,110 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "billing": {
+      "type": ["null", "object"],
+      "properties": {
+        "address": {
+      "$ref": "address.json"
+    }
+      }
+    },
+    "company": {
+      "type": ["null", "object"],
+      "properties": {
+        "tax_id_provided": {
+          "type": "boolean"
+        }
+      }
+    },
+    "created": {
+      "type": ["null", "integer"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "individual": {
+      "type": ["null", "object"],
+      "properties": {
+        "dob": {
+          "type": ["null", "object"],
+          "properties": {
+            "day": {
+              "type": ["null", "integer"]
+            },
+            "month": {
+              "type": ["null", "integer"]
+            },
+            "year": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "first_name": {
+          "type": ["null", "string"]
+        },
+        "last_name": {
+          "type": ["null", "string"]
+        },
+        "verification": {
+          "type": ["null", "object"],
+          "properties": {
+            "document": {
+              "type": ["null", "object"],
+              "properties": {
+                "back": {
+                  "type": ["null", "string"]
+                },
+                "front": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        }
+
+      }
+    },
+    "livemode": {
+      "type": ["null", "boolean"]
+    },
+    "metadata": {
+      "type": ["null", "object"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "phone_number": {
+      "type": ["null", "string"]
+    },
+    "requirements": {
+      "type": ["null", "object"],
+      "properties": {
+        "disabled_reason": {
+          "type": ["null", "string"]
+        },
+        "past_due": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "spending_controls": {
+      "$ref": "spending_controls.json"
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    }
+  }
+}
