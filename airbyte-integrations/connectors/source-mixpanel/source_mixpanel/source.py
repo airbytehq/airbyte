@@ -117,25 +117,12 @@ class SourceMixpanel(AbstractSource):
             Cohorts(authenticator=auth, **config),
             Funnels(authenticator=auth, **config),
             Revenue(authenticator=auth, **config),
-        ]:
-            try:
-                next(read_full_refresh(stream), None)
-            except requests.HTTPError as e:
-                if e.response.status_code != 402:
-                    raise e
-                logger.warning("Stream '%s' - is disabled, reason: 402 Payment Required", stream.name)
-            else:
-                streams.append(stream)
-
-
-        # streams with dynamically generated schema
-        for stream in [
             CohortMembers(authenticator=auth, **config),
             Engage(authenticator=auth, **config),
             Export(authenticator=auth, **config),
         ]:
             try:
-                stream.get_json_schema()
+                next(read_full_refresh(stream), None)
             except requests.HTTPError as e:
                 if e.response.status_code != 402:
                     raise e
