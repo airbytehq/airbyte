@@ -20,12 +20,12 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
+import com.google.cloud.bigquery.TableResult;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
 import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
@@ -51,13 +51,16 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
   protected final T writer;
   protected final BigQuery bigQuery;
   protected final BigQueryRecordFormatter recordFormatter;
+  protected final boolean use1s1t;
 
   AbstractBigQueryUploader(final TableId table,
                            final TableId tmpTable,
                            final T writer,
                            final WriteDisposition syncMode,
                            final BigQuery bigQuery,
-                           final BigQueryRecordFormatter recordFormatter) {
+                           final BigQueryRecordFormatter recordFormatter,
+                           final boolean use1s1t) {
+    this.use1s1t = use1s1t;
     this.table = table;
     this.tmpTable = tmpTable;
     this.writer = writer;
@@ -110,7 +113,9 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
   protected void uploadData(final Consumer<AirbyteMessage> outputRecordCollector, final AirbyteMessage lastStateMessage) throws Exception {
     try {
       LOGGER.info("Uploading data from the tmp table {} to the source table {}.", tmpTable.getTable(), table.getTable());
-      uploadDataToTableFromTmpTable();
+      if (!use1s1t) {
+        uploadDataToTableFromTmpTable();
+      }
       LOGGER.info("Data is successfully loaded to the source table {}!", table.getTable());
       outputRecordCollector.accept(lastStateMessage);
       LOGGER.info("Final state message is accepted.");

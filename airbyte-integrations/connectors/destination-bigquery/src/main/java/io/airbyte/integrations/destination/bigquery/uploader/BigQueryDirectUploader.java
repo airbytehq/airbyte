@@ -18,8 +18,9 @@ public class BigQueryDirectUploader extends AbstractBigQueryUploader<BigQueryTab
                                 final BigQueryTableWriter writer,
                                 final JobInfo.WriteDisposition syncMode,
                                 final BigQuery bigQuery,
-                                final BigQueryRecordFormatter recordFormatter) {
-    super(table, tmpTable, writer, syncMode, bigQuery, recordFormatter);
+                                final BigQueryRecordFormatter recordFormatter,
+                                final boolean use1s1t) {
+    super(table, tmpTable, writer, syncMode, bigQuery, recordFormatter, use1s1t);
   }
 
   @Override

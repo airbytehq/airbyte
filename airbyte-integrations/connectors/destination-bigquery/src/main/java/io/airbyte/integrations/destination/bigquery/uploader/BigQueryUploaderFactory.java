@@ -155,10 +155,10 @@ public class BigQueryUploaderFactory {
                                                                   final JobInfo.WriteDisposition syncMode,
                                                                   final String datasetLocation,
                                                                   final BigQueryRecordFormatter formatter,
-                                                                  final boolean skipTmpTable) {
+                                                                  final boolean use1s1t) {
     // https://cloud.google.com/bigquery/docs/loading-data-local#loading_data_from_a_local_data_source
-    final TableId tableToWriteRawData = skipTmpTable ? targetTable : tmpTable;
-    LOGGER.info("Will write raw data to {}", tableToWriteRawData);
+    final TableId tableToWriteRawData = use1s1t ? targetTable : tmpTable;
+    LOGGER.info("Will write raw data to {} with schema {}", tableToWriteRawData, formatter.getBigQuerySchema());
     final WriteChannelConfiguration writeChannelConfiguration =
         WriteChannelConfiguration.newBuilder(tableToWriteRawData)
             .setCreateDisposition(JobInfo.CreateDisposition.CREATE_IF_NEEDED)
@@ -197,7 +197,8 @@ public class BigQueryUploaderFactory {
         new BigQueryTableWriter(writer),
         syncMode,
         bigQuery,
-        formatter);
+        formatter,
+        use1s1t);
   }
 
 }
