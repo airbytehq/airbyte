@@ -766,7 +766,7 @@ def test_given_state_selector_when_read_records_use_slice_state(http_stream_read
     paginator = MagicMock()
     record_selector = MagicMock()
     stream_slicer = MagicMock()
-    stream_slicer.select.return_value = A_SLICE_STATE
+    stream_slicer.select_state.return_value = A_SLICE_STATE
 
     retriever = SimpleRetriever(
         name="stream_name",
