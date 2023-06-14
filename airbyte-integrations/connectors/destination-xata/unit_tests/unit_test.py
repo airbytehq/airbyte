@@ -7,6 +7,7 @@ import unittest
 from xata.client import XataClient
 from xata.helpers import BulkProcessor
 
+
 class DestinationConnectorXataTestCase(unittest.TestCase):
 
     def test_request(self):

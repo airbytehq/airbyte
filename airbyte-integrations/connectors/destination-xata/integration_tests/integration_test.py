@@ -3,13 +3,8 @@
 #
 
 import json
-
+from typing import Any, Mapping
 from unittest.mock import Mock
-from typing import Any, Dict, List, Mapping
-
-from destination_xata import DestinationXata
-
-from xata.client import XataClient
 
 import pytest
 from airbyte_cdk.models import (
@@ -23,11 +18,15 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from destination_xata import DestinationXata
+from xata.client import XataClient
+
 
 @pytest.fixture(name="config")
 def config_fixture() -> Mapping[str, Any]:
     with open("secrets/config.json", "r") as f:
         return json.loads(f.read())
+
 
 @pytest.fixture(name="configured_catalog")
 def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
@@ -46,7 +45,8 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
         destination_sync_mode=DestinationSyncMode.overwrite,
     )
     """
-    return ConfiguredAirbyteCatalog(streams=[append_stream,]) # overwrite_stream])
+    return ConfiguredAirbyteCatalog(streams=[append_stream])
+
 
 def test_check_valid_config(config: Mapping):
     outcome = DestinationXata().check(logger=Mock(), config=config)
@@ -58,6 +58,7 @@ def test_check_invalid_config():
     config = json.load(f)
     outcome = DestinationXata().check(logger=Mock(), config=config)
     assert outcome.status == Status.FAILED
+
 
 def test_write(config: Mapping):
     test_schema = {"type": "object", "properties": {"str_col": {"type": "str"}, "int_col": {"type": "integer"}}}
@@ -89,8 +90,8 @@ def test_write(config: Mapping):
         }).status_code == 200, "failed to set table schema"
 
     dest = DestinationXata()
-    output_states = list(dest.write(
-        config=config, 
+    list(dest.write(
+        config=config,
         configured_catalog=test_stream,
         input_messages=records
     ))

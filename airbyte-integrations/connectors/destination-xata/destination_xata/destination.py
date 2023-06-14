@@ -3,19 +3,18 @@
 #
 
 import logging
-
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
-
 from xata.client import XataClient
 from xata.helpers import BulkProcessor
 
 __version__ = "0.0.1"
 
 logger = logging.getLogger("airbyte")
+
 
 class DestinationXata(Destination):
     def write(
@@ -38,7 +37,7 @@ class DestinationXata(Destination):
 
         xata = XataClient(api_key=config["api_key"], db_url=config["db_url"])
         xata.set_header("user-agent", f"airbyte/destination-xata:{__version__}")
-        
+
         bp = BulkProcessor(xata)
         count = 0
         for message in input_messages:
@@ -51,8 +50,11 @@ class DestinationXata(Destination):
         bp.flush_queue()
         logger.info(bp.get_stats())
         if count != bp.get_stats()["total"] or bp.get_stats()["failed_batches"] != 0:
-            raise Exception("inconsistency found, expected %d records pushed, actual: %d with %d failures." % (count, bp.get_stats()["total"], bp.get_stats()["failed_batches"]))
-        
+            raise Exception(
+                "inconsistency found, expected %d records pushed, actual: %d with %d failures."
+                % (count, bp.get_stats()["total"], bp.get_stats()["failed_batches"])
+            )
+
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
