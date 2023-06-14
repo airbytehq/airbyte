@@ -18,6 +18,7 @@ from ci_connector_ops.pipelines.consts import (
     CI_CREDENTIALS_SOURCE_PATH,
     CONNECTOR_TESTING_REQUIREMENTS,
     DEFAULT_PYTHON_EXCLUDE,
+    LICENSE_SHORT_FILE_PATH,
     PYPROJECT_TOML_FILE_PATH,
 )
 from ci_connector_ops.pipelines.utils import get_file_contents
@@ -67,8 +68,30 @@ def with_testing_dependencies(context: PipelineContext) -> Container:
     """
     python_environment: Container = with_python_base(context)
     pyproject_toml_file = context.get_repo_dir(".", include=[PYPROJECT_TOML_FILE_PATH]).file(PYPROJECT_TOML_FILE_PATH)
-    return python_environment.with_exec(["pip", "install"] + CONNECTOR_TESTING_REQUIREMENTS).with_file(
-        f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file
+    license_short_file = context.get_repo_dir(".", include=[LICENSE_SHORT_FILE_PATH]).file(LICENSE_SHORT_FILE_PATH)
+
+    return (
+        python_environment.with_exec(["pip", "install"] + CONNECTOR_TESTING_REQUIREMENTS)
+        .with_file(f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file)
+        .with_file(f"/{LICENSE_SHORT_FILE_PATH}", license_short_file)
+    )
+
+
+def with_git(context: PipelineContext) -> Container:
+    return (
+        context.dagger_client.container()
+        .from_("alpine:latest")
+        .with_secret_variable("GITHUB_TOKEN", context.ci_github_access_token_secret)
+        .with_exec(["apk", "update"])
+        .with_exec(["apk", "add", "git", "tar", "wget"])
+        .with_workdir("/ghcli")
+        .with_exec(["wget", "https://github.com/cli/cli/releases/download/v2.30.0/gh_2.30.0_linux_amd64.tar.gz", "-O", "ghcli.tar.gz"])
+        .with_exec(["tar", "--strip-components=1", "-xf", "ghcli.tar.gz"])
+        .with_exec(["rm", "ghcli.tar.gz"])
+        .with_exec(["cp", "bin/gh", "/usr/local/bin/gh"])
+        .with_exec(["git", "config", "--global", "user.email", f"{context.ci_git_user}@users.noreply.github.com"])
+        .with_exec(["git", "config", "--global", "user.name", context.ci_git_user])
+        .with_exec(["git", "config", "--global", "--add", "--bool", "push.autoSetupRemote", "true"])
     )
 
 
