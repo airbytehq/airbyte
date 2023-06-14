@@ -336,15 +336,14 @@ class Issues(IncrementalJiraStream):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any],
-        next_page_token: Optional[Mapping[str, Any]] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["fields"] = "*all"
         jql_parts = [self.jql_compare_date(stream_state)]
         if self._project_ids:
-            project_ids = ", ".join([f"'{project_id}'" for project_id in self._project_ids])
-            jql_parts.append(f"project in ({project_ids})")
+            jql_parts.append(f"project in ({stream_slice.get('project_id')})")
         params["jql"] = " and ".join([p for p in jql_parts if p])
         expand = []
         if self._expand_changelog:
@@ -355,14 +354,6 @@ class Issues(IncrementalJiraStream):
             params["expand"] = ",".join(expand)
         return params
 
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        self._project_ids = []
-        if self._projects:
-            self._project_ids = self.get_project_ids()
-            if not self._project_ids:
-                return
-        yield from super().read_records(**kwargs)
-
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["projectId"] = record["fields"]["project"]["id"]
         record["projectKey"] = record["fields"]["project"]["key"]
@@ -372,6 +363,31 @@ class Issues(IncrementalJiraStream):
 
     def get_project_ids(self):
         return [project["id"] for project in read_full_refresh(self.projects_stream)]
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._starting_point_cache.clear()
+        self._project_ids = []
+        if self._projects:
+            self._project_ids = self.get_project_ids()
+            if not self._project_ids:
+                return
+            for project_id in self._project_ids:
+                yield {"project_id": project_id}
+        else:
+            yield from super().stream_slices(**kwargs)
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == requests.codes.bad_request:
+            # Issue: https://github.com/airbytehq/airbyte/issues/26712
+            # we should skip the slice with wrong permissions on project level
+            errors = response.json().get("errorMessages")
+            self.logger.error(
+                f"Stream `{self.name}`. An error occurred, details: {errors}." f"Check permissions for this project. Skipping for now."
+            )
+            setattr(self, "raise_on_http_errors", False)
+            return False
+        else:
+            return super().should_retry(response)
 
 
 class IssueComments(IncrementalJiraStream):
@@ -792,7 +808,7 @@ class Projects(JiraStream):
 
     def request_params(self, **kwargs):
         params = super().request_params(**kwargs)
-        params["expand"] = "description"
+        params["expand"] = "description,lead"
         return params
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:

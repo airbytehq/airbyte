@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "billing_zip": {
+      "type": ["null", "string"]
+    },
+    "charge": {
+      "type": ["null", "string"]
+    },
+    "closed_reason": {
+      "type": ["null", "string"]
+    },
+    "created": {
+      "type": ["null", "integer"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "ip_address": {
+      "type": ["null", "string"]
+    },
+    "ip_address_location": {
+      "type": ["null", "object"],
+      "properties": {
+        "city": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        },
+        "latitude": {
+          "type": ["null", "number"]
+        },
+        "longitude": {
+          "type": ["null", "number"]
+        },
+        "region": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "livemode": {
+      "type": ["null", "string"]
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "open": {
+      "type": ["null", "boolean"]
+    },
+    "opened_reason": {
+      "type": ["null", "string"]
+    },
+    "payment_intent": {
+      "type": ["null", "string"]
+    },
+    "reason": {
+      "type": ["null", "string"]
+    },
+    "session": {
+      "type": ["null", "object"],
+      "properties": {
+        "browser": {
+          "type": ["null", "string"]
+        },
+        "device": {
+          "type": ["null", "string"]
+        },
+        "platform": {
+          "type": ["null", "string"]
+        },
+        "version": {
+
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}
