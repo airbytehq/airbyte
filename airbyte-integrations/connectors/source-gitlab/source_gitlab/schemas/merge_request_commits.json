@@ -35,6 +35,13 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "prepared_at": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
     "closed_by": {
       "type": ["null", "object"]
     },
