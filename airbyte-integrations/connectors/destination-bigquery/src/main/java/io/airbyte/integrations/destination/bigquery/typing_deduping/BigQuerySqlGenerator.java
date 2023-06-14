@@ -30,13 +30,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   private final String RAW_ID = buildColumnId("_airbyte_raw_id").name(QUOTE);
 
   @Override
-  public StreamId buildStreamId(final String namespace, final String name) {
+  public StreamId buildStreamId(final String namespace, final String name, String rawNamespaceOverride) {
     return new StreamId(
         // TODO is this correct?
         nameTransformer.getNamespace(namespace),
         nameTransformer.convertStreamName(name),
         // TODO constant
-        nameTransformer.getNamespace("airbyte"),
+        nameTransformer.getNamespace(rawNamespaceOverride),
         // TODO maybe do something with #getRawTableName?
         nameTransformer.convertStreamName(namespace + "_" + name),
         namespace,

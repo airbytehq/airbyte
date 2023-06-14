@@ -30,10 +30,11 @@ class CatalogParserTest {
       String fieldName = invocation.getArgument(0);
       return new ColumnId(fieldName, fieldName, fieldName);
     });
-    when(sqlGenerator.buildStreamId(any(), any())).thenAnswer(invocation -> {
+    when(sqlGenerator.buildStreamId(any(), any(), any())).thenAnswer(invocation -> {
       String namespace = invocation.getArgument(0);
       String name = invocation.getArgument(1);
-      return new StreamId(namespace, name, "airbyte", namespace + "_" + name, namespace, name);
+      String rawNamespace = invocation.getArgument(1);
+      return new StreamId(namespace, name, rawNamespace, namespace + "_" + name, namespace, name);
     });
 
     parser = new CatalogParser<>(sqlGenerator);
@@ -62,13 +63,14 @@ class CatalogParserTest {
    */
   @Test
   public void finalNameCollision() {
-    when(sqlGenerator.buildStreamId(any(), any())).thenAnswer(invocation -> {
+    when(sqlGenerator.buildStreamId(any(), any(), any())).thenAnswer(invocation -> {
       String originalNamespace = invocation.getArgument(0);
       String originalName = (invocation.getArgument(1));
+      String originalRawNamespace = (invocation.getArgument(1));
 
       // emulate quoting logic that causes a name collision
       String quotedName = originalName.replaceAll("bar", "");
-      return new StreamId(originalNamespace, quotedName, "airbyte", originalNamespace + "_" + quotedName, originalNamespace, originalName);
+      return new StreamId(originalNamespace, quotedName, originalRawNamespace, originalNamespace + "_" + quotedName, originalNamespace, originalName);
     });
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         stream("a", "foobarfoo"),

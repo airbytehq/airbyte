@@ -55,7 +55,7 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
     }
   }
 
-  StreamId buildStreamId(String namespace, String name);
+  StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride);
 
   ColumnId buildColumnId(String name);
 

@@ -12,6 +12,7 @@ import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.annotations.VisibleForTesting;
@@ -72,6 +73,7 @@ import org.slf4j.LoggerFactory;
 public class BigQueryDestination extends BaseConnector implements Destination {
 
   public static final String USE_1S1T_FORMAT = "use_1s1t_format";
+  public static final String RAW_NAMESPACE_OVERRIDE = "raw_data_dataset";
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestination.class);
   private static final List<String> REQUIRED_PERMISSIONS = List.of(
       "storage.multipartUploads.abort",
@@ -292,13 +294,19 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final BigQuery bigquery = getBigQuery(config);
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(bigquery, config, catalog);
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator();
+    final CatalogParser<StandardSQLTypeName> catalogParser;
+    if (config.hasNonNull(RAW_NAMESPACE_OVERRIDE)) {
+      catalogParser = new CatalogParser<>(sqlGenerator, config.get(RAW_NAMESPACE_OVERRIDE).asText());
+    } else {
+      catalogParser = new CatalogParser<>(sqlGenerator);
+    }
     return new BigQueryRecordConsumer(
         writeConfigs,
         outputRecordCollector,
         BigQueryUtils.getDatasetId(config),
         sqlGenerator,
         new BigQueryDestinationHandler(bigquery),
-        new CatalogParser<>(sqlGenerator).parseCatalog(catalog),
+        catalogParser.parseCatalog(catalog),
         config.hasNonNull(USE_1S1T_FORMAT) && config.get(USE_1S1T_FORMAT).asBoolean());
   }
 

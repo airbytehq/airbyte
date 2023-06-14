@@ -1,5 +1,6 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
+import com.google.cloud.bigquery.StandardSQLTypeName;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.ColumnId;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.StreamId;
@@ -16,10 +17,17 @@ import org.apache.commons.codec.digest.DigestUtils;
 
 public class CatalogParser<DialectType> {
 
+  public static final String DEFAULT_RAW_TABLE_NAMESPACE = "airbyte";
   private final SqlGenerator<?, DialectType> sqlGenerator;
+  private final String rawNamespaceOverride;
 
   public CatalogParser(final SqlGenerator<?, DialectType> sqlGenerator) {
+    this(sqlGenerator, DEFAULT_RAW_TABLE_NAMESPACE);
+  }
+
+  public CatalogParser(final SqlGenerator<?, DialectType> sqlGenerator, String rawNamespaceOverride) {
     this.sqlGenerator = sqlGenerator;
+    this.rawNamespaceOverride = rawNamespaceOverride;
   }
 
   public record ParsedCatalog<DialectType>(List<StreamConfig<DialectType>> streams) {
@@ -56,7 +64,7 @@ public class CatalogParser<DialectType> {
         final String hash = DigestUtils.sha1Hex(originalStreamConfig.id().finalNamespace() + "&airbyte&" + originalName).substring(0, 3);
         final String newName = originalName + "_" + hash;
         streamConfigs.add(new StreamConfig<>(
-            sqlGenerator.buildStreamId(originalNamespace, newName),
+            sqlGenerator.buildStreamId(originalNamespace, newName, rawNamespaceOverride),
             originalStreamConfig.syncMode(),
             originalStreamConfig.destinationSyncMode(),
             originalStreamConfig.primaryKey(),
@@ -131,7 +139,7 @@ public class CatalogParser<DialectType> {
     }
 
     return new StreamConfig<>(
-        sqlGenerator.buildStreamId(stream.getStream().getNamespace(), stream.getStream().getName()),
+        sqlGenerator.buildStreamId(stream.getStream().getNamespace(), stream.getStream().getName(), rawNamespaceOverride),
         stream.getSyncMode(),
         stream.getDestinationSyncMode(),
         primaryKey,
