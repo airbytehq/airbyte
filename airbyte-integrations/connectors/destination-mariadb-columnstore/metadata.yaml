@@ -10,7 +10,7 @@ data:
   name: MariaDB ColumnStore
   registries:
     cloud:
-      enabled: false # hide MariaDB Destination https://github.com/airbytehq/airbyte-cloud/issues/2611
+      enabled: true  # hide MariaDB Destination https://github.com/airbytehq/airbyte-cloud/issues/2611
     oss:
       enabled: true
   releaseStage: alpha
