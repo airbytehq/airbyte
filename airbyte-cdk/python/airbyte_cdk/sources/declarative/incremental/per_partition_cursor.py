@@ -10,6 +10,13 @@ from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamSta
 
 
 class Hashabledict(dict):
+    """
+    We are concerned of the performance of looping through the `states` list and evaluating equality on the partition. To reduce this
+    concern, we wanted to use dictionaries to map `partition -> cursor`. However, partitions are dict and dict can't be used as dict keys
+    since they are not hashable. By creating hashable key and values, we can implement __hash__ for dict and then use them as dict keys.
+    Note that those dicts shouldn't be modified has their hash would change. For our case, it should be fine as partitions can be seen as
+    immutable.
+    """
     def __hash__(self):
         return hash(self._to_hashable(self))
 
@@ -25,7 +32,7 @@ class PerPartitionStreamSlice(StreamSlice):
     def __init__(self, partition: Mapping[str, Any], cursor_slice: Mapping[str, Any]):
         self._partition = partition
         self._cursor_slice = cursor_slice
-        self._stream_slice = partition | cursor_slice
+        self._stream_slice = dict(partition) | dict(cursor_slice)
 
     @property
     def partition(self):
@@ -74,7 +81,7 @@ class PerPartitionStreamSlice(StreamSlice):
         return False
 
     def __ne__(self, other):
-        return self.__eq__(other)
+        return not self.__eq__(other)
 
 
 class PerPartitionCursor(StreamSlicer):
