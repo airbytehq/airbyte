@@ -67,7 +67,7 @@ Breaking changes will be most notable to users actively syncing data from API so
 | Normalized tabular data 	         | API Source                            	| Unnested tables, `_airbyte` metadata columns, SCD tables 	                     |
 | Normalized tabular data 	         | Tabular Source (database, file, etc.) 	| `_airbyte` metadata columns, SCD tables                  	                     |
 
-For `destination-bigquery`, we are now loading `JSON` blobs as type `JSON` in BigQuery (introduced last [year](https://cloud.google.com/blog/products/data-analytics/bigquery-now-natively-supports-semi-structured-data)), instead of type `string`.
+Whenever possible, we've taken this opportunity to use the best data type for storing JSON for your querying convenience.  For example, `destination-bigquery` now loads `JSON` blobs as type `JSON` in BigQuery (introduced last [year](https://cloud.google.com/blog/products/data-analytics/bigquery-now-natively-supports-semi-structured-data)), instead of type `string`.
 
 
 ## Quick Start to Upgrading
@@ -79,11 +79,11 @@ The quickest path to upgrading is to click upgrade on any out-of-date connection
 After upgrading the out-of-date destination to a [Destinations V2 compatible version](#destinations-v2-effective-versions), the following will occur at the next sync **for each connection** sending data to the updated destination:
 1. Existing raw tables replicated to this destination will be copied to a new `airbyte` schema. 
 2. The copied raw table will be updated to the new Destinations V2 format.
-3. The new raw tables will be updated with any new data since the last sync.
+3. The new raw tables will be updated with any new data since the last sync, like normal.
 4. The updated raw tables will be typed and de-duplicated according to the Destinations V2 format.
 5. Once typing and de-duplication has completed successfully, your previous final table will be replaced with the updated data.
 
-Pre-existing raw tables, SCD tables and "unnested" tables will always be left untouched. You can delete these at your convenience.
+Pre-existing raw tables, SCD tables and "unnested" tables will always be left untouched. You can delete these at your convenience, but these tables will no longer be kept up-to-date by Airbyte syncs.
 Each destination version is managed separately, so if you have multiple destinations, they all need to be upgraded one by one.
 
 Versions are tied to the destination. When you update the destination, **all connections tied to that destination will be sending data in the Destinations V2 format**. For upgrade paths that will minimize disruption to existing dashboards, see:
@@ -100,7 +100,7 @@ Dual writing is a method employed during upgrades where new incoming data is wri
 
 #### Steps to Follow for All Sync Modes
 
-1. **[Open Source]** Update the default destination version for your workspace to a [Destinations V2 compatible version](#destinations-v2-effective-versions). This sets the default version for any newly created destination.
+1. **[Open Source]** Update the default destination version for your workspace to a [Destinations V2 compatible version](#destinations-v2-effective-versions). This sets the default version for any newly created destination.  All existing syncs will remain on their current version.
 
 ![Upgrade your default destination version](assets/airbyte_version_upgrade.png)
 
