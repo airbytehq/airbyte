@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-pokeapi
   githubIssueLabel: source-pokeapi
   icon: pokeapi.svg
-  license: MIT
+  license: "???"
   name: PokeAPI
   registries:
     cloud:
