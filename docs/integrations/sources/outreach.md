@@ -44,6 +44,10 @@ List of available streams:
 - Personas
 - Mailboxes
 - Stages
+- Users
+- Tasks
+- Templates
+- Snippets
 
 ## Changelog
 
