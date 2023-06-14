@@ -13,7 +13,7 @@ from pydash.objects import get
 def check_migration_guide(connector: Connector) -> bool:
     """Check if a migration guide is available for the connector if a breaking change was introduced."""
 
-    breaking_changes = get(connector.metadata, f"data.releases.breakingChanges")
+    breaking_changes = get(connector.metadata, f"releases.breakingChanges")
     if not breaking_changes:
         return True
 
