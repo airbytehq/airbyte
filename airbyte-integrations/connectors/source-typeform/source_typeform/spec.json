@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Typeform Spec",
     "type": "object",
-    "required": ["token", "start_date"],
+    "required": ["start_date"],
     "additionalProperties": true,
     "properties": {
       "credentials": {
@@ -59,10 +59,13 @@
             "type": "object",
             "required": ["access_token"],
             "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "access_token"
+              },
               "access_token": {
                 "type": "string",
                 "title": "API Token",
-                "const": "access_token",
                 "airbyte_secret": true,
                 "order": 0
               }
@@ -77,15 +80,6 @@
     "predicate_key": ["credentials", "auth_type"],
     "predicate_value": "oauth2.0",
     "oauth_config_specification": {
-      "oauth_user_input_from_connector_config_specification": {
-        "type": "object",
-        "properties": {
-          "domain": {
-            "type": "string",
-            "path_in_connector_config": ["api_url"]
-          }
-        }
-      },
       "complete_oauth_output_specification": {
         "type": "object",
         "properties": {

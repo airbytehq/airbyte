@@ -247,10 +247,10 @@ class Themes(PaginatedStream):
 
 
 class SourceTypeform(AbstractSource):
-    def get_auth(config: MutableMapping) -> AuthBase:
-        if config.get("token"):
-            return TokenAuthenticator(token=config["token"])
-        return SingleUseRefreshTokenOauth2Authenticator(config, token_refresh_endpoint=f"https://{config['api_url']}/oauth/token")
+    def get_auth(self, config: MutableMapping) -> AuthBase:
+        if config.get("access_token"):
+            return TokenAuthenticator(token=config["access_token"])
+        return SingleUseRefreshTokenOauth2Authenticator(config, token_refresh_endpoint=f"https://api.typeform.com/oauth/token", scopes=["offline", "accounts:read", "forms:read"])
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
@@ -258,7 +258,7 @@ class SourceTypeform(AbstractSource):
             # verify if form inputted by user is valid
             try:
                 url = urlparse.urljoin(TypeformStream.url_base, "me")
-                auth_headers = {"Authorization": f"Bearer {config['token']}"}
+                auth_headers = {"Authorization": f"Bearer {config['access_token']}"}
                 session = requests.get(url, headers=auth_headers)
                 session.raise_for_status()
             except Exception as e:
@@ -267,7 +267,7 @@ class SourceTypeform(AbstractSource):
                 for form in form_ids:
                     try:
                         url = urlparse.urljoin(TypeformStream.url_base, f"forms/{form}")
-                        auth_headers = {"Authorization": f"Bearer {config['token']}"}
+                        auth_headers = {"Authorization": f"Bearer {config['access_token']}"}
                         response = requests.get(url, headers=auth_headers)
                         response.raise_for_status()
                     except Exception as e:
