@@ -178,7 +178,7 @@ class IncrementalStripeStreamWithUpdates(IncrementalStripeStream):
         return self.last_stream_slice == currentSlice
     def setLastSlice(self,stream_state):
         if(self.last_stream_slice==None):
-            *_, last = self.stream_slices(sync_mode='incremental', stream_state=stream_state)
+            *_, last = self.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream_state)
             self.last_stream_slice = last
 
     def lookahead(self,stream_slice, iterable):
@@ -190,7 +190,7 @@ class IncrementalStripeStreamWithUpdates(IncrementalStripeStream):
         it = iter(iterable)
         last = next(it, None)
         if not last:
-            if self.last_record and self.completed == False:
+            if self.last_record and self.completed is False:
                 self.completed = True
                 yield self.last_record
             return
@@ -215,7 +215,7 @@ class IncrementalStripeStreamWithUpdates(IncrementalStripeStream):
         # If last state is not present or the main sync didn't complete or the last sync was more than 30 days ago
         # Fetch data from original stream else fetch data from events
         shouldResetState = durationInDaysFromLastSync >= 30
-        return hasState == False or self.completed is False or shouldResetState
+        return hasState is False or self.completed is False or shouldResetState
     def read_records(self, stream_slice, stream_state = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         shouldFetchFromOriginalResource = self.shouldFetchFromOriginalResource(stream_state)
         if shouldFetchFromOriginalResource:
@@ -229,8 +229,8 @@ class IncrementalStripeStreamWithUpdates(IncrementalStripeStream):
 
     def get_updates(self, stream_state, **kwargs)-> Iterable[Mapping[str, Any]]:
         update_stream = Updates(event_types=self.event_types, authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
-        slice = update_stream.stream_slices(sync_mode="incremental", stream_state=stream_state)
-        for _slice in slice:
+        stream_slice = update_stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream_state)
+        for _slice in stream_slice:
             for event in update_stream.read_records(stream_slice=_slice,stream_state=stream_state, **kwargs):
                 self.set_record_id(event)
                 yield event
@@ -320,8 +320,14 @@ class CustomerBalanceTransactions(StripeStream):
         parent_stream = Customers(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
         slices = parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
         for _slice in slices:
-            for customer in customers_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice):
-                yield from super().read_records(stream_slice={"customer_id": customer["record_id"]}, **kwargs)
+            for customer in parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice):
+                # we use `get` here because some attributes may not be returned by some API versions
+                if customer.get("next_invoice_sequence") == 1 and customer.get("balance") == 0:
+                    # We're making this check in order to speed up a sync. if a customer's balance is 0 and there are no
+                    # associated invoices, he shouldn't have any balance transactions. So we're saving time of one API call per customer.
+                    continue
+
+                yield customer
 
 
 class Coupons(IncrementalStripeStream):
@@ -507,19 +513,13 @@ class StripeSubStream(StripeStream, ABC):
         # get next pages
         items_next_pages = []
         if items_obj.get("has_more") and items:
-            stream_slice = {self.parent_id: parent_record["id"], "starting_after": items[-1]["id"]}
-            items_next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs)
-
-        # get next pages
-        items_next_pages = []
-        if items_obj.get("has_more") and items:
-            stream_slice = {self.parent_id: record["record_id"], "starting_after": items[-1]["id"]}
+            stream_slice = {self.parent_id: parent_record["record_id"], "starting_after": items[-1]["id"]}
             items_next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs)
 
         for item in chain(items, items_next_pages):
             if self.add_parent_id:
                 # add reference to parent object when item doesn't have it already
-                item[self.parent_id] = record["record_id"]
+                item[self.parent_id] = parent_record["record_id"]
             yield item
 
 
