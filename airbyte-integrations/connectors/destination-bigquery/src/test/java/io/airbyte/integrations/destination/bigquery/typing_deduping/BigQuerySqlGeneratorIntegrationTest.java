@@ -48,11 +48,11 @@ public class BigQuerySqlGeneratorIntegrationTest {
   public static final List<ColumnId> PRIMARY_KEY = List.of(GENERATOR.buildColumnId("id"));
   public static final String QUOTE = "`";
 
-  private String testDataset;
-  private StreamId streamId;
-
   private static BigQuery bq;
   private static LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> columns;
+
+  private String testDataset;
+  private StreamId streamId;
 
   @BeforeAll
   public static void setup() throws Exception {
@@ -99,6 +99,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
   @Test
   public void testCreateTableIncremental() throws InterruptedException {
     final String sql = GENERATOR.createTable(incrementalDedupStreamConfig());
+    LOGGER.info("Executing sql: {}", sql);
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     final Table table = bq.getTable(testDataset, "users_final");
@@ -120,6 +121,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
     // This variable is declared outside of the transaction, so we need to do it manually here
     final String sql = "DECLARE missing_pk_count INT64;" + GENERATOR.validatePrimaryKeys(streamId, List.of(new ColumnId("id", "id", "id")), columns);
+    LOGGER.info("Executing sql: {}", sql);
     final BigQueryException e = assertThrows(
         BigQueryException.class,
         () -> bq.query(QueryJobConfiguration.newBuilder(sql).build())
@@ -147,6 +149,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     ).build());
 
     final String sql = GENERATOR.insertNewRecords(streamId, columns);
+    LOGGER.info("Executing sql: {}", sql);
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     // TODO more stringent asserts
@@ -174,6 +177,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     ).build());
 
     final String sql = GENERATOR.dedupFinalTable(streamId, PRIMARY_KEY, CURSOR, columns);
+    LOGGER.info("Executing sql: {}", sql);
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     // TODO more stringent asserts
@@ -200,6 +204,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     ).build());
 
     final String sql = GENERATOR.dedupRawTable(streamId);
+    LOGGER.info("Executing sql: {}", sql);
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     // TODO more stringent asserts
@@ -220,6 +225,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     ).build());
 
     final String sql = GENERATOR.commitRawTable(streamId);
+    LOGGER.info("Executing sql: {}", sql);
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     // TODO more stringent asserts
@@ -241,8 +247,9 @@ public class BigQuerySqlGeneratorIntegrationTest {
             """)
     ).build());
 
-    final String updateSql = GENERATOR.updateTable("", incrementalDedupStreamConfig());
-    bq.query(QueryJobConfiguration.newBuilder(updateSql).build());
+    final String sql = GENERATOR.updateTable("", incrementalDedupStreamConfig());
+    LOGGER.info("Executing sql: {}", sql);
+    bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     // TODO
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build()).getTotalRows();
@@ -267,8 +274,9 @@ public class BigQuerySqlGeneratorIntegrationTest {
             """)
     ).build());
 
-    final String updateSql = GENERATOR.updateTable("", incrementalAppendStreamConfig());
-    bq.query(QueryJobConfiguration.newBuilder(updateSql).build());
+    final String sql = GENERATOR.updateTable("", incrementalAppendStreamConfig());
+    LOGGER.info("Executing sql: {}", sql);
+    bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     // TODO
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build()).getTotalRows();
@@ -298,8 +306,9 @@ public class BigQuerySqlGeneratorIntegrationTest {
             """)
     ).build());
 
-    final String updateSql = GENERATOR.updateTable("", fullRefreshAppendStreamConfig());
-    bq.query(QueryJobConfiguration.newBuilder(updateSql).build());
+    final String sql = GENERATOR.updateTable("", fullRefreshAppendStreamConfig());
+    LOGGER.info("Executing sql: {}", sql);
+    bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     // TODO
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build()).getTotalRows();
@@ -315,6 +324,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     createFinalTable("_tmp");
 
     final String sql = GENERATOR.overwriteFinalTable("_tmp", fullRefreshOverwriteStreamConfig());
+    LOGGER.info("Executing sql: {}", sql);
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     final Table table = bq.getTable(testDataset, "users_final");
