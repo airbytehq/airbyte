@@ -164,9 +164,3 @@ def test_given_stream_slices_when_get_stream_state_then_return_updated_state(moc
             }
         ]
     }
-
-
-def test_state_retrieval():
-    cursor = PerPartitionCursor(None, None)
-    state_for_partition = cursor._get_state_for_partition(STATE, {"partition_router_field_1": "X1", "partition_router_field_2": "Y1"})
-    assert state_for_partition == {"cursor state field": 1}

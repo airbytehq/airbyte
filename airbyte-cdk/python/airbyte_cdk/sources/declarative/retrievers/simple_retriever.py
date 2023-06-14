@@ -401,7 +401,7 @@ class SimpleRetriever(Retriever, HttpStream):
         #    it might make more sense to have this on the stream level since this logic would probably apply to the other retrievers. As of
         #    2023-06-09, this is a breaking change because it would mean adding `stream_slicer` to the Retriever interface which we would
         #    to avoid for now.
-        slice_state = self.stream_slicer.select(stream_slice, stream_state) if hasattr(self.stream_slicer, "select") else stream_state
+        slice_state = self.stream_slicer.select_state(stream_slice) if hasattr(self.stream_slicer, "select_state") else stream_state
         records_generator = self._read_pages(
             self.parse_records,
             stream_slice,
