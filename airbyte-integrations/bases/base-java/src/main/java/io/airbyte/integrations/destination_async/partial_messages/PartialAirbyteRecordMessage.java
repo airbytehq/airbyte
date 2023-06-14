@@ -15,6 +15,9 @@ public class PartialAirbyteRecordMessage {
   @JsonProperty("stream")
   private String stream;
 
+  @JsonProperty("data")
+  private Object data;
+
   @JsonProperty("emitted_at")
   @JsonPropertyDescription("when the data was emitted from the source. epoch in millisecond.")
   private long emittedAt;
@@ -48,6 +51,21 @@ public class PartialAirbyteRecordMessage {
 
   public PartialAirbyteRecordMessage withStream(final String stream) {
     this.stream = stream;
+    return this;
+  }
+
+  @JsonProperty("data")
+  public Object getData() {
+    return data;
+  }
+
+  @JsonProperty("data")
+  public void setData(final Object data) {
+    this.data = data;
+  }
+
+  public PartialAirbyteRecordMessage withData(final Object data) {
+    this.data = data;
     return this;
   }
 
