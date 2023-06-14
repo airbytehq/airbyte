@@ -45,7 +45,7 @@ public class PostgresXminHandler {
   private final JdbcCompatibleSourceOperations sourceOperations;
   private final JdbcDatabase database;
   private final String quoteString;
-  private final XminStatus xminStatus;
+  private final XminStatus currentXminStatus;
   private final XminStateManager xminStateManager;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresXminHandler.class);
@@ -58,7 +58,7 @@ public class PostgresXminHandler {
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
-    this.xminStatus = xminStatus;
+    this.currentXminStatus = xminStatus;
     this.xminStateManager = xminStateManager;
   }
 
@@ -138,17 +138,20 @@ public class PostgresXminHandler {
           quoteString);
 
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
+
+      // Get the xmin status associated with the previous run
+      final XminStatus previousRunXminStatus = xminStateManager.getXminStatus(airbyteStream);
+      final PreparedStatement xminPreparedStatement =
+          getXminPreparedStatement(connection, wrappedColumnNames, fullTableName, previousRunXminStatus, currentXminStatus);
       // The xmin state that we save represents the lowest XID that is still in progress. To make sure we
-      // don't miss
-      // data associated with the current transaction, we have to issue an >=
+      // don't miss data associated with the current transaction, we have to issue an >=
       final String sql = String.format("SELECT %s FROM %s WHERE xmin::text::bigint >= ?",
           wrappedColumnNames, fullTableName);
 
       final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
 
-      final XminStatus currentStreamXminStatus = xminStateManager.getXminStatus(airbyteStream);
-      if (currentStreamXminStatus != null) {
-        preparedStatement.setLong(1, currentStreamXminStatus.getXminXidValue());
+      if (previousRunXminStatus != null) {
+        preparedStatement.setLong(1, previousRunXminStatus.getXminXidValue());
       } else {
         preparedStatement.setLong(1, 0L);
       }
@@ -156,6 +159,65 @@ public class PostgresXminHandler {
       return preparedStatement;
     } catch (final SQLException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  private PreparedStatement getXminPreparedStatement(final Connection connection,
+      final String wrappedColumnNames, final String fullTableName, final XminStatus prevRunXminStatus, final
+      XminStatus currentXminStatus) throws SQLException {
+
+    // If the source Postgres DB has undergone multiple wraparound events between syncs, we have no option but to perform
+    // a full sync.
+    if (shouldPerformFullSync(prevRunXminStatus, currentXminStatus)) {
+      final String sql = String.format("SELECT %s FROM %s", wrappedColumnNames, fullTableName);
+      return connection.prepareStatement(sql);
+    } else if (isSingleWraparound(prevRunXminStatus, currentXminStatus)) {
+      // The xmin state that we save represents the lowest XID that is still in progress. To make sure we
+      // don't miss data associated with the current transaction, we have to issue an >=.
+      final String sql = String.format("SELECT %s FROM %s WHERE xmin::text::bigint >= ? OR xmin::text::bigint < ?",
+          wrappedColumnNames, fullTableName);
+      final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+      if (prevRunXminStatus != null) {
+        preparedStatement.setLong(1, prevRunXminStatus.getXminXidValue());
+      } else {
+        preparedStatement.setLong(1, 0L);
+      }
+
+      preparedStatement.setLong(2, currentXminStatus.getXminXidValue());
+      return preparedStatement;
+    } else {
+      // The xmin state that we save represents the lowest XID that is still in progress. To make sure we
+      // don't miss data associated with the current transaction, we have to issue an >=
+      final String sql = String.format("SELECT %s FROM %s WHERE xmin::text::bigint >= ?",
+          wrappedColumnNames, fullTableName);
+
+      final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
+
+      if (prevRunXminStatus != null) {
+        preparedStatement.setLong(1, prevRunXminStatus.getXminXidValue());
+      } else {
+        preparedStatement.setLong(1, 0L);
+      }
+
+      return preparedStatement;
+    }
+  }
+
+  // Detect whether the source Postgres DB has undergone a single wraparound event.
+  private static boolean isSingleWraparound(final XminStatus prevRunXminStatus, final XminStatus currentXminStatus) {
+    if (prevRunXminStatus != null) {
+      return currentXminStatus.getNumWraparound() - prevRunXminStatus.getNumWraparound() == 1;
+    } else {
+      return currentXminStatus.getNumWraparound() - 0 == 1;
+    }
+  }
+
+  // Detects whether source Postgres DB has undergone multiple wraparound events between syncs.
+  private static boolean shouldPerformFullSync(final XminStatus prevRunXminStatus, final XminStatus currentXminStatus) {
+    if (prevRunXminStatus != null) {
+      return currentXminStatus.getNumWraparound() - prevRunXminStatus.getNumWraparound() >= 2;
+    } else {
+      return currentXminStatus.getNumWraparound() - 0 >= 2;
     }
   }
 
@@ -196,7 +258,7 @@ public class PostgresXminHandler {
         autoCloseableIterator -> new XminStateIterator(
             autoCloseableIterator,
             pair,
-            xminStatus),
+            currentXminStatus),
         recordIterator,
         AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()));
   }
