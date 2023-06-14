@@ -10,7 +10,7 @@ import pandas as pd
 import requests
 
 from .constants import INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS
-from .inputs import BUILD_STATUSES, fetch_latest_build_status_for_connector_version
+from .inputs import BUILD_STATUSES, fetch_latest_build_status_for_connector
 from .models import ConnectorQAReport, QAReport
 
 logger = logging.getLogger(__name__)
@@ -40,8 +40,7 @@ def is_eligible_for_promotion_to_cloud(connector_qa_data: pd.Series) -> bool:
 
 def latest_build_is_successful(connector_qa_data: pd.Series) -> bool:
     connector_technical_name = connector_qa_data["connector_technical_name"]
-    connector_version = connector_qa_data["connector_version"]
-    latest_build_status = fetch_latest_build_status_for_connector_version(connector_technical_name, connector_version)
+    latest_build_status = fetch_latest_build_status_for_connector(connector_technical_name)
     return latest_build_status == BUILD_STATUSES.SUCCESS
 
 

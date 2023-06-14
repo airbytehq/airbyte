@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/image-does-not-exist-1
   githubIssueLabel: source-alloydb-strict-encrypt
   dockerImageTag: 0.0.1-exists
-  supportUrl: https://docs.airbyte.com/integrations/sources/alloydb
+  documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
   connectorSubtype: database
   releaseStage: generally_available
   license: MIT
