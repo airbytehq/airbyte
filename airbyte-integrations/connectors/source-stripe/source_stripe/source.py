@@ -92,7 +92,7 @@ class SourceStripe(AbstractSource):
             Events(**incremental_args),
             ExternalAccountBankAccounts(**args),
             ExternalAccountCards(**args),
-            Files(**args),
+            Files(**incremental_args),
             FileLinks(**args),
             InvoiceItems(**incremental_args),
             InvoiceLineItems(**args),
@@ -109,6 +109,6 @@ class SourceStripe(AbstractSource):
             SubscriptionItems(**args),
             Subscriptions(**incremental_args),
             SubscriptionSchedule(**incremental_args),
-            TopUps(**args),
+            TopUps(**incremental_args),
             Transfers(**incremental_args),
         ]
