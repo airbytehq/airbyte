@@ -2,6 +2,7 @@ package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
+import java.util.Optional;
 
 public interface SqlGenerator<DialectTableDefinition, DialectType> {
 
@@ -101,6 +102,6 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
   /**
    * Drop the previous final table, and rename the new final table to match the old final table.
    */
-  String overwriteFinalTable(String finalSuffix, StreamConfig<DialectType> stream);
+  Optional<String> overwriteFinalTable(String finalSuffix, StreamConfig<DialectType> stream);
 
 }

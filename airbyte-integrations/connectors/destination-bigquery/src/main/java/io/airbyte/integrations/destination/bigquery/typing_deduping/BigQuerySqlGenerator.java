@@ -169,7 +169,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     } else {
       // TODO idk
     }
-    return null;
+    return "";
   }
 
   @Override
@@ -196,7 +196,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     )).replace(
         """
             DECLARE missing_pk_count INT64;
-            
+                        
             BEGIN TRANSACTION;
             ${validate_primary_keys}
                       
@@ -215,8 +215,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   @VisibleForTesting
   String validatePrimaryKeys(final StreamId id, final List<ColumnId> primaryKeys, final LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
-    // TODO this method needs to handle all the sync modes
-    // e.g. this pk null check should only happen for incremental dedup
     final String pkNullChecks = primaryKeys.stream().map(
         pk -> {
           final String jsonExtract = extractAndCast(pk, streamColumns.get(pk).airbyteType(), streamColumns.get(pk).dialectType());
@@ -367,18 +365,18 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @Override
-  public String overwriteFinalTable(final String finalSuffix, final StreamConfig<StandardSQLTypeName> stream) {
+  public Optional<String> overwriteFinalTable(final String finalSuffix, final StreamConfig<StandardSQLTypeName> stream) {
     if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE && finalSuffix.length() > 0) {
-      return new StringSubstitutor(Map.of(
+      return Optional.of(new StringSubstitutor(Map.of(
           "final_table_id", stream.id().finalTableId(QUOTE),
           "tmp_final_table", stream.id().finalTableId(finalSuffix, QUOTE),
           "real_final_table", stream.id().finalName(QUOTE)
       )).replace("""
           DROP TABLE IF EXISTS ${final_table_id};
           ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
-          """);
+          """));
     } else {
-      return "";
+      return Optional.empty();
     }
   }
 }
