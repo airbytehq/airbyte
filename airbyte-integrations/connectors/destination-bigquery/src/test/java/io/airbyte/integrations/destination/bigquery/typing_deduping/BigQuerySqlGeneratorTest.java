@@ -28,17 +28,17 @@ class BigQuerySqlGeneratorTest {
 
     assertEquals(
         """
-            CREATE TABLE public.users (
+            CREATE TABLE `public`.`users` (
             _airbyte_raw_id STRING NOT NULL,
             _airbyte_extracted_at TIMESTAMP NOT NULL,
             _airbyte_meta JSON NOT NULL,
-            id INT64,
-            updated_at TIMESTAMP,
-            name STRING,
-            address STRING
+            `id` INT64,
+            `updated_at` TIMESTAMP,
+            `name` STRING,
+            `address` STRING
             )
             PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
-            CLUSTER BY id, _airbyte_extracted_at
+            CLUSTER BY `id`, _airbyte_extracted_at
             """,
         sql
     );
@@ -57,7 +57,7 @@ class BigQuerySqlGeneratorTest {
             BEGIN TRANSACTION;
             SET missing_pk_count = (
               SELECT COUNT(1)
-              FROM airbyte.public_users
+              FROM `airbyte`.`public_users`
               WHERE
                 `_airbyte_loaded_at` IS NULL
                 AND SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.id') as INT64) IS NULL
@@ -67,21 +67,21 @@ class BigQuerySqlGeneratorTest {
               RAISE USING message = FORMAT("Raw table has %s rows missing a primary key", CAST(missing_pk_count AS STRING));
             END IF;
                         
-              INSERT INTO public.users
+              INSERT INTO `public`.`users`
               (
-            id,
-            updated_at,
-            name,
-            address,
+            `id`,
+            `updated_at`,
+            `name`,
+            `address`,
             _airbyte_meta,
             _airbyte_raw_id,
             _airbyte_extracted_at
               )
               SELECT
-            SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.id') as INT64) as id,
-            SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.updated_at') as TIMESTAMP) as updated_at,
-            SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.name') as STRING) as name,
-            TO_JSON_STRING(JSON_QUERY(`_airbyte_data`, '$.address')) as address,
+            SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.id') as INT64) as `id`,
+            SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.updated_at') as TIMESTAMP) as `updated_at`,
+            SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.name') as STRING) as `name`,
+            TO_JSON_STRING(JSON_QUERY(`_airbyte_data`, '$.address')) as `address`,
             to_json(struct(array_concat(
             CASE
               WHEN (JSON_VALUE(`_airbyte_data`, '$.id') IS NOT NULL) AND (SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.id') as INT64) IS NULL) THEN ["Problem with `id`"]
@@ -102,44 +102,44 @@ class BigQuerySqlGeneratorTest {
             ) as errors)) as _airbyte_meta,
                 _airbyte_raw_id,
                 _airbyte_extracted_at
-              FROM airbyte.public_users
+              FROM `airbyte`.`public_users`
               WHERE
                 _airbyte_loaded_at IS NULL
                 AND JSON_EXTRACT(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
               ;
                       
-            DELETE FROM public.users
+            DELETE FROM `public`.`users`
             WHERE
               `_airbyte_raw_id` IN (
                 SELECT `_airbyte_raw_id` FROM (
                   SELECT `_airbyte_raw_id`, row_number() OVER (
-                    PARTITION BY id ORDER BY `updated_at` DESC, `_airbyte_extracted_at` DESC
-                  ) as row_number FROM public.users
+                    PARTITION BY `id` ORDER BY `updated_at` DESC, `_airbyte_extracted_at` DESC
+                  ) as row_number FROM `public`.`users`
                 )
                 WHERE row_number != 1
               )
               OR (
-                id IN (
+                `id` IN (
                   SELECT (
             SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.id') as INT64)
                   )
-                  FROM airbyte.public_users
+                  FROM `airbyte`.`public_users`
                   WHERE JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
                 )
               )
             ;
                       
             DELETE FROM
-              airbyte.public_users
+              `airbyte`.`public_users`
             WHERE
               `_airbyte_raw_id` NOT IN (
-                SELECT `_airbyte_raw_id` FROM public.users
+                SELECT `_airbyte_raw_id` FROM `public`.`users`
               )
               AND
               JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
             ;
                       
-            UPDATE airbyte.public_users
+            UPDATE `airbyte`.`public_users`
             SET `_airbyte_loaded_at` = CURRENT_TIMESTAMP()
             WHERE `_airbyte_loaded_at` IS NULL
             ;

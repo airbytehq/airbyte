@@ -22,30 +22,36 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
     /**
      * Most databases/warehouses use a `schema.name` syntax to identify tables. This is a convenience method to generate that syntax.
      */
-    public String finalTableId() {
-      return finalNamespace + "." + finalName;
+    public String finalTableId(String quote) {
+      return quote + finalNamespace + quote + "." + quote + finalName + quote;
     }
 
-    public String finalTableId(String suffix) {
-      // TODO this won't work if the finalName is quoted, e.g. "`foo bar`". In that case we need to unquote, add the suffix, and requote.
-      return finalNamespace + "." + finalName + suffix;
+    public String finalTableId(String suffix, String quote) {
+      return quote + finalNamespace + quote + "." + quote + finalName + suffix + quote;
     }
 
-    public String rawTableId() {
-      return rawNamespace + "." + rawName;
+    public String rawTableId(String quote) {
+      return quote + rawNamespace + quote + "." + quote + rawName + quote;
+    }
+
+    public String finalName(final String quote) {
+      return quote + finalName + quote;
     }
   }
 
   /**
    * In general, callers should not directly instantiate this class. Use {@link #buildColumnId(String)} instead.
    *
-   * @param name          the name of the column in the final table. Usable directly in a SQL query. For example, "`foo`" or "foo".
+   * @param name          the name of the column in the final table. Callers should prefer {@link #name(String)} when using the column in a query.
    * @param originalName  the name of the field in the raw JSON blob
    * @param canonicalName the name of the field according to the destination. Used for deduping. Useful if a destination warehouse handles columns
    *                      ignoring case, but preserves case in the table schema.
    */
   record ColumnId(String name, String originalName, String canonicalName) {
 
+    public String name(final String quote) {
+      return quote + name + quote;
+    }
   }
 
   StreamId buildStreamId(String namespace, String name);

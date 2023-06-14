@@ -46,6 +46,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
   private final static BigQuerySqlGenerator GENERATOR = new BigQuerySqlGenerator();
   public static final Optional<ColumnId> CURSOR = Optional.of(GENERATOR.buildColumnId("updated_at"));
   public static final List<ColumnId> PRIMARY_KEY = List.of(GENERATOR.buildColumnId("id"));
+  public static final String QUOTE = "`";
 
   private String testDataset;
   private StreamId streamId;
@@ -149,7 +150,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     // TODO more stringent asserts
-    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId()).build()).getTotalRows();
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build()).getTotalRows();
     assertEquals(3, finalRows);
   }
 
@@ -176,7 +177,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     // TODO more stringent asserts
-    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId()).build()).getTotalRows();
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build()).getTotalRows();
     assertEquals(2, finalRows);
   }
 
@@ -202,7 +203,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     // TODO more stringent asserts
-    final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId()).build()).getTotalRows();
+    final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
     assertEquals(2, rawRows);
   }
 
@@ -222,7 +223,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     // TODO more stringent asserts
-    final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId() + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
+    final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
     assertEquals(0, rawUntypedRows);
   }
 
@@ -244,11 +245,11 @@ public class BigQuerySqlGeneratorIntegrationTest {
     bq.query(QueryJobConfiguration.newBuilder(updateSql).build());
 
     // TODO
-    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId()).build()).getTotalRows();
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build()).getTotalRows();
     assertEquals(2, finalRows);
-    final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId()).build()).getTotalRows();
+    final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
     assertEquals(2, rawRows);
-    final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId() + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
+    final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
     assertEquals(0, rawUntypedRows);
   }
 
@@ -270,11 +271,11 @@ public class BigQuerySqlGeneratorIntegrationTest {
     bq.query(QueryJobConfiguration.newBuilder(updateSql).build());
 
     // TODO
-    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId()).build()).getTotalRows();
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build()).getTotalRows();
     assertEquals(3, finalRows);
-    final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId()).build()).getTotalRows();
+    final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
     assertEquals(3, rawRows);
-    final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId() + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
+    final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
     assertEquals(0, rawUntypedRows);
   }
 
@@ -301,11 +302,11 @@ public class BigQuerySqlGeneratorIntegrationTest {
     bq.query(QueryJobConfiguration.newBuilder(updateSql).build());
 
     // TODO
-    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId()).build()).getTotalRows();
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build()).getTotalRows();
     assertEquals(4, finalRows);
-    final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId()).build()).getTotalRows();
+    final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
     assertEquals(3, rawRows);
-    final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId() + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
+    final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
     assertEquals(0, rawUntypedRows);
   }
 

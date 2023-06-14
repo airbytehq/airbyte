@@ -23,10 +23,11 @@ import org.apache.commons.text.StringSubstitutor;
 
 public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, StandardSQLTypeName> {
 
+  private static final String QUOTE = "`";
   private static final BigQuerySQLNameTransformer nameTransformer = new BigQuerySQLNameTransformer();
 
   // metadata columns
-  private final String RAW_ID = buildColumnId("_airbyte_raw_id").name();
+  private final String RAW_ID = buildColumnId("_airbyte_raw_id").name(QUOTE);
 
   @Override
   public StreamId buildStreamId(final String namespace, final String name) {
@@ -128,20 +129,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     // TODO this should also create the dataset if needed
     // TODO this should accept a table suffix for full refresh overwrite
     final String columnDeclarations = stream.columns().entrySet().stream()
-        .map(column -> column.getKey().name() + " " + column.getValue().dialectType().name())
+        .map(column -> column.getKey().name(QUOTE) + " " + column.getValue().dialectType().name())
         .collect(joining(",\n"));
     final String clusterConfig;
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       // We're doing deduping, therefore we have a primary key.
       // Cluster on all the PK columns, and also extracted_at.
-      clusterConfig = stream.primaryKey().stream().map(ColumnId::name).collect(joining(",")) + ", _airbyte_extracted_at";
+      clusterConfig = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(",")) + ", _airbyte_extracted_at";
     } else {
       // Otherwise just cluser on extracted_at.
       clusterConfig = "_airbyte_extracted_at";
     }
 
     return new StringSubstitutor(Map.of(
-        "final_table_id", stream.id().finalTableId(),
+        "final_table_id", stream.id().finalTableId(QUOTE),
         "column_declarations", columnDeclarations,
         "cluster_config", clusterConfig
     )).replace("""
@@ -224,7 +225,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     ).collect(joining("\n"));
 
     return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(),
+        "raw_table_id", id.rawTableId(QUOTE),
         "pk_null_checks", pkNullChecks
     )).replace(
         """
@@ -244,7 +245,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   @VisibleForTesting
   String insertNewRecords(final StreamId id, final LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
     final String columnCasts = streamColumns.entrySet().stream().map(
-        col -> extractAndCast(col.getKey(), col.getValue().airbyteType(), col.getValue().dialectType()) + " as " + col.getKey().name() + ","
+        col -> extractAndCast(col.getKey(), col.getValue().airbyteType(), col.getValue().dialectType()) + " as " + col.getKey().name(QUOTE) + ","
     ).collect(joining("\n"));
     final String columnErrors = streamColumns.entrySet().stream().map(
         col -> new StringSubstitutor(Map.of(
@@ -260,11 +261,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
                 END"""
         )
     ).collect(joining(",\n"));
-    final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name() + ",").collect(joining("\n"));
+    final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
     return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(),
-        "final_table_id", id.finalTableId(),
+        "raw_table_id", id.rawTableId(QUOTE),
+        "final_table_id", id.finalTableId(QUOTE),
         "column_casts", columnCasts,
         "column_errors", columnErrors,
         "column_list", columnList
@@ -294,16 +295,16 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   @VisibleForTesting
   String dedupFinalTable(final StreamId id, final List<ColumnId> primaryKey, Optional<ColumnId> cursor, final LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
-    final String pkList = primaryKey.stream().map(ColumnId::name).collect(joining(","));
+    final String pkList = primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
     final String pkCastList = streamColumns.entrySet().stream()
         .filter(e -> primaryKey.contains(e.getKey()))
         .map(e -> extractAndCast(e.getKey(), e.getValue().airbyteType(), e.getValue().dialectType()))
         .collect(joining(",\n "));
-    final String cursorOrdering = cursor.map(quotedColumnId -> quotedColumnId.name() + " DESC,").orElse("");
+    final String cursorOrdering = cursor.map(quotedColumnId -> quotedColumnId.name(QUOTE) + " DESC,").orElse("");
 
     return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(),
-        "final_table_id", id.finalTableId(),
+        "raw_table_id", id.rawTableId(QUOTE),
+        "final_table_id", id.finalTableId(QUOTE),
         "pk_list", pkList,
         "pk_cast_list", pkCastList,
         "cursor_ordering", cursorOrdering
@@ -335,8 +336,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   @VisibleForTesting
   String dedupRawTable(final StreamId id) {
     return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(),
-        "final_table_id", id.finalTableId()
+        "raw_table_id", id.rawTableId(QUOTE),
+        "final_table_id", id.finalTableId(QUOTE)
     )).replace(
         // TODO remove the deleted_at clause if we don't have the cdc columns
         """
@@ -355,7 +356,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   @VisibleForTesting
   String commitRawTable(final StreamId id) {
     return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId()
+        "raw_table_id", id.rawTableId(QUOTE)
     )).replace(
         """
               UPDATE ${raw_table_id}
@@ -369,9 +370,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   public String overwriteFinalTable(final String finalSuffix, final StreamConfig<StandardSQLTypeName> stream) {
     if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE && finalSuffix.length() > 0) {
       return new StringSubstitutor(Map.of(
-          "final_table_id", stream.id().finalTableId(),
-          "tmp_final_table", stream.id().finalTableId(finalSuffix),
-          "real_final_table", stream.id().finalName()
+          "final_table_id", stream.id().finalTableId(QUOTE),
+          "tmp_final_table", stream.id().finalTableId(finalSuffix, QUOTE),
+          "real_final_table", stream.id().finalName(QUOTE)
       )).replace("""
           DROP TABLE IF EXISTS ${final_table_id};
           ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
