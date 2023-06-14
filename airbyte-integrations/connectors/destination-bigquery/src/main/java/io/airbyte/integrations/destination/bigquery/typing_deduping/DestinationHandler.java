@@ -7,7 +7,6 @@ public interface DestinationHandler<DialectTableDefinition> {
 
   Optional<DialectTableDefinition> findExistingTable(StreamId id);
 
-  // TODO change this to accept Optional<String>
   void execute(String sql) throws Exception;
 
 }

@@ -35,9 +35,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
         // TODO is this correct?
         nameTransformer.getNamespace(namespace),
         nameTransformer.convertStreamName(name),
-        // TODO constant
         nameTransformer.getNamespace(rawNamespaceOverride),
-        // TODO maybe do something with #getRawTableName?
         nameTransformer.convertStreamName(namespace + "_" + name),
         namespace,
         name);
@@ -107,7 +105,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   public StandardSQLTypeName toDialectType(final AirbyteProtocolType airbyteProtocolType) {
-    // TODO maybe this should be in the interface? unclear if that has value, but I expect every implementation to have this method
     return switch (airbyteProtocolType) {
       // TODO doublecheck these
       case STRING -> StandardSQLTypeName.STRING;
