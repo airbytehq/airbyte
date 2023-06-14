@@ -107,14 +107,13 @@ class PerPartitionCursor(StreamSlicer):
         self._cursor_factory = cursor_factory
         self._partition_router = partition_router
         self._cursor_per_partition = {}
-        self._default_cursor_state = self._NO_CURSOR_STATE
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[PerPartitionStreamSlice]:
         slices = self._partition_router.stream_slices(sync_mode, self._NO_STATE)
         for partition in slices:
             cursor = self._cursor_per_partition.get(self._to_tuple(partition))
             if not cursor:
-                cursor = self._create_cursor(self._default_cursor_state)
+                cursor = self._create_cursor(self._NO_CURSOR_STATE)
                 self._cursor_per_partition[self._to_tuple(partition)] = cursor
 
             for cursor_slice in cursor.stream_slices(sync_mode, self._get_state_for_partition(stream_state, partition)):
@@ -141,12 +140,6 @@ class PerPartitionCursor(StreamSlicer):
         for state in stream_state["states"]:
             self._cursor_per_partition[self._to_tuple(state["partition"])] = self._create_cursor(state["cursor"])
 
-    def set_default_state(self, default_state: dict) -> None:
-        """
-        Deprecated: this method only exist to support the migration of non per partition states
-        """
-        self._default_cursor_state = default_state
-
     def get_stream_state(self) -> StreamState:
         states = []
         for partition_tuple, cursor in self._cursor_per_partition.items():
@@ -170,7 +163,7 @@ class PerPartitionCursor(StreamSlicer):
             if partition == state["partition"]:
                 return state["cursor"]
 
-        return self._default_cursor_state
+        return None
 
     @staticmethod
     def _is_new_state(stream_state):
