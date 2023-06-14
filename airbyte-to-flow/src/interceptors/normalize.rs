@@ -69,6 +69,12 @@ pub fn automatic_normalizations(
     }, "".to_string())
 }
 
+// January 1st, 3000 is considered the maximum seconds unix timestamp
+// It is January 12th, 1971 as a milliseconds unix timestamp
+// This means we will not be able to support milliseconds unix timestamps before January 12th, 1971
+// and we will not be able to support seconds unix timestamps after January 1st, 30000
+const UNIX_SECONDS_MAX: i64 = 32503680000;
+
 fn normalize_to_rfc3339(doc: &mut serde_json::Value, ptr: &doc::Pointer) {
     if let Some(val) = ptr.query(doc) {
         match val.to_owned() {
@@ -91,17 +97,27 @@ fn normalize_to_rfc3339(doc: &mut serde_json::Value, ptr: &doc::Pointer) {
                     }
                 };    
             },
-            serde_json::Value::Number(val) => {
-                val.as_i64().map(|v| {
-                    match chrono::Utc.timestamp_opt(v, 0) {
-                        LocalResult::Single(dt) => {
-                            let formatted = dt.to_rfc3339_opts(SecondsFormat::AutoSi, true);
-                            ptr.create_value(doc)
-                            .map(|val| *val = serde_json::json!(formatted.as_str()));
-                        },
-                        _ => {}
-                    };
-                });
+            serde_json::Value::Number(raw_num) => {
+                let v = if raw_num.is_f64() {
+                    (raw_num.as_f64().unwrap() * 1000_f64) as i64
+                } else {
+                    raw_num.as_i64().unwrap()
+                };
+
+                let (seconds_since_epoch, nanoseconds) = if v > UNIX_SECONDS_MAX {
+                    let seconds = v / 1000;
+                    let millis = (v % 1000) as u32;
+                    (seconds, millis * 1000000)
+                } else { (v, 0) };
+
+                match chrono::Utc.timestamp_opt(seconds_since_epoch, nanoseconds) {
+                    LocalResult::Single(dt) => {
+                        let formatted = dt.to_rfc3339_opts(SecondsFormat::AutoSi, true);
+                        ptr.create_value(doc)
+                        .map(|val| *val = serde_json::json!(formatted.as_str()));
+                    },
+                    _ => {}
+                };
             },
             _ => {}
         }
@@ -297,7 +313,7 @@ mod tests {
                 serde_json::json!({
                     "type": "object",
                     "properties": {
-                        "created": {
+                        "seconds": {
                             "type": "string",
                             "format": "date-time"
                         },
@@ -305,7 +321,11 @@ mod tests {
                             "type": "array",
                             "items": {
                                 "properties": {
-                                    "x": {
+                                    "milliseconds": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "fractional_milliseconds": {
                                         "type": "string",
                                         "format": "date-time"
                                     }
@@ -315,12 +335,18 @@ mod tests {
                     }
                 }),
                 serde_json::json!({
-                    "created": 1685098188,
-                    "arr": [{ "x": 1685098188 }],
+                    "seconds": 1685098188,
+                    "arr": [{
+                        "milliseconds": 1685098188123_i64,
+                        "fractional_milliseconds": 1685098188.123
+                    }],
                 }),
                 serde_json::json!({
-                    "created": "2023-05-26T10:49:48Z",
-                    "arr": [{ "x": "2023-05-26T10:49:48Z" }],
+                    "seconds": "2023-05-26T10:49:48Z",
+                    "arr": [{
+                        "milliseconds": "2023-05-26T10:49:48.123Z",
+                        "fractional_milliseconds": "2023-05-26T10:49:48.123Z"
+                    }],
                 }),
             )
         ];
