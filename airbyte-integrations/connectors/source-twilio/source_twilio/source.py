@@ -42,8 +42,8 @@ from source_twilio.streams import (
     Trunks,
     UsageRecords,
     UsageTriggers,
-    Users,
     UserConversations,
+    Users,
 )
 
 RETENTION_WINDOW_LIMIT = 400

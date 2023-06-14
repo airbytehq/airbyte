@@ -32,8 +32,8 @@ from source_twilio.streams import (
     Transcriptions,
     UsageRecords,
     UsageTriggers,
+    UserConversations,
     Users,
-    UserConversations
 )
 
 

@@ -612,6 +612,7 @@ class ConversationMessages(TwilioNestedStream):
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {"conversation_sid": record["sid"]}
 
+
 class Users(TwilioStream):
     """https://www.twilio.com/docs/conversations/api/user-resource"""
 
@@ -619,6 +620,7 @@ class Users(TwilioStream):
 
     def path(self, **kwargs):
         return self.name.title()
+
 
 class UserConversations(TwilioNestedStream):
     """https://www.twilio.com/docs/conversations/api/user-conversation-resource#list-all-of-a-users-conversations"""
@@ -633,4 +635,3 @@ class UserConversations(TwilioNestedStream):
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {"user_sid": record["sid"]}
-    
