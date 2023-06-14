@@ -80,6 +80,8 @@ The Stripe source connector supports the following streams:
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Accounts](https://stripe.com/docs/api/accounts/list) \(Incremental\)
+- [Setup Attempts](https://stripe.com/docs/api/setup_attempts/list) \(Incremental\)
+- [Usage Records](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)
 
 ### Data type mapping
 
