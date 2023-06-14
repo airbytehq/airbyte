@@ -47,19 +47,17 @@ _____________________________
 
 ## Deprecating Legacy Normalization
 
-Existing normalization options, both `Raw data (JSON)` and `Normalized tabular data` are now deprecated, and will be unsupported starting Oct 1, 2023.
+The upgrade to Destinations V2 is handled by moving your connections to use [updated versions of Airbyte destinations](#destinations-v2-compatible-versions). Existing normalization options, both `Raw data (JSON)` and `Normalized tabular data` will be unsupported starting Oct 1, 2023.
 
 ![Legacy Normalization](./assets/airbyte_legacy_normalization.png)
 
-As a Cloud user, existing syncs will be paused on **Oct 1, 2023**. Follow the upgrade steps below to benefit from Destinations V2.
-
-As an Open Source user, you may choose to upgrade at your convenience. However, destination connector versions prior to Destinations V2 will no longer be supported as of **Oct 1, 2023**.
+As a Cloud user, existing connections using legacy normalization will be paused on **Oct 1, 2023**. As an Open Source user, you may choose to upgrade at your convenience. However, destination connector versions prior to Destinations V2 will no longer be supported as of **Oct 1, 2023**.
 
 See [here](to-do-doc) to learn more about Airbyte's breaking change rollout requirements.
 
 ### Breakdown of Breaking Changes
 
-Breaking changes will be most notable to users actively syncing data from API sources such as Facebook Marketing, HubSpot, Stripe, Amazon Ads, TikTok Marketing and more. The following table details the delivered data modified by Destinations V2:
+The following table details the delivered data modified by Destinations V2:
 
 | Current Normalization Setting   	 | Source Type                           	| Impacted Data (Breaking Changes)                         	                     |
 |-----------------------------------|---------------------------------------	|--------------------------------------------------------------------------------|
@@ -159,12 +157,12 @@ For each destination connector, Destinations V2 is effective as of the following
 
 | Destination Connector 	| Safe Rollback Version 	| Destinations V2 Compatible 	 |
 |-----------------------	|-----------------------	|------------------------------|
-| BigQuery              	| 1.4.4                 	| 1.5.0+                   	   |
-| Snowflake             	| 0.4.1                 	| 0.5.0+                   	   |
-| Redshift              	| 0.4.8                 	| 0.5.0+                   	   |
-| MSSQL                 	| 0.1.24                	| 0.2.0+                   	   |
-| MySQL                 	| 0.1.20                	| 0.2.0+                   	   |
-| Oracle                	| 0.1.19                	| 0.2.0+                   	   |
-| TiDB                  	| 0.1.3                 	| 0.2.0+                   	   |
-| DuckDB                	| 0.1.0                 	| 0.2.0+                   	   |
-| Clickhouse            	| 0.2.3                 	| 0.3.0+                   	   |
+| BigQuery              	| 1.4.4                 	| 2.0.0+                   	   |
+| Snowflake             	| 0.4.1                 	| 1.0.0+                   	   |
+| Redshift              	| 0.4.8                 	| 1.0.0+                   	   |
+| MSSQL                 	| 0.1.24                	| 2.0.0+                   	   |
+| MySQL                 	| 0.1.20                	| 2.0.0+                   	   |
+| Oracle                	| 0.1.19                	| 2.0.0+                   	   |
+| TiDB                  	| 0.1.3                 	| 2.0.0+                   	   |
+| DuckDB                	| 0.1.0                 	| 2.0.0+                   	   |
+| Clickhouse            	| 0.2.3                 	| 3.0.0+                   	   |
