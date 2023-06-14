@@ -3,6 +3,6 @@
 #
 
 from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
-from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionCursor
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import CursorFactory, PerPartitionCursor
 
-__all__ = ["DatetimeBasedCursor", "PerPartitionCursor"]
+__all__ = ["CursorFactory", "DatetimeBasedCursor", "PerPartitionCursor"]

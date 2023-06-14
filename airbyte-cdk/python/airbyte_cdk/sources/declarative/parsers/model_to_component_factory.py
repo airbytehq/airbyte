@@ -23,7 +23,7 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, PerPartitionCursor
+from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
@@ -107,14 +107,6 @@ ComponentDefinition: Union[Literal, Mapping, List]
 
 
 DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
-
-
-class CursorFactory:
-    def __init__(self, create_function):
-        self._create_function = create_function
-
-    def create(self):
-        return self._create_function()
 
 
 class ModelToComponentFactory:

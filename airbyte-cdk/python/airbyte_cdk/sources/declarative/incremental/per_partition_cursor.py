@@ -85,6 +85,14 @@ class PerPartitionStreamSlice(StreamSlice):
         return not self.__eq__(other)
 
 
+class CursorFactory:
+    def __init__(self, create_function):
+        self._create_function = create_function
+
+    def create(self):
+        return self._create_function()
+
+
 class PerPartitionCursor(StreamSlicer):
     """
     Given a stream has many partitions, it is important to provide a state per partition.
@@ -111,7 +119,7 @@ class PerPartitionCursor(StreamSlicer):
     _KEY = 0
     _VALUE = 1
 
-    def __init__(self, cursor_factory, partition_router):
+    def __init__(self, cursor_factory: CursorFactory, partition_router: StreamSlicer):
         self._cursor_factory = cursor_factory
         self._partition_router = partition_router
         self._cursor_per_partition = {}
@@ -161,12 +169,12 @@ class PerPartitionCursor(StreamSlicer):
                 states.append(
                     {
                         "partition": self._to_dict(partition_tuple),
-                        "cursor": cursor.get_stream_state(),
+                        "cursor": cursor_state,
                     }
                 )
         return {"states": states}
 
-    def _get_state_for_partition(self, partition: Mapping[str, Any]) -> Any:
+    def _get_state_for_partition(self, partition: Mapping[str, Any]) -> Optional[StreamState]:
         cursor = self._cursor_per_partition.get(self._to_partition_key(partition))
         if cursor:
             return cursor.get_stream_state()
