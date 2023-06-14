@@ -1,5 +1,5 @@
 {
   "api_token": "TOKEN",
   "start_date": "2020-01-01",
-  "batch_size": "31"
+  "batch_size": 31
 }
