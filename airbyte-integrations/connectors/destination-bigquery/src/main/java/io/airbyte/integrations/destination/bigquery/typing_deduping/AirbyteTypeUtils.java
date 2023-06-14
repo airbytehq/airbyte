@@ -14,6 +14,26 @@ import java.util.Map;
 
 public class AirbyteTypeUtils {
 
+  // Map from a protocol type to what other protocol types should take precedence over it if present in a OneOf
+  private static final Map<AirbyteProtocolType, List<AirbyteProtocolType>> EXCLUDED_PROTOCOL_TYPES_MAP = ImmutableMap.of(
+      AirbyteProtocolType.BOOLEAN, ImmutableList.of(AirbyteProtocolType.STRING, AirbyteProtocolType.NUMBER, AirbyteProtocolType.INTEGER),
+      AirbyteProtocolType.INTEGER, ImmutableList.of(AirbyteProtocolType.STRING, AirbyteProtocolType.NUMBER),
+      AirbyteProtocolType.NUMBER, ImmutableList.of(AirbyteProtocolType.STRING)
+  );
+
+  // Protocol types in order of precedence
+  private static final List<AirbyteProtocolType> ORDERED_PROTOCOL_TYPES = ImmutableList.of(
+      AirbyteProtocolType.BOOLEAN,
+      AirbyteProtocolType.INTEGER,
+      AirbyteProtocolType.NUMBER,
+      AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE,
+      AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
+      AirbyteProtocolType.DATE,
+      AirbyteProtocolType.TIME_WITH_TIMEZONE,
+      AirbyteProtocolType.TIME_WITHOUT_TIMEZONE,
+      AirbyteProtocolType.STRING
+  );
+
   protected static boolean nodeIsType(final JsonNode node, final String type) {
     if (node == null || !node.isTextual()) {
       return false;
@@ -74,44 +94,24 @@ public class AirbyteTypeUtils {
     return AirbyteProtocolType.UNKNOWN;
   }
 
-  // Map from a protocol type to what other protocol types should take precedence over it if present
-  private static final Map<AirbyteProtocolType, List<AirbyteProtocolType>> EXCLUDED_PROTOCOL_TYPES_MAP = ImmutableMap.of(
-      AirbyteProtocolType.BOOLEAN, ImmutableList.of(AirbyteProtocolType.STRING, AirbyteProtocolType.NUMBER, AirbyteProtocolType.INTEGER),
-      AirbyteProtocolType.INTEGER, ImmutableList.of(AirbyteProtocolType.STRING, AirbyteProtocolType.NUMBER),
-      AirbyteProtocolType.NUMBER, ImmutableList.of(AirbyteProtocolType.STRING)
-  );
-
-  // Protocol types in order of precedence
-  private static final List<AirbyteProtocolType> ORDERED_PROTOCOL_TYPES_LIST = ImmutableList.of(
-      AirbyteProtocolType.BOOLEAN,
-      AirbyteProtocolType.INTEGER,
-      AirbyteProtocolType.NUMBER,
-      AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE,
-      AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE,
-      AirbyteProtocolType.DATE,
-      AirbyteProtocolType.TIME_WITH_TIMEZONE,
-      AirbyteProtocolType.TIME_WITHOUT_TIMEZONE,
-      AirbyteProtocolType.STRING
-  );
-
-  // Pick which type in the list has precedence
+  // Pick which type in a OneOf has precedence
   protected static AirbyteType chooseOneOfType(final OneOf o) {
     final List<AirbyteType> options = o.options();
 
     // record what types are present
-    final Map<AirbyteProtocolType, Boolean> typePresenceMap = new HashMap<>();
-    Arrays.stream(AirbyteProtocolType.values()).map(type -> typePresenceMap.put(type, false));
     Array foundArrayType = null;
     Struct foundStructType = null;
+    final Map<AirbyteProtocolType, Boolean> typePresenceMap = new HashMap<>();
+    Arrays.stream(AirbyteProtocolType.values()).map(type -> typePresenceMap.put(type, false));
 
-    // looping only once for efficiency
+    // looping through the options only once for efficiency
     for (final AirbyteType option : options) {
-      if (option instanceof Array) {
-        foundArrayType = (Array) option;
-      } else if (option instanceof Struct) {
-        foundStructType = (Struct) option;
-      } else if (option instanceof final AirbyteProtocolType protocolType) {
-        typePresenceMap.put(protocolType, true);
+      if (option instanceof final Array a) {
+        foundArrayType = a;
+      } else if (option instanceof final Struct s) {
+        foundStructType = s;
+      } else if (option instanceof final AirbyteProtocolType p) {
+        typePresenceMap.put(p, true);
       }
     }
 
@@ -120,7 +120,7 @@ public class AirbyteTypeUtils {
     } else if (foundStructType != null) {
       return foundStructType;
     } else {
-      for (final AirbyteProtocolType protocolType : ORDERED_PROTOCOL_TYPES_LIST) {
+      for (final AirbyteProtocolType protocolType : ORDERED_PROTOCOL_TYPES) {
         if (typePresenceMap.get(protocolType)) {
           boolean foundExcludedTypes = false;
           final List<AirbyteProtocolType> excludedTypes = EXCLUDED_PROTOCOL_TYPES_MAP.get(protocolType);
