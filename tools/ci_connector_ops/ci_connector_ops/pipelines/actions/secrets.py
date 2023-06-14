@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 import anyio
 from ci_connector_ops.pipelines.actions import environments
+from ci_connector_ops.pipelines.utils import get_file_contents
 from dagger import Directory
 
 if TYPE_CHECKING:
@@ -22,11 +23,11 @@ async def mask_secrets_in_gha_logs(ci_credentials_with_downloaded_secrets: Conta
     We're not doing it directly from the ci_credentials tool because its stdout is wrapped around the dagger logger,
     And GHA will only interpret lines starting with ::add-mask:: as secrets to mask.
     """
-    secrets_to_mask = await ci_credentials_with_downloaded_secrets.file("/tmp/secrets_to_mask.txt").contents()
-    for secret_to_mask in secrets_to_mask.splitlines():
-        # We print directly to stdout because the GHA runner will mask only if the log line starts with "::add-mask::"
-        # If we use the dagger logger, or context logger, the log line will start with other stuff and will not be masked
-        print(f"::add-mask::{secret_to_mask}")
+    if secrets_to_mask := await get_file_contents(ci_credentials_with_downloaded_secrets, "/tmp/secrets_to_mask.txt"):
+        for secret_to_mask in secrets_to_mask.splitlines():
+            # We print directly to stdout because the GHA runner will mask only if the log line starts with "::add-mask::"
+            # If we use the dagger logger, or context logger, the log line will start with other stuff and will not be masked
+            print(f"::add-mask::{secret_to_mask}")
 
 
 async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GCP_GSM_CREDENTIALS") -> Directory:

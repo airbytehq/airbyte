@@ -161,6 +161,7 @@ class QaChecks(Step):
             .with_workdir("/airbyte")
             .with_exec(["run-qa-checks", f"connectors/{self.context.connector.technical_name}"])
         )
+
         return await self.get_step_result(qa_checks)
 
 

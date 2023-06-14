@@ -101,6 +101,7 @@ class SourceGitlab(AbstractSource):
             for stream_slice in projects.stream_slices(sync_mode=SyncMode.full_refresh):
                 next(projects.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
                 return True, None
+            return True, None  # in case there's no projects
         except Exception as error:
             return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(error)}"
 

@@ -176,9 +176,9 @@ def invalid_config_file(tmp_path):
 
 
 def test_handle_resolve_manifest(valid_resolve_manifest_config_file, dummy_catalog):
-    with mock.patch.object(connector_builder.main, "handle_connector_builder_request") as patch:
+    with mock.patch.object(connector_builder.main, "handle_connector_builder_request") as patched_handle:
         handle_request(["read", "--config", str(valid_resolve_manifest_config_file), "--catalog", str(dummy_catalog)])
-        assert patch.call_count == 1
+        assert patched_handle.call_count == 1
 
 
 def test_handle_test_read(valid_read_config_file, configured_catalog):
@@ -354,6 +354,8 @@ def test_read():
         ],
         test_read_limit_reached=False,
         inferred_schema=None,
+        inferred_datetime_formats=None,
+        latest_config_update={}
     )
 
     expected_airbyte_message = AirbyteMessage(
@@ -367,6 +369,8 @@ def test_read():
                 ],
                 "test_read_limit_reached": False,
                 "inferred_schema": None,
+                "inferred_datetime_formats": None,
+                "latest_config_update": {}
             },
             emitted_at=1,
         ),
@@ -378,6 +382,37 @@ def test_read():
         )
         output_record.record.emitted_at = 1
         assert output_record == expected_airbyte_message
+
+
+def test_config_update():
+    manifest = copy.deepcopy(MANIFEST)
+    manifest["definitions"]["retriever"]["requester"]["authenticator"] = {
+        "type": "OAuthAuthenticator",
+        "token_refresh_endpoint": "https://oauth.endpoint.com/tokens/bearer",
+        "client_id": "{{ config['credentials']['client_id'] }}",
+        "client_secret": "{{ config['credentials']['client_secret'] }}",
+        "refresh_token": "{{ config['credentials']['refresh_token'] }}",
+        "refresh_token_updater": {}
+    }
+    config = copy.deepcopy(TEST_READ_CONFIG)
+    config["__injected_declarative_manifest"] = manifest
+    config["credentials"] = {
+        "client_id": "a client id",
+        "client_secret": "a client secret",
+        "refresh_token": "a refresh token",
+    }
+    source = ManifestDeclarativeSource(manifest)
+
+    refresh_request_response = {
+        "access_token": "an updated access token",
+        "refresh_token": "an updated refresh token",
+        "expires_in": 3600,
+    }
+    with patch("airbyte_cdk.sources.streams.http.requests_native_auth.SingleUseRefreshTokenOauth2Authenticator._get_refresh_access_token_response", return_value=refresh_request_response):
+        output = handle_connector_builder_request(
+            source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), TestReadLimits()
+        )
+        assert output.record.data["latest_config_update"]
 
 
 @patch("traceback.TracebackException.from_exception")
@@ -407,7 +442,9 @@ def test_read_returns_error_response(mock_from_exception):
                                           pages=[StreamReadPages(records=[], request=None, response=None)],
                                           slice_descriptor=None, state=None)],
                                       test_read_limit_reached=False,
-                                      inferred_schema=None)
+                                      inferred_schema=None,
+                                      inferred_datetime_formats={},
+                                      latest_config_update=None)
 
     expected_message = AirbyteMessage(
         type=MessageType.RECORD,
