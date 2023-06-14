@@ -3,6 +3,7 @@
 #
 
 
+import os
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import SyncMode
@@ -40,6 +41,7 @@ from .streams import (
     Tags,
     Users,
 )
+from .utils import parse_url
 
 
 def get_authenticator(config: MutableMapping) -> AuthBase:
@@ -95,7 +97,16 @@ class SourceGitlab(AbstractSource):
         for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):
             yield from stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
 
+    @staticmethod
+    def _is_http_allowed() -> bool:
+        return os.environ.get("DEPLOYMENT_MODE", "").upper() != "CLOUD"
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
+        is_valid, scheme, _ = parse_url(config["api_url"])
+        if not is_valid:
+            return False, "Invalid API resource locator."
+        if scheme == "http" and not self._is_http_allowed():
+            return False, "Http scheme is not allowed in this environment. Please use `https` instead."
         try:
             projects = self._projects_stream(config)
             for stream_slice in projects.stream_slices(sync_mode=SyncMode.full_refresh):
