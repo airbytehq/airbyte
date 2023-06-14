@@ -111,6 +111,11 @@ definitions:
     $parameters:
       name: "users"
       path: ""
+  workspaces_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "workspaces"
+      path: ""
 
 streams:
   - "#/definitions/items_stream"
@@ -118,6 +123,7 @@ streams:
   - "#/definitions/teams_stream"
   - "#/definitions/updates_stream"
   - "#/definitions/users_stream"
+  - "#/definitions/workspaces_stream"
 
 check:
   stream_names:
