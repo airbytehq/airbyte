@@ -14,10 +14,13 @@ from airbyte_cdk import entrypoint as entrypoint_module
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
+    AirbyteControlConnectorConfigMessage,
+    AirbyteControlMessage,
     AirbyteMessage,
     AirbyteRecordMessage,
     AirbyteStream,
     ConnectorSpecification,
+    OrchestratorType,
     Status,
     SyncMode,
     Type,
@@ -33,6 +36,10 @@ class MockSource(Source):
         pass
 
     def check(self, **kwargs):
+        pass
+
+    @property
+    def message_repository(self):
         pass
 
 
@@ -53,8 +60,21 @@ def spec_mock(mocker):
     return mock
 
 
+MESSAGE_FROM_REPOSITORY = AirbyteMessage(
+    type=Type.CONTROL,
+    control=AirbyteControlMessage(
+        type=OrchestratorType.CONNECTOR_CONFIG,
+        emitted_at=10,
+        connectorConfig=AirbyteControlConnectorConfigMessage(config={"any config": "a config value"}),
+    )
+)
+
+
 @pytest.fixture
-def entrypoint() -> AirbyteEntrypoint:
+def entrypoint(mocker) -> AirbyteEntrypoint:
+    message_repository = MagicMock()
+    message_repository.consume_queue.side_effect = [[message for message in [MESSAGE_FROM_REPOSITORY]], []]
+    mocker.patch.object(MockSource, "message_repository", new_callable=mocker.PropertyMock, return_value=message_repository)
     return AirbyteEntrypoint(MockSource())
 
 
@@ -124,7 +144,10 @@ def test_run_spec(entrypoint: AirbyteEntrypoint, mocker):
     parsed_args = Namespace(command="spec")
     expected = ConnectorSpecification(connectionSpecification={"hi": "hi"})
     mocker.patch.object(MockSource, "spec", return_value=expected)
-    assert [_wrap_message(expected)] == list(entrypoint.run(parsed_args))
+
+    messages = list(entrypoint.run(parsed_args))
+
+    assert [MESSAGE_FROM_REPOSITORY.json(exclude_unset=True), _wrap_message(expected)] == messages
 
 
 @pytest.fixture
@@ -158,29 +181,54 @@ def test_config_validate(entrypoint: AirbyteEntrypoint, mocker, config_mock, sch
 
     messages = list(entrypoint.run(parsed_args))
     if config_valid:
-        assert [_wrap_message(check_value)] == messages
+        assert [MESSAGE_FROM_REPOSITORY.json(exclude_unset=True), _wrap_message(check_value)] == messages
     else:
-        assert len(messages) == 1
-        airbyte_message = AirbyteMessage.parse_raw(messages[0])
-        assert airbyte_message.type == Type.CONNECTION_STATUS
-        assert airbyte_message.connectionStatus.status == Status.FAILED
-        assert airbyte_message.connectionStatus.message.startswith("Config validation error:")
+        assert len(messages) == 2
+        assert messages[0] == MESSAGE_FROM_REPOSITORY.json(exclude_unset=True)
+        connection_status_message = AirbyteMessage.parse_raw(messages[1])
+        assert connection_status_message.type == Type.CONNECTION_STATUS
+        assert connection_status_message.connectionStatus.status == Status.FAILED
+        assert connection_status_message.connectionStatus.message.startswith("Config validation error:")
 
 
 def test_run_check(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
     parsed_args = Namespace(command="check", config="config_path")
     check_value = AirbyteConnectionStatus(status=Status.SUCCEEDED)
     mocker.patch.object(MockSource, "check", return_value=check_value)
-    assert [_wrap_message(check_value)] == list(entrypoint.run(parsed_args))
+
+    messages = list(entrypoint.run(parsed_args))
+
+    assert [MESSAGE_FROM_REPOSITORY.json(exclude_unset=True), _wrap_message(check_value)] == messages
     assert spec_mock.called
+
+
+def test_run_check_with_exception(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
+    parsed_args = Namespace(command="check", config="config_path")
+    mocker.patch.object(MockSource, "check", side_effect=ValueError("Any error"))
+
+    with pytest.raises(ValueError):
+        messages = list(entrypoint.run(parsed_args))
+        assert [MESSAGE_FROM_REPOSITORY.json(exclude_unset=True)] == messages
 
 
 def test_run_discover(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
     parsed_args = Namespace(command="discover", config="config_path")
     expected = AirbyteCatalog(streams=[AirbyteStream(name="stream", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh])])
     mocker.patch.object(MockSource, "discover", return_value=expected)
-    assert [_wrap_message(expected)] == list(entrypoint.run(parsed_args))
+
+    messages = list(entrypoint.run(parsed_args))
+
+    assert [MESSAGE_FROM_REPOSITORY.json(exclude_unset=True), _wrap_message(expected)] == messages
     assert spec_mock.called
+
+
+def test_run_discover_with_exception(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
+    parsed_args = Namespace(command="discover", config="config_path")
+    mocker.patch.object(MockSource, "discover", side_effect=ValueError("Any error"))
+
+    with pytest.raises(ValueError):
+        messages = list(entrypoint.run(parsed_args))
+        assert [MESSAGE_FROM_REPOSITORY.json(exclude_unset=True)] == messages
 
 
 def test_run_read(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
@@ -189,10 +237,24 @@ def test_run_read(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock)
     mocker.patch.object(MockSource, "read_state", return_value={})
     mocker.patch.object(MockSource, "read_catalog", return_value={})
     mocker.patch.object(MockSource, "read", return_value=[AirbyteMessage(record=expected, type=Type.RECORD)])
-    assert [_wrap_message(expected)] == list(entrypoint.run(parsed_args))
+
+    messages = list(entrypoint.run(parsed_args))
+
+    assert [_wrap_message(expected), MESSAGE_FROM_REPOSITORY.json(exclude_unset=True)] == messages
     assert spec_mock.called
 
 
-def test_invalid_command(entrypoint: AirbyteEntrypoint, mocker, config_mock):
+def test_run_read_with_exception(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
+    parsed_args = Namespace(command="read", config="config_path", state="statepath", catalog="catalogpath")
+    mocker.patch.object(MockSource, "read_state", return_value={})
+    mocker.patch.object(MockSource, "read_catalog", return_value={})
+    mocker.patch.object(MockSource, "read", side_effect=ValueError("Any error"))
+
+    with pytest.raises(ValueError):
+        messages = list(entrypoint.run(parsed_args))
+        assert [MESSAGE_FROM_REPOSITORY.json(exclude_unset=True)] == messages
+
+
+def test_invalid_command(entrypoint: AirbyteEntrypoint, config_mock):
     with pytest.raises(Exception):
         list(entrypoint.run(Namespace(command="invalid", config="conf")))

@@ -3,6 +3,7 @@
 #
 
 import logging
+import pytest
 
 from source_gitlab import SourceGitlab
 from source_gitlab.streams import GitlabStream
@@ -19,10 +20,22 @@ def test_streams(config, requests_mock):
     assert projects.project_ids == []
 
 
-def test_connection_success(config, requests_mock):
-    requests_mock.get("/api/v4/groups", json=[{"id": "g1"}])
-    requests_mock.get("/api/v4/groups/g1", json=[{"id": "g1", "projects": [{"id": "p1", "path_with_namespace": "p1"}]}])
-    requests_mock.get("/api/v4/projects/p1", json={"id": "p1"})
+@pytest.mark.parametrize(
+    "url_mocks",
+    (
+        (
+            {"url": "/api/v4/groups", "json": [{"id": "g1"}]},
+            {"url": "/api/v4/groups/g1", "json": [{"id": "g1", "projects": [{"id": "p1", "path_with_namespace": "p1"}]}]},
+            {"url": "/api/v4/projects/p1", "json": {"id": "p1"}}
+        ),
+        (
+            {"url": "/api/v4/groups", "json": []},
+        ),
+    )
+)
+def test_connection_success(config, requests_mock, url_mocks):
+    for url_mock in url_mocks:
+        requests_mock.get(**url_mock)
     source = SourceGitlab()
     status, msg = source.check_connection(logging.getLogger(), config)
     assert (status, msg) == (True, None)
