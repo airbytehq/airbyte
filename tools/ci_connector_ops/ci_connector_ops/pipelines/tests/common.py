@@ -155,7 +155,6 @@ class QaChecks(Step):
         filtered_repo = self.context.get_repo_dir(
             include=include,
         )
-        ci_connector_ops = ci_connector_ops.with_mounted_directory("/airbyte", filtered_repo).with_workdir("/airbyte").with_exec(["ls"])
 
         qa_checks = (
             ci_connector_ops.with_mounted_directory("/airbyte", filtered_repo)
