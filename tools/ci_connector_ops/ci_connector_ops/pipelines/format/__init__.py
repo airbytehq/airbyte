@@ -8,7 +8,7 @@ from __future__ import annotations
 import anyio
 from ci_connector_ops.pipelines.bases import ConnectorReport, StepResult
 from ci_connector_ops.pipelines.contexts import ConnectorContext
-from ci_connector_ops.pipelines.format import python_connectors
+from ci_connector_ops.pipelines.format import java_connectors, python_connectors
 from ci_connector_ops.utils import ConnectorLanguage
 
 
@@ -19,7 +19,7 @@ class NoFormatStepForLanguageError(Exception):
 LANGUAGE_FORMAT_CONNECTOR_MAPPING = {
     ConnectorLanguage.PYTHON: python_connectors.run_connector_format,
     ConnectorLanguage.LOW_CODE: python_connectors.run_connector_format,
-    ConnectorLanguage.JAVA: None,
+    ConnectorLanguage.JAVA: java_connectors.run_connector_format,
 }
 
 

@@ -421,11 +421,11 @@ def with_gradle(
         "buildSrc",
         "tools/bin/build_image.sh",
         "tools/lib/lib.sh",
+        "tools/gradle/codestyle",
     ]
 
     if sources_to_include:
         include += sources_to_include
-
     gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
     gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
 
@@ -433,7 +433,7 @@ def with_gradle(
         context.dagger_client.container()
         .from_("openjdk:17.0.1-jdk-slim")
         .with_exec(["apt-get", "update"])
-        .with_exec(["apt-get", "install", "-y", "curl", "jq", "rsync"])
+        .with_exec(["apt-get", "install", "-y", "curl", "jq", "rsync", "npm"])
         .with_env_variable("VERSION", consts.DOCKER_VERSION)
         .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
         .with_env_variable("GRADLE_HOME", "/root/.gradle")
