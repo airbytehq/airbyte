@@ -76,7 +76,6 @@ public sealed interface AirbyteType permits Array, OneOf, Struct, UnsupportedOne
   /**
    * @param properties Use LinkedHashMap to preserve insertion order.
    */
-  // TODO maybe we shouldn't call this thing Object, since java.lang.Object also exists?
   record Struct(LinkedHashMap<String, AirbyteType> properties) implements AirbyteType {
 
   }

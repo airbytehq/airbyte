@@ -89,11 +89,13 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
    *   <li>Merging those typed records into an existing table</li>
    *   <li>Updating the raw records with SET _airbyte_loaded_at = now()</li>
    * </ul>
+   * <p>
+   * Implementing classes are recommended to break this into smaller methods, which can be tested in isolation. However, this interface only requires
+   * a single mega-method.
    *
    * @param finalSuffix the suffix of the final table to write to. If empty string, writes to the final table directly. Useful for full refresh
    *                    overwrite syncs, where we write the entire sync to a temp table and then swap it into the final table at the end.
    */
-  // TODO maybe this should be broken into smaller methods, idk
   String updateTable(String finalSuffix, final StreamConfig<DialectType> stream);
 
   /**
