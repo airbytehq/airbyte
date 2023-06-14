@@ -1,8 +1,6 @@
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from pydantic import ValidationError
 from dataclasses import dataclass
-
-from pydantic import ValidationError
 from typing import Tuple, Any, Optional
 
 

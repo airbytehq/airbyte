@@ -48,3 +48,4 @@
 /airbyte-integrations/connectors/destination-rockset/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-s3/ @airbytehq/destinations
 /airbyte-integrations/connectors/destination-snowflake/ @airbytehq/destinations
+/airbyte-integrations/connectors/destination-tidb/ @airbytehq/destinations

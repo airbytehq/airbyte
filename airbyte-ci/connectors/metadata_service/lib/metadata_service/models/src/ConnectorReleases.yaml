@@ -1,0 +1,44 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/ConnectorReleases.yaml
+title: ConnectorReleases
+description: Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.
+type: object
+additionalProperties: false
+required:
+  - breakingChanges
+properties:
+  breakingChanges:
+    $ref: "#/definitions/ConnectorBreakingChanges"
+  migrationDocumentationUrl:
+    description: URL to documentation on how to migrate from the previous version to the current version. Defaults to ${documentationUrl}/migration_guide
+    type: string
+    format: uri
+definitions:
+  ConnectorBreakingChanges:
+    description: Each entry denotes a breaking change in a specific version of a connector that requires user action to upgrade.
+    type: object
+    additionalProperties: false
+    minProperties: 1
+    patternProperties:
+      "^\\d+\\.\\d+\\.\\d+$":
+        $ref: "#/definitions/VersionBreakingChange"
+  VersionBreakingChange:
+    description: Contains information about a breaking change, including the deadline to upgrade and a message detailing the change.
+    type: object
+    additionalProperties: false
+    required:
+      - upgradeDeadline
+      - message
+    properties:
+      upgradeDeadline:
+        description: The deadline by which to upgrade before the breaking change takes effect.
+        type: string
+        format: date
+      message:
+        description: Descriptive message detailing the breaking change.
+        type: string
+      migrationDocumentationUrl:
+        description: URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}/migration_guide#${version}
+        type: string
+        format: uri
