@@ -10,6 +10,7 @@ from typing import Iterable, Optional, Set, Tuple
 from ci_connector_ops.utils import Connector
 from pydash.objects import get
 
+
 def check_migration_guide(connector: Connector) -> bool:
     """Check if a migration guide is available for the connector if a breaking change was introduced."""
 
@@ -115,8 +116,6 @@ def check_changelog_entry_is_updated(connector: Connector) -> bool:
             if after_changelog and connector.version in line:
                 return True
     return False
-
-
 
 
 def check_connector_icon_is_available(connector: Connector) -> bool:
