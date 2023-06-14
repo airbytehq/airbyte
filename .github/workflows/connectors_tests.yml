@@ -1,8 +1,7 @@
-name: POC Connectors CI - test pipeline
+name: Connectors tests
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 on:
   workflow_dispatch:
@@ -11,9 +10,6 @@ on:
         description: "Options to pass to the 'airbyte-ci connectors test' command"
         default: "--modified"
   pull_request:
-    paths:
-      - "airbyte-integrations/connectors/**"
-      #- ".github/workflows/connector_integration_test_single_dagger.yml"
     types:
       - opened
       - synchronize
@@ -21,7 +17,7 @@ on:
 jobs:
   connectors_ci:
     name: Connectors CI
-    timeout-minutes: 240 # 4 hours
+    timeout-minutes: 1440 # 24 hours
     runs-on: dev-medium-runner
     steps:
       - name: Get start timestamp
@@ -64,15 +60,13 @@ jobs:
         env:
           _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: "us-east-2"
-          TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
+          CI_REPORT_BUCKET_NAME: "airbyte-ci-reports"
           CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
           CI_GIT_REVISION: ${{ github.sha }}
           CI_CONTEXT: "manual"
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
+          PRODUCTION: "True"
       - name: Run airbyte-ci connectors test [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         run: |
@@ -88,13 +82,11 @@ jobs:
         env:
           _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: "us-east-2"
-          TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
+          CI_REPORT_BUCKET_NAME: "airbyte-ci-reports"
           CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           CI_GIT_BRANCH: ${{ github.head_ref }}
           CI_GIT_REVISION: ${{ github.event.pull_request.head.sha }}
           CI_CONTEXT: "pull_request"
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
           PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+          PRODUCTION: "True"

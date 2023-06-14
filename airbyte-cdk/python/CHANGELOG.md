@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.40.4
+Emit messages using message repository
+
+## 0.40.3
+Add utils for inferring datetime formats
+
+## 0.40.2
+Add a metadata field to the declarative component schema
+
+## 0.40.1
+make DatetimeBasedCursor.end_datetime optional
+
+## 0.40.0
+Remove SingleUseRefreshTokenOAuthAuthenticator from low code CDK and add generic injection capabilities to ApiKeyAuthenticator
+
+## 0.39.4
+Connector builder: add latest connector config control message to read calls
+
+## 0.39.3
+Add refresh token update capabilities to OAuthAuthenticator
+
 ## 0.39.2
 Make step and cursor_granularity optional
 
