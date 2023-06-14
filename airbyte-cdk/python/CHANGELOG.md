@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.40.5
+Replace  with  when making oauth calls
+
+## 0.40.4
+Emit messages using message repository
+
 ## 0.40.3
 Add utils for inferring datetime formats
 

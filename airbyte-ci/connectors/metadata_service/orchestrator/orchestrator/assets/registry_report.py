@@ -9,7 +9,7 @@ from orchestrator.templates.render import (
     test_badge_html,
     ColumnInfo,
 )
-from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTORS_TEST_RESULT_BUCKET_URL
+from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTOR_TEST_SUMMARY_FOLDER, REPORT_FOLDER, get_public_metadata_service_url
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 from orchestrator.utils.object_helpers import to_json_sanitized_dict
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
@@ -75,7 +75,9 @@ def test_summary_url(row: pd.DataFrame) -> str:
 
     connector = docker_repo_name.replace("airbyte/", "")
 
-    return f"{CONNECTORS_TEST_RESULT_BUCKET_URL}/tests/summary/connectors/{connector}"
+    path = f"{REPORT_FOLDER}/{CONNECTOR_TEST_SUMMARY_FOLDER}/{connector}"
+
+    return get_public_metadata_service_url(path)
 
 
 # 📊 Dataframe Augmentation
