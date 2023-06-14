@@ -187,6 +187,7 @@ def test_check_migration_guide(mocker, tmp_path):
     # mock metadata
     # mock migration guide
     # check that the expected errors occur
+    connector = qa_checks.Connector("source-foobar")
     mock_metadata_dict = {
         "releases": {
             "breakingChanges": {
@@ -200,11 +201,10 @@ def test_check_migration_guide(mocker, tmp_path):
 
     mock_migration_file = Path(tmp_path / "source-foobar-migrations.md")
     with open(mock_migration_file, "w") as f:
-        f.write("# source-foobar Migration Guide\n")
+        f.write("# foobar Migration Guide\n")
         f.write("## Upgrading to 0.0.0\n")
 
     mocker.patch.object(qa_checks.Connector, "migration_guide_file_path", mock_migration_file)
     mocker.patch.object(qa_checks.Connector, "metadata", mock_metadata_dict)
-    mocker.patch.object(qa_checks.Connector, "version", "0.0.0")
 
-    assert qa_checks.check_migration_guide(qa_checks.Connector("source-foobar"))
+    assert qa_checks.check_migration_guide(connector)
