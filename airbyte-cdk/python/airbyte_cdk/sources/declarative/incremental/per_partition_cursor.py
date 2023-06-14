@@ -134,8 +134,11 @@ class PerPartitionCursor(StreamSlicer):
                     f"we should only update cursor for partition that where emitted during `stream_slices`"
                 )
 
-    def _init_state(self, stream_slice: dict) -> None:
-        for state in stream_slice["states"]:
+    def _init_state(self, stream_state: dict) -> None:
+        if "states" not in stream_state:
+            raise ValueError("Incompatible state format: please run a full refresh to update the format")
+
+        for state in stream_state["states"]:
             self._cursor_per_partition[self._to_tuple(state["partition"])] = self._create_cursor(state["cursor"])
 
     def set_default_state(self, default_state: dict) -> None:
@@ -161,7 +164,7 @@ class PerPartitionCursor(StreamSlicer):
         if PerPartitionCursor._is_new_state(stream_state):
             return None
         if "states" not in stream_state:
-            raise ValueError("Incompatible state format")
+            raise ValueError("Incompatible state format: please run a full refresh to update the format")
 
         for state in stream_state["states"]:
             if partition == state["partition"]:

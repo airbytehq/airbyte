@@ -24,7 +24,6 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, PerPartitionCursor
-from airbyte_cdk.sources.declarative.incremental.migrating_per_partition_cursor import MigratingPerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
@@ -514,13 +513,11 @@ class ModelToComponentFactory:
             )
 
         if model.incremental_sync and stream_slicer:
-            return MigratingPerPartitionCursor(
-                PerPartitionCursor(
-                    cursor_factory=CursorFactory(
-                        lambda: self._create_component_from_model(model=model.incremental_sync, config=config),
-                    ),
-                    partition_router=stream_slicer,
-                )
+            return PerPartitionCursor(
+                cursor_factory=CursorFactory(
+                    lambda: self._create_component_from_model(model=model.incremental_sync, config=config),
+                ),
+                partition_router=stream_slicer,
             )
         elif model.incremental_sync:
             return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
