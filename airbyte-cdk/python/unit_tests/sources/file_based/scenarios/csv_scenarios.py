@@ -39,9 +39,11 @@ single_csv_scenario = (
         {
             "streams": [
                 {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
                     "json_schema": {"col1": "string", "col2": "string"},
                     "name": "stream1",
-                    "supported_sync_modes": ["full_refresh"],
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
                 }
             ]
         }
@@ -95,13 +97,15 @@ multi_csv_scenario = (
         {
             "streams": [
                 {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
                     "json_schema": {
                         "col1": "string",
                         "col2": "string",
                         "col3": "string",
                     },
                     "name": "stream1",
-                    "supported_sync_modes": ["full_refresh"],
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
                 }
             ]
         }
@@ -157,9 +161,11 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
         {
             "streams": [
                 {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
                     "json_schema": {"col1": "string", "col2": "string"},
                     "name": "stream1",
-                    "supported_sync_modes": ["full_refresh"],
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
                 }
             ]
         }
@@ -208,9 +214,11 @@ invalid_csv_scenario = (
         {
             "streams": [
                 {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
                     "json_schema": {"col1": "string", "col2": "string"},
                     "name": "stream1",
-                    "supported_sync_modes": ["full_refresh"],
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
                 }
             ]
         }

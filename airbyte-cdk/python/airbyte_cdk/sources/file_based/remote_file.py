@@ -5,6 +5,7 @@
 from abc import ABC
 from datetime import datetime
 from enum import Enum
+from typing import Mapping
 
 
 class FileType(Enum):
@@ -23,3 +24,9 @@ class RemoteFile(ABC):
         self.uri = uri
         self.last_modified = last_modified
         self.file_type = file_type
+
+    @classmethod
+    def from_file_partition(cls, file_partition: Mapping[str, str]):
+        return RemoteFile(uri=file_partition["uri"],
+                          last_modified=file_partition["last_modified"],
+                          file_type=file_partition["file_type"])

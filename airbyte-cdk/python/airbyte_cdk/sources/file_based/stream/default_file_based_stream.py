@@ -6,7 +6,7 @@ import asyncio
 import logging
 from datetime import datetime
 from functools import cache
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Union, MutableMapping
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.file_based.exceptions import MissingSchemaError, RecordParseError, SchemaInferenceError
@@ -14,17 +14,44 @@ from airbyte_cdk.sources.file_based.remote_file import FileType, RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, type_mapping_to_jsonschema
 from airbyte_cdk.sources.file_based.schema_validation_policies import record_passes_validation_policy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
+from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 
 
-class DefaultFileBasedStream(AbstractFileBasedStream):
+class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     """
     The default file-based stream.
     """
 
+    #FIXME: move ot a policy or something
+    _state = {}
+    _state.setdefault("history",{})
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        """State setter, accept state serialized by state getter."""
+        self._state = value
+
+    #FIXME These things should probably be in a policy
+    ab_last_mod_col = "_ab_source_file_last_modified"
+    ab_file_name_col = "_ab_source_file_url"
+    airbyte_columns = [ab_last_mod_col, ab_file_name_col]
+
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         return self.config.primary_key
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        # FIXME: Should probably be in a policy
+        return [{"uri": f.uri,
+                 "last_modified": f.last_modified,
+                 "file_type": f.file_type} for f in self.list_files_for_this_sync(stream_state)]
 
     def read_records(
         self,
@@ -41,17 +68,27 @@ class DefaultFileBasedStream(AbstractFileBasedStream):
             # On read requests we should always have the catalog available
             raise MissingSchemaError("Expected `json_schema` in the configured catalog but it is missing.")
         parser = self.get_parser(self.config.file_type)
-        for file in self.list_files_for_this_sync(stream_state):
-            try:
-                for record in parser.parse_records(file, self._stream_reader):
-                    if not record_passes_validation_policy(self.config.validation_policy, record, schema):
-                        logging.warning(f"Record did not pass validation policy: {record}")
-                        continue
-                    yield stream_data_to_airbyte_message(self.name, record)
-            except Exception as exc:
-                raise RecordParseError(
-                    f"Error reading records from file: {file.uri}. Is the file valid {FileType(self.config.file_type.value)}?"
-                ) from exc
+        try:
+            file = RemoteFile.from_file_partition(stream_slice)
+            for record in parser.parse_records(file, self._stream_reader):
+                if not record_passes_validation_policy(self.config.validation_policy, record, schema):
+                    logging.warning(f"Record did not pass validation policy: {record}")
+                    continue
+                yield stream_data_to_airbyte_message(self.name, record)
+                self._state["history"][file.uri] = file.last_modified
+        except Exception as exc:
+            raise RecordParseError(
+                f"Error reading records from file: {stream_slice['uri']}. Is the file valid {FileType(self.config.file_type.value)}?"
+            ) from exc
+
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        """
+        Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
+        :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
+        """
+        # FIXME: should be in a policy
+        return self.ab_last_mod_col
 
     @cache
     def get_json_schema(self) -> Mapping[str, Any]:
@@ -62,6 +99,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream):
 
         Use no more than `_discovery_policy.max_n_files_for_schema_inference` files.
         """
+        # FIXME: need to merge with additional columns
         if self.config.input_schema:
             return type_mapping_to_jsonschema(self.config.input_schema)
 
