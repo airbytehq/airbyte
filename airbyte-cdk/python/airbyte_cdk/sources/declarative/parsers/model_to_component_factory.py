@@ -100,6 +100,7 @@ from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStrea
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.message import InMemoryMessageRepository
 from pydantic import BaseModel
 
 ComponentDefinition: Union[Literal, Mapping, List]
@@ -129,6 +130,7 @@ class ModelToComponentFactory:
         self._limit_slices_fetched = limit_slices_fetched
         self._emit_connector_builder_messages = emit_connector_builder_messages
         self._disable_retries = disable_retries
+        self._message_repository = InMemoryMessageRepository()
 
     def _init_mappings(self):
         self.PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
@@ -684,8 +686,7 @@ class ModelToComponentFactory:
     def create_no_pagination(model: NoPaginationModel, config: Config, **kwargs) -> NoPagination:
         return NoPagination(parameters={})
 
-    @staticmethod
-    def create_oauth_authenticator(model: OAuthAuthenticatorModel, config: Config, **kwargs) -> DeclarativeOauth2Authenticator:
+    def create_oauth_authenticator(self, model: OAuthAuthenticatorModel, config: Config, **kwargs) -> DeclarativeOauth2Authenticator:
         if model.refresh_token_updater:
             return DeclarativeSingleUseRefreshTokenOauth2Authenticator(
                 config,
@@ -702,6 +703,7 @@ class ModelToComponentFactory:
                 refresh_request_body=InterpolatedMapping(model.refresh_request_body or {}, parameters=model.parameters).eval(config),
                 scopes=model.scopes,
                 token_expiry_date_format=model.token_expiry_date_format,
+                message_repository=self._message_repository,
             )
         return DeclarativeOauth2Authenticator(
             access_token_name=model.access_token_name,
@@ -854,3 +856,6 @@ class ModelToComponentFactory:
         return WaitUntilTimeFromHeaderBackoffStrategy(
             header=model.header, parameters=model.parameters, config=config, min_wait=model.min_wait, regex=model.regex
         )
+
+    def get_message_repository(self):
+        return self._message_repository
