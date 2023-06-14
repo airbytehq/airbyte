@@ -32,4 +32,4 @@ In order to connect, you need:
 
 | Version | Date       | Pull Request                                                  | Subject                 |
 |:--------|:-----------|:--------------------------------------------------------------|:------------------------|
-| 0.0.1   | 2023-03-17 | [#24192](https://github.com/airbytehq/airbyte/pull/24192)     | New Destination Connector Xata |
+| 0.1.0   | 2023-06-14 | [#24192](https://github.com/airbytehq/airbyte/pull/24192)     | New Destination Connector Xata |
