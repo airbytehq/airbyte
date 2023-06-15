@@ -439,15 +439,15 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
     def instantiate_report_class(report: dict, config: Mapping[str, Any]) -> GoogleAnalyticsDataApiBaseStream:
         cohort_spec = report.get("cohortSpec")
         pivots = report.get("pivots")
-        dimension_filter = report.get('dimensionFilter')
-        metric_filter = report.get('metricFilter')
+        dimension_filter = report.get("dimensionFilter")
+        metric_filter = report.get("metricFilter")
         stream_config = {"metrics": report["metrics"], "dimensions": report["dimensions"], **config}
         report_class_tuple = (GoogleAnalyticsDataApiBaseStream,)
 
         if dimension_filter:
-            stream_config['dimension_filter'] = dimension_filter
+            stream_config["dimension_filter"] = dimension_filter
         if metric_filter:
-            stream_config['metric_filter'] = metric_filter
+            stream_config["metric_filter"] = metric_filter
 
         if pivots:
             stream_config["pivots"] = pivots
