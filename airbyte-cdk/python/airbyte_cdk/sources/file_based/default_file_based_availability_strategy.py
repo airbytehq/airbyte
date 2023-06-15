@@ -6,12 +6,12 @@ import logging
 from typing import Optional, Tuple
 
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 
-class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy):
+class DefaultFileBasedAvailabilityStrategy(AvailabilityStrategy):
     def __init__(self, stream_reader: AbstractFileBasedStreamReader):
         self.stream_reader = stream_reader
 
