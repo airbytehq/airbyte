@@ -1,0 +1,13 @@
+{
+  "properties": {
+    "project_id": {
+      "order": 1
+    },
+    "credentials_json": {
+      "order": 2,
+      "description": "The contents of your Service Account Key JSON file. See https://go.estuary.dev/bigquery for more information on how to obtain this key.",
+      "secret": true,
+      "multiline": true
+    }
+  }
+}

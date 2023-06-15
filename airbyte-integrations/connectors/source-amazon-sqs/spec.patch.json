@@ -1,0 +1,19 @@
+{
+  "properties": {
+    "queue_url": {
+      "order": 0
+    },
+    "region": {
+      "order": 1
+    },
+    "access_key": {
+      "order": 2
+    },
+    "secret_key": {
+      "order": 3
+    },
+    "delete_messages": {
+      "order": 4
+    }
+  }
+}

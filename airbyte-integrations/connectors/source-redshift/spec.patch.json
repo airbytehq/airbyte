@@ -1,0 +1,22 @@
+{
+  "properties": {
+    "host": {
+      "order": 0
+    },
+    "port": {
+      "order": 1
+    },
+    "database": {
+      "order": 2
+    },
+    "username": {
+      "order": 3
+    },
+    "password": {
+      "order": 4
+    },
+    "jdbc_url_params": {
+      "order": 5
+    }
+  }
+}

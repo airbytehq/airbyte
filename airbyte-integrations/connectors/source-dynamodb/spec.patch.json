@@ -1,0 +1,10 @@
+{
+  "properties": {
+    "access_key_id": {
+      "order": 1
+    },
+    "secret_access_key": {
+      "order": 2
+    }
+  }
+}
