@@ -5,7 +5,6 @@
 import datetime
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from urllib.parse import urlparse
 
 import pendulum
 import requests
@@ -13,6 +12,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
+
+from .utils import parse_url
 
 
 class GitlabStream(HttpStream, ABC):
@@ -53,12 +54,7 @@ class GitlabStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        parse_result = urlparse(self.api_url)
-        # Default scheme to "https" if URL doesn't contain
-        scheme = parse_result.scheme if parse_result.scheme else "https"
-        # hostname without a scheme will result in `path` attribute
-        # Use path if netloc is not detected
-        host = parse_result.netloc if parse_result.netloc else parse_result.path
+        _, scheme, host = parse_url(self.api_url)
         return f"{scheme}://{host}/api/v4/"
 
     @property
