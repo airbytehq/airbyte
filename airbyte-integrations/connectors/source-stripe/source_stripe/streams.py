@@ -839,10 +839,7 @@ class SetupAttempts(IncrementalStripeStream, HttpSubStream):
         )
         if incremental_slices:
             parent_records = HttpSubStream.stream_slices(self, sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
-            for rec in parent_records:
-                for slice in incremental_slices:
-                    yield slice | rec
-            # yield from (slice | rec for rec in parent_records for slice in incremental_slices)
+            yield from (slice | rec for rec in parent_records for slice in incremental_slices)
         else:
             yield None
 
