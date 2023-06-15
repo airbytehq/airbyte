@@ -9,8 +9,8 @@ import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Array;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.OneOf;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.UnsupportedOneOf;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
@@ -168,6 +168,30 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     } else {
       // TODO idk
     }
+    /*
+     * TODO maybe we do something like this?
+     *  CREATE OR REPLACE TABLE ${final_table_id} AS (
+     *    SELECT
+     *      _airbyte_raw_id,
+     *      _airbyte_extracted_at,
+     *      _airbyte_meta,
+     *      -- cast columns when needed
+     *      CAST(col1 AS new_type) AS col1,
+     *      -- some columns will not change at all
+     *      col2,
+     *      -- new columns default to null
+     *      NULL as col3
+     *      ...
+     *    FROM ${final_table_id}
+     *  )
+     *
+     * This has a few advantages:
+     * * bypasses the whole "you can only alter certain column types" problem
+     * * preserves column ordering
+     *
+     * But it does mean that we have to rewrite the entire table, which really sucks. But maybe that's fine, since it only happens on schema change?
+     * And it's presumably no worse than a soft reset.
+     */
     return "";
   }
 
