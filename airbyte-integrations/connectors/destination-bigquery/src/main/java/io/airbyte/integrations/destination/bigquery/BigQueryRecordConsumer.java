@@ -16,20 +16,22 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDest
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedCatalog;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.StreamId;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +74,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private final ParsedCatalog<StandardSQLTypeName> catalog;
   private final boolean use1s1t;
   private final String rawNamespaceOverride;
+  private final Map<StreamId, String> overwriteStreamsWithTmpTable;
 
   public BigQueryRecordConsumer(final BigQuery bigquery,
                                 final Map<StreamWriteTargets, AbstractBigQueryUploader<?>> uploaderMap,
@@ -91,6 +94,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     this.catalog = catalog;
     this.use1s1t = use1s1t;
     this.rawNamespaceOverride = rawNamespaceOverride;
+    this.overwriteStreamsWithTmpTable = new HashMap<>();
 
     LOGGER.info("Got parsed catalog {}", catalog);
     LOGGER.info("Got canonical stream IDs {}", uploaderMap.keySet());
@@ -106,8 +110,23 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         final Optional<TableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
         if (existingTable.isEmpty()) {
           destinationHandler.execute(sqlGenerator.createTable(stream, ""));
+          if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+            // We're creating this table for the first time. Write directly into it.
+            overwriteStreamsWithTmpTable.put(stream.id(), "");
+          }
         } else {
           destinationHandler.execute(sqlGenerator.alterTable(stream, existingTable.get()));
+          if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+            final BigInteger rowsInFinalTable = bigquery.getTable(TableId.of(stream.id().finalNamespace(), stream.id().finalName())).getNumRows();
+            if (new BigInteger("0").equals(rowsInFinalTable)) {
+              // The table already exists but is empty. We'll load data incrementally.
+              // (this might be because the user ran a reset, which creates an empty table)
+              overwriteStreamsWithTmpTable.put(stream.id(), "");
+            } else {
+              // We're working with an existing table. Write into a tmp table. We'll overwrite the table at the end of the sync.
+              overwriteStreamsWithTmpTable.put(stream.id(), OVERWRITE_TABLE_SUFFIX);
+            }
+          }
         }
       }
 
@@ -115,14 +134,15 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       // non-1s1t syncs actually overwrite the raw table at the end of of the sync, wo we only do this in 1s1t mode.
       for (StreamConfig<StandardSQLTypeName> stream : catalog.streams()) {
         LOGGER.info("Stream {} has sync mode {}", stream.id(), stream.destinationSyncMode());
-        if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+        final String suffix = overwriteStreamsWithTmpTable.get(stream.id());
+        if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE && suffix != null && !suffix.isEmpty()) {
           // drop+recreate the raw table
           final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
           bigquery.delete(rawTableId);
           BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
 
           // create the tmp final table
-          destinationHandler.execute(sqlGenerator.createTable(stream, OVERWRITE_TABLE_SUFFIX));
+          destinationHandler.execute(sqlGenerator.createTable(stream, suffix));
         }
       }
     }
@@ -186,7 +206,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
           if (streamConfig.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
             LOGGER.info("Overwriting final table with tmp table");
             // We're at the end of the sync. Move the tmp table to the final table.
-            final Optional<String> overwriteFinalTable = sqlGenerator.overwriteFinalTable(OVERWRITE_TABLE_SUFFIX, streamConfig);
+            final Optional<String> overwriteFinalTable = sqlGenerator.overwriteFinalTable(overwriteStreamsWithTmpTable.get(streamConfig.id()), streamConfig);
             if (overwriteFinalTable.isPresent()) {
               destinationHandler.execute(overwriteFinalTable.get());
             }
@@ -204,11 +224,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   private void doTypingAndDeduping(final StreamConfig<StandardSQLTypeName> stream) throws InterruptedException {
     String suffix;
-    if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
-      suffix = OVERWRITE_TABLE_SUFFIX;
-    } else {
-      suffix = "";
-    }
+    suffix = overwriteStreamsWithTmpTable.getOrDefault(stream.id(), "");
     final String sql = sqlGenerator.updateTable(suffix, stream);
     destinationHandler.execute(sql);
   }

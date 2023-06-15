@@ -28,6 +28,8 @@ class BigQuerySqlGeneratorTest {
 
     assertEquals(
         """
+            CREATE SCHEMA IF NOT EXISTS `public`;
+            
             CREATE TABLE `public`.`users` (
             _airbyte_raw_id STRING NOT NULL,
             _airbyte_extracted_at TIMESTAMP NOT NULL,
