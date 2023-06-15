@@ -21,6 +21,3 @@ setup(
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={"tests": TEST_REQUIREMENTS},
 )
-
-
-
