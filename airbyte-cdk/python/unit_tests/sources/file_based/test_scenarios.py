@@ -17,7 +17,8 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
 )
 from unit_tests.sources.file_based.scenarios.csv_incremental_scenarios import (
     single_csv_input_state_is_earlier_scenario,
-    single_csv_no_input_state_scenario
+    single_csv_no_input_state_scenario,
+    multi_csv_no_input_state_scenario
 
 )
 
@@ -28,6 +29,7 @@ scenarios = [
     multi_csv_stream_n_file_exceeds_limit_for_inference,
     single_csv_input_state_is_earlier_scenario,
     single_csv_no_input_state_scenario,
+    multi_csv_no_input_state_scenario,
 ]
 
 

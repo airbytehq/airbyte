@@ -24,12 +24,11 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     The default file-based stream.
     """
 
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        #FIXME: move ot a policy or something
+        # FIXME: move ot a policy or something
         self._state = {}
-        self._state.setdefault("history",{})
+        self._state.setdefault("history", {})
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -40,7 +39,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         """State setter, accept state serialized by state getter."""
         self._state = value
 
-    #FIXME These things should probably be in a policy
+    # FIXME These things should probably be in a policy
     ab_last_mod_col = "_ab_source_file_last_modified"
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_last_mod_col, ab_file_name_col]
@@ -50,19 +49,22 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         return self.config.primary_key
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         # FIXME: Should probably be in a policy
-        return [{"uri": f.uri,
-                 "last_modified": f.last_modified,
-                 "file_type": f.file_type} for f in self.list_files_for_this_sync(stream_state)]
+        # FIXME: returns a single slice containing all the files right now
+        return [
+            {"files": [{"uri": f.uri,
+                        "last_modified": f.last_modified,
+                        "file_type": f.file_type} for f in self.list_files_for_this_sync(stream_state)]}
+        ]
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        stream_state: Optional[StreamState] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Optional[StreamSlice] = None,
+            stream_state: Optional[StreamState] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
@@ -72,18 +74,20 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             # On read requests we should always have the catalog available
             raise MissingSchemaError("Expected `json_schema` in the configured catalog but it is missing.")
         parser = self.get_parser(self.config.file_type)
-        try:
-            file = RemoteFile.from_file_partition(stream_slice)
-            for record in parser.parse_records(file, self._stream_reader):
-                if not record_passes_validation_policy(self.config.validation_policy, record, schema):
-                    logging.warning(f"Record did not pass validation policy: {record}")
-                    continue
-                yield stream_data_to_airbyte_message(self.name, record)
-                self._state["history"][file.uri] = file.last_modified
-        except Exception as exc:
-            raise RecordParseError(
-                f"Error reading records from file: {stream_slice['uri']}. Is the file valid {self.config.file_type}?"
-            ) from exc
+        for file_description in stream_slice["files"]:
+            try:
+                file = RemoteFile.from_file_partition(file_description)
+                for record in parser.parse_records(file, self._stream_reader):
+                    if not record_passes_validation_policy(self.config.validation_policy, record, schema):
+                        logging.warning(f"Record did not pass validation policy: {record}")
+                        continue
+                    yield stream_data_to_airbyte_message(self.name, record)
+                    self._state["history"][file.uri] = file.last_modified
+            except Exception as exc:
+                raise RecordParseError(
+                    #FIXME
+                    f"Error reading records from file: {file_description['uri']}. Is the file valid {self.config.file_type}?"
+                ) from exc
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
