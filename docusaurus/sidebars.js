@@ -499,6 +499,7 @@ module.exports = {
         type: 'generated-index',
       },
       items: [
+        /*
         {
               type: 'category',
               label: 'May 2023',
@@ -510,6 +511,8 @@ module.exports = {
                 'release_notes/upgrading_to_destinations_v2'
               ],
         },
+        */
+        'release_notes/may_2023',
         'release_notes/april_2023',
         'release_notes/march_2023',
         'release_notes/february_2023',
