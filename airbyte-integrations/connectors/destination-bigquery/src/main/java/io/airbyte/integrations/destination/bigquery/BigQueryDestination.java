@@ -348,12 +348,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final BigQuery bigquery = getBigQuery(config);
     final ConfiguredAirbyteCatalog catalogForTypingAndDeduping = cloneAndModifyCatalogForFinalTables(config, catalog);
 
-    final String rawNamespaceOverride;
-    if (use1s1t && config.hasNonNull(RAW_NAMESPACE_OVERRIDE)) {
-      rawNamespaceOverride = config.get(RAW_NAMESPACE_OVERRIDE).asText();
-    } else {
-      rawNamespaceOverride = null;
-    }
+    final String rawNamespaceOverride = resolveRawNamespace(use1s1t, config);
+
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator();
     LOGGER.info("Got raw catalog {}", catalogForTypingAndDeduping);
     final CatalogParser<StandardSQLTypeName> catalogParser;
@@ -381,6 +377,18 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         parsedCatalog,
         use1s1t,
         rawNamespaceOverride);
+  }
+
+
+  private String resolveRawNamespace(final boolean use1s1t,  final JsonNode config) {
+    final String rawNamespaceOverride;
+    if (use1s1t) {
+      rawNamespaceOverride = config.hasNonNull(RAW_NAMESPACE_OVERRIDE) ?
+              config.get(RAW_NAMESPACE_OVERRIDE).asText() : JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA;
+    } else {
+      rawNamespaceOverride = null;
+    }
+    return rawNamespaceOverride;
   }
 
   public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,
