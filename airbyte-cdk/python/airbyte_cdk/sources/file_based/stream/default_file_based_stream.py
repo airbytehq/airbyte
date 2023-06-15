@@ -24,9 +24,12 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     The default file-based stream.
     """
 
-    #FIXME: move ot a policy or something
-    _state = {}
-    _state.setdefault("history",{})
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        #FIXME: move ot a policy or something
+        self._state = {}
+        self._state.setdefault("history",{})
 
     @property
     def state(self) -> MutableMapping[str, Any]:
