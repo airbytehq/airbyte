@@ -3,8 +3,10 @@
 #
 
 
+import pendulum
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
+from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -42,10 +44,42 @@ from .streams import (
 )
 
 
+class SingleUseRefreshTokenGitlabOAuth2Authenticator(SingleUseRefreshTokenOauth2Authenticator):
+    def __init__(self, *args, created_at_name: str = "created_at", **kwargs):
+        super().__init__(*args, **kwargs)
+        self._created_at_name = created_at_name
+
+    def get_created_at_name(self) -> str:
+        return self._created_at_name
+
+    def get_access_token(self) -> str:
+        if self.token_has_expired():
+            new_access_token, access_token_expires_in, access_token_created_at, new_refresh_token = self.refresh_access_token()
+            new_token_expiry_date = self.get_new_token_expiry_date(access_token_expires_in, access_token_created_at)
+            self.access_token = new_access_token
+            self.set_refresh_token(new_refresh_token)
+            self.set_token_expiry_date(new_token_expiry_date)
+            emit_configuration_as_airbyte_control_message(self._connector_config)
+        return self.access_token
+
+    @staticmethod
+    def get_new_token_expiry_date(access_token_expires_in: int, access_token_created_at: int) -> pendulum.DateTime:
+        return pendulum.from_timestamp(access_token_created_at + access_token_expires_in)
+
+    def refresh_access_token(self) -> Tuple[str, int, int, str]:
+        response_json = self._get_refresh_access_token_response()
+        return (
+            response_json[self.get_access_token_name()],
+            response_json[self.get_expires_in_name()],
+            response_json[self.get_created_at_name()],
+            response_json[self.get_refresh_token_name()],
+        )
+
+
 def get_authenticator(config: MutableMapping) -> AuthBase:
     if config["credentials"]["auth_type"] == "access_token":
         return TokenAuthenticator(token=config["credentials"]["access_token"])
-    return SingleUseRefreshTokenOauth2Authenticator(config, token_refresh_endpoint=f"https://{config['api_url']}/oauth/token")
+    return SingleUseRefreshTokenGitlabOAuth2Authenticator(config, token_refresh_endpoint=f"https://{config['api_url']}/oauth/token")
 
 
 class SourceGitlab(AbstractSource):
