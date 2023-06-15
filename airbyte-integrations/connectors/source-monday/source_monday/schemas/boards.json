@@ -10,6 +10,7 @@
         "additionalProperties": true,
         "properties": {
           "archived": { "type": ["null", "boolean"] },
+          "description": { "type": ["null", "string"] },
           "id": { "type": ["null", "string"] },
           "settings_str": { "type": ["null", "string"] },
           "title": { "type": ["null", "string"] },
@@ -37,7 +38,17 @@
     },
     "id": { "type": ["null", "string"] },
     "name": { "type": ["null", "string"] },
-    "owner": {
+    "owners": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": ["null", "integer"] }
+        }
+      }
+    },
+    "creator": {
       "type": ["null", "object"],
       "properties": {
         "id": { "type": ["null", "integer"] }
@@ -89,7 +100,11 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "string"] }
+          "id": { "type": ["null", "string"] },
+          "name": { "type": ["null", "string"] },
+          "settings_str": { "type": ["null", "string"] },
+          "type": { "type": ["null", "string"] },
+          "view_specific_data_str": { "type": ["null", "string"] }
         }
       }
     },

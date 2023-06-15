@@ -38,12 +38,13 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "id": { "type": ["null", "string"] },
-          "value": { "type": ["null", "string"] },
           "additional_info": { "type": ["null", "string"] },
+          "description": { "type": ["null", "string"] },
+          "id": { "type": ["null", "string"] },
           "text": { "type": ["null", "string"] },
           "title": { "type": ["null", "string"] },
-          "type": { "type": ["null", "string"] }
+          "type": { "type": ["null", "string"] },
+          "value": { "type": ["null", "string"] }
         }
       }
     },
