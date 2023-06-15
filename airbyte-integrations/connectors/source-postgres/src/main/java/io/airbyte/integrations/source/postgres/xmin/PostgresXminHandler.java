@@ -154,25 +154,27 @@ public class PostgresXminHandler {
       final String wrappedColumnNames, final String fullTableName, final XminStatus prevRunXminStatus, final
       XminStatus currentXminStatus) throws SQLException {
 
-    // If the source Postgres DB has undergone multiple wraparound events between syncs, we have no option but to perform
-    // a full sync.
-    if (shouldPerformFullSync(prevRunXminStatus, currentXminStatus)) {
+    if (prevRunXminStatus == null || shouldPerformFullSync(prevRunXminStatus, currentXminStatus)) {
+      // If the source Postgres DB has undergone multiple wraparound events between syncs, we have no option but to perform
+      // a full sync.
+      if (prevRunXminStatus == null) {
+        LOGGER.info("First xmin sync. Performing a full sync for {}", fullTableName);
+      } else {
+        LOGGER.info("Detected multiple wraparounds. Performing a full sync for {}", fullTableName);
+      }
       final String sql = String.format("SELECT %s FROM %s", wrappedColumnNames, fullTableName);
       return connection.prepareStatement(sql);
     } else if (isSingleWraparound(prevRunXminStatus, currentXminStatus)) {
       // The xmin state that we save represents the lowest XID that is still in progress. To make sure we
       // don't miss data associated with the current transaction, we have to issue an >=. Because of the wraparound, the changes prior to the
       // end xmin xid value must also be captured.
+      LOGGER.info("Detect a single wraparound for {}", fullTableName);
       final String sql = String.format("SELECT %s FROM %s WHERE xmin::text::bigint >= ? OR xmin::text::bigint < ?",
           wrappedColumnNames, fullTableName);
       final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-      if (prevRunXminStatus != null) {
-        preparedStatement.setLong(1, prevRunXminStatus.getXminXidValue());
-      } else {
-        preparedStatement.setLong(1, 0L);
-      }
-
+      preparedStatement.setLong(1, prevRunXminStatus.getXminXidValue());
       preparedStatement.setLong(2, currentXminStatus.getXminXidValue());
+
       return preparedStatement;
     } else {
       // The xmin state that we save represents the lowest XID that is still in progress. To make sure we
@@ -181,12 +183,7 @@ public class PostgresXminHandler {
           wrappedColumnNames, fullTableName);
 
       final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
-
-      if (prevRunXminStatus != null) {
-        preparedStatement.setLong(1, prevRunXminStatus.getXminXidValue());
-      } else {
-        preparedStatement.setLong(1, 0L);
-      }
+      preparedStatement.setLong(1, prevRunXminStatus.getXminXidValue());
 
       return preparedStatement;
     }
@@ -194,20 +191,12 @@ public class PostgresXminHandler {
 
   // Detect whether the source Postgres DB has undergone a single wraparound event.
   static boolean isSingleWraparound(final XminStatus prevRunXminStatus, final XminStatus currentXminStatus) {
-    if (prevRunXminStatus != null) {
-      return currentXminStatus.getNumWraparound() - prevRunXminStatus.getNumWraparound() == 1;
-    } else {
-      return currentXminStatus.getNumWraparound() - 0 == 1;
-    }
+    return currentXminStatus.getNumWraparound() - prevRunXminStatus.getNumWraparound() == 1;
   }
 
   // Detects whether source Postgres DB has undergone multiple wraparound events between syncs.
   static boolean shouldPerformFullSync(final XminStatus prevRunXminStatus, final XminStatus currentXminStatus) {
-    if (prevRunXminStatus != null) {
-      return currentXminStatus.getNumWraparound() - prevRunXminStatus.getNumWraparound() >= 2;
-    } else {
-      return currentXminStatus.getNumWraparound() - 0 >= 2;
-    }
+    return currentXminStatus.getNumWraparound() - prevRunXminStatus.getNumWraparound() >= 2;
   }
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}
