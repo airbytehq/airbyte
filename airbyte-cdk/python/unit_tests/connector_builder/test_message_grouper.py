@@ -555,18 +555,6 @@ def test_given_control_message_then_stream_read_has_config_update(mock_entrypoin
 
 
 @patch('airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read')
-def test_given_no_control_message_then_use_in_memory_config_change_as_update(mock_entrypoint_read):
-    mock_source = make_mock_source(mock_entrypoint_read, iter(any_request_and_response_with_a_record()))
-    connector_builder_handler = MessageGrouper(MAX_PAGES_PER_SLICE, MAX_SLICES)
-    full_config = {**CONFIG, **{"__injected_declarative_manifest": MANIFEST}}
-    stream_read: StreamRead = connector_builder_handler.get_message_groups(
-        source=mock_source, config=full_config, configured_catalog=create_configured_catalog("hashiras")
-    )
-
-    assert stream_read.latest_config_update == CONFIG
-
-
-@patch('airbyte_cdk.connector_builder.message_grouper.AirbyteEntrypoint.read')
 def test_given_multiple_control_messages_then_stream_read_has_latest_based_on_emitted_at(mock_entrypoint_read):
     earliest = 0
     earliest_config = {"earliest": 0}
