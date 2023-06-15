@@ -4,11 +4,14 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.TableDefinition;
+import com.google.cloud.bigquery.TableId;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedCatalog;
@@ -26,6 +29,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +60,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordConsumer.class);
   public static final int RECORDS_PER_TYPING_AND_DEDUPING_BATCH = 10_000;
 
+  private final BigQuery bigquery;
   private final Map<StreamWriteTargets, AbstractBigQueryUploader<?>> uploaderMap;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final String datasetId;
@@ -68,7 +73,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private final boolean use1s1t;
   private final String rawNamespaceOverride;
 
-  public BigQueryRecordConsumer(final Map<StreamWriteTargets, AbstractBigQueryUploader<?>> uploaderMap,
+  public BigQueryRecordConsumer(final BigQuery bigquery,
+                                final Map<StreamWriteTargets, AbstractBigQueryUploader<?>> uploaderMap,
                                 final Consumer<AirbyteMessage> outputRecordCollector,
                                 final String datasetId,
                                 final BigQuerySqlGenerator sqlGenerator,
@@ -76,6 +82,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
                                 final ParsedCatalog<StandardSQLTypeName> catalog,
                                 final boolean use1s1t,
                                 final String rawNamespaceOverride) {
+    this.bigquery = bigquery;
     this.uploaderMap = uploaderMap;
     this.outputRecordCollector = outputRecordCollector;
     this.datasetId = datasetId;
@@ -104,15 +111,17 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         }
       }
 
-      // For streams in overwrite mode, truncate the raw table create a tmp table.
+      // For streams in overwrite mode, truncate the raw table and create a tmp table.
       // non-1s1t syncs actually overwrite the raw table at the end of of the sync, wo we only do this in 1s1t mode.
-      // TODO check for tmp table existence + drop it if it already exists?
       for (StreamConfig<StandardSQLTypeName> stream : catalog.streams()) {
         LOGGER.info("Stream {} has sync mode {}", stream.id(), stream.destinationSyncMode());
         if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
-          final String rawTable = stream.id().rawTableId(BigQuerySqlGenerator.QUOTE);
-          destinationHandler.execute("TRUNCATE TABLE " + rawTable);
+          // drop+recreate the raw table
+          final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
+          bigquery.delete(rawTableId);
+          BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
 
+          // create the tmp final table
           destinationHandler.execute(sqlGenerator.createTable(stream, OVERWRITE_TABLE_SUFFIX));
         }
       }
