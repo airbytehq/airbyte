@@ -85,21 +85,25 @@ class SourceMixpanel(AbstractSource):
         # https://github.com/airbytehq/airbyte/pull/27252#discussion_r1228356872
         # temporary solution, testing access for all streams to avoid 402 error
         streams = [Annotations, Cohorts, Engage, Export, Revenue]
+        connected = False
+        reason = None
         for stream_class in streams:
             try:
                 stream = stream_class(authenticator=auth, **config)
-                stream.reqs_per_hour_limit = 0
                 next(read_full_refresh(stream), None)
+                connected = True
                 break
             except requests.HTTPError as e:
+                reason = e.response.json()["error"]
                 if e.response.status_code == 402:
                     logger.info(f"Stream {stream_class.__name__}: {e.response.json()['error']}")
                 else:
-                    return False, e.response.json()["error"]
+                    return connected, reason
             except Exception as e:
-                return False, e
+                return connected, e
 
-        return True, None
+        reason = None if connected else reason
+        return connected, reason
 
     @adapt_streams_if_testing
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
