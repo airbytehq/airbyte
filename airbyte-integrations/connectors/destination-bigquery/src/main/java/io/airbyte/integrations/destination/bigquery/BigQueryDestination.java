@@ -369,6 +369,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         use1s1t);
 
     return new BigQueryRecordConsumer(
+        bigquery,
         writeConfigs,
         outputRecordCollector,
         BigQueryUtils.getDatasetId(config),
