@@ -355,3 +355,97 @@ multi_csv_different_timestamps_scenario = (
     .set_incremental_scenario_config(IncrementalScenarioConfig(
         input_state=[],
     ))).build()
+
+mulit_csv_per_timestamp_scenario = (
+    TestScenarioBuilder()
+    .set_name("mulit_csv_per_timestamp_scenario")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*.csv"],
+                    "validation_policy": "emit_record_on_schema_mismatch",
+                }
+            ]
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("val11a", "val12a"),
+                    ("val21a", "val22a"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000000Z",
+            },
+            "b.csv": {
+                "contents": [
+                    ("col1", "col2", "col3"),
+                    ("val11b", "val12b", "val13b"),
+                    ("val21b", "val22b", "val23b"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000000Z",
+            },
+            "c.csv": {
+                "contents": [
+                    ("col1", "col2", "col3"),
+                    ("val11c", "val12c", "val13c"),
+                    ("val21c", "val22c", "val23c"),
+                ],
+                "last_modified": "2023-06-06T03:54:07.000000Z",
+            },
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "col1": "string",
+                        "col2": "string",
+                        "col3": "string",
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"col1": "val11a", "col2": "val12a"},
+            {"col1": "val21a", "col2": "val22a"},
+            {"col1": "val11b", "col2": "val12b", "col3": "val13b"},
+            {"col1": "val21b", "col2": "val22b", "col3": "val23b"},
+            {
+                "stream1": {
+                    "cursor_value": "2023-06-05T03:54:07.000000Z",
+                    "history": {
+                        "a.csv": "2023-06-05T03:54:07.000000Z",
+                        "b.csv": "2023-06-05T03:54:07.000000Z"
+                    }
+                }
+            },
+            {"col1": "val11c", "col2": "val12c", "col3": "val13c"},
+            {"col1": "val21c", "col2": "val22c", "col3": "val23c"},
+            {
+                "stream1": {
+                    "cursor_value": "2023-06-06T03:54:07.000000Z",
+                    "history": {
+                        "a.csv": "2023-06-05T03:54:07.000000Z",
+                        "b.csv": "2023-06-05T03:54:07.000000Z",
+                        "c.csv": "2023-06-06T03:54:07.000000Z"
+                    }
+                }
+            },
+        ]
+    )
+    .set_incremental_scenario_config(IncrementalScenarioConfig(
+        input_state=[],
+    ))).build()

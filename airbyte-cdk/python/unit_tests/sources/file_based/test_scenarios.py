@@ -20,7 +20,8 @@ from unit_tests.sources.file_based.scenarios.csv_incremental_scenarios import (
     single_csv_no_input_state_scenario,
     single_csv_input_state_is_later_scenario,
     multi_csv_same_timestamp_scenario,
-    multi_csv_different_timestamps_scenario
+    multi_csv_different_timestamps_scenario,
+    mulit_csv_per_timestamp_scenario
 )
 
 scenarios = [
@@ -32,7 +33,8 @@ scenarios = [
     single_csv_no_input_state_scenario,
     single_csv_input_state_is_later_scenario,
     multi_csv_same_timestamp_scenario,
-    multi_csv_different_timestamps_scenario
+    multi_csv_different_timestamps_scenario,
+    mulit_csv_per_timestamp_scenario
 ]
 
 
