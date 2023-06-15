@@ -75,7 +75,7 @@
       },
       "api_url": {
         "type": "string",
-        "examples": ["gitlab.com"],
+        "examples": ["gitlab.com", "https://gitlab.com", "https://gitlab.company.org"],
         "title": "API URL",
         "default": "gitlab.com",
         "description": "Please enter your basic URL from GitLab instance.",
