@@ -57,6 +57,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
+| 0.2.6   | 2023-06-12 | [27244](https://github.com/airbytehq/airbyte/pull/27244) | Added http error handling for `403` and `500` HTTP errors |  
 | 0.2.5   | 2023-05-22 | [225881](https://github.com/airbytehq/airbyte/pull/25881) | Fix pagination for the items stream |  
 | 0.2.4   | 2023-04-26 | [25277](https://github.com/airbytehq/airbyte/pull/25277) | Increase row limit to 100 |
 | 0.2.3   | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version         |

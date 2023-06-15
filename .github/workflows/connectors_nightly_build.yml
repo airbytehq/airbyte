@@ -2,8 +2,8 @@ name: Connectors nightly build
 
 on:
   schedule:
-    # 10AM UTC is 12AM CET, 1PM EEST, 2AM PST.
-    - cron: "0 10 * * *"
+    # 0AM UTC is 2AM CEST, 3AM EEST, 5PM PDT.
+    - cron: "0 0 * * *"
   workflow_dispatch:
     inputs:
       runs-on:
@@ -19,7 +19,7 @@ run-name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build
 jobs:
   test_connectors:
     name: "Test connectors: ${{ inputs.test-connectors-options || 'nightly build for GA and Beta connectors' }} - on ${{ inputs.runs-on || 'dev-large-runner' }}"
-    timeout-minutes: 600 # 10 hours
+    timeout-minutes: 1380 # 23 hours
     runs-on: ${{ inputs.runs-on || 'dev-large-runner' }}
     steps:
       - name: Get start timestamp
