@@ -3,7 +3,6 @@
 #
 
 from airbyte_cdk.sources.file_based.exceptions import RecordParseError, SchemaInferenceError
-from airbyte_cdk.sources.file_based.remote_file import FileType
 from unit_tests.sources.file_based.helpers import LowInferenceLimitDiscoveryPolicy
 from unit_tests.sources.file_based.scenarios._scenario_builder import TestScenarioBuilder
 
@@ -34,7 +33,7 @@ single_csv_scenario = (
             }
         }
     )
-    .set_file_type(FileType.Csv)
+    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -90,7 +89,7 @@ multi_csv_scenario = (
             },
         }
     )
-    .set_file_type(FileType.Csv)
+    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -152,7 +151,7 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
             },
         }
     )
-    .set_file_type(FileType.Csv)
+    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -203,7 +202,7 @@ invalid_csv_scenario = (
             }
         }
     )
-    .set_file_type(FileType.Csv)
+    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [

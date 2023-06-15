@@ -5,23 +5,19 @@
 import logging
 import traceback
 from abc import ABC
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Type
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
+from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
-from airbyte_cdk.sources.file_based.file_types import AvroParser, CsvParser, JsonlParser, ParquetParser
+from airbyte_cdk.sources.file_based.file_types import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
-from airbyte_cdk.sources.file_based.remote_file import FileType
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, DefaultFileBasedStream
-
-default_parsers = {
-    FileType.Avro: AvroParser(),
-    FileType.Csv: CsvParser(),
-    FileType.Jsonl: JsonlParser(),
-    FileType.Parquet: ParquetParser(),
-}
+from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from pydantic.error_wrappers import ValidationError
 
 
 class FileBasedSource(AbstractSource, ABC):
@@ -32,14 +28,12 @@ class FileBasedSource(AbstractSource, ABC):
     def __init__(
         self,
         stream_reader: AbstractFileBasedStreamReader,
-        availability_strategy: AbstractFileBasedAvailabilityStrategy,
+        availability_strategy: AvailabilityStrategy,
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
-        parsers: Dict[FileType, FileTypeParser] = None,
-        stream_cls: Type[AbstractFileBasedStream] = DefaultFileBasedStream,
+        parsers: Dict[str, FileTypeParser] = None,
     ):
         self.stream_reader = stream_reader
-        self.stream_cls = stream_cls
-        self.availability_strategy = availability_strategy
+        self.availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)
         self.parsers = parsers or default_parsers
         self.discovery_policy = discovery_policy
 
@@ -57,7 +51,9 @@ class FileBasedSource(AbstractSource, ABC):
         if len(streams) == 0:
             return (
                 False,
-                f"No streams are available for source {self.name}. This is probably an issue with the connector. Please contact support. ",
+                f"No streams are available for source {self.name}. This is probably an issue with the connector. Please verify that your "
+                f"configuration provides permissions to list and read files from the source. Contact support if you are unable to "
+                f"resolve this issue.",
             )
 
         errors = []
@@ -79,13 +75,16 @@ class FileBasedSource(AbstractSource, ABC):
         """
         Return a list of this source's streams.
         """
-        return [
-            self.stream_cls(
-                raw_config=stream,
-                stream_reader=self.stream_reader,
-                availability_strategy=self.availability_strategy,
-                discovery_policy=self.discovery_policy,
-                parsers=self.parsers,
-            )
-            for stream in config["streams"]
-        ]
+        try:
+            return [
+                DefaultFileBasedStream(
+                    config=FileBasedStreamConfig(**stream),
+                    stream_reader=self.stream_reader,
+                    availability_strategy=self.availability_strategy,
+                    discovery_policy=self.discovery_policy,
+                    parsers=self.parsers,
+                )
+                for stream in config["streams"]
+            ]
+        except ValidationError as exc:
+            raise ConfigValidationError("Error creating stream config object.") from exc

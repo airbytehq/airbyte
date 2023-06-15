@@ -24,6 +24,7 @@ class AbstractFileBasedStreamReader(BaseModel):
         client = boto3.Session(...)
         return smart_open.open(remote_file.uri, transport_params={"client": client})
         """
+        ...
 
     @abstractmethod
     def list_matching_files(
@@ -46,6 +47,7 @@ class AbstractFileBasedStreamReader(BaseModel):
         Utility method `self.filter_files_by_globs` and `self.get_prefixes_from_globs`
         are available, which may be helpful when implementing this method.
         """
+        ...
 
     @staticmethod
     def filter_files_by_globs(files: List[RemoteFile], globs: List[str]) -> List[RemoteFile]:
@@ -59,4 +61,4 @@ class AbstractFileBasedStreamReader(BaseModel):
         """
         Utility method for extracting prefixes from the globs.
         """
-        raise NotImplementedError
+        ...

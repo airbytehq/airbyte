@@ -6,9 +6,9 @@ import logging
 from typing import Optional, Tuple
 
 from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import DefaultDiscoveryPolicy
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 
 class LowInferenceLimitDiscoveryPolicy(DefaultDiscoveryPolicy):
@@ -17,6 +17,6 @@ class LowInferenceLimitDiscoveryPolicy(DefaultDiscoveryPolicy):
         return 1
 
 
-class DefaultTestAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy):
+class DefaultTestAvailabilityStrategy(AvailabilityStrategy):
     def check_availability(self, stream: Stream, logger: logging.Logger, _: Optional[Source]) -> Tuple[bool, Optional[str]]:
         return True, None
