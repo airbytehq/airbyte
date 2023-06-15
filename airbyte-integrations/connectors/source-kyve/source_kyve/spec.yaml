@@ -1,0 +1,48 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/kyve
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: KYVE Spec
+  type: object
+  required:
+    - pool_ids
+    - start_ids
+  properties:
+    pool_ids:
+      type: string
+      title: Pool-IDs
+      description: The IDs of the KYVE storage pool you want to archive. (Comma separated)
+      order: 0
+      examples:
+        - '0'
+        - '0,1'
+    start_ids:
+      type: string
+      title: Bundle-Start-IDs
+      description: The start-id defines, from which bundle id the pipeline should
+        start to extract the data (Comma separated)
+      order: 1
+      examples:
+        - '0'
+        - '0,0'
+    url_base:
+      type: string
+      title: KYVE-API URL Base
+      description: URL to the KYVE Chain API.
+      default: https://api.korellia.kyve.network
+      order: 2
+      examples:
+        - https://api.korellia.kyve.network/
+        - https://api.beta.kyve.network/
+    max_pages:
+      type: integer
+      description: The maximum amount of pages to go trough. Set to 'null' for all
+        pages.
+      order: 3
+      airbyte_hidden: true
+    page_size:
+      type: integer
+      description: The pagesize for pagination, smaller numbers are used in integration
+        tests.
+      default: 100
+      order: 4
+      airbyte_hidden: true
