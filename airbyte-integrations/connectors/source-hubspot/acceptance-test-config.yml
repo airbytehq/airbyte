@@ -49,6 +49,8 @@ acceptance_tests:
           contacts:
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_time_in_subscriber
+              bypass_reason: Hubspot time depend on current time
             - name: properties/hs_latest_source_timestamp
               bypass_reason: Hubspot time depend on current time
             - name: properties/hs_predictivescoringtier
