@@ -95,11 +95,11 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
-          cache-python: "false"
+      # - name: Cache Build Artifacts
+      #   uses: ./.github/actions/cache-build-artifacts
+      #   with:
+      #     cache-key: ${{ secrets.CACHE_VERSION }}
+      #     cache-python: "false"
 
       - uses: actions/setup-java@v3
         with:
@@ -251,10 +251,10 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}-connectors-gradle-build
+      # - name: Cache Build Artifacts
+      #   uses: ./.github/actions/cache-build-artifacts
+      #   with:
+      #     cache-key: ${{ secrets.CACHE_VERSION }}-connectors-gradle-build
 
       - uses: actions/setup-java@v3
         with:
