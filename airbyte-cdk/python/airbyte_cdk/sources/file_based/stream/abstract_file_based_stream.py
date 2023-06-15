@@ -83,7 +83,7 @@ class AbstractFileBasedStream(Stream):
         ...
 
     @abstractmethod
-    def list_files_for_this_sync(self, stream_state: Optional[StreamState]) -> Iterable[RemoteFile]:
+    def list_files_for_this_sync(self, stream_slice: Optional[StreamSlice]) -> Iterable[RemoteFile]:
         """
         Return the subset of this stream's files that will be read in the current sync.
         """

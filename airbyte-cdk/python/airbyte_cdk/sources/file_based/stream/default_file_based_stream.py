@@ -42,7 +42,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream):
             # On read requests we should always have the catalog available
             raise MissingSchemaError("Expected `json_schema` in the configured catalog but it is missing.")
         parser = self.get_parser(self.config.file_type)
-        for file in self.list_files_for_this_sync(stream_state):
+        for file in self.list_files_for_this_sync(stream_slice):
             try:
                 for record in parser.parse_records(file, self._stream_reader):
                     if not record_passes_validation_policy(self.config.validation_policy, record, schema):
@@ -79,19 +79,19 @@ class DefaultFileBasedStream(AbstractFileBasedStream):
         """
         return list(self._stream_reader.list_matching_files(self.config.globs))
 
-    def list_files_for_this_sync(self, stream_state: Optional[StreamState]) -> Iterable[RemoteFile]:
+    def list_files_for_this_sync(self, stream_slice: Optional[StreamSlice]) -> Iterable[RemoteFile]:
         """
         Return the subset of this stream's files that will be read in the current sync.
 
         Specifically:
 
         - Take the output of `list_files`
-        - If `stream_state.start` is non-None then remove all files with last_modified
+        - If `stream_slice.start` is non-None then remove all files with last_modified
           date before `start`
         """
-        return self._stream_reader.list_matching_files(self.config.globs, self._get_datetime_from_stream_state(stream_state))
+        return self._stream_reader.list_matching_files(self.config.globs, self._get_datetime_from_stream_slice(stream_slice))
 
-    def _get_datetime_from_stream_state(self, stream_state: Optional[StreamState]) -> Optional[datetime]:
+    def _get_datetime_from_stream_slice(self, stream_slice: Optional[StreamSlice]) -> Optional[datetime]:
         # TODO: implement me
         return None
 
