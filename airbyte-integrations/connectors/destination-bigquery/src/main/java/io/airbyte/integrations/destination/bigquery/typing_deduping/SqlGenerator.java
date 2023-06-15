@@ -38,6 +38,10 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
     public String finalName(final String quote) {
       return quote + finalName + quote;
     }
+
+    public String finalNamespace(final String quote) {
+      return quote + finalNamespace + quote;
+    }
   }
 
   /**
@@ -66,8 +70,10 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
    * <p>
    * The generated SQL may throw an exception if the table already exists. Callers should use {@link #alterTable(StreamConfig, java.lang.Object)} if
    * the table is known to exist.
+   *
+   * @param suffix A suffix to add to the stream name. Useful for full refresh overwrite syncs, where we write the entire sync to a temp table.
    */
-  String createTable(final StreamConfig<DialectType> stream);
+  String createTable(final StreamConfig<DialectType> stream, final String suffix);
 
   /**
    * Generate a SQL statement to alter an existing table to match the given stream.
