@@ -5,6 +5,9 @@ import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Singleton of destination config for easy lookup of values.
+ */
 @Singleton
 public class DestinationConfig {
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationConfig.class);
@@ -21,6 +24,8 @@ public class DestinationConfig {
       }
       config = new DestinationConfig();
       config.root = root;
+    } else {
+      LOGGER.warn("Singleton was already initialized.");
     }
   }
 
@@ -39,19 +44,23 @@ public class DestinationConfig {
     return node;
   }
 
+  // string value, otherwise empty string
   public String getTextValue(final String key) {
     final JsonNode node = getNodeValue(key);
-    if (!node.isTextual()) {
-      LOGGER.warn("Cannot get text value for node that is not text type: {}", key);
+    if (node == null || !node.isTextual()) {
+      LOGGER.warn("Cannot retrieve text value for node with key {}", key);
+      return "";
     }
-    return node.asText("");
+    return node.asText();
   }
 
+  // boolean value, otherwise false
   public Boolean getBooleanValue(final String key) {
     final JsonNode node = getNodeValue(key);
-    if (!node.isBoolean()) {
-      LOGGER.warn("Cannot get boolean value for node that is not boolean type: {}", key);
+    if (node == null || !node.isBoolean()) {
+      LOGGER.warn("Cannot retrieve boolean value for node with key {}", key);
+      return false;
     }
-    return node.asBoolean(false);
+    return node.asBoolean();
   }
 }
