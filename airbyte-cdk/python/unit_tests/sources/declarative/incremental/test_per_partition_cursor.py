@@ -6,6 +6,7 @@ from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionCursor, PerPartitionStreamSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 
@@ -52,7 +53,7 @@ class MockedCursorBuilder:
         return self
 
     def build(self):
-        cursor = Mock(spec=StreamSlicer)
+        cursor = Mock(spec=Cursor)
         cursor.get_stream_state.return_value = self._stream_state
         cursor.stream_slices.return_value = self._stream_slices
         return cursor
@@ -74,7 +75,7 @@ def test_given_no_partition_when_stream_slices_then_no_slices(mocked_cursor_fact
     mocked_partition_router.stream_slices.return_value = []
     cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)
 
-    slices = cursor.stream_slices(SYNC_MODE, STATE)
+    slices = cursor.stream_slices(SYNC_MODE)
 
     assert not next(slices, None)
 
@@ -86,7 +87,7 @@ def test_given_partition_router_without_state_has_one_partition_then_return_one_
     mocked_cursor_factory.create.return_value = MockedCursorBuilder().with_stream_slices(cursor_slices).build()
     cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)
 
-    slices = cursor.stream_slices(SYNC_MODE, STATE)
+    slices = cursor.stream_slices(SYNC_MODE)
 
     assert list(slices) == [PerPartitionStreamSlice(partition, cursor_slice) for cursor_slice in cursor_slices]
 
@@ -98,14 +99,14 @@ def test_given_partition_associated_with_state_when_stream_slices_then_do_not_re
     mocked_cursor_factory.create.return_value = MockedCursorBuilder().with_stream_slices(cursor_slices).build()
     cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)
 
-    cursor.update_cursor({
+    cursor.set_initial_state({
         "states": [{
             "partition": partition,
             "cursor": CURSOR_STATE
         }]
     })
     mocked_cursor_factory.create.assert_called_once()
-    slices = list(cursor.stream_slices(SYNC_MODE, STATE))
+    slices = list(cursor.stream_slices(SYNC_MODE))
 
     mocked_cursor_factory.create.assert_called_once()
     assert len(slices) == 1
@@ -122,13 +123,13 @@ def test_given_multiple_partitions_then_each_have_their_state(mocked_cursor_fact
     mocked_cursor_factory.create.side_effect = [first_cursor, second_cursor]
     cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)
 
-    cursor.update_cursor({
+    cursor.set_initial_state({
         "states": [{
             "partition": first_partition,
             "cursor": CURSOR_STATE
         }]
     })
-    slices = list(cursor.stream_slices(SYNC_MODE, STATE))
+    slices = list(cursor.stream_slices(SYNC_MODE))
 
     first_cursor.stream_slices.assert_called_once()
     second_cursor.stream_slices.assert_called_once()
@@ -151,7 +152,7 @@ def test_given_stream_slices_when_get_stream_state_then_return_updated_state(moc
     ]
     mocked_partition_router.stream_slices.return_value = [{"partition key": "first partition"}, {"partition key": "second partition"}]
     cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)
-    list(cursor.stream_slices(SYNC_MODE, {}))
+    list(cursor.stream_slices(SYNC_MODE))
     assert cursor.get_stream_state() == {
         "states": [
             {

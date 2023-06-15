@@ -9,6 +9,6 @@ from airbyte_cdk.sources.declarative.partition_routers.single_partition_router i
 def test():
     iterator = SinglePartitionRouter(parameters={})
 
-    stream_slices = iterator.stream_slices(SyncMode.incremental, None)
+    stream_slices = iterator.stream_slices(SyncMode.incremental)
     next_slice = next(stream_slices)
     assert next_slice == dict()

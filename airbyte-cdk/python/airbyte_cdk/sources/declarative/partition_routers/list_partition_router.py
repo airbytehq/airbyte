@@ -39,17 +39,6 @@ class ListPartitionRouter(StreamSlicer):
 
         self._cursor = None
 
-    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
-        # This method is called after the records are processed.
-        slice_value = stream_slice.get(self.cursor_field.eval(self.config))
-        if slice_value and slice_value in self.values:
-            self._cursor = slice_value
-        else:
-            raise ValueError(f"Unexpected stream slice: {slice_value}")
-
-    def get_stream_state(self) -> StreamState:
-        return {self.cursor_field.eval(self.config): self._cursor} if self._cursor else {}
-
     def get_request_params(
         self,
         stream_state: Optional[StreamState] = None,
@@ -86,7 +75,7 @@ class ListPartitionRouter(StreamSlicer):
         # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
         return self._get_request_option(RequestOptionType.body_json, stream_slice)
 
-    def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(self, sync_mode: SyncMode) -> Iterable[Mapping[str, Any]]:
         return [{self.cursor_field.eval(self.config): slice_value} for slice_value in self.values]
 
     def _get_request_option(self, request_option_type: RequestOptionType, stream_slice: StreamSlice):

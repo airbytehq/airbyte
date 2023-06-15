@@ -16,12 +16,6 @@ class SinglePartitionRouter(StreamSlicer):
 
     parameters: InitVar[Mapping[str, Any]]
 
-    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
-        pass
-
-    def get_stream_state(self) -> StreamState:
-        return {}
-
     def get_request_params(
         self,
         stream_state: Optional[StreamState] = None,
@@ -54,5 +48,5 @@ class SinglePartitionRouter(StreamSlicer):
     ) -> Mapping[str, Any]:
         return {}
 
-    def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[StreamSlice]:
+    def stream_slices(self, sync_mode: SyncMode) -> Iterable[StreamSlice]:
         yield dict()
