@@ -274,17 +274,28 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
             _airbyte_raw_id,
             _airbyte_extracted_at
               )
+              WITH intermediate_data AS (
               SELECT
             ${column_casts}
-            to_json(struct(array_concat(
+                array_concat(
             ${column_errors}
-            ) as errors)) as _airbyte_meta,
+                ) as _airbyte_cast_errors,
                 _airbyte_raw_id,
                 _airbyte_extracted_at
               FROM ${raw_table_id}
               WHERE
                 _airbyte_loaded_at IS NULL
                 AND JSON_EXTRACT(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
+              )
+              SELECT
+            ${column_list}
+            CASE
+              WHEN array_length(_airbyte_cast_errors) = 0 THEN JSON'{}'
+              ELSE to_json(struct(_airbyte_cast_errors AS errors))
+            END AS _airbyte_meta,
+            _airbyte_raw_id,
+            _airbyte_extracted_at
+              FROM intermediate_data
               ;"""
     );
   }
