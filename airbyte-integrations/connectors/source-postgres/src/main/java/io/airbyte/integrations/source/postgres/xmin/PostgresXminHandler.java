@@ -143,20 +143,8 @@ public class PostgresXminHandler {
       final XminStatus previousRunXminStatus = xminStateManager.getXminStatus(airbyteStream);
       final PreparedStatement xminPreparedStatement =
           getXminPreparedStatement(connection, wrappedColumnNames, fullTableName, previousRunXminStatus, currentXminStatus);
-      // The xmin state that we save represents the lowest XID that is still in progress. To make sure we
-      // don't miss data associated with the current transaction, we have to issue an >=
-      final String sql = String.format("SELECT %s FROM %s WHERE xmin::text::bigint >= ?",
-          wrappedColumnNames, fullTableName);
-
-      final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
-
-      if (previousRunXminStatus != null) {
-        preparedStatement.setLong(1, previousRunXminStatus.getXminXidValue());
-      } else {
-        preparedStatement.setLong(1, 0L);
-      }
-      LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
-      return preparedStatement;
+      LOGGER.info("Executing query for table {}: {}", tableName, xminPreparedStatement);
+      return xminPreparedStatement;
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
@@ -173,7 +161,8 @@ public class PostgresXminHandler {
       return connection.prepareStatement(sql);
     } else if (isSingleWraparound(prevRunXminStatus, currentXminStatus)) {
       // The xmin state that we save represents the lowest XID that is still in progress. To make sure we
-      // don't miss data associated with the current transaction, we have to issue an >=.
+      // don't miss data associated with the current transaction, we have to issue an >=. Because of the wraparound, the changes prior to the
+      // end xmin xid value must also be captured.
       final String sql = String.format("SELECT %s FROM %s WHERE xmin::text::bigint >= ? OR xmin::text::bigint < ?",
           wrappedColumnNames, fullTableName);
       final PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -204,7 +193,7 @@ public class PostgresXminHandler {
   }
 
   // Detect whether the source Postgres DB has undergone a single wraparound event.
-  private static boolean isSingleWraparound(final XminStatus prevRunXminStatus, final XminStatus currentXminStatus) {
+  static boolean isSingleWraparound(final XminStatus prevRunXminStatus, final XminStatus currentXminStatus) {
     if (prevRunXminStatus != null) {
       return currentXminStatus.getNumWraparound() - prevRunXminStatus.getNumWraparound() == 1;
     } else {
@@ -213,7 +202,7 @@ public class PostgresXminHandler {
   }
 
   // Detects whether source Postgres DB has undergone multiple wraparound events between syncs.
-  private static boolean shouldPerformFullSync(final XminStatus prevRunXminStatus, final XminStatus currentXminStatus) {
+  static boolean shouldPerformFullSync(final XminStatus prevRunXminStatus, final XminStatus currentXminStatus) {
     if (prevRunXminStatus != null) {
       return currentXminStatus.getNumWraparound() - prevRunXminStatus.getNumWraparound() >= 2;
     } else {
