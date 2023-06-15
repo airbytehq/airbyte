@@ -87,6 +87,7 @@ Each destination version is managed separately, so if you have multiple destinat
 Versions are tied to the destination. When you update the destination, **all connections tied to that destination will be sending data in the Destinations V2 format**. For upgrade paths that will minimize disruption to existing dashboards, see:
 * [Upgrading Connections One by One with Dual-Writing](#upgrading-connections-one-by-one-with-dual-writing)
 * [Testing Destinations V2 on a Single Connection](#testing-destinations-v2-for-a-single-connection)
+* [Upgrading Connections One by One Using CDC]
 * [Upgrading as a User of Raw Tables](#upgrading-as-a-user-of-raw-tables)
 * [(OSS Only) Rolling back to Legacy Normalization](#oss-only-rolling-back-to-legacy-normalization)
  
@@ -146,6 +147,16 @@ If you have written downstream transformations directly from the output of raw t
 * You can dual write by following the [steps above](#upgrading-connections-one-by-one-with-dual-writing) and copying your raw data to the schema of your newly created connection.
 
 We may make further changes to raw tables in the future, as these tables are intended to be a staging ground for Airbyte to optimize the performance of your syncs. We cannot guarantee the same level of stability as for final tables in your destination schema.
+
+### Upgrade Paths for Connections using CDC
+
+For each [CDC-supported](https://docs.airbyte.com/understanding-airbyte/cdc) source connector, we recommend the following:
+
+| CDC Source 	| Recommendation              	                                  | Notes                                                                                                                                                                                               	                                                              |
+|------------	|----------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Postgres   	| [Upgrade connection in place](#quick-start-to-upgrading)	      | You can optionally dual write, but this requires resyncing historical data from the source. You must create a new Postgres source with a different replication slot than your existing source to preserve the integrity of your existing connection.             	 |
+| MySQL      	| [All above upgrade paths supported](#advanced-upgrade-paths) 	 | You can upgrade the connection in place, or dual write. When dual writing, Airbyte can leverage the state of an existing, active connection to ensure historical data is not re-replicated from MySQL. 	                                                           |
+| SQL Server 	| [All above upgrade paths supported](#advanced-upgrade-paths) 	 | You can upgrade the connection in place, or dual write. When dual writing, Airbyte can leverage the state of an existing, active connection to ensure historical data is not re-replicated from SQL Server. 	                                                      |
 
 ### (OSS Only) Rolling back to Legacy Normalization
 
