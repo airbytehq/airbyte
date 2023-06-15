@@ -10,6 +10,9 @@ from typing import List
 
 import backoff
 import pendulum
+import requests
+import urllib3
+
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 from cached_property import cached_property
@@ -18,6 +21,8 @@ from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.adobjects.user import User
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
+from urllib3 import Retry
+
 from source_facebook_marketing.streams.common import retry_pattern
 
 logger = logging.getLogger("airbyte")
@@ -27,7 +32,10 @@ class FacebookAPIException(Exception):
     """General class for all API errors"""
 
 
-backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, factor=5)
+backoff_policy = retry_pattern(backoff.expo, (FacebookRequestError,
+                                              requests.exceptions.ConnectionError,
+                                              urllib3.exceptions.ProtocolError,
+                                              ConnectionResetError), max_tries=15, factor=5)
 
 
 class MyFacebookAdsApi(FacebookAdsApi):
@@ -165,6 +173,8 @@ class API:
     def __init__(self, account_ids: List[str], access_token: str):
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
+        adapter = requests.adapters.HTTPAdapter(pool_maxsize=100, pool_block=True)
+        MyFacebookAdsApi.get_default_api()._session.requests.mount('https://graph.facebook.com', adapter)
         FacebookAdsApi.set_default_api(self.api)
         self._account_ids = account_ids
         self.me = User(fbid='me')
@@ -180,7 +190,7 @@ class API:
     def _find_account(account_id: str) -> AdAccount:
         """Actual implementation of find account"""
         try:
-            return AdAccount(f"act_{account_id}").api_get()
+            return AdAccount(f"act_{account_id}")
         except FacebookRequestError as exc:
             message = (
                 f"Error: {exc.api_error_code()}, {exc.api_error_message()}. "

@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import itertools
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
@@ -9,6 +9,7 @@ from functools import partial
 from queue import Queue
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
 
+import gevent
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -16,7 +17,6 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
-from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 
 from .common import deep_merge
@@ -65,7 +65,7 @@ class FBMarketingStream(Stream, ABC):
             if batch:
                 logger.info("Retry failed requests in batch")
 
-    def execute_in_batch(self, pending_requests: Iterable[FacebookRequest]) -> Iterable[MutableMapping[str, Any]]:
+    def execute_batch(self, pending_requests: Iterable[FacebookRequest]) -> Iterable[MutableMapping[str, Any]]:
         """Execute list of requests in batches"""
         requests_q = Queue()
         records = []
@@ -85,18 +85,30 @@ class FBMarketingStream(Stream, ABC):
             requests_q.put(request)
 
         api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
-
         while not requests_q.empty():
             request = requests_q.get()
             api_batch.add_request(request, success=success, failure=partial(failure, request=request))
-            if len(api_batch) == self.max_batch_size or requests_q.empty():
-                # make a call for every max_batch_size items or less if it is the last call
+            if requests_q.empty():
                 self._execute_batch(api_batch)
-                yield from records
-                records = []
                 api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
+        return records
 
-        yield from records
+    def execute_in_batch(self, pending_requests: Iterable[FacebookRequest]) -> Iterable[MutableMapping[str, Any]]:
+        requests_q = Queue()
+        for r in pending_requests:
+            requests_q.put(r)
+        jobs = []
+        batch = []
+        while not requests_q.empty():
+            batch.append(requests_q.get())
+            # make a batch for every max_batch_size items or less if it is the last call
+            if len(batch) == self.max_batch_size or requests_q.empty():
+                jobs.append(gevent.spawn(self.execute_batch, batch))
+                batch = []
+        with gevent.iwait(jobs) as completed_jobs:
+            for job in completed_jobs:
+                if job.value:
+                    yield from job.value
 
     def read_records(
         self,

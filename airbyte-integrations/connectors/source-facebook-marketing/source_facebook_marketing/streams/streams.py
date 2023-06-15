@@ -7,12 +7,12 @@ import logging
 import itertools
 from typing import Any, Iterable, List, Mapping, Optional, Set
 
+import gevent
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
-from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.adobjects.user import User
 
@@ -70,8 +70,10 @@ class AdCreatives(FBMarketingStream):
             yield record
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        ad_sets = [account.get_ad_creatives(params=params) for account in self._api.accounts]
-        return list(itertools.chain(*ad_sets))
+        jobs = [gevent.spawn(account.get_ad_creatives, params=params) for account in self._api.accounts]
+        with gevent.iwait(jobs) as completed_jobs:
+            for job in completed_jobs:
+                yield from job.value
 
 
 class CustomConversions(FBMarketingStream):
@@ -81,8 +83,10 @@ class CustomConversions(FBMarketingStream):
     enable_deleted = False
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        ad_sets = [account.get_custom_conversions(params=params) for account in self._api.accounts]
-        return list(itertools.chain(*ad_sets))
+        jobs = [gevent.spawn(account.get_custom_conversions, params=params) for account in self._api.accounts]
+        with gevent.iwait(jobs) as completed_jobs:
+            for job in completed_jobs:
+                yield from job.value
 
 
 class Ads(FBMarketingIncrementalStream):
@@ -91,8 +95,10 @@ class Ads(FBMarketingIncrementalStream):
     entity_prefix = "ad"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        ads = [account.get_ads(params=params) for account in self._api.accounts]
-        return list(itertools.chain(*ads))
+        jobs = [gevent.spawn(account.get_ads, params=params) for account in self._api.accounts]
+        with gevent.iwait(jobs) as completed_jobs:
+            for job in completed_jobs:
+                yield from job.value
 
 
 class AdSets(FBMarketingIncrementalStream):
@@ -101,8 +107,10 @@ class AdSets(FBMarketingIncrementalStream):
     entity_prefix = "adset"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        ad_sets = [account.get_ad_sets(params=params) for account in self._api.accounts]
-        return list(itertools.chain(*ad_sets))
+        jobs = [gevent.spawn(account.get_ad_sets, params=params) for account in self._api.accounts]
+        with gevent.iwait(jobs) as completed_jobs:
+            for job in completed_jobs:
+                yield from job.value
 
 
 class Campaigns(FBMarketingIncrementalStream):
@@ -111,8 +119,10 @@ class Campaigns(FBMarketingIncrementalStream):
     entity_prefix = "campaign"
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        campaigns = [account.get_campaigns(params=params) for account in self._api.accounts]
-        return list(itertools.chain(*campaigns))
+        jobs = [gevent.spawn(account.get_campaigns, params=params) for account in self._api.accounts]
+        with gevent.iwait(jobs) as completed_jobs:
+            for job in completed_jobs:
+                yield from job.value
 
 
 class Activities(FBMarketingIncrementalStream):
@@ -123,8 +133,10 @@ class Activities(FBMarketingIncrementalStream):
     primary_key = None
 
     def list_objects(self, fields: List[str], params: Mapping[str, Any]) -> Iterable:
-        activities = [account.get_activities(params=params, fields=fields) for account in self._api.accounts]
-        return list(itertools.chain(*activities))
+        jobs = [gevent.spawn(account.get_activities, params=params, fields=fields) for account in self._api.accounts]
+        with gevent.iwait(jobs) as completed_jobs:
+            for job in completed_jobs:
+                yield from job.value
 
     def read_records(
         self,
@@ -162,8 +174,10 @@ class Videos(FBMarketingReversedIncrementalStream):
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         # Remove filtering as it is not working for this stream since 2023-01-13
-        ad_sets = [account.get_ad_videos(params=params, fields=self.fields) for account in self._api.accounts]
-        return list(itertools.chain(*ad_sets))
+        jobs = [gevent.spawn(account.get_ad_videos, params=params, fields=self.fields) for account in self._api.accounts]
+        with gevent.iwait(jobs) as completed_jobs:
+            for job in completed_jobs:
+                yield from job.value
 
 
 class AdAccounts(FBMarketingStream):
@@ -204,8 +218,10 @@ class Images(FBMarketingReversedIncrementalStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/ad-image"""
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        ad_sets = [account.get_ad_images(params=params, fields=self.fields) for account in self._api.accounts]
-        return list(itertools.chain(*ad_sets))
+        jobs = [gevent.spawn(account.get_ad_images, params=params, fields=self.fields) for account in self._api.accounts]
+        with gevent.iwait(jobs) as completed_jobs:
+            for job in completed_jobs:
+                yield from job.value
 
     def get_record_deleted_status(self, record) -> bool:
         return record[AdImage.Field.status] == AdImage.Status.deleted
