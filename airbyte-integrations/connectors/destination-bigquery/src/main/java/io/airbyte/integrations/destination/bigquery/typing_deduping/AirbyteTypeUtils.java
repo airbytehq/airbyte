@@ -21,6 +21,7 @@ import java.util.Collections;
 public class AirbyteTypeUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteTypeUtils.class);
+
   // Map from a protocol type to what other protocol types should take precedence over it if present in a OneOf
   private static final Map<AirbyteProtocolType, List<AirbyteProtocolType>> EXCLUDED_PROTOCOL_TYPES_MAP = ImmutableMap.of(
       AirbyteProtocolType.BOOLEAN, ImmutableList.of(AirbyteProtocolType.STRING, AirbyteProtocolType.NUMBER, AirbyteProtocolType.INTEGER),
