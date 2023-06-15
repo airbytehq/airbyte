@@ -48,7 +48,6 @@ Content records have the following form:
 As this fulfills the requirements for incremental syncs, we can configure the "Incremental sync" section in the following way:
 * "Cursor field" is set to `webPublicationDate`
 * "Datetime format" is set to `%Y-%m-%dT%H:%M:%SZ`
-* "Cursor granularity is set to `PT1S` as this API can handle date/time values on the second level
 * "Start datetime" is set to "user input" to allow the user of the connector configuring a Source to specify the time to start syncing
 * "End datetime" is set to "now" to fetch all articles up to the current date
 * "Inject start time into outgoing HTTP request" is set to `request_parameter` with "Field" set to `from-date`
@@ -92,11 +91,13 @@ In some cases, it's helpful to reference the start and end date of the interval 
 
 The description above is sufficient for a lot of APIs. However there are some more subtle configurations which sometimes become relevant. 
 
-### Step
+### Split up interval
 
-When incremental syncs are enabled and "Step" is set, the connector is not fetching all records since the cutoff date at once - instead it's splitting up the time range between the cutoff date and the desired end date into intervals based on the "Step" configuration expressed as [ISO 8601 duration](https://en.wikipedia.org/wiki/ISO_8601#Durations).
+When incremental syncs are enabled and "Split up interval" is set, the connector is not fetching all records since the cutoff date at once - instead it's splitting up the time range between the cutoff date and the desired end date into intervals based on the "Step" configuration expressed as [ISO 8601 duration](https://en.wikipedia.org/wiki/ISO_8601#Durations).
 
-For example if the "Step" is set to 10 days (`P10D`) for the Guardian articles stream described above and a longer time range, then the following requests will be performed:
+The "cursor granularity" also needs to be set to an ISO 8601 duration - it represents the smallest possible time unit the API supports to filter records by. It's used to ensure the start of a interval does not overlap with the end of the previous one.
+
+For example if the "Step" is set to 10 days (`P10D`) and the "Cursor granularity" set to second (`PT1S`) for the Guardian articles stream described above and a longer time range, then the following requests will be performed:
 <pre>
 curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-01-01T00:00:00Z</b>&to-date=<b>2023-01-10T00:00:00Z</b>'{`\n`}
 curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-01-10T00:00:00Z</b>&to-date=<b>2023-01-20T00:00:00Z</b>'{`\n`}
@@ -106,7 +107,7 @@ curl 'https://content.guardianapis.com/search?order-by=oldest&from-date=<b>2023-
 
 After an interval is processed, the cursor value of the last record will be saved as part of the connection as the new cutoff date.
 
-This value is optional and if left unset, the connector will not split up the time range at all but will instead just request all records for the entire target time range. This configuration works for all connectors, but there are two reasons to change it:
+If left unset, the connector will not split up the time range at all but will instead just request all records for the entire target time range. This configuration works for all connectors, but there are two reasons to change it:
 * **To protect a connection against intermittent failures** - if the "Step" size is a day, the cutoff date is saved after all records associated with a day are proccessed. If a sync fails halfway through because the API, the Airbyte system, the destination or the network between these components has a failure, then at most one day worth of data needs to be resynced. However, a smaller step size might cause more requests to the API and more load on the system. It depends on the expected amount of data and load characteristics of an API what step size is optimal, but for a lot of applications the default of one month is a good starting point.
 * **The API requires the connector to fetch data in pre-specified chunks** - for example the [Exchange Rates API](https://exchangeratesapi.io/documentation/) makes the date to fetch data for part of the URL path and only allows to fetch data for a single day at a time
 
