@@ -23,7 +23,7 @@ import org.apache.commons.text.StringSubstitutor;
 
 public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, StandardSQLTypeName> {
 
-  private static final String QUOTE = "`";
+  public static final String QUOTE = "`";
   private static final BigQuerySQLNameTransformer nameTransformer = new BigQuerySQLNameTransformer();
 
   // metadata columns
@@ -265,6 +265,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
         "column_errors", columnErrors,
         "column_list", columnList
     )).replace(
+        // TODO if column_errors is an empty array, then set airbyte_meta to just {} (or at least {errors:null})
         """
               INSERT INTO ${final_table_id}
               (
@@ -297,6 +298,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
         .collect(joining(",\n "));
     final String cursorOrdering = cursor.map(quotedColumnId -> quotedColumnId.name(QUOTE) + " DESC,").orElse("");
 
+    // TODO can the CDC deletes just use the final table deleted_at column? (this would allow us to delete deleted records from the raw table also)
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
         "final_table_id", id.finalTableId(QUOTE),

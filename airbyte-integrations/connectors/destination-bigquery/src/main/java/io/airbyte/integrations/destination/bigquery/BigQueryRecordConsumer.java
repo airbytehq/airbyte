@@ -71,7 +71,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
                                 final BigQuerySqlGenerator sqlGenerator,
                                 final BigQueryDestinationHandler destinationHandler,
                                 final ParsedCatalog<StandardSQLTypeName> catalog,
-                                final boolean use1s1t, final String rawNamespaceOverride) {
+                                final boolean use1s1t,
+                                final String rawNamespaceOverride) {
     this.uploaderMap = uploaderMap;
     this.outputRecordCollector = outputRecordCollector;
     this.datasetId = datasetId;
@@ -89,8 +90,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   protected void startTracked() throws InterruptedException {
     // todo (cgardens) - move contents of #write into this method.
 
-    // For each stream, make sure that its corresponding final table exists.
     if (use1s1t) {
+      // For each stream, make sure that its corresponding final table exists.
       for (StreamConfig<StandardSQLTypeName> stream : catalog.streams()) {
         final Optional<TableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
         if (existingTable.isEmpty()) {
@@ -98,6 +99,12 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
         } else {
           destinationHandler.execute(sqlGenerator.alterTable(stream, existingTable.get()));
         }
+      }
+
+      // Also, we're no longer overwriting the raw table in 1s1t mode, so truncate the raw table here.
+      for (StreamConfig<StandardSQLTypeName> stream : catalog.streams()) {
+        final String rawTable = stream.id().rawTableId(BigQuerySqlGenerator.QUOTE);
+        destinationHandler.execute("TRUNCATE TABLE " + rawTable);
       }
     }
   }
