@@ -9,7 +9,7 @@ data:
   dockerRepository: airbyte/source-freshdesk
   githubIssueLabel: source-freshdesk
   icon: freshdesk.svg
-  license: MIT
+  license: ??
   name: Freshdesk
   registries:
     cloud:
