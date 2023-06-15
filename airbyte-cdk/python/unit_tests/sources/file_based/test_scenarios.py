@@ -16,7 +16,9 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     multi_csv_stream_n_file_exceeds_limit_for_inference,
 )
 from unit_tests.sources.file_based.scenarios.csv_incremental_scenarios import (
-    single_csv_input_state_is_earlier_scenario
+    single_csv_input_state_is_earlier_scenario,
+    single_csv_no_input_state_scenario
+
 )
 
 scenarios = [
@@ -25,6 +27,7 @@ scenarios = [
     multi_csv_scenario,
     multi_csv_stream_n_file_exceeds_limit_for_inference,
     single_csv_input_state_is_earlier_scenario,
+    single_csv_no_input_state_scenario,
 ]
 
 
@@ -66,8 +69,10 @@ def test_read_incremental(capsys, tmp_path, json_spec, scenario):
             assert len(output) == len(expected_output)
             for actual, expected in zip(output, expected_output):
                 if "record" in actual:
+                    print(f"actual_record: {actual}")
                     assert actual["record"]["data"] == expected
                 elif "state" in actual:
+                    print(f"actual_state: {actual}")
                     assert actual["state"]["data"] == expected
 
 
