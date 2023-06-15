@@ -1,0 +1,263 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "type": "object",
+  "properties": {
+    "afterpay_clearpay": {
+      "additionalProperties": true,
+      "type": ["null", "object"]
+    },
+    "alipay": {
+      "additionalProperties": true,
+      "type": ["null", "object"]
+    },
+    "au_becs_debit": {
+      "additionalProperties": true,
+      "type": ["null", "object"],
+      "properties": {
+        "bsb_number": {
+          "type": ["null", "string"]
+        },
+        "fingerprint": {
+          "type": ["null", "string"]
+        },
+        "last4": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "bacs_debit": {
+      "additionalProperties": true,
+      "type": ["null", "object"],
+      "properties": {
+        "fingerprint": {
+          "type": ["null", "string"]
+        },
+        "last4": {
+          "type": ["null", "string"]
+        },
+        "sort_code": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "bancontact": {
+      "additionalProperties": true,
+      "type": ["null", "object"]
+    },
+    "billing_details": {
+      "additionalProperties": true,
+      "type": ["null", "object"],
+      "properties": {
+        "address": {
+          "$ref": "address.json"
+        },
+        "email": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "phone": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "card": {
+      "additionalProperties": true,
+      "type": ["null", "object"],
+      "properties": {
+        "brand": {
+          "type": ["null", "string"]
+        },
+        "checks": {
+          "additionalProperties": true,
+          "type": ["null", "object"],
+          "properties": {
+            "address_line1_check": {
+              "type": ["null", "string"]
+            },
+            "address_postal_code_check": {
+              "type": ["null", "string"]
+            },
+            "cvc_check": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "country": {
+          "type": ["null", "string"]
+        },
+        "exp_month": {
+          "type": ["null", "integer"]
+        },
+        "exp_year": {
+          "type": ["null", "integer"]
+        },
+        "fingerprint": {
+          "type": ["null", "string"]
+        },
+        "funding": {
+          "type": ["null", "string"]
+        },
+        "generated_from": {
+          "additionalProperties": true,
+          "type": ["null", "object"]
+        },
+        "last4": {
+          "type": ["null", "string"]
+        },
+        "networks": {
+          "additionalProperties": true,
+          "type": ["null", "object"],
+          "properties": {
+            "available": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "preferred": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "three_d_secure_usage": {
+          "additionalProperties": true,
+          "type": ["null", "object"],
+          "properties": {
+            "supported": {
+              "type": ["null", "boolean"]
+            }
+          }
+        },
+        "wallet": {
+          "additionalProperties": true,
+          "type": ["null", "object"]
+        }
+      }
+    },
+    "card_present": {
+      "additionalProperties": true,
+      "type": ["null", "object"]
+    },
+    "created": {
+      "type": ["null", "integer"]
+    },
+    "customer": {
+      "$ref": "customer.json"
+    },
+    "eps": {
+      "additionalProperties": true,
+      "type": ["null", "object"],
+      "properties": {
+        "bank": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "fpx": {
+      "additionalProperties": true,
+      "type": ["null", "object"],
+      "properties": {
+        "bank": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "giropay": {
+      "additionalProperties": true,
+      "type": ["null", "object"]
+    },
+    "grabpay": {
+      "additionalProperties": true,
+      "type": ["null", "object"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "ideal": {
+      "additionalProperties": true,
+      "type": ["null", "object"],
+      "properties": {
+        "bank": {
+          "type": ["null", "string"]
+        },
+        "bic": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "interac_present": {
+      "additionalProperties": true,
+      "type": ["null", "object"]
+    },
+    "livemode": {
+      "type": ["null", "boolean"]
+    },
+    "metadata": {
+      "additionalProperties": true,
+      "type": ["null", "object"]
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "oxxo": {
+      "additionalProperties": true,
+      "type": ["null", "object"]
+    },
+    "p24": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "bank": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "sepa_debit": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "bank_code": {
+          "type": ["null", "string"]
+        },
+        "branch_code": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        },
+        "fingerprint": {
+          "type": ["null", "string"]
+        },
+        "generated_from": {
+          "type": ["null", "object"],
+          "properties": {
+            "charge": {
+              "type": ["null", "string"]
+            },
+            "setup_attempt": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "last4": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "sofort": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "country": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "type": {
+      "type": ["null", "string"]
+    }
+  }
+}
