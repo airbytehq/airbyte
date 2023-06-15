@@ -6,12 +6,11 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Optional, Type
 
 from airbyte_cdk.models.airbyte_protocol import SyncMode
-from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_source import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
-from airbyte_cdk.sources.file_based.remote_file import FileType
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, DefaultFileBasedStream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from unit_tests.sources.file_based.helpers import DefaultTestAvailabilityStrategy
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
 
@@ -38,12 +37,12 @@ class TestScenario:
             name: str,
             config: Mapping[str, Any],
             files: Dict[str, Any],
-            file_type: FileType,
+            file_type: str,
             expected_catalog: Dict[str, Any],
             expected_records: Dict[str, Any],
-            availability_strategy: AbstractFileBasedAvailabilityStrategy,
+            availability_strategy: AvailabilityStrategy,
             discovery_policy: AbstractDiscoveryPolicy,
-            parsers: Dict[FileType, FileTypeParser],
+            parsers: Dict[str, FileTypeParser],
             stream_cls: Type[AbstractFileBasedStream],
             expected_discover_error: Optional[Type[Exception]],
             expected_read_error: Optional[Type[Exception]],
@@ -119,7 +118,7 @@ class TestScenarioBuilder:
         self._files = files
         return self
 
-    def set_file_type(self, file_type: FileType):
+    def set_file_type(self, file_type: str):
         self._file_type = file_type
         return self
 
@@ -131,7 +130,7 @@ class TestScenarioBuilder:
         self._expected_records = expected_records
         return self
 
-    def set_availability_strategy(self, availability_strategy: AbstractFileBasedAvailabilityStrategy):
+    def set_availability_strategy(self, availability_strategy: AvailabilityStrategy):
         self._availability_strategy = availability_strategy
         return self
 

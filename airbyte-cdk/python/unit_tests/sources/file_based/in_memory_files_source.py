@@ -8,13 +8,13 @@ from datetime import datetime
 from io import IOBase
 from typing import Dict, List, Optional, Type
 
-from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
-from airbyte_cdk.sources.file_based.remote_file import FileType, RemoteFile
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 
 class InMemoryFilesSource(FileBasedSource):
@@ -22,9 +22,9 @@ class InMemoryFilesSource(FileBasedSource):
             self,
             files,
             file_type,
-            availability_strategy: AbstractFileBasedAvailabilityStrategy,
+            availability_strategy: AvailabilityStrategy,
             discovery_policy: AbstractDiscoveryPolicy,
-            parsers: Dict[FileType, FileTypeParser],
+            parsers: Dict[str, FileTypeParser],
             stream_cls: Type[AbstractFileBasedStream],
     ):
         super().__init__(
@@ -32,7 +32,6 @@ class InMemoryFilesSource(FileBasedSource):
             availability_strategy=availability_strategy,
             discovery_policy=discovery_policy,
             parsers=parsers,
-            stream_cls=stream_cls,
         )
         self.files = files
         self.file_type = file_type
@@ -41,7 +40,7 @@ class InMemoryFilesSource(FileBasedSource):
 
 class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
     files: Dict[str, dict]
-    file_type: FileType
+    file_type: str
 
     def list_matching_files(
         self,
@@ -57,7 +56,7 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
         return io.StringIO(self._make_file_contents(file.uri))
 
     def _make_file_contents(self, file_name: str):
-        if self.file_type == FileType.Csv:
+        if self.file_type == "csv":
             return self._make_csv_file_contents(file_name)
         else:
             raise NotImplementedError(f"No implementation for filename: {file_name}")

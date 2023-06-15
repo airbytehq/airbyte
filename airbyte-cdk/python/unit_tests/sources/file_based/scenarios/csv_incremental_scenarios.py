@@ -1,8 +1,5 @@
 from typing import Any, Mapping, List
 
-from airbyte_cdk.sources.file_based.exceptions import RecordParseError, SchemaInferenceError
-from airbyte_cdk.sources.file_based.remote_file import FileType
-from unit_tests.sources.file_based.helpers import LowInferenceLimitDiscoveryPolicy
 from unit_tests.sources.file_based.scenarios._scenario_builder import TestScenarioBuilder, FileBasedStreamState, IncrementalScenarioConfig
 
 single_csv_input_state_is_earlier_scenario = (
@@ -32,7 +29,7 @@ single_csv_input_state_is_earlier_scenario = (
             }
         }
     )
-    .set_file_type(FileType.Csv)
+    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [

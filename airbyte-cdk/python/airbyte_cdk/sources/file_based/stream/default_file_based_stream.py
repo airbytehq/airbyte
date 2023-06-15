@@ -9,8 +9,9 @@ from functools import cache
 from typing import Any, Iterable, List, Mapping, Optional, Union, MutableMapping
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.file_based.exceptions import MissingSchemaError, RecordParseError, SchemaInferenceError
-from airbyte_cdk.sources.file_based.remote_file import FileType, RemoteFile
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, type_mapping_to_jsonschema
 from airbyte_cdk.sources.file_based.schema_validation_policies import record_passes_validation_policy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
@@ -57,8 +58,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         self,
         sync_mode: SyncMode,
         cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        stream_state: Optional[StreamState] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
@@ -78,7 +79,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                 self._state["history"][file.uri] = file.last_modified
         except Exception as exc:
             raise RecordParseError(
-                f"Error reading records from file: {stream_slice['uri']}. Is the file valid {FileType(self.config.file_type.value)}?"
+                f"Error reading records from file: {stream_slice['uri']}. Is the file valid {self.config.file_type}?"
             ) from exc
 
     @property
@@ -118,7 +119,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         """
         return list(self._stream_reader.list_matching_files(self.config.globs))
 
-    def list_files_for_this_sync(self, stream_state: Optional[Mapping[str, Any]]) -> Iterable[RemoteFile]:
+    def list_files_for_this_sync(self, stream_state: Optional[StreamState]) -> Iterable[RemoteFile]:
         """
         Return the subset of this stream's files that will be read in the current sync.
 
@@ -130,7 +131,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         """
         return self._stream_reader.list_matching_files(self.config.globs, self._get_datetime_from_stream_state(stream_state))
 
-    def _get_datetime_from_stream_state(self, stream_state: Optional[Mapping[str, Any]]) -> Optional[datetime]:
+    def _get_datetime_from_stream_state(self, stream_state: Optional[StreamState]) -> Optional[datetime]:
         # TODO: implement me
         return None
 
@@ -166,6 +167,4 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         try:
             return await self.get_parser(self.config.file_type).infer_schema(file, self._stream_reader)
         except Exception as exc:
-            raise SchemaInferenceError(
-                f"Error inferring schema for file: {file.uri}. Is the file valid {FileType(self.config.file_type.value)}?"
-            ) from exc
+            raise SchemaInferenceError(f"Error inferring schema for file: {file.uri}. Is the file valid {self.config.file_type}?") from exc

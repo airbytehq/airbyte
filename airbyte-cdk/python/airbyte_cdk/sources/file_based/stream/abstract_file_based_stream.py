@@ -4,17 +4,18 @@
 
 from abc import abstractmethod
 from functools import cached_property
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Union
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, UndefinedParserError
+from airbyte_cdk.sources.file_based.exceptions import UndefinedParserError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
-from airbyte_cdk.sources.file_based.remote_file import FileType, RemoteFile
-from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig, PrimaryKeyType
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 
 class AbstractFileBasedStream(Stream):
@@ -35,17 +36,14 @@ class AbstractFileBasedStream(Stream):
 
     def __init__(
         self,
-        raw_config: Dict[str, Any],
+        config: FileBasedStreamConfig,
         stream_reader: AbstractFileBasedStreamReader,
-        availability_strategy: AbstractFileBasedAvailabilityStrategy,
+        availability_strategy: AvailabilityStrategy,
         discovery_policy: AbstractDiscoveryPolicy,
-        parsers: Dict[FileType, FileTypeParser],
+        parsers: Dict[str, FileTypeParser],
     ):
         super().__init__()
-        try:
-            self.config = FileBasedStreamConfig(**raw_config)
-        except Exception as exc:
-            raise ConfigValidationError("Error creating stream config object.") from exc
+        self.config = config
         self._catalog_schema = {}  # TODO: wire through configured catalog
         self._stream_reader = stream_reader
         self._discovery_policy = discovery_policy
@@ -54,7 +52,7 @@ class AbstractFileBasedStream(Stream):
 
     @property
     @abstractmethod
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+    def primary_key(self) -> PrimaryKeyType:
         ...
 
     @abstractmethod
@@ -62,8 +60,8 @@ class AbstractFileBasedStream(Stream):
         self,
         sync_mode: SyncMode,
         cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        stream_state: Optional[StreamState] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
@@ -85,7 +83,7 @@ class AbstractFileBasedStream(Stream):
         ...
 
     @abstractmethod
-    def list_files_for_this_sync(self, stream_state: Optional[Mapping[str, Any]]) -> Iterable[RemoteFile]:
+    def list_files_for_this_sync(self, stream_state: Optional[StreamState]) -> Iterable[RemoteFile]:
         """
         Return the subset of this stream's files that will be read in the current sync.
         """
@@ -98,11 +96,11 @@ class AbstractFileBasedStream(Stream):
         """
         ...
 
-    def get_parser(self, file_type: FileType) -> FileTypeParser:
+    def get_parser(self, file_type: str) -> FileTypeParser:
         try:
             return self._parsers[file_type]
         except KeyError:
-            raise UndefinedParserError(f"No parser is defined for file type {file_type.name}.")
+            raise UndefinedParserError(f"No parser is defined for file type {file_type}.")
 
     @cached_property
     def availability_strategy(self):

@@ -4,15 +4,7 @@
 
 from abc import ABC
 from datetime import datetime
-from enum import Enum
-from typing import Mapping
-
-
-class FileType(Enum):
-    Avro = "avro"
-    Csv = "csv"
-    Jsonl = "jsonl"
-    Parquet = "parquet"
+from typing import Any, Mapping
 
 
 class RemoteFile(ABC):
@@ -20,13 +12,13 @@ class RemoteFile(ABC):
     A file in a file-based stream.
     """
 
-    def __init__(self, uri: str, last_modified: datetime, file_type: FileType):
+    def __init__(self, uri: str, last_modified: datetime, file_type: str):
         self.uri = uri
         self.last_modified = last_modified
         self.file_type = file_type
 
     @classmethod
-    def from_file_partition(cls, file_partition: Mapping[str, str]):
+    def from_file_partition(cls, file_partition: Mapping[str, Any]):
         return RemoteFile(uri=file_partition["uri"],
                           last_modified=file_partition["last_modified"],
                           file_type=file_partition["file_type"])
