@@ -2,6 +2,7 @@ package io.airbyte.integrations.destination.iceberg.config.storage;
 
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.GCS_BUCKET_LOCATION_CONFIG_KEY;
 import static io.airbyte.integrations.destination.iceberg.IcebergConstants.GCS_WAREHOUSE_URI_CONFIG_KEY;
+import static io.airbyte.integrations.destination.iceberg.IcebergConstants.GCS_PROJECT_ID_CONFIG_KEY;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -9,10 +10,10 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.iceberg.config.storage.credential.S3AWSDefaultProfileCredentialConfig;
-import io.airbyte.integrations.destination.iceberg.config.storage.credential.S3AccessKeyCredentialConfig;
-import io.airbyte.integrations.destination.iceberg.config.storage.credential.S3CredentialConfig;
-import io.airbyte.integrations.destination.iceberg.config.storage.credential.S3CredentialType;
+// import io.airbyte.integrations.destination.iceberg.config.storage.credential.S3AWSDefaultProfileCredentialConfig;
+// import io.airbyte.integrations.destination.iceberg.config.storage.credential.S3AccessKeyCredentialConfig;
+// import io.airbyte.integrations.destination.iceberg.config.storage.credential.S3CredentialConfig;
+// import io.airbyte.integrations.destination.iceberg.config.storage.credential.S3CredentialType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -24,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.iceberg.CatalogProperties;
 
 /**
- * @author Leibniz on 2022/10/26.
+ * @author Thomas van Latum on 2023/06/13.
  */
 @Slf4j
 @Data
@@ -43,6 +44,7 @@ public class GCSConfig implements StorageConfig {
     */
   private final String warehouseUri;
   private final String bucketLocation;
+  private final String projectId;
 
   private Storage gcsClient;
 
@@ -57,6 +59,11 @@ public class GCSConfig implements StorageConfig {
       throw new IllegalArgumentException("Warehouse URI must start with gs://");
     }
     builder.warehouseUri(warehouseUri);
+
+    String projectId = getProperty(config, GCS_PROJECT_ID_CONFIG_KEY);
+    if (isBlank(projectId)) {
+      throw new IllegalArgumentException("Project ID cannot be blank");
+    }
 
     return builder.build().setProperty();
   }
@@ -85,7 +92,7 @@ public class GCSConfig implements StorageConfig {
   private Storage resetGCSClient() {
     synchronized (lock) {
       if (gcsClient != null) {
-        gcsClient.close();
+        //Investigate if this is necessary
       }
       gcsClient = createGCSClient();
       return gcsClient;
@@ -94,7 +101,7 @@ public class GCSConfig implements StorageConfig {
 
   private Storage createGCSClient() {
     log.info("Creating GCS client...");
-    return StorageOptions.getDefaultInstance().getService();
+    return StorageOptions.newBuilder().setProjectId(projectId).build().getService();
   }
 
   public void check() {

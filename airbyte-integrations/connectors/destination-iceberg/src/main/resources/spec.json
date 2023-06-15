@@ -1,12 +1,19 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/destinations/iceberg",
   "supportsNormalization": false,
-  "supported_destination_sync_modes": ["overwrite", "append"],
+  "supported_destination_sync_modes": [
+    "overwrite",
+    "append"
+  ],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Iceberg Destination Spec",
     "type": "object",
-    "required": ["catalog_config", "storage_config", "format_config"],
+    "required": [
+      "catalog_config",
+      "storage_config",
+      "format_config"
+    ],
     "properties": {
       "catalog_config": {
         "title": "Iceberg catalog config",
@@ -15,20 +22,27 @@
         "oneOf": [
           {
             "title": "HiveCatalog: Use Apache Hive MetaStore",
-            "required": ["catalog_type", "hive_thrift_uri"],
+            "required": [
+              "catalog_type",
+              "hive_thrift_uri"
+            ],
             "properties": {
               "catalog_type": {
                 "title": "Catalog Type",
                 "type": "string",
                 "default": "Hive",
-                "enum": ["Hive"],
+                "enum": [
+                  "Hive"
+                ],
                 "order": 0
               },
               "hive_thrift_uri": {
                 "title": "Hive Metastore thrift uri",
                 "type": "string",
                 "description": "Hive MetaStore thrift server uri of iceberg catalog.",
-                "examples": ["host:port"],
+                "examples": [
+                  "host:port"
+                ],
                 "order": 1
               },
               "database": {
@@ -36,7 +50,9 @@
                 "description": "The default database tables are written to if the source does not specify a namespace. The usual value for this field is \"default\".",
                 "type": "string",
                 "default": "default",
-                "examples": ["default"],
+                "examples": [
+                  "default"
+                ],
                 "order": 2
               }
             }
@@ -44,13 +60,17 @@
           {
             "title": "HadoopCatalog: Use hierarchical file systems as same as storage config",
             "description": "A Hadoop catalog doesn’t need to connect to a Hive MetaStore, but can only be used with HDFS or similar file systems that support atomic rename.",
-            "required": ["catalog_type"],
+            "required": [
+              "catalog_type"
+            ],
             "properties": {
               "catalog_type": {
                 "title": "Catalog Type",
                 "type": "string",
                 "default": "Hadoop",
-                "enum": ["Hadoop"],
+                "enum": [
+                  "Hadoop"
+                ],
                 "order": 0
               },
               "database": {
@@ -58,7 +78,9 @@
                 "description": "The default database tables are written to if the source does not specify a namespace. The usual value for this field is \"default\".",
                 "type": "string",
                 "default": "default",
-                "examples": ["default"],
+                "examples": [
+                  "default"
+                ],
                 "order": 1
               }
             }
@@ -66,13 +88,17 @@
           {
             "title": "JdbcCatalog: Use relational database",
             "description": "Using a table in a relational database to manage Iceberg tables through JDBC. Read more <a href=\"https://iceberg.apache.org/docs/latest/jdbc/\">here</a>. Supporting: PostgreSQL",
-            "required": ["catalog_type"],
+            "required": [
+              "catalog_type"
+            ],
             "properties": {
               "catalog_type": {
                 "title": "Catalog Type",
                 "type": "string",
                 "default": "Jdbc",
-                "enum": ["Jdbc"],
+                "enum": [
+                  "Jdbc"
+                ],
                 "order": 0
               },
               "database": {
@@ -80,13 +106,17 @@
                 "description": "The default schema tables are written to if the source does not specify a namespace. The usual value for this field is \"public\".",
                 "type": "string",
                 "default": "public",
-                "examples": ["public"],
+                "examples": [
+                  "public"
+                ],
                 "order": 1
               },
               "jdbc_url": {
                 "title": "Jdbc url",
                 "type": "string",
-                "examples": ["jdbc:postgresql://{host}:{port}/{database}"],
+                "examples": [
+                  "jdbc:postgresql://{host}:{port}/{database}"
+                ],
                 "order": 2
               },
               "username": {
@@ -114,8 +144,37 @@
                 "description": "Iceberg catalog metadata tables are written to catalog schema. The usual value for this field is \"public\".",
                 "type": "string",
                 "default": "public",
-                "examples": ["public"],
+                "examples": [
+                  "public"
+                ],
                 "order": 6
+              }
+            }
+          },
+          {
+            "title": "BigLake: Use GCP BigLake",
+            "required": [
+              "catalog_type"
+            ],
+            "properties": {
+              "catalog_type": {
+                "title": "Catalog Type",
+                "type": "string",
+                "default": "BigLake",
+                "enum": [
+                  "BigLake"
+                ],
+                "order": 0
+              },
+              "database": {
+                "title": "Default database",
+                "description": "The default database tables are written to if the source does not specify a namespace. The usual value for this field is \"default\".",
+                "type": "string",
+                "default": "default",
+                "examples": [
+                  "default"
+                ],
+                "order": 1
               }
             }
           }
@@ -142,7 +201,9 @@
                 "title": "Storage Type",
                 "type": "string",
                 "default": "S3",
-                "enum": ["S3"],
+                "enum": [
+                  "S3"
+                ],
                 "order": 0
               },
               "access_key_id": {
@@ -150,7 +211,9 @@
                 "description": "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>.",
                 "title": "S3 Key ID",
                 "airbyte_secret": true,
-                "examples": ["A012345678910EXAMPLE"],
+                "examples": [
+                  "A012345678910EXAMPLE"
+                ],
                 "order": 0
               },
               "secret_access_key": {
@@ -158,7 +221,9 @@
                 "description": "The corresponding secret to the access key ID. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>",
                 "title": "S3 Access Key",
                 "airbyte_secret": true,
-                "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],
+                "examples": [
+                  "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
+                ],
                 "order": 1
               },
               "s3_warehouse_uri": {
@@ -211,25 +276,82 @@
                 "type": "string",
                 "default": "",
                 "description": "Your S3 endpoint url. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use\">here</a>",
-                "examples": ["http://localhost:9000", "localhost:9000"],
+                "examples": [
+                  "http://localhost:9000",
+                  "localhost:9000"
+                ],
                 "order": 4
               },
               "s3_path_style_access": {
                 "type": "boolean",
                 "description": "Use path style access",
-                "examples": [true, false],
+                "examples": [
+                  true,
+                  false
+                ],
                 "default": true,
                 "order": 5
               }
             }
+          },
+          {
+            "title": "GCS",
+            "type": "object",
+            "description": "Google Cloud Storage",
+            "required": [
+              "storage_type",
+              "gcs_project_id",
+              "gcs_bucket_location",
+              "gcs_warehouse_uri"
+            ],
+            "properties": {
+              "storage_type": {
+                "title": "Storage Type",
+                "type": "string",
+                "default": "GCS",
+                "enum": [
+                  "GCS"
+                ],
+                "order": 0
+              },
+              "gcs_project_id": {
+                "title": "GCS Project ID",
+                "type": "string",
+                "description": "The project ID of the Google Cloud Platform project to use for requests. Read more <a href=\"https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects\">here</a>.",
+                "examples": [
+                  "my-project"
+                ],
+                "order": 1
+              },
+              "gcs_bucket_location": {
+                "title": "GCS Bucket Location",
+                "type": "string",
+                "description": "The location of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/locations#available_locations\">here</a>.",
+                "examples": [
+                  "europe-west4"
+                ],
+                "order": 2
+              },
+              "gcs_warehouse_uri": {
+                "title": "GCS Warehouse Uri for Iceberg",
+                "type": "string",
+                "description": "The Warehouse Uri for Iceberg",
+                "examples": [
+                  "gs://my-bucket/path/to/warehouse"
+                ],
+                "order": 3
+              }
+            },
+            "order": 1
           }
-        ],
-        "order": 1
+        ]
       },
       "format_config": {
         "title": "File format",
         "type": "object",
-        "required": ["format"],
+        "required": [
+          "format"
+        ],
         "description": "File format of Iceberg storage.",
         "properties": {
           "format": {
@@ -237,7 +359,10 @@
             "type": "string",
             "default": "Parquet",
             "description": "",
-            "enum": ["Parquet", "Avro"],
+            "enum": [
+              "Parquet",
+              "Avro"
+            ],
             "order": 0
           },
           "flush_batch_size": {

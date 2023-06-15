@@ -41,6 +41,7 @@ public class IcebergConstants {
 
   public static final String GCS_BUCKET_LOCATION_CONFIG_KEY = "gcs_bucket_location";
   public static final String GCS_WAREHOUSE_URI_CONFIG_KEY = "gcs_warehouse_uri";
+  public static final String GCS_PROJECT_ID_CONFIG_KEY = "gcs_project_id";
 
   /**
    * Format Config keys

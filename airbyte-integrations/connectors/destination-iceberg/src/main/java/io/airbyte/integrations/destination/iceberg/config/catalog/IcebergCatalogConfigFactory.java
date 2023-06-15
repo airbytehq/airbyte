@@ -14,6 +14,7 @@ import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBE
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.iceberg.config.format.FormatConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.S3Config;
+import io.airbyte.integrations.destination.iceberg.config.storage.GCSConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.StorageConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.StorageType;
 import javax.annotation.Nonnull;
@@ -53,7 +54,7 @@ public class IcebergCatalogConfigFactory {
       case S3:
         return S3Config.fromDestinationConfig(storageConfigJson);
       case GCS:
-        throw new RuntimeException("GCS is not supported yet");
+        return GCSConfig.fromDestinationConfig(storageConfigJson);
       case HDFS:
       default:
         throw new RuntimeException("Unexpected storage config: " + storageTypeStr);
@@ -72,6 +73,7 @@ public class IcebergCatalogConfigFactory {
       case HIVE -> new HiveCatalogConfig(catalogConfigJson);
       case HADOOP -> new HadoopCatalogConfig(catalogConfigJson);
       case JDBC -> new JdbcCatalogConfig(catalogConfigJson);
+      case BIGLAKE -> new BigLakeCatalogConfig(catalogConfigJson);
       default -> throw new RuntimeException("Unexpected catalog config: " + catalogTypeStr);
     };
   }
