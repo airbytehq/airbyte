@@ -2,29 +2,95 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "code": {
-      "type": ["null", "string"]
+    "customerId": {
+      "type": "integer"
+    },
+    "createDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "modifyDate": {
+      "type": "string",
+      "format": "date-time"
     },
     "name": {
       "type": "string"
     },
-    "accountNumber": {
+    "company": {
       "type": "string"
     },
-    "requiresFundedAccount": {
+    "street1": {
       "type": "string"
     },
-    "balance": {
-      "type": "number"
+    "street2": {
+      "type": "string"
     },
-    "nickname": {
-      "type": ["null", "string"]
+    "city": {
+      "type": "string"
     },
-    "shippingProviderId": {
-      "type": "integer"
+    "state": {
+      "type": "string"
     },
-    "primary": {
-      "type": "boolean"
+    "postalCode": {
+      "type": "string"
+    },
+    "countryCode": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "addressVerified": {
+      "type": "string"
+    },
+    "marketplaceUsernames": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "customerUserId": {
+            "type": "integer"
+          },
+          "customerId": {
+            "type": "integer"
+          },
+          "createDate": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "modifyDate": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "marketplaceId": {
+            "type": "integer"
+          },
+          "marketplace": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tagId": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      }
     }
   }
 }

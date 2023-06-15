@@ -2,23 +2,23 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "code": {
-      "type": ["null", "string"]
-    },
     "name": {
+      "type": "string"
+    },
+    "code": {
       "type": "string"
     },
     "accountNumber": {
       "type": "string"
     },
     "requiresFundedAccount": {
-      "type": "string"
+      "type": ["boolean", "null"]
     },
     "balance": {
       "type": "number"
     },
     "nickname": {
-      "type": ["null", "string"]
+      "type": ["string", "null"]
     },
     "shippingProviderId": {
       "type": "integer"
