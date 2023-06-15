@@ -4,12 +4,15 @@
 
 from multiprocessing import current_process
 
+import inflect
 from airbyte_cdk.models import AirbyteRecordMessage, Type
-from mimesis import Address, Datetime, Person
+from mimesis import Address, Datetime, Numeric, Person
 from mimesis.locales import Locale
 
 from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
 from .utils import format_airbyte_time, now_millis
+
+inflect_engine = inflect.engine()
 
 
 class UserGenerator:
@@ -32,10 +35,12 @@ class UserGenerator:
         global person
         global address
         global dt
+        global numeric
 
         person = Person(locale=Locale.EN, seed=seed_with_offset)
         address = Address(locale=Locale.EN, seed=seed_with_offset)
         dt = Datetime(seed=seed_with_offset)
+        numeric = Numeric(seed=seed_with_offset)
 
     def generate(self, user_id: int):
         time_a = dt.datetime()
@@ -72,6 +77,10 @@ class UserGenerator:
                 "country_code": address.country_code(),
             },
         }
+
+        # We want ~1% of users to have a typing error.  We will convert their age (int) to a string
+        if numeric.integer_number(0, 100) == 13:
+            profile["age"] = inflect_engine.number_to_words(profile["age"])
 
         while not profile["created_at"]:
             profile["created_at"] = format_airbyte_time(dt.datetime())
