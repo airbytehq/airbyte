@@ -4,12 +4,13 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static io.airbyte.integrations.base.JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
@@ -31,8 +32,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static io.airbyte.integrations.base.JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA;
 
 /**
  * This class mimics the same functionality as
@@ -83,12 +82,12 @@ public class BigQueryStagingConsumerFactory {
           final String streamName = stream.getName();
           final BigQueryRecordFormatter recordFormatter = recordFormatterCreator.apply(stream.getJsonSchema());
 
-          final var internalTableNamespace = TypingAndDedupingFlag.isDestinationV2() ? stream.getNamespace() : AIRBYTE_NAMESPACE_SCHEMA;
+          final var internalTableNamespace = TypingAndDedupingFlag.isDestinationV2() ? AIRBYTE_NAMESPACE_SCHEMA : stream.getNamespace();
 
           final BigQueryWriteConfig writeConfig = new BigQueryWriteConfig(
               streamName,
               internalTableNamespace,
-              BigQueryUtils.getSchema(config, configuredStream),
+              internalTableNamespace,
               BigQueryUtils.getDatasetLocation(config),
               tmpTableNameTransformer.apply(streamName),
               targetTableNameTransformer.apply(streamName),

@@ -11,6 +11,7 @@ import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DefaultDestStateLifecycleManager;
 import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DestStateLifecycleManager;
 import io.airbyte.integrations.destination.record_buffer.BufferFlushType;
@@ -23,10 +24,13 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,12 +130,28 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.onStart = onStart;
     this.onClose = onClose;
     this.catalog = catalog;
-    this.streamNames = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
+    // TODO: real stuff
+    if (true) {
+      this.streamNames = fromConfiguredCatalogAirbyteSchema(catalog);
+    } else {
+      this.streamNames = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
+    }
     this.isValidRecord = isValidRecord;
     this.streamToIgnoredRecordCount = new HashMap<>();
     this.bufferingStrategy = bufferingStrategy;
     this.stateManager = new DefaultDestStateLifecycleManager();
     this.bufferFlushFrequency = flushFrequency;
+  }
+
+  public static Set<AirbyteStreamNameNamespacePair> fromConfiguredCatalogAirbyteSchema(final ConfiguredAirbyteCatalog catalog) {
+    final var pairs = new HashSet<AirbyteStreamNameNamespacePair>();
+
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      final var pair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA);
+      pairs.add(pair);
+    }
+
+    return pairs;
   }
 
   @Override
@@ -157,7 +177,13 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
     if (message.getType() == Type.RECORD) {
       final AirbyteRecordMessage record = message.getRecord();
-      final AirbyteStreamNameNamespacePair stream = AirbyteStreamNameNamespacePair.fromRecordMessage(record);
+      final AirbyteStreamNameNamespacePair stream;
+      // TODO: make a real hook
+      if (true) {
+        stream = new AirbyteStreamNameNamespacePair(record.getStream(), JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA);
+      } else {
+        stream = AirbyteStreamNameNamespacePair.fromRecordMessage(record);
+      }
 
       // if stream is not part of list of streams to sync to then throw invalid stream exception
       if (!streamNames.contains(stream)) {

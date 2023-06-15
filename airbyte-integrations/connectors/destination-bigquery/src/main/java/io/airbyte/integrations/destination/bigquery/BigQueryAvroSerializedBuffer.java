@@ -52,7 +52,7 @@ public class BigQueryAvroSerializedBuffer extends AvroSerializedBuffer {
     return (pair, catalog) -> {
       final AirbyteStream stream = catalog.getStreams()
           .stream()
-          .filter(s -> s.getStream().getName().equals(pair.getName()) && StringUtils.equals(s.getStream().getNamespace(), pair.getNamespace()))
+          .filter(s -> s.getStream().getName().equals(pair.getName()))
           .findFirst()
           .orElseThrow(() -> new RuntimeException(String.format("No such stream %s.%s", pair.getNamespace(), pair.getName())))
           .getStream();
