@@ -14,6 +14,7 @@ class RemoteFile(ABC):
 
     def __init__(self, uri: str, last_modified: datetime, file_type: str):
         self.uri = uri
+        assert isinstance(last_modified, datetime)
         self.last_modified = last_modified
         self.file_type = file_type
 

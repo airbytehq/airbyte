@@ -27,7 +27,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # FIXME: move ot a policy or something
-        self._state = {}
+        self._state = {"cursor_value": "2000-01-01T00:00:00.000Z"} #Should be something like min?
         self._state.setdefault("history", {})
 
     @property
@@ -75,14 +75,22 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             raise MissingSchemaError("Expected `json_schema` in the configured catalog but it is missing.")
         parser = self.get_parser(self.config.file_type)
         for file_description in stream_slice["files"]:
+            file = RemoteFile.from_file_partition(file_description)
             try:
-                file = RemoteFile.from_file_partition(file_description)
                 for record in parser.parse_records(file, self._stream_reader):
                     if not record_passes_validation_policy(self.config.validation_policy, record, schema):
                         logging.warning(f"Record did not pass validation policy: {record}")
                         continue
                     yield stream_data_to_airbyte_message(self.name, record)
-                    self._state["history"][file.uri] = file.last_modified
+                    self._state["history"][file.uri] = file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                    logging.warning(f"statebeforeupdating: {self._state['cursor_value']}")
+                    logging.warning(f"type: {type(self._state['cursor_value'])}")
+                    logging.warning(f"file.last_modified: {file.last_modified}")
+                    logging.warning(f"type(file.last_modified): {type(file.last_modified)}")
+                    new_cursor = max(datetime.strptime(self._state["cursor_value"], "%Y-%m-%dT%H:%M:%S.%fZ"), file.last_modified)
+                    logging.warning(f"new_cursor: {new_cursor}")
+                    self._state["cursor_value"] = new_cursor.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                    logging.warning(f"updated: {self._state['cursor_value']}")
             except Exception as exc:
                 raise RecordParseError(
                     #FIXME
@@ -139,8 +147,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         return self._stream_reader.list_matching_files(self.config.globs, self._get_datetime_from_stream_state(stream_state))
 
     def _get_datetime_from_stream_state(self, stream_state: Optional[StreamState]) -> Optional[datetime]:
-        # TODO: implement me
-        return None
+        return datetime.strptime(stream_state["cursor_value"], "%Y-%m-%dT%H:%M:%S.%fZ") if stream_state else None
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
