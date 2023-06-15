@@ -5,6 +5,7 @@ import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.CTID
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
+import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -55,10 +56,11 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
     if (messageIterator.hasNext()) {
       if (count % 1_000_000 == 0 && StringUtils.isNotBlank(lastCtid)) {
         LOGGER.info("saving ctid state with {}", this.lastCtid);
-        return CtidStateManager.createStateMessage(pair,
+        //TODO (Rodi): To add relation_filenode attribute in the CtidStatus
+        return CtidStateManager.createPerStreamStateMessage(pair,
             new CtidStatus()
-                .withVer(CTID_STATUS_VERSION)
-                .withType(CtidStatus.Type.CTID)
+                .withVersion(CTID_STATUS_VERSION)
+                .withStateType(StateType.CTID)
                 .withCtid(lastCtid)
                 .withIncrementalState(streamStateForIncrementalRun));
       }

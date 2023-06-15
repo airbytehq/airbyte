@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.postgres.ctid;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
+import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -40,8 +41,8 @@ public class CtidStateManager {
           final CtidStatus ctidStatus;
           try {
             ctidStatus = Jsons.object(stateMessage.getStream().getStreamState(), CtidStatus.class);
-            assert (ctidStatus.getVer() == CTID_STATUS_VERSION);
-            assert(ctidStatus.getType().equals(CtidStatus.Type.CTID)); // TODO: check here
+            assert (ctidStatus.getVersion() == CTID_STATUS_VERSION);
+            assert(ctidStatus.getStateType().equals(StateType.CTID)); // TODO: check here
           } catch (final IllegalArgumentException e) {
             throw new ConfigErrorException("Invalid per-stream state");
           }
@@ -56,7 +57,8 @@ public class CtidStateManager {
     return pairToCtidStatus.get(pair);
   }
 
-  public static AirbyteMessage createStateMessage(final AirbyteStreamNameNamespacePair pair, final CtidStatus ctidStatus) {
+  //TODO : We will need a similar method to generate a GLOBAL state message for CDC
+  public static AirbyteMessage createPerStreamStateMessage(final AirbyteStreamNameNamespacePair pair, final CtidStatus ctidStatus) {
     final AirbyteStreamState airbyteStreamState =
         new AirbyteStreamState()
             .withStreamDescriptor(
