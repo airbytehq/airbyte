@@ -2,8 +2,8 @@ name: Format modified connectors
 
 on:
   push:
-    branches-ignore:
-      - master
+    # branches-ignore:
+    #   - master
     # TODO: remove this once we confirm the workflow is working
     branches:
       - "augustin/connectors-ci/python-auto-format"
