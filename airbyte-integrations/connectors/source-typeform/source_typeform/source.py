@@ -251,16 +251,20 @@ class SourceTypeform(AbstractSource):
         if config.get("access_token"):
             return TokenAuthenticator(token=config["access_token"])
         return SingleUseRefreshTokenOauth2Authenticator(
-            config, token_refresh_endpoint="https://api.typeform.com/oauth/token", scopes=["offline", "accounts:read", "forms:read"]
+            config, token_refresh_endpoint="https://api.typeform.com/oauth/token"
         )
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             form_ids = config.get("form_ids", []).copy()
+            if config.get("credentials"):
+                token = config["credentials"]["access_token"]
+            else:
+                token = config["access_token"]
             # verify if form inputted by user is valid
             try:
                 url = urlparse.urljoin(TypeformStream.url_base, "me")
-                auth_headers = {"Authorization": f"Bearer {config['access_token']}"}
+                auth_headers = {"Authorization": f"Bearer {token}"}
                 session = requests.get(url, headers=auth_headers)
                 session.raise_for_status()
             except Exception as e:
@@ -269,7 +273,7 @@ class SourceTypeform(AbstractSource):
                 for form in form_ids:
                     try:
                         url = urlparse.urljoin(TypeformStream.url_base, f"forms/{form}")
-                        auth_headers = {"Authorization": f"Bearer {config['access_token']}"}
+                        auth_headers = {"Authorization": f"Bearer {token}"}
                         response = requests.get(url, headers=auth_headers)
                         response.raise_for_status()
                     except Exception as e:
