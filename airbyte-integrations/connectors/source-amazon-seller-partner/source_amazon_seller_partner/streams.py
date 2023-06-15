@@ -168,7 +168,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         self,
         url_base: str,
         aws_signature: AWSSignature,
-        replication_start_date: str,
+        replication_start_date: Optional[str],
         marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
@@ -188,6 +188,10 @@ class ReportsAmazonSPStream(Stream, ABC):
         self._report_options = report_options
         self.max_wait_seconds = max_wait_seconds
         self.source_name = source_name
+        
+        # added by Jerry 2023.6.15, if replication_start_date is none, set the replication_start_date to the previous day
+        if self._replication_start_date is None:
+            self._replication_start_date = pendulum.now("utc").subtract(days=1).strftime(DATE_TIME_FORMAT)
 
     @property
     def url_base(self) -> str:
