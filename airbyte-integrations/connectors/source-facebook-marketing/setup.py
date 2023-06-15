@@ -8,7 +8,7 @@ from setuptools import find_packages, setup
 MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.36",
     "cached_property==1.5.2",
-    "facebook_business==16.0.0",
+    "facebook_business==17.0.0",
     "pendulum>=2,<3",
 ]
 
