@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.TypingAndDedupingFlag;
@@ -24,8 +25,11 @@ import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -83,6 +87,7 @@ public class BigQueryStagingConsumerFactory {
           final BigQueryRecordFormatter recordFormatter = recordFormatterCreator.apply(stream.getJsonSchema());
 
           final var internalTableNamespace = TypingAndDedupingFlag.isDestinationV2() ? AIRBYTE_NAMESPACE_SCHEMA : stream.getNamespace();
+          final var targetTableName = resolveTargetTableName(targetTableNameTransformer, config.get("dataset_id").asText(), streamName);
 
           final BigQueryWriteConfig writeConfig = new BigQueryWriteConfig(
               streamName,
@@ -90,7 +95,7 @@ public class BigQueryStagingConsumerFactory {
               internalTableNamespace,
               BigQueryUtils.getDatasetLocation(config),
               tmpTableNameTransformer.apply(streamName),
-              targetTableNameTransformer.apply(streamName),
+              targetTableName,
               recordFormatter.getBigQuerySchema(),
               configuredStream.getDestinationSyncMode());
 
@@ -101,6 +106,15 @@ public class BigQueryStagingConsumerFactory {
         .collect(Collectors.toMap(
             c -> new AirbyteStreamNameNamespacePair(c.streamName(), c.namespace()),
             Functions.identity()));
+  }
+
+  private String resolveTargetTableName(final Function<String, String> targetTableNameResolver, String datasetId, String streamName) {
+    final String v2name = String.join("_",
+            Arrays.asList(datasetId, streamName)
+                    .stream().filter(Objects::nonNull)
+                    .collect(Collectors.toList()));
+    return TypingAndDedupingFlag.isDestinationV2() ?
+            Names.toAlphanumericAndUnderscore(v2name) : targetTableNameResolver.apply(streamName);
   }
 
   /**
