@@ -3,6 +3,7 @@
 #
 
 import asyncio
+import itertools
 import logging
 from datetime import datetime
 from functools import cache
@@ -27,7 +28,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # FIXME: move ot a policy or something
-        self._state = {"cursor_value": "2000-01-01T00:00:00.000Z"} #Should be something like min?
+        self._state = {"cursor_value": "2000-01-01T00:00:00.000Z"}  # Should be something like min?
         self._state.setdefault("history", {})
 
     @property
@@ -52,12 +53,12 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         # FIXME: Should probably be in a policy
-        # FIXME: returns a single slice containing all the files right now
-        return [
-            {"files": [{"uri": f.uri,
-                        "last_modified": f.last_modified,
-                        "file_type": f.file_type} for f in self.list_files_for_this_sync(stream_state)]}
-        ]
+        all_files = [{"uri": f.uri,
+                      "last_modified": f.last_modified,
+                      "file_type": f.file_type} for f in self.list_files_for_this_sync(stream_state)]
+        ret = [{"files": list(group[1])} for group in itertools.groupby(all_files, lambda f: f['last_modified'])]
+        logging.warning(f"stream_slices: {ret}")
+        return ret
 
     def read_records(
             self,
@@ -93,7 +94,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     logging.warning(f"updated: {self._state['cursor_value']}")
             except Exception as exc:
                 raise RecordParseError(
-                    #FIXME
+                    # FIXME
                     f"Error reading records from file: {file_description['uri']}. Is the file valid {self.config.file_type}?"
                 ) from exc
 
