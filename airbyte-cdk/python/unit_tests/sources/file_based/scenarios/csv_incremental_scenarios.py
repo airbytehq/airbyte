@@ -1,6 +1,3 @@
-import datetime
-from typing import Any, Mapping, List
-
 from unit_tests.sources.file_based.scenarios._scenario_builder import TestScenarioBuilder, FileBasedStreamState, IncrementalScenarioConfig
 
 single_csv_input_state_is_earlier_scenario = (
@@ -449,3 +446,10 @@ mulit_csv_per_timestamp_scenario = (
     .set_incremental_scenario_config(IncrementalScenarioConfig(
         input_state=[],
     ))).build()
+
+# FIXME: Not yet supported
+# - Filter out files that do not match the glob
+# - Partition by glob
+# - Is there any way to support concurrent reads at the partition level?
+# -- I think we can. It's just a slice.
+# - Add the cursor column to the records
