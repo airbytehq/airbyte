@@ -6,7 +6,8 @@ import json
 import time
 
 import pytest
-from airbyte_cdk.config_observation import ConfigObserver, ObservedDict, observe_connector_config
+from airbyte_cdk.config_observation import ConfigObserver, ObservedDict, create_connector_config_control_message, observe_connector_config
+from airbyte_cdk.models import AirbyteControlConnectorConfigMessage, OrchestratorType, Type
 
 
 class TestObservedDict:
@@ -74,3 +75,14 @@ def test_observe_already_observed_config():
     observed_config = observe_connector_config({"foo": "bar"})
     with pytest.raises(ValueError):
         observe_connector_config(observed_config)
+
+
+def test_create_connector_config_control_message():
+    A_CONFIG = {"config key": "config value"}
+
+    message = create_connector_config_control_message(A_CONFIG)
+
+    assert message.type == Type.CONTROL
+    assert message.control.type == OrchestratorType.CONNECTOR_CONFIG
+    assert message.control.connectorConfig == AirbyteControlConnectorConfigMessage(config=A_CONFIG)
+    assert message.control.emitted_at is not None

@@ -66,6 +66,8 @@ def render_report_output_prefix(ctx: click.Context) -> str:
     git_revision = ctx.obj["git_revision"]
     pipeline_start_timestamp = ctx.obj["pipeline_start_timestamp"]
     ci_context = ctx.obj["ci_context"]
+    ci_job_key = ctx.obj["ci_job_key"] if ctx.obj.get("ci_job_key") else ci_context
+
     sanitized_branch = git_branch.replace("/", "_")
 
     # get the command name for the current context, if a group then prepend the parent command name
@@ -75,7 +77,7 @@ def render_report_output_prefix(ctx: click.Context) -> str:
 
     path_values = [
         cmd,
-        ci_context,
+        ci_job_key,
         sanitized_branch,
         pipeline_start_timestamp,
         git_revision,
@@ -223,12 +225,13 @@ def test(
     try:
         anyio.run(
             run_connectors_pipelines,
-            connectors_tests_contexts,
+            [connector_context for connector_context in connectors_tests_contexts],
             run_connector_test_pipeline,
             "Test Pipeline",
             ctx.obj["concurrency"],
             ctx.obj["execute_timeout"],
         )
+
     except Exception as e:
         click.secho(str(e), err=True, fg="red")
         update_global_commit_status_check_for_tests(ctx.obj, "failure")
