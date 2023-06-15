@@ -1,20 +1,17 @@
 data:
-  allowedHosts:
-    hosts:
-      - TODO # Please change to the hostname of the source.
   registries:
+    cloud:
+      enabled: true
     oss:
-      enabled: false
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: cd92e3dc-c43f-4b47-a9e7-b3fbe0e1bd20
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-audienceproject
   githubIssueLabel: source-audienceproject
-  icon: audienceproject.svg
   license: MIT
   name: Audienceproject
-  releaseDate: TODO
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/audienceproject
   tags:
