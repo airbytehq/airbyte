@@ -123,6 +123,7 @@ class SourceMixpanel(AbstractSource):
         ]:
             try:
                 next(read_full_refresh(stream), None)
+                stream.get_json_schema()
             except requests.HTTPError as e:
                 if e.response.status_code != 402:
                     raise e
