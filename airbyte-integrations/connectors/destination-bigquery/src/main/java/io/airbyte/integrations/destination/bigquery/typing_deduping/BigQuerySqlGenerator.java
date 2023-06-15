@@ -26,9 +26,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   public static final String QUOTE = "`";
   private static final BigQuerySQLNameTransformer nameTransformer = new BigQuerySQLNameTransformer();
 
-  // metadata columns
-  private final String RAW_ID = buildColumnId("_airbyte_raw_id").name(QUOTE);
-
   @Override
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
     return new StreamId(
@@ -94,10 +91,15 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   private String extractAndCast(final ColumnId column, final AirbyteType airbyteType, final StandardSQLTypeName dialectType) {
-    // TODO also handle oneOf types
-    if (airbyteType instanceof Struct || airbyteType instanceof Array || airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
-      // TODO handle null better (don't stringify it)
-      return "TO_JSON_STRING(JSON_QUERY(`_airbyte_data`, '$." + column.originalName() + "'))";
+    if (airbyteType instanceof OneOf o) {
+      // This is guaranteed to not be a OneOf, so we won't recurse infinitely
+      final AirbyteType chosenType = AirbyteTypeUtils.chooseOneOfType(o);
+      return extractAndCast(column, chosenType, dialectType);
+    } else if (airbyteType instanceof Struct || airbyteType instanceof Array || airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
+      // TO_JSON_STRING(null) returns JSON'null', so we explicitly check for null here.
+      // This matters for the case where the column is not present at all in the JSON blob.
+      return new StringSubstitutor(Map.of("query", "JSON_QUERY(`_airbyte_data`, '$.\" + column.originalName() + \"')"))
+          .replace("IF(${query} IS NULL, NULL, TO_JSON_STRING(${query}))");
     } else {
       return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$." + column.originalName() + "') as " + dialectType.name() + ")";
     }
