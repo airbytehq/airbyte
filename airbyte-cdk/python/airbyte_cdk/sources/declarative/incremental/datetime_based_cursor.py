@@ -116,7 +116,7 @@ class DatetimeBasedCursor(Cursor):
         stream_slice_value = stream_slice.get(self.partition_field_start.eval(self.config))
         last_record_value = last_record.get(self.cursor_field.eval(self.config)) if last_record else None
 
-        possible_cursor_values = list(filter(lambda item: item is not None, [stream_slice_value, last_record_value, self._cursor]))
+        possible_cursor_values = list(filter(lambda item: item, [stream_slice_value, last_record_value, self._cursor]))
         self._cursor = max(possible_cursor_values) if possible_cursor_values else None
 
     def stream_slices(self, sync_mode: SyncMode) -> Iterable[Mapping[str, Any]]:

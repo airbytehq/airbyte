@@ -38,6 +38,7 @@ class Cursor(ABC, StreamSlicer):
         Returns the current stream state. We would like to restrict it's usage since it does expose internal of state. As of 2023-06-14, it
         is used for two things:
         * Interpolation of the requests
+        * Transformation of records
         * Saving the state
 
         For the first case, we are probably stuck with exposing the stream state. For the second, we can probably expose a method that
