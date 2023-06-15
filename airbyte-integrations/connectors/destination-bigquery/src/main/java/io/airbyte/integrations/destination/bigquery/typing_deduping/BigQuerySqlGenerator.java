@@ -30,7 +30,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   private final String RAW_ID = buildColumnId("_airbyte_raw_id").name(QUOTE);
 
   @Override
-  public StreamId buildStreamId(final String namespace, final String name, String rawNamespaceOverride) {
+  public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
     return new StreamId(
         // TODO is this correct?
         nameTransformer.getNamespace(namespace),
@@ -79,7 +79,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
       // eventually this should be JSON; keep STRING for now as legacy compatibility
       return new ParsedType<>(StandardSQLTypeName.STRING, type);
     } else if (type instanceof final OneOf o) {
-      // TODO choose the best data type + map to bigquery type
       final AirbyteType typeWithPrecedence = AirbyteTypeUtils.chooseOneOfType(o);
       final StandardSQLTypeName dialectType;
       if ((typeWithPrecedence instanceof Struct) || (typeWithPrecedence instanceof Array)) {
@@ -291,7 +290,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @VisibleForTesting
-  String dedupFinalTable(final StreamId id, final String finalSuffix, final List<ColumnId> primaryKey, Optional<ColumnId> cursor, final LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
+  String dedupFinalTable(final StreamId id, final String finalSuffix, final List<ColumnId> primaryKey, final Optional<ColumnId> cursor, final LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
     final String pkList = primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
     final String pkCastList = streamColumns.entrySet().stream()
         .filter(e -> primaryKey.contains(e.getKey()))
