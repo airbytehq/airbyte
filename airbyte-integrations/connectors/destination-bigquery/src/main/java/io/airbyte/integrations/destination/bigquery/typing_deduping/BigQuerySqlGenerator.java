@@ -122,9 +122,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @Override
-  public String createTable(final StreamConfig<StandardSQLTypeName> stream) {
-    // TODO this should also create the dataset if needed
-    // TODO this should accept a table suffix for full refresh overwrite
+  public String createTable(final StreamConfig<StandardSQLTypeName> stream, final String suffix) {
     final String columnDeclarations = stream.columns().entrySet().stream()
         .map(column -> column.getKey().name(QUOTE) + " " + column.getValue().dialectType().name())
         .collect(joining(",\n"));
@@ -139,10 +137,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     }
 
     return new StringSubstitutor(Map.of(
-        "final_table_id", stream.id().finalTableId(QUOTE),
+        "final_namespace", stream.id().finalNamespace(QUOTE),
+        "final_table_id", stream.id().finalTableId(suffix, QUOTE),
         "column_declarations", columnDeclarations,
         "cluster_config", clusterConfig
     )).replace("""
+        CREATE SCHEMA IF NOT EXISTS ${final_namespace};
+        
         CREATE TABLE ${final_table_id} (
         _airbyte_raw_id STRING NOT NULL,
         _airbyte_extracted_at TIMESTAMP NOT NULL,
@@ -175,12 +176,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
     }
-    final String insertNewRecords = insertNewRecords(stream.id(), stream.columns());
+    final String insertNewRecords = insertNewRecords(stream.id(), finalSuffix, stream.columns());
     String dedupFinalTable = "";
     String dedupRawTable = "";
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      dedupRawTable = dedupRawTable(stream.id());
-      dedupFinalTable = dedupFinalTable(stream.id(), stream.primaryKey(), stream.cursor(), stream.columns());
+      dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
+      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor(), stream.columns());
     }
     final String commitRawTable = commitRawTable(stream.id());
 
@@ -238,7 +239,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @VisibleForTesting
-  String insertNewRecords(final StreamId id, final LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
+  String insertNewRecords(final StreamId id, final String finalSuffix, final LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
     final String columnCasts = streamColumns.entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue().airbyteType(), col.getValue().dialectType()) + " as " + col.getKey().name(QUOTE) + ","
     ).collect(joining("\n"));
@@ -260,7 +261,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(QUOTE),
+        "final_table_id", id.finalTableId(finalSuffix, QUOTE),
         "column_casts", columnCasts,
         "column_errors", columnErrors,
         "column_list", columnList
@@ -290,7 +291,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @VisibleForTesting
-  String dedupFinalTable(final StreamId id, final List<ColumnId> primaryKey, Optional<ColumnId> cursor, final LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
+  String dedupFinalTable(final StreamId id, final String finalSuffix, final List<ColumnId> primaryKey, Optional<ColumnId> cursor, final LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
     final String pkList = primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
     final String pkCastList = streamColumns.entrySet().stream()
         .filter(e -> primaryKey.contains(e.getKey()))
@@ -301,7 +302,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     // TODO can the CDC deletes just use the final table deleted_at column? (this would allow us to delete deleted records from the raw table also)
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(QUOTE),
+        "final_table_id", id.finalTableId(finalSuffix, QUOTE),
         "pk_list", pkList,
         "pk_cast_list", pkCastList,
         "cursor_ordering", cursorOrdering
@@ -331,10 +332,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @VisibleForTesting
-  String dedupRawTable(final StreamId id) {
+  String dedupRawTable(final StreamId id, final String finalSuffix) {
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(QUOTE)
+        "final_table_id", id.finalTableId(finalSuffix, QUOTE)
     )).replace(
         // TODO remove the deleted_at clause if we don't have the cdc columns
         """

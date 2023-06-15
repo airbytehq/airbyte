@@ -18,6 +18,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,8 @@ import org.slf4j.LoggerFactory;
  * Record Consumer used for STANDARD INSERTS
  */
 public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
+
+  public static final String OVERWRITE_TABLE_SUFFIX = "_airbyte_tmp";
 
   /**
    * Incredibly hacky record to get allow us to write raw tables to one namespace, and final tables to a different namespace.
@@ -95,16 +98,23 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       for (StreamConfig<StandardSQLTypeName> stream : catalog.streams()) {
         final Optional<TableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
         if (existingTable.isEmpty()) {
-          destinationHandler.execute(sqlGenerator.createTable(stream));
+          destinationHandler.execute(sqlGenerator.createTable(stream, ""));
         } else {
           destinationHandler.execute(sqlGenerator.alterTable(stream, existingTable.get()));
         }
       }
 
-      // Also, we're no longer overwriting the raw table in 1s1t mode, so truncate the raw table here.
+      // For streams in overwrite mode, truncate the raw table create a tmp table.
+      // non-1s1t syncs actually overwrite the raw table at the end of of the sync, wo we only do this in 1s1t mode.
+      // TODO check for tmp table existence + drop it if it already exists?
       for (StreamConfig<StandardSQLTypeName> stream : catalog.streams()) {
-        final String rawTable = stream.id().rawTableId(BigQuerySqlGenerator.QUOTE);
-        destinationHandler.execute("TRUNCATE TABLE " + rawTable);
+        LOGGER.info("Stream {} has sync mode {}", stream.id(), stream.destinationSyncMode());
+        if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+          final String rawTable = stream.id().rawTableId(BigQuerySqlGenerator.QUOTE);
+          destinationHandler.execute("TRUNCATE TABLE " + rawTable);
+
+          destinationHandler.execute(sqlGenerator.createTable(stream, OVERWRITE_TABLE_SUFFIX));
+        }
       }
     }
   }
@@ -149,7 +159,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     // This is just modular arithmetic written in a complicated way. We want to run T+D every RECORDS_PER_TYPING_AND_DEDUPING_BATCH records.
     // TODO this counter should be per stream, not global.
     if (recordsSinceLastTDRun.getAndUpdate(l -> (l + 1) % RECORDS_PER_TYPING_AND_DEDUPING_BATCH) == RECORDS_PER_TYPING_AND_DEDUPING_BATCH - 1) {
-      doTypingAndDeduping(streamWriteTargets);
+      doTypingAndDeduping(getStreamConfig(streamWriteTargets));
     }
   }
 
@@ -160,7 +170,19 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     uploaderMap.forEach((streamWriteTargets, uploader) -> {
       try {
         uploader.close(hasFailed, outputRecordCollector, lastStateMessage);
-        doTypingAndDeduping(streamWriteTargets);
+        if (use1s1t) {
+          LOGGER.info("Attempting typing and deduping for {}", streamWriteTargets);
+          final StreamConfig<StandardSQLTypeName> streamConfig = getStreamConfig(streamWriteTargets);
+          doTypingAndDeduping(streamConfig);
+          if (streamConfig.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+            LOGGER.info("Overwriting final table with tmp table");
+            // We're at the end of the sync. Move the tmp table to the final table.
+            final Optional<String> overwriteFinalTable = sqlGenerator.overwriteFinalTable(OVERWRITE_TABLE_SUFFIX, streamConfig);
+            if (overwriteFinalTable.isPresent()) {
+              destinationHandler.execute(overwriteFinalTable.get());
+            }
+          }
+        }
       } catch (final Exception e) {
         exceptionsThrown.add(e);
         LOGGER.error("Exception while closing uploader {}", uploader, e);
@@ -171,21 +193,26 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     }
   }
 
-  private void doTypingAndDeduping(final StreamWriteTargets streamWriteTargets) throws InterruptedException {
-    if (use1s1t) {
-      LOGGER.info("Attempting typing and deduping for {}", streamWriteTargets);
-      final StreamConfig<StandardSQLTypeName> stream = catalog.streams()
-          .stream()
-          .filter(s -> s.id().originalName().equals(streamWriteTargets.name()) && s.id()
-              .originalNamespace()
-              .equals(streamWriteTargets.finalNamespace()))
-          .findFirst()
-          // Assume that if we're trying to do T+D on a stream, that stream exists in the catalog.
-          .get();
-      // TODO generate a suffix for full refresh overwrite syncs
-      final String sql = sqlGenerator.updateTable("", stream);
-      destinationHandler.execute(sql);
+  private void doTypingAndDeduping(final StreamConfig<StandardSQLTypeName> stream) throws InterruptedException {
+    String suffix;
+    if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+      suffix = OVERWRITE_TABLE_SUFFIX;
+    } else {
+      suffix = "";
     }
+    final String sql = sqlGenerator.updateTable(suffix, stream);
+    destinationHandler.execute(sql);
+  }
+
+  private StreamConfig<StandardSQLTypeName> getStreamConfig(final StreamWriteTargets streamWriteTargets) {
+    return catalog.streams()
+        .stream()
+        .filter(s -> s.id().originalName().equals(streamWriteTargets.name()) && s.id()
+            .originalNamespace()
+            .equals(streamWriteTargets.finalNamespace()))
+        .findFirst()
+        // Assume that if we're trying to do T+D on a stream, that stream exists in the catalog.
+        .get();
   }
 
 }

@@ -24,7 +24,7 @@ class BigQuerySqlGeneratorTest {
   public void basicCreateTable() {
     StreamConfig<StandardSQLTypeName> stream = incrementalDedupStreamConfig();
 
-    final String sql = generator.createTable(stream);
+    final String sql = generator.createTable(stream, "");
 
     assertEquals(
         """
