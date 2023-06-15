@@ -10,7 +10,7 @@ data:
   name: RabbitMQ
   registries:
     cloud:
-      enabled: true
+      enabled: false # hide RabbitMQ Destination https://github.com/airbytehq/airbyte/issues/16315
     oss:
       enabled: true
   releaseStage: alpha
