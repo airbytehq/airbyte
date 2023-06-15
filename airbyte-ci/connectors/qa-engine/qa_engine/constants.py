@@ -3,7 +3,7 @@
 #
 import os
 
-CONNECTOR_BUILD_OUTPUT_URL = "https://dnsgjos7lj2fu.cloudfront.net/tests/history/connectors"
+CONNECTOR_TEST_SUMMARY_URL = "https://connectors.airbyte.com/files/generated_reports/test_summary"
 CLOUD_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/cloud_registry.json"
 OSS_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 

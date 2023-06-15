@@ -14,7 +14,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: "3.3.0"
+          disable_for_version: "3.6.0" # new streams added: Cards, Payment Methods; no actual breaking changes; schema refactoring
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -24,7 +24,11 @@ acceptance_tests:
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "application_fees_refunds"
             bypass_reason: "this stream can't be seeded in our sandbox account"
+          - name: "authorizations"
+            bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "bank_accounts"
+            bypass_reason: "this stream can't be seeded in our sandbox account"
+          - name: "cards"
             bypass_reason: "this stream can't be seeded in our sandbox account"
           - name: "early_fraud_warnings"
             bypass_reason: "This stream can't be seeded in our sandbox account"
@@ -36,6 +40,10 @@ acceptance_tests:
             bypass_reason: "This stream can't be seeded in our sandbox account"
           - name: "checkout_sessions_line_items"
             bypass_reason: "This stream can't be seeded in our sandbox account"
+          - name: "payment_methods"
+            bypass_reason: "this stream can't be seeded in our sandbox account"
+          - name: "reviews"
+            bypass_reason: "this stream can't be seeded in our sandbox account"
           - name: "transfers"
             bypass_reason: "This stream can't be seeded in our sandbox account"
         expect_records:
