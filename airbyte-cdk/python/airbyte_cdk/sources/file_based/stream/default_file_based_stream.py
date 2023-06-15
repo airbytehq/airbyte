@@ -5,7 +5,7 @@
 import asyncio
 import itertools
 import logging
-from datetime import datetime
+from datetime import datetime, time
 from functools import cache
 from typing import Any, Iterable, List, Mapping, Optional, Union, MutableMapping
 
@@ -28,7 +28,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # FIXME: move ot a policy or something
-        self._state = {"cursor_value": "2000-01-01T00:00:00.000Z"}  # Should be something like min?
+        self._state = {"cursor_value": time.min.strftime("%Y-%m-%dT%H:%M:%S.%fZ")}  # Should be something like min?
         self._state.setdefault("history", {})
 
     @property
