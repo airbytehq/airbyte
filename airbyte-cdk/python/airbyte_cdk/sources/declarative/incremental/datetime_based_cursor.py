@@ -9,8 +9,8 @@ from typing import Any, Iterable, Mapping, Optional, Union
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
