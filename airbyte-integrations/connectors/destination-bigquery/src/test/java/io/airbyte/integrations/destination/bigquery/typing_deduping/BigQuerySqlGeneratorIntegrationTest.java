@@ -4,6 +4,7 @@ import static io.airbyte.integrations.destination.bigquery.BigQueryDestination.g
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -45,11 +46,14 @@ public class BigQuerySqlGeneratorIntegrationTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest.class);
   private final static BigQuerySqlGenerator GENERATOR = new BigQuerySqlGenerator();
   public static final Optional<ColumnId> CURSOR = Optional.of(GENERATOR.buildColumnId("updated_at"));
+  // Much like the rest of this class - this is purely for test purposes. Real CDC cursors may not be exactly the same as this.
+  public static final Optional<ColumnId> CDC_CURSOR = Optional.of(GENERATOR.buildColumnId("_ab_cdc_lsn"));
   public static final List<ColumnId> PRIMARY_KEY = List.of(GENERATOR.buildColumnId("id"));
   public static final String QUOTE = "`";
 
   private static BigQuery bq;
   private static LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> columns;
+  private static LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> cdcColumns;
 
   private String testDataset;
   private StreamId streamId;
@@ -79,6 +83,15 @@ public class BigQuerySqlGeneratorIntegrationTest {
     columns.put(GENERATOR.buildColumnId("address"), new ParsedType<>(StandardSQLTypeName.STRING, new Struct(addressProperties)));
 
     columns.put(GENERATOR.buildColumnId("age"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
+
+    cdcColumns = new LinkedHashMap<>();
+    cdcColumns.put(GENERATOR.buildColumnId("id"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
+    cdcColumns.put(GENERATOR.buildColumnId("_ab_cdc_lsn"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
+    cdcColumns.put(GENERATOR.buildColumnId("_ab_cdc_deleted_at"), new ParsedType<>(StandardSQLTypeName.TIMESTAMP, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
+    cdcColumns.put(GENERATOR.buildColumnId("name"), new ParsedType<>(StandardSQLTypeName.STRING, AirbyteProtocolType.STRING));
+    // This is a bit unrealistic - DB sources don't actually declare explicit properties in their JSONB columns.
+    cdcColumns.put(GENERATOR.buildColumnId("address"), new ParsedType<>(StandardSQLTypeName.STRING, new Struct(addressProperties)));
+    cdcColumns.put(GENERATOR.buildColumnId("age"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
   }
 
   @BeforeEach
@@ -127,11 +140,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
         () -> bq.query(QueryJobConfiguration.newBuilder(sql).build())
     );
 
-    // TODO this is super fragile
-    assertEquals(
-        "Raw table has 1 rows missing a primary key at [10:3]",
-        e.getError().getMessage()
-    );
+    assertTrue(e.getError().getMessage().startsWith("Raw table has 1 rows missing a primary key at"), "Message was actually: " + e.getError().getMessage());
   }
 
   @Test
@@ -333,6 +342,37 @@ public class BigQuerySqlGeneratorIntegrationTest {
     assertNotNull(table);
   }
 
+  @Test
+  public void testCdcUpdate() throws InterruptedException {
+    createRawTable();
+    createFinalTableCdc();
+    bq.query(QueryJobConfiguration.newBuilder(
+        new StringSubstitutor(Map.of(
+            "dataset", testDataset
+        )).replace("""
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 2, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}, "age": 42, "_ab_cdc_lsn": 10001}', 'd7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z');
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 2, "name": "Alice", "address": {"city": "San Diego", "state": "CA"}, "age": 84, "_ab_cdc_lsn": 10002}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z');
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 3, "name": "Bob", "age": "oops", "_ab_cdc_lsn": 10002}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES (JSON'{"id": 1, "_ab_cdc_lsn": 10003, "_ab_cdc_deleted_at": "2022-12-31T23:59:59Z"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
+            
+            INSERT INTO ${dataset}.users_final (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, id, _ab_cdc_lsn, name, address, age) values
+              ('64f4390f-3da1-4b65-b64a-a6c67497f18d', '2022-12-31T00:00:00Z', JSON'{}', 1, 1000, 'spooky ghost', NULL, NULL);
+            """)
+    ).build());
+
+    final String sql = GENERATOR.updateTable("", cdcStreamConfig());
+    LOGGER.info("Executing sql: {}", sql);
+    bq.query(QueryJobConfiguration.newBuilder(sql).build());
+
+    // TODO
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
+    assertEquals(2, finalRows);
+    final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
+    assertEquals(3, rawRows);
+    final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
+    assertEquals(0, rawUntypedRows);
+  }
+
   private StreamConfig<StandardSQLTypeName> incrementalDedupStreamConfig() {
     return new StreamConfig<>(
         streamId,
@@ -341,6 +381,17 @@ public class BigQuerySqlGeneratorIntegrationTest {
         PRIMARY_KEY,
         CURSOR,
         columns
+    );
+  }
+
+  private StreamConfig<StandardSQLTypeName> cdcStreamConfig() {
+    return new StreamConfig<>(
+        streamId,
+        SyncMode.INCREMENTAL,
+        DestinationSyncMode.APPEND_DEDUP,
+        PRIMARY_KEY,
+        CDC_CURSOR,
+        cdcColumns
     );
   }
 
@@ -412,6 +463,28 @@ public class BigQuerySqlGeneratorIntegrationTest {
               _airbyte_meta JSON NOT NULL,
               id INT64,
               updated_at TIMESTAMP,
+              name STRING,
+              address STRING,
+              age INT64
+            )
+            PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
+            CLUSTER BY id, _airbyte_extracted_at;
+            """)
+    ).build());
+  }
+
+  private void createFinalTableCdc() throws InterruptedException {
+    bq.query(QueryJobConfiguration.newBuilder(
+        new StringSubstitutor(Map.of(
+            "dataset", testDataset
+        )).replace("""
+            CREATE TABLE ${dataset}.users_final (
+              _airbyte_raw_id STRING NOT NULL,
+              _airbyte_extracted_at TIMESTAMP NOT NULL,
+              _airbyte_meta JSON NOT NULL,
+              id INT64,
+              _ab_cdc_deleted_at TIMESTAMP,
+              _ab_cdc_lsn INT64,
               name STRING,
               address STRING,
               age INT64
