@@ -28,8 +28,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # FIXME: move ot a policy or something
-        self._state = {"cursor_value": time.min.strftime("%Y-%m-%dT%H:%M:%S.%fZ")}  # Should be something like min?
-        self._state.setdefault("history", {}) # this feels silly
+        self._state = {"start_timestamp": time.min.strftime("%Y-%m-%dT%H:%M:%S.%fZ")}  # Should be something like min?
+        self._state.setdefault("history", {})  # this feels silly
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -56,8 +56,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         # Step 1: Get all files that match a glob (no filtering yet)
         # Step 2: Filter out files that have already been processed
         files = [{"uri": f.uri,
-                      "last_modified": f.last_modified,
-                      "file_type": f.file_type} for f in self.list_files_for_this_sync(stream_state)]
+                  "last_modified": f.last_modified,
+                  "file_type": f.file_type} for f in self.list_files_for_this_sync(stream_state)]
 
         ret = [{"files": list(group[1])} for group in itertools.groupby(files, lambda f: f['last_modified'])]
         logging.warning(f"stream_slices: {ret}")
@@ -87,14 +87,14 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                         continue
                     yield stream_data_to_airbyte_message(self.name, record)
                     self._state["history"][file.uri] = file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                    logging.warning(f"statebeforeupdating: {self._state['cursor_value']}")
-                    logging.warning(f"type: {type(self._state['cursor_value'])}")
+                    logging.warning(f"statebeforeupdating: {self._state['start_timestamp']}")
+                    logging.warning(f"type: {type(self._state['start_timestamp'])}")
                     logging.warning(f"file.last_modified: {file.last_modified}")
                     logging.warning(f"type(file.last_modified): {type(file.last_modified)}")
-                    new_cursor = max(datetime.strptime(self._state["cursor_value"], "%Y-%m-%dT%H:%M:%S.%fZ"), file.last_modified)
+                    new_cursor = max(datetime.strptime(self._state["start_timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ"), file.last_modified)
                     logging.warning(f"new_cursor: {new_cursor}")
-                    self._state["cursor_value"] = new_cursor.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                    logging.warning(f"updated: {self._state['cursor_value']}")
+                    self._state["start_timestamp"] = new_cursor.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                    logging.warning(f"updated: {self._state['start_timestamp']}")
             except Exception as exc:
                 raise RecordParseError(
                     # FIXME
@@ -149,11 +149,21 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
           date before `start`
         """
 
+        """
+        This should be modified to only sync files newer than (3?) days,  
+        or equal to or newer than the oldest file(s) recorded in the history if there are too many files newer than 3 days.
+        """
+
         all_files = self._stream_reader.list_matching_files(self.config.globs, self._get_datetime_from_stream_state(stream_state))
         return [f for f in all_files if (not stream_state or f.uri not in stream_state["history"])]
 
     def _get_datetime_from_stream_state(self, stream_state: Optional[StreamState]) -> Optional[datetime]:
-        return datetime.strptime(stream_state["cursor_value"], "%Y-%m-%dT%H:%M:%S.%fZ") if stream_state else None
+        if not stream_state:
+            return None
+        else:
+            history = stream_state["history"]
+            earliest = min(history.values()) if history else None
+            return datetime.strptime(earliest, "%Y-%m-%dT%H:%M:%S.%fZ") if earliest else None
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()

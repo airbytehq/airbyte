@@ -22,7 +22,8 @@ from unit_tests.sources.file_based.scenarios.csv_incremental_scenarios import (
     multi_csv_same_timestamp_scenario,
     multi_csv_different_timestamps_scenario,
     mulit_csv_per_timestamp_scenario,
-    multi_csv_skip_file_if_already_in_history
+    multi_csv_skip_file_if_already_in_history,
+    multi_csv_include_missing_files_within_history_range
 )
 
 # FIXME: Not yet supported
@@ -31,7 +32,6 @@ from unit_tests.sources.file_based.scenarios.csv_incremental_scenarios import (
 # - Is there any way to support concurrent reads at the partition level?
 # -- I think we can. It's just a slice.
 # - Add the cursor column to the records
-# - Using the history to filtering out files
 # - Removing old files from the history
 # - warning if the size of the state is too large
 # -  Tests verify that we sync any new files that have shown up between the timestamps in the history key, if the history key does not exceed the maximum size.
@@ -48,7 +48,8 @@ scenarios = [
     multi_csv_same_timestamp_scenario,
     multi_csv_different_timestamps_scenario,
     mulit_csv_per_timestamp_scenario,
-    multi_csv_skip_file_if_already_in_history
+    multi_csv_skip_file_if_already_in_history,
+    multi_csv_include_missing_files_within_history_range
 ]
 
 
