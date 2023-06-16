@@ -112,6 +112,12 @@ pub fn fix_document_schema_keys(
                             if let Some(null_idx) = vec.iter().position(|item| item == "null") {
                                 vec.swap_remove(null_idx);
                             }
+                            // Some connectors rely on single string `type` when it comes to primary keys
+                            // so if we find that a key has a single type, we just put that single type in place
+                            // instead of a single-element array
+                            if vec.len() == 1 {
+                                *e = vec.first().unwrap().clone();
+                            }
                         }
                     });
 
@@ -263,7 +269,7 @@ mod test {
             json!({
                 "properties": {
                     "id": {
-                        "type": ["string"]
+                        "type": "string"
                     }
                 },
                 "required": ["id"]
@@ -296,7 +302,7 @@ mod test {
                     "test": {
                         "properties": {
                             "id": {
-                                "type": ["string"]
+                                "type": "string"
                             }
                         },
                         "required": ["id"]
@@ -403,10 +409,10 @@ mod test {
             json!({
                 "properties": {
                     "doc": {
-                        "type": ["object"],
+                        "type": "object",
                         "properties": {
                             "id": {
-                                "type": ["string"]
+                                "type": "string"
                             }
                         },
                         "required": ["id"]
@@ -442,7 +448,7 @@ mod test {
                     "type": ["object"],
                     "properties": {
                         "id": {
-                            "type": ["string"]
+                            "type": "string"
                         }
                     },
                     "required": ["id"]
@@ -478,7 +484,7 @@ mod test {
                     "type": ["object"],
                     "properties": {
                         "id": {
-                            "type": ["string"]
+                            "type": "string"
                         }
                     },
                     "required": ["id"]

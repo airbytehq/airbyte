@@ -235,6 +235,7 @@ impl AirbyteSourceInterceptor {
                         .collect();
                 }
 
+                // cursor_field does not accept JSON Pointers, but keys directly, so we remove the initial `/` from keys
                 let non_pointer_key = key.iter().map(|ptr| ptr.get(1..).unwrap().to_string()).collect();
 
                 // Sometimes the cursor_field is Some([]), this block handles that case and defaults to the primary key
@@ -252,10 +253,11 @@ impl AirbyteSourceInterceptor {
                     stream: stream.name.clone(),
                     namespace: stream.namespace,
                     sync_mode: mode,
-                    cursor_field: cursor_field,
+                    cursor_field,
                 };
 
                 let mut doc_schema = sj::from_str::<sj::Value>(stream.json_schema.get())?;
+
                 let doc_schema_patch = std::fs::read_to_string(format!(
                     "{}/{}{}",
                     STREAM_PATCH_DIR_NAME, recommended_name, STREAM_PATCH_SUFFIX
