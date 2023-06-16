@@ -37,7 +37,7 @@ class StripeStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
-        if bool(decoded_response.get("has_more", "False")) and decoded_response.get("data", []):
+        if "has_more" in decoded_response and decoded_response["has_more"] and decoded_response.get("data", []):
             last_object_id = decoded_response["data"][-1]["id"]
             return {"starting_after": last_object_id}
 
@@ -812,3 +812,39 @@ class Cards(IncrementalStripeStream):
 
     def path(self, **kwargs):
         return "issuing/cards"
+
+
+class TopUps(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/topups/list
+    """
+
+    name = "top_ups"
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "topups"
+
+
+class Files(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/files/list
+    """
+
+    name = "files"
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "files"
+
+
+class FileLinks(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/file_links/list
+    """
+
+    name = "file_links"
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "file_links"
