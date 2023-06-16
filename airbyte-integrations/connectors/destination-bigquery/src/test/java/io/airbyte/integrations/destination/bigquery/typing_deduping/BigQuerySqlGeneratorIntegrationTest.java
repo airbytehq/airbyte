@@ -439,7 +439,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
               
             -- insert raw record from the second record batch - this is an outdated record that should be ignored.
             INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-              (JSON'{"id": 1, "_ab_cdc_lsn": 10001, "name": "alice"}', generate_uuid(), '2023-01-01T00:00:00Z');
+              (JSON'{"id": 1, "_ab_cdc_lsn": 10000, "name": "alice"}', generate_uuid(), '2023-01-01T00:00:00Z');
             """)
     ).build());
 
