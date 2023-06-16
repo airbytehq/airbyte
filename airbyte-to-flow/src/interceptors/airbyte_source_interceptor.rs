@@ -200,12 +200,6 @@ impl AirbyteSourceInterceptor {
                 } else {
                     SyncMode::FullRefresh
                 };
-                let resource_spec = ResourceSpec {
-                    stream: stream.name.clone(),
-                    namespace: stream.namespace,
-                    sync_mode: mode,
-                    cursor_field: stream.default_cursor_field,
-                };
 
                 let mut key: Vec<String> = stream
                     .source_defined_primary_key
@@ -240,6 +234,26 @@ impl AirbyteSourceInterceptor {
                         .map(|s| format!("/{}", s.as_str().unwrap()))
                         .collect();
                 }
+
+                let non_pointer_key = key.iter().map(|ptr| ptr.get(1..).unwrap().to_string()).collect();
+
+                // Sometimes the cursor_field is Some([]), this block handles that case and defaults to the primary key
+                let cursor_field = if let Some(cf) = stream.default_cursor_field {
+                    if cf.is_empty() {
+                        Some(non_pointer_key)
+                    } else {
+                        Some(cf)
+                    }
+                } else {
+                    Some(non_pointer_key)
+                };
+
+                let resource_spec = ResourceSpec {
+                    stream: stream.name.clone(),
+                    namespace: stream.namespace,
+                    sync_mode: mode,
+                    cursor_field: cursor_field,
+                };
 
                 let mut doc_schema = sj::from_str::<sj::Value>(stream.json_schema.get())?;
                 let doc_schema_patch = std::fs::read_to_string(format!(

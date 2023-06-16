@@ -1,10 +1,20 @@
 {
   "properties": {
     "access_key_id": {
-      "order": 1
+      "order": 1,
+      "description": "The Access Key ID to access DynamoDB. These credentials require read permissions to the database."
     },
     "secret_access_key": {
-      "order": 2
+      "order": 2,
+      "description": "The Secret Access Key to access DynamoDB."
+    },
+    "region": {
+      "order": 3
     }
-  }
+  },
+  "required": [
+    "access_key_id",
+    "secret_access_key",
+    "region"
+  ]
 }
