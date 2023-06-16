@@ -1,5 +1,5 @@
 import json
-
+import re
 from google.cloud import storage
 from google.oauth2 import service_account
 
@@ -133,7 +133,7 @@ def gcs_file_blob(resource_context: InitResourceContext) -> storage.Blob:
     config_schema={
         "gcs_bucket": StringSource,
         "prefix": StringSource,
-        "suffix": StringSource,
+        "match_regex": StringSource,
     },
 )
 def gcs_directory_blobs(resource_context: InitResourceContext) -> storage.Blob:
@@ -142,15 +142,15 @@ def gcs_directory_blobs(resource_context: InitResourceContext) -> storage.Blob:
     """
     gcs_bucket = resource_context.resource_config["gcs_bucket"]
     prefix = resource_context.resource_config["prefix"]
-    suffix = resource_context.resource_config["suffix"]
+    match_regex = resource_context.resource_config["match_regex"]
 
     storage_client = resource_context.resources.gcp_gcs_client
     bucket = storage_client.get_bucket(gcs_bucket)
 
-    resource_context.log.info(f"retrieving gcs file blobs for prefix: {prefix}, suffix: {suffix}, in bucket: {gcs_bucket}")
+    resource_context.log.info(f"retrieving gcs file blobs for prefix: {prefix}, match_regex: {match_regex}, in bucket: {gcs_bucket}")
 
     gcs_file_blobs = bucket.list_blobs(prefix=prefix)
-    if suffix:
-        gcs_file_blobs = [blob for blob in gcs_file_blobs if blob.name.endswith(suffix)]
+    if match_regex:
+        gcs_file_blobs = [blob for blob in gcs_file_blobs if re.match(match_regex, blob.name)]
 
     return gcs_file_blobs
