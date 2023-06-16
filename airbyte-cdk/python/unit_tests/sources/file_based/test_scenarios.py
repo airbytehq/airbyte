@@ -4,31 +4,31 @@
 
 import json
 from pathlib import Path
-from typing import Any, Dict, Union, List
-from freezegun import freeze_time
+from typing import Any, Dict, List, Union
 
 import pytest
-from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.entrypoint import launch
-from unit_tests.sources.file_based.scenarios.csv_scenarios import (
-    invalid_csv_scenario,
-    single_csv_scenario,
-    multi_csv_scenario,
-    multi_csv_stream_n_file_exceeds_limit_for_inference,
-)
+from airbyte_cdk.models.airbyte_protocol import SyncMode
+from freezegun import freeze_time
 from unit_tests.sources.file_based.scenarios.csv_incremental_scenarios import (
-    single_csv_input_state_is_earlier_scenario,
-    single_csv_no_input_state_scenario,
-    single_csv_input_state_is_later_scenario,
-    multi_csv_same_timestamp_scenario,
-    multi_csv_different_timestamps_scenario,
     mulit_csv_per_timestamp_scenario,
-    multi_csv_skip_file_if_already_in_history,
+    multi_csv_different_timestamps_scenario,
     multi_csv_include_missing_files_within_history_range,
     multi_csv_remove_old_files_if_history_is_full_scenario,
     multi_csv_same_timestamp_more_files_than_history_size_scenario,
-    multi_csv_sync_recent_files_if_history_is_incomplete_scenario,
+    multi_csv_same_timestamp_scenario,
+    multi_csv_skip_file_if_already_in_history,
     multi_csv_sync_recent_files_if_history_is_incomplete__different_timestamps_scenario,
+    multi_csv_sync_recent_files_if_history_is_incomplete_scenario,
+    single_csv_input_state_is_earlier_scenario,
+    single_csv_input_state_is_later_scenario,
+    single_csv_no_input_state_scenario,
+)
+from unit_tests.sources.file_based.scenarios.csv_scenarios import (
+    invalid_csv_scenario,
+    multi_csv_scenario,
+    multi_csv_stream_n_file_exceeds_limit_for_inference,
+    single_csv_scenario,
 )
 
 # FIXME: Not yet supported

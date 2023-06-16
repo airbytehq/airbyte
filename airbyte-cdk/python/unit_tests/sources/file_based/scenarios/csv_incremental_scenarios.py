@@ -1,4 +1,8 @@
-from unit_tests.sources.file_based.scenarios._scenario_builder import TestScenarioBuilder, FileBasedStreamState, IncrementalScenarioConfig
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+from unit_tests.sources.file_based.scenarios._scenario_builder import FileBasedStreamState, IncrementalScenarioConfig, TestScenarioBuilder
 
 single_csv_input_state_is_earlier_scenario = (
     TestScenarioBuilder()

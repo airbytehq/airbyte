@@ -14,6 +14,7 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 from unit_tests.sources.file_based.helpers import DefaultTestAvailabilityStrategy
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
 
+
 @dataclass
 class FileBasedStreamState:
     mapping: Dict[str, Any] = field(default_factory=dict)

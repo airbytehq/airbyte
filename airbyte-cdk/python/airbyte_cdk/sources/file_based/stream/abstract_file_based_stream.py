@@ -35,12 +35,12 @@ class AbstractFileBasedStream(Stream):
     """
 
     def __init__(
-            self,
-            config: FileBasedStreamConfig,
-            stream_reader: AbstractFileBasedStreamReader,
-            availability_strategy: AvailabilityStrategy,
-            discovery_policy: AbstractDiscoveryPolicy,
-            parsers: Dict[str, FileTypeParser],
+        self,
+        config: FileBasedStreamConfig,
+        stream_reader: AbstractFileBasedStreamReader,
+        availability_strategy: AvailabilityStrategy,
+        discovery_policy: AbstractDiscoveryPolicy,
+        parsers: Dict[str, FileTypeParser],
     ):
         super().__init__()
         self.config = config
@@ -56,11 +56,11 @@ class AbstractFileBasedStream(Stream):
         ...
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Optional[StreamSlice] = None,
-            stream_state: Optional[StreamState] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        stream_state: Optional[StreamState] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
@@ -77,7 +77,7 @@ class AbstractFileBasedStream(Stream):
         ...
 
     def stream_slices(
-            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         This method acts as an adapter between the generic Stream interface and the file-based's

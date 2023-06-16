@@ -1,6 +1,10 @@
-import pytest
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from datetime import datetime, timedelta
 
+import pytest
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.file_based_state import FileBasedState
 from freezegun import freeze_time

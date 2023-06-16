@@ -1,13 +1,17 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+import logging
 from datetime import datetime, timedelta
-from typing import Mapping, Any, List, Optional
+from typing import Any, List, Mapping, Optional
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-import logging
 
 
 class FileBasedState:
     def __init__(self, max_history_size: int, time_window_if_history_is_full: timedelta):
-        self._file_to_datetime_history: Mapping[str: datetime] = {}
+        self._file_to_datetime_history: Mapping[str:datetime] = {}
         self._max_history_size = max_history_size
         logging.warning(f"max history size: {self._max_history_size}")
         self._time_window_if_history_is_full = time_window_if_history_is_full
@@ -40,10 +44,14 @@ class FileBasedState:
         start_time = self.compute_start_time()
         logging.warning(f"history_is_complete: {self.is_history_complete()}")
         logging.warning(f"all_files: {all_files}")
-        files_to_sync = [f for f in all_files if
-                         (f.last_modified >= start_time and
-                          (not self._file_to_datetime_history or not self.is_history_complete() or f.uri not in self._file_to_datetime_history))
-                         ]
+        files_to_sync = [
+            f
+            for f in all_files
+            if (
+                f.last_modified >= start_time
+                and (not self._file_to_datetime_history or not self.is_history_complete() or f.uri not in self._file_to_datetime_history)
+            )
+        ]
         logging.warning(f"files to sync: {files_to_sync}")
         # If len(files_to_sync), the next sync will not be able to use the history
         if len(files_to_sync) > self._max_history_size:

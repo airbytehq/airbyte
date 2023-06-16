@@ -4,8 +4,9 @@
 
 from abc import ABC
 from datetime import datetime
-from pydantic import BaseModel
 from typing import Any, Mapping
+
+from pydantic import BaseModel
 
 
 class RemoteFile(BaseModel):
@@ -19,6 +20,4 @@ class RemoteFile(BaseModel):
 
     @classmethod
     def from_file_partition(cls, file_partition: Mapping[str, Any]):
-        return RemoteFile(uri=file_partition["uri"],
-                          last_modified=file_partition["last_modified"],
-                          file_type=file_partition["file_type"])
+        return RemoteFile(uri=file_partition["uri"], last_modified=file_partition["last_modified"], file_type=file_partition["file_type"])
