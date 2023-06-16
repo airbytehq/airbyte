@@ -29,7 +29,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         super().__init__(**kwargs)
         # FIXME: move ot a policy or something
         self._state = {"history": {}}
-        self._MAX_HISTORY_SIZE = 3
+        self._max_history_size = self.config.max_history_size or 10_000
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -85,7 +85,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                         continue
                     yield stream_data_to_airbyte_message(self.name, record)
                     self._state["history"][file.uri] = file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                if len(self._state["history"]) > self._MAX_HISTORY_SIZE:
+                if len(self._state["history"]) > self._max_history_size:
                     oldest_file = min(self._state["history"], key=self._state["history"].get)
                     logging.warning(f"Removing {oldest_file} from history")
                     del self._state["history"][oldest_file]
@@ -156,7 +156,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         files_to_sync = [f for f in all_files if (not stream_state or stream_state.get("incomplete_history") or f.uri not in stream_state["history"])]
         logging.warning(f"files to sync: {files_to_sync}")
         # If len(files_to_sync), the next sync will not be able to use the history
-        if len(files_to_sync) > self._MAX_HISTORY_SIZE:
+        if len(files_to_sync) > self._max_history_size:
             logging.warning(f"History will be too large for {self.name}")
             self._state["incomplete_history"] = True
         else:

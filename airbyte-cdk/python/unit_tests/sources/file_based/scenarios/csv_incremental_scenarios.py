@@ -648,6 +648,7 @@ multi_csv_remove_old_files_if_history_is_full_scenario = (
                     "file_type": "csv",
                     "globs": ["*.csv"],
                     "validation_policy": "emit_record_on_schema_mismatch",
+                    "max_history_size": 3,
                 }
             ]
         }
@@ -763,6 +764,7 @@ multi_csv_same_timestamp_more_files_than_history_size_scenario = (
                     "file_type": "csv",
                     "globs": ["*.csv"],
                     "validation_policy": "emit_record_on_schema_mismatch",
+                    "max_history_size": 3,
                 }
             ]
         }
@@ -858,6 +860,7 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario = (
                     "file_type": "csv",
                     "globs": ["*.csv"],
                     "validation_policy": "emit_record_on_schema_mismatch",
+                    "max_history_size": 3,
                 }
             ]
         }
@@ -967,6 +970,7 @@ multi_csv_sync_recent_files_if_history_is_incomplete__different_timestamps_scena
                     "file_type": "csv",
                     "globs": ["*.csv"],
                     "validation_policy": "emit_record_on_schema_mismatch",
+                    "max_history_size": 3,
                 }
             ]
         }

@@ -19,3 +19,4 @@ class FileBasedStreamConfig(BaseModel):
     catalog_schema: Optional[ConfiguredAirbyteCatalog]
     input_schema: Optional[Mapping[str, Any]]
     primary_key: PrimaryKeyType
+    max_history_size: Optional[int]
