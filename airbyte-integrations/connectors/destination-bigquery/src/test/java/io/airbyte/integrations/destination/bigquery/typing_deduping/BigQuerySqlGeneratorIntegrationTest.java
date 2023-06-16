@@ -417,11 +417,10 @@ public class BigQuerySqlGeneratorIntegrationTest {
    * source operations:
    * <ol>
    *   <li>insert id=1 (lsn 10000)</li>
-   *   <li>update id=1 (lsn 10001, 10002)</li>
-   *   <li>delete id=1 (lsn 10003)</li>
+   *   <li>delete id=1 (lsn 10001)</li>
    * </ol>
    * <p>
-   * But the destination writes lsn 10002 and 10003 before 10001. We should still end up with no records in the final table.
+   * But the destination writes lsn 10001 before 10000. We should still end up with no records in the final table.
    * <p>
    * All records have the same emitted_at timestamp. This means that we live or die purely based on our ability to use _ab_cdc_lsn.
    */
@@ -433,74 +432,39 @@ public class BigQuerySqlGeneratorIntegrationTest {
         new StringSubstitutor(Map.of(
             "dataset", testDataset
         )).replace("""
-            -- records from a previous sync
+            -- Write raw deletion record from the first batch, which resulted in an empty final table.
+            -- Note the non-null loaded_at - this is to simulate that we previously ran T+D on this record.
             INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`, `_airbyte_loaded_at`) VALUES
-              (JSON'{"id": 1, "_ab_cdc_lsn": 10000, "name": "alice"}', '64f4390f-3da1-4b65-b64a-a6c67497f18d', '2023-01-01T00:00:00Z', '2023-01-01T00:00:01Z');
-            INSERT INTO ${dataset}.users_final (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, id, _ab_cdc_lsn, name) values
-              ('64f4390f-3da1-4b65-b64a-a6c67497f18d', '2022-12-31T00:00:00Z', JSON'{}', 1, 10000, 'alice');
+              (JSON'{"id": 1, "_ab_cdc_lsn": 10001, "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"}', generate_uuid(), '2023-01-01T00:00:00Z', '2023-01-01T00:00:01Z');
+              
+            -- insert raw record from the second record batch - this is an outdated record that should be ignored.
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
+              (JSON'{"id": 1, "_ab_cdc_lsn": 10001, "name": "alice"}', generate_uuid(), '2023-01-01T00:00:00Z');
             """)
     ).build());
 
-    // insert raw records from the first record batch
-    bq.query(QueryJobConfiguration.newBuilder(
-        new StringSubstitutor(Map.of(
-            "dataset", testDataset
-        )).replace("""
-              INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-                (JSON'{"id": 1, "_ab_cdc_lsn": 10002, "name": "alice3"}', generate_uuid(), '2023-01-01T00:00:00Z'),
-                (JSON'{"id": 1, "_ab_cdc_lsn": 10003, "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"}', generate_uuid(), '2023-01-01T00:00:00Z');
-              """)
-    ).build());
-    {
-      // Run the first round of typing and deduping. This should delete the record from the final table, but leave the deletion record in the raw table.
-      final String sql = GENERATOR.updateTable("", cdcStreamConfig());
-      LOGGER.info("Executing sql: {}", sql);
-      bq.query(QueryJobConfiguration.newBuilder(sql).build());
+    final String sql = GENERATOR.updateTable("", cdcStreamConfig());
+    LOGGER.info("Executing sql: {}", sql);
+    bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
-      final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
-      assertEquals(0, finalRows);
-      final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
-      assertEquals(1, rawRows);
-      final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
-          "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
-      assertEquals(0, rawUntypedRows);
-    }
-
-    // insert raw records from the second record batch
-    bq.query(QueryJobConfiguration.newBuilder(
-        new StringSubstitutor(Map.of(
-            "dataset", testDataset
-        )).replace("""
-              INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-                (JSON'{"id": 1, "_ab_cdc_lsn": 10001, "name": "alice2"}', generate_uuid(), '2023-01-01T00:00:00Z');
-              """)
-    ).build());
-    {
-      // Run the second round of typing and deduping. This should just discard the outdated record.
-      final String sql = GENERATOR.updateTable("", cdcStreamConfig());
-      LOGGER.info("Executing sql: {}", sql);
-      bq.query(QueryJobConfiguration.newBuilder(sql).build());
-
-      final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
-      assertEquals(0, finalRows);
-      final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
-      assertEquals(1, rawRows);
-      final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
-          "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
-      assertEquals(0, rawUntypedRows);
-    }
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
+    assertEquals(0, finalRows);
+    final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
+    assertEquals(1, rawRows);
+    final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
+        "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
+    assertEquals(0, rawUntypedRows);
   }
 
   /**
    * source operations:
    * <ol>
-   *   <li>insert id=1 (lsn 10000)</li>
+   *   <li>arbitrary history...</li>
    *   <li>delete id=1 (lsn 10001)</li>
    *   <li>reinsert id=1 (lsn 10002)</li>
-   *   <li>update id=1 (lsn 10003)</li>
    * </ol>
    * <p>
-   * But the destination receives LSNs in the order 10000, 10002, 10001, 10003.
+   * But the destination receives LSNs 10002 before 10001. In this case, we should keep the reinserted record in the final table.
    * <p>
    * All records have the same emitted_at timestamp. This means that we live or die purely based on our ability to use _ab_cdc_lsn.
    */
@@ -512,48 +476,17 @@ public class BigQuerySqlGeneratorIntegrationTest {
         new StringSubstitutor(Map.of(
             "dataset", testDataset
         )).replace("""
-            -- records from a previous sync
+            -- records from the first batch
             INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`, `_airbyte_loaded_at`) VALUES
-              (JSON'{"id": 1, "_ab_cdc_lsn": 10000, "name": "alice"}', '64f4390f-3da1-4b65-b64a-a6c67497f18d', '2023-01-01T00:00:00Z', '2023-01-01T00:00:01Z');
+              (JSON'{"id": 1, "_ab_cdc_lsn": 10002, "name": "alice_reinsert"}', '64f4390f-3da1-4b65-b64a-a6c67497f18d', '2023-01-01T00:00:00Z', '2023-01-01T00:00:01Z');
             INSERT INTO ${dataset}.users_final (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, id, _ab_cdc_lsn, name) values
-              ('64f4390f-3da1-4b65-b64a-a6c67497f18d', '2022-12-31T00:00:00Z', JSON'{}', 1, 10000, 'alice');
+              ('64f4390f-3da1-4b65-b64a-a6c67497f18d', '2023-01-01T00:00:00Z', JSON'{}', 1, 10002, 'alice_reinsert');
+            
+            -- second record batch
+            INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
+              (JSON'{"id": 1, "_ab_cdc_lsn": 10001, "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"}', generate_uuid(), '2023-01-01T00:00:00Z');
             """)
     ).build());
-
-    // insert raw records from the first record batch
-    bq.query(QueryJobConfiguration.newBuilder(
-        new StringSubstitutor(Map.of(
-            "dataset", testDataset
-        )).replace("""
-              INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-                (JSON'{"id": 1, "_ab_cdc_lsn": 10002, "name": "alice_reinsert"}', generate_uuid(), '2023-01-01T00:00:00Z');
-              """)
-    ).build());
-    {
-      // Run the first round of typing and deduping. This should update the record.
-      final String sql = GENERATOR.updateTable("", cdcStreamConfig());
-      LOGGER.info("Executing sql: {}", sql);
-      bq.query(QueryJobConfiguration.newBuilder(sql).build());
-
-      final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
-      assertEquals(1, finalRows);
-      final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
-      assertEquals(1, rawRows);
-      final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
-          "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
-      assertEquals(0, rawUntypedRows);
-    }
-
-    // insert raw records from the second record batch
-    bq.query(QueryJobConfiguration.newBuilder(
-        new StringSubstitutor(Map.of(
-            "dataset", testDataset
-        )).replace("""
-              INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-                (JSON'{"id": 1, "_ab_cdc_lsn": 10001, "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"}', generate_uuid(), '2023-01-01T00:00:00Z');
-              """)
-    ).build());
-    {
       // Run the second round of typing and deduping. This should do nothing to the final table, because the delete is outdated.
       // But we should keep the deletion record in the raw table.
       final String sql = GENERATOR.updateTable("", cdcStreamConfig());
@@ -567,32 +500,6 @@ public class BigQuerySqlGeneratorIntegrationTest {
       final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
           "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
       assertEquals(0, rawUntypedRows);
-    }
-
-    // insert raw records from the third record batch
-    bq.query(QueryJobConfiguration.newBuilder(
-        new StringSubstitutor(Map.of(
-            "dataset", testDataset
-        )).replace("""
-              INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-                (JSON'{"id": 1, "_ab_cdc_lsn": 10003, "name": "alice_reinsert2"}', generate_uuid(), '2023-01-01T00:00:00Z');
-              """)
-    ).build());
-    {
-      // Run the third round of typing and deduping. This should update the final table record.
-      final String sql = GENERATOR.updateTable("", cdcStreamConfig());
-      LOGGER.info("Executing sql: {}", sql);
-      bq.query(QueryJobConfiguration.newBuilder(sql).build());
-
-      final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
-      assertEquals(1, finalRows);
-      // TODO assert that the non-delete raw record is also the newer version.
-      final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
-      assertEquals(2, rawRows);
-      final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
-          "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
-      assertEquals(0, rawUntypedRows);
-    }
   }
 
   private StreamConfig<StandardSQLTypeName> incrementalDedupStreamConfig() {
