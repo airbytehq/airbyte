@@ -5,14 +5,22 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import static io.airbyte.integrations.base.JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA;
+import static io.airbyte.integrations.destination.bigquery.BigQueryRecordConsumer.OVERWRITE_TABLE_SUFFIX;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.cloud.bigquery.StandardSQLTypeName;
+import com.google.cloud.bigquery.TableDefinition;
+import com.google.cloud.bigquery.TableId;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
@@ -26,10 +34,13 @@ import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 
+import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -53,7 +64,12 @@ public class BigQueryStagingConsumerFactory {
                                        final BufferCreateFunction onCreateBuffer,
                                        final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
                                        final Function<String, String> tmpTableNameTransformer,
-                                       final Function<String, String> targetTableNameTransformer) {
+                                       final Function<String, String> targetTableNameTransformer,
+                                       final BigQuerySqlGenerator sqlGenerator,
+                                       final BigQueryDestinationHandler destinationHandler,
+                                       final CatalogParser.ParsedCatalog<StandardSQLTypeName> parsedCatalog,
+                                       final boolean use1s1t,
+                                       final String rawNamespaceOverride) throws InterruptedException {
     final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs = createWriteConfigs(
         config,
         catalog,
@@ -61,17 +77,79 @@ public class BigQueryStagingConsumerFactory {
         tmpTableNameTransformer,
         targetTableNameTransformer);
 
+    final var overwriteStreamsWithTmpTable = createFinalTables(use1s1t, parsedCatalog, destinationHandler, sqlGenerator);
+    final String finalDatasetId = config.get("dataset_id").asText();
+    ThrowingConsumer<String, InterruptedException> typeAndDedupeStreamFunction = typingAndDedupingStreamConsumer(finalDatasetId,
+            rawNamespaceOverride,
+            sqlGenerator,
+            destinationHandler,
+            parsedCatalog,
+            use1s1t,
+            overwriteStreamsWithTmpTable
+    );
+
+    ThrowingConsumer<BigQueryWriteConfig, InterruptedException> replaceFinalTableConsumer =
+            getReplaceFinalTableConsumer(use1s1t,
+                    finalDatasetId,
+                    rawNamespaceOverride,
+                    sqlGenerator,
+                    destinationHandler,
+                    overwriteStreamsWithTmpTable,
+                    parsedCatalog);
+
     return new BufferedStreamConsumer(
-        outputRecordCollector,
-        onStartFunction(bigQueryGcsOperations, writeConfigs),
-        new SerializedBufferingStrategy(
-            onCreateBuffer,
+            outputRecordCollector,
+            onStartFunction(bigQueryGcsOperations, writeConfigs),
+            new SerializedBufferingStrategy(
+                    onCreateBuffer,
+                    catalog,
+                    flushBufferFunction(bigQueryGcsOperations, writeConfigs, catalog, typeAndDedupeStreamFunction)),
+            onCloseFunction(bigQueryGcsOperations, writeConfigs, replaceFinalTableConsumer),
             catalog,
-            flushBufferFunction(bigQueryGcsOperations, writeConfigs, catalog)),
-        onCloseFunction(bigQueryGcsOperations, writeConfigs),
-        catalog,
-        json -> true);
+            json -> true);
   }
+
+  @FunctionalInterface
+  public interface ThrowingConsumer<T, E extends Exception> {
+    void accept(T t) throws E;
+  }
+
+  private ThrowingConsumer<String, InterruptedException> typingAndDedupingStreamConsumer(final String finalNamespace,
+                                                           final String rawNamespace,
+                                                           final BigQuerySqlGenerator sqlGenerator,
+                                                           final BigQueryDestinationHandler destinationHandler,
+                                                           final CatalogParser.ParsedCatalog<StandardSQLTypeName> parsedCatalog,
+                                                           final boolean use1s1t,
+                                                           final Map<SqlGenerator.StreamId, String> overwriteStreamsWithTmpTable
+                                                           ) {
+    return (streamName) -> {
+      if (!use1s1t) {
+        return;
+      } else {
+        final var streamConfig = getStreamConfig(streamName, finalNamespace, rawNamespace, parsedCatalog);
+        String suffix;
+        suffix = overwriteStreamsWithTmpTable.getOrDefault(streamConfig.id(), "");
+        final String sql = sqlGenerator.updateTable(suffix, streamConfig);
+        destinationHandler.execute(sql);
+      }
+    };
+  }
+
+  private CatalogParser.StreamConfig<StandardSQLTypeName> getStreamConfig(String streamName,
+                                                                          String finalNamespace,
+                                                                          String rawNamespace,
+                                                                          final CatalogParser.ParsedCatalog<StandardSQLTypeName> parsedCatalog) {
+    BigQueryRecordConsumer.StreamWriteTargets streamWriteTargets = new BigQueryRecordConsumer.StreamWriteTargets(finalNamespace, rawNamespace, streamName);
+    return parsedCatalog.streams()
+            .stream()
+            .filter(s -> s.id().originalName().equals(streamWriteTargets.name()) && s.id()
+                    .originalNamespace()
+                    .equals(streamWriteTargets.finalNamespace()))
+            .findFirst()
+            // Assume that if we're trying to do T+D on a stream, that stream exists in the catalog.
+            .get();
+  }
+
 
   private Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> createWriteConfigs(final JsonNode config,
                                                                                       final ConfiguredAirbyteCatalog catalog,
@@ -156,6 +234,41 @@ public class BigQueryStagingConsumerFactory {
     };
   }
 
+  private Map<SqlGenerator.StreamId, String> createFinalTables(boolean use1s1t,
+                                                               final CatalogParser.ParsedCatalog<StandardSQLTypeName> parsedCatalog,
+                                                               final BigQueryDestinationHandler destinationHandler,
+                                                               final BigQuerySqlGenerator sqlGenerator) throws InterruptedException {
+    // TODO: share this code from BigQueryRecordConsumer
+    Map<SqlGenerator.StreamId, String> overwriteStreamsWithTmpTable = new HashMap<>();
+    if (use1s1t) {
+      // For each stream, make sure that its corresponding final table exists.
+      for (CatalogParser.StreamConfig<StandardSQLTypeName> stream : parsedCatalog.streams()) {
+        final Optional<TableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
+        if (existingTable.isEmpty()) {
+          destinationHandler.execute(sqlGenerator.createTable(stream, ""));
+          if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+            // We're creating this table for the first time. Write directly into it.
+            overwriteStreamsWithTmpTable.put(stream.id(), "");
+          }
+        } else {
+          destinationHandler.execute(sqlGenerator.alterTable(stream, existingTable.get()));
+          if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+            final BigInteger rowsInFinalTable = destinationHandler.getFinalTable(stream.id()).getNumRows();
+            if (new BigInteger("0").equals(rowsInFinalTable)) {
+              // The table already exists but is empty. We'll load data incrementally.
+              // (this might be because the user ran a reset, which creates an empty table)
+              overwriteStreamsWithTmpTable.put(stream.id(), "");
+            } else {
+              // We're working with an existing table. Write into a tmp table. We'll overwrite the table at the end of the sync.
+              overwriteStreamsWithTmpTable.put(stream.id(), OVERWRITE_TABLE_SUFFIX);
+            }
+          }
+        }
+      }
+    }
+    return overwriteStreamsWithTmpTable;
+  }
+
   /**
    * Flushes buffer data, writes to staging environment then proceeds to upload those same records to
    * destination table
@@ -167,7 +280,8 @@ public class BigQueryStagingConsumerFactory {
   private FlushBufferFunction flushBufferFunction(
                                                   final BigQueryStagingOperations bigQueryGcsOperations,
                                                   final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
-                                                  final ConfiguredAirbyteCatalog catalog) {
+                                                  final ConfiguredAirbyteCatalog catalog,
+                                                  final ThrowingConsumer<String, InterruptedException> typerDeduper) {
     return (pair, writer) -> {
       LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!writeConfigs.containsKey(pair)) {
@@ -189,6 +303,8 @@ public class BigQueryStagingConsumerFactory {
         writeConfig.addStagedFile(stagedFile);
         bigQueryGcsOperations.copyIntoTableFromStage(datasetId, stream, writeConfig.targetTableId(), writeConfig.tableSchema(),
             List.of(stagedFile));
+        final BigQueryRecordConsumer.StreamWriteTargets writeTargets = null;
+        typerDeduper.accept(stream);
       } catch (final Exception e) {
         LOGGER.error("Failed to flush and commit buffer data into destination's raw table:", e);
         throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
@@ -204,7 +320,8 @@ public class BigQueryStagingConsumerFactory {
    * @return
    */
   private OnCloseFunction onCloseFunction(final BigQueryStagingOperations bigQueryGcsOperations,
-                                          final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs) {
+                                          final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
+                                          final ThrowingConsumer<BigQueryWriteConfig, InterruptedException> replaceFinalTableConsumer) {
     return (hasFailed) -> {
       /*
        * Previously the hasFailed value was used to commit any remaining staged files into destination,
@@ -212,11 +329,34 @@ public class BigQueryStagingConsumerFactory {
        * successes, we'll be committing the target table (aka airbyte_raw) table throughout the sync
        */
 
+
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
       for (final BigQueryWriteConfig writeConfig : writeConfigs.values()) {
         bigQueryGcsOperations.dropStageIfExists(writeConfig.datasetId(), writeConfig.streamName());
+        // replace final table
+        replaceFinalTableConsumer.accept(writeConfig);
       }
       LOGGER.info("Cleaning up destination completed.");
+    };
+  }
+
+  private ThrowingConsumer<BigQueryWriteConfig, InterruptedException> getReplaceFinalTableConsumer(boolean use1s1t,
+                                                                  final String finalNamespace,
+                                                                  final String rawNamespace,
+                                                                  final BigQuerySqlGenerator sqlGenerator,
+                                                                  final BigQueryDestinationHandler destinationHandler,
+                                                                  final Map<SqlGenerator.StreamId, String> overwriteStreamsWithTmpTable,
+                                                                  final CatalogParser.ParsedCatalog<StandardSQLTypeName> parsedCatalog
+                                                                  ) {
+    return (writeConfig) -> {
+      final var streamConfig = getStreamConfig(writeConfig.streamName(), finalNamespace, rawNamespace, parsedCatalog);
+      if (use1s1t && DestinationSyncMode.OVERWRITE.equals(writeConfig.syncMode())) {
+        LOGGER.info("Overwriting final table with tmp table");
+        final Optional<String> overwriteFinalTable = sqlGenerator.overwriteFinalTable(overwriteStreamsWithTmpTable.get(streamConfig.id()), streamConfig);
+        if (overwriteFinalTable.isPresent()) {
+          destinationHandler.execute(overwriteFinalTable.get());
+        }
+      }
     };
   }
 

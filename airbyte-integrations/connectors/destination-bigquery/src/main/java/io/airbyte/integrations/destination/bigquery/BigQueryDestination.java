@@ -217,7 +217,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector)
-      throws IOException {
+          throws IOException, InterruptedException {
     final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
     if (uploadingMethod == UploadingMethod.STANDARD) {
       LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
@@ -394,8 +394,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,
                                                      final ConfiguredAirbyteCatalog catalog,
-                                                     final Consumer<AirbyteMessage> outputRecordCollector) {
-
+                                                     final Consumer<AirbyteMessage> outputRecordCollector) throws InterruptedException {
+    final boolean use1s1t = config.hasNonNull(USE_1S1T_FORMAT) && config.get(USE_1S1T_FORMAT).asBoolean();
     final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
     final BigQuery bigQuery = getBigQuery(config);
     final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsAvroDestinationConfig(config);
@@ -431,6 +431,21 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             () -> new FileBuffer(S3AvroFormatConfig.DEFAULT_SUFFIX, numberOfFileBuffers));
 
     LOGGER.info("Creating BigQuery staging message consumer with staging ID {} at {}", stagingId, syncDatetime);
+
+    // TODO refactor and share this with the standard inserts consumer
+    final BigQuery bigquery = getBigQuery(config);
+    final ConfiguredAirbyteCatalog catalogForTypingAndDeduping = cloneAndModifyCatalogForFinalTables(config, catalog);
+    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator();
+    LOGGER.info("Got raw catalog {}", catalogForTypingAndDeduping);
+    final CatalogParser<StandardSQLTypeName> catalogParser;
+    final String rawNamespaceOverride = resolveRawNamespace(use1s1t, config);
+    if (rawNamespaceOverride != null) {
+      catalogParser = new CatalogParser<>(sqlGenerator, rawNamespaceOverride);
+    } else {
+      catalogParser = new CatalogParser<>(sqlGenerator);
+    }
+    final ParsedCatalog<StandardSQLTypeName> parsedCatalog = catalogParser.parseCatalog(catalogForTypingAndDeduping);
+
     return new BigQueryStagingConsumerFactory().create(
         config,
         catalog,
@@ -439,7 +454,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         onCreateBuffer,
         recordFormatterCreator,
         namingResolver::getTmpTableName,
-        getTargetTableNameTransformer(namingResolver));
+        getTargetTableNameTransformer(namingResolver),
+        sqlGenerator,
+        new BigQueryDestinationHandler(bigquery),
+        parsedCatalog,
+        use1s1t,
+        rawNamespaceOverride);
   }
 
   protected BiFunction<BigQueryRecordFormatter, AirbyteStreamNameNamespacePair, Schema> getAvroSchemaCreator() {

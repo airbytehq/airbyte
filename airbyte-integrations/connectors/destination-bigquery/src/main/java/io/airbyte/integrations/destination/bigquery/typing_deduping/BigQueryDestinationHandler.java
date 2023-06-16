@@ -4,6 +4,7 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
+import com.google.cloud.bigquery.TableId;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.StreamId;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,6 +26,10 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
   public Optional<TableDefinition> findExistingTable(StreamId id) {
     final Table table = bq.getTable(id.finalNamespace(), id.finalName());
     return Optional.ofNullable(table).map(Table::getDefinition);
+  }
+
+  public Table getFinalTable(StreamId id) {
+    return bq.getTable(TableId.of(id.finalNamespace(), id.finalName()));
   }
 
   @Override
