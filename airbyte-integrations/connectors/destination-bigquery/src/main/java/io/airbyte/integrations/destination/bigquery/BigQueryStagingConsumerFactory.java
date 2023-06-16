@@ -261,6 +261,7 @@ public class BigQueryStagingConsumerFactory {
             } else {
               // We're working with an existing table. Write into a tmp table. We'll overwrite the table at the end of the sync.
               overwriteStreamsWithTmpTable.put(stream.id(), OVERWRITE_TABLE_SUFFIX);
+              destinationHandler.execute(sqlGenerator.createTable(stream, OVERWRITE_TABLE_SUFFIX));
             }
           }
         }
