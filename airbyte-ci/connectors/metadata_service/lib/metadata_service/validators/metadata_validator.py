@@ -75,7 +75,7 @@ def validate_all_tags_are_keyvalue_pairs(metadata_definition: ConnectorMetadataD
 
 
 def is_major_version(version: str) -> bool:
-    return re.match(r"^\d\.0\.0$", version) is not None
+    return re.match(r"^\d+\.0\.0$", version) is not None
 
 
 def validate_major_version_has_breaking_change_entry(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
