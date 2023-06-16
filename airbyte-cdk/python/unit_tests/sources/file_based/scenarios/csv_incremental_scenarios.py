@@ -47,7 +47,6 @@ single_csv_input_state_is_earlier_scenario = (
             {"col1": "val21", "col2": "val22"},
             {
                 "stream1": {
-                    "start_timestamp": "2023-06-05T03:54:07.000000Z",
                     "history": {
                         "a.csv": "2023-06-05T03:54:07.000000Z"
                     }
@@ -60,7 +59,6 @@ single_csv_input_state_is_earlier_scenario = (
             "type": "STREAM",
             "stream": {
                 "stream_state": {
-                    "start_timestamp": "2020-01-01T01:51:01.000000Z",
                     "history": {}
                 },
                 "stream_descriptor": {"name": "stream1"}
@@ -116,7 +114,6 @@ single_csv_no_input_state_scenario = (
             {"col1": "val21", "col2": "val22"},
             {
                 "stream1": {
-                    "start_timestamp": "2023-06-05T03:54:07.000000Z",
                     "history": {
                         "a.csv": "2023-06-05T03:54:07.000000Z"
                     }
@@ -189,7 +186,6 @@ multi_csv_same_timestamp_scenario = (
             {"col1": "val21b", "col2": "val22b", "col3": "val23b"},
             {
                 "stream1": {
-                    "start_timestamp": "2023-06-05T03:54:07.000000Z",
                     "history": {
                         "a.csv": "2023-06-05T03:54:07.000000Z",
                         "b.csv": "2023-06-05T03:54:07.000000Z"
@@ -247,7 +243,6 @@ single_csv_input_state_is_later_scenario = (
         [
             {
                 "stream1": {
-                    "start_timestamp": "2023-07-15T23:59:59.000000Z",
                     "history": {
                         "recent_file.csv": "2023-07-15T23:59:59.000000Z"
                     }
@@ -260,7 +255,6 @@ single_csv_input_state_is_later_scenario = (
             "type": "STREAM",
             "stream": {
                 "stream_state": {
-                    "start_timestamp": "2023-07-15T23:59:59.000000Z",
                     "history": {
                         "recent_file.csv": "2023-07-15T23:59:59.000000Z"
                     }
@@ -330,7 +324,6 @@ multi_csv_different_timestamps_scenario = (
             {"col1": "val21a", "col2": "val22a"},
             {
                 "stream1": {
-                    "start_timestamp": "2023-06-04T03:54:07.000000Z",
                     "history": {
                         "a.csv": "2023-06-04T03:54:07.000000Z",
                     }
@@ -340,7 +333,6 @@ multi_csv_different_timestamps_scenario = (
             {"col1": "val21b", "col2": "val22b", "col3": "val23b"},
             {
                 "stream1": {
-                    "start_timestamp": "2023-06-05T03:54:07.000000Z",
                     "history": {
                         "a.csv": "2023-06-04T03:54:07.000000Z",
                         "b.csv": "2023-06-05T03:54:07.000000Z"
@@ -422,7 +414,6 @@ mulit_csv_per_timestamp_scenario = (
             {"col1": "val21b", "col2": "val22b", "col3": "val23b"},
             {
                 "stream1": {
-                    "start_timestamp": "2023-06-05T03:54:07.000000Z",
                     "history": {
                         "a.csv": "2023-06-05T03:54:07.000000Z",
                         "b.csv": "2023-06-05T03:54:07.000000Z"
@@ -433,7 +424,6 @@ mulit_csv_per_timestamp_scenario = (
             {"col1": "val21c", "col2": "val22c", "col3": "val23c"},
             {
                 "stream1": {
-                    "start_timestamp": "2023-06-06T03:54:07.000000Z",
                     "history": {
                         "a.csv": "2023-06-05T03:54:07.000000Z",
                         "b.csv": "2023-06-05T03:54:07.000000Z",
@@ -516,7 +506,6 @@ multi_csv_skip_file_if_already_in_history = (
             {"col1": "val21b", "col2": "val22b", "col3": "val23b"},
             {
                 "stream1": {
-                    "start_timestamp": "2023-06-05T03:54:07.000000Z",
                     "history": {
                         "a.csv": "2023-06-05T03:54:07.000000Z",
                         "b.csv": "2023-06-05T03:54:07.000000Z"
@@ -527,7 +516,6 @@ multi_csv_skip_file_if_already_in_history = (
             {"col1": "val21c", "col2": "val22c", "col3": "val23c"},
             {
                 "stream1": {
-                    "start_timestamp": "2023-06-06T03:54:07.000000Z",
                     "history": {
                         "a.csv": "2023-06-05T03:54:07.000000Z",
                         "b.csv": "2023-06-05T03:54:07.000000Z",
@@ -542,7 +530,6 @@ multi_csv_skip_file_if_already_in_history = (
             "type": "STREAM",
             "stream": {
                 "stream_state": {
-                    "start_timestamp": "2023-06-05T03:54:07.000000Z",
                     "history": {"a.csv": "2023-06-05T03:54:07.000000Z"}
                 },
                 "stream_descriptor": {"name": "stream1"}
@@ -622,7 +609,6 @@ multi_csv_include_missing_files_within_history_range = (
             # {"col1": "val21c", "col2": "val22c", "col3": "val23c"}, # this file is skipped
             {
                 "stream1": {
-                    "start_timestamp": "2023-06-06T03:54:07.000000Z",
                     "history": {
                         "a.csv": "2023-06-05T03:54:07.000000Z",
                         "b.csv": "2023-06-05T03:54:07.000000Z",
@@ -637,7 +623,6 @@ multi_csv_include_missing_files_within_history_range = (
             "type": "STREAM",
             "stream": {
                 "stream_state": {
-                    "start_timestamp": "2023-06-06T03:54:07.000000Z",
                     "history": {
                         "a.csv": "2023-06-05T03:54:07.000000Z",
                         "c.csv": "2023-06-06T03:54:07.000000Z"

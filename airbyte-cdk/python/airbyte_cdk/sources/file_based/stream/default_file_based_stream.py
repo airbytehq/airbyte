@@ -28,8 +28,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # FIXME: move ot a policy or something
-        self._state = {"start_timestamp": time.min.strftime("%Y-%m-%dT%H:%M:%S.%fZ")}  # Should be something like min?
-        self._state.setdefault("history", {})  # this feels silly
+        self._state = {"history": {}}
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -87,14 +86,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                         continue
                     yield stream_data_to_airbyte_message(self.name, record)
                     self._state["history"][file.uri] = file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                    logging.warning(f"statebeforeupdating: {self._state['start_timestamp']}")
-                    logging.warning(f"type: {type(self._state['start_timestamp'])}")
-                    logging.warning(f"file.last_modified: {file.last_modified}")
-                    logging.warning(f"type(file.last_modified): {type(file.last_modified)}")
-                    new_cursor = max(datetime.strptime(self._state["start_timestamp"], "%Y-%m-%dT%H:%M:%S.%fZ"), file.last_modified)
-                    logging.warning(f"new_cursor: {new_cursor}")
-                    self._state["start_timestamp"] = new_cursor.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                    logging.warning(f"updated: {self._state['start_timestamp']}")
             except Exception as exc:
                 raise RecordParseError(
                     # FIXME
