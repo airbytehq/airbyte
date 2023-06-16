@@ -58,9 +58,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                   "last_modified": f.last_modified,
                   "file_type": f.file_type} for f in self.list_files_for_this_sync(stream_state)]
 
-        ret = [{"files": list(group[1])} for group in itertools.groupby(files, lambda f: f['last_modified'])]
-        logging.warning(f"stream_slices: {ret}")
-        return ret
+        return [{"files": list(group[1])} for group in itertools.groupby(files, lambda f: f['last_modified'])]
 
     def read_records(
             self,
@@ -88,7 +86,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     self._state["history"][file.uri] = file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             except Exception as exc:
                 raise RecordParseError(
-                    # FIXME
                     f"Error reading records from file: {file_description['uri']}. Is the file valid {self.config.file_type}?"
                 ) from exc
 
