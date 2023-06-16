@@ -84,6 +84,17 @@ def test_to_partition_key():
     assert PerPartitionKeySerializer().to_partition_key(PARTITION) == PARTITION_KEY
 
 
+def test_given_list_with_dict_and_other_when_to_partition_key_then_raise_error():
+    partition = {
+        "partition_key": [
+            {"a dict": "a value"},
+            "not a dict",
+        ],
+    }
+    with pytest.raises(ValueError):
+        PerPartitionKeySerializer().to_partition_key(partition)
+
+
 def test_to_dict():
     assert PerPartitionKeySerializer().to_partition(PARTITION_KEY) == PARTITION
 

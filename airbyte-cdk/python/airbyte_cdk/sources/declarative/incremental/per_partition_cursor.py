@@ -14,9 +14,8 @@ class PerPartitionKeySerializer:
     """
     We are concerned of the performance of looping through the `states` list and evaluating equality on the partition. To reduce this
     concern, we wanted to use dictionaries to map `partition -> cursor`. However, partitions are dict and dict can't be used as dict keys
-    since they are not hashable. By creating hashable key and values, we can implement __hash__ for dict and then use them as dict keys.
-    Note that those dicts shouldn't be modified has their hash would change. For our case, it should be fine as partitions can be seen as
-    immutable.
+    since they are not hashable. By creating tuples using the dict, we can have a use the dict as a key to the dict since tuples are
+    hashable.
     """
 
     @staticmethod
@@ -29,7 +28,12 @@ class PerPartitionKeySerializer:
             for key in sorted(to_serialize.keys()):
                 yield from PerPartitionKeySerializer._to_partition_key(to_serialize[key], previous_keys=(*previous_keys, key))
         elif isinstance(to_serialize, list):
-            if isinstance(to_serialize[0], dict):
+            all_dict = all(isinstance(item, dict) for item in to_serialize)
+            any_dict = any(isinstance(item, dict) for item in to_serialize)
+            if any_dict and not all_dict:
+                raise ValueError("Error trying to serialize partition key: if one dict is list, all items from list are expected to be dict")
+
+            if all_dict:
                 yield *previous_keys, tuple([PerPartitionKeySerializer.to_partition_key(dictionary) for dictionary in to_serialize])
             else:
                 yield *previous_keys, tuple(to_serialize)
