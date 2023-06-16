@@ -285,38 +285,36 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
         "column_errors", columnErrors,
         "column_list", columnList
     )).replace(
-        // TODO if column_errors is an empty array, then set airbyte_meta to just {} (or at least {errors:null})
         """
-              INSERT INTO ${final_table_id}
-              (
+            INSERT INTO ${final_table_id}
+            (
             ${column_list}
-            _airbyte_meta,
-            _airbyte_raw_id,
-            _airbyte_extracted_at
-              )
-              WITH intermediate_data AS (
+              _airbyte_meta,
+              _airbyte_raw_id,
+              _airbyte_extracted_at
+            )
+            WITH intermediate_data AS (
               SELECT
             ${column_casts}
-                array_concat(
+              array_concat(
             ${column_errors}
-                ) as _airbyte_cast_errors,
-                _airbyte_raw_id,
-                _airbyte_extracted_at
+              ) as _airbyte_cast_errors,
+              _airbyte_raw_id,
+              _airbyte_extracted_at
               FROM ${raw_table_id}
               WHERE
                 _airbyte_loaded_at IS NULL
                 AND JSON_EXTRACT(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
-              )
-              SELECT
+            )
+            SELECT
             ${column_list}
-            CASE
-              WHEN array_length(_airbyte_cast_errors) = 0 THEN JSON'{}'
-              ELSE to_json(struct(_airbyte_cast_errors AS errors))
-            END AS _airbyte_meta,
-            _airbyte_raw_id,
-            _airbyte_extracted_at
-              FROM intermediate_data
-              ;"""
+              CASE
+                WHEN array_length(_airbyte_cast_errors) = 0 THEN JSON'{}'
+                ELSE to_json(struct(_airbyte_cast_errors AS errors))
+              END AS _airbyte_meta,
+              _airbyte_raw_id,
+              _airbyte_extracted_at
+            FROM intermediate_data;"""
     );
   }
 
@@ -356,8 +354,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
                   FROM ${raw_table_id}
                   WHERE JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
                 )
-              )
-            ;"""
+              );"""
     );
   }
 
