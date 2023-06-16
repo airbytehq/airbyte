@@ -6,7 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_shipstation_abstract.source import ShipstationAbstractStream
+from source_shipstation.source import ShipstationAbstractStream
 
 
 @pytest.fixture

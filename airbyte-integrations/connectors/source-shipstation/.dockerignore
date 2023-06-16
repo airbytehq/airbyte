@@ -1,6 +1,6 @@
 *
 !Dockerfile
 !main.py
-!source_shipstation_abstract
+!source_shipstation
 !setup.py
 !secrets
