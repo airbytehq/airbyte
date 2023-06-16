@@ -66,20 +66,17 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     // switch pattern-matching is still in preview at language level 17 :(
     if (type instanceof final AirbyteProtocolType p) {
       return new ParsedType<>(toDialectType(p), type);
-    } else if (type instanceof final Struct s) {
-      // eventually this should be JSON; keep STRING for now as legacy compatibility
-      return new ParsedType<>(StandardSQLTypeName.STRING, type);
-    } else if (type instanceof final Array a) {
-      // eventually this should be JSON; keep STRING for now as legacy compatibility
-      return new ParsedType<>(StandardSQLTypeName.STRING, type);
-    } else if (type instanceof final UnsupportedOneOf u) {
-      // eventually this should be JSON; keep STRING for now as legacy compatibility
-      return new ParsedType<>(StandardSQLTypeName.STRING, type);
+    } else if (type instanceof Struct) {
+      return new ParsedType<>(StandardSQLTypeName.JSON, type);
+    } else if (type instanceof Array) {
+      return new ParsedType<>(StandardSQLTypeName.JSON, type);
+    } else if (type instanceof UnsupportedOneOf) {
+      return new ParsedType<>(StandardSQLTypeName.JSON, type);
     } else if (type instanceof final OneOf o) {
       final AirbyteType typeWithPrecedence = AirbyteTypeUtils.chooseOneOfType(o);
       final StandardSQLTypeName dialectType;
       if ((typeWithPrecedence instanceof Struct) || (typeWithPrecedence instanceof Array)) {
-        dialectType = StandardSQLTypeName.STRING;
+        dialectType = StandardSQLTypeName.JSON;
       } else {
         dialectType = toDialectType((AirbyteProtocolType) typeWithPrecedence);
       }
@@ -96,10 +93,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
       final AirbyteType chosenType = AirbyteTypeUtils.chooseOneOfType(o);
       return extractAndCast(column, chosenType, dialectType);
     } else if (airbyteType instanceof Struct || airbyteType instanceof Array || airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
-      // TO_JSON_STRING(null) returns JSON'null', so we explicitly check for null here.
-      // This matters for the case where the column is not present at all in the JSON blob.
-      return new StringSubstitutor(Map.of("query", "JSON_QUERY(`_airbyte_data`, '$.\" + column.originalName() + \"')"))
-          .replace("IF(${query} IS NULL, NULL, TO_JSON_STRING(${query}))");
+      return "JSON_QUERY(`_airbyte_data`, '$." + column.originalName() + "')";
     } else {
       return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$." + column.originalName() + "') as " + dialectType.name() + ")";
     }
@@ -117,8 +111,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
       case TIME_WITH_TIMEZONE -> StandardSQLTypeName.STRING;
       case TIME_WITHOUT_TIMEZONE -> StandardSQLTypeName.TIME;
       case DATE -> StandardSQLTypeName.DATE;
-      // eventually this should be JSON; keep STRING for now as legacy compatibility
-      case UNKNOWN -> StandardSQLTypeName.STRING;
+      case UNKNOWN -> StandardSQLTypeName.JSON;
     };
   }
 
