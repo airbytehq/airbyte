@@ -42,11 +42,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO this proooobably belongs in test-integration?
-// TODO can we run these test methods in parallel? They're each writing to a different namespace, so there's no risk of stomping anything.
+// TODO this proooobably belongs in test-integration? make sure to update the build.gradle concurrent runner stuff if you do this
+@Execution(ExecutionMode.CONCURRENT)
 public class BigQuerySqlGeneratorIntegrationTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest.class);
