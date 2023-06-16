@@ -143,7 +143,7 @@ class ListMembers(IncrementalMailChimpStream):
     data_field = "members"
 
     def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        lists_stream = Lists(**kwargs)        
+        lists_stream = Lists(authenticator=self.authenticator)      
         for list_record in lists_stream.read_records(sync_mode=SyncMode.full_refresh):
             list_id = list_record["id"]
             yield from super().read_records(sync_mode=SyncMode.full_refresh, stream_slice={"list_id": list_id})
@@ -157,7 +157,7 @@ class GetMemberInfo(IncrementalMailChimpStream):
     cursor_field = "last_changed"
 
     def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
-        listmembers_stream = ListMembers(**kwargs)        
+        listmembers_stream = ListMembers(authenticator=self.authenticator)        
         for list_record in listmembers_stream.read_records(sync_mode=SyncMode.full_refresh):
             subscriber_hash = list_record["email_address"]
             yield from super().read_records(sync_mode=SyncMode.full_refresh, stream_slice={"email_address": email_address})
