@@ -152,12 +152,24 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         else:
             start_datetime = datetime.min
         all_files = self._stream_reader.list_matching_files(self.config.globs, start_datetime)
-        return [f for f in all_files if (not stream_state or f.uri not in stream_state["history"])]
+
+        files_to_sync = [f for f in all_files if (not stream_state or stream_state.get("incomplete_history") or f.uri not in stream_state["history"])]
+        logging.warning(f"files to sync: {files_to_sync}")
+        # If len(files_to_sync), the next sync will not be able to use the history
+        if len(files_to_sync) > self._MAX_HISTORY_SIZE:
+            logging.warning(f"History will be too large for {self.name}")
+            self._state["incomplete_history"] = True
+        else:
+            self._state.pop("incomplete_history", None)
+        return files_to_sync
 
     def _get_datetime_from_stream_state(self, stream_state: Optional[StreamState]) -> Optional[datetime]:
         if not stream_state:
             return None
         else:
+            #if stream_state.get("incomplete_history"):
+            #    logging.warning(f"History is incomplete for {self.name}")
+            #    return datetime.now() - timedelta(days=3)
             history = stream_state.get("history", {})
             logging.warning(f"history: {history}")
             logging.warning(f"history size: {len(history)}")
