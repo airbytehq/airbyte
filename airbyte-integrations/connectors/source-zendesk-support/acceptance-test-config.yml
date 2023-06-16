@@ -31,6 +31,8 @@ acceptance_tests:
           # This stream is only available for enterprise accounts https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/
           - name: "audit_logs"
             bypass_reason: "no records"
+          - name: "ticket_skips"
+            bypass_reason: "stream not seeded"
   incremental:
     tests:
       - config_path: "secrets/config.json"
