@@ -76,6 +76,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     if not record_passes_validation_policy(self.config.validation_policy, record, schema):
                         logging.warning(f"Record did not pass validation policy: {record}")
                         continue
+                    record[self.ab_last_mod_col] = file.last_modified.strftime("%Y-%m-%dT%H:%M:%SZ")
+                    record[self.ab_file_name_col] = file.uri
                     yield stream_data_to_airbyte_message(self.name, record)
                 self._state.add_file(file)
             except Exception as exc:

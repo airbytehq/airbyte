@@ -62,8 +62,8 @@ single_csv_scenario = (
     )
     .set_expected_records(
         [
-            {"col1": "val11", "col2": "val12"},
-            {"col1": "val21", "col2": "val22"},
+            {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"},
+            {"col1": "val21", "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"},
         ]
     )
 ).build()
@@ -136,10 +136,10 @@ multi_csv_scenario = (
     )
     .set_expected_records(
         [
-            {"col1": "val11a", "col2": "val12a"},
-            {"col1": "val21a", "col2": "val22a"},
-            {"col1": "val11b", "col2": "val12b", "col3": "val13b"},
-            {"col1": "val21b", "col2": "val22b", "col3": "val23b"},
+            {"col1": "val11a", "col2": "val12a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"},
+            {"col1": "val21a", "col2": "val22a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"},
+            {"col1": "val11b", "col2": "val12b", "col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
+            {"col1": "val21b", "col2": "val22b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
         ]
     )
 ).build()
@@ -208,10 +208,10 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
     )
     .set_expected_records(
         [
-            {"col1": "val11a", "col2": "val12a"},
-            {"col1": "val21a", "col2": "val22a"},
-            {"col1": "val11b", "col2": "val12b", "col3": "val13b"},
-            {"col1": "val21b", "col2": "val22b", "col3": "val23b"},
+            {"col1": "val11a", "col2": "val12a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"},
+            {"col1": "val21a", "col2": "val22a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"},
+            {"col1": "val11b", "col2": "val12b", "col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
+            {"col1": "val21b", "col2": "val22b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
         ]
     )
     .set_discovery_policy(LowInferenceLimitDiscoveryPolicy())
@@ -272,8 +272,8 @@ invalid_csv_scenario = (
     )
     .set_expected_records(
         [
-            {"col1": "val11", "col2": "val12"},
-            {"col1": "val21", "col2": "val22"},
+            {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"},
+            {"col1": "val21", "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "b.csv"},
         ]
     )
     .set_expected_discover_error(SchemaInferenceError)
