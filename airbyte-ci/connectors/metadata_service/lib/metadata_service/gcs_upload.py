@@ -15,7 +15,7 @@ from google.oauth2 import service_account
 
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER, ICON_FILE_NAME
-from metadata_service.validators.metadata_validator import validate_metadata_images_in_dockerhub
+from metadata_service.validators.metadata_validator import run_post_upload_validations
 
 
 def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
@@ -105,8 +105,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path) -> Tuple[
     raw_metadata = yaml.safe_load(metadata_file_path.read_text())
     metadata = ConnectorMetadataDefinitionV0.parse_obj(raw_metadata)
 
-    print("Validating that the images are on DockerHub...")
-    is_valid, error = validate_metadata_images_in_dockerhub(metadata)
+    is_valid, error = run_post_upload_validations(metadata)
     if not is_valid:
         raise ValueError(error)
 

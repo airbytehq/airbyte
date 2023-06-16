@@ -8,7 +8,6 @@ import json
 import yaml
 from metadata_service import gcs_upload
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
-from pydantic import ValidationError
 from metadata_service.constants import METADATA_FILE_NAME
 
 

@@ -47,6 +47,7 @@ def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadata
 
 
 def validate_breaking_change_images_in_dockerhub(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
+    """Ensure that all versions referenced in breakingChanges exist as images in DockerHub."""
     metadata_definition_dict = metadata_definition.dict()
     releases = get(metadata_definition_dict, "data.releases")
     if not releases:
@@ -61,6 +62,7 @@ def validate_breaking_change_images_in_dockerhub(metadata_definition: ConnectorM
         images_to_check,
         "This non-existent image was referenced in a releases.breakingChanges entry."
     )
+
 
 def validate_at_least_one_langauge_tag(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
     """Ensure that there is at least one tag in the data.tags field that matches language:<LANG>."""
@@ -88,7 +90,6 @@ def pre_upload_validations(metadata_definition: ConnectorMetadataDefinitionV0) -
     validations = [
         validate_all_tags_are_keyvalue_pairs,
         validate_at_least_one_langauge_tag,
-        validate_major_version_has_breaking_change_entry,
     ]
 
     for validation in validations:
@@ -98,11 +99,13 @@ def pre_upload_validations(metadata_definition: ConnectorMetadataDefinitionV0) -
 
     return True, None
 
-def post_upload_validations(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
+
+def run_post_upload_validations(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
     """
     Runs all validations that should be run after uploading a connector to the registry.
     """
     validations = [
+        validate_metadata_images_in_dockerhub,
         validate_breaking_change_images_in_dockerhub,
     ]
 
