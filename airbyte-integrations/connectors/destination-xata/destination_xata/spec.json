@@ -1,0 +1,32 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/xata",
+  "supported_destination_sync_modes": [
+    "append"
+  ],
+  "supportsIncremental": false,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination Xata",
+    "type": "object",
+    "required": [
+      "api_key", 
+      "db_url"
+    ],
+    "additionalProperties": true,
+    "properties": {
+      "api_key": {
+        "title": "API Key",
+        "description": "API Key to connect.",
+        "type": "string",
+        "order": 0
+      },
+      "db_url": {
+        "title": "Database URL",
+        "description": "URL pointing to your workspace.",
+        "type": "string",
+        "order": 1,
+        "example": "https://my-workspace-abc123.us-east-1.xata.sh/db/nyc-taxi-fares:main"
+      }
+    }
+  }
+}
