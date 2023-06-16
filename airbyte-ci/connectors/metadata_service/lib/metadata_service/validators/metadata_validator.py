@@ -9,6 +9,18 @@ from pydash.objects import get
 
 ValidationResult = Tuple[bool, Optional[Union[ValidationError, str]]]
 
+# These connectors were already on N.0.0 versions when the validation checking for breakingChanges entries
+# on major version bumps was added - therefore they are exempt from the check. These connectors should be
+# removed from the list as soon as their version is bumped to something else (ideally before their next
+# major version bump).
+MAJOR_VERSION_BREAKING_CHANGE_CHECK_EXCEPTIONS = [
+    ("airbyte/destination-csv", "1.0.0"),
+    ("airbyte/destination-meilisearch", "1.0.0"),
+    ("airbyte/source-s3", "3.0.0"),
+    ("airbyte/source-yandex-metrica", "1.0.0"),
+    ("airbyte/source-onesignal", "1.0.0"),
+]
+
 
 def validate_images_are_in_dockerhub(images_to_check: List[Tuple[str, str]], extra_error_info: Optional[str] = "") -> ValidationResult:
     """Ensure that all images exist in DockerHub."""
@@ -63,6 +75,7 @@ def validate_breaking_change_images_in_dockerhub(metadata_definition: ConnectorM
         "This non-existent image was referenced in a releases.breakingChanges entry."
     )
 
+
 def validate_at_least_one_langauge_tag(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
     """Ensure that there is at least one tag in the data.tags field that matches language:<LANG>."""
     tags = get(metadata_definition, "data.tags", [])
@@ -91,8 +104,11 @@ def validate_major_version_has_breaking_change_entry(metadata_definition: Connec
     metadata_definition_dict = metadata_definition.dict()
     image_tag = get(metadata_definition_dict, "data.dockerImageTag", None)
 
-    # check if image_tag regex matches n.0.0
     if not is_major_version(image_tag):
+        return True, None
+
+    base_docker_image = get(metadata_definition_dict, "data.dockerRepository")
+    if (base_docker_image, image_tag) in MAJOR_VERSION_BREAKING_CHANGE_CHECK_EXCEPTIONS:
         return True, None
 
     releases = get(metadata_definition_dict, "data.releases", None)
