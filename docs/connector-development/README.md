@@ -143,12 +143,7 @@ Once you've finished iterating on the changes to a connector as specified in its
 1. Bump the version in the `Dockerfile` of the connector \(`LABEL io.airbyte.version=X.X.X`\). 
 2. Bump the docker image version in the [metadata.yaml](connector-metadata-file.md) of the connector.
 3. Submit a PR containing the changes you made.
-4. One of Airbyte maintainers will review the change in the new version.  Triggering tests can be done by leaving a comment on the PR with the following format \(the PR must be from the Airbyte repo, not a fork\):
-   ```text
-   # to run integration tests for the connector
-   # Example: /test connector=connectors/source-hubspot
-   /test connector=(connectors|bases)/<connector_name> 
-   ```
+4. One of Airbyte maintainers will review the change in the new version and make sure the tests are passing.
 5. You our an Airbyte maintainer can merge the PR once it is approved and all the required CI checks are passing you.
 6. Once the PR is merged the new connector version will be published to DockerHub and the connector should now be available for everyone who uses it. Thank you!
 
