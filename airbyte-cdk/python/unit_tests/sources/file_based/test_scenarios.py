@@ -10,7 +10,13 @@ import pytest
 from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from freezegun import freeze_time
-from unit_tests.sources.file_based.scenarios.csv_incremental_scenarios import (
+from unit_tests.sources.file_based.scenarios.csv_scenarios import (
+    invalid_csv_scenario,
+    multi_csv_scenario,
+    multi_csv_stream_n_file_exceeds_limit_for_inference,
+    single_csv_scenario,
+)
+from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     mulit_csv_per_timestamp_scenario,
     multi_csv_different_timestamps_scenario,
     multi_csv_include_missing_files_within_history_range,
@@ -24,21 +30,6 @@ from unit_tests.sources.file_based.scenarios.csv_incremental_scenarios import (
     single_csv_input_state_is_later_scenario,
     single_csv_no_input_state_scenario,
 )
-from unit_tests.sources.file_based.scenarios.csv_scenarios import (
-    invalid_csv_scenario,
-    multi_csv_scenario,
-    multi_csv_stream_n_file_exceeds_limit_for_inference,
-    single_csv_scenario,
-)
-
-# FIXME: Not yet supported
-# - Filter out files that do not match the glob
-# - Partition by glob
-# - Is there any way to support concurrent reads at the partition level?
-# -- I think we can. It's just a slice.
-# - Add the cursor column to the records
-# - warning if the size of the state is too large
-# - Support and User-facing documentation is created describing the new contract for incremental syncs.
 
 scenarios = [
     invalid_csv_scenario,
@@ -60,8 +51,6 @@ scenarios = [
 ]
 
 
-# FIXME: We should test the output of stream_slices
-
 @pytest.mark.parametrize("scenario", scenarios, ids=[s.name for s in scenarios])
 def test_discover(capsys, tmp_path, json_spec, scenario):
     if scenario.expected_discover_error:
@@ -72,9 +61,15 @@ def test_discover(capsys, tmp_path, json_spec, scenario):
 
 
 @pytest.mark.parametrize("scenario", scenarios, ids=[s.name for s in scenarios])
+@freeze_time("2023-06-09T00:00:00Z")
 def test_read(capsys, tmp_path, json_spec, scenario):
     if scenario.incremental_scenario_config:
-        return
+        run_test_read_incremental(capsys, tmp_path, scenario)
+    else:
+        run_test_read_full_refresh(capsys, tmp_path, scenario)
+
+
+def run_test_read_full_refresh(capsys, tmp_path, scenario):
     if scenario.expected_read_error:
         with pytest.raises(scenario.expected_read_error):
             read(capsys, tmp_path, scenario)
@@ -86,24 +81,19 @@ def test_read(capsys, tmp_path, json_spec, scenario):
             assert actual["record"]["data"] == expected
 
 
-@pytest.mark.parametrize("scenario", scenarios, ids=[s.name for s in scenarios])
-@freeze_time("2023-06-09T00:00:00Z")
-def test_read_incremental(capsys, tmp_path, json_spec, scenario):
-    if scenario.incremental_scenario_config:
-        if scenario.expected_read_error:
-            with pytest.raises(scenario.expected_read_error):
-                read_with_state(capsys, tmp_path, scenario)
-        else:
-            output = read_with_state(capsys, tmp_path, scenario)
-            expected_output = scenario.expected_records
-            assert len(output) == len(expected_output)
-            for actual, expected in zip(output, expected_output):
-                if "record" in actual:
-                    print(f"actual_record: {actual}")
-                    assert actual["record"]["data"] == expected
-                elif "state" in actual:
-                    print(f"actual_state: {actual}")
-                    assert actual["state"]["data"] == expected
+def run_test_read_incremental(capsys, tmp_path, scenario):
+    if scenario.expected_read_error:
+        with pytest.raises(scenario.expected_read_error):
+            read_with_state(capsys, tmp_path, scenario)
+    else:
+        output = read_with_state(capsys, tmp_path, scenario)
+        expected_output = scenario.expected_records
+        assert len(output) == len(expected_output)
+        for actual, expected in zip(output, expected_output):
+            if "record" in actual:
+                assert actual["record"]["data"] == expected
+            elif "state" in actual:
+                assert actual["state"]["data"] == expected
 
 
 def discover(capsys, tmp_path, scenario) -> Dict[str, Any]:

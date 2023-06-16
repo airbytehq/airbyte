@@ -5,9 +5,9 @@
 import asyncio
 import itertools
 import logging
-from datetime import datetime, timedelta, time
+from datetime import datetime, time, timedelta
 from functools import cache
-from typing import Any, Iterable, List, Mapping, Optional, Union, MutableMapping
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
@@ -29,7 +29,9 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # FIXME: move ot a policy or something
-        self._state = FileBasedState(self.config.max_history_size or 10_000, timedelta(days=(self.config.days_to_sync_if_history_is_full or 3)))
+        self._state = FileBasedState(
+            self.config.max_history_size or 10_000, timedelta(days=(self.config.days_to_sync_if_history_is_full or 3))
+        )
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -52,11 +54,9 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def compute_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         # Group all files by timestamps and return them as slices
         # TODO: Partition the files by glob patterns to enable better checkpointing
-        files = [{"uri": f.uri,
-                  "last_modified": f.last_modified,
-                  "file_type": f.file_type} for f in self.list_files_for_this_sync()]
+        files = [{"uri": f.uri, "last_modified": f.last_modified, "file_type": f.file_type} for f in self.list_files_for_this_sync()]
 
-        slices = [{"files": list(group[1])} for group in itertools.groupby(files, lambda f: f['last_modified'])]
+        slices = [{"files": list(group[1])} for group in itertools.groupby(files, lambda f: f["last_modified"])]
         slices.sort(key=lambda s: s["files"][0]["last_modified"])
 
         return slices
