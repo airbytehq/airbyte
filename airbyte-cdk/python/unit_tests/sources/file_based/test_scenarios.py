@@ -5,6 +5,7 @@
 import json
 from pathlib import Path
 from typing import Any, Dict, Union, List
+from freezegun import freeze_time
 
 import pytest
 from airbyte_cdk.models.airbyte_protocol import SyncMode
@@ -23,7 +24,8 @@ from unit_tests.sources.file_based.scenarios.csv_incremental_scenarios import (
     multi_csv_different_timestamps_scenario,
     mulit_csv_per_timestamp_scenario,
     multi_csv_skip_file_if_already_in_history,
-    multi_csv_include_missing_files_within_history_range
+    multi_csv_include_missing_files_within_history_range,
+    multi_csv_include_recent_files_earlier_than_earliest_in_history_scenario
 )
 
 # FIXME: Not yet supported
@@ -49,7 +51,8 @@ scenarios = [
     multi_csv_different_timestamps_scenario,
     mulit_csv_per_timestamp_scenario,
     multi_csv_skip_file_if_already_in_history,
-    multi_csv_include_missing_files_within_history_range
+    multi_csv_include_missing_files_within_history_range,
+    multi_csv_include_recent_files_earlier_than_earliest_in_history_scenario
 ]
 
 
@@ -80,6 +83,7 @@ def test_read(capsys, tmp_path, json_spec, scenario):
 
 
 @pytest.mark.parametrize("scenario", scenarios, ids=[s.name for s in scenarios])
+@freeze_time("2023-06-10T00:00:00Z")
 def test_read_incremental(capsys, tmp_path, json_spec, scenario):
     if scenario.incremental_scenario_config:
         if scenario.expected_read_error:

@@ -5,7 +5,7 @@
 import asyncio
 import itertools
 import logging
-from datetime import datetime, time
+from datetime import datetime, timedelta, time
 from functools import cache
 from typing import Any, Iterable, List, Mapping, Optional, Union, MutableMapping
 
@@ -141,8 +141,13 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         This should be modified to only sync files newer than (3?) days,  
         or equal to or newer than the oldest file(s) recorded in the history if there are too many files newer than 3 days.
         """
-
-        all_files = self._stream_reader.list_matching_files(self.config.globs, self._get_datetime_from_stream_state(stream_state))
+        state_datetime = self._get_datetime_from_stream_state(stream_state)
+        if state_datetime:
+            time_window = datetime.now() - timedelta(days=3)
+            start_datetime = min(time_window, state_datetime)
+        else:
+            start_datetime = datetime.min
+        all_files = self._stream_reader.list_matching_files(self.config.globs, start_datetime)
         return [f for f in all_files if (not stream_state or f.uri not in stream_state["history"])]
 
     def _get_datetime_from_stream_state(self, stream_state: Optional[StreamState]) -> Optional[datetime]:
