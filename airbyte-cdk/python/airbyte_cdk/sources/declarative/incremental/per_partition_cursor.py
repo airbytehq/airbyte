@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, Mapping, Optional, Tuple
+from typing import Any, Callable, Iterable, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -116,10 +116,10 @@ class PerPartitionStreamSlice(StreamSlice):
 
 
 class CursorFactory:
-    def __init__(self, create_function):
+    def __init__(self, create_function: Callable[[], StreamSlicer]):
         self._create_function = create_function
 
-    def create(self):
+    def create(self) -> StreamSlicer:
         return self._create_function()
 
 
