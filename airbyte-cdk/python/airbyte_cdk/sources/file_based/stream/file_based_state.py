@@ -15,7 +15,7 @@ class FileBasedState:
 
     def set_initial_state(self, value: Mapping[str, Any]):
         self._file_to_datetime_history = value.get("history", {})
-        self._history_is_complete = value.get("incomplete_history", True)
+        self._history_is_complete = not value.get("incomplete_history", False)
 
     def add_file(self, file: RemoteFile):
         logging.warning(f"adding file to history: {file.uri}")
@@ -38,6 +38,8 @@ class FileBasedState:
 
     def get_files_to_sync(self, all_files: List[RemoteFile]):
         start_time = self.compute_start_time()
+        logging.warning(f"history_is_complete: {self.is_history_complete()}")
+        logging.warning(f"all_files: {all_files}")
         files_to_sync = [f for f in all_files if
                          (f.last_modified >= start_time and
                           (not self._file_to_datetime_history or not self.is_history_complete() or f.uri not in self._file_to_datetime_history))
@@ -47,6 +49,8 @@ class FileBasedState:
         if len(files_to_sync) > self._max_history_size:
             logging.warning(f"History will be too large")
             self._history_is_complete = False
+        else:
+            self._history_is_complete = True
         return files_to_sync
 
     def compute_start_time(self) -> datetime:
@@ -59,4 +63,5 @@ class FileBasedState:
                 logging.warning(f"History is incomplete")
                 time_window = datetime.now() - self._time_window_if_history_is_full
                 earliest_dt = min(earliest_dt, time_window)
+            logging.warning(f"earliest_dt: {earliest_dt}")
             return earliest_dt
