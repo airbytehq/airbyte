@@ -2,7 +2,7 @@ import yaml
 import pathlib
 from pydantic import ValidationError
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 from metadata_service.docker_hub import is_image_on_docker_hub
 from pydash.objects import get
 
@@ -70,23 +70,6 @@ def pre_upload_validations(metadata_definition: ConnectorMetadataDefinitionV0) -
     validations = [
         validate_all_tags_are_keyvalue_pairs,
         validate_at_least_one_langauge_tag,
-    ]
-
-    for validation in validations:
-        valid, error = validation(metadata_definition)
-        if not valid:
-            return False, error
-
-    return True, None
-
-
-def run_post_upload_validations(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
-    """
-    Runs all validations that should be run after uploading a connector to the registry.
-    """
-    validations = [
-        validate_metadata_images_in_dockerhub,
-        validate_breaking_change_images_in_dockerhub,
     ]
 
     for validation in validations:
