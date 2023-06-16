@@ -46,8 +46,6 @@ public class BigQuerySqlGeneratorIntegrationTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest.class);
   private final static BigQuerySqlGenerator GENERATOR = new BigQuerySqlGenerator();
   public static final Optional<ColumnId> CURSOR = Optional.of(GENERATOR.buildColumnId("updated_at"));
-  // Much like the rest of this class - this is purely for test purposes. Real CDC cursors may not be exactly the same as this.
-  public static final Optional<ColumnId> CDC_CURSOR = Optional.of(GENERATOR.buildColumnId("_ab_cdc_lsn"));
   public static final List<ColumnId> PRIMARY_KEY = List.of(GENERATOR.buildColumnId("id"));
   public static final String QUOTE = "`";
 
@@ -89,7 +87,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     cdcColumns.put(GENERATOR.buildColumnId("_ab_cdc_lsn"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
     cdcColumns.put(GENERATOR.buildColumnId("_ab_cdc_deleted_at"), new ParsedType<>(StandardSQLTypeName.TIMESTAMP, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
     cdcColumns.put(GENERATOR.buildColumnId("name"), new ParsedType<>(StandardSQLTypeName.STRING, AirbyteProtocolType.STRING));
-    // This is a bit unrealistic - DB sources don't actually declare explicit properties in their JSONB columns.
+    // This is a bit unrealistic - DB sources don't actually declare explicit properties in their JSONB columns, and JSONB isn't necessarily a Struct anyway.
     cdcColumns.put(GENERATOR.buildColumnId("address"), new ParsedType<>(StandardSQLTypeName.STRING, new Struct(addressProperties)));
     cdcColumns.put(GENERATOR.buildColumnId("age"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
   }
@@ -395,7 +393,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
         PRIMARY_KEY,
-        CDC_CURSOR,
+        // Much like the rest of this class - this is purely for test purposes. Real CDC cursors may not be exactly the same as this.
+        Optional.of(GENERATOR.buildColumnId("_ab_cdc_lsn")),
         cdcColumns
     );
   }
