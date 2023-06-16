@@ -180,5 +180,26 @@
       "stream_state": { "created": 10000000000 },
       "stream_descriptor": { "name": "setup_intents" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "top_ups" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "files" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "created": 10000000000 },
+      "stream_descriptor": { "name": "file_links" }
+    }
   }
 ]

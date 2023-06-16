@@ -106,6 +106,12 @@ class MixpanelStream(HttpStream, ABC):
         self.retries += 1
         return 2**self.retries * 60
 
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 402:
+            self.logger.warning(f"Unable to perform a request. Payment Required: {response.json()['error']}")
+            return False
+        return super().should_retry(response)
+
     def get_stream_params(self) -> Mapping[str, Any]:
         """
         Fetch required parameters in a given stream. Used to create sub-streams
