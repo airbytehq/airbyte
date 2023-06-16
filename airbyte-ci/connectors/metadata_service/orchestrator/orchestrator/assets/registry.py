@@ -11,7 +11,7 @@ from dagster import asset, OpExecutionContext, MetadataValue, Output
 
 from metadata_service.spec_cache import get_cached_spec
 
-from orchestrator.models.metadata import MetadataDefinition, LatestMetadataEntry
+from orchestrator.models.metadata import LatestMetadataEntry
 from orchestrator.utils.dagster_helpers import OutputDataFrame
 from orchestrator.utils.object_helpers import deep_copy_params
 

@@ -14,7 +14,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/duckdb
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/duckdb
   tags:
     - language:python
 metadataSpecVersion: "1.0"
