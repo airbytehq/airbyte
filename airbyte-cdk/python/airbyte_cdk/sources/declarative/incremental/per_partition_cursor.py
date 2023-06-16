@@ -2,37 +2,71 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Callable, Iterable, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
-class Hashabledict(dict):
+class PerPartitionKeySerializer:
     """
     We are concerned of the performance of looping through the `states` list and evaluating equality on the partition. To reduce this
     concern, we wanted to use dictionaries to map `partition -> cursor`. However, partitions are dict and dict can't be used as dict keys
-    since they are not hashable. By creating hashable key and values, we can implement __hash__ for dict and then use them as dict keys.
-    Note that those dicts shouldn't be modified has their hash would change. For our case, it should be fine as partitions can be seen as
-    immutable.
+    since they are not hashable. By creating tuples using the dict, we can have a use the dict as a key to the dict since tuples are
+    hashable.
     """
 
-    def __hash__(self):
-        return hash(self._to_hashable(self))
+    @staticmethod
+    def to_partition_key(to_serialize: Any) -> Tuple:
+        return tuple(PerPartitionKeySerializer._to_partition_key(to_serialize))
 
-    def _to_hashable(self, value):
-        if type(value) == list:
-            return (self._to_hashable(item) for item in value)
-        elif type(value) in {dict, Hashabledict}:
-            return frozenset(value), frozenset((self._to_hashable(item) for item in value.values()))
-        return value
+    @staticmethod
+    def _to_partition_key(to_serialize: Any, previous_keys=()):
+        if isinstance(to_serialize, dict):
+            for key in sorted(to_serialize.keys()):
+                yield from PerPartitionKeySerializer._to_partition_key(to_serialize[key], previous_keys=(*previous_keys, key))
+        elif isinstance(to_serialize, list):
+            all_dict = all(isinstance(item, dict) for item in to_serialize)
+            any_dict = any(isinstance(item, dict) for item in to_serialize)
+            if any_dict and not all_dict:
+                raise ValueError("Error trying to serialize partition key: if one dict is list, all items from list are expected to be dict")
+
+            if all_dict:
+                yield *previous_keys, tuple([PerPartitionKeySerializer.to_partition_key(dictionary) for dictionary in to_serialize])
+            else:
+                yield *previous_keys, tuple(to_serialize)
+        else:
+            yield *previous_keys, to_serialize
+
+    @staticmethod
+    def to_partition(to_deserialize: Any):
+        root = {}
+        for flattened_entry in to_deserialize:
+            previous_dict = root
+            for index, item in enumerate(flattened_entry):
+                key, value = item, flattened_entry[index + 1]
+                is_value_a_leaf = len(flattened_entry) == index + 2
+                if is_value_a_leaf:
+                    if isinstance(value, tuple):
+                        if isinstance(value[0], tuple):
+                            previous_dict.setdefault(key, [PerPartitionKeySerializer.to_partition(dictionary) for dictionary in value])
+                        else:
+                            previous_dict.setdefault(key, list(value))
+                    else:
+                        previous_dict.setdefault(key, value)
+                    break
+                else:
+                    previous_dict = previous_dict.setdefault(key, {})
+        return root
 
 
 class PerPartitionStreamSlice(StreamSlice):
     def __init__(self, partition: Mapping[str, Any], cursor_slice: Mapping[str, Any]):
         self._partition = partition
         self._cursor_slice = cursor_slice
+        if partition.keys() & cursor_slice.keys():
+            raise ValueError("Keys for partition and incremental sync cursor should not overlap")
         self._stream_slice = dict(partition) | dict(cursor_slice)
 
     @property
@@ -74,15 +108,23 @@ class PerPartitionStreamSlice(StreamSlice):
         return self._stream_slice.get(key, default)
 
     def __eq__(self, other):
-        if type(other) == dict:
+        if isinstance(other, dict):
             return self._stream_slice == other
-        if type(other) == PerPartitionStreamSlice:
+        if isinstance(other, PerPartitionStreamSlice):
             # noinspection PyProtectedMember
             return self._partition == other._partition and self._cursor_slice == other._cursor_slice
         return False
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+
+class CursorFactory:
+    def __init__(self, create_function: Callable[[], StreamSlicer]):
+        self._create_function = create_function
+
+    def create(self) -> StreamSlicer:
+        return self._create_function()
 
 
 class PerPartitionCursor(StreamSlicer):
@@ -111,12 +153,13 @@ class PerPartitionCursor(StreamSlicer):
     _KEY = 0
     _VALUE = 1
 
-    def __init__(self, cursor_factory, partition_router):
+    def __init__(self, cursor_factory: CursorFactory, partition_router: StreamSlicer):
         self._cursor_factory = cursor_factory
         self._partition_router = partition_router
         self._cursor_per_partition = {}
+        self._partition_serializer = PerPartitionKeySerializer()
 
-    def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[PerPartitionStreamSlice]:
+    def stream_slices(self, sync_mode: SyncMode, _: StreamState) -> Iterable[PerPartitionStreamSlice]:
         """
         We knowingly avoid using stream_state as we want PerPartitionCursor to manage its own state.
         """
@@ -164,12 +207,12 @@ class PerPartitionCursor(StreamSlicer):
                 states.append(
                     {
                         "partition": self._to_dict(partition_tuple),
-                        "cursor": cursor.get_stream_state(),
+                        "cursor": cursor_state,
                     }
                 )
         return {"states": states}
 
-    def _get_state_for_partition(self, partition: Mapping[str, Any]) -> Any:
+    def _get_state_for_partition(self, partition: Mapping[str, Any]) -> Optional[StreamState]:
         cursor = self._cursor_per_partition.get(self._to_partition_key(partition))
         if cursor:
             return cursor.get_stream_state()
@@ -178,15 +221,13 @@ class PerPartitionCursor(StreamSlicer):
 
     @staticmethod
     def _is_new_state(stream_state):
-        return not bool(stream_state) or stream_state == {}
+        return not bool(stream_state)
 
-    @staticmethod
-    def _to_partition_key(partition) -> Hashabledict:
-        return Hashabledict(partition)
+    def _to_partition_key(self, partition) -> tuple:
+        return self._partition_serializer.to_partition_key(partition)
 
-    @staticmethod
-    def _to_dict(partition_key: Hashabledict) -> StreamSlice:
-        return partition_key
+    def _to_dict(self, partition_key: tuple) -> StreamSlice:
+        return self._partition_serializer.to_partition(partition_key)
 
     def select_state(self, stream_slice: Optional[PerPartitionStreamSlice] = None) -> Optional[StreamState]:
         if not stream_slice:

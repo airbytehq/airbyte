@@ -6,8 +6,49 @@ from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import PerPartitionCursor, PerPartitionStreamSlice
+from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import (
+    PerPartitionCursor,
+    PerPartitionKeySerializer,
+    PerPartitionStreamSlice,
+)
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+
+PARTITION_KEY = (
+    ("partition_key int", 1),
+    (
+        "partition_key list dict",
+        (
+            (
+                ("dict within list key 1-1", "dict within list value 1-1"),
+                ("dict within list key 1-2", "dict within list value 1-2"),
+            ),
+            (
+                ("dict within list key 2", "dict within list value 2"),
+            )
+        )
+    ),
+    ("partition_key list str", ("list item 1", "list item 2")),
+    ("partition_key nested dict", "nested_partition_key 1", "a nested value"),
+    ("partition_key nested dict", "nested_partition_key 2", "another nested value"),
+    ("partition_key string", "partition value"),
+)
+
+PARTITION = {
+    "partition_key string": "partition value",
+    "partition_key int": 1,
+    "partition_key list str": ["list item 1", "list item 2"],
+    "partition_key list dict": [
+        {
+            "dict within list key 1-1": "dict within list value 1-1",
+            "dict within list key 1-2": "dict within list value 1-2"
+        },
+        {"dict within list key 2": "dict within list value 2"},
+    ],
+    "partition_key nested dict": {
+        "nested_partition_key 1": "a nested value",
+        "nested_partition_key 2": "another nested value",
+    },
+}
 
 CURSOR_SLICE_FIELD = "cursor slice field"
 CURSOR_STATE_KEY = "cursor state"
@@ -36,6 +77,35 @@ STATE = {
         },
     ]
 }
+
+
+def test_to_partition_key():
+    assert PerPartitionKeySerializer().to_partition_key(PARTITION) == PARTITION_KEY
+
+
+def test_given_list_with_dict_and_other_when_to_partition_key_then_raise_error():
+    partition = {
+        "partition_key": [
+            {"a dict": "a value"},
+            "not a dict",
+        ],
+    }
+    with pytest.raises(ValueError):
+        PerPartitionKeySerializer().to_partition_key(partition)
+
+
+def test_to_dict():
+    assert PerPartitionKeySerializer().to_partition(PARTITION_KEY) == PARTITION
+
+
+def test_stream_slice_merge_dictionaries():
+    stream_slice = PerPartitionStreamSlice({"partition key": "partition value"}, {"cursor key": "cursor value"})
+    assert stream_slice == {"partition key": "partition value", "cursor key": "cursor value"}
+
+
+def test_overlapping_slice_keys_raise_error():
+    with pytest.raises(ValueError):
+        PerPartitionStreamSlice({"overlapping key": "partition value"}, {"overlapping key": "cursor value"})
 
 
 class MockedCursorBuilder:
