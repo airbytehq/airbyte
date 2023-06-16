@@ -26,6 +26,10 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     The default file-based stream.
     """
 
+    ab_last_mod_col = "_ab_source_file_last_modified"
+    ab_file_name_col = "_ab_source_file_url"
+    airbyte_columns = [ab_last_mod_col, ab_file_name_col]
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._state = FileBasedState(
@@ -40,11 +44,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def state(self, value: MutableMapping[str, Any]):
         """State setter, accept state serialized by state getter."""
         self._state.set_initial_state(value)
-
-    # FIXME These things should probably be in a policy
-    ab_last_mod_col = "_ab_source_file_last_modified"
-    ab_file_name_col = "_ab_source_file_url"
-    airbyte_columns = [ab_last_mod_col, ab_file_name_col]
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -114,16 +113,19 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
         Use no more than `_discovery_policy.max_n_files_for_schema_inference` files.
         """
-        if self.config.input_schema:
-            return type_mapping_to_jsonschema(self.config.input_schema)
 
-        files = self.list_files()
-        max_n_files_for_schema_inference = self._discovery_policy.max_n_files_for_schema_inference
-        if len(files) > max_n_files_for_schema_inference:
-            # Use the most recent files for schema inference, so we pick up schema changes during discovery.
-            files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:max_n_files_for_schema_inference]
-            logging.warning(f"Refusing to infer schema for {len(files)} files; using {max_n_files_for_schema_inference} files.")
-        return type_mapping_to_jsonschema(self.infer_schema(files))
+        # FIXME: I only did the bare minimal for discovery tests to look right. I haven't verified the schema merging works
+        if self.config.input_schema:
+            type_mapping = self.config.input_schema
+        else:
+            files = self.list_files()
+            max_n_files_for_schema_inference = self._discovery_policy.max_n_files_for_schema_inference
+            if len(files) > max_n_files_for_schema_inference:
+                # Use the most recent files for schema inference, so we pick up schema changes during discovery.
+                files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:max_n_files_for_schema_inference]
+                logging.warning(f"Refusing to infer schema for {len(files)} files; using {max_n_files_for_schema_inference} files.")
+            type_mapping = self.infer_schema(files)
+        return type_mapping_to_jsonschema(type_mapping)
 
     @cache
     def list_files(self) -> List[RemoteFile]:
