@@ -87,6 +87,16 @@ def test_to_dict():
     assert PerPartitionKeySerializer().to_partition(PARTITION_KEY) == PARTITION
 
 
+def test_stream_slice_merge_dictionaries():
+    stream_slice = PerPartitionStreamSlice({"partition key": "partition value"}, {"cursor key": "cursor value"})
+    assert stream_slice == {"partition key": "partition value", "cursor key": "cursor value"}
+
+
+def test_overlapping_slice_keys_raise_error():
+    with pytest.raises(ValueError):
+        PerPartitionStreamSlice({"overlapping key": "partition value"}, {"overlapping key": "cursor value"})
+
+
 class MockedCursorBuilder:
     def __init__(self):
         self._stream_slices = []

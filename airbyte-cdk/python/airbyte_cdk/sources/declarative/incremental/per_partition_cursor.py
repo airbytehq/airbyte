@@ -61,6 +61,8 @@ class PerPartitionStreamSlice(StreamSlice):
     def __init__(self, partition: Mapping[str, Any], cursor_slice: Mapping[str, Any]):
         self._partition = partition
         self._cursor_slice = cursor_slice
+        if partition.keys() & cursor_slice.keys():
+            raise ValueError("Keys for partition and incremental sync cursor should not overlap")
         self._stream_slice = dict(partition) | dict(cursor_slice)
 
     @property
