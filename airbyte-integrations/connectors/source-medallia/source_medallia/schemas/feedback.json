@@ -85,12 +85,26 @@
                  },
                  "name": {
                    "type": "string"
-                 },
-                 "numericValue": {
-                   "type": "number"
                  }
                },
                "type": "object"
+             },
+             "type": "array"
+           },
+           "units": {
+             "items": {
+               "properties": {
+                 "id": {
+                   "type": "string"
+                 }
+               },
+               "type": "object"
+             },
+             "type": "array"
+           },
+           "values": {
+             "items": {
+               "type": "string"
              },
              "type": "array"
            }
