@@ -49,4 +49,3 @@ configurations.all {
     force 'com.google.api-client:google-api-client:1.31.5'
   }
 }
-
