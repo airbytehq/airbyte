@@ -496,8 +496,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
       final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
       assertEquals(1, finalRows);
       final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
-      // TODO assert that the raw record is the alice_reinsert record
-      assertEquals(1, rawRows);
+      assertEquals(2, rawRows);
       final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
           "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
       assertEquals(0, rawUntypedRows);
