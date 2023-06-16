@@ -427,9 +427,7 @@ class SimpleRetriever(Retriever, HttpStream):
                 self.cursor.update_state(stream_slice, last_record=last_record)
             yield from []
 
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Optional[StreamState] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Specifies the slices for this stream. See the stream slicing section of the docs for more information.
 
@@ -477,10 +475,8 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
                 f"The maximum number of slices on a test read needs to be strictly positive. Got {self.maximum_number_of_slices}"
             )
 
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Optional[StreamState] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        return islice(super().stream_slices(sync_mode=sync_mode, stream_state=stream_state), self.maximum_number_of_slices)
+    def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
+        return islice(super().stream_slices(), self.maximum_number_of_slices)
 
     def parse_records(
         self,

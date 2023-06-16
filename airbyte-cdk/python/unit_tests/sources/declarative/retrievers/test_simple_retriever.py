@@ -103,7 +103,7 @@ def test_simple_retriever_full(mock_http_stream):
     assert retriever.state == underlying_state
     assert retriever.next_page_token(response) == next_page_token
     assert retriever.request_params(None, None, None) == request_params
-    assert retriever.stream_slices(sync_mode=SyncMode.incremental) == stream_slices
+    assert retriever.stream_slices() == stream_slices
 
     assert retriever._last_response is None
     assert retriever._last_records is None
@@ -720,7 +720,7 @@ def test_limit_stream_slices():
         config={},
     )
 
-    truncated_slices = list(retriever.stream_slices(sync_mode=SyncMode.incremental, stream_state=None))
+    truncated_slices = list(retriever.stream_slices())
 
     assert truncated_slices == _generate_slices(maximum_number_of_slices)
 

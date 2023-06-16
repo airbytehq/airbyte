@@ -149,4 +149,4 @@ class DeclarativeStream(Stream):
         :param stream_state: we knowingly avoid using stream_state as we want cursors to manage their own state
         :return:
         """
-        return self.retriever.stream_slices(sync_mode=sync_mode)
+        return self.retriever.stream_slices()

@@ -99,6 +99,6 @@ class CartesianProductStreamSlicer(StreamSlicer):
             )
         )
 
-    def stream_slices(self) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(self) -> Iterable[StreamSlice]:
         sub_slices = (s.stream_slices() for s in self.stream_slicers)
         return (dict(ChainMap(*a)) for a in itertools.product(*sub_slices))

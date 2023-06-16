@@ -117,7 +117,7 @@ class DatetimeBasedCursor(Cursor):
         possible_cursor_values = list(filter(lambda item: item, [last_record_value, self._cursor]))
         self._cursor = max(possible_cursor_values) if possible_cursor_values else None
 
-    def stream_slices(self) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(self) -> Iterable[StreamSlice]:
         """
         Partition the daterange into slices of size = step.
 
