@@ -637,9 +637,9 @@ multi_csv_include_missing_files_within_history_range = (
         )],
     ))).build()
 
-multi_csv_include_recent_files_earlier_than_earliest_in_history_scenario = (
+multi_csv_remove_old_files_if_history_is_full_scenario = (
     TestScenarioBuilder()
-    .set_name("multi_csv_include_recent_files_earlier_than_earliest_in_history")
+    .set_name("multi_csv_remove_old_files_if_history_is_full")
     .set_config(
         {
             "streams": [
@@ -700,15 +700,34 @@ multi_csv_include_recent_files_earlier_than_earliest_in_history_scenario = (
     )
     .set_expected_records(
         [
-            # {"col1": "val11a", "col2": "val12a"}, # this file is skipped because it is too old
-            # {"col1": "val21a", "col2": "val22a"}, # this file is skipped because it is too old
-            {"col1": "val11b", "col2": "val12b", "col3": "val13b"},
-            {"col1": "val21b", "col2": "val22b", "col3": "val23b"},
-            # {"col1": "val11c", "col2": "val12c", "col3": "val13c"}, # this file is skipped because it is already in history
-            # {"col1": "val21c", "col2": "val22c", "col3": "val23c"}, # this file is skipped because it is already in history
+            {"col1": "val11a", "col2": "val12a"},
+            {"col1": "val21a", "col2": "val22a"},
             {
                 "stream1": {
                     "history": {
+                        "very_old_file.csv": "2023-06-02T03:54:07.000000Z",
+                        "old_file_same_timestamp_as_a.csv": "2023-06-06T03:54:07.000000Z",
+                        "a.csv": "2023-06-06T03:54:07.000000Z",
+                    }
+                }
+            },
+            {"col1": "val11b", "col2": "val12b", "col3": "val13b"},
+            {"col1": "val21b", "col2": "val22b", "col3": "val23b"},
+            {
+                "stream1": {
+                    "history": {
+                        "old_file_same_timestamp_as_a.csv": "2023-06-06T03:54:07.000000Z",
+                        "a.csv": "2023-06-06T03:54:07.000000Z",
+                        "b.csv": "2023-06-07T03:54:07.000000Z",
+                    }
+                }
+            },
+            {"col1": "val11c", "col2": "val12c", "col3": "val13c"},
+            {"col1": "val21c", "col2": "val22c", "col3": "val23c"},
+            {
+                "stream1": {
+                    "history": {
+                        "a.csv": "2023-06-06T03:54:07.000000Z",
                         "b.csv": "2023-06-07T03:54:07.000000Z",
                         "c.csv": "2023-06-10T03:54:07.000000Z"
                     }
@@ -722,7 +741,9 @@ multi_csv_include_recent_files_earlier_than_earliest_in_history_scenario = (
             "stream": {
                 "stream_state": {
                     "history": {
-                        "c.csv": "2023-06-10T03:54:07.000000Z"
+                        "very_very_old_file.csv": "2023-06-01T03:54:07.000000Z",
+                        "very_old_file.csv": "2023-06-02T03:54:07.000000Z",
+                        "old_file_same_timestamp_as_a.csv": "2023-06-06T03:54:07.000000Z",
                     },
                 },
                 "stream_descriptor": {"name": "stream1"}

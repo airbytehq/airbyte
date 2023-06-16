@@ -25,7 +25,7 @@ from unit_tests.sources.file_based.scenarios.csv_incremental_scenarios import (
     mulit_csv_per_timestamp_scenario,
     multi_csv_skip_file_if_already_in_history,
     multi_csv_include_missing_files_within_history_range,
-    multi_csv_include_recent_files_earlier_than_earliest_in_history_scenario
+    multi_csv_remove_old_files_if_history_is_full_scenario
 )
 
 # FIXME: Not yet supported
@@ -38,6 +38,9 @@ from unit_tests.sources.file_based.scenarios.csv_incremental_scenarios import (
 # - warning if the size of the state is too large
 # -  Tests verify that we sync any new files that have shown up between the timestamps in the history key, if the history key does not exceed the maximum size.
 # - Support and User-facing documentation is created describing the new contract for incremental syncs.
+
+# We should also stop deleting the history key when the number of files synced gets too large,
+# and instead keep a moving window of synced files where the oldest drop off if the history gets too large.
 
 scenarios = [
     invalid_csv_scenario,
@@ -52,7 +55,7 @@ scenarios = [
     mulit_csv_per_timestamp_scenario,
     multi_csv_skip_file_if_already_in_history,
     multi_csv_include_missing_files_within_history_range,
-    multi_csv_include_recent_files_earlier_than_earliest_in_history_scenario
+    multi_csv_remove_old_files_if_history_is_full_scenario
 ]
 
 

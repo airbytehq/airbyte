@@ -29,6 +29,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         super().__init__(**kwargs)
         # FIXME: move ot a policy or something
         self._state = {"history": {}}
+        self._MAX_HISTORY_SIZE = 3
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -84,6 +85,10 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                         continue
                     yield stream_data_to_airbyte_message(self.name, record)
                     self._state["history"][file.uri] = file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                if len(self._state["history"]) > self._MAX_HISTORY_SIZE:
+                    oldest_file = min(self._state["history"], key=self._state["history"].get)
+                    logging.warning(f"Removing {oldest_file} from history")
+                    del self._state["history"][oldest_file]
             except Exception as exc:
                 raise RecordParseError(
                     f"Error reading records from file: {file_description['uri']}. Is the file valid {self.config.file_type}?"
@@ -138,13 +143,12 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         """
 
         """
-        This should be modified to only sync files newer than (3?) days,  
-        or equal to or newer than the oldest file(s) recorded in the history if there are too many files newer than 3 days.
+        Only sync files newer than (3?) days,  
+        or equal to or newer than the oldest file(s) recorded in the history
         """
         state_datetime = self._get_datetime_from_stream_state(stream_state)
         if state_datetime:
-            time_window = datetime.now() - timedelta(days=3)
-            start_datetime = min(time_window, state_datetime)
+            start_datetime = state_datetime
         else:
             start_datetime = datetime.min
         all_files = self._stream_reader.list_matching_files(self.config.globs, start_datetime)
@@ -154,9 +158,11 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         if not stream_state:
             return None
         else:
-            history = stream_state["history"]
-            earliest = min(history.values()) if history else None
-            return datetime.strptime(earliest, "%Y-%m-%dT%H:%M:%S.%fZ") if earliest else None
+            history = stream_state.get("history", {})
+            logging.warning(f"history: {history}")
+            logging.warning(f"history size: {len(history)}")
+            earliest = min(history.values())
+            return datetime.strptime(earliest, "%Y-%m-%dT%H:%M:%S.%fZ")
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
