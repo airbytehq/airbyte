@@ -50,6 +50,7 @@ class AmazonSellerPartnerConfig(BaseModel):
     )
 
     replication_start_date: str = Field(
+        None,
         description="UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         title="Start Date",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
