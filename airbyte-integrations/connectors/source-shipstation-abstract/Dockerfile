@@ -36,3 +36,11 @@ ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=0.1.0
 LABEL io.airbyte.name=airbyte/source-shipstation-abstract
+
+# Add Docker repository and image tag placeholders
+ARG DOCKER_REPOSITORY
+ARG DOCKER_IMAGE_TAG
+
+# Set Docker repository and image tag labels
+LABEL docker.repository=$DOCKER_REPOSITORY
+LABEL docker.tag=$DOCKER_IMAGE_TAG
