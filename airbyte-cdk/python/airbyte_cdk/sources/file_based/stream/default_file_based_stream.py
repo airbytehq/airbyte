@@ -16,6 +16,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, type_mapping_to_jsonschema
 from airbyte_cdk.sources.file_based.schema_validation_policies import record_passes_validation_policy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
+from airbyte_cdk.sources.file_based.stream.file_based_state import FileBasedState
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 
@@ -28,18 +29,16 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # FIXME: move ot a policy or something
-        self._state = {"history": {}}
-        self._max_history_size = self.config.max_history_size or 10_000
-        self._time_window_if_history_is_full = timedelta(days=(self.config.days_to_sync_if_history_is_full or 3))
+        self._state = FileBasedState(self.config.max_history_size or 10_000, timedelta(days=(self.config.days_to_sync_if_history_is_full or 3)))
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return self._state
+        return self._state.to_dict()
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         """State setter, accept state serialized by state getter."""
-        self._state = value
+        self._state.set_initial_state(value)
 
     # FIXME These things should probably be in a policy
     ab_last_mod_col = "_ab_source_file_last_modified"
@@ -53,12 +52,13 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def stream_slices(
             self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        # WARNING: The stream state passed here is NOT used !!!
         # FIXME: Should probably be in a policy
         # Step 1: Get all files that match a glob (no filtering yet)
         # Step 2: Filter out files that have already been processed
         files = [{"uri": f.uri,
                   "last_modified": f.last_modified,
-                  "file_type": f.file_type} for f in self.list_files_for_this_sync(stream_state)]
+                  "file_type": f.file_type} for f in self.list_files_for_this_sync()]
 
         return [{"files": list(group[1])} for group in itertools.groupby(files, lambda f: f['last_modified'])]
 
@@ -85,11 +85,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                         logging.warning(f"Record did not pass validation policy: {record}")
                         continue
                     yield stream_data_to_airbyte_message(self.name, record)
-                    self._state["history"][file.uri] = file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-                if len(self._state["history"]) > self._max_history_size:
-                    oldest_file = min(self._state["history"], key=self._state["history"].get)
-                    logging.warning(f"Removing {oldest_file} from history")
-                    del self._state["history"][oldest_file]
+                    self._state.add_file(file) #FIXME this is in the wrong indentation!
             except Exception as exc:
                 raise RecordParseError(
                     f"Error reading records from file: {file_description['uri']}. Is the file valid {self.config.file_type}?"
@@ -132,7 +128,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         """
         return list(self._stream_reader.list_matching_files(self.config.globs))
 
-    def list_files_for_this_sync(self, stream_state: Optional[StreamState]) -> Iterable[RemoteFile]:
+    def list_files_for_this_sync(self) -> Iterable[RemoteFile]:
         """
         Return the subset of this stream's files that will be read in the current sync.
 
@@ -147,37 +143,13 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         Only sync files newer than (3?) days,  
         or equal to or newer than the oldest file(s) recorded in the history
         """
-        state_datetime = self._get_datetime_from_stream_state(stream_state)
+        state_datetime = self._state.get_start_time()
         if state_datetime:
             start_datetime = state_datetime
         else:
             start_datetime = datetime.min
         all_files = self._stream_reader.list_matching_files(self.config.globs, start_datetime)
-
-        files_to_sync = [f for f in all_files if (not stream_state or stream_state.get("incomplete_history") or f.uri not in stream_state["history"])]
-        logging.warning(f"files to sync: {files_to_sync}")
-        # If len(files_to_sync), the next sync will not be able to use the history
-        if len(files_to_sync) > self._max_history_size:
-            logging.warning(f"History will be too large for {self.name}")
-            self._state["incomplete_history"] = True
-        else:
-            self._state.pop("incomplete_history", None)
-        return files_to_sync
-
-    def _get_datetime_from_stream_state(self, stream_state: Optional[StreamState]) -> Optional[datetime]:
-        if not stream_state:
-            return None
-        else:
-            history = stream_state.get("history", {})
-            logging.warning(f"history: {history}")
-            logging.warning(f"history size: {len(history)}")
-            earliest = min(history.values())
-            earliest_dt = datetime.strptime(earliest, "%Y-%m-%dT%H:%M:%S.%fZ")
-            if stream_state.get("incomplete_history"):
-                logging.warning(f"History is incomplete for {self.name}")
-                time_window = datetime.now() - self._time_window_if_history_is_full
-                earliest_dt = min(earliest_dt, time_window)
-            return earliest_dt
+        return self._state.get_files_to_sync(all_files)
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
