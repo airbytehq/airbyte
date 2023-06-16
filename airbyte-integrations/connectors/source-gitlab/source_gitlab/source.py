@@ -91,6 +91,11 @@ class SourceGitlab(AbstractSource):
         self.__groups_stream: Optional[GitlabStream] = None
         self.__projects_stream: Optional[GitlabStream] = None
 
+    @staticmethod
+    def _ensure_default_values(config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        config["api_url"] = config.get("api_url") or "gitlab.com"
+        return config
+
     def _groups_stream(self, config: MutableMapping[str, Any]) -> Groups:
         if not self.__groups_stream:
             auth_params = self._auth_params(config)
@@ -136,6 +141,7 @@ class SourceGitlab(AbstractSource):
         return os.environ.get("DEPLOYMENT_MODE", "").upper() != "CLOUD"
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
+        config = self._ensure_default_values(config)
         is_valid, scheme, _ = parse_url(config["api_url"])
         if not is_valid:
             return False, "Invalid API resource locator."
@@ -151,6 +157,7 @@ class SourceGitlab(AbstractSource):
             return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(error)}"
 
     def streams(self, config: MutableMapping[str, Any]) -> List[Stream]:
+        config = self._ensure_default_values(config)
         auth_params = self._auth_params(config)
 
         groups, projects = self._groups_stream(config), self._projects_stream(config)

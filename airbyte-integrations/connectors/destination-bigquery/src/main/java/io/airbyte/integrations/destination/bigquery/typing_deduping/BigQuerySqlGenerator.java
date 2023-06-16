@@ -66,20 +66,17 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     // switch pattern-matching is still in preview at language level 17 :(
     if (type instanceof final AirbyteProtocolType p) {
       return new ParsedType<>(toDialectType(p), type);
-    } else if (type instanceof final Struct s) {
-      // eventually this should be JSON; keep STRING for now as legacy compatibility
-      return new ParsedType<>(StandardSQLTypeName.STRING, type);
-    } else if (type instanceof final Array a) {
-      // eventually this should be JSON; keep STRING for now as legacy compatibility
-      return new ParsedType<>(StandardSQLTypeName.STRING, type);
-    } else if (type instanceof final UnsupportedOneOf u) {
-      // eventually this should be JSON; keep STRING for now as legacy compatibility
-      return new ParsedType<>(StandardSQLTypeName.STRING, type);
+    } else if (type instanceof Struct) {
+      return new ParsedType<>(StandardSQLTypeName.JSON, type);
+    } else if (type instanceof Array) {
+      return new ParsedType<>(StandardSQLTypeName.JSON, type);
+    } else if (type instanceof UnsupportedOneOf) {
+      return new ParsedType<>(StandardSQLTypeName.JSON, type);
     } else if (type instanceof final OneOf o) {
       final AirbyteType typeWithPrecedence = AirbyteTypeUtils.chooseOneOfType(o);
       final StandardSQLTypeName dialectType;
       if ((typeWithPrecedence instanceof Struct) || (typeWithPrecedence instanceof Array)) {
-        dialectType = StandardSQLTypeName.STRING;
+        dialectType = StandardSQLTypeName.JSON;
       } else {
         dialectType = toDialectType((AirbyteProtocolType) typeWithPrecedence);
       }
@@ -96,10 +93,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
       final AirbyteType chosenType = AirbyteTypeUtils.chooseOneOfType(o);
       return extractAndCast(column, chosenType, dialectType);
     } else if (airbyteType instanceof Struct || airbyteType instanceof Array || airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
-      // TO_JSON_STRING(null) returns JSON'null', so we explicitly check for null here.
-      // This matters for the case where the column is not present at all in the JSON blob.
-      return new StringSubstitutor(Map.of("query", "JSON_QUERY(`_airbyte_data`, '$.\" + column.originalName() + \"')"))
-          .replace("IF(${query} IS NULL, NULL, TO_JSON_STRING(${query}))");
+      return "JSON_QUERY(`_airbyte_data`, '$." + column.originalName() + "')";
     } else {
       return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$." + column.originalName() + "') as " + dialectType.name() + ")";
     }
@@ -117,8 +111,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
       case TIME_WITH_TIMEZONE -> StandardSQLTypeName.STRING;
       case TIME_WITHOUT_TIMEZONE -> StandardSQLTypeName.TIME;
       case DATE -> StandardSQLTypeName.DATE;
-      // eventually this should be JSON; keep STRING for now as legacy compatibility
-      case UNKNOWN -> StandardSQLTypeName.STRING;
+      case UNKNOWN -> StandardSQLTypeName.JSON;
     };
   }
 
@@ -206,7 +199,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     String dedupRawTable = "";
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
-      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor(), stream.columns());
+      // If we're in dedup mode, then we must have a cursor
+      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor().get(), stream.columns());
     }
     final String commitRawTable = commitRawTable(stream.id());
 
@@ -284,6 +278,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     ).collect(joining(",\n"));
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
+    // Note that we intentionally excluded deleted records from this insert. See dedupRawRecords for an explanation of how CDC deletes work.
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
         "final_table_id", id.finalTableId(finalSuffix, QUOTE),
@@ -291,51 +286,49 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
         "column_errors", columnErrors,
         "column_list", columnList
     )).replace(
-        // TODO if column_errors is an empty array, then set airbyte_meta to just {} (or at least {errors:null})
         """
-              INSERT INTO ${final_table_id}
-              (
+            INSERT INTO ${final_table_id}
+            (
             ${column_list}
-            _airbyte_meta,
-            _airbyte_raw_id,
-            _airbyte_extracted_at
-              )
-              WITH intermediate_data AS (
+              _airbyte_meta,
+              _airbyte_raw_id,
+              _airbyte_extracted_at
+            )
+            WITH intermediate_data AS (
               SELECT
             ${column_casts}
-                array_concat(
+              array_concat(
             ${column_errors}
-                ) as _airbyte_cast_errors,
-                _airbyte_raw_id,
-                _airbyte_extracted_at
+              ) as _airbyte_cast_errors,
+              _airbyte_raw_id,
+              _airbyte_extracted_at
               FROM ${raw_table_id}
               WHERE
                 _airbyte_loaded_at IS NULL
                 AND JSON_EXTRACT(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
-              )
-              SELECT
+            )
+            SELECT
             ${column_list}
-            CASE
-              WHEN array_length(_airbyte_cast_errors) = 0 THEN JSON'{}'
-              ELSE to_json(struct(_airbyte_cast_errors AS errors))
-            END AS _airbyte_meta,
-            _airbyte_raw_id,
-            _airbyte_extracted_at
-              FROM intermediate_data
-              ;"""
+              CASE
+                WHEN array_length(_airbyte_cast_errors) = 0 THEN JSON'{}'
+                ELSE to_json(struct(_airbyte_cast_errors AS errors))
+              END AS _airbyte_meta,
+              _airbyte_raw_id,
+              _airbyte_extracted_at
+            FROM intermediate_data;"""
     );
   }
 
   @VisibleForTesting
-  String dedupFinalTable(final StreamId id, final String finalSuffix, final List<ColumnId> primaryKey, final Optional<ColumnId> cursor, final LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
+  String dedupFinalTable(final StreamId id, final String finalSuffix, final List<ColumnId> primaryKey, final ColumnId cursor, final LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
     final String pkList = primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
     final String pkCastList = streamColumns.entrySet().stream()
         .filter(e -> primaryKey.contains(e.getKey()))
         .map(e -> extractAndCast(e.getKey(), e.getValue().airbyteType(), e.getValue().dialectType()))
         .collect(joining(",\n "));
-    final String cursorOrdering = cursor.map(quotedColumnId -> quotedColumnId.name(QUOTE) + " DESC,").orElse("");
+    final String cursorOrdering = cursor.name(QUOTE) + " DESC,";
 
-    // TODO can the CDC deletes just use the final table deleted_at column? (this would allow us to delete deleted records from the raw table also)
+    // See dedupRawTable for an explanation of why we delete records using the raw data rather than the final table's _ab_cdc_deleted_at column.
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
         "final_table_id", id.finalTableId(finalSuffix, QUOTE),
@@ -362,13 +355,27 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
                   FROM ${raw_table_id}
                   WHERE JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
                 )
-              )
-            ;"""
+              );"""
     );
   }
 
   @VisibleForTesting
   String dedupRawTable(final StreamId id, final String finalSuffix) {
+    /*
+     * Note that we need to keep the deletion raw records because of how async syncs work. Consider this sequence of source events:
+     * 1. Insert record id=1
+     * 2. Update record id=1
+     * 3. Delete record id=1
+     *
+     * It's possible for the destination to receive them out of order, e.g.:
+     * 1. Insert
+     * 2. Delete
+     * 3. Update
+     *
+     * We can generally resolve this using the cursor column (e.g. multiple updates in the wrong order). However, deletions are special because we
+     * propagate them as hard deletes to the final table. As a result, we need to keep the deletion in the raw table, so that a late-arriving update
+     * doesn't incorrectly reinsert the final record.
+     */
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
         "final_table_id", id.finalTableId(finalSuffix, QUOTE)
