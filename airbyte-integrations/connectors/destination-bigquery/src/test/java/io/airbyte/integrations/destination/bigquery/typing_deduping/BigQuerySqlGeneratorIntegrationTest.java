@@ -1,7 +1,6 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import static com.google.cloud.bigquery.LegacySQLTypeName.legacySQLTypeName;
-import static io.airbyte.integrations.destination.bigquery.BigQueryDestination.getServiceAccountCredentials;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -20,6 +19,7 @@ import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
@@ -94,7 +94,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     JsonNode config = Jsons.deserialize(rawConfig);
 
     final BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
-    final GoogleCredentials credentials = getServiceAccountCredentials(config);
+    final GoogleCredentials credentials = BigQueryDestination.getServiceAccountCredentials(config);
     bq = bigQueryBuilder
         .setProjectId(config.get("project_id").asText())
         .setCredentials(credentials)
@@ -389,7 +389,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
               (JSON'{"id": 0, "_ab_cdc_lsn": 9999, "name": "zombie", "_ab_cdc_deleted_at": "2022-12-31T00:O0:00Z"}', generate_uuid(), '2022-12-31T00:00:00Z', '2022-12-31T00:00:01Z');
             INSERT INTO ${dataset}.users_final (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, id, _ab_cdc_lsn, name, address, age) values
               ('64f4390f-3da1-4b65-b64a-a6c67497f18d', '2022-12-31T00:00:00Z', JSON'{}', 1, 1000, 'spooky ghost', NULL, NULL);
-            
+                        
             -- new records from the current sync
             INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
               (JSON'{"id": 2, "_ab_cdc_lsn": 10001, "name": "alice"}', generate_uuid(), '2023-01-01T00:00:00Z'),
@@ -488,23 +488,23 @@ public class BigQuerySqlGeneratorIntegrationTest {
               (JSON'{"id": 1, "_ab_cdc_lsn": 10002, "name": "alice_reinsert"}', '64f4390f-3da1-4b65-b64a-a6c67497f18d', '2023-01-01T00:00:00Z', '2023-01-01T00:00:01Z');
             INSERT INTO ${dataset}.users_final (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, id, _ab_cdc_lsn, name) values
               ('64f4390f-3da1-4b65-b64a-a6c67497f18d', '2023-01-01T00:00:00Z', JSON'{}', 1, 10002, 'alice_reinsert');
-            
+                        
             -- second record batch
             INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
               (JSON'{"id": 1, "_ab_cdc_lsn": 10001, "_ab_cdc_deleted_at": "2023-01-01T00:01:00Z"}', generate_uuid(), '2023-01-01T00:00:00Z');
             """)
     ).build());
-      // Run the second round of typing and deduping. This should do nothing to the final table, because the delete is outdated.
-      final String sql = GENERATOR.updateTable("", cdcStreamConfig());
+    // Run the second round of typing and deduping. This should do nothing to the final table, because the delete is outdated.
+    final String sql = GENERATOR.updateTable("", cdcStreamConfig());
     logAndExecute(sql);
 
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
-      assertEquals(1, finalRows);
-      final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
-      assertEquals(2, rawRows);
-      final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
-          "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
-      assertEquals(0, rawUntypedRows);
+    assertEquals(1, finalRows);
+    final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
+    assertEquals(2, rawRows);
+    final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
+        "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
+    assertEquals(0, rawUntypedRows);
   }
 
   private StreamConfig<StandardSQLTypeName> incrementalDedupStreamConfig() {
