@@ -16,7 +16,7 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_shipstation_abstract",
+    name="source_shipstation",
     description="Source implementation for Shipstation Abstract.",
     author="Airbyte",
     author_email="contact@airbyte.io",

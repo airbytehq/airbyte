@@ -4,7 +4,7 @@
 
 from unittest.mock import MagicMock
 
-from source_shipstation_abstract.source import SourceShipstationAbstract
+from source_shipstation.source import SourceShipstationAbstract
 
 
 def test_check_connection(mocker):

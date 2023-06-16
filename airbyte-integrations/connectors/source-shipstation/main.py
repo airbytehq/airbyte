@@ -6,7 +6,7 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_shipstation_abstract import SourceShipstationAbstract
+from source_shipstation import SourceShipstationAbstract
 
 if __name__ == "__main__":
     source = SourceShipstationAbstract()

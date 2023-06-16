@@ -5,5 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_shipstation_abstract'
+    moduleDirectory 'source_shipstation'
 }
