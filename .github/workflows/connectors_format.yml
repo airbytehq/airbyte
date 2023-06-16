@@ -1,14 +1,14 @@
 name: Format modified connectors
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
 on:
   push:
-    # branches-ignore:
-    #   - master
-    # TODO: remove this once we confirm the workflow is working
-    branches:
-      - "augustin/connectors-ci/python-auto-format"
+    branches-ignore:
+      - master
     paths:
-      - "airbyte-integrations/connectors"
+      - "airbyte-integrations/connectors/**"
 
 jobs:
   format_modified_connectors:
@@ -19,6 +19,8 @@ jobs:
       DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
       DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
       CI_REPORT_BUCKET_NAME: "airbyte-ci-reports"
+      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      PRODUCTION: "True"
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v2
