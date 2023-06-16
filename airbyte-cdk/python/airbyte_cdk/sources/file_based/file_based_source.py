@@ -8,6 +8,7 @@ from abc import ABC
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
@@ -32,7 +33,7 @@ class FileBasedSource(AbstractSource, ABC):
         parsers: Dict[str, FileTypeParser] = None,
     ):
         self.stream_reader = stream_reader
-        self.availability_strategy = availability_strategy #or DefaultFileBasedAvailabilityStrategy(stream_reader)
+        self.availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)
         self.parsers = parsers or default_parsers
         self.discovery_policy = discovery_policy
 

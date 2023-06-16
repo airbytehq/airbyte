@@ -63,11 +63,11 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         return [{"files": list(group[1])} for group in itertools.groupby(files, lambda f: f['last_modified'])]
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: List[str] = None,
-            stream_slice: Optional[StreamSlice] = None,
-            stream_state: Optional[StreamState] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        stream_state: Optional[StreamState] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
@@ -139,7 +139,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         Specifically:
 
         - Take the output of `list_files`
-        - If `stream_state.start` is non-None then remove all files with last_modified
+        - If `stream_slice.start` is non-None then remove all files with last_modified
           date before `start`
         """
 
