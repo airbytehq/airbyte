@@ -199,7 +199,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     String dedupRawTable = "";
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
-      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor(), stream.columns());
+      // If we're in dedup mode, then we must have a cursor
+      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor().get(), stream.columns());
     }
     final String commitRawTable = commitRawTable(stream.id());
 
@@ -320,13 +321,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @VisibleForTesting
-  String dedupFinalTable(final StreamId id, final String finalSuffix, final List<ColumnId> primaryKey, final Optional<ColumnId> cursor, final LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
+  String dedupFinalTable(final StreamId id, final String finalSuffix, final List<ColumnId> primaryKey, final ColumnId cursor, final LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
     final String pkList = primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
     final String pkCastList = streamColumns.entrySet().stream()
         .filter(e -> primaryKey.contains(e.getKey()))
         .map(e -> extractAndCast(e.getKey(), e.getValue().airbyteType(), e.getValue().dialectType()))
         .collect(joining(",\n "));
-    final String cursorOrdering = cursor.map(quotedColumnId -> quotedColumnId.name(QUOTE) + " DESC,").orElse("");
+    final String cursorOrdering = cursor.name(QUOTE) + " DESC,";
 
     // TODO can the CDC deletes just use the final table deleted_at column? (this would allow us to delete deleted records from the raw table also)
     return new StringSubstitutor(Map.of(
