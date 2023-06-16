@@ -94,7 +94,7 @@ class AsyncFlush implements DestinationFlushFunction {
   @Override
   public long getOptimalBatchSizeBytes() {
     // todo(davin): this should be per-destination specific. currently this is for Snowflake.
-    return 100 * 1024 * 1024;
+    return 50 * 1024 * 1024;
   }
 
 }
