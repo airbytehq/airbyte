@@ -770,6 +770,22 @@ class Schedules(SourceZendeskSupportFullRefreshStream):
         return "business_hours/schedules.json"
 
 
+class AccountAttributes(SourceZendeskSupportFullRefreshStream):
+    """Account attributes stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/skill_based_routing/#list-account-attributes"""
+
+    def path(self, *args, **kwargs) -> str:
+        return "routing/attributes"
+
+
+class AttributeDefinitions(SourceZendeskSupportFullRefreshStream):
+    """Attribute definitions stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/skill_based_routing/#list-routing-attribute-definitions"""
+
+    primary_key = None
+
+    def path(self, *args, **kwargs) -> str:
+        return "routing/attributes/definitions"
+
+
 class UserSettingsStream(SourceZendeskSupportFullRefreshStream):
     """Stream for checking of a request token and permissions"""
 

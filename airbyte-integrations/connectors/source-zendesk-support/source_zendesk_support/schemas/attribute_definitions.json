@@ -1,0 +1,33 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "conditions_all": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "subject": {
+            "type": ["null", "string"]
+          },
+          "title": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "conditions_any": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "subject": {
+            "type": ["null", "string"]
+          },
+          "title": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}
