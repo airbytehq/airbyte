@@ -5,9 +5,9 @@
 import asyncio
 import itertools
 import logging
-from datetime import datetime, time, timedelta
+from datetime import datetime, timedelta, time
 from functools import cache
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional, Union, MutableMapping
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
@@ -29,9 +29,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # FIXME: move ot a policy or something
-        self._state = FileBasedState(
-            self.config.max_history_size or 10_000, timedelta(days=(self.config.days_to_sync_if_history_is_full or 3))
-        )
+        self._state = FileBasedState(self.config.max_history_size or 10_000, timedelta(days=(self.config.days_to_sync_if_history_is_full or 3)))
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -52,13 +50,16 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         return self.config.primary_key
 
     def compute_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
-        # WARNING: The stream state passed here is NOT used !!!
-        # FIXME: Should probably be in a policy
-        # Step 1: Get all files that match a glob (no filtering yet)
-        # Step 2: Filter out files that have already been processed
-        files = [{"uri": f.uri, "last_modified": f.last_modified, "file_type": f.file_type} for f in self.list_files_for_this_sync()]
+        # Group all files by timestamps and return them as slices
+        # TODO: Partition the files by glob patterns to enable better checkpointing
+        files = [{"uri": f.uri,
+                  "last_modified": f.last_modified,
+                  "file_type": f.file_type} for f in self.list_files_for_this_sync()]
 
-        return [{"files": list(group[1])} for group in itertools.groupby(files, lambda f: f["last_modified"])]
+        slices = [{"files": list(group[1])} for group in itertools.groupby(files, lambda f: f['last_modified'])]
+        slices.sort(key=lambda s: s["files"][0]["last_modified"])
+
+        return slices
 
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
         """

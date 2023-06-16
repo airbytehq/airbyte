@@ -123,7 +123,7 @@ def read(capsys, tmp_path, scenario):
             "--config",
             make_file(tmp_path / "config.json", scenario.config),
             "--catalog",
-            make_file(tmp_path / "catalog.json", scenario.configured_catalog()),
+            make_file(tmp_path / "catalog.json", scenario.configured_catalog(SyncMode.full_refresh)),
         ],
     )
     captured = capsys.readouterr()
