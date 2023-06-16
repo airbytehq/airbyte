@@ -115,7 +115,7 @@ def discover(capsys, tmp_path, scenario) -> Dict[str, Any]:
     return json.loads(captured.out.splitlines()[0])["catalog"]
 
 
-def read(capsys, tmp_path, scenario, types_to_keep = set(["RECORD"])):
+def read(capsys, tmp_path, scenario):
     launch(
         scenario.source,
         [
@@ -123,15 +123,16 @@ def read(capsys, tmp_path, scenario, types_to_keep = set(["RECORD"])):
             "--config",
             make_file(tmp_path / "config.json", scenario.config),
             "--catalog",
-            make_file(tmp_path / "catalog.json", scenario.configured_catalog(SyncMode.full_refresh)),
+            make_file(tmp_path / "catalog.json", scenario.configured_catalog()),
         ],
     )
     captured = capsys.readouterr()
     return [
         msg
         for msg in (json.loads(line) for line in captured.out.splitlines())
-        if msg["type"] in types_to_keep
+        if msg["type"] == "RECORD"
     ]
+
 
 def read_with_state(capsys, tmp_path, scenario):
     launch(
@@ -144,7 +145,6 @@ def read_with_state(capsys, tmp_path, scenario):
             make_file(tmp_path / "catalog.json", scenario.configured_catalog(SyncMode.incremental)),
             "--state",
             make_file(tmp_path / "state.json", scenario.input_state()),
-            "--debug"
         ],
     )
     captured = capsys.readouterr()
