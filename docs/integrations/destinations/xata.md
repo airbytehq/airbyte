@@ -8,10 +8,10 @@ Currently only `append` is supported.
 
 Conventions:
 
-- The `stream` name will be define the name of the table in Xata.
+- The `stream` name will define the name of the table in Xata.
 - The `message` data will be mapped one by one to the table schema.
 
-For example, as stream name `nyc_taxi_fares_2022` will attempt to write to a table with the same name. 
+For example, a stream name `nyc_taxi_fares_2022` will attempt to write to a table with the same name. 
 If the message has the following shape:
 ```
 {
