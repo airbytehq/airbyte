@@ -75,4 +75,4 @@ def type_mapping_to_jsonschema(type_mapping: Mapping[str, Any]) -> Mapping[str, 
     """
     Return the user input schema (type mapping), transformed to JSON Schema format.
     """
-    ...
+    return {k: {"type": v} for k, v in type_mapping.items()}

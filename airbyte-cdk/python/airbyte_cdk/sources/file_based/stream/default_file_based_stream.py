@@ -28,7 +28,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # FIXME: move ot a policy or something
         self._state = FileBasedState(
             self.config.max_history_size or 10_000, timedelta(days=(self.config.days_to_sync_if_history_is_full or 3))
         )
@@ -90,11 +89,19 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
         :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
         """
-        # FIXME: should be in a policy
         return self.ab_last_mod_col
 
     @cache
     def get_json_schema(self) -> Mapping[str, Any]:
+        extra_fields = {
+            self.ab_last_mod_col: {"type": "string"},
+            self.ab_file_name_col: {"type": "string"},
+        }
+        schema = self.get_raw_json_schema()
+        return {**schema, **extra_fields}
+
+    @cache
+    def get_raw_json_schema(self) -> Mapping[str, Any]:
         """
         Return the JSON Schema for a stream.
 
@@ -102,7 +109,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
         Use no more than `_discovery_policy.max_n_files_for_schema_inference` files.
         """
-        # FIXME: need to merge with additional columns
         if self.config.input_schema:
             return type_mapping_to_jsonschema(self.config.input_schema)
 
@@ -112,7 +118,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             # Use the most recent files for schema inference, so we pick up schema changes during discovery.
             files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:max_n_files_for_schema_inference]
             logging.warning(f"Refusing to infer schema for {len(files)} files; using {max_n_files_for_schema_inference} files.")
-        return self.infer_schema(files)
+        return type_mapping_to_jsonschema(self.infer_schema(files))
 
     @cache
     def list_files(self) -> List[RemoteFile]:

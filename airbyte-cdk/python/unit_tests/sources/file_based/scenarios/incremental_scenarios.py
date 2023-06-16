@@ -39,7 +39,18 @@ single_csv_input_state_is_earlier_scenario = (
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                    "json_schema": {"col1": "string", "col2": "string"},
+                    "json_schema": {"col1": {
+                            "type": "string"
+                        }, "col2": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_last_modified": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_url": {
+                            "type": "string"
+                        },
+                    },
                     "name": "stream1",
                 }
             ]
@@ -109,7 +120,18 @@ single_csv_no_input_state_scenario = (
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                    "json_schema": {"col1": "string", "col2": "string"},
+                    "json_schema": {"col1": {
+                            "type": "string"
+                        }, "col2": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_last_modified": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_url": {
+                            "type": "string"
+                        },
+                    },
                     "name": "stream1",
                 }
             ]
@@ -174,9 +196,21 @@ multi_csv_same_timestamp_scenario = (
                 {
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "json_schema": {
-                        "col1": "string",
-                        "col2": "string",
-                        "col3": "string",
+                        "col1": {
+                            "type": "string"
+                        },
+                        "col2": {
+                            "type": "string"
+                        },
+                        "col3": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_last_modified": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_url": {
+                            "type": "string"
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -240,7 +274,18 @@ single_csv_input_state_is_later_scenario = (
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "source_defined_cursor": True,
                     "supported_sync_modes": ["full_refresh", "incremental"],
-                    "json_schema": {"col1": "string", "col2": "string"},
+                    "json_schema": {"col1": {
+                            "type": "string"
+                        }, "col2": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_last_modified": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_url": {
+                            "type": "string"
+                        },
+                    },
                     "name": "stream1",
                 }
             ]
@@ -314,9 +359,21 @@ multi_csv_different_timestamps_scenario = (
                 {
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "json_schema": {
-                        "col1": "string",
-                        "col2": "string",
-                        "col3": "string",
+                        "col1": {
+                            "type": "string"
+                        },
+                        "col2": {
+                            "type": "string"
+                        },
+                        "col3": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_last_modified": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_url": {
+                            "type": "string"
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -402,9 +459,21 @@ mulit_csv_per_timestamp_scenario = (
                 {
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "json_schema": {
-                        "col1": "string",
-                        "col2": "string",
-                        "col3": "string",
+                        "col1": {
+                            "type": "string"
+                        },
+                        "col2": {
+                            "type": "string"
+                        },
+                        "col3": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_last_modified": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_url": {
+                            "type": "string"
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -494,9 +563,21 @@ multi_csv_skip_file_if_already_in_history = (
                 {
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "json_schema": {
-                        "col1": "string",
-                        "col2": "string",
-                        "col3": "string",
+                        "col1": {
+                            "type": "string"
+                        },
+                        "col2": {
+                            "type": "string"
+                        },
+                        "col3": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_last_modified": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_url": {
+                            "type": "string"
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -595,9 +676,21 @@ multi_csv_include_missing_files_within_history_range = (
                 {
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "json_schema": {
-                        "col1": "string",
-                        "col2": "string",
-                        "col3": "string",
+                        "col1": {
+                            "type": "string"
+                        },
+                        "col2": {
+                            "type": "string"
+                        },
+                        "col3": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_last_modified": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_url": {
+                            "type": "string"
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -692,9 +785,21 @@ multi_csv_remove_old_files_if_history_is_full_scenario = (
                 {
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "json_schema": {
-                        "col1": "string",
-                        "col2": "string",
-                        "col3": "string",
+                        "col1": {
+                            "type": "string"
+                        },
+                        "col2": {
+                            "type": "string"
+                        },
+                        "col3": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_last_modified": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_url": {
+                            "type": "string"
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -817,9 +922,21 @@ multi_csv_same_timestamp_more_files_than_history_size_scenario = (
                 {
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "json_schema": {
-                        "col1": "string",
-                        "col2": "string",
-                        "col3": "string",
+                        "col1": {
+                            "type": "string"
+                        },
+                        "col2": {
+                            "type": "string"
+                        },
+                        "col3": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_last_modified": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_url": {
+                            "type": "string"
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -914,9 +1031,21 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario = (
                 {
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "json_schema": {
-                        "col1": "string",
-                        "col2": "string",
-                        "col3": "string",
+                        "col1": {
+                            "type": "string"
+                        },
+                        "col2": {
+                            "type": "string"
+                        },
+                        "col3": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_last_modified": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_url": {
+                            "type": "string"
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -1025,9 +1154,21 @@ multi_csv_sync_recent_files_if_history_is_incomplete__different_timestamps_scena
                 {
                     "default_cursor_field": ["_ab_source_file_last_modified"],
                     "json_schema": {
-                        "col1": "string",
-                        "col2": "string",
-                        "col3": "string",
+                        "col1": {
+                            "type": "string"
+                        },
+                        "col2": {
+                            "type": "string"
+                        },
+                        "col3": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_last_modified": {
+                            "type": "string"
+                        },
+                        "_ab_source_file_url": {
+                            "type": "string"
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
