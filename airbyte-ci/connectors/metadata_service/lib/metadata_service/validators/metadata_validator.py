@@ -3,7 +3,7 @@ import yaml
 import pathlib
 from pydantic import ValidationError
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 from metadata_service.docker_hub import is_image_on_docker_hub
 from pydash.objects import get
 
@@ -50,7 +50,7 @@ def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadata
 
     for image, version in images_to_check:
         if not is_image_on_docker_hub(image, version):
-            return False, f"Image {image}:{version} does not exist in DockerHub."
+            return False, f"Image {image}:{version} does not exist in DockerHub"
 
     return True, None
 
