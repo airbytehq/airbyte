@@ -81,7 +81,7 @@ def is_major_version(version: str) -> bool:
 def validate_major_version_has_breaking_change_entry(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
     """Ensure that if the major version is incremented, there is a breaking change entry for that version."""
     metadata_definition_dict = metadata_definition.dict()
-    image_tag = get(metadata_definition_dict, "data.dockerImageTag", None)
+    image_tag = get(metadata_definition_dict, "data.dockerImageTag")
 
     if not is_major_version(image_tag):
         return True, None
@@ -90,11 +90,11 @@ def validate_major_version_has_breaking_change_entry(metadata_definition: Connec
     if (base_docker_image, image_tag) in MAJOR_VERSION_BREAKING_CHANGE_CHECK_EXCEPTIONS:
         return True, None
 
-    releases = get(metadata_definition_dict, "data.releases", None)
+    releases = get(metadata_definition_dict, "data.releases")
     if not releases:
         return False, f"When doing a major version bump ({image_tag}), there must be a 'releases' property that contains 'breakingChanges' entries."
 
-    breaking_changes = get(metadata_definition_dict, "data.releases.breakingChanges", None)
+    breaking_changes = get(metadata_definition_dict, "data.releases.breakingChanges")
     if image_tag not in breaking_changes.keys():
         return False, f"Major version {image_tag} needs a 'releases.breakingChanges' entry indicating what changed."
 
