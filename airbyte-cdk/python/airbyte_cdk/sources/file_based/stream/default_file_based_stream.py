@@ -85,7 +85,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                         logging.warning(f"Record did not pass validation policy: {record}")
                         continue
                     yield stream_data_to_airbyte_message(self.name, record)
-                self._state.add_file(file) #FIXME this is in the wrong indentation!
+                self._state.add_file(file)
             except Exception as exc:
                 raise RecordParseError(
                     f"Error reading records from file: {file_description['uri']}. Is the file valid {self.config.file_type}?"
