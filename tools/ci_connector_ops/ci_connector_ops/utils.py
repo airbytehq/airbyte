@@ -208,7 +208,7 @@ class Connector:
 
     @property
     def migration_guide_file_path(self) -> Path:
-        migration_guide_file_name = f"{self.name}.migrations.md"
+        migration_guide_file_name = f"{self.name}-migrations.md"
         return self.documentation_directory / migration_guide_file_name
 
     @property
