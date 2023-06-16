@@ -23,5 +23,10 @@ data:
       enabled: true
       dockerRepository: airbyte/image-exists-4
       dockerImageTag: 0.0.1-exists
+  releases:
+    breakingChanges:
+      1.0.0-exists:
+        upgradeDeadline: 2023-08-22
+        message: "This version made a change."
   tags:
     - language:java

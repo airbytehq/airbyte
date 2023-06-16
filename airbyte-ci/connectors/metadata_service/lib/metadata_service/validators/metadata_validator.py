@@ -9,17 +9,6 @@ from pydash.objects import get
 ValidationResult = Tuple[bool, Optional[Union[ValidationError, str]]]
 
 
-def validate_images_are_in_dockerhub(images_to_check: List[Tuple[str, str]], extra_error_info: Optional[str] = "") -> ValidationResult:
-    """Ensure that all images exist in DockerHub."""
-    print(f"Checking that the following images are on dockerhub: {images_to_check}")
-
-    for image, version in images_to_check:
-        if not is_image_on_docker_hub(image, version):
-            return False, f"Image {image}:{version} does not exist in DockerHub. {extra_error_info}"
-
-    return True, None
-
-
 def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
     metadata_definition_dict = metadata_definition.dict()
     base_docker_image = get(metadata_definition_dict, "data.dockerRepository")
@@ -34,34 +23,25 @@ def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadata
     normalization_docker_image = get(metadata_definition_dict, "data.normalizationConfig.normalizationRepository", None)
     normalization_docker_version = get(metadata_definition_dict, "data.normalizationConfig.normalizationTag", None)
 
+    breaking_change_versions = get(metadata_definition_dict, "data.releases.breakingChanges", {}).keys()
+
     possible_docker_images = [
         (base_docker_image, base_docker_version),
         (oss_docker_image, oss_docker_version),
         (cloud_docker_image, cloud_docker_version),
         (normalization_docker_image, normalization_docker_version),
     ]
+    possible_docker_images.extend([(base_docker_image, version) for version in breaking_change_versions])
 
     # Filter out tuples with None and remove duplicates
     images_to_check = list(set(filter(lambda x: None not in x, possible_docker_images)))
-    return validate_images_are_in_dockerhub(images_to_check)
+    print(f"Checking that the following images are on dockerhub: {images_to_check}")
 
+    for image, version in images_to_check:
+        if not is_image_on_docker_hub(image, version):
+            return False, f"Image {image}:{version} does not exist in DockerHub"
 
-def validate_breaking_change_images_in_dockerhub(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
-    """Ensure that all versions referenced in breakingChanges exist as images in DockerHub."""
-    metadata_definition_dict = metadata_definition.dict()
-    releases = get(metadata_definition_dict, "data.releases")
-    if not releases:
-        return True, None
-
-    base_docker_image = get(metadata_definition_dict, "data.dockerRepository")
-    images_to_check = []
-    for version in releases.keys():
-        images_to_check.append((base_docker_image, version))
-
-    return validate_images_are_in_dockerhub(
-        images_to_check,
-        "This non-existent image was referenced in a releases.breakingChanges entry."
-    )
+    return True, None
 
 
 def validate_at_least_one_langauge_tag(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
