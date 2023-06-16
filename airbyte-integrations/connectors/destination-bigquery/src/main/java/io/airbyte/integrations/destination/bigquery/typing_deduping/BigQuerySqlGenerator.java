@@ -26,6 +26,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   public static final String QUOTE = "`";
   private static final BigQuerySQLNameTransformer nameTransformer = new BigQuerySQLNameTransformer();
 
+  private final ColumnId CDC_DELETED_AT_COLUMN = buildColumnId("_ab_cdc_deleted_at");
+
   @Override
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
     return new StreamId(
@@ -198,7 +200,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     String dedupFinalTable = "";
     String dedupRawTable = "";
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
+      dedupRawTable = dedupRawTable(stream.id(), finalSuffix, stream.columns());
       // If we're in dedup mode, then we must have a cursor
       dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor().get(), stream.columns());
     }
@@ -363,7 +365,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
   }
 
   @VisibleForTesting
-  String dedupRawTable(final StreamId id, final String finalSuffix) {
+  String dedupRawTable(final StreamId id, final String finalSuffix, LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> streamColumns) {
     /*
      * Note that we need to keep the deletion raw records because of how async syncs work. Consider this sequence of source events:
      * 1. Insert record id=1
@@ -379,12 +381,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
      * propagate them as hard deletes to the final table. As a result, we need to keep the deletion in the raw table, so that a late-arriving update
      * doesn't incorrectly reinsert the final record.
      */
+    String cdcDeletedAtClause;
+    if (streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
+      cdcDeletedAtClause = "AND JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL";
+    } else {
+      cdcDeletedAtClause = "";
+    }
+
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(finalSuffix, QUOTE)
+        "final_table_id", id.finalTableId(finalSuffix, QUOTE),
+        "cdc_deleted_at_clause", cdcDeletedAtClause
     )).replace(
-        // TODO remove the deleted_at clause if we don't have the cdc columns
-        // TODO do a row_number thing to wipe out old deleted records, maybe? (sounds annoying, maybe we just don't care)
+        // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it would be painful,
+        // and it only matters in a few edge cases.
         """
               DELETE FROM
                 ${raw_table_id}
@@ -392,8 +402,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
                 `_airbyte_raw_id` NOT IN (
                   SELECT `_airbyte_raw_id` FROM ${final_table_id}
                 )
-                AND
-                JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
+                ${cdc_deleted_at_clause}
               ;"""
     );
   }

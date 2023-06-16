@@ -31,6 +31,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,7 +106,11 @@ public class BigQuerySqlGeneratorIntegrationTest {
     // In practice, the final table would be testDataset.users, and the raw table would be airbyte.testDataset_users.
     streamId = new StreamId(testDataset, "users_final", testDataset, "users_raw", testDataset, "users_final");
     LOGGER.info("Running in dataset {}", testDataset);
-    bq.create(DatasetInfo.newBuilder(testDataset).build());
+
+    bq.create(DatasetInfo.newBuilder(testDataset)
+        // This unfortunately doesn't delete the actual dataset after 3 days, but at least we can clear out the tables if the AfterEach is skipped.
+        .setDefaultTableLifetime(Duration.ofDays(3).toMillis())
+        .build());
   }
 
   @AfterEach
@@ -238,7 +243,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
             """)
     ).build());
 
-    final String sql = GENERATOR.dedupRawTable(streamId, "");
+    final String sql = GENERATOR.dedupRawTable(streamId, "", cdcColumns);
     LOGGER.info("Executing sql: {}", sql);
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
@@ -386,16 +391,18 @@ public class BigQuerySqlGeneratorIntegrationTest {
         )).replace("""
             -- records from a previous sync
             INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`, `_airbyte_loaded_at`) VALUES
-              (JSON'{"id": 1, "_ab_cdc_lsn": 10000, "name": "spooky ghost"}', '64f4390f-3da1-4b65-b64a-a6c67497f18d', '2022-12-31T00:00:00Z', '2022-12-31T00:00:01Z');
+              (JSON'{"id": 1, "_ab_cdc_lsn": 10000, "name": "spooky ghost"}', '64f4390f-3da1-4b65-b64a-a6c67497f18d', '2022-12-31T00:00:00Z', '2022-12-31T00:00:01Z'),
+              (JSON'{"id": 0, "_ab_cdc_lsn": 9999, "name": "zombie", "_ab_cdc_deleted_at": "2022-12-31T00:O0:00Z"}', generate_uuid(), '2022-12-31T00:00:00Z', '2022-12-31T00:00:01Z');
             INSERT INTO ${dataset}.users_final (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, id, _ab_cdc_lsn, name, address, age) values
               ('64f4390f-3da1-4b65-b64a-a6c67497f18d', '2022-12-31T00:00:00Z', JSON'{}', 1, 1000, 'spooky ghost', NULL, NULL);
-                        
+            
             -- new records from the current sync
             INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-              (JSON'{"id": 2, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}, "age": 42, "_ab_cdc_lsn": 10001}', 'd7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z'),
-              (JSON'{"id": 2, "name": "Alice", "address": {"city": "San Diego", "state": "CA"}, "age": 84, "_ab_cdc_lsn": 10002}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z'),
-              (JSON'{"id": 3, "name": "Bob", "age": "oops", "_ab_cdc_lsn": 10003}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z'),
-              (JSON'{"id": 1, "_ab_cdc_lsn": 10004, "_ab_cdc_deleted_at": "2022-12-31T23:59:59Z"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
+              (JSON'{"id": 2, "_ab_cdc_lsn": 10001, "name": "alice"}', generate_uuid(), '2023-01-01T00:00:00Z'),
+              (JSON'{"id": 2, "_ab_cdc_lsn": 10002, "name": "alice2"}', generate_uuid(), '2023-01-01T00:00:00Z'),
+              (JSON'{"id": 3, "_ab_cdc_lsn": 10003, "name": "bob"}', generate_uuid(), '2023-01-01T00:00:00Z'),
+              (JSON'{"id": 1, "_ab_cdc_lsn": 10004, "_ab_cdc_deleted_at": "2022-12-31T23:59:59Z"}', generate_uuid(), '2023-01-01T00:00:00Z'),
+              (JSON'{"id": 0, "_ab_cdc_lsn": 10005, "name": "zombie_returned"}', generate_uuid(), '2023-01-01T00:00:00Z');
             """)
     ).build());
 
@@ -405,9 +412,16 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
     // TODO
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
-    assertEquals(2, finalRows);
+    assertEquals(3, finalRows);
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
-    assertEquals(3, rawRows);
+    /*
+     * Explanation:
+     * id=0 has two raw records (the old deletion record + zombie_returned)
+     * id=1 has one raw record (the new deletion record; the old raw record was deleted)
+     * id=2 has one raw record (the newer alice2 record)
+     * id=3 has one raw record
+     */
+    assertEquals(5, rawRows);
     final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
         "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
     assertEquals(0, rawUntypedRows);
