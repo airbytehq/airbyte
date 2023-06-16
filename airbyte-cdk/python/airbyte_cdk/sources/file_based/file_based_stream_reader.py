@@ -30,11 +30,9 @@ class AbstractFileBasedStreamReader(BaseModel):
     def list_matching_files(
         self,
         globs: List[str],
-        from_date: Optional[datetime] = None,
     ) -> List[RemoteFile]:
         """
-        Return all files that match any of the globs. If a from_date provided,
-        return only files last modified after that date.
+        Return all files that match any of the globs.
 
         Example:
 

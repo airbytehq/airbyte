@@ -143,12 +143,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         Only sync files newer than (3?) days,  
         or equal to or newer than the oldest file(s) recorded in the history
         """
-        state_datetime = self._state.get_start_time()
-        if state_datetime:
-            start_datetime = state_datetime
-        else:
-            start_datetime = datetime.min
-        all_files = self._stream_reader.list_matching_files(self.config.globs, start_datetime)
+        all_files = self._stream_reader.list_matching_files(self.config.globs)
         return self._state.get_files_to_sync(all_files)
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
