@@ -29,7 +29,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         super().__init__(**kwargs)
         # FIXME: move ot a policy or something
         self._state = {"cursor_value": time.min.strftime("%Y-%m-%dT%H:%M:%S.%fZ")}  # Should be something like min?
-        self._state.setdefault("history", {})
+        self._state.setdefault("history", {}) # this feels silly
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -53,10 +53,18 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         # FIXME: Should probably be in a policy
+        # Step 1: Get all files that match a glob (no filtering yet)
+        # Step 2: Filter out files that have already been processed
+        # FIXME: We also need to check in the history
         all_files = [{"uri": f.uri,
                       "last_modified": f.last_modified,
                       "file_type": f.file_type} for f in self.list_files_for_this_sync(stream_state)]
-        ret = [{"files": list(group[1])} for group in itertools.groupby(all_files, lambda f: f['last_modified'])]
+
+        #FIXME: should the filtering be done in list_files_for_this_sync?
+        logging.warning(f"stream_state: {stream_state}")
+        new_files = [f for f in all_files if (not stream_state or f["uri"] not in stream_state["history"])]
+
+        ret = [{"files": list(group[1])} for group in itertools.groupby(new_files, lambda f: f['last_modified'])]
         logging.warning(f"stream_slices: {ret}")
         return ret
 

@@ -21,8 +21,21 @@ from unit_tests.sources.file_based.scenarios.csv_incremental_scenarios import (
     single_csv_input_state_is_later_scenario,
     multi_csv_same_timestamp_scenario,
     multi_csv_different_timestamps_scenario,
-    mulit_csv_per_timestamp_scenario
+    mulit_csv_per_timestamp_scenario,
+    multi_csv_skip_file_if_already_in_history
 )
+
+# FIXME: Not yet supported
+# - Filter out files that do not match the glob
+# - Partition by glob
+# - Is there any way to support concurrent reads at the partition level?
+# -- I think we can. It's just a slice.
+# - Add the cursor column to the records
+# - Using the history to filtering out files
+# - Removing old files from the history
+# - warning if the size of the state is too large
+# -  Tests verify that we sync any new files that have shown up between the timestamps in the history key, if the history key does not exceed the maximum size.
+# - Support and User-facing documentation is created describing the new contract for incremental syncs.
 
 scenarios = [
     invalid_csv_scenario,
@@ -34,7 +47,8 @@ scenarios = [
     single_csv_input_state_is_later_scenario,
     multi_csv_same_timestamp_scenario,
     multi_csv_different_timestamps_scenario,
-    mulit_csv_per_timestamp_scenario
+    mulit_csv_per_timestamp_scenario,
+    multi_csv_skip_file_if_already_in_history
 ]
 
 

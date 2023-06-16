@@ -53,7 +53,7 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
             RemoteFile(f, datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"), self.file_type)
             for f, data in self.files.items()
         ]
-        return [f for f in matching_files if (not from_date or f.last_modified > from_date)] # Maybe >= ?
+        return [f for f in matching_files if (not from_date or f.last_modified >= from_date)] # How far back we do we want to go?
 
     def open_file(self, file: RemoteFile) -> IOBase:
         return io.StringIO(self._make_file_contents(file.uri))
