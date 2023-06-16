@@ -50,7 +50,9 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
     ) -> List[RemoteFile]:
         logging.warning(f"from_date: {from_date}")
         matching_files = [
-            RemoteFile(f, datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"), self.file_type)
+            RemoteFile(uri=f,
+                       last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"),
+                       file_type=self.file_type)
             for f, data in self.files.items()
         ]
         return [f for f in matching_files]
