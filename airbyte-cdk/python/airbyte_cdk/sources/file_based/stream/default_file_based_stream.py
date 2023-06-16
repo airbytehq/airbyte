@@ -167,14 +167,19 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         if not stream_state:
             return None
         else:
-            #if stream_state.get("incomplete_history"):
-            #    logging.warning(f"History is incomplete for {self.name}")
-            #    return datetime.now() - timedelta(days=3)
+            if stream_state.get("incomplete_history"):
+                logging.warning(f"History is incomplete for {self.name}")
+                time_window = datetime.now() - timedelta(days=3)
             history = stream_state.get("history", {})
             logging.warning(f"history: {history}")
             logging.warning(f"history size: {len(history)}")
             earliest = min(history.values())
-            return datetime.strptime(earliest, "%Y-%m-%dT%H:%M:%S.%fZ")
+            earliest_dt = datetime.strptime(earliest, "%Y-%m-%dT%H:%M:%S.%fZ")
+            if stream_state.get("incomplete_history"):
+                logging.warning(f"History is incomplete for {self.name}")
+                time_window = datetime.now() - timedelta(days=3)
+                earliest_dt = min(earliest_dt, time_window)
+            return earliest_dt
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()

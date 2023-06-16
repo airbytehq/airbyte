@@ -28,6 +28,7 @@ from unit_tests.sources.file_based.scenarios.csv_incremental_scenarios import (
     multi_csv_remove_old_files_if_history_is_full_scenario,
     multi_csv_same_timestamp_more_files_than_history_size_scenario,
     multi_csv_sync_recent_files_if_history_is_incomplete_scenario,
+    multi_csv_sync_recent_files_if_history_is_incomplete__different_timestamps_scenario,
 )
 
 # FIXME: Not yet supported
@@ -60,6 +61,7 @@ scenarios = [
     multi_csv_remove_old_files_if_history_is_full_scenario,
     multi_csv_same_timestamp_more_files_than_history_size_scenario,
     multi_csv_sync_recent_files_if_history_is_incomplete_scenario,
+    multi_csv_sync_recent_files_if_history_is_incomplete__different_timestamps_scenario,
 ]
 
 
@@ -90,7 +92,7 @@ def test_read(capsys, tmp_path, json_spec, scenario):
 
 
 @pytest.mark.parametrize("scenario", scenarios, ids=[s.name for s in scenarios])
-@freeze_time("2023-06-10T00:00:00Z")
+@freeze_time("2023-06-09T00:00:00Z")
 def test_read_incremental(capsys, tmp_path, json_spec, scenario):
     if scenario.incremental_scenario_config:
         if scenario.expected_read_error:
