@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.gcs.util;
 
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import javax.annotation.Nullable;
 import org.apache.avro.LogicalTypes;
@@ -31,13 +32,12 @@ public class GcsUtils {
     if (stdNamespace != null) {
       builder = builder.namespace(stdNamespace);
     }
-    // TODO: add hook
-    if (true) {
+    if (TypingAndDedupingFlag.isDestinationV2()) {
       builder.namespace("airbyte");
     }
 
     SchemaBuilder.FieldAssembler<Schema> assembler = builder.fields();
-    if (true) {
+    if (TypingAndDedupingFlag.isDestinationV2()) {
       if (appendAirbyteFields) {
         assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID).type(UUID_SCHEMA).noDefault();
         assembler = assembler.name(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT).type(TIMESTAMP_MILLIS_SCHEMA).noDefault();

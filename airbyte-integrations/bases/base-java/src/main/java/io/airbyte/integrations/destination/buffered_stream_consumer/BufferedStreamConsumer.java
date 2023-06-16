@@ -12,6 +12,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DefaultDestStateLifecycleManager;
 import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DestStateLifecycleManager;
 import io.airbyte.integrations.destination.record_buffer.BufferFlushType;
@@ -130,8 +131,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.onStart = onStart;
     this.onClose = onClose;
     this.catalog = catalog;
-    // TODO: real stuff
-    if (true) {
+    if (TypingAndDedupingFlag.isDestinationV2()) {
       this.streamNames = fromConfiguredCatalogAirbyteSchema(catalog);
     } else {
       this.streamNames = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
@@ -178,8 +178,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     if (message.getType() == Type.RECORD) {
       final AirbyteRecordMessage record = message.getRecord();
       final AirbyteStreamNameNamespacePair stream;
-      // TODO: make a real hook
-      if (true) {
+      if (TypingAndDedupingFlag.isDestinationV2()) {
         stream = new AirbyteStreamNameNamespacePair(record.getStream(), JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA);
       } else {
         stream = AirbyteStreamNameNamespacePair.fromRecordMessage(record);

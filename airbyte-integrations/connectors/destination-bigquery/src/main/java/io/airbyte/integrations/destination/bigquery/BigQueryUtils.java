@@ -38,7 +38,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.TypingAndDedupingFlag;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
