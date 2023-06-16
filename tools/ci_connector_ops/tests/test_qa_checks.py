@@ -255,6 +255,9 @@ def test_check_migration_guide(
     success,
     expected_in_stdout,
 ):
+    mock_documentation_directory_path = Path(tmp_path)
+    mocker.patch.object(qa_checks.Connector, "documentation_directory", mock_documentation_directory_path)
+
     mock_breaking_change_value = {
         "upgradeDeadline": "2021-01-01",
         "message": "This is a breaking change",
@@ -263,16 +266,15 @@ def test_check_migration_guide(
     # transform metadata_breaking_changes into a dictionary
     mock_breaking_change_dict = {version: mock_breaking_change_value for version in metadata_breaking_changes}
 
-    mock_metadata_dict = {"releases": {"breakingChanges": mock_breaking_change_dict}}
+    mock_metadata_dict = {"documentationUrl": tmp_path, "releases": {"breakingChanges": mock_breaking_change_dict}}
 
-    mock_migration_file = Path(tmp_path / f"{connector.name}-migrations.md")
+    mock_migration_file = mock_documentation_directory_path / f"{connector.name}-migrations.md"
     with open(mock_migration_file, "w") as f:
         f.write(f"# {title_name} Migration Guide\n")
         for version in migration_guide_breaking_changes:
             f.write(f"## Upgrading to {version}\n")
             f.write(f"{mock_breaking_change_value['message']}\n")
 
-    mocker.patch.object(qa_checks.Connector, "migration_guide_file_path", mock_migration_file)
     mocker.patch.object(qa_checks.Connector, "metadata", mock_metadata_dict)
 
     assert qa_checks.check_migration_guide(connector) == success
