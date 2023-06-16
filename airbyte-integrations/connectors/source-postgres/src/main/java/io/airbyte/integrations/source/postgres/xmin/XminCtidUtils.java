@@ -33,7 +33,7 @@ public class XminCtidUtils {
           return;
         }
         final AirbyteStateMessage clonedState = Jsons.clone(s);
-        if (streamState.has("type") && streamState.get("type").asText().equalsIgnoreCase("ctid")) {
+        if (streamState.has("state_type") && streamState.get("state_type").asText().equalsIgnoreCase("ctid")) {
           statesFromCtidSync.add(clonedState);
           streamsStillInCtidSync.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
         } else {

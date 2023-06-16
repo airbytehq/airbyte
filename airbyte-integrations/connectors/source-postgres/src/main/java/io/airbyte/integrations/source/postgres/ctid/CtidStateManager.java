@@ -15,6 +15,7 @@ import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +27,12 @@ public class CtidStateManager {
       .withType(AirbyteStateType.STREAM)
       .withStream(new AirbyteStreamState());
 
-  public CtidStateManager(final List<AirbyteStateMessage> stateMessages) {
-    this.pairToCtidStatus = createPairToCtidStatusMap(stateMessages);
+  public CtidStateManager(final List<AirbyteStateMessage> stateMessages, final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
+    this.pairToCtidStatus = createPairToCtidStatusMap(stateMessages, fileNodes);
   }
 
-  private static Map<AirbyteStreamNameNamespacePair, CtidStatus> createPairToCtidStatusMap(final List<AirbyteStateMessage> stateMessages) {
+  private static Map<AirbyteStreamNameNamespacePair, CtidStatus> createPairToCtidStatusMap(final List<AirbyteStateMessage> stateMessages,
+      final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
     final Map<AirbyteStreamNameNamespacePair, CtidStatus> localMap = new HashMap<>();
     if (stateMessages != null) {
       for (final AirbyteStateMessage stateMessage : stateMessages) {
@@ -42,15 +44,25 @@ public class CtidStateManager {
           try {
             ctidStatus = Jsons.object(stateMessage.getStream().getStreamState(), CtidStatus.class);
             assert (ctidStatus.getVersion() == CTID_STATUS_VERSION);
-            assert(ctidStatus.getStateType().equals(StateType.CTID)); // TODO: check here
+            assert (ctidStatus.getStateType().equals(StateType.CTID));
           } catch (final IllegalArgumentException e) {
             throw new ConfigErrorException("Invalid per-stream state");
           }
-          localMap.put(pair, ctidStatus);
+          if (validateRelationFileNode(ctidStatus, pair, fileNodes)) {
+            localMap.put(pair, ctidStatus);
+          }
         }
       }
     }
     return localMap;
+  }
+
+  private static boolean validateRelationFileNode(final CtidStatus ctidstatus, final AirbyteStreamNameNamespacePair pair, final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
+    if (fileNodes.containsKey(pair)) {
+      final Long fileNode = fileNodes.get(pair);
+      return Objects.equals(ctidstatus.getRelationFilenode(), fileNode);
+    }
+    return true;
   }
 
   public CtidStatus getCtidStatus(final AirbyteStreamNameNamespacePair pair) {

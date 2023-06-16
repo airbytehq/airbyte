@@ -12,9 +12,13 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,33 +99,56 @@ public class PostgresQueryUtils {
         .withStateType(StateType.XMIN);
   }
 
-  public static void logFullVacuumStatus(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog, final String quoteString) {
-    catalog.getStreams().forEach(stream -> {
+  public static Map<AirbyteStreamNameNamespacePair, Long> fileNode(final JdbcDatabase database, final List<ConfiguredAirbyteStream> streams, final String quoteString) {
+    final Map<AirbyteStreamNameNamespacePair, Long> fileNodes = new HashMap<>();
+    streams.forEach(stream -> {
+      final AirbyteStreamNameNamespacePair namespacePair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+      final long l = fileNode(database, namespacePair, quoteString);
+      fileNodes.put(namespacePair, l);
+    });
+    return fileNodes;
+  }
+
+  public static long fileNode(final JdbcDatabase database, final AirbyteStreamNameNamespacePair stream, final String quoteString) {
+    try {
+      final String streamName = stream.getName();
+      final String schemaName = stream.getNamespace();
+      final String fullTableName =
+          getFullyQualifiedTableNameWithQuoting(schemaName, streamName, quoteString);
+      final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
+          conn -> conn.prepareStatement(CTID_FULL_VACUUM_REL_FILENODE_QUERY.formatted(fullTableName)).executeQuery(),
+          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+      Preconditions.checkState(jsonNodes.size() == 1);
+      final long relationFilenode = jsonNodes.get(0).get("pg_relation_filenode").asLong();
+      LOGGER.info("Relation filenode is for stream {} is {}", fullTableName, relationFilenode);
+      return relationFilenode;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static boolean willVacuumingCauseIssue(final JdbcDatabase database, final List<ConfiguredAirbyteStream> streams, final String quoteString) {
+    final List<String> streamsUnderVacuuming = new ArrayList<>();
+    streams.forEach(stream -> {
       final String streamName = stream.getStream().getName();
       final String schemaName = stream.getStream().getNamespace();
       final String fullTableName =
           getFullyQualifiedTableNameWithQuoting(schemaName, streamName, quoteString);
-      LOGGER.info("Full Vacuum information for {}", fullTableName);
       try {
-        List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
-            conn -> conn.prepareStatement(CTID_FULL_VACUUM_REL_FILENODE_QUERY.formatted(fullTableName)).executeQuery(),
+        final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
+            conn -> conn.prepareStatement(CTID_FULL_VACUUM_IN_PROGRESS_QUERY.formatted(fullTableName)).executeQuery(),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
-        Preconditions.checkState(jsonNodes.size() == 1);
-        LOGGER.info("Relation filenode is {}", jsonNodes.get(0).get("pg_relation_filenode"));
-
-        jsonNodes =
-            database.bufferedResultSetQuery(conn -> conn.prepareStatement(CTID_FULL_VACUUM_IN_PROGRESS_QUERY.formatted(fullTableName)).executeQuery(),
-                resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
-        if (jsonNodes.size() == 0) {
-          LOGGER.info("No full vacuum currently in progress");
-        } else {
+        if (jsonNodes.size() != 0) {
           Preconditions.checkState(jsonNodes.size() == 1);
-          LOGGER.info("Full Vacuum currently in progress in {} phase", jsonNodes.get(0).get("phase"));
+          LOGGER.warn("Full Vacuum currently in progress for table {} in {} phase", fullTableName, jsonNodes.get(0).get("phase"));
+          streamsUnderVacuuming.add(fullTableName);
         }
       } catch (SQLException e) {
-        LOGGER.warn("Failed to log full vacuum in progress. This warning shouldn't affect the sync and can be ignored", e);
+        // Assume it's safe to progress and skip relation node and vaccuum validation
+        LOGGER.warn("Failed to fetch vacuum for table {} info. Going to move ahead with the sync assuming it's safe", fullTableName, e);
       }
     });
+    return !streamsUnderVacuuming.isEmpty();
   }
 
 }

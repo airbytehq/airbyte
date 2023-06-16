@@ -20,6 +20,8 @@ import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CU
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.ROW_COUNT_RESULT_COL;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TABLE_ESTIMATE_QUERY;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TOTAL_BYTES_RESULT_COL;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.fileNode;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.willVacuumingCauseIssue;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.isIncrementalSyncMode;
 import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.categoriseStreams;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
@@ -33,7 +35,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
@@ -74,13 +75,11 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteEstimateTraceMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -93,7 +92,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -228,7 +226,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   protected void logPreSyncDebugData(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog)
       throws SQLException {
     super.logPreSyncDebugData(database, catalog);
-    PostgresQueryUtils.logFullVacuumStatus(database, catalog, getQuoteString());
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final String streamName = stream.getStream().getName();
       final String schemaName = stream.getStream().getNamespace();
@@ -472,10 +469,17 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final List<AutoCloseableIterator<AirbyteMessage>> xminIterator = new ArrayList<>();
 
       if (!streamsCategorised.ctidStreams.streamsForCtidSync.isEmpty()) {
-        final CtidStateManager ctidStateManager = new CtidStateManager(streamsCategorised.ctidStreams.statesFromCtidSync);
-        final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(database, sourceOperations, getQuoteString(), ctidStateManager,
-            x -> new ObjectMapper().valueToTree(xminStatus),
-            (pair, jsonState) -> XminStateManager.getAirbyteStateMessage(pair, Jsons.object(jsonState, XminStatus.class)));
+        if (willVacuumingCauseIssue(database, streamsCategorised.ctidStreams.streamsForCtidSync, getQuoteString())) {
+          //TODO : should we just skip these streams instead of failing the entire sync and just LOG warning stating that we are skipping these streams
+          throw new RuntimeException("Stopping sync cause few streams are under Vacuuming, can not sync them using ctid");
+        }
+
+        final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long> fileNodes = fileNode(database,
+            streamsCategorised.ctidStreams.streamsForCtidSync, getQuoteString());
+        final CtidStateManager ctidStateManager = new CtidStateManager(streamsCategorised.ctidStreams.statesFromCtidSync, fileNodes);
+        final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database, sourceOperations, getQuoteString(), fileNodes, ctidStateManager,
+            namespacePair -> new ObjectMapper().valueToTree(xminStatus),
+            (namespacePair, jsonState) -> XminStateManager.getAirbyteStateMessage(namespacePair, Jsons.object(jsonState, XminStatus.class)));
         ctidIterator.addAll(ctidHandler.getIncrementalIterators(
             new ConfiguredAirbyteCatalog().withStreams(streamsCategorised.ctidStreams.streamsForCtidSync), tableNameToTable, emittedAt));
       }

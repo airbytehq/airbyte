@@ -10,40 +10,54 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.Iterator;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import javax.annotation.CheckForNull;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage>
-{
+public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
   private static final Logger LOGGER = LoggerFactory.getLogger(CtidStateIterator.class);
+  public static final Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(15);
+  public static final Integer SYNC_CHECKPOINT_RECORDS = 10_000;
+
+
   private final Iterator<AirbyteMessage> messageIterator;
   private final AirbyteStreamNameNamespacePair pair;
   private boolean hasEmittedFinalState;
   private boolean hasCaughtException = false;
   private String lastCtid;
   private final JsonNode streamStateForIncrementalRun;
-  final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier;
-  final AtomicLong recordCount = new AtomicLong();
+  private final long relationFileNode;
+  private final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier;
+  private long recordCount = 0L;
+  private Instant lastCheckpoint = Instant.now();
+  private final Duration syncCheckpointDuration;
+  private final Long syncCheckpointRecords;
 
   public CtidStateIterator(final Iterator<AirbyteMessage> messageIterator,
       final AirbyteStreamNameNamespacePair pair,
+      final long relationFileNode,
       final JsonNode streamStateForIncrementalRun,
-      final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier) {
+      final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier,
+      final Duration checkpointDuration,
+      final Long checkpointRecords) {
     this.messageIterator = messageIterator;
     this.pair = pair;
+    this.relationFileNode = relationFileNode;
     this.streamStateForIncrementalRun = streamStateForIncrementalRun;
     this.finalStateMessageSupplier = finalStateMessageSupplier;
+    this.syncCheckpointDuration = checkpointDuration;
+    this.syncCheckpointRecords = checkpointRecords;
   }
 
   @CheckForNull
   @Override
   protected AirbyteMessage computeNext() {
-    final long count = recordCount.incrementAndGet();
     if (hasCaughtException) {
       // Mark iterator as done since the next call to messageIterator will result in an
       // IllegalArgumentException and resets exception caught state.
@@ -54,15 +68,18 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
     }
 
     if (messageIterator.hasNext()) {
-      if (count % 1_000_000 == 0 && StringUtils.isNotBlank(lastCtid)) {
-        LOGGER.info("saving ctid state with {}", this.lastCtid);
-        //TODO (Rodi): To add relation_filenode attribute in the CtidStatus
-        return CtidStateManager.createPerStreamStateMessage(pair,
-            new CtidStatus()
-                .withVersion(CTID_STATUS_VERSION)
-                .withStateType(StateType.CTID)
-                .withCtid(lastCtid)
-                .withIncrementalState(streamStateForIncrementalRun));
+      if ((recordCount >= syncCheckpointRecords || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)
+          && StringUtils.isNotBlank(lastCtid)) {
+        final CtidStatus ctidStatus = new CtidStatus()
+            .withVersion(CTID_STATUS_VERSION)
+            .withStateType(StateType.CTID)
+            .withCtid(lastCtid)
+            .withIncrementalState(streamStateForIncrementalRun)
+            .withRelationFilenode(relationFileNode);
+        LOGGER.info("Emitting ctid state for stream {}, state is {}", pair, ctidStatus);
+        recordCount = 0L;
+        lastCheckpoint = Instant.now();
+        return CtidStateManager.createPerStreamStateMessage(pair, ctidStatus);
       }
       // Use try-catch to catch Exception that could occur when connection to the database fails
       try {
@@ -70,14 +87,10 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
         if (message.getRecord().getData().hasNonNull("ctid")) {
           this.lastCtid = message.getRecord().getData().get("ctid").asText();
         }
+        recordCount++;
         return message;
       } catch (final Exception e) {
-        hasCaughtException = true;
-        LOGGER.error("Message iterator failed to read next record.", e);
-        // We want to still continue attempting to sync future streams, so the exception is caught. When
-        // frequent state emission is introduced, this
-        // will result in a partial success.
-        return endOfData();
+        throw new RuntimeException(e);
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;

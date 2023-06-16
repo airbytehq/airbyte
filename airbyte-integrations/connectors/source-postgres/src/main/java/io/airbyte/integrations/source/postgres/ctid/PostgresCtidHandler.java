@@ -28,6 +28,7 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,22 +43,29 @@ import org.slf4j.LoggerFactory;
 public class PostgresCtidHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCtidHandler.class);
+
+  private final JsonNode config;
   private final JdbcDatabase database;
   private final JdbcCompatibleSourceOperations<?> sourceOperations;
   private final String quoteString;
   private final CtidStateManager ctidStateManager;
+  private final Map<AirbyteStreamNameNamespacePair, Long> fileNodes;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
   private final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier;
 
-  public PostgresCtidHandler(final JdbcDatabase database,
+  public PostgresCtidHandler(final JsonNode config,
+      final JdbcDatabase database,
       final JdbcCompatibleSourceOperations<?> sourceOperations,
       final String quoteString,
+      final Map<AirbyteStreamNameNamespacePair, Long> fileNodes,
       final CtidStateManager ctidStateManager,
       final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
       final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier) {
+    this.config = config;
     this.database = database;
     this.sourceOperations = sourceOperations;
     this.quoteString = quoteString;
+    this.fileNodes = fileNodes;
     this.ctidStateManager = ctidStateManager;
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
     this.finalStateMessageSupplier = finalStateMessageSupplier;
@@ -187,10 +194,18 @@ public class PostgresCtidHandler {
     final JsonNode incrementalState =
         (currentCtidStatus == null || currentCtidStatus.getIncrementalState() == null) ? streamStateForIncrementalRunSupplier.apply(pair)
             : currentCtidStatus.getIncrementalState();
+    final Long latestFileNode = fileNodes.get(pair);
+    assert latestFileNode != null;
 
+    final Duration syncCheckpointDuration =
+        config.get("sync_checkpoint_seconds") != null ? Duration.ofSeconds(config.get("sync_checkpoint_seconds").asLong())
+            : CtidStateIterator.SYNC_CHECKPOINT_DURATION;
+    final Long syncCheckpointRecords = config.get("sync_checkpoint_records") != null ? config.get("sync_checkpoint_records").asLong()
+        : CtidStateIterator.SYNC_CHECKPOINT_RECORDS;
 
     return AutoCloseableIterators.transform(
-        autoClosableIterator -> new CtidStateIterator(recordIterator, pair, incrementalState, finalStateMessageSupplier ), recordIterator, pair);
+        autoClosableIterator -> new CtidStateIterator(recordIterator, pair, latestFileNode, incrementalState, finalStateMessageSupplier,
+            syncCheckpointDuration, syncCheckpointRecords), recordIterator, pair);
   }
 
   private AutoCloseableIterator<AirbyteMessage> swallowCtid(final AutoCloseableIterator<AirbyteMessage> iterator,
