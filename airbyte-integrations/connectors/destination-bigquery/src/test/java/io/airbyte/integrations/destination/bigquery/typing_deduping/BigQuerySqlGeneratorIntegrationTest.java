@@ -52,17 +52,41 @@ import org.slf4j.LoggerFactory;
 public class BigQuerySqlGeneratorIntegrationTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest.class);
-  private final static BigQuerySqlGenerator GENERATOR = new BigQuerySqlGenerator();
+  private static final BigQuerySqlGenerator GENERATOR = new BigQuerySqlGenerator();
   public static final ColumnId CURSOR = GENERATOR.buildColumnId("updated_at");
   public static final List<ColumnId> PRIMARY_KEY = List.of(GENERATOR.buildColumnId("id"));
   public static final String QUOTE = "`";
+  private static final LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> COLUMNS;
+  private static final LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> CDC_COLUMNS;
 
   private static BigQuery bq;
-  private static LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> columns;
-  private static LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> cdcColumns;
 
   private String testDataset;
   private StreamId streamId;
+
+  static {
+    COLUMNS = new LinkedHashMap<>();
+    COLUMNS.put(GENERATOR.buildColumnId("id"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
+    COLUMNS.put(GENERATOR.buildColumnId("updated_at"), new ParsedType<>(StandardSQLTypeName.TIMESTAMP, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
+    COLUMNS.put(GENERATOR.buildColumnId("name"), new ParsedType<>(StandardSQLTypeName.STRING, AirbyteProtocolType.STRING));
+
+    LinkedHashMap<String, AirbyteType> addressProperties = new LinkedHashMap<>();
+    addressProperties.put("city", AirbyteProtocolType.STRING);
+    addressProperties.put("state", AirbyteProtocolType.STRING);
+    COLUMNS.put(GENERATOR.buildColumnId("address"), new ParsedType<>(StandardSQLTypeName.JSON, new Struct(addressProperties)));
+
+    COLUMNS.put(GENERATOR.buildColumnId("age"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
+
+    CDC_COLUMNS = new LinkedHashMap<>();
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("id"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("_ab_cdc_lsn"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("_ab_cdc_deleted_at"),
+        new ParsedType<>(StandardSQLTypeName.TIMESTAMP, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("name"), new ParsedType<>(StandardSQLTypeName.STRING, AirbyteProtocolType.STRING));
+    // This is a bit unrealistic - DB sources don't actually declare explicit properties in their JSONB columns, and JSONB isn't necessarily a Struct anyway.
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("address"), new ParsedType<>(StandardSQLTypeName.JSON, new Struct(addressProperties)));
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("age"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
+  }
 
   @BeforeAll
   public static void setup() throws Exception {
@@ -77,28 +101,6 @@ public class BigQuerySqlGeneratorIntegrationTest {
         .setHeaderProvider(BigQueryUtils.getHeaderProvider())
         .build()
         .getService();
-
-    columns = new LinkedHashMap<>();
-    columns.put(GENERATOR.buildColumnId("id"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
-    columns.put(GENERATOR.buildColumnId("updated_at"), new ParsedType<>(StandardSQLTypeName.TIMESTAMP, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
-    columns.put(GENERATOR.buildColumnId("name"), new ParsedType<>(StandardSQLTypeName.STRING, AirbyteProtocolType.STRING));
-
-    LinkedHashMap<String, AirbyteType> addressProperties = new LinkedHashMap<>();
-    addressProperties.put("city", AirbyteProtocolType.STRING);
-    addressProperties.put("state", AirbyteProtocolType.STRING);
-    columns.put(GENERATOR.buildColumnId("address"), new ParsedType<>(StandardSQLTypeName.JSON, new Struct(addressProperties)));
-
-    columns.put(GENERATOR.buildColumnId("age"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
-
-    cdcColumns = new LinkedHashMap<>();
-    cdcColumns.put(GENERATOR.buildColumnId("id"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
-    cdcColumns.put(GENERATOR.buildColumnId("_ab_cdc_lsn"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
-    cdcColumns.put(GENERATOR.buildColumnId("_ab_cdc_deleted_at"),
-        new ParsedType<>(StandardSQLTypeName.TIMESTAMP, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
-    cdcColumns.put(GENERATOR.buildColumnId("name"), new ParsedType<>(StandardSQLTypeName.STRING, AirbyteProtocolType.STRING));
-    // This is a bit unrealistic - DB sources don't actually declare explicit properties in their JSONB columns, and JSONB isn't necessarily a Struct anyway.
-    cdcColumns.put(GENERATOR.buildColumnId("address"), new ParsedType<>(StandardSQLTypeName.JSON, new Struct(addressProperties)));
-    cdcColumns.put(GENERATOR.buildColumnId("age"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
   }
 
   @BeforeEach
@@ -162,7 +164,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     ).build());
 
     // This variable is declared outside of the transaction, so we need to do it manually here
-    final String sql = "DECLARE missing_pk_count INT64;" + GENERATOR.validatePrimaryKeys(streamId, List.of(new ColumnId("id", "id", "id")), columns);
+    final String sql = "DECLARE missing_pk_count INT64;" + GENERATOR.validatePrimaryKeys(streamId, List.of(new ColumnId("id", "id", "id")), COLUMNS);
     LOGGER.info("Executing sql: {}", sql);
     final BigQueryException e = assertThrows(
         BigQueryException.class,
@@ -188,7 +190,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
             """)
     ).build());
 
-    final String sql = GENERATOR.insertNewRecords(streamId, "", columns);
+    final String sql = GENERATOR.insertNewRecords(streamId, "", COLUMNS);
     LOGGER.info("Executing sql: {}", sql);
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
@@ -217,7 +219,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
             """)
     ).build());
 
-    final String sql = GENERATOR.dedupFinalTable(streamId, "", PRIMARY_KEY, CURSOR, columns);
+    final String sql = GENERATOR.dedupFinalTable(streamId, "", PRIMARY_KEY, CURSOR, COLUMNS);
     LOGGER.info("Executing sql: {}", sql);
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
@@ -245,7 +247,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
             """)
     ).build());
 
-    final String sql = GENERATOR.dedupRawTable(streamId, "", cdcColumns);
+    final String sql = GENERATOR.dedupRawTable(streamId, "", CDC_COLUMNS);
     LOGGER.info("Executing sql: {}", sql);
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
@@ -525,7 +527,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
         DestinationSyncMode.APPEND_DEDUP,
         PRIMARY_KEY,
         Optional.of(CURSOR),
-        columns
+        COLUMNS
     );
   }
 
@@ -537,7 +539,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
         PRIMARY_KEY,
         // Much like the rest of this class - this is purely for test purposes. Real CDC cursors may not be exactly the same as this.
         Optional.of(GENERATOR.buildColumnId("_ab_cdc_lsn")),
-        cdcColumns
+        CDC_COLUMNS
     );
   }
 
@@ -548,7 +550,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
         DestinationSyncMode.APPEND,
         null,
         Optional.of(CURSOR),
-        columns
+        COLUMNS
     );
   }
 
@@ -559,7 +561,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
         DestinationSyncMode.APPEND,
         null,
         Optional.empty(),
-        columns
+        COLUMNS
     );
   }
 
@@ -570,7 +572,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
         DestinationSyncMode.OVERWRITE,
         null,
         Optional.empty(),
-        columns
+        COLUMNS
     );
   }
 
