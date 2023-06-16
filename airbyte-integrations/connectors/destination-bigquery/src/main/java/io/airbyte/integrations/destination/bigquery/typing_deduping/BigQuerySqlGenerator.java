@@ -278,6 +278,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
     ).collect(joining(",\n"));
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
+    // Note that we intentionally excluded deleted records from this insert. See dedupRawRecords for an explanation of how CDC deletes work.
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
         "final_table_id", id.finalTableId(finalSuffix, QUOTE),
@@ -327,7 +328,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
         .collect(joining(",\n "));
     final String cursorOrdering = cursor.name(QUOTE) + " DESC,";
 
-    // TODO can the CDC deletes just use the final table deleted_at column? (this would allow us to delete deleted records from the raw table also)
+    // See dedupRawTable for an explanation of why we delete records using the raw data rather than the final table's _ab_cdc_deleted_at column.
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
         "final_table_id", id.finalTableId(finalSuffix, QUOTE),
@@ -360,6 +361,21 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
 
   @VisibleForTesting
   String dedupRawTable(final StreamId id, final String finalSuffix) {
+    /*
+     * Note that we need to keep the deletion raw records because of how async syncs work. Consider this sequence of source events:
+     * 1. Insert record id=1
+     * 2. Update record id=1
+     * 3. Delete record id=1
+     *
+     * It's possible for the destination to receive them out of order, e.g.:
+     * 1. Insert
+     * 2. Delete
+     * 3. Update
+     *
+     * We can generally resolve this using the cursor column (e.g. multiple updates in the wrong order). However, deletions are special because we
+     * propagate them as hard deletes to the final table. As a result, we need to keep the deletion in the raw table, so that a late-arriving update
+     * doesn't incorrectly reinsert the final record.
+     */
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE),
         "final_table_id", id.finalTableId(finalSuffix, QUOTE)
