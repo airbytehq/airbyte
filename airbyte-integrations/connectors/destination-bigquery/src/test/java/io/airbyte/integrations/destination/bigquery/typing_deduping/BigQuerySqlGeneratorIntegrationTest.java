@@ -125,8 +125,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
   @Test
   public void testCreateTableIncremental() throws InterruptedException {
     final String sql = GENERATOR.createTable(incrementalDedupStreamConfig(), "");
-    LOGGER.info("Executing sql: {}", sql);
-    bq.query(QueryJobConfiguration.newBuilder(sql).build());
+    logAndExecute(sql);
 
     final Table table = bq.getTable(testDataset, "users_final");
     // The table should exist
@@ -165,10 +164,9 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
     // This variable is declared outside of the transaction, so we need to do it manually here
     final String sql = "DECLARE missing_pk_count INT64;" + GENERATOR.validatePrimaryKeys(streamId, List.of(new ColumnId("id", "id", "id")), COLUMNS);
-    LOGGER.info("Executing sql: {}", sql);
     final BigQueryException e = assertThrows(
         BigQueryException.class,
-        () -> bq.query(QueryJobConfiguration.newBuilder(sql).build())
+        () -> logAndExecute(sql)
     );
 
     assertTrue(e.getError().getMessage().startsWith("Raw table has 1 rows missing a primary key at"),
@@ -191,8 +189,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     ).build());
 
     final String sql = GENERATOR.insertNewRecords(streamId, "", COLUMNS);
-    LOGGER.info("Executing sql: {}", sql);
-    bq.query(QueryJobConfiguration.newBuilder(sql).build());
+    logAndExecute(sql);
 
     // TODO more stringent asserts
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build()).getTotalRows();
@@ -220,8 +217,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     ).build());
 
     final String sql = GENERATOR.dedupFinalTable(streamId, "", PRIMARY_KEY, CURSOR, COLUMNS);
-    LOGGER.info("Executing sql: {}", sql);
-    bq.query(QueryJobConfiguration.newBuilder(sql).build());
+    logAndExecute(sql);
 
     // TODO more stringent asserts
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build()).getTotalRows();
@@ -248,8 +244,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     ).build());
 
     final String sql = GENERATOR.dedupRawTable(streamId, "", CDC_COLUMNS);
-    LOGGER.info("Executing sql: {}", sql);
-    bq.query(QueryJobConfiguration.newBuilder(sql).build());
+    logAndExecute(sql);
 
     // TODO more stringent asserts
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
@@ -270,8 +265,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     ).build());
 
     final String sql = GENERATOR.commitRawTable(streamId);
-    LOGGER.info("Executing sql: {}", sql);
-    bq.query(QueryJobConfiguration.newBuilder(sql).build());
+    logAndExecute(sql);
 
     // TODO more stringent asserts
     final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
@@ -296,8 +290,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     ).build());
 
     final String sql = GENERATOR.updateTable("_foo", incrementalDedupStreamConfig());
-    LOGGER.info("Executing sql: {}", sql);
-    bq.query(QueryJobConfiguration.newBuilder(sql).build());
+    logAndExecute(sql);
 
     // TODO
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("_foo", QUOTE)).build()).getTotalRows();
@@ -325,8 +318,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     ).build());
 
     final String sql = GENERATOR.updateTable("_foo", incrementalAppendStreamConfig());
-    LOGGER.info("Executing sql: {}", sql);
-    bq.query(QueryJobConfiguration.newBuilder(sql).build());
+    logAndExecute(sql);
 
     // TODO
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("_foo", QUOTE)).build()).getTotalRows();
@@ -359,8 +351,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     ).build());
 
     final String sql = GENERATOR.updateTable("_foo", fullRefreshAppendStreamConfig());
-    LOGGER.info("Executing sql: {}", sql);
-    bq.query(QueryJobConfiguration.newBuilder(sql).build());
+    logAndExecute(sql);
 
     // TODO
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("_foo", QUOTE)).build()).getTotalRows();
@@ -377,8 +368,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     createFinalTable("_tmp");
 
     final String sql = GENERATOR.overwriteFinalTable("_tmp", fullRefreshOverwriteStreamConfig()).get();
-    LOGGER.info("Executing sql: {}", sql);
-    bq.query(QueryJobConfiguration.newBuilder(sql).build());
+    logAndExecute(sql);
 
     final Table table = bq.getTable(testDataset, "users_final");
     // TODO this should assert table schema + partitioning/clustering configs
@@ -411,8 +401,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     ).build());
 
     final String sql = GENERATOR.updateTable("", cdcStreamConfig());
-    LOGGER.info("Executing sql: {}", sql);
-    bq.query(QueryJobConfiguration.newBuilder(sql).build());
+    logAndExecute(sql);
 
     // TODO
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
@@ -462,8 +451,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     ).build());
 
     final String sql = GENERATOR.updateTable("", cdcStreamConfig());
-    LOGGER.info("Executing sql: {}", sql);
-    bq.query(QueryJobConfiguration.newBuilder(sql).build());
+    logAndExecute(sql);
 
     // TODO better asserts
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
@@ -508,10 +496,9 @@ public class BigQuerySqlGeneratorIntegrationTest {
     ).build());
       // Run the second round of typing and deduping. This should do nothing to the final table, because the delete is outdated.
       final String sql = GENERATOR.updateTable("", cdcStreamConfig());
-      LOGGER.info("Executing sql: {}", sql);
-      bq.query(QueryJobConfiguration.newBuilder(sql).build());
+    logAndExecute(sql);
 
-      final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
       assertEquals(1, finalRows);
       final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
       assertEquals(2, rawRows);
@@ -641,5 +628,10 @@ public class BigQuerySqlGeneratorIntegrationTest {
             CLUSTER BY id, _airbyte_extracted_at;
             """)
     ).build());
+  }
+
+  private static void logAndExecute(final String sql) throws InterruptedException {
+    LOGGER.info("Executing sql: {}", sql);
+    bq.query(QueryJobConfiguration.newBuilder(sql).build());
   }
 }
