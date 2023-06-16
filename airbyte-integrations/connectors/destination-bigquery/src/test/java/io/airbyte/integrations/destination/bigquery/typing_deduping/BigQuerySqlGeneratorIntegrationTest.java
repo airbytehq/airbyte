@@ -1,5 +1,6 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
+import static com.google.cloud.bigquery.LegacySQLTypeName.legacySQLTypeName;
 import static io.airbyte.integrations.destination.bigquery.BigQueryDestination.getServiceAccountCredentials;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -12,7 +13,11 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.DatasetInfo;
+import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.Field.Mode;
+import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
 import io.airbyte.commons.json.Jsons;
@@ -41,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // TODO this proooobably belongs in test-integration?
+// TODO can we run these test methods in parallel? They're each writing to a different namespace, so there's no risk of stomping anything.
 public class BigQuerySqlGeneratorIntegrationTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest.class);
@@ -78,7 +84,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     LinkedHashMap<String, AirbyteType> addressProperties = new LinkedHashMap<>();
     addressProperties.put("city", AirbyteProtocolType.STRING);
     addressProperties.put("state", AirbyteProtocolType.STRING);
-    columns.put(GENERATOR.buildColumnId("address"), new ParsedType<>(StandardSQLTypeName.STRING, new Struct(addressProperties)));
+    columns.put(GENERATOR.buildColumnId("address"), new ParsedType<>(StandardSQLTypeName.JSON, new Struct(addressProperties)));
 
     columns.put(GENERATOR.buildColumnId("age"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
 
@@ -88,7 +94,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     cdcColumns.put(GENERATOR.buildColumnId("_ab_cdc_deleted_at"), new ParsedType<>(StandardSQLTypeName.TIMESTAMP, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
     cdcColumns.put(GENERATOR.buildColumnId("name"), new ParsedType<>(StandardSQLTypeName.STRING, AirbyteProtocolType.STRING));
     // This is a bit unrealistic - DB sources don't actually declare explicit properties in their JSONB columns, and JSONB isn't necessarily a Struct anyway.
-    cdcColumns.put(GENERATOR.buildColumnId("address"), new ParsedType<>(StandardSQLTypeName.STRING, new Struct(addressProperties)));
+    cdcColumns.put(GENERATOR.buildColumnId("address"), new ParsedType<>(StandardSQLTypeName.JSON, new Struct(addressProperties)));
     cdcColumns.put(GENERATOR.buildColumnId("age"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
   }
 
@@ -114,8 +120,25 @@ public class BigQuerySqlGeneratorIntegrationTest {
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
     final Table table = bq.getTable(testDataset, "users_final");
-    // TODO this should assert table schema + partitioning/clustering configs
+    // The table should exist
     assertNotNull(table);
+    final Schema schema = table.getDefinition().getSchema();
+    // And we should know exactly what columns it contains
+    assertEquals(
+        // Would be nice to assert directly against StandardSQLTypeName, but bigquery returns schemas of LegacySQLTypeName. So we have to translate.
+        Schema.of(
+            Field.newBuilder("_airbyte_raw_id", legacySQLTypeName(StandardSQLTypeName.STRING)).setMode(Mode.REQUIRED).build(),
+            Field.newBuilder("_airbyte_extracted_at", legacySQLTypeName(StandardSQLTypeName.TIMESTAMP)).setMode(Mode.REQUIRED).build(),
+            Field.newBuilder("_airbyte_meta", legacySQLTypeName(StandardSQLTypeName.JSON)).setMode(Mode.REQUIRED).build(),
+            Field.of("id", legacySQLTypeName(StandardSQLTypeName.INT64)),
+            Field.of("updated_at", legacySQLTypeName(StandardSQLTypeName.TIMESTAMP)),
+            Field.of("name", legacySQLTypeName(StandardSQLTypeName.STRING)),
+            Field.of("address", legacySQLTypeName(StandardSQLTypeName.JSON)),
+            Field.of("age", legacySQLTypeName(StandardSQLTypeName.INT64))
+        ),
+        schema
+    );
+    // TODO this should assert partitioning/clustering configs
   }
 
   @Test
