@@ -14,7 +14,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: "3.6.0" # new streams added: Cards, Payment Methods; no actual breaking changes; schema refactoring
+          disable_for_version: "3.8.0" # schema of invoice items changed, non breaking change
   basic_read:
     tests:
       - config_path: "secrets/config.json"
