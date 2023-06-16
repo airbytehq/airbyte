@@ -11,7 +11,7 @@ import requests
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, Type
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.exceptions import ReadException
-from airbyte_cdk.sources.declarative.incremental import Cursor, DatetimeBasedCursor
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
@@ -52,14 +52,14 @@ def test_simple_retriever_full(mock_http_stream):
     record_selector = MagicMock()
     record_selector.select_records.return_value = records
 
-    cursor = MagicMock(spec=Cursor)
+    stream_slicer = MagicMock()
     stream_slices = [{"date": "2022-01-01"}, {"date": "2022-01-02"}]
-    cursor.stream_slices.return_value = stream_slices
+    stream_slicer.stream_slices.return_value = stream_slices
 
     response = requests.Response()
 
     underlying_state = {"date": "2021-01-01"}
-    cursor.get_stream_state.return_value = underlying_state
+    stream_slicer.get_stream_state.return_value = underlying_state
 
     requester.get_authenticator.return_value = NoAuth({})
     url_base = "https://airbyte.io"
@@ -91,8 +91,7 @@ def test_simple_retriever_full(mock_http_stream):
         requester=requester,
         paginator=paginator,
         record_selector=record_selector,
-        stream_slicer=cursor,
-        cursor=cursor,
+        stream_slicer=stream_slicer,
         parameters={},
         config={},
     )
@@ -738,7 +737,7 @@ def test_read_records_updates_stream_slicer_once_if_no_records(test_name, last_r
         requester = MagicMock()
         paginator = MagicMock()
         record_selector = MagicMock()
-        cursor = MagicMock(spec=Cursor)
+        stream_slicer = MagicMock()
 
         retriever = SimpleRetriever(
             name="stream_name",
@@ -746,8 +745,7 @@ def test_read_records_updates_stream_slicer_once_if_no_records(test_name, last_r
             requester=requester,
             paginator=paginator,
             record_selector=record_selector,
-            stream_slicer=cursor,
-            cursor=cursor,
+            stream_slicer=stream_slicer,
             parameters={},
             config={},
         )
@@ -755,7 +753,7 @@ def test_read_records_updates_stream_slicer_once_if_no_records(test_name, last_r
 
         list(retriever.read_records(sync_mode=SyncMode.incremental, stream_slice={"repository": "airbyte"}))
 
-        assert cursor.update_state.call_count == expected_stream_slicer_update_count
+        assert stream_slicer.update_cursor.call_count == expected_stream_slicer_update_count
 
 
 def _generate_slices(number_of_slices):
@@ -767,8 +765,8 @@ def test_given_state_selector_when_read_records_use_slice_state(http_stream_read
     requester = MagicMock()
     paginator = MagicMock()
     record_selector = MagicMock()
-    cursor = MagicMock(spec=Cursor)
-    cursor.select_state = MagicMock(return_value=A_SLICE_STATE)
+    stream_slicer = MagicMock()
+    stream_slicer.select_state.return_value = A_SLICE_STATE
 
     retriever = SimpleRetriever(
         name="stream_name",
@@ -776,12 +774,11 @@ def test_given_state_selector_when_read_records_use_slice_state(http_stream_read
         requester=requester,
         paginator=paginator,
         record_selector=record_selector,
-        stream_slicer=cursor,
-        cursor=cursor,
+        stream_slicer=stream_slicer,
         parameters={},
         config={},
     )
-    list(retriever.read_records(SyncMode.incremental, stream_slice=A_STREAM_SLICE))
+    list(retriever.read_records(SyncMode.incremental, stream_slice=A_STREAM_SLICE, stream_state=A_STREAM_STATE))
 
     http_stream_read_pages.assert_called_once_with(retriever.parse_records, A_STREAM_SLICE, A_SLICE_STATE)
 

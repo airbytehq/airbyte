@@ -165,6 +165,43 @@ def test_substream_slicer(test_name, parent_stream_configs, expected_slices):
 
 
 @pytest.mark.parametrize(
+    "test_name, stream_slice, expected_state",
+    [
+        ("test_update_cursor_no_state_no_record", {}, {}),
+        ("test_update_cursor_with_state_single_parent", {"first_stream_id": "1234"}, {"first_stream_id": "1234"}),
+        ("test_update_cursor_with_unknown_state_field", {"unknown_stream_id": "1234"}, {}),
+        (
+            "test_update_cursor_with_state_from_both_parents",
+            {"first_stream_id": "1234", "second_stream_id": "4567"},
+            {"first_stream_id": "1234", "second_stream_id": "4567"},
+        ),
+    ],
+)
+def test_update_cursor(test_name, stream_slice, expected_state):
+    parent_stream_name_to_config = [
+        ParentStreamConfig(
+            stream=MockStream(parent_slices, data_first_parent_slice + data_second_parent_slice, "first_stream"),
+            parent_key="id",
+            partition_field="first_stream_id",
+            parameters={},
+            config={},
+        ),
+        ParentStreamConfig(
+            stream=MockStream(second_parent_stream_slice, more_records, "second_stream"),
+            parent_key="id",
+            partition_field="second_stream_id",
+            parameters={},
+            config={},
+        ),
+    ]
+
+    partition_router = SubstreamPartitionRouter(parent_stream_configs=parent_stream_name_to_config, parameters={}, config={})
+    partition_router.update_cursor(stream_slice, None)
+    updated_state = partition_router.get_stream_state()
+    assert expected_state == updated_state
+
+
+@pytest.mark.parametrize(
     "test_name, parent_stream_request_parameters, expected_req_params, expected_headers, expected_body_json, expected_body_data",
     [
         (

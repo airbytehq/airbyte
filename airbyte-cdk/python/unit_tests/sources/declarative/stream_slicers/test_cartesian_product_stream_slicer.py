@@ -70,8 +70,45 @@ from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_sli
 )
 def test_substream_slicer(test_name, stream_slicers, expected_slices):
     slicer = CartesianProductStreamSlicer(stream_slicers=stream_slicers, parameters={})
-    slices = [s for s in slicer.stream_slices(SyncMode.incremental)]
+    slices = [s for s in slicer.stream_slices(SyncMode.incremental, stream_state=None)]
     assert slices == expected_slices
+
+
+@pytest.mark.parametrize(
+    "test_name, stream_slice, expected_state",
+    [
+        ("test_update_cursor_no_state_no_record", {}, {}),
+        ("test_update_cursor_partial_state", {"owner_resource": "customer"}, {"owner_resource": "customer"}),
+        (
+            "test_update_cursor_full_state",
+            {"owner_resource": "customer", "date": "2021-01-01"},
+            {"owner_resource": "customer", "date": "2021-01-01"},
+        ),
+    ],
+)
+def test_update_cursor(test_name, stream_slice, expected_state):
+    stream_slicers = [
+        ListPartitionRouter(values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={}),
+        DatetimeBasedCursor(
+            start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", parameters={}),
+            end_datetime=MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d", parameters={}),
+            step="P1D",
+            cursor_field=InterpolatedString(string="date", parameters={}),
+            datetime_format="%Y-%m-%d",
+            cursor_granularity="P1D",
+            config={},
+            parameters={},
+        ),
+    ]
+    slicer = CartesianProductStreamSlicer(stream_slicers=stream_slicers, parameters={})
+
+    if expected_state:
+        slicer.update_cursor(stream_slice, None)
+        updated_state = slicer.get_stream_state()
+        assert expected_state == updated_state
+    else:
+        with pytest.raises(ValueError):
+            slicer.update_cursor(stream_slice, None)
 
 
 @pytest.mark.parametrize(
