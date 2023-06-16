@@ -20,3 +20,4 @@ class FileBasedStreamConfig(BaseModel):
     input_schema: Optional[Mapping[str, Any]]
     primary_key: PrimaryKeyType
     max_history_size: Optional[int]
+    days_to_sync_if_history_is_full: Optional[int]

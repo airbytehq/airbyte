@@ -30,6 +30,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         # FIXME: move ot a policy or something
         self._state = {"history": {}}
         self._max_history_size = self.config.max_history_size or 10_000
+        self._time_window_if_history_is_full = timedelta(days=(self.config.days_to_sync_if_history_is_full or 3))
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -167,9 +168,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         if not stream_state:
             return None
         else:
-            if stream_state.get("incomplete_history"):
-                logging.warning(f"History is incomplete for {self.name}")
-                time_window = datetime.now() - timedelta(days=3)
             history = stream_state.get("history", {})
             logging.warning(f"history: {history}")
             logging.warning(f"history size: {len(history)}")
@@ -177,7 +175,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             earliest_dt = datetime.strptime(earliest, "%Y-%m-%dT%H:%M:%S.%fZ")
             if stream_state.get("incomplete_history"):
                 logging.warning(f"History is incomplete for {self.name}")
-                time_window = datetime.now() - timedelta(days=3)
+                time_window = datetime.now() - self._time_window_if_history_is_full
                 earliest_dt = min(earliest_dt, time_window)
             return earliest_dt
 
