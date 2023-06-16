@@ -132,5 +132,5 @@ def test_get_files_to_sync(files, expected_files_to_sync, max_history_size, hist
 def test_compute_if_history_is_incomplete(earliest_file_in_history, expected_start_time):
     state = FileBasedState(3, timedelta(days=3))
     state.add_file(earliest_file_in_history)
-    state._state["incomplete_history"] = True
+    state._history_is_complete = False
     assert state.compute_start_time() == expected_start_time
