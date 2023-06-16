@@ -55,16 +55,11 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         # FIXME: Should probably be in a policy
         # Step 1: Get all files that match a glob (no filtering yet)
         # Step 2: Filter out files that have already been processed
-        # FIXME: We also need to check in the history
-        all_files = [{"uri": f.uri,
+        files = [{"uri": f.uri,
                       "last_modified": f.last_modified,
                       "file_type": f.file_type} for f in self.list_files_for_this_sync(stream_state)]
 
-        #FIXME: should the filtering be done in list_files_for_this_sync?
-        logging.warning(f"stream_state: {stream_state}")
-        new_files = [f for f in all_files if (not stream_state or f["uri"] not in stream_state["history"])]
-
-        ret = [{"files": list(group[1])} for group in itertools.groupby(new_files, lambda f: f['last_modified'])]
+        ret = [{"files": list(group[1])} for group in itertools.groupby(files, lambda f: f['last_modified'])]
         logging.warning(f"stream_slices: {ret}")
         return ret
 
@@ -153,7 +148,9 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         - If `stream_state.start` is non-None then remove all files with last_modified
           date before `start`
         """
-        return self._stream_reader.list_matching_files(self.config.globs, self._get_datetime_from_stream_state(stream_state))
+
+        all_files = self._stream_reader.list_matching_files(self.config.globs, self._get_datetime_from_stream_state(stream_state))
+        return [f for f in all_files if (not stream_state or f.uri not in stream_state["history"])]
 
     def _get_datetime_from_stream_state(self, stream_state: Optional[StreamState]) -> Optional[datetime]:
         return datetime.strptime(stream_state["cursor_value"], "%Y-%m-%dT%H:%M:%S.%fZ") if stream_state else None
