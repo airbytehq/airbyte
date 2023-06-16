@@ -6,7 +6,6 @@ import datetime
 import unittest
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -331,7 +330,7 @@ def test_stream_slices(
         parameters={},
     )
     cursor.set_initial_state(stream_state)
-    stream_slices = cursor.stream_slices(SyncMode.incremental)
+    stream_slices = cursor.stream_slices()
 
     assert stream_slices == expected_slices
 
@@ -339,14 +338,6 @@ def test_stream_slices(
 @pytest.mark.parametrize(
     "test_name, previous_cursor, stream_slice, last_record, expected_state",
     [
-        ("test_update_state_no_state_no_record", None, {}, None, {}),
-        (
-            "test_update_state_with_state_no_record",
-            None,
-            {"start_time": "2021-01-02T00:00:00.000000+0000"},
-            None,
-            {cursor_field: "2021-01-02T00:00:00.000000+0000"},
-        ),
         (
             "test_update_state_with_state_equals_record",
             None,
@@ -355,11 +346,11 @@ def test_stream_slices(
             {cursor_field: "2021-01-02T00:00:00.000000+0000"},
         ),
         (
-            "test_update_state_with_state_greater_than_record",
+            "test_update_state_with_slice_not_matching_record_than_use_record_cursor_field",
             None,
             {"start_time": "2021-01-03T00:00:00.000000+0000"},
             {cursor_field: "2021-01-02T00:00:00.000000+0000"},
-            {cursor_field: "2021-01-03T00:00:00.000000+0000"},
+            {cursor_field: "2021-01-02T00:00:00.000000+0000"},
         ),
         (
             "test_update_state_with_state_less_than_record",
@@ -559,7 +550,7 @@ def test_no_cursor_granularity_and_no_step_then_only_return_one_slice():
         config=config,
         parameters={},
     )
-    stream_slices = cursor.stream_slices(SyncMode.incremental)
+    stream_slices = cursor.stream_slices()
     assert stream_slices == [{"start_time": "2021-01-01", "end_time": "2023-01-01"}]
 
 
@@ -571,7 +562,7 @@ def test_no_end_datetime(mock_datetime_now):
         config=config,
         parameters={},
     )
-    stream_slices = cursor.stream_slices(SyncMode.incremental)
+    stream_slices = cursor.stream_slices()
     assert stream_slices == [{"start_time": "2021-01-01", "end_time": FAKE_NOW.strftime("%Y-%m-%d")}]
 
 

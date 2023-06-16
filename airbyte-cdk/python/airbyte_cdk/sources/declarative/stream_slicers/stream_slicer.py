@@ -6,7 +6,6 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Iterable
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.types import StreamSlice
 
@@ -23,10 +22,9 @@ class StreamSlicer(RequestOptionsProvider):
     """
 
     @abstractmethod
-    def stream_slices(self, sync_mode: SyncMode) -> Iterable[StreamSlice]:
+    def stream_slices(self) -> Iterable[StreamSlice]:
         """
         Defines stream slices
 
-        :param sync_mode: The sync mode used the read data
         :return: List of stream slices
         """

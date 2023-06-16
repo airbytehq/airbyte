@@ -7,7 +7,6 @@ from collections import ChainMap
 from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, List, Mapping, Optional
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
@@ -100,6 +99,6 @@ class CartesianProductStreamSlicer(StreamSlicer):
             )
         )
 
-    def stream_slices(self, sync_mode: SyncMode) -> Iterable[Mapping[str, Any]]:
-        sub_slices = (s.stream_slices(sync_mode) for s in self.stream_slicers)
+    def stream_slices(self) -> Iterable[Mapping[str, Any]]:
+        sub_slices = (s.stream_slices() for s in self.stream_slicers)
         return (dict(ChainMap(*a)) for a in itertools.product(*sub_slices))

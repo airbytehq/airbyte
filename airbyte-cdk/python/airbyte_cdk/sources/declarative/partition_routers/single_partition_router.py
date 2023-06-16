@@ -5,7 +5,6 @@
 from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, Mapping, Optional
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
@@ -48,5 +47,5 @@ class SinglePartitionRouter(StreamSlicer):
     ) -> Mapping[str, Any]:
         return {}
 
-    def stream_slices(self, sync_mode: SyncMode) -> Iterable[StreamSlice]:
+    def stream_slices(self) -> Iterable[StreamSlice]:
         yield dict()

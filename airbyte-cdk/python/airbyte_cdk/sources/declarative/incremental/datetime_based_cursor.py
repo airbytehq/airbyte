@@ -6,7 +6,6 @@ import datetime
 from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, Mapping, Optional, Union
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
@@ -118,14 +117,13 @@ class DatetimeBasedCursor(Cursor):
         possible_cursor_values = list(filter(lambda item: item, [last_record_value, self._cursor]))
         self._cursor = max(possible_cursor_values) if possible_cursor_values else None
 
-    def stream_slices(self, sync_mode: SyncMode) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(self) -> Iterable[Mapping[str, Any]]:
         """
         Partition the daterange into slices of size = step.
 
         The start of the window is the minimum datetime between start_datetime - lookback_window and the stream_state's datetime
         The end of the window is the minimum datetime between the start of the window and end_datetime.
 
-        :param sync_mode:
         :return:
         """
         end_datetime = self._select_best_end_datetime()

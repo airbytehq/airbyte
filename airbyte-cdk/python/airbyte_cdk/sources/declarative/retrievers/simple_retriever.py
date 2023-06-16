@@ -439,7 +439,7 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self.stream_slicer.stream_slices(sync_mode)
+        return self.stream_slicer.stream_slices()
 
     @property
     def state(self) -> MutableMapping[str, Any]:

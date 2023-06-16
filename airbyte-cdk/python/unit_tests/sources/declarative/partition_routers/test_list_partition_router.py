@@ -3,7 +3,6 @@
 #
 
 import pytest as pytest
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 
@@ -37,7 +36,7 @@ parameters = {"cursor_field": "owner_resource"}
 )
 def test_list_partition_router(test_name, partition_values, cursor_field, expected_slices):
     slicer = ListPartitionRouter(values=partition_values, cursor_field=cursor_field, config={}, parameters=parameters)
-    slices = [s for s in slicer.stream_slices(SyncMode.incremental)]
+    slices = [s for s in slicer.stream_slices()]
     assert slices == expected_slices
 
 

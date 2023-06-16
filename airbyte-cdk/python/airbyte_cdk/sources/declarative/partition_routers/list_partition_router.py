@@ -5,7 +5,6 @@
 from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -75,7 +74,7 @@ class ListPartitionRouter(StreamSlicer):
         # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
         return self._get_request_option(RequestOptionType.body_json, stream_slice)
 
-    def stream_slices(self, sync_mode: SyncMode) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(self) -> Iterable[Mapping[str, Any]]:
         return [{self.cursor_field.eval(self.config): slice_value} for slice_value in self.values]
 
     def _get_request_option(self, request_option_type: RequestOptionType, stream_slice: StreamSlice):

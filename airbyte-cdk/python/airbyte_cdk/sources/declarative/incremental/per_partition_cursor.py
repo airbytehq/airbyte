@@ -4,7 +4,6 @@
 
 from typing import Any, Callable, Iterable, Mapping, Optional, Tuple
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
@@ -31,7 +30,9 @@ class PerPartitionKeySerializer:
             all_dict = all(isinstance(item, dict) for item in to_serialize)
             any_dict = any(isinstance(item, dict) for item in to_serialize)
             if any_dict and not all_dict:
-                raise ValueError("Error trying to serialize partition key: if one dict is list, all items from list are expected to be dict")
+                raise ValueError(
+                    "Error trying to serialize partition key: if one dict is list, all items from list are expected to be dict"
+                )
 
             if all_dict:
                 yield *previous_keys, tuple([PerPartitionKeySerializer.to_partition_key(dictionary) for dictionary in to_serialize])
@@ -160,18 +161,15 @@ class PerPartitionCursor(Cursor):
         self._cursor_per_partition = {}
         self._partition_serializer = PerPartitionKeySerializer()
 
-    def stream_slices(self, sync_mode: SyncMode) -> Iterable[PerPartitionStreamSlice]:
-        """
-        We knowingly avoid using stream_state as we want PerPartitionCursor to manage its own state.
-        """
-        slices = self._partition_router.stream_slices(sync_mode)
+    def stream_slices(self) -> Iterable[PerPartitionStreamSlice]:
+        slices = self._partition_router.stream_slices()
         for partition in slices:
             cursor = self._cursor_per_partition.get(self._to_partition_key(partition))
             if not cursor:
                 cursor = self._create_cursor(self._NO_CURSOR_STATE)
                 self._cursor_per_partition[self._to_partition_key(partition)] = cursor
 
-            for cursor_slice in cursor.stream_slices(sync_mode):
+            for cursor_slice in cursor.stream_slices():
                 yield PerPartitionStreamSlice(partition, cursor_slice)
 
     def set_initial_state(self, stream_state: StreamState) -> None:

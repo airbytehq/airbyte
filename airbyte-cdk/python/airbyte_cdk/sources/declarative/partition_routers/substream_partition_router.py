@@ -103,7 +103,7 @@ class SubstreamPartitionRouter(StreamSlicer):
                         params.update({parent_config.request_option.field_name: value})
         return params
 
-    def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[StreamSlice]:
+    def stream_slices(self) -> Iterable[StreamSlice]:
         """
         Iterate over each parent stream's record and create a StreamSlice for each record.
 
@@ -125,7 +125,9 @@ class SubstreamPartitionRouter(StreamSlicer):
                 parent_stream = parent_stream_config.stream
                 parent_field = parent_stream_config.parent_key.eval(self.config)
                 stream_state_field = parent_stream_config.partition_field.eval(self.config)
-                for parent_stream_slice in parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=None):
+                for parent_stream_slice in parent_stream.stream_slices(
+                    sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None
+                ):
                     empty_parent_slice = True
                     parent_slice = parent_stream_slice
 

@@ -3,7 +3,6 @@
 #
 
 import pytest as pytest
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -70,7 +69,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_sli
 )
 def test_substream_slicer(test_name, stream_slicers, expected_slices):
     slicer = CartesianProductStreamSlicer(stream_slicers=stream_slicers, parameters={})
-    slices = [s for s in slicer.stream_slices(SyncMode.incremental)]
+    slices = [s for s in slicer.stream_slices()]
     assert slices == expected_slices
 
 
