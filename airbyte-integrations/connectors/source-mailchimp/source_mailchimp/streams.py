@@ -137,6 +137,7 @@ class Lists(IncrementalMailChimpStream):
     def path(self, **kwargs) -> str:
         return "lists"
 
+
 class ListMembers(IncrementalMailChimpStream):
     cursor_field = "last_changed"
     data_field = "members"
