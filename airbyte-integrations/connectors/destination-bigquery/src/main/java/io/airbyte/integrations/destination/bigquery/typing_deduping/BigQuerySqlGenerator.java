@@ -326,7 +326,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
         .filter(e -> primaryKey.contains(e.getKey()))
         .map(e -> extractAndCast(e.getKey(), e.getValue().airbyteType(), e.getValue().dialectType()))
         .collect(joining(",\n "));
-    final String cursorOrdering = cursor.name(QUOTE) + " DESC,";
+    final String cursorCast = extractAndCast(cursor, streamColumns.get(cursor).airbyteType(), streamColumns.get(cursor).dialectType());
 
     // See dedupRawTable for an explanation of why we delete records using the raw data rather than the final table's _ab_cdc_deleted_at column.
     return new StringSubstitutor(Map.of(
@@ -334,7 +334,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
         "final_table_id", id.finalTableId(finalSuffix, QUOTE),
         "pk_list", pkList,
         "pk_cast_list", pkCastList,
-        "cursor_ordering", cursorOrdering
+        "cursor_name", cursor.name(QUOTE),
+        "cursor_cast", cursorCast
     )).replace(
         """
             DELETE FROM ${final_table_id}
@@ -342,7 +343,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
               `_airbyte_raw_id` IN (
                 SELECT `_airbyte_raw_id` FROM (
                   SELECT `_airbyte_raw_id`, row_number() OVER (
-                    PARTITION BY ${pk_list} ORDER BY ${cursor_ordering} `_airbyte_extracted_at` DESC
+                    PARTITION BY ${pk_list} ORDER BY ${cursor_name} DESC, `_airbyte_extracted_at` DESC
                   ) as row_number FROM ${final_table_id}
                 )
                 WHERE row_number != 1
@@ -353,7 +354,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
             ${pk_cast_list}
                   )
                   FROM ${raw_table_id}
-                  WHERE JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+                  WHERE
+                    JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+                    AND ${cursor_name} < ${cursor_cast}
                 )
               );"""
     );
@@ -381,6 +384,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
         "final_table_id", id.finalTableId(finalSuffix, QUOTE)
     )).replace(
         // TODO remove the deleted_at clause if we don't have the cdc columns
+        // TODO do a row_number thing to wipe out old deleted records, maybe? (sounds annoying, maybe we just don't care)
         """
               DELETE FROM
                 ${raw_table_id}

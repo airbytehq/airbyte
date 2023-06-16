@@ -447,6 +447,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     LOGGER.info("Executing sql: {}", sql);
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
 
+    // TODO better asserts
     final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
     assertEquals(0, finalRows);
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
@@ -488,7 +489,6 @@ public class BigQuerySqlGeneratorIntegrationTest {
             """)
     ).build());
       // Run the second round of typing and deduping. This should do nothing to the final table, because the delete is outdated.
-      // But we should keep the deletion record in the raw table.
       final String sql = GENERATOR.updateTable("", cdcStreamConfig());
       LOGGER.info("Executing sql: {}", sql);
       bq.query(QueryJobConfiguration.newBuilder(sql).build());
@@ -496,7 +496,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
       final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("", QUOTE)).build()).getTotalRows();
       assertEquals(1, finalRows);
       final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
-      assertEquals(2, rawRows);
+      // TODO assert that the raw record is the alice_reinsert record
+      assertEquals(1, rawRows);
       final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
           "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
       assertEquals(0, rawUntypedRows);
