@@ -182,8 +182,7 @@ class FileStream(Stream, ABC):
             self.ab_file_name_col: {"type": "string"},
         }
         schema = self._raw_schema
-        return schema
-        #return {**schema, **extra_fields}
+        return {**schema, **extra_fields}
 
     def get_json_schema(self) -> Mapping[str, Any]:
         # note: making every non-airbyte column nullable for compatibility
