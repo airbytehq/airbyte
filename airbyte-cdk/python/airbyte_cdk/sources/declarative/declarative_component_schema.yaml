@@ -574,7 +574,6 @@ definitions:
         type: string
         interpolation_context:
           - config
-          - stream_state
         examples:
           - "created_at"
           - "{{ config['record_cursor'] }}"
@@ -628,6 +627,8 @@ definitions:
         anyOf:
           - type: string
           - "$ref": "#/definitions/MinMaxDatetime"
+        interpolation_context:
+          - config
         examples:
           - "2021-01-1T00:00:00Z"
           - "{{ now_utc() }}"
@@ -638,6 +639,8 @@ definitions:
         anyOf:
           - type: string
           - "$ref": "#/definitions/MinMaxDatetime"
+        interpolation_context:
+          - config
         examples:
           - "2020-01-1T00:00:00Z"
           - "{{ config['start_time'] }}"
@@ -656,6 +659,8 @@ definitions:
         title: Lookback Window
         description: Time interval before the start_datetime to read data for, e.g. P1M for looking back one month.
         type: string
+        interpolation_context:
+          - config
         examples:
           - "P1D"
           - "P{{ config['lookback_days'] }}D"
