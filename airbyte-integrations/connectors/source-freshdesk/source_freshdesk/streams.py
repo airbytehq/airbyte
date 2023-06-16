@@ -18,6 +18,7 @@ from requests.auth import AuthBase
 from source_freshdesk.availability_strategy import FreshdeskAvailabilityStrategy
 from source_freshdesk.utils import CallCredit
 
+
 logger = logging.getLogger("airbyte")
 
 
