@@ -1226,3 +1226,11 @@
   icon: Shein_Logo_2017.svg
   sourceType: api
   releaseStage: alpha
+- name: ShipStation
+  sourceDefinitionId: 91007e74-57b1-44f3-9b83-7c9e7a9318fd
+  dockerRepository: yuanrui2014/source-shipstation
+  dockerImageTag: 0.0.1
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/shipstation
+  icon: shipstation.svg
+  sourceType: api
+  releaseStage: alpha
