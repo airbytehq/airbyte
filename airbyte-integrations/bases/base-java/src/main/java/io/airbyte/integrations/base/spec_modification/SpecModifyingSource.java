@@ -55,4 +55,5 @@ public abstract class SpecModifyingSource implements Source {
       throws Exception {
     return source.readStreams(config, catalog, state);
   }
+
 }
