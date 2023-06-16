@@ -141,58 +141,29 @@ class ListMembers(IncrementalMailChimpStream):
     cursor_field = "last_changed"
     data_field = "members"
 
-    def __init__(self, list_id: Optional[str] = None, **kwargs):
-        super().__init__(**kwargs)
-        self.list_id = list_id
+    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
+        lists_stream = Lists(**kwargs)        
+        for list_record in lists_stream.read_records(sync_mode=SyncMode.full_refresh):
+            list_id = list_record["id"]
+            yield from super().read_records(sync_mode=SyncMode.full_refresh, stream_slice={"list_id": list_id})
 
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        stream_state = stream_state or {}
-        if self.list_id:
-            # this is a workaround to speed up SATs and enable incremental tests
-            lists = [{"id": self.list_id}]
-        else:
-            lists = Lists(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
-        for mclist in lists:
-            slice_ = {"list_id": mclist["id"]}
-            cursor_value = stream_state.get(mclist["id"], {}).get(self.cursor_field)
-            if cursor_value:
-                slice_[self.filter_field] = cursor_value
-            yield slice_
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+    def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
         list_id = stream_slice["list_id"]
         return f"lists/{list_id}/members"
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        """
-        Return the latest state by comparing the list_id and cursor value in the latest record with the stream's most recent state object
-        and returning an updated state object.
-        """
-        list_id = latest_record.get("list_id")
-        latest_cursor_value = latest_record.get(self.cursor_field)
-        current_stream_state = current_stream_state or {}
-        current_state = current_stream_state.get(list_id) if current_stream_state else None
-        if current_state:
-            current_state = current_state.get(self.cursor_field)
-        current_state_value = current_state or latest_cursor_value
-        max_value = max(current_state_value, latest_cursor_value)
-        new_value = {self.cursor_field: max_value}
 
-        current_stream_state[list_id] = new_value
-        return current_stream_state
+class GetMemberInfo(IncrementalMailChimpStream):
+    cursor_field = "last_changed"
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        try:
-            response_json = response.json()
-        except requests.exceptions.JSONDecodeError:
-            logger.error(f"Response returned with {response.status_code=}, {response.content=}")
-            response_json = {}
-        data = response_json.get(self.data_field, [])
-        for item in data:
-            for member_item in item.pop("member", []):
-                yield {**item, **member_item}
+    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
+        listmembers_stream = ListMembers(**kwargs)        
+        for list_record in listmembers_stream.read_records(sync_mode=SyncMode.full_refresh):
+            subscriber_hash = list_record["email_address"]
+            yield from super().read_records(sync_mode=SyncMode.full_refresh, stream_slice={"email_address": email_address})
+
+    def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
+        subscriber_hash = stream_slice["email_address"]
+        return f"lists/{list_id}/members/{subscriber_hash}"
 
 
 class Reports(IncrementalMailChimpStream):
@@ -201,7 +172,6 @@ class Reports(IncrementalMailChimpStream):
 
     def path(self, **kwargs) -> str:
         return "reports"
-
 
 
 class Campaigns(IncrementalMailChimpStream):
