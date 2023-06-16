@@ -141,14 +141,9 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         Specifically:
 
         - Take the output of `list_files`
-        - If `stream_slice.start` is non-None then remove all files with last_modified
-          date before `start`
+        - Remove files that have already been read in previous syncs, according to the state
         """
 
-        """
-        Only sync files newer than (3?) days,  
-        or equal to or newer than the oldest file(s) recorded in the history
-        """
         all_files = self._stream_reader.list_matching_files(self.config.globs)
         return self._state.get_files_to_sync(all_files)
 
