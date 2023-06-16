@@ -49,9 +49,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         return self.config.primary_key
 
-    def stream_slices(
-            self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+    def compute_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         # WARNING: The stream state passed here is NOT used !!!
         # FIXME: Should probably be in a policy
         # Step 1: Get all files that match a glob (no filtering yet)
@@ -62,13 +60,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
         return [{"files": list(group[1])} for group in itertools.groupby(files, lambda f: f['last_modified'])]
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        stream_state: Optional[StreamState] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+    def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:
         """
         Yield all records from all remote files in `list_files_for_this_sync`.
         """
