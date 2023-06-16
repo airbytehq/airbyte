@@ -22,17 +22,6 @@ MAJOR_VERSION_BREAKING_CHANGE_CHECK_EXCEPTIONS = [
 ]
 
 
-def validate_images_are_in_dockerhub(images_to_check: List[Tuple[str, str]], extra_error_info: Optional[str] = "") -> ValidationResult:
-    """Ensure that all images exist in DockerHub."""
-    print(f"Checking that the following images are on dockerhub: {images_to_check}")
-
-    for image, version in images_to_check:
-        if not is_image_on_docker_hub(image, version):
-            return False, f"Image {image}:{version} does not exist in DockerHub. {extra_error_info}"
-
-    return True, None
-
-
 def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
     metadata_definition_dict = metadata_definition.dict()
     base_docker_image = get(metadata_definition_dict, "data.dockerRepository")
@@ -56,24 +45,14 @@ def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadata
 
     # Filter out tuples with None and remove duplicates
     images_to_check = list(set(filter(lambda x: None not in x, possible_docker_images)))
-    return validate_images_are_in_dockerhub(images_to_check)
 
+    print(f"Checking that the following images are on dockerhub: {images_to_check}")
 
-def validate_breaking_change_images_in_dockerhub(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
-    metadata_definition_dict = metadata_definition.dict()
-    releases = get(metadata_definition_dict, "data.releases")
-    if not releases:
-        return True, None
+    for image, version in images_to_check:
+        if not is_image_on_docker_hub(image, version):
+            return False, f"Image {image}:{version} does not exist in DockerHub."
 
-    base_docker_image = get(metadata_definition_dict, "data.dockerRepository")
-    images_to_check = []
-    for version in releases.keys():
-        images_to_check.append((base_docker_image, version))
-
-    return validate_images_are_in_dockerhub(
-        images_to_check,
-        "This non-existent image was referenced in a releases.breakingChanges entry."
-    )
+    return True, None
 
 
 def validate_at_least_one_langauge_tag(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
@@ -130,21 +109,6 @@ def pre_upload_validations(metadata_definition: ConnectorMetadataDefinitionV0) -
         validate_all_tags_are_keyvalue_pairs,
         validate_at_least_one_langauge_tag,
         validate_major_version_has_breaking_change_entry,
-    ]
-
-    for validation in validations:
-        valid, error = validation(metadata_definition)
-        if not valid:
-            return False, error
-
-    return True, None
-
-def post_upload_validations(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
-    """
-    Runs all validations that should be run after uploading a connector to the registry.
-    """
-    validations = [
-        validate_breaking_change_images_in_dockerhub,
     ]
 
     for validation in validations:
