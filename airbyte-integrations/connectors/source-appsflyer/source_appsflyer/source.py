@@ -32,6 +32,7 @@ def parse_date(date: Any, timezone: Timezone) -> datetime:
 
 # Basic full refresh stream
 class AppsflyerStream(HttpStream, ABC):
+    raise_on_http_errors = False
     primary_key = None
     main_fields = ()
     additional_fields = ()
@@ -109,12 +110,21 @@ class AppsflyerStream(HttpStream, ABC):
 
         return is_bad_request and is_template_match
 
+    def is_current_plan_not_supported(self, response: requests.Response) -> bool:
+        template = "Your current subscription package doesn't include"
+        is_bad_request = response.status_code == HTTPStatus.BAD_REQUEST
+        is_template_match = template in response.text
+
+        return is_bad_request and is_template_match
+
     def should_retry(self, response: requests.Response) -> bool:
         is_aggregate_reports_reached_limit = self.is_aggregate_reports_reached_limit(response)
         is_raw_data_reports_reached_limit = self.is_raw_data_reports_reached_limit(response)
-        is_app_event_report_limit_reached = self.is_app_event_report_limit_reached(response)
-
-        is_rejected = is_aggregate_reports_reached_limit or is_raw_data_reports_reached_limit or is_app_event_report_limit_reached
+        if self.is_app_event_report_limit_reached(response) or self.is_current_plan_not_supported(response):
+            setattr(self, "raise_on_http_errors", False)
+            self.logger.warn(f"Error response received : {response.text},{response.status_code} ")
+            return False
+        is_rejected = is_aggregate_reports_reached_limit or is_raw_data_reports_reached_limit
         return is_rejected or super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
@@ -325,23 +335,17 @@ class SourceAppsflyer(AbstractSource):
             api_token = config["api_token"]
             dates = pendulum.now("UTC").to_date_string()
             test_url = f"https://hq1.appsflyer.com/api/agg-data/export/app/{app_id}/partners_report/v5?from={dates}&to={dates}"
-            test_url_2 = f"https://hq1.appsflyer.com/api/raw-data/export/app/{app_id}/in_app_events_report/v5?from={dates}&to={dates}"
+
             headers = {"accept": "text/csv", "authorization": f"Bearer {api_token}"}
             response = requests.request("GET", url=test_url, headers=headers)
 
             if response.status_code != 200:
+                if "Limit reached for " in response.text:
+                    return True, None
                 error_message = "The supplied APP ID is invalid" if response.status_code == 404 else response.text.rstrip("\n")
                 if error_message:
                     return False, error_message
                 response.raise_for_status()
-
-            response2 = requests.request("GET", url=test_url_2, headers=headers)
-
-            if response2.status_code != 200:
-                error_message = "The supplied APP ID is invalid" if response2.status_code == 404 else response2.text.rstrip("\n")
-                if error_message:
-                    return False, error_message
-                response2.raise_for_status()
         except Exception as e:
             return False, e
 
