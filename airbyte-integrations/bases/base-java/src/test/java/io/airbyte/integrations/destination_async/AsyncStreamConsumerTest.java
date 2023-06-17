@@ -37,6 +37,8 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -162,7 +164,6 @@ class AsyncStreamConsumerTest {
   @Test
   void testShouldBlockWhenQueuesAreFull() throws Exception {
     consumer.start();
-
   }
 
   /*
@@ -214,6 +215,32 @@ class AsyncStreamConsumerTest {
     executor.shutdownNow();
 
     assertTrue(recordCount.get() < 1000, String.format("Record count was %s", recordCount.get()));
+  }
+
+  @Test
+  void deserializeAirbyteMessageWithAirbyteRecord() {
+    final JsonNode payload = Jsons.jsonNode(Map.of(
+        "created_at", "2022-02-01T17:02:19+00:00",
+        "id", 1,
+        "make", "Mazda",
+        "nested_column", Map.of("array_column", List.of(1, 2, 3))));
+    final AirbyteMessage airbyteMessage = new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(STREAM_NAME)
+            .withNamespace(SCHEMA_NAME)
+            .withData(payload));
+    final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
+    final String airbyteRecordString = Jsons.serialize(payload);
+    final Optional<PartialAirbyteMessage> partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
+    assertEquals(airbyteRecordString, partial.get().getSerialized());
+  }
+
+  @Test
+  void deserializeAirbyteMessageWithAirbyteState() {
+    final String serializedAirbyteMessage = Jsons.serialize(STATE_MESSAGE1);
+    final Optional<PartialAirbyteMessage> partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
+    assertEquals(serializedAirbyteMessage, partial.get().getSerialized());
   }
 
   @Nested
