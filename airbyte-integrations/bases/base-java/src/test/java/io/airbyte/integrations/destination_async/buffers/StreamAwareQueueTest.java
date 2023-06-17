@@ -32,7 +32,8 @@ public class StreamAwareQueueTest {
     queue.take();
 
     assertEquals(0, queue.getCurrentMemoryUsage());
-    assertNotNull(queue.getTimeOfLastMessage().orElse(null));
+    // This should be null because the queue is empty
+    assertNull(queue.getTimeOfLastMessage().orElse(null));
   }
 
 }
