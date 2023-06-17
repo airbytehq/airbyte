@@ -55,6 +55,9 @@
     "name": {
       "type": ["null", "string"]
     },
+    "rounded_corners": {
+      "type": ["null", "string"]
+    },
     "screens": {
       "type": ["null", "object"],
       "properties": {
@@ -67,6 +70,12 @@
       }
     },
     "visibility": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
       "type": ["null", "string"]
     }
   },

@@ -7,6 +7,15 @@
     "type": {
       "type": ["null", "string"]
     },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "last_updated_at": {
+      "type": ["null", "string"]
+    },
+    "published_at": {
+      "type": ["null", "string"]
+    },
     "title": {
       "type": ["null", "string"]
     },
