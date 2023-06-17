@@ -57,13 +57,13 @@
           {
             "title": "Private Token",
             "type": "object",
-            "required": ["access_token"],
+            "required": ["token"],
             "properties": {
               "auth_type": {
                 "type": "string",
                 "const": "access_token"
               },
-              "access_token": {
+              "token": {
                 "type": "string",
                 "title": "Private Token",
                 "description": "Log into your Typeform account and then generate a personal Access Token.",

@@ -248,8 +248,8 @@ class Themes(PaginatedStream):
 
 class SourceTypeform(AbstractSource):
     def get_auth(self, config: MutableMapping) -> AuthBase:
-        if config.get("access_token"):
-            return TokenAuthenticator(token=config["access_token"])
+        if config.get("token"):
+            return TokenAuthenticator(token=config["token"])
         return SingleUseRefreshTokenOauth2Authenticator(
             config, token_refresh_endpoint="https://api.typeform.com/oauth/token"
         )
@@ -260,7 +260,7 @@ class SourceTypeform(AbstractSource):
             if config.get("credentials"):
                 token = config["credentials"]["access_token"]
             else:
-                token = config["access_token"]
+                token = config["token"]
             # verify if form inputted by user is valid
             try:
                 url = urlparse.urljoin(TypeformStream.url_base, "me")
