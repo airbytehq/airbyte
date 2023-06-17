@@ -629,6 +629,7 @@ class UserConversations(TwilioNestedStream):
     url_base = TWILIO_CONVERSATIONS_URL_BASE
     uri_from_subresource = False
     data_field = "conversations"
+    primary_key = ["account_sid"]
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs):
         return f"Users/{stream_slice['user_sid']}/Conversations"
