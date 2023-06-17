@@ -17,6 +17,9 @@
     "state": {
       "type": ["null", "string"]
     },
+    "membership_state": {
+      "type": ["null", "string"]
+    },
     "avatar_url": {
       "type": ["null", "string"]
     },
@@ -32,7 +35,27 @@
     },
     "expires_at": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
+    },
+    "created_by": {
+      "avatar_url": {
+        "type": ["null", "string"]
+      },
+      "id": {
+        "type": ["null", "integer"]
+      },
+      "name": {
+        "type": ["null", "string"]
+      },
+      "state": {
+        "type": ["null", "string"]
+      },
+      "username": {
+        "type": ["null", "string"]
+      },
+      "web_url": {
+        "type": ["null", "string"]
+      }
     }
   }
 }
