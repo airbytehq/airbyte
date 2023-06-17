@@ -35,7 +35,9 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -114,7 +117,7 @@ class AsyncStreamConsumerTest {
 
   @Test
   void test1StreamWith1State() throws Exception {
-    final List<PartialAirbyteMessage> expectedRecords = generateRecords(1_000);
+    final List<AirbyteMessage> expectedRecords = generateRecords(1_000);
 
     consumer.start();
     consumeRecords(consumer, expectedRecords);
@@ -130,7 +133,7 @@ class AsyncStreamConsumerTest {
 
   @Test
   void test1StreamWith2State() throws Exception {
-    final List<PartialAirbyteMessage> expectedRecords = generateRecords(1_000);
+    final List<AirbyteMessage> expectedRecords = generateRecords(1_000);
 
     consumer.start();
     consumeRecords(consumer, expectedRecords);
@@ -147,15 +150,15 @@ class AsyncStreamConsumerTest {
 
   @Test
   void test1StreamWith0State() throws Exception {
-    final List<PartialAirbyteMessage> expectedRecords = generateRecords(1_000);
+    final List<AirbyteMessage> allRecords = generateRecords(1_000);
 
     consumer.start();
-    consumeRecords(consumer, expectedRecords);
+    consumeRecords(consumer, allRecords);
     consumer.close();
 
     verifyStartAndClose();
 
-    verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecords);
+    verifyRecords(STREAM_NAME, SCHEMA_NAME, allRecords);
   }
 
   @Test
@@ -246,10 +249,10 @@ class AsyncStreamConsumerTest {
 
   }
 
-  private static void consumeRecords(final AsyncStreamConsumer consumer, final Collection<PartialAirbyteMessage> records) {
+  private static void consumeRecords(final AsyncStreamConsumer consumer, final Collection<AirbyteMessage> records) {
     records.forEach(m -> {
       try {
-        consumer.accept(m.getSerialized(), RECORD_SIZE_20_BYTES);
+        consumer.accept(Jsons.serialize(m), RECORD_SIZE_20_BYTES);
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
@@ -258,25 +261,20 @@ class AsyncStreamConsumerTest {
 
   // NOTE: Generates records at chunks of 160 bytes
   @SuppressWarnings("SameParameterValue")
-  private static List<PartialAirbyteMessage> generateRecords(final long targetSizeInBytes) {
-    final List<PartialAirbyteMessage> output = Lists.newArrayList();
+  private static List<AirbyteMessage> generateRecords(final long targetSizeInBytes) {
+    final List<AirbyteMessage> output = Lists.newArrayList();
     long bytesCounter = 0;
     for (int i = 0;; i++) {
       final JsonNode payload =
           Jsons.jsonNode(ImmutableMap.of("id", RandomStringUtils.randomAlphabetic(7), "name", "human " + String.format("%8d", i)));
       final long sizeInBytes = RecordSizeEstimator.getStringByteSize(payload);
       bytesCounter += sizeInBytes;
-      final PartialAirbyteMessage airbyteMessage = new PartialAirbyteMessage()
-          .withType(Type.RECORD)
-          .withRecord(new PartialAirbyteRecordMessage()
-              .withStream(STREAM_NAME)
-              .withNamespace(SCHEMA_NAME))
-          .withSerialized(Jsons.serialize(new AirbyteMessage()
+      final AirbyteMessage airbyteMessage = new AirbyteMessage()
               .withType(Type.RECORD)
               .withRecord(new AirbyteRecordMessage()
-                  .withStream(STREAM_NAME)
-                  .withNamespace(SCHEMA_NAME)
-                  .withData(payload))));
+                      .withStream(STREAM_NAME)
+                      .withNamespace(SCHEMA_NAME)
+                      .withData(payload));
       if (bytesCounter > targetSizeInBytes) {
         break;
       } else {
@@ -292,7 +290,7 @@ class AsyncStreamConsumerTest {
   }
 
   @SuppressWarnings({"unchecked", "SameParameterValue"})
-  private void verifyRecords(final String streamName, final String namespace, final Collection<PartialAirbyteMessage> expectedRecords)
+  private void verifyRecords(final String streamName, final String namespace, final List<AirbyteMessage> allRecords)
       throws Exception {
     final ArgumentCaptor<Stream<PartialAirbyteMessage>> argumentCaptor = ArgumentCaptor.forClass(Stream.class);
     verify(flushFunction, atLeast(1)).flush(
@@ -306,7 +304,16 @@ class AsyncStreamConsumerTest {
         // flatten those results into a single list for the simplicity of comparison
         .flatMap(s -> s)
         .toList();
-    assertEquals(expectedRecords.stream().toList(), actualRecords);
+
+    final var expRecords = allRecords.stream().map(m ->
+            new PartialAirbyteMessage()
+                    .withType(Type.RECORD)
+                    .withRecord(new PartialAirbyteRecordMessage()
+                            .withStream(m.getRecord().getStream())
+                            .withNamespace(m.getRecord().getNamespace())
+                            .withData(m.getRecord().getData()))
+                    .withSerialized(Jsons.serialize(m.getRecord().getData()))).collect(Collectors.toList());
+    assertEquals(expRecords, actualRecords);
   }
 
 }

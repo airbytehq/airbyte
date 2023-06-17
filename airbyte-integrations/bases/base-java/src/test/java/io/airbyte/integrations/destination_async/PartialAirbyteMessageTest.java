@@ -27,7 +27,6 @@ public class PartialAirbyteMessageTest {
             .withEmittedAt(Instant.now().toEpochMilli())
             .withData(Jsons.jsonNode("data"))));
 
-    System.out.println(serializedRec);
     final var rec = Jsons.tryDeserialize(serializedRec, PartialAirbyteMessage.class).get();
     Assertions.assertEquals(AirbyteMessage.Type.RECORD, rec.getType());
     Assertions.assertEquals("users", rec.getRecord().getStream());

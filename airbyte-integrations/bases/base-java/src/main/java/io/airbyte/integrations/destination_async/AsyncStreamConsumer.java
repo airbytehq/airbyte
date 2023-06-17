@@ -112,7 +112,6 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
           if (message.getType() == Type.RECORD) {
             validateRecord(message);
           }
-
           bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
         });
   }
@@ -128,12 +127,13 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
   public static Optional<PartialAirbyteMessage> deserializeAirbyteMessage(final String messageString) {
     final Optional<PartialAirbyteMessage> messageOptional = Jsons.tryDeserialize(messageString, PartialAirbyteMessage.class)
         .map(partial -> {
-          if (partial.getRecord() != null) {
+          if (partial.getType().equals(Type.RECORD)) {
             return partial.withSerialized(partial.getRecord().getData().toString());
           } else {
             return partial.withSerialized(messageString);
           }
         });
+
     if (messageOptional.isPresent()) {
       return messageOptional;
     } else {
@@ -144,6 +144,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
         return Optional.empty();
       }
     }
+
   }
 
   /**
