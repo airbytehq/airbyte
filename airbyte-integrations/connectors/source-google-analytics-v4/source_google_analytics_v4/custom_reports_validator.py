@@ -7,6 +7,9 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, ValidationError, validator
+from pydantic.class_validators import root_validator
+
+ERROR_MSG_MISSING_SEGMENT_DIMENSION = "errors: `ga:segment` is required"
 
 
 class Model(BaseModel):
@@ -17,6 +20,7 @@ class Model(BaseModel):
     dimensions: list[str]
     metrics: list[str]
     filter: Optional[str]
+    segments: Optional[list[str]]
 
     @validator("dimensions", "metrics")
     def check_field_reference_forrmat(cls, value):
@@ -27,6 +31,16 @@ class Model(BaseModel):
         for v in value:
             if "ga:" not in v:
                 raise ValueError(v)
+
+    @classmethod
+    @root_validator(pre=True)
+    def check_segment_included_in_dimension(cls, values):
+        dimensions = values.get("dimensions")
+        segments = values.get("segments")
+        print(segments, dimensions)
+        if segments and "ga:segment" not in dimensions:
+            raise ValueError(ERROR_MSG_MISSING_SEGMENT_DIMENSION)
+        return values
 
 
 class Explainer:

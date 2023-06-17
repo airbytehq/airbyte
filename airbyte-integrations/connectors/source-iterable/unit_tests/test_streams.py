@@ -3,6 +3,7 @@
 #
 
 import json
+from unittest.mock import MagicMock
 
 import pendulum
 import pytest
@@ -249,3 +250,19 @@ def test_events_read_full_refresh():
     records = list(read_full_refresh(stream))
     assert [r["email"] for r in records] == ['user1', 'user2', 'user3', 'user5']
     assert m.call_count == 3
+
+
+def test_retry_read_timeout():
+    stream = Lists(authenticator=None)
+    stream._session.send = MagicMock(side_effect=requests.exceptions.ReadTimeout)
+    with pytest.raises(requests.exceptions.ReadTimeout):
+        list(read_full_refresh(stream))
+    stream._session.send.call_args[1] == {'timeout': (60, 300)}
+    assert stream._session.send.call_count == stream.max_retries + 1
+
+    stream = Campaigns(authenticator=None)
+    stream._session.send = MagicMock(side_effect=requests.exceptions.ConnectionError)
+    with pytest.raises(requests.exceptions.ConnectionError):
+        list(read_full_refresh(stream))
+    stream._session.send.call_args[1] == {'timeout': (60, 300)}
+    assert stream._session.send.call_count == stream.max_retries + 1

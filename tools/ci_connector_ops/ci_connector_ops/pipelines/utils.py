@@ -241,6 +241,8 @@ def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
     modified_connectors = {}
     all_connector_dependencies = [(connector, connector.get_local_dependencies_paths()) for connector in get_all_released_connectors()]
     for modified_file in modified_files:
+        if str(modified_file).endswith(".md"):
+            continue
         for connector, connector_dependencies in all_connector_dependencies:
             for connector_dependency in connector_dependencies:
                 connector_dependency_parts = connector_dependency.parts
