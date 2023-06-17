@@ -42,7 +42,9 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
     // final boolean useAsyncSnowflake = false;
      final boolean useAsyncSnowflake = config.has("loading_method")
      && config.get("loading_method").has("method")
-     && config.get("loading_method").get("method").asText().equals("Internal Staging");
+     && config.get("loading_method").get("method").asText().equals("Internal Staging")
+        // Standard is when someone doesn't specify a loading method but still DestinationType.INTERNAL_STAGING
+        || config.get("loading_method").get("method").asText().equals("Standard");
 
     log.info("using async snowflake: {}", useAsyncSnowflake);
     if (useAsyncSnowflake) {
