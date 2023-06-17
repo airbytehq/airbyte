@@ -35,9 +35,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -270,11 +268,11 @@ class AsyncStreamConsumerTest {
       final long sizeInBytes = RecordSizeEstimator.getStringByteSize(payload);
       bytesCounter += sizeInBytes;
       final AirbyteMessage airbyteMessage = new AirbyteMessage()
-              .withType(Type.RECORD)
-              .withRecord(new AirbyteRecordMessage()
-                      .withStream(STREAM_NAME)
-                      .withNamespace(SCHEMA_NAME)
-                      .withData(payload));
+          .withType(Type.RECORD)
+          .withRecord(new AirbyteRecordMessage()
+              .withStream(STREAM_NAME)
+              .withNamespace(SCHEMA_NAME)
+              .withData(payload));
       if (bytesCounter > targetSizeInBytes) {
         break;
       } else {
@@ -305,14 +303,13 @@ class AsyncStreamConsumerTest {
         .flatMap(s -> s)
         .toList();
 
-    final var expRecords = allRecords.stream().map(m ->
-            new PartialAirbyteMessage()
-                    .withType(Type.RECORD)
-                    .withRecord(new PartialAirbyteRecordMessage()
-                            .withStream(m.getRecord().getStream())
-                            .withNamespace(m.getRecord().getNamespace())
-                            .withData(m.getRecord().getData()))
-                    .withSerialized(Jsons.serialize(m.getRecord().getData()))).collect(Collectors.toList());
+    final var expRecords = allRecords.stream().map(m -> new PartialAirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new PartialAirbyteRecordMessage()
+            .withStream(m.getRecord().getStream())
+            .withNamespace(m.getRecord().getNamespace())
+            .withData(m.getRecord().getData()))
+        .withSerialized(Jsons.serialize(m.getRecord().getData()))).collect(Collectors.toList());
     assertEquals(expRecords, actualRecords);
   }
 
