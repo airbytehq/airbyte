@@ -58,17 +58,17 @@ def setup_responses(
             "https://advertising-api.amazon.com/sd/productAds",
             body=product_ads_response,
         )
-    if generic_response:
-        responses.add(
-            responses.GET,
-            f"https://advertising-api.amazon.com/{generic_response}",
-            json=[],
-        )
     if creatives_response:
         responses.add(
             responses.GET,
             "https://advertising-api.amazon.com/sd/creatives",
             body=creatives_response,
+        )
+    if generic_response:
+        responses.add(
+            responses.GET,
+            f"https://advertising-api.amazon.com/{generic_response}",
+            json=[],
         )
 
 
