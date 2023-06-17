@@ -124,7 +124,8 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
    * @param messageString the string to deserialize
    * @return PartialAirbyteMessage if the message is valid, empty otherwise
    */
-  private Optional<PartialAirbyteMessage> deserializeAirbyteMessage(final String messageString) {
+  @VisibleForTesting
+  public static Optional<PartialAirbyteMessage> deserializeAirbyteMessage(final String messageString) {
     final Optional<PartialAirbyteMessage> messageOptional = Jsons.tryDeserialize(messageString, PartialAirbyteMessage.class)
         .map(partial -> {
           if (partial.getRecord() != null) {
