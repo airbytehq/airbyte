@@ -5,7 +5,7 @@
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_shipstation_abstract.source import IncrementalShipstationAbstractStream
+from source_shipstation.source import IncrementalShipstationAbstractStream
 
 
 @fixture

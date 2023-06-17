@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "customerId": {
+      "type": "integer"
+    },
+    "createDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "modifyDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "name": {
+      "type": "string"
+    },
+    "company": {
+      "type": "string"
+    },
+    "street1": {
+      "type": "string"
+    },
+    "street2": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "postalCode": {
+      "type": "string"
+    },
+    "countryCode": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string",
+      "format": "email"
+    },
+    "addressVerified": {
+      "type": "string"
+    },
+    "marketplaceUsernames": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "customerUserId": {
+            "type": "integer"
+          },
+          "customerId": {
+            "type": "integer"
+          },
+          "createDate": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "modifyDate": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "marketplaceId": {
+            "type": "integer"
+          },
+          "marketplace": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tagId": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

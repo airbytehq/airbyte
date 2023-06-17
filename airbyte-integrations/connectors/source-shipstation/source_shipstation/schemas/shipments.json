@@ -1,0 +1,191 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "shipmentId": {
+      "type": "integer"
+    },
+    "orderId": {
+      "type": "integer"
+    },
+    "orderKey": {
+      "type": "string"
+    },
+    "userId": {
+      "type": "string"
+    },
+    "orderNumber": {
+      "type": "string"
+    },
+    "createDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "shipDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "shipmentCost": {
+      "type": "number"
+    },
+    "insuranceCost": {
+      "type": "number"
+    },
+    "trackingNumber": {
+      "type": "string"
+    },
+    "isReturnLabel": {
+      "type": "boolean"
+    },
+    "batchNumber": {
+      "type": "string"
+    },
+    "carrierCode": {
+      "type": "string"
+    },
+    "serviceCode": {
+      "type": "string"
+    },
+    "packageCode": {
+      "type": "string"
+    },
+    "confirmation": {
+      "type": "string"
+    },
+    "warehouseId": {
+      "type": "integer"
+    },
+    "voided": {
+      "type": "boolean"
+    },
+    "voidDate": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "marketplaceNotified": {
+      "type": "boolean"
+    },
+    "notifyErrorMessage": {
+      "type": ["string", "null"]
+    },
+    "shipTo": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string"
+        },
+        "street1": {
+          "type": "string"
+        },
+        "street2": {
+          "type": "string"
+        },
+        "street3": {
+          "type": ["string", "null"]
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "postalCode": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "residential": {
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "weight": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "integer"
+        },
+        "units": {
+          "type": "string"
+        }
+      }
+    },
+    "dimensions": {
+      "type": ["object", "null"]
+    },
+    "insuranceOptions": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": ["string", "null"]
+        },
+        "insureShipment": {
+          "type": "boolean"
+        },
+        "insuredValue": {
+          "type": "integer"
+        }
+      }
+    },
+    "advancedOptions": {
+      "type": ["object", "null"]
+    },
+    "shipmentItems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "orderItemId": {
+            "type": "integer"
+          },
+          "lineItemKey": {
+            "type": ["string", "null"]
+          },
+          "sku": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": ["string", "null"]
+          },
+          "weight": {
+            "type": ["object", "null"]
+          },
+          "quantity": {
+            "type": "integer"
+          },
+          "unitPrice": {
+            "type": "integer"
+          },
+          "warehouseLocation": {
+            "type": ["string", "null"]
+          },
+          "options": {
+            "type": ["object", "null"]
+          },
+          "productId": {
+            "type": "integer"
+          },
+          "fulfillmentSku": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "labelData": {
+      "type": ["object", "null"]
+    },
+    "formData": {
+      "type": ["object", "null"]
+    }
+  }
+}

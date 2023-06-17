@@ -6,16 +6,7 @@ from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests.auth import AuthBase
-from airbyte_cdk.models import (
-    AirbyteCatalog,
-    AirbyteConnectionStatus,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    Status,
-    Type,
-)
+from airbyte_cdk.models import AirbyteRecordMessage
 import datetime
 import time
 
