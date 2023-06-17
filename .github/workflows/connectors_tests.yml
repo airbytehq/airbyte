@@ -20,6 +20,13 @@ jobs:
     timeout-minutes: 1440 # 24 hours
     runs-on: dev-medium-runner
     steps:
+      - name: Check if PR is from a fork
+        if: github.event_name == 'pull_request'
+        run: |
+          if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
+            echo "PR is from a fork. Exiting workflow..."
+            exit 78
+          fi
       - name: Get start timestamp
         id: get-start-timestamp
         run: echo "::set-output name=start-timestamp::$(date +%s)"
