@@ -81,7 +81,6 @@ public class PostgresCtidHandler {
       final String namespace = stream.getNamespace();
       final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
       final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(namespace, streamName);
-      //TODO: what if stream doesn't need ctid
       if (!tableNameToTable.containsKey(fullyQualifiedTableName)) {
         LOGGER.info("Skipping stream {} because it is not in the source", fullyQualifiedTableName);
         continue;
@@ -137,9 +136,6 @@ public class PostgresCtidHandler {
           quoteString);
 
       final String wrappedColumnNames = RelationalDbQueryUtils.enquoteIdentifierList(columnNames, quoteString);
-      // The xmin state that we save represents the lowest XID that is still in progress. To make sure we
-      // don't miss
-      // data associated with the current transaction, we have to issue an >=
       final String sql = "SELECT ctid, %s FROM %s WHERE ctid > ?::tid".formatted(wrappedColumnNames, fullTableName);
       final PreparedStatement preparedStatement = connection.prepareStatement(sql);
       final CtidStatus currentCtidStatus = ctidStateManager.getCtidStatus(airbyteStream);
