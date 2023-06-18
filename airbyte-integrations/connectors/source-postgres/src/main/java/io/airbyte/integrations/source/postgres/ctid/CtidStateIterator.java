@@ -29,7 +29,6 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
   private final Iterator<AirbyteMessage> messageIterator;
   private final AirbyteStreamNameNamespacePair pair;
   private boolean hasEmittedFinalState;
-  private boolean hasCaughtException = false;
   private String lastCtid;
   private final JsonNode streamStateForIncrementalRun;
   private final long relationFileNode;
@@ -58,15 +57,6 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
   @CheckForNull
   @Override
   protected AirbyteMessage computeNext() {
-    if (hasCaughtException) {
-      // Mark iterator as done since the next call to messageIterator will result in an
-      // IllegalArgumentException and resets exception caught state.
-      // This occurs when the previous iteration emitted state so this iteration cycle will indicate
-      // iteration is complete
-      hasCaughtException = false;
-      return endOfData();
-    }
-
     if (messageIterator.hasNext()) {
       if ((recordCount >= syncCheckpointRecords || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)
           && StringUtils.isNotBlank(lastCtid)) {
