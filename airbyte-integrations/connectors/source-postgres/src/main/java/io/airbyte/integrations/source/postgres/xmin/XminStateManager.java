@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.postgres.xmin;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
@@ -87,7 +86,7 @@ public class XminStateManager {
                 new StreamDescriptor()
                     .withName(pair.getName())
                     .withNamespace(pair.getNamespace()))
-            .withStreamState(new ObjectMapper().valueToTree(xminStatus));
+            .withStreamState(Jsons.jsonNode(xminStatus));
 
     // Set state
     final AirbyteStateMessage stateMessage =

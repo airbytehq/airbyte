@@ -1,6 +1,5 @@
 package io.airbyte.integrations.source.postgres.ctid;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
@@ -77,7 +76,7 @@ public class CtidStateManager {
                 new StreamDescriptor()
                     .withName(pair.getName())
                     .withNamespace(pair.getNamespace()))
-            .withStreamState(new ObjectMapper().valueToTree(ctidStatus));
+            .withStreamState(Jsons.jsonNode(ctidStatus));
 
     final AirbyteStateMessage stateMessage =
         new AirbyteStateMessage()

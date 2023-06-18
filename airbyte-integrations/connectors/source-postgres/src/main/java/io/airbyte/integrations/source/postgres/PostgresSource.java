@@ -30,7 +30,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -478,7 +477,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
             streamsCategorised.ctidStreams.streamsForCtidSync, getQuoteString());
         final CtidStateManager ctidStateManager = new CtidStateManager(streamsCategorised.ctidStreams.statesFromCtidSync, fileNodes);
         final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database, sourceOperations, getQuoteString(), fileNodes, ctidStateManager,
-            namespacePair -> new ObjectMapper().valueToTree(xminStatus),
+            namespacePair -> Jsons.jsonNode(xminStatus),
             (namespacePair, jsonState) -> XminStateManager.getAirbyteStateMessage(namespacePair, Jsons.object(jsonState, XminStatus.class)));
         ctidIterator.addAll(ctidHandler.getIncrementalIterators(
             new ConfiguredAirbyteCatalog().withStreams(streamsCategorised.ctidStreams.streamsForCtidSync), tableNameToTable, emittedAt));
