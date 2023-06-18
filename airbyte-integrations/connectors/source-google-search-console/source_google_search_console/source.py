@@ -24,6 +24,8 @@ from source_google_search_console.streams import (
     SearchAnalyticsByDevice,
     SearchAnalyticsByPage,
     SearchAnalyticsByQuery,
+    SearchAnalyticsKeywordPageReportByPage,
+    SearchAnalyticsKeywordPageReportByProperty,
     Sitemaps,
     Sites,
 )
@@ -136,6 +138,8 @@ class SourceGoogleSearchConsole(AbstractSource):
             SearchAnalyticsByQuery(**stream_config),
             SearchAnalyticsByPage(**stream_config),
             SearchAnalyticsAllFields(**stream_config),
+            SearchAnalyticsKeywordPageReportByPage(**stream_config),
+            SearchAnalyticsKeywordPageReportByProperty(**stream_config),
         ]
 
         streams = streams + self.get_custom_reports(config=config, stream_config=stream_config)

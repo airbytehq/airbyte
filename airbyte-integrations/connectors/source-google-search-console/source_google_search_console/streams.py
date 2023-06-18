@@ -3,6 +3,7 @@
 #
 
 from abc import ABC
+from enum import Enum
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import quote_plus, unquote_plus
 
@@ -14,6 +15,12 @@ from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
 BASE_URL = "https://www.googleapis.com/webmasters/v3/"
 ROW_LIMIT = 25000
+
+
+class QueryAggregationType(Enum):
+    auto = "auto"
+    by_page = "byPage"
+    by_property = "byProperty"
 
 
 class GoogleSearchConsole(HttpStream, ABC):
@@ -94,6 +101,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
     """
 
     data_field = "rows"
+    aggregation_type = QueryAggregationType.auto
     start_row = 0
     dimensions = []
     search_types = ["web", "news", "image", "video"]
@@ -185,7 +193,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
             "endDate": stream_slice["end_date"],
             "dimensions": self.dimensions,
             "searchType": stream_slice.get("search_type"),
-            "aggregationType": "auto",
+            "aggregationType": self.aggregation_type.value,
             "startRow": self.start_row,
             "rowLimit": ROW_LIMIT,
             "dataState": stream_slice.get("data_state"),
@@ -301,6 +309,16 @@ class SearchAnalyticsAllFields(SearchAnalytics):
     dimensions = ["date", "country", "device", "page", "query"]
 
 
+class SearchAnalyticsKeywordPageReportByPage(SearchAnalytics):
+    dimensions = ["date", "country", "device", "query", "page"]
+    aggregation_type = QueryAggregationType.by_page
+
+
+class SearchAnalyticsKeywordPageReportByProperty(SearchAnalytics):
+    dimensions = ["date", "country", "device", "query", "page"]
+    aggregation_type = QueryAggregationType.by_property
+
+
 class SearchAnalyticsByCustomDimensions(SearchAnalytics):
     dimension_to_property_schema_map = {
         "country": [{"country": {"type": ["null", "string"]}}],
@@ -319,7 +337,7 @@ class SearchAnalyticsByCustomDimensions(SearchAnalytics):
             return super(SearchAnalyticsByCustomDimensions, self).get_json_schema()
         except FileNotFoundError:
             schema: Mapping[str, Any] = {
-                "$schema": "http://json-schema.org/draft-07/schema#",
+                "$schema": "https://json-schema.org/draft-07/schema#",
                 "type": ["null", "object"],
                 "additionalProperties": True,
                 "properties": {
