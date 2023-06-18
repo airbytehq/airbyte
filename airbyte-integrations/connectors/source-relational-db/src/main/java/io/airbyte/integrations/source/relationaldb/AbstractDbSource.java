@@ -418,8 +418,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()),
         r -> {
           final long count = recordCount.incrementAndGet();
-          if (count % 1_000_000 == 0) {
-            LOGGER.info("Reading stream {}. /airbyte-config/init/: {}", streamName, count);
+          if (count % 10000 == 0) {
+            LOGGER.info("Reading stream {}. Records read: {}", streamName, count);
           }
           return r;
         });

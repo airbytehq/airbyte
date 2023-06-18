@@ -306,7 +306,6 @@ public class DataSourceFactory {
       config.setPassword(password);
       config.setUsername(username);
 
-      config.setIdleTimeout(1_000); // TODO: check here
       /*
        * Disable to prevent failing on startup. Applications may start prior to the database container
        * being available. To avoid failing to create the connection pool, disable the fail check. This
