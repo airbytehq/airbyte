@@ -3,6 +3,7 @@
 #
 
 import json
+from copy import deepcopy
 from dataclasses import InitVar, dataclass, field
 from itertools import islice
 from json import JSONDecodeError
@@ -19,6 +20,7 @@ from airbyte_cdk.sources.declarative.partition_routers.single_partition_router i
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorStopCondition
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -448,6 +450,9 @@ class SimpleRetriever(Retriever, HttpStream):
         """State setter, accept state serialized by state getter."""
         if self.cursor:
             self.stream_slicer.set_initial_state(value)
+        if isinstance(self.paginator.pagination_strategy.stop_condition, CursorStopCondition):
+            # freezing cursor state for CursorStopCondition
+            self.paginator.pagination_strategy.stop_condition._cursor = deepcopy(self.cursor)
 
     def parse_records(
         self,

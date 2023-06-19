@@ -50,7 +50,7 @@ class DatetimeBasedCursor(Cursor):
     datetime_format: str
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    _cursor: dict = field(repr=False, default=None)  # tracks current datetime
+    _cursor: str = field(repr=False, default=None)  # tracks current datetime
     _initial_cursor_value: datetime.datetime = field(repr=False, default=None)  # keep initial state
     end_datetime: Optional[Union[MinMaxDatetime, str]] = None
     step: Optional[Union[InterpolatedString, str]] = None
@@ -235,6 +235,7 @@ class DatetimeBasedCursor(Cursor):
             options[self.end_time_option.field_name] = stream_slice.get(self.partition_field_end.eval(self.config))
         return options
 
-    def should_be_synced_based_on_initial_state(self, record: Record) -> bool:
+    def should_be_synced(self, record: Record) -> bool:
         record_cursor_value = self.parse_date(record.get(self.cursor_field.eval(self.config)))
-        return record_cursor_value <= self._initial_cursor_value if self._initial_cursor_value else True
+        # bug fix https://github.com/airbytehq/airbyte/issues/27447 should change this as it would make self._cursor a datetime
+        return record_cursor_value <= self.parse_date(self._cursor) if self._initial_cursor_value else True

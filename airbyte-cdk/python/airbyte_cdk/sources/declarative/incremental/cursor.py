@@ -45,8 +45,7 @@ class Cursor(ABC, StreamSlicer):
         """
 
     @abstractmethod
-    def should_be_synced_based_on_initial_state(self, record: Record) -> bool:
+    def should_be_synced(self, record: Record) -> bool:
         """
-        Initial state is a good reference point to know if some things make sense in the current sync. We often want to compare a record to
-        the state at the beginning of the sync to filter or know when to stop paginating
+        Evaluating if a record should be synced allows for filtering and stop condition on pagination
         """
