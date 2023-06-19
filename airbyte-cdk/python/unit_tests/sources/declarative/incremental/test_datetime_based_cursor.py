@@ -10,6 +10,7 @@ from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDate
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.types import Record
 
 datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 cursor_granularity = "PT0.000001S"
@@ -20,6 +21,7 @@ end_date_now = InterpolatedString(string="{{ today_utc() }}", parameters={})
 cursor_field = "created"
 timezone = datetime.timezone.utc
 NO_STATE = {}
+ANY_SLICE = {}
 
 
 class MockedNowDatetime(datetime.datetime):
@@ -336,39 +338,35 @@ def test_stream_slices(
 
 
 @pytest.mark.parametrize(
-    "test_name, previous_cursor, stream_slice, last_record, expected_state",
+    "test_name, previous_cursor, record_data, expected_state",
     [
         (
             "test_update_state_with_state_equals_record",
             None,
-            {"start_time": "2021-01-02T00:00:00.000000+0000"},
             {cursor_field: "2021-01-02T00:00:00.000000+0000"},
             {cursor_field: "2021-01-02T00:00:00.000000+0000"},
         ),
         (
             "test_update_state_with_slice_not_matching_record_than_use_record_cursor_field",
             None,
-            {"start_time": "2021-01-03T00:00:00.000000+0000"},
             {cursor_field: "2021-01-02T00:00:00.000000+0000"},
             {cursor_field: "2021-01-02T00:00:00.000000+0000"},
         ),
         (
             "test_update_state_with_state_less_than_record",
             None,
-            {"start_time": "2021-01-02T00:00:00.000000+0000"},
             {cursor_field: "2021-01-03T00:00:00.000000+0000"},
             {cursor_field: "2021-01-03T00:00:00.000000+0000"},
         ),
         (
             "test_update_state_with_state_less_than_previous_cursor",
             "2021-01-03T00:00:00.000000+0000",
-            {"start_time": "2021-01-02T00:00:00.000000+0000"},
             {},
             {cursor_field: "2021-01-03T00:00:00.000000+0000"},
         ),
     ],
 )
-def test_update_state(test_name, previous_cursor, stream_slice, last_record, expected_state):
+def test_update_state(test_name, previous_cursor, record_data, expected_state):
     slicer = DatetimeBasedCursor(
         start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
         end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
@@ -381,7 +379,7 @@ def test_update_state(test_name, previous_cursor, stream_slice, last_record, exp
         parameters={},
     )
     slicer._cursor = previous_cursor
-    slicer.update_state(stream_slice, last_record)
+    slicer.update_state(Record(record_data, ANY_SLICE))
     updated_state = slicer.get_stream_state()
     assert expected_state == updated_state
 

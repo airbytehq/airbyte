@@ -418,13 +418,13 @@ class SimpleRetriever(Retriever, HttpStream):
         for record in records_generator:
             # Only record messages should be parsed to update the cursor which is indicated by the Mapping type
             if self.cursor and isinstance(record, Mapping):
-                self.cursor.update_state(stream_slice, last_record=record)
+                self.cursor.update_state(record=record)
                 cursor_updated = True
             yield record
         if self.cursor and not cursor_updated:
             last_record = self._last_records[-1] if self._last_records else None
             if last_record and isinstance(last_record, Mapping):
-                self.cursor.update_state(stream_slice, last_record=last_record)
+                self.cursor.update_state(record=last_record)
             yield from []
 
     def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:

@@ -5,7 +5,7 @@
 from abc import ABC, abstractmethod
 
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Record, StreamState
 
 
 class Cursor(ABC, StreamSlicer):
@@ -24,12 +24,11 @@ class Cursor(ABC, StreamSlicer):
         """
 
     @abstractmethod
-    def update_state(self, stream_slice: StreamSlice, last_record: Record) -> None:
+    def update_state(self, record: Record) -> None:
         """
         Update state based on the latest record
 
-        :param stream_slice: Current stream_slice
-        :param last_record: Last record read from the source
+        :param record: record read from the source
         """
 
     @abstractmethod

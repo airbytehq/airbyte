@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from typing import Any, List, Mapping
 
-
 # A FieldPointer designates a path to a field inside a mapping. For example, retrieving ["k1", "k1.2"] in the object {"k1" :{"k1.2":
 # "hello"}] returns "hello"
 FieldPointer = List[str]
@@ -24,6 +23,10 @@ class Record(Mapping[str, Any]):
     @property
     def data(self) -> dict:
         return self._data
+
+    @property
+    def associated_slice(self) -> StreamSlice:
+        return self._associated_slice
 
     def __repr__(self):
         return repr(self._data)

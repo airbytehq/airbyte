@@ -20,7 +20,6 @@ from airbyte_cdk.sources.declarative.transformations import AddFields, RecordTra
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Record
 
-
 SLICE_NOT_CONSIDERED_FOR_EQUALITY = {}
 
 
