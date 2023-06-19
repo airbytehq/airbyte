@@ -63,6 +63,7 @@ This source is capable of syncing the following streams:
 * [Sponsored Products Ad groups](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Ad%20groups)
 * [Sponsored Products Keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Keywords)
 * [Sponsored Products Negative keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Negative%20keywords)
+* [Sponsored Products Campaign Negative keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Negative%20keywords)
 * [Sponsored Products Ads](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20ads)
 * [Sponsored Products Targetings](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20targeting)
 * [Brands Reports](https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports)
@@ -94,6 +95,7 @@ Information about expected report generation waiting time you may find [here](ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 1.1.1   | 2023-06-19 | [25412](https://github.com/airbytehq/airbyte/pull/25412) | Add sponsored_product_campaign_negative_keywords stream                                                         |
 | 1.1.0   | 2023-04-22 | [25412](https://github.com/airbytehq/airbyte/pull/25412) | Add missing reporting metrics                                                                                   |
 | 1.0.6   | 2023-05-09 | [25913](https://github.com/airbytehq/airbyte/pull/25913) | Small schema fixes                                                                                              |
 | 1.0.5   | 2023-05-08 | [25885](https://github.com/airbytehq/airbyte/pull/25885) | Improve error handling for attribution_report(s) streams                                                        |
