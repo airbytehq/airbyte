@@ -78,8 +78,12 @@ The Stripe source connector supports the following streams:
 - [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
 - [Subscription Schedule](https://stripe.com/docs/api/subscription_schedules) \(Incremental\)
 - [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
+- [Transactions](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 - [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
+- [Transfer Reversals](https://stripe.com/docs/api/transfer_reversals/list)
 - [Accounts](https://stripe.com/docs/api/accounts/list) \(Incremental\)
+- [Setup Attempts](https://stripe.com/docs/api/setup_attempts/list) \(Incremental\)
+- [Usage Records](https://stripe.com/docs/api/usage_records/subscription_item_summary_list)
 - [TopUps](https://stripe.com/docs/api/topups/list) \(Incremental\)
 - [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
 - [FileLinks](https://stripe.com/docs/api/file_links/list) \(Incremental\)
@@ -96,6 +100,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.9.0   | 2023-06-19 | [27362](https://github.com/airbytehq/airbyte/pull/27362) | Add new Streams: Transfer Reversals, Setup Attempts, Usage Records, Transactions                                                                     |
 | 3.8.0   | 2023-06-12 | [27238](https://github.com/airbytehq/airbyte/pull/27238) | Add `Topups` stream; Add `Files` stream; Add `FileLinks` stream                                                                                      |
 | 3.7.0   | 2023-06-06 | [27083](https://github.com/airbytehq/airbyte/pull/27083) | Add new Streams: Authorizations, Cardholders, Cards, Payment Methods, Reviews                                                                        |
 | 3.6.0   | 2023-05-24 | [25893](https://github.com/airbytehq/airbyte/pull/25893) | Add `ApplicationFeesRefunds` stream with parent `ApplicationFees`                                                                                    |
