@@ -154,5 +154,8 @@ def _parse_datetime(dt_str: str,
                     increment: Optional[bool] = False):
     parsed_time = datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S%z")
     if increment:
+        # Increment the datetime cursor to prevent re-fetching the last fetched record.
+        # This is required because the `since` parameter in the Survicate API is inclusive and we 
+        # determine the cursor based on the last record we retrieved.
         return incremented_time = parsed_time + timedelta(minutes=1)
     return parsed_time
