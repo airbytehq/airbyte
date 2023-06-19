@@ -138,7 +138,6 @@ jobs:
           CI_REPORT_BUCKET_NAME: "airbyte-ci-reports"
           CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           CI_GIT_BRANCH: ${{ github.head_ref }}
-          CI_GIT_REVISION: ${{ github.event.pull_request.head.sha }}
           CI_CONTEXT: "pull_request"
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
           PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
