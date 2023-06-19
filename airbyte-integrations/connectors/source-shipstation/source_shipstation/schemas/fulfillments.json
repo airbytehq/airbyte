@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "fulfillmentId": {
+      "type": "integer"
+    },
+    "orderId": {
+      "type": "integer"
+    },
+    "orderNumber": {
+      "type": "string"
+    },
+    "userId": {
+      "type": "string"
+    },
+    "customerEmail": {
+      "type": "string",
+      "format": "email"
+    },
+    "trackingNumber": {
+      "type": "string"
+    },
+    "createDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "shipDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "voidDate": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "deliveryDate": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "carrierCode": {
+      "type": "string"
+    },
+    "fulfillmentProviderCode": {
+      "type": ["string", "null"]
+    },
+    "fulfillmentServiceCode": {
+      "type": ["string", "null"]
+    },
+    "fulfillmentFee": {
+      "type": "number"
+    },
+    "voidRequested": {
+      "type": "boolean"
+    },
+    "voided": {
+      "type": "boolean"
+    },
+    "marketplaceNotified": {
+      "type": "boolean"
+    },
+    "notifyErrorMessage": {
+      "type": ["string", "null"]
+    },
+    "shipTo": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "company": {
+          "type": ["string", "null"]
+        },
+        "street1": {
+          "type": "string"
+        },
+        "street2": {
+          "type": ["string", "null"]
+        },
+        "street3": {
+          "type": ["string", "null"]
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "postalCode": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "residential": {
+          "type": ["boolean", "null"]
+        },
+        "addressVerified": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}

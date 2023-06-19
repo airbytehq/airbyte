@@ -153,6 +153,28 @@ export const upgradeSubscription = (options?: SecondParameter<typeof apiOverride
   );
 };
 
+export const failedPaymentDetails = (options?: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<UpgradeSubscription>(
+    {
+      url: `/sub/getFailedPaymentDetails?`,
+      method: "get",
+      headers: { "Content-Type": "application/json" },
+    },
+    options
+  );
+};
+
+export const updatePaymentMethod = (paymentOrderId: string, options?: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<UpgradeSubscription>(
+    {
+      url: `/sub/updatePaymentMethod?paymentOrderId=${paymentOrderId}`,
+      method: "get",
+      headers: { "Content-Type": "application/json" },
+    },
+    options
+  );
+};
+
 export const pauseSubscription = (options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<PauseSubscription>(
     {

@@ -1,0 +1,30 @@
+{
+  "documentationUrl": "https://docs.daspire.com/setup-guide/sources/shipstation",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ShipStation Spec",
+    "type": "object",
+    "required": ["api_key", "api_secret"],
+    "additionalProperties": true,
+    "properties": {
+      "api_key": {
+        "title": "ShipStation API Key",
+        "type": "string",
+        "description": "Enter your ShipStation API key.",
+        "order": 0
+      },
+      "api_secret": {
+        "title": "ShipStation API Secret",
+        "type": "string",
+        "description": "Enter your ShipStation API secret.",
+        "order": 1
+      },
+      "stores_id": {
+        "title": "Store ID",
+        "type": "string",
+        "description": "Enter store id to obtain data from the specific store.",
+        "order": 2
+      }
+    }
+  }
+}

@@ -1222,6 +1222,15 @@
   sourceDefinitionId: 1db6dfaf-3ed3-4f8d-a18a-f6d290c5eede
   dockerRepository: yuanrui2014/source-shein
   dockerImageTag: 0.0.1
-  documentationUrl: https://docsurl.com
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/shein
+  icon: Shein_Logo_2017.svg
+  sourceType: api
+  releaseStage: alpha
+- name: ShipStation
+  sourceDefinitionId: 91007e74-57b1-44f3-9b83-7c9e7a9318fd
+  dockerRepository: yuanrui2014/source-shipstation
+  dockerImageTag: 0.0.1
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/shipstation
+  icon: shipstation.svg
   sourceType: api
   releaseStage: alpha
