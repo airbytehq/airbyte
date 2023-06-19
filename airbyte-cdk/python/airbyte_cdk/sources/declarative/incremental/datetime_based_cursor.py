@@ -51,7 +51,6 @@ class DatetimeBasedCursor(Cursor):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     _cursor: str = field(repr=False, default=None)  # tracks current datetime
-    _initial_cursor_value: datetime.datetime = field(repr=False, default=None)  # keep initial state
     end_datetime: Optional[Union[MinMaxDatetime, str]] = None
     step: Optional[Union[InterpolatedString, str]] = None
     cursor_granularity: Optional[str] = None
@@ -104,7 +103,6 @@ class DatetimeBasedCursor(Cursor):
         :param stream_state: The state of the stream as returned by get_stream_state
         """
         self._cursor = stream_state.get(self.cursor_field.eval(self.config)) if stream_state else None
-        self._initial_cursor_value = self.parse_date(self._cursor)
 
     def update_state(self, record: Record) -> None:
         """
@@ -238,4 +236,4 @@ class DatetimeBasedCursor(Cursor):
     def should_be_synced(self, record: Record) -> bool:
         record_cursor_value = self.parse_date(record.get(self.cursor_field.eval(self.config)))
         # bug fix https://github.com/airbytehq/airbyte/issues/27447 should change this as it would make self._cursor a datetime
-        return record_cursor_value <= self.parse_date(self._cursor) if self._initial_cursor_value else True
+        return record_cursor_value <= self.parse_date(self._cursor) if self._cursor else True
