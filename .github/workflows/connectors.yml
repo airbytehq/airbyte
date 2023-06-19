@@ -148,6 +148,7 @@ jobs:
           - name: source-amazon-sqs
           - name: source-redshift
           - name: source-oracle
+          - name: source-postgres-heroku
 
     steps:
       - uses: actions/checkout@v2
