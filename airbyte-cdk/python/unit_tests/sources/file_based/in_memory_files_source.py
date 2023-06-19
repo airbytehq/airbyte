@@ -48,7 +48,7 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
         from_date: Optional[datetime] = None,
     ) -> List[RemoteFile]:
         return [
-            RemoteFile(f, data["last_modified"], self.file_type)
+            RemoteFile(f, datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"), self.file_type)
             for f, data in self.files.items()
         ]
 

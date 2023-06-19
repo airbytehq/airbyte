@@ -38,7 +38,17 @@ single_csv_scenario = (
         {
             "streams": [
                 {
-                    "json_schema": {"col1": "string", "col2": "string"},
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": ["null", "string"]
+                            },
+                            "col2": {
+                                "type": ["null", "string"]
+                            },
+                        },
+                    },
                     "name": "stream1",
                     "supported_sync_modes": ["full_refresh"],
                 }
@@ -95,9 +105,18 @@ multi_csv_scenario = (
             "streams": [
                 {
                     "json_schema": {
-                        "col1": "string",
-                        "col2": "string",
-                        "col3": "string",
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": ["null", "string"]
+                            },
+                            "col2": {
+                                "type": ["null", "string"]
+                            },
+                            "col3": {
+                                "type": ["null", "string"]
+                            },
+                        },
                     },
                     "name": "stream1",
                     "supported_sync_modes": ["full_refresh"],
@@ -156,7 +175,17 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
         {
             "streams": [
                 {
-                    "json_schema": {"col1": "string", "col2": "string"},
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": ["null", "string"]
+                            },
+                            "col2": {
+                                "type": ["null", "string"]
+                            },
+                        },
+                    },
                     "name": "stream1",
                     "supported_sync_modes": ["full_refresh"],
                 }
@@ -207,7 +236,17 @@ invalid_csv_scenario = (
         {
             "streams": [
                 {
-                    "json_schema": {"col1": "string", "col2": "string"},
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": ["null", "string"]
+                            },
+                            "col2": {
+                                "type": ["null", "string"]
+                            },
+                        },
+                    },
                     "name": "stream1",
                     "supported_sync_modes": ["full_refresh"],
                 }

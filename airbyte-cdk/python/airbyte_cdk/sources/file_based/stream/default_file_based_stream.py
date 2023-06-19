@@ -121,7 +121,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream):
             for task in done:
                 base_schema = merge_schemas(base_schema, task.result())
 
-        return base_schema
+        return {"type": "object", "properties": base_schema}
 
     async def _infer_file_schema(self, file: RemoteFile) -> Mapping[str, Any]:
         try:
