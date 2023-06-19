@@ -82,7 +82,7 @@ class MessageGrouper:
             inferred_schema=schema_inferrer.get_stream_schema(
                 configured_catalog.streams[0].stream.name
             ),  # The connector builder currently only supports reading from a single stream at a time
-            latest_config_update=latest_config_update.connectorConfig.config if latest_config_update else self._clean_config(config),
+            latest_config_update=self._clean_config(latest_config_update.connectorConfig.config) if latest_config_update else None,
             inferred_datetime_formats=datetime_format_inferrer.get_inferred_datetime_formats(),
         )
 
