@@ -268,6 +268,64 @@ class TestTransformConfig:
         assert expected == actual
         assert extract_schema(actual) == "public"
 
+    def test_transform_redshift(self):
+        input = {
+            "host": "airbyte.io",
+            "port": 5432,
+            "username": "a user",
+            "password": "password123",
+            "database": "my_db",
+            "schema": "public",
+        }
+
+        actual = TransformConfig().transform_redshift(input)
+        expected = {
+            "type": "redshift",
+            "dbname": "my_db",
+            "host": "airbyte.io",
+            "pass": "password123",
+            "port": 5432,
+            "schema": "public",
+            "threads": 4,
+            "user": "a user",
+        }
+
+        assert expected == actual
+        assert extract_schema(actual) == "public"
+
+    def test_transform_redshift_ssh(self):
+        input = {
+            "host": "airbyte.io",
+            "port": 5432,
+            "username": "a user",
+            "password": "password123",
+            "database": "my_db",
+            "schema": "public",
+            "tunnel_method": {
+                "tunnel_host": "1.2.3.4",
+                "tunnel_method": "SSH_PASSWORD_AUTH",
+                "tunnel_port": 22,
+                "tunnel_user": "user",
+                "tunnel_user_password": "pass",
+            },
+        }
+        port = TransformConfig.pick_a_port()
+
+        actual = TransformConfig().transform_redshift(input)
+        expected = {
+            "type": "redshift",
+            "dbname": "my_db",
+            "host": "localhost",
+            "pass": "password123",
+            "port": port,
+            "schema": "public",
+            "threads": 4,
+            "user": "a user",
+        }
+
+        assert expected == actual
+        assert extract_schema(actual) == "public"
+
     def test_transform_snowflake(self):
         input = {
             "host": "http://123abc.us-east-7.aws.snowflakecomputing.com",

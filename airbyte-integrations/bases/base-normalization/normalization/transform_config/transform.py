@@ -196,6 +196,10 @@ class TransformConfig:
     @staticmethod
     def transform_redshift(config: Dict[str, Any]):
         print("transform_redshift")
+
+        if TransformConfig.is_ssh_tunnelling(config):
+            config = TransformConfig.get_ssh_altered_config(config, port_key="port", host_key="host")
+
         # https://docs.getdbt.com/reference/warehouse-profiles/redshift-profile
         dbt_config = {
             "type": "redshift",
