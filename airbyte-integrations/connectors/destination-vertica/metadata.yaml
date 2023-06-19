@@ -13,6 +13,10 @@ data:
   icon: vertica.svg
   license: MIT
   name: Vertica
+  normalizationConfig:
+    normalizationIntegrationType: vertica
+    normalizationRepository: airbyte/normalization-vertica
+    normalizationTag: 0.4.3
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/vertica
   tags:
