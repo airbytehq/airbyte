@@ -7,7 +7,7 @@ from typing import Any, List, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
 @dataclass
@@ -57,7 +57,7 @@ class NoPagination(Paginator):
     ) -> Mapping[str, Any]:
         return {}
 
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Mapping[str, Any]:
+    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Mapping[str, Any]:
         return {}
 
     def reset(self):

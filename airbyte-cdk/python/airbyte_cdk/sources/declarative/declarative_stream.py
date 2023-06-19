@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import Config, StreamSlice
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 
 
@@ -119,6 +119,8 @@ class DeclarativeStream(Stream):
                 return message_or_record_data
         elif isinstance(message_or_record_data, dict):
             record = message_or_record_data
+        elif isinstance(message_or_record_data, Record):
+            record = message_or_record_data.data
         else:
             # Raise an error because this is unexpected and indicative of a typing problem in the CDK
             raise ValueError(
