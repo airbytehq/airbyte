@@ -43,3 +43,10 @@ class Cursor(ABC, StreamSlicer):
         For the first case, we are probably stuck with exposing the stream state. For the second, we can probably expose a method that
         allows for emitting the state to the platform.
         """
+
+    @abstractmethod
+    def should_be_synced_based_on_initial_state(self, record: Record) -> bool:
+        """
+        Initial state is a good reference point to know if some things make sense in the current sync. We often want to compare a record to
+        the state at the beginning of the sync to filter or know when to stop paginating
+        """

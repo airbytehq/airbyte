@@ -443,9 +443,6 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
         parameters={},
     )
     stream_slice = {"start_time": "2021-01-01T00:00:00.000000+0000", "end_time": "2021-01-04T00:00:00.000000+0000"}
-
-    slicer.set_initial_state(stream_slice)
-
     assert expected_req_params == slicer.get_request_params(stream_slice=stream_slice)
     assert expected_headers == slicer.get_request_headers(stream_slice=stream_slice)
     assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)

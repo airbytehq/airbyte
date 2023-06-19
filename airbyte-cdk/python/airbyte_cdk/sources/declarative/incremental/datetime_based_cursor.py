@@ -51,6 +51,7 @@ class DatetimeBasedCursor(Cursor):
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     _cursor: dict = field(repr=False, default=None)  # tracks current datetime
+    _initial_cursor_value: datetime.datetime = field(repr=False, default=None)  # keep initial state
     end_datetime: Optional[Union[MinMaxDatetime, str]] = None
     step: Optional[Union[InterpolatedString, str]] = None
     cursor_granularity: Optional[str] = None
@@ -103,6 +104,7 @@ class DatetimeBasedCursor(Cursor):
         :param stream_state: The state of the stream as returned by get_stream_state
         """
         self._cursor = stream_state.get(self.cursor_field.eval(self.config)) if stream_state else None
+        self._initial_cursor_value = self.parse_date(self._cursor)
 
     def update_state(self, record: Record) -> None:
         """
@@ -112,7 +114,6 @@ class DatetimeBasedCursor(Cursor):
         :return: None
         """
         record_value = record.get(self.cursor_field.eval(self.config)) if record else None
-
         possible_cursor_values = list(filter(lambda item: item, [record_value, self._cursor]))
         self._cursor = max(possible_cursor_values) if possible_cursor_values else None
 
@@ -233,3 +234,7 @@ class DatetimeBasedCursor(Cursor):
         if self.end_time_option and self.end_time_option.inject_into == option_type:
             options[self.end_time_option.field_name] = stream_slice.get(self.partition_field_end.eval(self.config))
         return options
+
+    def should_be_synced_based_on_initial_state(self, record: Record) -> bool:
+        record_cursor_value = self.parse_date(record.get(self.cursor_field.eval(self.config)))
+        return record_cursor_value <= self._initial_cursor_value if self._initial_cursor_value else True

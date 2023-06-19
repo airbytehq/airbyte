@@ -285,3 +285,7 @@ class PerPartitionCursor(Cursor):
         ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_body_json(
             stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token
         )
+
+    def should_be_synced_based_on_initial_state(self, record: Record) -> bool:
+        cursor = self._cursor_per_partition[self._to_partition_key(record.stream_slice.partition)]
+        return cursor.should_be_synced_based_on_initial_state(Record(record.stream_slice.cursor_slice, record.data))
