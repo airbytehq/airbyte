@@ -89,9 +89,11 @@ jobs:
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
           PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
           PRODUCTION: "True"
-      - name: Pull format changes
-        run: |
-          git pull origin ${{ steps.extract_branch.outputs.branch }} && git log -1
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
       - name: Run airbyte-ci connectors test [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch'
         run: |

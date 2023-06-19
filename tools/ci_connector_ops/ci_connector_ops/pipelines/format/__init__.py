@@ -14,7 +14,7 @@ from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import ConnectorReport, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.format import java_connectors, python_connectors
-from ci_connector_ops.pipelines.git import GitPushChanges, GitPushEmptyCommit
+from ci_connector_ops.pipelines.git import GitPushChanges
 from ci_connector_ops.pipelines.pipelines.connectors import run_report_complete_pipeline
 from ci_connector_ops.utils import ConnectorLanguage
 
@@ -100,13 +100,4 @@ async def run_connectors_format_pipelines(
 
         await run_report_complete_pipeline(dagger_client, contexts)
 
-        # The auto format commit skip CI to not trigger other pipelines like test
-        # We do want to trigger the CI pipeline once all the connectors are formatted
-        # So we push an empty commit to trigger the CI pipeline
-        # Without this commit, the required CI pipeline will not be triggered and would require additional commits or manual trigger from the developper
-        if contexts and not is_local and any(len(context.report.successful_steps) > 0 for context in contexts):
-            await GitPushEmptyCommit(dagger_client, ci_git_user, ci_github_access_token, git_branch).run(
-                "I formatted all the connectors, please run CI now!",
-                skip_ci=False,
-            )
     return contexts
