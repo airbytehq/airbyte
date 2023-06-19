@@ -63,9 +63,16 @@ curl -X GET \
 
 ### API Key
 
-The API key authentication method is similar to the Bearer authentication but allows to configure as which HTTP header the API key is sent as part of the request. The http header name is part of the connector definition while the API key itself can be set via "Testing values" in the connector builder as well as when configuring this connector as a Source.
+The API key authentication method is similar to the Bearer authentication but allows to configure where to inject the API key (header, request param or request body), as well as under which field name. The used injection mechanism and the field name is part of the connector definition while the API key itself can be set via "Testing values" in the connector builder as well as when configuring this connector as a Source.
 
-This form of authentication is often called "(custom) header authentication". It only supports setting the token to an HTTP header, for other cases, see the ["Other authentication methods" section](#access-token-as-query-or-body-parameter)
+The following table helps with which mechanism to use for which API:
+
+| Description | Injection mechanism |
+|----------|----------|
+|  (HTTP) header   |  `header`   |
+|  Query parameter / query string / request parameter / URL parameter  |  `request_parameter`   |
+|  Form encoded request body / form data   |  `body_data`   |
+|  JSON encoded request body   |  `body_json`   |
 
 #### Example
 
@@ -77,6 +84,8 @@ curl -X GET \
   -H "X-CoinAPI-Key: <api-key>" \
   https://rest.coinapi.io/v1/<stream path>
 ```
+
+In this case the injection mechanism is `header` and the field name is `X-CoinAPI-Key`.
 
 ### OAuth
 
@@ -132,24 +141,8 @@ curl -X GET \
 
 In a lot of cases, OAuth refresh tokens are long-lived and can be used to create access tokens for every sync. In some cases however, a refresh token becomes invalid after it has been used to create an access token. In these situations, a new refresh token is returned along with the access token. One example of this behavior is the [Smartsheets API](https://smartsheet.redoc.ly/#section/OAuth-Walkthrough/Get-or-Refresh-an-Access-Token). In these cases, it's necessary to update the refresh token in the configuration every time an access token is generated, so the next sync will still succeed.
 
-This can be done using the "Overwrite config with refresh token response" setting. If enabled, the authenticator expects a new refresh token to be returned from the token refresh endpoint. By default, the property `refresh_token` is used to extract the new refresh token, but this can be configured using the "Refresh token property name" setting. The connector then updates its own configuration with the new refresh token and uses it the next time an access token needs to be generated.
+This can be done using the "Overwrite config with refresh token response" setting. If enabled, the authenticator expects a new refresh token to be returned from the token refresh endpoint. By default, the property `refresh_token` is used to extract the new refresh token, but this can be configured using the "Refresh token property name" setting. The connector then updates its own configuration with the new refresh token and uses it the next time an access token needs to be generated. If this option is used, it's necessary to specify an initial access token along with its expiry date in the "Testing values" menu.
 
-### Other authentication methods
-
-If your API is not using one of the natively supported authentication methods, it's still possible to build an Airbyte connector as described below.
-
-#### Access token as query or body parameter
-
-Some APIs require to include the access token in different parts of the request (for example as a request parameter). For example, the [Breezometer API](https://docs.breezometer.com/api-documentation/introduction/#authentication) is using this kind of authentication. In these cases it's also possible to configure authentication manually:
-* Add a user input as secret field on the "User inputs" page (e.g. named `api_key`)
-* On the stream page, add a new "Request parameter"
-* As key, configure the name of the query parameter the API requires (e.g. named `key`)
-* As value, configure a [placeholder](/connector-development/config-based/understanding-the-yaml-file/reference#variables) for the created user input (e.g. `{{ config['api_key'] }}`)
-
-<iframe width="640" height="396" src="https://www.loom.com/embed/1d62a8cce4304ee7ac45e748bd9c29be" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-
-The same approach can be used to add the token to the request body.
-
-#### Custom authentication methods
+### Custom authentication methods
 
 Some APIs require complex custom authentication schemes involving signing requests or doing multiple requests to authenticate. In these cases, it's required to use the [low-code CDK](/connector-development/config-based/low-code-cdk-overview) or [Python CDK](/connector-development/cdk-python/).
