@@ -7,19 +7,6 @@ from datetime import datetime
 import pandas as pd
 import pytest
 
-from ci_connector_ops.qa_engine.constants import OSS_CATALOG_URL, CLOUD_CATALOG_URL
-from ci_connector_ops.qa_engine.inputs import fetch_remote_catalog
-
-
-@pytest.fixture(scope="module")
-def oss_catalog():
-    return fetch_remote_catalog(OSS_CATALOG_URL)
-
-
-@pytest.fixture(scope="module")
-def cloud_catalog():
-    return fetch_remote_catalog(CLOUD_CATALOG_URL)
-
 
 @pytest.fixture(scope="module")
 def adoption_metrics_per_connector_version():

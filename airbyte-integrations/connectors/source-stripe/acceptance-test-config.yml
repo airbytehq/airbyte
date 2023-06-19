@@ -14,7 +14,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: "3.7.0" # new streams added; no actual breaking changes; schemas refactoring
+          disable_for_version: "3.8.0" # new streams added; no actual breaking changes; schemas refactoring
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -76,6 +76,9 @@ acceptance_tests:
               bypass_reason: "URL changes upon each request for privacy/security"
             - name: charges/data/*/payment_method_details
               bypass_reason: "Randomly added network_token field to the record"
+          files:
+            - name: links/data
+              bypass_reason: "Order of links/data elements changes on every request"
           usage_records:
             - name: id
               bypass_reason: "id field is randomly generated"
