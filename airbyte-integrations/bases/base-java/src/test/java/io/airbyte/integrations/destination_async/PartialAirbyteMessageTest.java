@@ -19,12 +19,13 @@ public class PartialAirbyteMessageTest {
 
   @Test
   void testDeserializeRecord() {
+    final long emittedAt = Instant.now().toEpochMilli();
     final var serializedRec = Jsons.serialize(new AirbyteMessage()
         .withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withStream("users")
             .withNamespace("public")
-            .withEmittedAt(Instant.now().toEpochMilli())
+            .withEmittedAt(emittedAt)
             .withData(Jsons.jsonNode("data"))));
 
     final var rec = Jsons.tryDeserialize(serializedRec, PartialAirbyteMessage.class).get();
@@ -32,6 +33,7 @@ public class PartialAirbyteMessageTest {
     Assertions.assertEquals("users", rec.getRecord().getStream());
     Assertions.assertEquals("public", rec.getRecord().getNamespace());
     Assertions.assertEquals("\"data\"", rec.getRecord().getData().toString());
+    Assertions.assertEquals(emittedAt, rec.getRecord().getEmittedAt());
   }
 
   @Test

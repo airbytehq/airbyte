@@ -109,7 +109,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
      */
     deserializeAirbyteMessage(messageString)
         .ifPresent(message -> {
-          if (message.getType() == Type.RECORD) {
+          if (message.getType().equals(Type.RECORD)) {
             validateRecord(message);
           }
           bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
@@ -120,17 +120,25 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
    * Deserializes to a {@link PartialAirbyteMessage} which can represent both a Record or a State
    * Message
    *
+   * PartialAirbyteMessage holds either:
+   * <li>entire serialized message string when message is a valid State Message
+   * <li>serialized AirbyteRecordMessage when message is a valid Record Message</li>
+   *
    * @param messageString the string to deserialize
    * @return PartialAirbyteMessage if the message is valid, empty otherwise
    */
   @VisibleForTesting
   public static Optional<PartialAirbyteMessage> deserializeAirbyteMessage(final String messageString) {
+    // TODO: (ryankfu) plumb in the serialized AirbyteStateMessage to match AirbyteRecordMessage and
+    // code parity
     final Optional<PartialAirbyteMessage> messageOptional = Jsons.tryDeserialize(messageString, PartialAirbyteMessage.class)
         .map(partial -> {
-          if (partial.getType().equals(Type.RECORD)) {
+          if (partial.getType().equals(Type.RECORD) && partial.getRecord().getData() != null) {
             return partial.withSerialized(partial.getRecord().getData().toString());
-          } else {
+          } else if (partial.getType().equals(Type.STATE)) {
             return partial.withSerialized(messageString);
+          } else {
+            return null;
           }
         });
 
@@ -153,7 +161,8 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
    * @param input a JSON string that represents an {@link AirbyteMessage}.
    * @return {@code true} if the message is a state message, {@code false} otherwise.
    */
-  private static boolean isStateMessage(final String input) {
+  @VisibleForTesting
+  public static boolean isStateMessage(final String input) {
     final Optional<AirbyteTypeMessage> deserialized = Jsons.tryDeserialize(input, AirbyteTypeMessage.class);
     return deserialized.filter(airbyteTypeMessage -> airbyteTypeMessage.getType() == Type.STATE).isPresent();
   }

@@ -24,6 +24,7 @@ import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyte
 import io.airbyte.integrations.destination_async.state.FlushFailure;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteLogMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -76,6 +77,12 @@ class AsyncStreamConsumerTest {
           SCHEMA_NAME,
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING))));
+
+  private static final JsonNode PAYLOAD = Jsons.jsonNode(Map.of(
+      "created_at", "2022-02-01T17:02:19+00:00",
+      "id", 1,
+      "make", "Mazda",
+      "nested_column", Map.of("array_column", List.of(1, 2, 3))));
 
   private static final AirbyteMessage STATE_MESSAGE1 = new AirbyteMessage()
       .withType(Type.STATE)
@@ -219,21 +226,40 @@ class AsyncStreamConsumerTest {
 
   @Test
   void deserializeAirbyteMessageWithAirbyteRecord() {
-    final JsonNode payload = Jsons.jsonNode(Map.of(
-        "created_at", "2022-02-01T17:02:19+00:00",
-        "id", 1,
-        "make", "Mazda",
-        "nested_column", Map.of("array_column", List.of(1, 2, 3))));
     final AirbyteMessage airbyteMessage = new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
             .withStream(STREAM_NAME)
             .withNamespace(SCHEMA_NAME)
-            .withData(payload));
+            .withData(PAYLOAD));
     final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
-    final String airbyteRecordString = Jsons.serialize(payload);
+    final String airbyteRecordString = Jsons.serialize(PAYLOAD);
     final Optional<PartialAirbyteMessage> partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
     assertEquals(airbyteRecordString, partial.get().getSerialized());
+  }
+
+  @Test
+  void deserializeAirbyteMessageWithEmptyAirbyteRecord() {
+    final Map emptyMap = Map.of();
+    final AirbyteMessage airbyteMessage = new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(STREAM_NAME)
+            .withNamespace(SCHEMA_NAME)
+            .withData(Jsons.jsonNode(emptyMap)));
+    final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
+    final Optional<PartialAirbyteMessage> partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
+    assertEquals(emptyMap.toString(), partial.get().getSerialized());
+  }
+
+  @Test
+  void deserializeAirbyteMessageWithNoStateOrRecord() {
+    final AirbyteMessage airbyteMessage = new AirbyteMessage()
+        .withType(Type.LOG)
+        .withLog(new AirbyteLogMessage());
+    final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
+    final Optional<PartialAirbyteMessage> partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
+    assertTrue(partial.isEmpty());
   }
 
   @Test
@@ -241,6 +267,17 @@ class AsyncStreamConsumerTest {
     final String serializedAirbyteMessage = Jsons.serialize(STATE_MESSAGE1);
     final Optional<PartialAirbyteMessage> partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
     assertEquals(serializedAirbyteMessage, partial.get().getSerialized());
+  }
+
+  @Test
+  void deserializeAirbyteMessageWithBadAirbyteState() {
+    final AirbyteMessage badState = new AirbyteMessage()
+        .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState().withStreamDescriptor(STREAM1_DESC).withStreamState(Jsons.jsonNode(1))));
+    final String serializedAirbyteMessage = Jsons.serialize(badState);
+    final boolean isState = AsyncStreamConsumer.isStateMessage(serializedAirbyteMessage);
+    assertFalse(isState);
   }
 
   @Nested
