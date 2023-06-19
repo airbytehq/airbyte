@@ -1,0 +1,184 @@
+{
+  "properties": {
+    "replication_method": {
+      "oneOf": null,
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string",
+          "default": "Standard",
+          "const": "Standard"
+        }
+      },
+      "default": {
+        "method": "Standard"
+      }
+    },
+    "jdbc_url_params": {
+      "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (Eg. key1=value1&key2=value2&key3=value3). For more information see https://jdbc.postgresql.org/documentation/head/connect.html"
+    },
+    "ssl_mode": {
+      "description": "SSL connection modes. Read more at https://jdbc.postgresql.org/documentation/head/ssl-client.html",
+      "oneOf": [
+        {
+          "additionalProperties": true,
+          "description": "Disables encryption of communication between Flow and source database.",
+          "properties": {
+            "mode": {
+              "const": "disable",
+              "order": 0,
+              "type": "string"
+            }
+          },
+          "required": [
+            "mode"
+          ],
+          "title": "disable"
+        },
+        {
+          "additionalProperties": true,
+          "description": "Enables encryption only when required by the source database.",
+          "properties": {
+            "mode": {
+              "const": "allow",
+              "order": 0,
+              "type": "string"
+            }
+          },
+          "required": [
+            "mode"
+          ],
+          "title": "allow"
+        },
+        {
+          "additionalProperties": true,
+          "description": "Allows unencrypted connection only if the source database does not support encryption.",
+          "properties": {
+            "mode": {
+              "const": "prefer",
+              "order": 0,
+              "type": "string"
+            }
+          },
+          "required": [
+            "mode"
+          ],
+          "title": "prefer"
+        },
+        {
+          "additionalProperties": true,
+          "description": "Always require encryption. If the source database server does not support encryption, connection will fail.",
+          "properties": {
+            "mode": {
+              "const": "require",
+              "order": 0,
+              "type": "string"
+            }
+          },
+          "required": [
+            "mode"
+          ],
+          "title": "require"
+        },
+        {
+          "additionalProperties": true,
+          "description": "Always require encryption and verifies that the source database server has a valid SSL certificate.",
+          "properties": {
+            "ca_certificate": {
+              "airbyte_secret": true,
+              "description": "CA certificate",
+              "multiline": true,
+              "order": 1,
+              "title": "CA Certificate",
+              "type": "string"
+            },
+            "client_certificate": {
+              "airbyte_secret": true,
+              "always_show": true,
+              "description": "Client certificate",
+              "multiline": true,
+              "order": 2,
+              "title": "Client Certificate",
+              "type": "string"
+            },
+            "client_key": {
+              "airbyte_secret": true,
+              "always_show": true,
+              "description": "Client key",
+              "multiline": true,
+              "order": 3,
+              "title": "Client Key",
+              "type": "string"
+            },
+            "client_key_password": {
+              "airbyte_secret": true,
+              "description": "Password for keystorage. If you do not add it - the password will be generated automatically.",
+              "order": 4,
+              "title": "Client key password",
+              "type": "string"
+            },
+            "mode": {
+              "const": "verify-ca",
+              "order": 0,
+              "type": "string"
+            }
+          },
+          "required": [
+            "mode",
+            "ca_certificate"
+          ],
+          "title": "verify-ca"
+        },
+        {
+          "additionalProperties": true,
+          "description": "This is the most secure mode. Always require encryption and verifies the identity of the source database server.",
+          "properties": {
+            "ca_certificate": {
+              "airbyte_secret": true,
+              "description": "CA certificate",
+              "multiline": true,
+              "order": 1,
+              "title": "CA Certificate",
+              "type": "string"
+            },
+            "client_certificate": {
+              "airbyte_secret": true,
+              "always_show": true,
+              "description": "Client certificate",
+              "multiline": true,
+              "order": 2,
+              "title": "Client Certificate",
+              "type": "string"
+            },
+            "client_key": {
+              "airbyte_secret": true,
+              "always_show": true,
+              "description": "Client key",
+              "multiline": true,
+              "order": 3,
+              "title": "Client Key",
+              "type": "string"
+            },
+            "client_key_password": {
+              "airbyte_secret": true,
+              "description": "Password for keystorage. If you do not add it - the password will be generated automatically.",
+              "order": 4,
+              "title": "Client key password",
+              "type": "string"
+            },
+            "mode": {
+              "const": "verify-full",
+              "order": 0,
+              "type": "string"
+            }
+          },
+          "required": [
+            "mode",
+            "ca_certificate"
+          ],
+          "title": "verify-full"
+        }
+      ]
+    }
+  }
+}
