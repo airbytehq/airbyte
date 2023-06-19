@@ -1,8 +1,10 @@
 package io.airbyte.integrations.source.postgres.xmin;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -14,10 +16,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class XminCtidUtils {
+  private static final Logger LOGGER = LoggerFactory.getLogger(XminCtidUtils.class);
 
-  public static StreamsCategorised categoriseStreams(final StateManager stateManager, final ConfiguredAirbyteCatalog fullCatalog) {
+  public static StreamsCategorised categoriseStreams(final StateManager stateManager, final ConfiguredAirbyteCatalog fullCatalog, final XminStatus currentXminStatus) {
     final List<AirbyteStateMessage> rawStateMessages = stateManager.getRawStateMessages();
     final List<AirbyteStateMessage> statesFromCtidSync = new ArrayList<>();
     final List<AirbyteStateMessage> statesFromXminSync = new ArrayList<>();
@@ -36,6 +41,11 @@ public class XminCtidUtils {
         if (streamState.has("state_type") && streamState.get("state_type").asText().equalsIgnoreCase("ctid")) {
           statesFromCtidSync.add(clonedState);
           streamsStillInCtidSync.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
+        } else if (shouldPerformFullSync(currentXminStatus, streamState)) {
+          final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(),
+              streamDescriptor.getNamespace());
+          LOGGER.info("Detected multiple wraparounds. Will perform a full sync for {}", pair);
+          streamsStillInCtidSync.add(pair);
         } else {
           statesFromXminSync.add(clonedState);
         }
@@ -58,6 +68,12 @@ public class XminCtidUtils {
         .toList();
 
     return new StreamsCategorised(new CtidStreams(streamsForCtidSync, statesFromCtidSync), new XminStreams(streamsForXminSync, statesFromXminSync));
+  }
+
+  @VisibleForTesting
+  static boolean shouldPerformFullSync(final XminStatus currentXminStatus, final JsonNode streamState) {
+    // Detects whether source Postgres DB has undergone multiple wraparound events between syncs.
+    return streamState.has("num_wraparound") && (currentXminStatus.getNumWraparound() - streamState.get("num_wraparound").asLong() >= 2);
   }
 
   private static List<ConfiguredAirbyteStream> identifyNewlyAddedStreams(final ConfiguredAirbyteCatalog fullCatalog,

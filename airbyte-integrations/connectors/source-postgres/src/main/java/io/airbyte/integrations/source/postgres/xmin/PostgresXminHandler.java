@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.postgres.xmin;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -150,20 +151,11 @@ public class PostgresXminHandler {
     }
   }
 
-  private PreparedStatement getXminPreparedStatement(final Connection connection,
-      final String wrappedColumnNames, final String fullTableName, final XminStatus prevRunXminStatus, final
-      XminStatus currentXminStatus) throws SQLException {
+  private PreparedStatement getXminPreparedStatement(final Connection connection, final String wrappedColumnNames,
+      final String fullTableName, final XminStatus prevRunXminStatus, final XminStatus currentXminStatus) throws SQLException {
 
-    if (prevRunXminStatus == null || shouldPerformFullSync(prevRunXminStatus, currentXminStatus)) {
-      // If the source Postgres DB has undergone multiple wraparound events between syncs, we have no option but to perform
-      // a full sync.
-      if (prevRunXminStatus == null) {
-        LOGGER.info("First xmin sync. Performing a full sync for {}", fullTableName);
-      } else {
-        LOGGER.info("Detected multiple wraparounds. Performing a full sync for {}", fullTableName);
-      }
-      final String sql = String.format("SELECT %s FROM %s", wrappedColumnNames, fullTableName);
-      return connection.prepareStatement(sql);
+    if (prevRunXminStatus == null) {
+      throw new RuntimeException("XminStatus not found for table " + fullTableName + ", should have triggered a full sync via ctid path");
     } else if (isSingleWraparound(prevRunXminStatus, currentXminStatus)) {
       // The xmin state that we save represents the lowest XID that is still in progress. To make sure we
       // don't miss data associated with the current transaction, we have to issue an >=. Because of the wraparound, the changes prior to the
@@ -189,14 +181,10 @@ public class PostgresXminHandler {
     }
   }
 
-  // Detect whether the source Postgres DB has undergone a single wraparound event.
+  @VisibleForTesting
   static boolean isSingleWraparound(final XminStatus prevRunXminStatus, final XminStatus currentXminStatus) {
+    // Detect whether the source Postgres DB has undergone a single wraparound event.
     return currentXminStatus.getNumWraparound() - prevRunXminStatus.getNumWraparound() == 1;
-  }
-
-  // Detects whether source Postgres DB has undergone multiple wraparound events between syncs.
-  static boolean shouldPerformFullSync(final XminStatus prevRunXminStatus, final XminStatus currentXminStatus) {
-    return currentXminStatus.getNumWraparound() - prevRunXminStatus.getNumWraparound() >= 2;
   }
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}

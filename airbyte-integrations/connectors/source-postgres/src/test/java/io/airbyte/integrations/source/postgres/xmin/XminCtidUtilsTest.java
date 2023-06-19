@@ -3,25 +3,27 @@ package io.airbyte.integrations.source.postgres.xmin;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import org.junit.jupiter.api.Test;
 
-public class PostgresXminHandlerTest {
+public class XminCtidUtilsTest {
 
   @Test
   void testWraparound() {
-    final XminStatus initialStatus =
-        new XminStatus()
+    final JsonNode initialStatus =
+        Jsons.jsonNode(new XminStatus()
             .withNumWraparound(0L)
             .withXminRawValue(5555L)
-            .withXminRawValue(5555L);
+            .withXminRawValue(5555L));
 
     final XminStatus noWrapAroundStatus =
         new XminStatus()
             .withNumWraparound(0L)
             .withXminRawValue(5588L)
             .withXminRawValue(5588L);
-    assertFalse(PostgresXminHandler.isSingleWraparound(initialStatus, noWrapAroundStatus));
+    assertFalse(XminCtidUtils.shouldPerformFullSync(noWrapAroundStatus, initialStatus));
 
     final XminStatus singleWrapAroundStatus =
         new XminStatus()
@@ -29,7 +31,7 @@ public class PostgresXminHandlerTest {
             .withXminRawValue(5588L)
             .withXminRawValue(4294972884L);
 
-    assertTrue(PostgresXminHandler.isSingleWraparound(initialStatus, singleWrapAroundStatus));
+    assertFalse(XminCtidUtils.shouldPerformFullSync(singleWrapAroundStatus, initialStatus));
 
     final XminStatus doubleWrapAroundStatus =
         new XminStatus()
@@ -37,6 +39,7 @@ public class PostgresXminHandlerTest {
             .withXminRawValue(5588L)
             .withXminRawValue(8589940180L);
 
-    assertFalse(PostgresXminHandler.isSingleWraparound(initialStatus, doubleWrapAroundStatus));
+    assertTrue(XminCtidUtils.shouldPerformFullSync(doubleWrapAroundStatus, initialStatus));
   }
+
 }

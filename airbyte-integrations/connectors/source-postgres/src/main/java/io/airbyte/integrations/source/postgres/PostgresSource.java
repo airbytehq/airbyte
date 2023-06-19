@@ -459,7 +459,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)));
 
     } else if (PostgresUtils.isXmin(sourceConfig) && isIncrementalSyncMode(catalog)) {
-      final StreamsCategorised streamsCategorised = categoriseStreams(stateManager, catalog);
+      final StreamsCategorised streamsCategorised = categoriseStreams(stateManager, catalog, xminStatus);
       LOGGER.info("Streams to be synced via ctid : {}", streamsCategorised.ctidStreams.streamsForCtidSync.size());
       LOGGER.info("Streams to be synced via xmin : {}", streamsCategorised.xminStreams.streamsForXminSync.size());
 
