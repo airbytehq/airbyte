@@ -308,6 +308,14 @@ class XminPostgresSourceTest {
     assertMessageSequence(recordsAfterLastSync);
     final List<AirbyteStateMessage> stateAfterLastSync = extractStateMessage(recordsAfterLastSync);
     assertEquals(1, stateAfterLastSync.size());
+
+    final AirbyteStateMessage finalStateMesssage = stateAfterLastSync.get(0);
+    final String stateTypeFromFinalStateMessage = finalStateMesssage.getStream().getStreamState().get("state_type").asText();
+    assertEquals("xmin", stateTypeFromFinalStateMessage);
+    assertTrue(finalStateMesssage.getStream().getStreamState().get("xmin_xid_value").asLong() > thirdStateMessage.getStream().getStreamState()
+        .get("xmin_xid_value").asLong());
+    assertTrue(finalStateMesssage.getStream().getStreamState().get("xmin_raw_value").asLong() > thirdStateMessage.getStream().getStreamState()
+        .get("xmin_raw_value").asLong());
   }
 
   private void assertEqualsCtidState(final JsonNode left, final JsonNode right) {
