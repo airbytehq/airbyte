@@ -89,9 +89,16 @@ jobs:
           CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
           PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
           PRODUCTION: "True"
-      - name: Pull changes from upstream [PULL REQUESTS]
-        if: github.event_name == 'pull_request'
-        run: "git pull --ff-only origin ${{ github.head_ref }}"
+      - name: "Fetch last commit id from remote branch"
+        id: fetch_last_commit_id
+        run: |
+          commit_id=$(git ls-remote --heads origin augustin/connectors-ci/python-auto-format | cut -f 1)
+          echo "::set-output name=commit_id::$commit_id"
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ steps.fetch_last_commit_id.outputs.commit_id }}
       - name: Run airbyte-ci connectors test [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch'
         run: |
