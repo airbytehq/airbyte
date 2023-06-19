@@ -3,10 +3,10 @@
 #
 
 import logging
+from typing import Union
 
 import pendulum
 from pendulum import Date, DateTime
-from typing import Union
 
 logger = logging.getLogger("airbyte")
 
