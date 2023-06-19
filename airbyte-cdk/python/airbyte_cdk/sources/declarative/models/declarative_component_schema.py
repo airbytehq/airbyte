@@ -917,7 +917,7 @@ class DpathExtractor(BaseModel):
     type: Literal["DpathExtractor"]
     field_path: List[str] = Field(
         ...,
-        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array.',
+        description='List of potentially nested fields describing the full path of the field to extract. Use "*" to extract all values from an array. See more info in the [docs](https://docs.airbyte.com/connector-development/config-based/understanding-the-yaml-file/record-selector).',
         examples=[
             ["data"],
             ["data", "records"],

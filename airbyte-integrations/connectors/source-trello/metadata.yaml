@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 8da67652-004c-11ec-9a03-0242ac130003
-  dockerImageTag: 0.3.2
+  dockerImageTag: 0.3.3
   dockerRepository: airbyte/source-trello
   githubIssueLabel: source-trello
   icon: trello.svg
