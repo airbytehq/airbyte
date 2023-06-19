@@ -19,12 +19,7 @@ from ci_connector_ops.pipelines.github import update_global_commit_status_check_
 from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_pipelines
 from ci_connector_ops.pipelines.publish import reorder_contexts, run_connector_publish_pipeline
 from ci_connector_ops.pipelines.tests import run_connector_test_pipeline
-from ci_connector_ops.pipelines.utils import (
-    DaggerPipelineCommand,
-    get_last_commit_message,
-    get_modified_connectors,
-    get_modified_metadata_files,
-)
+from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors, get_modified_metadata_files
 from ci_connector_ops.utils import ConnectorLanguage, console, get_all_released_connectors
 from rich.logging import RichHandler
 from rich.table import Table
@@ -457,9 +452,6 @@ def list(
 @connectors.command(cls=DaggerPipelineCommand, help="Autoformat connector code.")
 @click.pass_context
 def format(ctx: click.Context) -> bool:
-    if ctx.obj["is_ci"] and get_last_commit_message().startswith("🤖"):
-        click.secho("Skipping format as the last commit is from a bot.", fg="yellow")
-        return True
 
     if ctx.obj["modified"]:
         # We only want to format the connector that with modified files on the current branch.
@@ -472,10 +464,13 @@ def format(ctx: click.Context) -> bool:
             (connector, modified_files) for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
         ]
 
-    click.secho(
-        f"Will format the following connectors: {', '.join([connector.technical_name for connector, _ in connectors_and_files_to_format])}.",
-        fg="green",
-    )
+    if connectors_and_files_to_format:
+        click.secho(
+            f"Will format the following connectors: {', '.join([connector.technical_name for connector, _ in connectors_and_files_to_format])}.",
+            fg="green",
+        )
+    else:
+        click.secho("No connectors to format.", fg="yellow")
 
     connectors_contexts = [
         ConnectorContext(
