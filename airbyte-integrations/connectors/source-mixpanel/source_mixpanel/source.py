@@ -13,7 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator, TokenAuthenticator
 
-from .streams import Annotations, CohortMembers, Cohorts, Engage, Export, Funnels, FunnelsList, Revenue
+from .streams import Annotations, CohortMembers, Cohorts, Engage, Export, Funnels, Revenue
 from .testing import adapt_streams_if_testing, adapt_validate_if_testing
 from .utils import read_full_refresh
 
@@ -79,16 +79,31 @@ class SourceMixpanel(AbstractSource):
         try:
             config = self._validate_and_transform(config)
             auth = self.get_authenticator(config)
-            FunnelsList.max_retries = 0
-            funnels = FunnelsList(authenticator=auth, **config)
-            funnels.reqs_per_hour_limit = 0
-            next(read_full_refresh(funnels), None)
-        except requests.HTTPError as e:
-            return False, e.response.json()["error"]
         except Exception as e:
             return False, e
 
-        return True, None
+        # https://github.com/airbytehq/airbyte/pull/27252#discussion_r1228356872
+        # temporary solution, testing access for all streams to avoid 402 error
+        streams = [Annotations, Cohorts, Engage, Export, Revenue]
+        connected = False
+        reason = None
+        for stream_class in streams:
+            try:
+                stream = stream_class(authenticator=auth, **config)
+                next(read_full_refresh(stream), None)
+                connected = True
+                break
+            except requests.HTTPError as e:
+                reason = e.response.json()["error"]
+                if e.response.status_code == 402:
+                    logger.info(f"Stream {stream_class.__name__}: {e.response.json()['error']}")
+                else:
+                    return connected, reason
+            except Exception as e:
+                return connected, e
+
+        reason = None if connected else reason
+        return connected, reason
 
     @adapt_streams_if_testing
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -100,20 +115,18 @@ class SourceMixpanel(AbstractSource):
         logger.info(f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
 
         auth = self.get_authenticator(config)
-        streams = [
+        streams = []
+        for stream in [
             Annotations(authenticator=auth, **config),
             Cohorts(authenticator=auth, **config),
             Funnels(authenticator=auth, **config),
             Revenue(authenticator=auth, **config),
-        ]
-
-        # streams with dynamically generated schema
-        for stream in [
             CohortMembers(authenticator=auth, **config),
             Engage(authenticator=auth, **config),
             Export(authenticator=auth, **config),
         ]:
             try:
+                next(read_full_refresh(stream), None)
                 stream.get_json_schema()
             except requests.HTTPError as e:
                 if e.response.status_code != 402:

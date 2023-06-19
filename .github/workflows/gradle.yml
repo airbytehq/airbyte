@@ -95,11 +95,11 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
-          cache-python: "false"
+      # - name: Cache Build Artifacts
+      #   uses: ./.github/actions/cache-build-artifacts
+      #   with:
+      #     cache-key: ${{ secrets.CACHE_VERSION }}
+      #     cache-python: "false"
 
       - uses: actions/setup-java@v3
         with:
@@ -126,7 +126,7 @@ jobs:
           EOF
 
       - name: Format
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: SUB_BUILD=OCTAVIA_CLI ./gradlew format --scan --info --stacktrace
           attempt_limit: 3
@@ -136,14 +136,14 @@ jobs:
         run: ./tools/bin/check_for_file_changes
 
       - name: Build
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: SUB_BUILD=OCTAVIA_CLI ./gradlew :octavia-cli:build javadoc --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
       - name: Run integration tests
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: ./tools/bin/integration_tests_octavia.sh
           attempt_limit: 3
@@ -189,7 +189,7 @@ jobs:
           EOF
 
       - name: Format
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: SUB_BUILD=CDK ./gradlew format --scan --info --stacktrace
           attempt_limit: 3
@@ -203,7 +203,7 @@ jobs:
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
 
       - name: Build
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: SUB_BUILD=CDK ./gradlew build --scan
           attempt_limit: 3
@@ -251,10 +251,10 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}-connectors
+      # - name: Cache Build Artifacts
+      #   uses: ./.github/actions/cache-build-artifacts
+      #   with:
+      #     cache-key: ${{ secrets.CACHE_VERSION }}-connectors-gradle-build
 
       - uses: actions/setup-java@v3
         with:
@@ -270,7 +270,7 @@ jobs:
           python-version: "3.9"
 
       - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
+        run: python3 -m pip install virtualenv --user
 
       - name: Install automake
         run: apt-get update && apt-get install -y automake build-essential libtool libtool-bin autoconf
@@ -290,7 +290,7 @@ jobs:
           EOF
 
       - name: Generate Template scaffold
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: ./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates --scan
           attempt_limit: 3
@@ -301,21 +301,21 @@ jobs:
         run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       - name: Format
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
       - name: Build
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
       - name: Process Resources
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: SUB_BUILD=CONNECTORS_BASE ./gradlew :airbyte-config-oss:init-oss:processResources --scan
           attempt_limit: 3

@@ -9,6 +9,11 @@ import static io.debezium.connector.postgresql.SourceInfo.LSN_KEY;
 import static io.debezium.relational.RelationalDatabaseConnectorConfig.DATABASE_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.PostgresUtils;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
 import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -21,8 +26,12 @@ import io.debezium.connector.postgresql.PostgresPartition;
 import io.debezium.connector.postgresql.connection.Lsn;
 import io.debezium.pipeline.spi.Offsets;
 import io.debezium.pipeline.spi.Partition;
+import io.debezium.time.Conversions;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -222,6 +231,45 @@ public class PostgresDebeziumStateUtil {
 
     return OptionalLong.empty();
 
+  }
+
+  /**
+   * Method to construct initial Debezium state which can be passed onto Debezium engine to make it
+   * process WAL from a specific LSN and skip snapshot phase
+   */
+  public JsonNode constructInitialDebeziumState(final JdbcDatabase database, final String dbName) {
+    try {
+      return format(currentXLogLocation(database), currentTransactionId(database), dbName, Instant.now());
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @VisibleForTesting
+  public JsonNode format(final Long currentXLogLocation, final Long currentTransactionId, final String dbName, final Instant time) {
+    final String key = "[\"" + dbName + "\",{\"server\":\"" + dbName + "\"}]";
+    final String value =
+        "{\"transaction_id\":null,\"lsn\":" + currentXLogLocation + ",\"txId\":" + currentTransactionId + ",\"ts_usec\":" + Conversions.toEpochMicros(
+            time) + "}";
+
+    final Map<String, String> result = new HashMap<>();
+    result.put(key, value);
+
+    final JsonNode jsonNode = Jsons.jsonNode(result);
+    LOGGER.info("Initial Debezium state constructed: {}", jsonNode);
+
+    return jsonNode;
+  }
+
+  private long currentXLogLocation(JdbcDatabase database) throws SQLException {
+    return PostgresUtils.getLsn(database).asLong();
+  }
+
+  private Long currentTransactionId(final JdbcDatabase database) throws SQLException {
+    final List<Long> transactionId = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery("select * from txid_current()"),
+        resultSet -> resultSet.getLong(1));
+    Preconditions.checkState(transactionId.size() == 1);
+    return transactionId.get(0);
   }
 
 }
