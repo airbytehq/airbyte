@@ -198,12 +198,13 @@ class AdsInsights(FBMarketingIncrementalStream):
         """
 
         self._next_cursor_value = self._get_start_date()
-        for ts_start in self._date_intervals():
-            if ts_start in self._completed_slices:
-                continue
-            ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
-            interval = pendulum.Period(ts_start, ts_end)
-            yield InsightAsyncJob(api=self._api.api, edge_object=self._api.account, interval=interval, params=params)
+        for account in self._api.accounts:
+            for ts_start in self._date_intervals():
+                if ts_start in self._completed_slices:
+                    continue
+                ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
+                interval = pendulum.Period(ts_start, ts_end)
+                yield InsightAsyncJob(api=self._api, edge_object=account, interval=interval, params=params)
 
     def check_breakdowns(self):
         """
@@ -215,7 +216,8 @@ class AdsInsights(FBMarketingIncrementalStream):
             "breakdowns": self.breakdowns,
             "fields": ["account_id"],
         }
-        self._api.account.get_insights(params=params, is_async=False)
+        # Maybe fix this to run for every account
+        self._api.accounts[0].get_insights(params=params, is_async=False)
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None

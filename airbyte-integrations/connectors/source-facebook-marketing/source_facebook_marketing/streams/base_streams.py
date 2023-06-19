@@ -16,6 +16,7 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
+from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 
 from .common import deep_merge

@@ -18,6 +18,7 @@ from .utils import command_check
 def config_fixture():
     config = {
         "account_id": "123",
+        "account_ids": "123",
         "access_token": "TOKEN",
         "start_date": "2019-10-10T00:00:00Z",
         "end_date": "2020-10-10T00:00:00Z",
@@ -41,6 +42,8 @@ def config_gen(config):
 def api_fixture(mocker):
     api_mock = mocker.patch("source_facebook_marketing.source.API")
     api_mock.return_value = mocker.Mock(account=123)
+    api_mock.accounts = [mocker.Mock(), mocker.Mock()]
+
     return api_mock
 
 
@@ -55,8 +58,8 @@ class TestSourceFacebookMarketing:
 
         assert ok
         assert not error_msg
-        api.assert_called_once_with(account_id="123", access_token="TOKEN")
-        logger_mock.info.assert_called_once_with(f"Select account {api.return_value.account}")
+        api.assert_called_once_with(account_ids=["123"], access_token="TOKEN")
+        logger_mock.info.assert_called_once_with(f"Select accounts ['{api.return_value.account}']")
 
     def test_check_connection_future_date_range(self, api, config, logger_mock):
         config["start_date"] = "2219-10-10T00:00:00"

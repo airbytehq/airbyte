@@ -4,7 +4,7 @@
 
 from .streams import (
     Activities,
-    AdAccount,
+    AdAccounts,
     AdCreatives,
     Ads,
     AdSets,
@@ -35,7 +35,7 @@ from .streams import (
 )
 
 __all__ = [
-    "AdAccount",
+    "AdAccounts",
     "AdCreatives",
     "Ads",
     "AdSets",

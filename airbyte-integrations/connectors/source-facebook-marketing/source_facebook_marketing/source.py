@@ -17,7 +17,7 @@ from source_facebook_marketing.api import API, FacebookAPIException
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
     Activities,
-    AdAccount,
+    AdAccounts,
     AdCreatives,
     Ads,
     AdSets,
@@ -78,8 +78,10 @@ class SourceFacebookMarketing(AbstractSource):
             if config.end_date < config.start_date:
                 return False, "end_date must be equal or after start_date."
 
-            api = API(account_id=config.account_id, access_token=config.access_token)
-            logger.info(f"Select account {api.account}")
+            account_ids = config.account_ids.split(",") if config.account_ids else []
+            api = API(account_ids=account_ids, access_token=config.access_token)
+            logger.info(f"Select accounts {account_ids}")
+
         except (requests.exceptions.RequestException, ValidationError, FacebookAPIException) as e:
             return False, e
 
@@ -101,13 +103,14 @@ class SourceFacebookMarketing(AbstractSource):
         config.start_date = validate_start_date(config.start_date)
         config.end_date = validate_end_date(config.start_date, config.end_date)
 
-        api = API(account_id=config.account_id, access_token=config.access_token)
+        account_ids = config.account_ids.split(",") if config.account_ids else []
+        api = API(account_ids=account_ids, access_token=config.access_token)
 
         insights_args = dict(
             api=api, start_date=config.start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
         )
         streams = [
-            AdAccount(api=api),
+            AdAccounts(api=api),
             AdSets(
                 api=api,
                 start_date=config.start_date,
