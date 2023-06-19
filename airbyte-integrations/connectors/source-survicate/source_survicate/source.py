@@ -95,7 +95,7 @@ class Responses(SurveyStream):
         else:
             if self.cursor_field in current_stream_state and isinstance(current_stream_state[self.cursor_field], str):
                 # Handle initial state loaded from JSON which is in str format
-                current_stream_state[self.cursor_field] = _parse_datetime(current_stream_state[self.cursor_field])
+                current_stream_state[self.cursor_field] = _parse_datetime(current_stream_state[self.cursor_field], increment=True)
             current_stream_state[self.cursor_field] = max(
                 _parse_datetime(latest_record[self.cursor_field]), current_stream_state.get(self.cursor_field, self._start_datetime)
             )
@@ -150,5 +150,9 @@ class Responses(SurveyStream):
         return schema
 
 
-def _parse_datetime(dt_str: str):
-    return datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S%z")
+def _parse_datetime(dt_str: str,
+                    increment: Optional[bool] = False):
+    parsed_time = datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S%z")
+    if increment:
+        return incremented_time = parsed_time + timedelta(minutes=1)
+    return parsed_time
