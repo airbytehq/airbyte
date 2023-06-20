@@ -79,6 +79,7 @@ class TestScenario:
         else:
             return []
 
+
 class TestScenarioBuilder:
     def __init__(self):
         self._name = ""

@@ -4,7 +4,7 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, List, Mapping, Optional
+from typing import Any, List, Mapping
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 

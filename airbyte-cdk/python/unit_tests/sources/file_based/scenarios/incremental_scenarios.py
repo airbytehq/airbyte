@@ -4,9 +4,6 @@
 
 from unit_tests.sources.file_based.scenarios._scenario_builder import IncrementalScenarioConfig, TestScenarioBuilder
 
-## FIXME: Need to verify this acceptance criteria:
-#  When the number of files with the same last-modified timestamp is too large, we log an appropriate warning.
-
 single_csv_input_state_is_earlier_scenario = (
     TestScenarioBuilder()
     .set_name("single_csv_input_state_is_earlier")
