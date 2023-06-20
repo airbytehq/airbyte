@@ -99,10 +99,13 @@ public class PostgresQueryUtils {
         .withStateType(StateType.XMIN);
   }
 
-  static Map<AirbyteStreamNameNamespacePair, Long> fileNodeForStreams(final JdbcDatabase database, final List<ConfiguredAirbyteStream> streams, final String quoteString) {
+  static Map<AirbyteStreamNameNamespacePair, Long> fileNodeForStreams(final JdbcDatabase database,
+                                                                      final List<ConfiguredAirbyteStream> streams,
+                                                                      final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, Long> fileNodes = new HashMap<>();
     streams.forEach(stream -> {
-      final AirbyteStreamNameNamespacePair namespacePair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+      final AirbyteStreamNameNamespacePair namespacePair =
+          new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
       final long l = fileNodeForStreams(database, namespacePair, quoteString);
       fileNodes.put(namespacePair, l);
     });

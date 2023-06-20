@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.ctid;
 
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
@@ -53,13 +57,13 @@ public class PostgresCtidHandler {
   private final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier;
 
   public PostgresCtidHandler(final JsonNode config,
-      final JdbcDatabase database,
-      final CtidPostgresSourceOperations sourceOperations,
-      final String quoteString,
-      final Map<AirbyteStreamNameNamespacePair, Long> fileNodes,
-      final CtidStateManager ctidStateManager,
-      final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
-      final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier) {
+                             final JdbcDatabase database,
+                             final CtidPostgresSourceOperations sourceOperations,
+                             final String quoteString,
+                             final Map<AirbyteStreamNameNamespacePair, Long> fileNodes,
+                             final CtidStateManager ctidStateManager,
+                             final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
+                             final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier) {
     this.config = config;
     this.database = database;
     this.sourceOperations = sourceOperations;
@@ -69,10 +73,11 @@ public class PostgresCtidHandler {
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
     this.finalStateMessageSupplier = finalStateMessageSupplier;
   }
+
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
-      final ConfiguredAirbyteCatalog catalog,
-      final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
-      final Instant emmitedAt) {
+                                                                             final ConfiguredAirbyteCatalog catalog,
+                                                                             final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
+                                                                             final Instant emmitedAt) {
     final List<AutoCloseableIterator<AirbyteMessage>> iteratorList = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
@@ -94,7 +99,8 @@ public class PostgresCtidHandler {
             .filter(CatalogHelpers.getTopLevelFieldNames(airbyteStream)::contains)
             .toList();
         final AutoCloseableIterator<RowDataWithCtid> queryStream = queryTableCtid(selectedDatabaseFields, table.getNameSpace(), table.getName());
-        final AutoCloseableIterator<AirbyteMessageWithCtid> recordIterator = getRecordIterator(queryStream, streamName, namespace, emmitedAt.toEpochMilli());
+        final AutoCloseableIterator<AirbyteMessageWithCtid> recordIterator =
+            getRecordIterator(queryStream, streamName, namespace, emmitedAt.toEpochMilli());
         final AutoCloseableIterator<AirbyteMessage> recordAndMessageIterator = augmentWithState(recordIterator, pair);
         final AutoCloseableIterator<AirbyteMessage> logAugmented = augmentWithLogs(recordAndMessageIterator, pair, streamName);
         iteratorList.add(logAugmented);
@@ -105,9 +111,9 @@ public class PostgresCtidHandler {
   }
 
   private AutoCloseableIterator<RowDataWithCtid> queryTableCtid(
-      final List<String> columnNames,
-      final String schemaName,
-      final String tableName) {
+                                                                final List<String> columnNames,
+                                                                final String schemaName,
+                                                                final String tableName) {
 
     LOGGER.info("Queueing query for table: {}", tableName);
     final AirbyteStreamNameNamespacePair airbyteStream =
@@ -116,7 +122,7 @@ public class PostgresCtidHandler {
       try {
         final Stream<RowDataWithCtid> stream = database.unsafeQuery(
             connection -> createCtidQueryStatement(connection, columnNames, schemaName, tableName, airbyteStream), sourceOperations::recordWithCtid);
-        return  AutoCloseableIterators.fromStream(stream, airbyteStream);
+        return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final SQLException e) {
         throw new RuntimeException(e);
       }
@@ -124,11 +130,11 @@ public class PostgresCtidHandler {
   }
 
   private PreparedStatement createCtidQueryStatement(
-      final Connection connection,
-      final List<String> columnNames,
-      final String schemaName,
-      final String tableName,
-      final AirbyteStreamNameNamespacePair airbyteStream) {
+                                                     final Connection connection,
+                                                     final List<String> columnNames,
+                                                     final String schemaName,
+                                                     final String tableName,
+                                                     final AirbyteStreamNameNamespacePair airbyteStream) {
     try {
       LOGGER.info("Preparing query for table: {}", tableName);
       final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName,
@@ -152,10 +158,10 @@ public class PostgresCtidHandler {
 
   // Transforms the given iterator to create an {@link AirbyteRecordMessage}
   private AutoCloseableIterator<AirbyteMessageWithCtid> getRecordIterator(
-      final AutoCloseableIterator<RowDataWithCtid> recordIterator,
-      final String streamName,
-      final String namespace,
-      final long emittedAt) {
+                                                                          final AutoCloseableIterator<RowDataWithCtid> recordIterator,
+                                                                          final String streamName,
+                                                                          final String namespace,
+                                                                          final long emittedAt) {
     return AutoCloseableIterators.transform(recordIterator, r -> new AirbyteMessageWithCtid(new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
@@ -168,8 +174,8 @@ public class PostgresCtidHandler {
 
   // Augments the given iterator with record count logs.
   private AutoCloseableIterator<AirbyteMessage> augmentWithLogs(final AutoCloseableIterator<AirbyteMessage> iterator,
-      final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair,
-      final String streamName) {
+                                                                final io.airbyte.protocol.models.AirbyteStreamNameNamespacePair pair,
+                                                                final String streamName) {
     final AtomicLong recordCount = new AtomicLong();
     return AutoCloseableIterators.transform(iterator,
         AirbyteStreamUtils.convertFromNameAndNamespace(pair.getName(), pair.getNamespace()),
@@ -183,7 +189,7 @@ public class PostgresCtidHandler {
   }
 
   private AutoCloseableIterator<AirbyteMessage> augmentWithState(final AutoCloseableIterator<AirbyteMessageWithCtid> recordIterator,
-      final AirbyteStreamNameNamespacePair pair) {
+                                                                 final AirbyteStreamNameNamespacePair pair) {
 
     final CtidStatus currentCtidStatus = ctidStateManager.getCtidStatus(pair);
     final JsonNode incrementalState =
@@ -200,7 +206,8 @@ public class PostgresCtidHandler {
 
     return AutoCloseableIterators.transformIterator(
         r -> new CtidStateIterator(r, pair, latestFileNode, incrementalState, finalStateMessageSupplier,
-            syncCheckpointDuration, syncCheckpointRecords), recordIterator, pair);
+            syncCheckpointDuration, syncCheckpointRecords),
+        recordIterator, pair);
   }
 
 }

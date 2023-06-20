@@ -20,7 +20,6 @@ import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CU
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.ROW_COUNT_RESULT_COL;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TABLE_ESTIMATE_QUERY;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TOTAL_BYTES_RESULT_COL;
-import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.fileNodeForStreams;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.willVacuumingCauseIssue;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.isIncrementalSyncMode;
 import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.categoriseStreams;
@@ -469,7 +468,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       if (!streamsCategorised.ctidStreams().streamsForCtidSync().isEmpty()) {
         if (willVacuumingCauseIssue(database, streamsCategorised.ctidStreams().streamsForCtidSync(), getQuoteString())) {
-          //TODO : should we just skip these streams instead of failing the entire sync and just LOG warning stating that we are skipping these streams
+          // TODO : should we just skip these streams instead of failing the entire sync and just LOG warning
+          // stating that we are skipping these streams
           throw new RuntimeException("Stopping sync cause few streams are under Vacuuming, can not sync them using ctid");
         }
 
@@ -688,4 +688,5 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     Preconditions.checkState(jsonNodes.size() == 1);
     return jsonNodes;
   }
+
 }

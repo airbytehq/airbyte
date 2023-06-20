@@ -214,7 +214,8 @@ class XminPostgresSourceTest {
     // Extract the state message and assert that it exists. It contains the xmin value, so validating
     // the actual value isn't useful right now.
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(recordsFromFirstSync);
-    // We should have 3 state messages because we have set state emission frequency after each record in the test
+    // We should have 3 state messages because we have set state emission frequency after each record in
+    // the test
     assertEquals(3, stateAfterFirstBatch.size());
 
     final AirbyteStateMessage firstStateMessage = stateAfterFirstBatch.get(0);

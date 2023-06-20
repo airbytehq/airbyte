@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.ctid;
 
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.CTID_STATUS_VERSION;
@@ -22,10 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(CtidStateIterator.class);
   public static final Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(15);
   public static final Integer SYNC_CHECKPOINT_RECORDS = 10_000;
-
 
   private final Iterator<AirbyteMessageWithCtid> messageIterator;
   private final AirbyteStreamNameNamespacePair pair;
@@ -40,12 +44,12 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
   private final Long syncCheckpointRecords;
 
   public CtidStateIterator(final Iterator<AirbyteMessageWithCtid> messageIterator,
-      final AirbyteStreamNameNamespacePair pair,
-      final long relationFileNode,
-      final JsonNode streamStateForIncrementalRun,
-      final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier,
-      final Duration checkpointDuration,
-      final Long checkpointRecords) {
+                           final AirbyteStreamNameNamespacePair pair,
+                           final long relationFileNode,
+                           final JsonNode streamStateForIncrementalRun,
+                           final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier,
+                           final Duration checkpointDuration,
+                           final Long checkpointRecords) {
     this.messageIterator = messageIterator;
     this.pair = pair;
     this.relationFileNode = relationFileNode;
@@ -93,4 +97,5 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
       return endOfData();
     }
   }
+
 }

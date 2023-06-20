@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.xmin;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -67,7 +71,7 @@ public class XminCtidUtils {
   }
 
   private static List<ConfiguredAirbyteStream> identifyNewlyAddedStreams(final ConfiguredAirbyteCatalog fullCatalog,
-      final Set<AirbyteStreamNameNamespacePair> alreadySeenStreams) {
+                                                                         final Set<AirbyteStreamNameNamespacePair> alreadySeenStreams) {
     final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(fullCatalog);
 
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySeenStreams));
@@ -77,7 +81,6 @@ public class XminCtidUtils {
         .map(Jsons::clone)
         .collect(Collectors.toList());
   }
-
 
   public record StreamsCategorised(CtidStreams ctidStreams,
                                    XminStreams xminStreams) {
