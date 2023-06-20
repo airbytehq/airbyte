@@ -47,8 +47,9 @@ public abstract class BigQueryRecordFormatter {
   };
 
   /***
-   * To write to a JSON type, Standard inserts needs the Json to be an object.
-   * For Avro however, it needs to be a string. The column in the schema remains JSON regardless.
+   * To write to a JSON type, Standard inserts needs the Json to be an object. For Avro however, it
+   * needs to be a string. The column in the schema remains JSON regardless.
+   *
    * @return whether to use an object for the formatting of the record.
    */
   protected boolean useObjectForData() {

@@ -19,7 +19,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.apache.avro.Schema;
 import org.apache.avro.file.CodecFactory;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * This class differs from {@link AvroSerializedBuffer} in that 1) the Avro schema can be customized

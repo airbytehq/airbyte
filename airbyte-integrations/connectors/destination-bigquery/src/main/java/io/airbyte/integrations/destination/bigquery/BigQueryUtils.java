@@ -204,8 +204,8 @@ public class BigQueryUtils {
    */
   static void createPartitionedTableIfNotExists(final BigQuery bigquery, final TableId tableId, final Schema schema) {
     try {
-      final var chunkingColumn = TypingAndDedupingFlag.isDestinationV2() ?
-              JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT : JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
+      final var chunkingColumn =
+          TypingAndDedupingFlag.isDestinationV2() ? JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT : JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
       final TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
           .setField(chunkingColumn)
           .build();

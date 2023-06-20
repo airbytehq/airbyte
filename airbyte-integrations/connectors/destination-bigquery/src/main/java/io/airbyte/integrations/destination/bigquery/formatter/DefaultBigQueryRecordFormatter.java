@@ -14,7 +14,6 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -32,10 +31,10 @@ public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
       Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
 
   public static final com.google.cloud.bigquery.Schema SCHEMA_V2 = com.google.cloud.bigquery.Schema.of(
-          Field.of(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, StandardSQLTypeName.STRING),
-          Field.of(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, StandardSQLTypeName.TIMESTAMP),
-          Field.of(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, StandardSQLTypeName.TIMESTAMP),
-          Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.JSON));
+      Field.of(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, StandardSQLTypeName.STRING),
+      Field.of(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, StandardSQLTypeName.TIMESTAMP),
+      Field.of(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, StandardSQLTypeName.TIMESTAMP),
+      Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.JSON));
 
   public DefaultBigQueryRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
     super(jsonSchema, namingResolver);
@@ -51,7 +50,7 @@ public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
       destinationV2record.put(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, null);
       if (useObjectForData()) {
         destinationV2record.put(JavaBaseConstants.COLUMN_NAME_DATA,
-                StandardNameTransformer.formatJsonPath(recordMessage.getData()));
+            StandardNameTransformer.formatJsonPath(recordMessage.getData()));
       } else {
         destinationV2record.put(JavaBaseConstants.COLUMN_NAME_DATA, getData(recordMessage));
       }

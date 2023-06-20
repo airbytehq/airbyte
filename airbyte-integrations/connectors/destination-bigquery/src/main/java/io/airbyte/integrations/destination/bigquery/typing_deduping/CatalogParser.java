@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
@@ -29,20 +33,20 @@ public class CatalogParser<DialectType> {
     this.rawNamespaceOverride = rawNamespaceOverride;
   }
 
-  public record ParsedCatalog<DialectType>(List<StreamConfig<DialectType>> streams) {
+  public record ParsedCatalog<DialectType> (List<StreamConfig<DialectType>> streams) {
 
   }
 
-  public record ParsedType<DialectType>(DialectType dialectType, AirbyteType airbyteType) {
+  public record ParsedType<DialectType> (DialectType dialectType, AirbyteType airbyteType) {
 
   }
 
-  public record StreamConfig<DialectType>(StreamId id,
-                                          SyncMode syncMode,
-                                          DestinationSyncMode destinationSyncMode,
-                                          List<ColumnId> primaryKey,
-                                          Optional<ColumnId> cursor,
-                                          LinkedHashMap<ColumnId, ParsedType<DialectType>> columns) {
+  public record StreamConfig<DialectType> (StreamId id,
+                                           SyncMode syncMode,
+                                           DestinationSyncMode destinationSyncMode,
+                                           List<ColumnId> primaryKey,
+                                           Optional<ColumnId> cursor,
+                                           LinkedHashMap<ColumnId, ParsedType<DialectType>> columns) {
 
   }
 
@@ -68,8 +72,7 @@ public class CatalogParser<DialectType> {
             originalStreamConfig.destinationSyncMode(),
             originalStreamConfig.primaryKey(),
             originalStreamConfig.cursor(),
-            originalStreamConfig.columns()
-        ));
+            originalStreamConfig.columns()));
       } else {
         streamConfigs.add(originalStreamConfig);
       }
@@ -104,7 +107,8 @@ public class CatalogParser<DialectType> {
     }
 
     // this code is really bad and I'm not convinced we need to preserve this behavior.
-    // as with the tablename collisions thing above - we're trying to preserve legacy normalization's naming conventions here.
+    // as with the tablename collisions thing above - we're trying to preserve legacy normalization's
+    // naming conventions here.
     final LinkedHashMap<ColumnId, ParsedType<DialectType>> columns = new LinkedHashMap<>();
     for (Entry<String, AirbyteType> entry : airbyteColumns.entrySet()) {
       final ParsedType<DialectType> dialectType = sqlGenerator.toDialectType(entry.getValue());
@@ -130,8 +134,7 @@ public class CatalogParser<DialectType> {
         columnId = new ColumnId(
             columnId.name(),
             originalColumnId.originalName(),
-            columnId.canonicalName()
-        );
+            columnId.canonicalName());
       }
 
       columns.put(columnId, dialectType);
@@ -143,7 +146,7 @@ public class CatalogParser<DialectType> {
         stream.getDestinationSyncMode(),
         primaryKey,
         cursor,
-        columns
-    );
+        columns);
   }
+
 }

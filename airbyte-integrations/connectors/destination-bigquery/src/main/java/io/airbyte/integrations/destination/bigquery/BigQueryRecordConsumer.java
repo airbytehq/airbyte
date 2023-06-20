@@ -43,10 +43,12 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   public static final String OVERWRITE_TABLE_SUFFIX = "_airbyte_tmp";
 
   /**
-   * Incredibly hacky record to get allow us to write raw tables to one namespace, and final tables to a different namespace.
+   * Incredibly hacky record to get allow us to write raw tables to one namespace, and final tables to
+   * a different namespace.
    * <p>
-   * This is effectively just {@link io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair} but with separate namespaces for raw and final.
-   * We're not adding a new field there because it's declared in protocol-models, and is painful to modify.
+   * This is effectively just {@link io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair} but
+   * with separate namespaces for raw and final. We're not adding a new field there because it's
+   * declared in protocol-models, and is painful to modify.
    */
   public record StreamWriteTargets(String finalNamespace, String rawNamespace, String name) {
 
@@ -57,6 +59,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     public static StreamWriteTargets fromAirbyteStream(AirbyteStream stream, String finalNamespace) {
       return new StreamWriteTargets(finalNamespace, stream.getNamespace(), stream.getName());
     }
+
   }
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordConsumer.class);
@@ -69,7 +72,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   private final BigQuerySqlGenerator sqlGenerator;
   private final BigQueryDestinationHandler destinationHandler;
   private AirbyteMessage lastStateMessage = null;
-  // This is super hacky, but in async land we don't need to make this decision at all. We'll just run T+D whenever we commit raw data.
+  // This is super hacky, but in async land we don't need to make this decision at all. We'll just run
+  // T+D whenever we commit raw data.
   private final AtomicLong recordsSinceLastTDRun = new AtomicLong(0);
   private final ParsedCatalog<StandardSQLTypeName> catalog;
   private final boolean use1s1t;
@@ -123,7 +127,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
               // (this might be because the user ran a reset, which creates an empty table)
               overwriteStreamsWithTmpTable.put(stream.id(), "");
             } else {
-              // We're working with an existing table. Write into a tmp table. We'll overwrite the table at the end of the sync.
+              // We're working with an existing table. Write into a tmp table. We'll overwrite the table at the
+              // end of the sync.
               overwriteStreamsWithTmpTable.put(stream.id(), OVERWRITE_TABLE_SUFFIX);
             }
           }
@@ -131,7 +136,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       }
 
       // For streams in overwrite mode, truncate the raw table and create a tmp table.
-      // non-1s1t syncs actually overwrite the raw table at the end of of the sync, wo we only do this in 1s1t mode.
+      // non-1s1t syncs actually overwrite the raw table at the end of of the sync, wo we only do this in
+      // 1s1t mode.
       for (StreamConfig<StandardSQLTypeName> stream : catalog.streams()) {
         LOGGER.info("Stream {} has sync mode {}", stream.id(), stream.destinationSyncMode());
         final String suffix = overwriteStreamsWithTmpTable.get(stream.id());
@@ -177,7 +183,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   }
 
   /**
-   * Processes {@link io.airbyte.protocol.models.AirbyteRecordMessage} by writing Airbyte stream data to Big Query Writer
+   * Processes {@link io.airbyte.protocol.models.AirbyteRecordMessage} by writing Airbyte stream data
+   * to Big Query Writer
    *
    * @param message record to be written
    */
@@ -185,7 +192,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     final var streamWriteTargets = StreamWriteTargets.fromRecordMessage(message.getRecord(), finalNamespace);
     uploaderMap.get(streamWriteTargets).upload(message);
 
-    // This is just modular arithmetic written in a complicated way. We want to run T+D every RECORDS_PER_TYPING_AND_DEDUPING_BATCH records.
+    // This is just modular arithmetic written in a complicated way. We want to run T+D every
+    // RECORDS_PER_TYPING_AND_DEDUPING_BATCH records.
     // TODO this counter should be per stream, not global.
     if (recordsSinceLastTDRun.getAndUpdate(l -> (l + 1) % RECORDS_PER_TYPING_AND_DEDUPING_BATCH) == RECORDS_PER_TYPING_AND_DEDUPING_BATCH - 1) {
       doTypingAndDeduping(getStreamConfig(streamWriteTargets));
@@ -206,7 +214,8 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
           if (streamConfig.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
             LOGGER.info("Overwriting final table with tmp table");
             // We're at the end of the sync. Move the tmp table to the final table.
-            final Optional<String> overwriteFinalTable = sqlGenerator.overwriteFinalTable(overwriteStreamsWithTmpTable.get(streamConfig.id()), streamConfig);
+            final Optional<String> overwriteFinalTable =
+                sqlGenerator.overwriteFinalTable(overwriteStreamsWithTmpTable.get(streamConfig.id()), streamConfig);
             if (overwriteFinalTable.isPresent()) {
               destinationHandler.execute(overwriteFinalTable.get());
             }
