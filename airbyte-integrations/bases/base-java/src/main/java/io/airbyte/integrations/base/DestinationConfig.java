@@ -1,6 +1,7 @@
 package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,9 @@ public class DestinationConfig {
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationConfig.class);
 
   private static DestinationConfig config;
-  private JsonNode root;
+
+  @VisibleForTesting
+  protected JsonNode root;
 
   private DestinationConfig() {}
 
@@ -37,7 +40,6 @@ public class DestinationConfig {
   }
 
   public JsonNode getNodeValue(final String key) {
-    getInstance();
     final JsonNode node = config.root.get(key);
     if (node == null) {
       LOGGER.warn("Cannot find node with key {} ", key);
@@ -47,7 +49,6 @@ public class DestinationConfig {
 
   // string value, otherwise empty string
   public String getTextValue(final String key) {
-    getInstance();
     final JsonNode node = getNodeValue(key);
     if (node == null || !node.isTextual()) {
       LOGGER.warn("Cannot retrieve text value for node with key {}", key);
@@ -58,7 +59,6 @@ public class DestinationConfig {
 
   // boolean value, otherwise false
   public Boolean getBooleanValue(final String key) {
-    getInstance();
     final JsonNode node = getNodeValue(key);
     if (node == null || !node.isBoolean()) {
       LOGGER.warn("Cannot retrieve boolean value for node with key {}", key);
