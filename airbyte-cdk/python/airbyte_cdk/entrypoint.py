@@ -4,12 +4,16 @@
 
 
 import argparse
+import functools
 import importlib
+import ipaddress
 import logging
 import os.path
+import socket
 import sys
 import tempfile
 from typing import Any, Iterable, List, Mapping
+from urllib.parse import urlparse
 
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
@@ -21,13 +25,24 @@ from airbyte_cdk.sources.source import TCatalog, TState
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from requests import Session
 
 logger = init_logger("airbyte")
+
+VALID_URL_SCHEMES = ["https"]
+CLOUD_DEPLOYMENT_MODE = "cloud"
 
 
 class AirbyteEntrypoint(object):
     def __init__(self, source: Source):
         init_uncaught_exception_handler(logger)
+
+        # DEPLOYMENT_MODE is read when instantiating the entrypoint because it is the common path shared by syncs and connector
+        # builder test requests
+        deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
+        if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE:
+            _init_internal_request_filter()
+
         self.source = source
         self.logger = logging.getLogger(f"airbyte.{getattr(source, 'name', '')}")
 
@@ -170,6 +185,43 @@ def launch(source: Source, args: List[str]):
     parsed_args = source_entrypoint.parse_args(args)
     for message in source_entrypoint.run(parsed_args):
         print(message)
+
+
+def _init_internal_request_filter():
+    """
+    Wraps the Python requests library to prevent sending requests to internal URL endpoints.
+    """
+    wrapped_fn = Session.send
+
+    @functools.wraps(wrapped_fn)
+    def filtered_send(self, request, **kwargs):
+        parsed_url = urlparse(request.url)
+
+        if parsed_url.scheme not in VALID_URL_SCHEMES:
+            raise ValueError(
+                "Invalid Protocol Scheme: The endpoint that data is being requested from is using an invalid or insecure "
+                + f"protocol {parsed_url.scheme}"
+            )
+
+        if not parsed_url.hostname:
+            raise ValueError("Invalid URL specified: The endpoint that data is being requested from is not a valid URL")
+
+        try:
+            ip_address = socket.gethostbyname(str(parsed_url.hostname))
+            is_private_ip = ipaddress.ip_address(ip_address).is_private
+            if is_private_ip:
+                raise ValueError(
+                    "Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Low "
+                    + "code connectors only support requesting data from public API endpoints."
+                )
+        except socket.gaierror:
+            # This is a special case where the developer specifies an IP address string that is not formatted correctly like trailing
+            # whitespace which will fail the socket IP lookup. This only happens when using IP addresses and not text hostnames.
+            raise ValueError(f"Invalid hostname or IP address '{parsed_url.hostname}' specified.")
+
+        return wrapped_fn(self, request, **kwargs)
+
+    Session.send = filtered_send
 
 
 def main():
