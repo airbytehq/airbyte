@@ -143,7 +143,7 @@ The record should update to use USD as the base currency:
 
 ### Adding incremental reads
 
-<div style={{ position: "relative", paddingBottom: "59.66850828729282%", height: 0 }}><iframe src="https://www.loom.com/embed/223d28508682464481a433396cab2a3a" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%"}}></iframe></div>
+<div style={{ position: "relative", paddingBottom: "59.66850828729282%", height: 0 }}><iframe src="https://www.loom.com/embed/d52259513b664119a842809a4fd13c15" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%"}}></iframe></div>
 
 We now have a working implementation of a connector reading the latest exchange rates for a given currency.
 In this section, we'll update the source to read historical data instead of only reading the latest exchange rates.
@@ -153,14 +153,15 @@ According to the API documentation, we can read the exchange rate for a specific
 To configure your connector to request every day individually, follow these steps:
 * On top of the form, change the "Path URL" input to `/exchangerates_data/{{ stream_interval.start_time }}` to [inject](/connector-development/config-based/understanding-the-yaml-file/reference#variables) the date to fetch data for into the path of the request
 * Enable "Incremental sync" for the Rates stream
-* Set the "Cursor field" to `date` - this is the property in our records to check what date got synced last
-* Set the "Datetime format" to `%Y-%m-%d` to match the format of the date in the record returned from the API
-* Set the "Cursor granularity" to `P1D` to tell the connector the API only supports daily increments
+* Set the "Cursor Field" to `date` - this is the property in our records to check what date got synced last
+* Set the "Cursor Field Datetime Format" to `%Y-%m-%d` to match the format of the date in the record returned from the API
 * Leave start time to "User input" so the end user can set the desired start time for syncing data
 * Leave end time to "Now" to always sync exchange rates up to the current date
 * In a lot of cases the start and end date are injected into the request body or request parameters. However in the case of the exchange rate API it needs to be added to the path of the request, so disable the "Inject start/end time into outgoing HTTP request" options
-* Open the "Advanced" section and set "Step" to `P1D` to configure the connector to do one separate request per day by partitioning the dataset into daily intervals
-* Set a start date (like `2023-03-03`) in the "Testing values" menu
+* Open the "Advanced" section and enable "Split up interval" so that the connector will partition the dataset into chunks
+* Set "Step" to `P1D` to configure the connector to do one separate request per day
+* Set the "Cursor granularity" to `P1D` to tell the connector the API only supports daily increments
+* Set a start date (like `2023-06-11`) in the "Testing values" menu
 * Hit the "Test" button to trigger a new test read
 
 Now, you should see a dropdown above the records view that lets you step through the daily exchange rates along with the requests performed to fetch this data. Note that in the connector builder at most 5 partitions are requested to speed up testing. During a proper sync the full time range between your configured start date and the current day will be executed.
@@ -190,7 +191,6 @@ Congratulations! You just completed the following steps:
 * Configured a production-ready connector to extract currency exchange data from an HTTP-based API:
   * Configurable API key, start date and base currency
   * Incremental sync to keep the number of requests small
-  * Schema declaration to enable normalization in the destination
 * Tested whether the connector works correctly in the builder
 * Made the working connector available to configure sources in the workspace
 * Set up a connection using the published connector and synced data from the Exchange Rates API
