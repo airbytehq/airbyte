@@ -358,8 +358,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
     createRawTable();
     createFinalTable("_foo");
     bq.query(QueryJobConfiguration.newBuilder(
-            new StringSubstitutor(Map.of(
-                "dataset", testDataset)).replace(
+        new StringSubstitutor(Map.of(
+            "dataset", testDataset)).replace(
                 """
                 INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
                   (JSON'{"id": 1, "updated_at": "2023-01-01T01:00:00Z", "array": ["foo"], "struct": {"foo": "bar"}, "string": "foo", "number": 42.1, "integer": 42, "boolean": true, "timestamp_with_timezone": "2023-01-23T12:34:56Z", "timestamp_without_timezone": "2023-01-23T12:34:56", "time_with_timezone": "12:34:56Z", "time_without_timezone": "12:34:56", "date": "2023-01-23", "unknown": {}}', generate_uuid(), '2023-01-01T00:00:00Z'),
