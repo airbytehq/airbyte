@@ -1,0 +1,16 @@
+## Incremental syncs
+The file-based connectors supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+| Feature                                        | Supported? |
+| :--------------------------------------------- |:-----------|
+| Full Refresh Sync                              | Yes        |
+| Incremental Sync                               | Yes        |
+| Replicate Incremental Deletes                  | No         |
+| Replicate Multiple Files \(pattern matching\)  | Yes        |
+| Replicate Multiple Streams \(distinct tables\) | Yes        |
+| Namespaces                                     | No         |
+
+### Incremental sync 
+After the initial sync, the connector only pulls files that were modified since the last sync.
+
+The connector checkpoints the connection states when it is done syncing all files for a given timestamp. The connection's state only keeps track of the last 10 000 files synced. If more than 10 000 files are synced at once, the connector won't be able to rely on the connection state to deduplicate files. In this case, the connector will pull all files that were last modified in the last 3 days.
