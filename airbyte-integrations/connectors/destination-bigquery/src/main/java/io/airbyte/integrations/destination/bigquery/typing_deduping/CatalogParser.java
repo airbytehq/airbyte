@@ -33,16 +33,16 @@ public class CatalogParser {
     this.rawNamespaceOverride = rawNamespaceOverride;
   }
 
-  public record ParsedCatalog (List<StreamConfig> streams) {
+  public record ParsedCatalog(List<StreamConfig> streams) {
 
   }
 
-  public record StreamConfig (StreamId id,
-                                           SyncMode syncMode,
-                                           DestinationSyncMode destinationSyncMode,
-                                           List<ColumnId> primaryKey,
-                                           Optional<ColumnId> cursor,
-                                           LinkedHashMap<ColumnId, AirbyteType> columns) {
+  public record StreamConfig(StreamId id,
+                             SyncMode syncMode,
+                             DestinationSyncMode destinationSyncMode,
+                             List<ColumnId> primaryKey,
+                             Optional<ColumnId> cursor,
+                             LinkedHashMap<ColumnId, AirbyteType> columns) {
 
   }
 

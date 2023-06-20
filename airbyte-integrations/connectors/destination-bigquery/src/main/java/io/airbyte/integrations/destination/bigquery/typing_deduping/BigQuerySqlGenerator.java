@@ -409,10 +409,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
           "final_table_id", stream.id().finalTableId(QUOTE),
           "tmp_final_table", stream.id().finalTableId(finalSuffix, QUOTE),
           "real_final_table", stream.id().finalName(QUOTE))).replace(
-             """
-             DROP TABLE IF EXISTS ${final_table_id};
-             ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
-             """));
+              """
+              DROP TABLE IF EXISTS ${final_table_id};
+              ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
+              """));
     } else {
       return Optional.empty();
     }

@@ -8,7 +8,6 @@ import static io.airbyte.integrations.base.JavaBaseConstants.AIRBYTE_NAMESPACE_S
 import static io.airbyte.integrations.destination.bigquery.BigQueryRecordConsumer.OVERWRITE_TABLE_SUFFIX;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
@@ -135,9 +134,9 @@ public class BigQueryStagingConsumerFactory {
   }
 
   private CatalogParser.StreamConfig getStreamConfig(String streamName,
-                                                                          String finalNamespace,
-                                                                          String rawNamespace,
-                                                                          final CatalogParser.ParsedCatalog parsedCatalog) {
+                                                     String finalNamespace,
+                                                     String rawNamespace,
+                                                     final CatalogParser.ParsedCatalog parsedCatalog) {
     BigQueryRecordConsumer.StreamWriteTargets streamWriteTargets =
         new BigQueryRecordConsumer.StreamWriteTargets(finalNamespace, rawNamespace, streamName);
     return parsedCatalog.streams()
