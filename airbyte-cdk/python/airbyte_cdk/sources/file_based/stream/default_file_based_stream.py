@@ -8,6 +8,10 @@ import logging
 from datetime import datetime, time, timedelta
 from functools import cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+import logging
+from datetime import datetime
+from functools import cache
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
@@ -22,6 +26,8 @@ from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_messa
 
 
 class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
+
+
     """
     The default file-based stream.
     """
@@ -102,18 +108,11 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             self.ab_file_name_col: {"type": "string"},
         }
         schema = self.get_raw_json_schema()
-        return {**schema, **extra_fields}
+        schema["properties"] = {**extra_fields, **schema.get("properties", {})}
+        return schema
 
     @cache
     def get_raw_json_schema(self) -> Mapping[str, Any]:
-        """
-        Return the JSON Schema for a stream.
-
-        If the user provided a schema, return that. Otherwise, infer it.
-
-        Use no more than `_discovery_policy.max_n_files_for_schema_inference` files.
-        """
-
         # FIXME: I only did the bare minimal for discovery tests to look right. I haven't verified the schema merging works
         if self.config.input_schema:
             type_mapping = self.config.input_schema
@@ -125,7 +124,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                 files = sorted(files, key=lambda x: x.last_modified, reverse=True)[:max_n_files_for_schema_inference]
                 logging.warning(f"Refusing to infer schema for {len(files)} files; using {max_n_files_for_schema_inference} files.")
             type_mapping = self.infer_schema(files)
-        return type_mapping_to_jsonschema(type_mapping)
+        return type_mapping
 
     @cache
     def list_files(self) -> List[RemoteFile]:
@@ -173,7 +172,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             for task in done:
                 base_schema = merge_schemas(base_schema, task.result())
 
-        return base_schema
+        return {"type": "object", "properties": base_schema}
 
     async def _infer_file_schema(self, file: RemoteFile) -> Mapping[str, Any]:
         try:

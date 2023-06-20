@@ -4,7 +4,6 @@
 
 import csv
 import io
-import logging
 from datetime import datetime
 from io import IOBase
 from typing import Dict, List, Optional, Type
@@ -46,15 +45,12 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
     def list_matching_files(
         self,
         globs: List[str],
-
+        from_date: Optional[datetime] = None,
     ) -> List[RemoteFile]:
-        matching_files = [
-            RemoteFile(uri=f,
-                       last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"),
-                       file_type=self.file_type)
+        return [
+            RemoteFile(uri=f, last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"), file_type=self.file_type)
             for f, data in self.files.items()
         ]
-        return [f for f in matching_files]
 
     def open_file(self, file: RemoteFile) -> IOBase:
         return io.StringIO(self._make_file_contents(file.uri))

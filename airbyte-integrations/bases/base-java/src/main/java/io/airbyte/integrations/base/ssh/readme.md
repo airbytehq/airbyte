@@ -31,7 +31,7 @@ Our SSH connector support is designed to be easy to plug into any existing conne
     Replace port_key and host_key as necessary. Look at `transform_postgres()` to see an example.
 2. To make sure your changes are present in Normalization when running tests on the connector locally, you'll need to change [this version tag](https://github.com/airbytehq/airbyte/blob/6d9ba022646441c7f298ca4dcaa3df59b9a19fbb/airbyte-workers/src/main/java/io/airbyte/workers/normalization/DefaultNormalizationRunner.java#L50) to `dev` so that the new locally built docker image for Normalization is used. Don't push this change with the PR though.
 3. If your `host_key="host"` and `port_key="port"` then this step is not necessary. However if the key names differ for your connector, you will also need to add some logic into `sshtunneling.sh` (within airbyte-workers) to handle this, as currently it assumes that the keys are exactly `host` and `port`.
-4. When making your PR, make sure that you've version bumped Normalization (in `airbyte-workers/src/main/java/io/airbyte/workers/normalization/DefaultNormalizationRunner.java` and `airbyte-integrations/bases/base-normalization/Dockerfile`). You'll need to /test & /legacy-publish Normalization _first_ so that when you /test the connector, it can use the new version.
+4. When making your PR, make sure that you've version bumped Normalization (in `airbyte-workers/src/main/java/io/airbyte/workers/normalization/DefaultNormalizationRunner.java` and `airbyte-integrations/bases/base-normalization/Dockerfile`). You'll need to /legacy-test & /legacy-publish Normalization _first_ so that when you the connector is tested, it can use the new version.
 
 ## Misc
 

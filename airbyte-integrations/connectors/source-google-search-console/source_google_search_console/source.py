@@ -76,7 +76,7 @@ class SourceGoogleSearchConsole(AbstractSource):
 
         config["site_urls"] = [self.normalize_url(url) for url in config["site_urls"]]
 
-        config["data_state"] = config.get("date_state", "final")
+        config["data_state"] = config.get("data_state", "final")
         return config
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:

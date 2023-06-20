@@ -15,7 +15,7 @@ class CsvParser(FileTypeParser):
 
         with stream_reader.open_file(file) as fp:
             reader = csv.DictReader(fp)
-            return {field.strip(): "string" for field in next(reader)}
+            return {field.strip(): {"type": ["null", "string"]} for field in next(reader)}
 
     def parse_records(self, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader) -> Iterable[Dict[str, Any]]:
         with stream_reader.open_file(file) as fp:

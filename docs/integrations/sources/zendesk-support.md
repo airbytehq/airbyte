@@ -47,6 +47,7 @@ The Zendesk Support source connector supports the following streams:
 - [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships) \(Incremental\)
 - [Macros](https://developer.zendesk.com/rest_api/docs/support/macros) \(Incremental\)
 - [Organizations](https://developer.zendesk.com/rest_api/docs/support/organizations) \(Incremental\)
+- [Organization Memberships](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/) \(Incremental\)
 - [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings) \(Incremental\)
 - [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules)
 - [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies)
@@ -69,8 +70,9 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 ## Changelog
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
-| :------- | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `0.3.1`  | 2023-06-02 | [26945](https://github.com/airbytehq/airbyte/pull/26945) | Make `Ticket Metrics` stream to use cursor pagination  |
+|:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `0.4.0`  | 2023-06-16 | [27431](https://github.com/airbytehq/airbyte/pull/27431) | Add Organization Memberships stream                                                                                                                                                                                                |
+| `0.3.1`  | 2023-06-02 | [26945](https://github.com/airbytehq/airbyte/pull/26945) | Make `Ticket Metrics` stream to use cursor pagination                                                                                                                                                                              |
 | `0.3.0`  | 2023-05-23 | [26347](https://github.com/airbytehq/airbyte/pull/26347) | Add stream `Audit Logs` logs`                                                                                                                                                                                                      |
 | `0.2.30` | 2023-05-23 | [26414](https://github.com/airbytehq/airbyte/pull/26414) | Added missing handlers when `empty json` or `JSONDecodeError` is received                                                                                                                                                          |
 | `0.2.29` | 2023-04-18 | [25214](https://github.com/airbytehq/airbyte/pull/25214) | Add missing fields to `Tickets` stream                                                                                                                                                                                             |

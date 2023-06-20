@@ -87,6 +87,7 @@ class AbstractFileBasedStream(Stream):
 
     @abstractmethod
     def compute_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
+        """"""
         ...
 
     @abstractmethod

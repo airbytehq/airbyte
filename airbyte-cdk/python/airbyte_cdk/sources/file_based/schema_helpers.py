@@ -4,16 +4,18 @@
 
 from copy import deepcopy
 from typing import Any, Dict, Literal, Mapping
+from typing import Any, Dict, List, Literal, Mapping, Union
 
 from airbyte_cdk.sources.file_based.exceptions import SchemaInferenceError
 
 type_widths = {str: 0}
 
-JsonSchemaType = Literal["string"]
-supported_types = {"string"}
+JsonSchemaSupportedType = Union[List, Literal["string"], str]
+SchemaType = Dict[str, Dict[str, JsonSchemaSupportedType]]
+supported_types = {"null", "string"}
 
 
-def merge_schemas(schema1: Dict[str, JsonSchemaType], schema2: Dict[str, JsonSchemaType]) -> Dict[str, JsonSchemaType]:
+def merge_schemas(schema1: SchemaType, schema2: SchemaType) -> SchemaType:
     """
     Returns a new dictionary that contains schema1 and schema2.
 
@@ -30,26 +32,30 @@ def merge_schemas(schema1: Dict[str, JsonSchemaType], schema2: Dict[str, JsonSch
     and nothing else.
     """
     for k, t in list(schema1.items()) + list(schema2.items()):
-        assert _is_valid_type(t), f"Unsupported type in schema at {k}: {t}"
+        assert _is_valid_type(t["type"]), f"Unsupported type in schema at {k}: {t}"
 
     merged_schema = deepcopy(schema1)
     for k2, t2 in schema2.items():
         t1 = merged_schema.get(k2)
-        if t1 is None:
+        t1_type = t1["type"] if t1 else None
+        t2_type = t2["type"]
+        if t1_type is None:
             merged_schema[k2] = t2
-        elif t1 == t2:
+        elif t1_type == t2_type:
             continue
         else:
-            merged_schema[k2] = _choose_wider_type(k2, t1, t2)
+            merged_schema[k2]["type"] = _choose_wider_type(k2, t1_type, t2_type)
 
     return merged_schema
 
 
-def _is_valid_type(t: str) -> bool:
+def _is_valid_type(t: JsonSchemaSupportedType) -> bool:
+    if isinstance(t, list):
+        return all(_t in supported_types for _t in t)
     return t in supported_types
 
 
-def _choose_wider_type(key: str, t1: JsonSchemaType, t2: JsonSchemaType) -> JsonSchemaType:
+def _choose_wider_type(key: str, t1: JsonSchemaSupportedType, t2: JsonSchemaSupportedType) -> JsonSchemaSupportedType:
     # TODO: update with additional types.
     if t1 is None and t2 is None:
         raise SchemaInferenceError(f"Null value found in schema at {key}.")
