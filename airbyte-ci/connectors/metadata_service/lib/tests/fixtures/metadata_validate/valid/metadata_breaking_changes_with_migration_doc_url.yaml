@@ -11,10 +11,10 @@ data:
   releaseStage: generally_available
   license: MIT
   releases:
-    migrationDocumentationUrl: https://docs.airbyte.com/integrations/sources/alloydb/migration_guide
+    migrationDocumentationUrl: https://docs.airbyte.com/integrations/sources/alloydb-migrations
     breakingChanges:
       2.0.0:
-        migrationDocumentationUrl: https://docs.airbyte.com/integrations/sources/alloydb/migration_guide#2.0.0
+        migrationDocumentationUrl: https://docs.airbyte.com/integrations/sources/alloydb-migrations#2.0.0
         upgradeDeadline: 2023-08-22
         message: "This version changes the connector’s authentication method from `ApiKey` to `oAuth`, per the [API guide](https://amazon-sqs.com/api/someguide)."
   tags:

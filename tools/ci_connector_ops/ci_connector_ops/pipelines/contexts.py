@@ -70,6 +70,8 @@ class PipelineContext:
         pull_request: PullRequest = None,
         ci_report_bucket: Optional[str] = None,
         ci_gcs_credentials: Optional[str] = None,
+        ci_git_user: Optional[str] = None,
+        ci_github_access_token: Optional[str] = None,
     ):
         """Initialize a pipeline context.
 
@@ -105,6 +107,8 @@ class PipelineContext:
         self.dockerd_service = None
         self.ci_gcs_credentials = sanitize_gcs_credentials(ci_gcs_credentials) if ci_gcs_credentials else None
         self.ci_report_bucket = ci_report_bucket
+        self.ci_git_user = ci_git_user
+        self.ci_github_access_token = ci_github_access_token
         self.started_at = None
         self.stopped_at = None
         update_commit_status_check(**self.github_commit_status)
@@ -140,6 +144,10 @@ class PipelineContext:
     @property
     def ci_gcs_credentials_secret(self) -> Secret:
         return self.dagger_client.set_secret("ci_gcs_credentials", self.ci_gcs_credentials)
+
+    @property
+    def ci_github_access_token_secret(self) -> Secret:
+        return self.dagger_client.set_secret("ci_github_access_token", self.ci_github_access_token)
 
     @property
     def github_commit_status(self) -> dict:
@@ -284,6 +292,8 @@ class ConnectorContext(PipelineContext):
         use_remote_secrets: bool = True,
         ci_report_bucket: Optional[str] = None,
         ci_gcs_credentials: Optional[str] = None,
+        ci_git_user: Optional[str] = None,
+        ci_github_access_token: Optional[str] = None,
         connector_acceptance_test_image: Optional[str] = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
         gha_workflow_run_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
@@ -334,6 +344,8 @@ class ConnectorContext(PipelineContext):
             pull_request=pull_request,
             ci_report_bucket=ci_report_bucket,
             ci_gcs_credentials=ci_gcs_credentials,
+            ci_git_user=ci_git_user,
+            ci_github_access_token=ci_github_access_token,
         )
 
     @property
