@@ -281,7 +281,7 @@ jobs:
           echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE} ${{ github.event.inputs.pre-release }})" >> $GITHUB_ENV
       - name: Prepare Sentry
         if: startsWith(matrix.connector, 'connectors')
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
@@ -299,7 +299,7 @@ jobs:
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: |
             echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
