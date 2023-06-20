@@ -311,10 +311,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
             )
             SELECT
             ${column_list}
-              CASE
-                WHEN array_length(_airbyte_cast_errors) = 0 THEN JSON'{}'
-                ELSE to_json(struct(_airbyte_cast_errors AS errors))
-              END AS _airbyte_meta,
+              to_json(struct(_airbyte_cast_errors AS errors)) AS _airbyte_meta,
               _airbyte_raw_id,
               _airbyte_extracted_at
             FROM intermediate_data;"""

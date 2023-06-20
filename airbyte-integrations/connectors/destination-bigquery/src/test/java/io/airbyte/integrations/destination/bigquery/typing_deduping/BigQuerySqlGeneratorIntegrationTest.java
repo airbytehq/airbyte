@@ -14,10 +14,13 @@ import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.Field.Mode;
+import com.google.cloud.bigquery.FieldValue;
+import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
+import com.google.cloud.bigquery.TableResult;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
@@ -32,11 +35,18 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -191,9 +201,48 @@ public class BigQuerySqlGeneratorIntegrationTest {
     final String sql = GENERATOR.insertNewRecords(streamId, "", COLUMNS);
     logAndExecute(sql);
 
-    // TODO more stringent asserts
-    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build()).getTotalRows();
-    assertEquals(3, finalRows);
+    final TableResult result = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build());
+
+    assertQueryResult(
+        List.of(
+            Map.of(
+                "id", Optional.of(1L),
+                "name", Optional.of("Alice"),
+                "address", Optional.of(Jsons.deserialize("""
+                    {"city": "San Francisco", "state": "CA"}
+                    """)),
+                "age", Optional.empty(),
+                "updated_at", Optional.of(Instant.parse("2023-01-01T01:00:00Z")),
+                "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
+                "_airbyte_meta", Optional.of(Jsons.deserialize("""
+                    {"errors":[]}
+                    """))
+            ),
+            Map.of(
+                "id", Optional.of(1L),
+                "name", Optional.of("Alice"),
+                "address", Optional.of(Jsons.deserialize("""
+                    {"city": "San Diego", "state": "CA"}
+                    """)),
+                "age", Optional.empty(),
+                "updated_at", Optional.of(Instant.parse("2023-01-01T02:00:00Z")),
+                "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
+                "_airbyte_meta", Optional.of(Jsons.deserialize("""
+                    {"errors":[]}"""))
+            ),
+            Map.of(
+                "id", Optional.of(2L),
+                "name", Optional.of("Bob"),
+                "address", Optional.empty(),
+                "updated_at", Optional.of(Instant.parse("2023-01-01T03:00:00Z")),
+                "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
+                "_airbyte_meta", Optional.of(Jsons.deserialize("""
+                    {"errors":["Problem with `age`"]}
+                    """))
+            )
+        ),
+        result
+    );
   }
 
   @Test
@@ -633,5 +682,102 @@ public class BigQuerySqlGeneratorIntegrationTest {
   private static void logAndExecute(final String sql) throws InterruptedException {
     LOGGER.info("Executing sql: {}", sql);
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
+  }
+
+  private Map<String, Object> toMap(Schema schema, FieldValueList row) {
+    final Map<String, Object> map = new HashMap<>();
+    for (int i = 0; i < schema.getFields().size(); i++) {
+      final Field field = schema.getFields().get(i);
+      final FieldValue value = row.get(i);
+      Object typedValue;
+      if (value.getValue() == null) {
+        typedValue = null;
+      } else {
+        typedValue = switch (field.getType().getStandardType()) {
+          case BOOL -> value.getBooleanValue();
+          case INT64 -> value.getLongValue();
+          case FLOAT64 -> value.getDoubleValue();
+          case NUMERIC, BIGNUMERIC -> value.getNumericValue();
+          case STRING -> value.getStringValue();
+          case BYTES -> value.getBytesValue();
+          case TIMESTAMP -> value.getTimestampInstant();
+          // value.getTimestampInstant() fails to parse these types
+          case DATE, DATETIME, TIME -> value.getStringValue();
+          // bigquery returns JSON columns as string; manually parse it into a JsonNode
+          case JSON -> Jsons.deserialize(value.getStringValue());
+
+          // Default case for weird types (struct, array, geography, interval)
+          default -> value.getStringValue();
+        };
+      }
+      map.put(field.getName(), typedValue);
+    }
+    return map;
+  }
+
+  private void assertQueryResult(final List<Map<String, Optional<Object>>> expectedRows, final TableResult result) {
+    List<Map<String, Object>> actualRows = result.streamAll().map(row -> toMap(result.getSchema(), row)).toList();
+    LOGGER.info("Got rows: {}", actualRows);
+    List<Map<String, Optional<Object>>> missingRows = new ArrayList<>();
+    Set<Map<String, Object>> matchedRows = new HashSet<>();
+    boolean foundMultiMatch = false;
+    // For each expected row, iterate through all actual rows to find a match.
+    for (Map<String, Optional<Object>> expectedRow : expectedRows) {
+      final List<Map<String, Object>> matchingRows = actualRows.stream().filter(actualRow -> {
+        // We only want to check the fields that are specified in the expected row.
+        // E.g.we shouldn't assert against randomized UUIDs.
+        for (Entry<String, Optional<Object>> expectedEntry : expectedRow.entrySet()) {
+          // If the expected value is empty, we just check that the actual value is null.
+          if (expectedEntry.getValue().isEmpty()) {
+            if (actualRow.get(expectedEntry.getKey()) != null) {
+              // It wasn't null, so this actualRow doesn't match the expected row
+              return false;
+            } else {
+              // It _was_ null, so we can move on the next key.
+              continue;
+            }
+          }
+          // If the expected value is non-empty, we check that the actual value matches.
+          if (!expectedEntry.getValue().get().equals(actualRow.get(expectedEntry.getKey()))) {
+            return false;
+          }
+        }
+        return true;
+      }).toList();
+
+      if (matchingRows.size() == 0) {
+        missingRows.add(expectedRow);
+      } else if (matchingRows.size() > 1) {
+        foundMultiMatch = true;
+      }
+      matchedRows.addAll(matchingRows);
+    }
+
+    boolean success = true;
+    String errorMessage = "";
+
+    if (foundMultiMatch) {
+      success = false;
+      // TODO is this true? E.g. what if we try to write the same row twice (because of a retry)? Are we guaranteed to have some differentiator?
+      errorMessage += "Some expected rows appeared multiple times in the actual table. This is probably a bug in the test itself. \n";
+    }
+    if (!missingRows.isEmpty()) {
+      success = false;
+      final String missingRowsRendered = missingRows.stream()
+          .map(Object::toString)
+          .collect(Collectors.joining("\n"));
+      errorMessage += "There were %d rows missing from the actual table:\n%s\n".formatted(missingRows.size(), missingRowsRendered);
+    }
+    if (matchedRows.size() != actualRows.size()) {
+      success = false;
+      final String extraRowsRendered = actualRows.stream()
+          .filter(row -> !matchedRows.contains(row))
+          .map(Object::toString)
+          .collect(Collectors.joining("\n"));
+      errorMessage += "There were %d rows in the actual table, which were not expected:\n%s\n".formatted(
+          actualRows.size() - matchedRows.size(),
+          extraRowsRendered);
+    }
+    assertTrue(success, errorMessage);
   }
 }
