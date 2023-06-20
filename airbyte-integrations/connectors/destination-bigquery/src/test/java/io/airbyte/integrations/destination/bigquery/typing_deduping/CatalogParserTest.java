@@ -23,8 +23,8 @@ import org.junit.jupiter.api.Test;
 
 class CatalogParserTest {
 
-  private SqlGenerator<String, String> sqlGenerator;
-  private CatalogParser<String> parser;
+  private SqlGenerator<String> sqlGenerator;
+  private CatalogParser parser;
 
   @BeforeEach
   public void setup() {
@@ -41,7 +41,7 @@ class CatalogParserTest {
       return new StreamId(namespace, name, rawNamespace, namespace + "_" + name, namespace, name);
     });
 
-    parser = new CatalogParser<>(sqlGenerator);
+    parser = new CatalogParser(sqlGenerator);
   }
 
   /**
@@ -54,7 +54,7 @@ class CatalogParserTest {
         stream("a", "b_c"),
         stream("a_b", "c")));
 
-    final ParsedCatalog<?> parsedCatalog = parser.parseCatalog(catalog);
+    final ParsedCatalog parsedCatalog = parser.parseCatalog(catalog);
 
     assertNotEquals(
         parsedCatalog.streams().get(0).id().rawName(),
@@ -80,7 +80,7 @@ class CatalogParserTest {
         stream("a", "foobarfoo"),
         stream("a", "foofoo")));
 
-    final ParsedCatalog<?> parsedCatalog = parser.parseCatalog(catalog);
+    final ParsedCatalog parsedCatalog = parser.parseCatalog(catalog);
 
     assertNotEquals(
         parsedCatalog.streams().get(0).id().finalName(),
@@ -111,7 +111,7 @@ class CatalogParserTest {
                                         """);
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream("a", "a", schema)));
 
-    final ParsedCatalog<?> parsedCatalog = parser.parseCatalog(catalog);
+    final ParsedCatalog parsedCatalog = parser.parseCatalog(catalog);
 
     assertEquals(2, parsedCatalog.streams().get(0).columns().size());
   }
@@ -127,7 +127,7 @@ class CatalogParserTest {
   public void defaultCursor() {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream("a", "a")));
 
-    final ParsedCatalog<?> parsedCatalog = parser.parseCatalog(catalog);
+    final ParsedCatalog parsedCatalog = parser.parseCatalog(catalog);
 
     assertEquals("_airbyte_extracted_at", parsedCatalog.streams().get(0).cursor().get().name());
   }

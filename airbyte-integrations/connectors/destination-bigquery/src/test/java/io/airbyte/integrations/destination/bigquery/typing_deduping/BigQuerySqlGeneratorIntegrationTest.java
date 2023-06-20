@@ -30,7 +30,6 @@ import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.ColumnId;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.StreamId;
@@ -71,8 +70,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
   public static final ColumnId CURSOR = GENERATOR.buildColumnId("updated_at");
   public static final List<ColumnId> PRIMARY_KEY = List.of(GENERATOR.buildColumnId("id"));
   public static final String QUOTE = "`";
-  private static final LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> COLUMNS;
-  private static final LinkedHashMap<ColumnId, ParsedType<StandardSQLTypeName>> CDC_COLUMNS;
+  private static final LinkedHashMap<ColumnId, AirbyteType> COLUMNS;
+  private static final LinkedHashMap<ColumnId, AirbyteType> CDC_COLUMNS;
 
   private static BigQuery bq;
 
@@ -81,27 +80,26 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
   static {
     COLUMNS = new LinkedHashMap<>();
-    COLUMNS.put(GENERATOR.buildColumnId("id"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
-    COLUMNS.put(GENERATOR.buildColumnId("updated_at"), new ParsedType<>(StandardSQLTypeName.TIMESTAMP, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
-    COLUMNS.put(GENERATOR.buildColumnId("name"), new ParsedType<>(StandardSQLTypeName.STRING, AirbyteProtocolType.STRING));
+    COLUMNS.put(GENERATOR.buildColumnId("id"), AirbyteProtocolType.INTEGER);
+    COLUMNS.put(GENERATOR.buildColumnId("updated_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+    COLUMNS.put(GENERATOR.buildColumnId("name"), AirbyteProtocolType.STRING);
 
     LinkedHashMap<String, AirbyteType> addressProperties = new LinkedHashMap<>();
     addressProperties.put("city", AirbyteProtocolType.STRING);
     addressProperties.put("state", AirbyteProtocolType.STRING);
-    COLUMNS.put(GENERATOR.buildColumnId("address"), new ParsedType<>(StandardSQLTypeName.JSON, new Struct(addressProperties)));
+    COLUMNS.put(GENERATOR.buildColumnId("address"), new Struct(addressProperties));
 
-    COLUMNS.put(GENERATOR.buildColumnId("age"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
+    COLUMNS.put(GENERATOR.buildColumnId("age"), AirbyteProtocolType.INTEGER);
 
     CDC_COLUMNS = new LinkedHashMap<>();
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("id"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("_ab_cdc_lsn"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("_ab_cdc_deleted_at"),
-        new ParsedType<>(StandardSQLTypeName.TIMESTAMP, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("name"), new ParsedType<>(StandardSQLTypeName.STRING, AirbyteProtocolType.STRING));
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("id"), AirbyteProtocolType.INTEGER);
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("_ab_cdc_lsn"), AirbyteProtocolType.INTEGER);
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("_ab_cdc_deleted_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("name"), AirbyteProtocolType.STRING);
     // This is a bit unrealistic - DB sources don't actually declare explicit properties in their JSONB
     // columns, and JSONB isn't necessarily a Struct anyway.
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("address"), new ParsedType<>(StandardSQLTypeName.JSON, new Struct(addressProperties)));
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("age"), new ParsedType<>(StandardSQLTypeName.INT64, AirbyteProtocolType.INTEGER));
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("address"), new Struct(addressProperties));
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("age"), AirbyteProtocolType.INTEGER);
   }
 
   @BeforeAll
@@ -562,8 +560,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
     assertEquals(0, rawUntypedRows);
   }
 
-  private StreamConfig<StandardSQLTypeName> incrementalDedupStreamConfig() {
-    return new StreamConfig<>(
+  private StreamConfig incrementalDedupStreamConfig() {
+    return new StreamConfig(
         streamId,
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
@@ -572,8 +570,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
         COLUMNS);
   }
 
-  private StreamConfig<StandardSQLTypeName> cdcStreamConfig() {
-    return new StreamConfig<>(
+  private StreamConfig cdcStreamConfig() {
+    return new StreamConfig(
         streamId,
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND_DEDUP,
@@ -584,8 +582,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
         CDC_COLUMNS);
   }
 
-  private StreamConfig<StandardSQLTypeName> incrementalAppendStreamConfig() {
-    return new StreamConfig<>(
+  private StreamConfig incrementalAppendStreamConfig() {
+    return new StreamConfig(
         streamId,
         SyncMode.INCREMENTAL,
         DestinationSyncMode.APPEND,
@@ -594,8 +592,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
         COLUMNS);
   }
 
-  private StreamConfig<StandardSQLTypeName> fullRefreshAppendStreamConfig() {
-    return new StreamConfig<>(
+  private StreamConfig fullRefreshAppendStreamConfig() {
+    return new StreamConfig(
         streamId,
         SyncMode.FULL_REFRESH,
         DestinationSyncMode.APPEND,
@@ -604,8 +602,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
         COLUMNS);
   }
 
-  private StreamConfig<StandardSQLTypeName> fullRefreshOverwriteStreamConfig() {
-    return new StreamConfig<>(
+  private StreamConfig fullRefreshOverwriteStreamConfig() {
+    return new StreamConfig(
         streamId,
         SyncMode.FULL_REFRESH,
         DestinationSyncMode.OVERWRITE,

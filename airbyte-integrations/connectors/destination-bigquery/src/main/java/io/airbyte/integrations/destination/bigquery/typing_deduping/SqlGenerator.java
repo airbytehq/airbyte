@@ -4,11 +4,10 @@
 
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
-import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedType;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
 import java.util.Optional;
 
-public interface SqlGenerator<DialectTableDefinition, DialectType> {
+public interface SqlGenerator<DialectTableDefinition> {
 
   /**
    * In general, callers should not directly instantiate this class. Use
@@ -76,8 +75,6 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
 
   ColumnId buildColumnId(String name);
 
-  ParsedType<DialectType> toDialectType(AirbyteType type);
-
   /**
    * Generate a SQL statement to create a fresh table to match the given stream.
    * <p>
@@ -87,7 +84,7 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
    * @param suffix A suffix to add to the stream name. Useful for full refresh overwrite syncs, where
    *        we write the entire sync to a temp table.
    */
-  String createTable(final StreamConfig<DialectType> stream, final String suffix);
+  String createTable(final StreamConfig stream, final String suffix);
 
   /**
    * Generate a SQL statement to alter an existing table to match the given stream.
@@ -96,7 +93,7 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
    * altering a partitioning scheme and requires you to recreate+rename the table; snowflake only
    * allows altering some column types to certain other types, etc.).
    */
-  String alterTable(final StreamConfig<DialectType> stream, DialectTableDefinition existingTable);
+  String alterTable(final StreamConfig stream, DialectTableDefinition existingTable);
 
   /**
    * Generate a SQL statement to copy new data from the raw table into the final table.
@@ -119,11 +116,11 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
    *        final table directly. Useful for full refresh overwrite syncs, where we write the entire
    *        sync to a temp table and then swap it into the final table at the end.
    */
-  String updateTable(String finalSuffix, final StreamConfig<DialectType> stream);
+  String updateTable(String finalSuffix, final StreamConfig stream);
 
   /**
    * Drop the previous final table, and rename the new final table to match the old final table.
    */
-  Optional<String> overwriteFinalTable(String finalSuffix, StreamConfig<DialectType> stream);
+  Optional<String> overwriteFinalTable(String finalSuffix, StreamConfig stream);
 
 }

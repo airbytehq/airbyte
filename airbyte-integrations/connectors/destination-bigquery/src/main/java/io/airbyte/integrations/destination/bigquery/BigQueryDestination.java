@@ -12,7 +12,6 @@ import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
-import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.annotations.VisibleForTesting;
@@ -355,13 +354,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator();
     LOGGER.info("Got raw catalog {}", catalogForTypingAndDeduping);
-    final CatalogParser<StandardSQLTypeName> catalogParser;
+    final CatalogParser catalogParser;
     if (rawNamespaceOverride != null) {
-      catalogParser = new CatalogParser<>(sqlGenerator, rawNamespaceOverride);
+      catalogParser = new CatalogParser(sqlGenerator, rawNamespaceOverride);
     } else {
-      catalogParser = new CatalogParser<>(sqlGenerator);
+      catalogParser = new CatalogParser(sqlGenerator);
     }
-    final ParsedCatalog<StandardSQLTypeName> parsedCatalog = catalogParser.parseCatalog(catalogForTypingAndDeduping);
+    final ParsedCatalog parsedCatalog = catalogParser.parseCatalog(catalogForTypingAndDeduping);
 
     final Map<StreamWriteTargets, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(
         bigquery,
@@ -440,14 +439,14 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final ConfiguredAirbyteCatalog catalogForTypingAndDeduping = cloneAndModifyCatalogForFinalTables(config, catalog);
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator();
     LOGGER.info("Got raw catalog {}", catalogForTypingAndDeduping);
-    final CatalogParser<StandardSQLTypeName> catalogParser;
+    final CatalogParser catalogParser;
     final String rawNamespaceOverride = resolveRawNamespace(use1s1t, config);
     if (rawNamespaceOverride != null) {
-      catalogParser = new CatalogParser<>(sqlGenerator, rawNamespaceOverride);
+      catalogParser = new CatalogParser(sqlGenerator, rawNamespaceOverride);
     } else {
-      catalogParser = new CatalogParser<>(sqlGenerator);
+      catalogParser = new CatalogParser(sqlGenerator);
     }
-    final ParsedCatalog<StandardSQLTypeName> parsedCatalog = catalogParser.parseCatalog(catalogForTypingAndDeduping);
+    final ParsedCatalog parsedCatalog = catalogParser.parseCatalog(catalogForTypingAndDeduping);
 
     return new BigQueryStagingConsumerFactory().create(
         config,

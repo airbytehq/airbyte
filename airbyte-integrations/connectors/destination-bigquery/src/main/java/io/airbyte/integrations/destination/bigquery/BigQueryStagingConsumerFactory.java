@@ -65,7 +65,7 @@ public class BigQueryStagingConsumerFactory {
                                        final Function<String, String> targetTableNameTransformer,
                                        final BigQuerySqlGenerator sqlGenerator,
                                        final BigQueryDestinationHandler destinationHandler,
-                                       final CatalogParser.ParsedCatalog<StandardSQLTypeName> parsedCatalog,
+                                       final CatalogParser.ParsedCatalog parsedCatalog,
                                        final boolean use1s1t,
                                        final String rawNamespaceOverride)
       throws InterruptedException {
@@ -118,7 +118,7 @@ public class BigQueryStagingConsumerFactory {
                                                                                          final String rawNamespace,
                                                                                          final BigQuerySqlGenerator sqlGenerator,
                                                                                          final BigQueryDestinationHandler destinationHandler,
-                                                                                         final CatalogParser.ParsedCatalog<StandardSQLTypeName> parsedCatalog,
+                                                                                         final CatalogParser.ParsedCatalog parsedCatalog,
                                                                                          final boolean use1s1t,
                                                                                          final Map<SqlGenerator.StreamId, String> overwriteStreamsWithTmpTable) {
     return (streamName) -> {
@@ -134,10 +134,10 @@ public class BigQueryStagingConsumerFactory {
     };
   }
 
-  private CatalogParser.StreamConfig<StandardSQLTypeName> getStreamConfig(String streamName,
+  private CatalogParser.StreamConfig getStreamConfig(String streamName,
                                                                           String finalNamespace,
                                                                           String rawNamespace,
-                                                                          final CatalogParser.ParsedCatalog<StandardSQLTypeName> parsedCatalog) {
+                                                                          final CatalogParser.ParsedCatalog parsedCatalog) {
     BigQueryRecordConsumer.StreamWriteTargets streamWriteTargets =
         new BigQueryRecordConsumer.StreamWriteTargets(finalNamespace, rawNamespace, streamName);
     return parsedCatalog.streams()
@@ -233,7 +233,7 @@ public class BigQueryStagingConsumerFactory {
   }
 
   private Map<SqlGenerator.StreamId, String> createFinalTables(boolean use1s1t,
-                                                               final CatalogParser.ParsedCatalog<StandardSQLTypeName> parsedCatalog,
+                                                               final CatalogParser.ParsedCatalog parsedCatalog,
                                                                final BigQueryDestinationHandler destinationHandler,
                                                                final BigQuerySqlGenerator sqlGenerator)
       throws InterruptedException {
@@ -241,7 +241,7 @@ public class BigQueryStagingConsumerFactory {
     Map<SqlGenerator.StreamId, String> overwriteStreamsWithTmpTable = new HashMap<>();
     if (use1s1t) {
       // For each stream, make sure that its corresponding final table exists.
-      for (CatalogParser.StreamConfig<StandardSQLTypeName> stream : parsedCatalog.streams()) {
+      for (CatalogParser.StreamConfig stream : parsedCatalog.streams()) {
         final Optional<TableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());
         if (existingTable.isEmpty()) {
           destinationHandler.execute(sqlGenerator.createTable(stream, ""));
@@ -346,7 +346,7 @@ public class BigQueryStagingConsumerFactory {
                                                                                                    final BigQuerySqlGenerator sqlGenerator,
                                                                                                    final BigQueryDestinationHandler destinationHandler,
                                                                                                    final Map<SqlGenerator.StreamId, String> overwriteStreamsWithTmpTable,
-                                                                                                   final CatalogParser.ParsedCatalog<StandardSQLTypeName> parsedCatalog) {
+                                                                                                   final CatalogParser.ParsedCatalog parsedCatalog) {
     return (writeConfig) -> {
       final var streamConfig = getStreamConfig(writeConfig.streamName(), finalNamespace, rawNamespace, parsedCatalog);
       if (use1s1t && DestinationSyncMode.OVERWRITE.equals(writeConfig.syncMode())) {
