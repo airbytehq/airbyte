@@ -97,6 +97,7 @@ Salesloft has the [rate limits](hhttps://developers.salesloft.com/api.html#!/Top
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------|
+| 1.1.2   | 2023-06-20 | [27505](https://github.com/airbytehq/airbyte/pull/27505) | Added new streams (Call Data Records, Call Dispositions, ... )    |
 | 1.1.1   | 2023-06-17 | [27484](https://github.com/airbytehq/airbyte/pull/27484) | Bump version on py files updates                                  |
 | 1.1.0   | 2023-05-17 | [26188](https://github.com/airbytehq/airbyte/pull/26188) | Added `latest_active_date` field to the `Cadences` stream schema. |
 | 1.0.0   | 2023-03-08 | [23937](https://github.com/airbytehq/airbyte/pull/23937) | Certify to Beta                                                   |
