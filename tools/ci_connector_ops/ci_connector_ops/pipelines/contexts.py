@@ -15,8 +15,8 @@ from typing import List, Optional
 import yaml
 from anyio import Path
 from asyncer import asyncify
-from ci_connector_ops.pipelines.actions import remote_storage, secrets
-from ci_connector_ops.pipelines.bases import CIContext, ConnectorReport, Report, StepStatus
+from ci_connector_ops.pipelines.actions import secrets
+from ci_connector_ops.pipelines.bases import CIContext, ConnectorReport, Report
 from ci_connector_ops.pipelines.github import update_commit_status_check
 from ci_connector_ops.pipelines.slack import send_message_to_webhook
 from ci_connector_ops.pipelines.utils import AIRBYTE_REPO_URL, METADATA_FILE_NAME, sanitize_gcs_credentials
@@ -70,6 +70,8 @@ class PipelineContext:
         pull_request: PullRequest = None,
         ci_report_bucket: Optional[str] = None,
         ci_gcs_credentials: Optional[str] = None,
+        ci_git_user: Optional[str] = None,
+        ci_github_access_token: Optional[str] = None,
     ):
         """Initialize a pipeline context.
 
@@ -105,7 +107,10 @@ class PipelineContext:
         self.dockerd_service = None
         self.ci_gcs_credentials = sanitize_gcs_credentials(ci_gcs_credentials) if ci_gcs_credentials else None
         self.ci_report_bucket = ci_report_bucket
-
+        self.ci_git_user = ci_git_user
+        self.ci_github_access_token = ci_github_access_token
+        self.started_at = None
+        self.stopped_at = None
         update_commit_status_check(**self.github_commit_status)
 
     @property
@@ -139,6 +144,10 @@ class PipelineContext:
     @property
     def ci_gcs_credentials_secret(self) -> Secret:
         return self.dagger_client.set_secret("ci_gcs_credentials", self.ci_gcs_credentials)
+
+    @property
+    def ci_github_access_token_secret(self) -> Secret:
+        return self.dagger_client.set_secret("ci_github_access_token", self.ci_github_access_token)
 
     @property
     def github_commit_status(self) -> dict:
@@ -202,6 +211,7 @@ class PipelineContext:
         if self.dagger_client is None:
             raise Exception("A Pipeline can't be entered with an undefined dagger_client")
         self.state = ContextState.RUNNING
+        self.started_at = datetime.utcnow()
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         if self.should_send_slack_message:
             await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)
@@ -247,6 +257,7 @@ class PipelineContext:
             bool: Whether the teardown operation ran successfully.
         """
         self.state = self.determine_final_state(self.report, exception_value)
+        self.stopped_at = datetime.utcnow()
 
         if exception_value:
             self.logger.error("An error was handled by the Pipeline", exc_info=True)
@@ -281,6 +292,8 @@ class ConnectorContext(PipelineContext):
         use_remote_secrets: bool = True,
         ci_report_bucket: Optional[str] = None,
         ci_gcs_credentials: Optional[str] = None,
+        ci_git_user: Optional[str] = None,
+        ci_github_access_token: Optional[str] = None,
         connector_acceptance_test_image: Optional[str] = DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE,
         gha_workflow_run_url: Optional[str] = None,
         pipeline_start_timestamp: Optional[int] = None,
@@ -331,6 +344,8 @@ class ConnectorContext(PipelineContext):
             pull_request=pull_request,
             ci_report_bucket=ci_report_bucket,
             ci_gcs_credentials=ci_gcs_credentials,
+            ci_git_user=ci_git_user,
+            ci_github_access_token=ci_github_access_token,
         )
 
     @property
@@ -402,6 +417,7 @@ class ConnectorContext(PipelineContext):
         Returns:
             bool: Whether the teardown operation ran successfully.
         """
+        self.stopped_at = datetime.utcnow()
         self.state = self.determine_final_state(self.report, exception_value)
         if exception_value:
             self.logger.error("An error got handled by the ConnectorContext", exc_info=True)
