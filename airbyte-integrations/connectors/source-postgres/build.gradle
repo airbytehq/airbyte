@@ -56,3 +56,4 @@ jsonSchema2Pojo {
     includeConstructors = false
     includeSetters = true
 }
+
