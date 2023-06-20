@@ -1,13 +1,25 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import json
 import logging
-from typing import Any, Mapping
-import pytest
 from datetime import datetime
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, Type, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode
+from typing import Any, Mapping
+
+import pytest
+from airbyte_cdk.models import (
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    Status,
+    SyncMode,
+    Type,
+)
 from destination_timeplus import DestinationTimeplus
+
 
 @pytest.fixture(name="config")
 def config_fixture() -> Mapping[str, Any]:
