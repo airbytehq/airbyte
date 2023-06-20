@@ -329,6 +329,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         )
 
         results = []
+        """
         if self.name == "GET_SALES_AND_TRAFFIC_REPORT":
             result_json = json.loads(document)
             result_json["source_name"] = self.source_name
@@ -338,6 +339,12 @@ class ReportsAmazonSPStream(Stream, ABC):
             for item in document_records:
                 item["source_name"] = self.source_name
                 results.append(item)
+        """
+        document_records = self.parse_document(document)
+        for item in document_records:
+            item["source_name"] = self.source_name
+            results.append(item)
+                   
         yield from results
 
     def parse_document(self, document):
@@ -427,12 +434,6 @@ class LedgerDetailViewDataReports(ReportsAmazonSPStream):
 
     name = "GET_LEDGER_DETAIL_VIEW_DATA"
 
-class SalesAndTrafficReports(ReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120
-    """
-
-    name = "GET_SALES_AND_TRAFFIC_REPORT"
 
 class FbaInventoryReports(ReportsAmazonSPStream):
     """
@@ -521,9 +522,10 @@ class BrandAnalyticsStream(ReportsAmazonSPStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-        options = self.report_options()
-        if options is not None:
-            data.update(self._augmented_data(options))
+        if self._report_options:
+            options = self.report_options()
+            if options is not None:
+                data.update(self._augmented_data(options))
 
         return data
 
@@ -593,6 +595,32 @@ class BrandAnalyticsItemComparisonReports(BrandAnalyticsStream):
     name = "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT"
     result_key = "dataByAsin"
 
+
+class SalesAndTrafficReports(ReportsAmazonSPStream):
+    name = "GET_SALES_AND_TRAFFIC_REPORT"
+    
+    def parse_document(self, document):
+        results = []
+        parsed = json_lib.loads(document)
+        results.append(parsed)
+        return results
+    
+    def _report_data(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
+        if self._report_options:
+            options = self.report_options()
+            if options is not None:
+                data["reportOptions"] = options
+                
+        logger.info(f"****** the data with report options is {data}")
+
+        return data
 
 class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
     @property
