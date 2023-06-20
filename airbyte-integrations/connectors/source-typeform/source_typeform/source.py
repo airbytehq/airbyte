@@ -250,9 +250,7 @@ class SourceTypeform(AbstractSource):
     def get_auth(self, config: MutableMapping) -> AuthBase:
         if config.get("token"):
             return TokenAuthenticator(token=config["token"])
-        return SingleUseRefreshTokenOauth2Authenticator(
-            config, token_refresh_endpoint="https://api.typeform.com/oauth/token"
-        )
+        return SingleUseRefreshTokenOauth2Authenticator(config, token_refresh_endpoint="https://api.typeform.com/oauth/token")
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
