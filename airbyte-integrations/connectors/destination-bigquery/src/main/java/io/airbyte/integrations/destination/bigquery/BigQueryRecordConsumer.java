@@ -108,6 +108,7 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     // todo (cgardens) - move contents of #write into this method.
 
     if (use1s1t) {
+      // TODO extract common logic with GCS record consumer + extract into a higher level class
       // For each stream, make sure that its corresponding final table exists.
       for (StreamConfig stream : catalog.streams()) {
         final Optional<TableDefinition> existingTable = destinationHandler.findExistingTable(stream.id());

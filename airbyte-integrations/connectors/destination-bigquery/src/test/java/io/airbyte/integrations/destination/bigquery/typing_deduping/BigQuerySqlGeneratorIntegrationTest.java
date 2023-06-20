@@ -29,6 +29,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.AirbyteProtocolType;
+import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Array;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.StreamConfig;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.ColumnId;
@@ -67,8 +68,10 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest.class);
   private static final BigQuerySqlGenerator GENERATOR = new BigQuerySqlGenerator();
+  public static final ColumnId ID_COLUMN = GENERATOR.buildColumnId("id");
+  public static final List<ColumnId> PRIMARY_KEY = List.of(ID_COLUMN);
   public static final ColumnId CURSOR = GENERATOR.buildColumnId("updated_at");
-  public static final List<ColumnId> PRIMARY_KEY = List.of(GENERATOR.buildColumnId("id"));
+  public static final ColumnId CDC_CURSOR = GENERATOR.buildColumnId("_ab_cdc_lsn");
   public static final String QUOTE = "`";
   private static final LinkedHashMap<ColumnId, AirbyteType> COLUMNS;
   private static final LinkedHashMap<ColumnId, AirbyteType> CDC_COLUMNS;
@@ -80,26 +83,37 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
   static {
     COLUMNS = new LinkedHashMap<>();
-    COLUMNS.put(GENERATOR.buildColumnId("id"), AirbyteProtocolType.INTEGER);
-    COLUMNS.put(GENERATOR.buildColumnId("updated_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-    COLUMNS.put(GENERATOR.buildColumnId("name"), AirbyteProtocolType.STRING);
-
-    LinkedHashMap<String, AirbyteType> addressProperties = new LinkedHashMap<>();
-    addressProperties.put("city", AirbyteProtocolType.STRING);
-    addressProperties.put("state", AirbyteProtocolType.STRING);
-    COLUMNS.put(GENERATOR.buildColumnId("address"), new Struct(addressProperties));
-
-    COLUMNS.put(GENERATOR.buildColumnId("age"), AirbyteProtocolType.INTEGER);
+    COLUMNS.put(ID_COLUMN, AirbyteProtocolType.INTEGER);
+    COLUMNS.put(CURSOR, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+    COLUMNS.put(GENERATOR.buildColumnId("struct"), new Struct(new LinkedHashMap<>()));
+    COLUMNS.put(GENERATOR.buildColumnId("array"), new Array(AirbyteProtocolType.UNKNOWN));
+    COLUMNS.put(GENERATOR.buildColumnId("string"), AirbyteProtocolType.STRING);
+    COLUMNS.put(GENERATOR.buildColumnId("number"), AirbyteProtocolType.NUMBER);
+    COLUMNS.put(GENERATOR.buildColumnId("integer"), AirbyteProtocolType.INTEGER);
+    COLUMNS.put(GENERATOR.buildColumnId("boolean"), AirbyteProtocolType.BOOLEAN);
+    COLUMNS.put(GENERATOR.buildColumnId("timestamp_with_timezone"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+    COLUMNS.put(GENERATOR.buildColumnId("timestamp_without_timezone"), AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE);
+    COLUMNS.put(GENERATOR.buildColumnId("time_with_timezone"), AirbyteProtocolType.TIME_WITH_TIMEZONE);
+    COLUMNS.put(GENERATOR.buildColumnId("time_without_timezone"), AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
+    COLUMNS.put(GENERATOR.buildColumnId("date"), AirbyteProtocolType.DATE);
+    COLUMNS.put(GENERATOR.buildColumnId("unknown"), AirbyteProtocolType.UNKNOWN);
 
     CDC_COLUMNS = new LinkedHashMap<>();
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("id"), AirbyteProtocolType.INTEGER);
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("_ab_cdc_lsn"), AirbyteProtocolType.INTEGER);
+    CDC_COLUMNS.put(ID_COLUMN, AirbyteProtocolType.INTEGER);
+    CDC_COLUMNS.put(CDC_CURSOR, AirbyteProtocolType.INTEGER);
     CDC_COLUMNS.put(GENERATOR.buildColumnId("_ab_cdc_deleted_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("name"), AirbyteProtocolType.STRING);
-    // This is a bit unrealistic - DB sources don't actually declare explicit properties in their JSONB
-    // columns, and JSONB isn't necessarily a Struct anyway.
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("address"), new Struct(addressProperties));
-    CDC_COLUMNS.put(GENERATOR.buildColumnId("age"), AirbyteProtocolType.INTEGER);
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("struct"), new Struct(new LinkedHashMap<>()));
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("array"), new Array(AirbyteProtocolType.UNKNOWN));
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("string"), AirbyteProtocolType.STRING);
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("number"), AirbyteProtocolType.NUMBER);
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("integer"), AirbyteProtocolType.INTEGER);
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("boolean"), AirbyteProtocolType.BOOLEAN);
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("timestamp_with_timezone"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("timestamp_without_timezone"), AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE);
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("time_with_timezone"), AirbyteProtocolType.TIME_WITH_TIMEZONE);
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("time_without_timezone"), AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("date"), AirbyteProtocolType.DATE);
+    CDC_COLUMNS.put(GENERATOR.buildColumnId("unknown"), AirbyteProtocolType.UNKNOWN);
   }
 
   @BeforeAll
@@ -141,8 +155,9 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
   @Test
   public void testCreateTableIncremental() throws InterruptedException {
-    final String sql = GENERATOR.createTable(incrementalDedupStreamConfig(), "");
-    logAndExecute(sql);
+    StreamConfig stream = incrementalDedupStreamConfig();
+
+    logAndExecute(GENERATOR.createTable(stream, ""));
 
     final Table table = bq.getTable(testDataset, "users_final");
     // The table should exist
@@ -158,9 +173,18 @@ public class BigQuerySqlGeneratorIntegrationTest {
             Field.newBuilder("_airbyte_meta", legacySQLTypeName(StandardSQLTypeName.JSON)).setMode(Mode.REQUIRED).build(),
             Field.of("id", legacySQLTypeName(StandardSQLTypeName.INT64)),
             Field.of("updated_at", legacySQLTypeName(StandardSQLTypeName.TIMESTAMP)),
-            Field.of("name", legacySQLTypeName(StandardSQLTypeName.STRING)),
-            Field.of("address", legacySQLTypeName(StandardSQLTypeName.JSON)),
-            Field.of("age", legacySQLTypeName(StandardSQLTypeName.INT64))),
+            Field.of("struct", legacySQLTypeName(StandardSQLTypeName.JSON)),
+            Field.of("array", legacySQLTypeName(StandardSQLTypeName.JSON)),
+            Field.of("string", legacySQLTypeName(StandardSQLTypeName.STRING)),
+            Field.of("number", legacySQLTypeName(StandardSQLTypeName.NUMERIC)),
+            Field.of("integer", legacySQLTypeName(StandardSQLTypeName.INT64)),
+            Field.of("boolean", legacySQLTypeName(StandardSQLTypeName.BOOL)),
+            Field.of("timestamp_with_timezone", legacySQLTypeName(StandardSQLTypeName.TIMESTAMP)),
+            Field.of("timestamp_without_timezone", legacySQLTypeName(StandardSQLTypeName.DATETIME)),
+            Field.of("time_with_timezone", legacySQLTypeName(StandardSQLTypeName.STRING)),
+            Field.of("time_without_timezone", legacySQLTypeName(StandardSQLTypeName.TIME)),
+            Field.of("date", legacySQLTypeName(StandardSQLTypeName.DATE)),
+            Field.of("unknown", legacySQLTypeName(StandardSQLTypeName.JSON))),
         schema);
     // TODO this should assert partitioning/clustering configs
   }
@@ -170,11 +194,12 @@ public class BigQuerySqlGeneratorIntegrationTest {
     createRawTable();
     bq.query(QueryJobConfiguration.newBuilder(
         new StringSubstitutor(Map.of(
-            "dataset", testDataset)).replace("""
-                                             INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-                                               (JSON'{}', '10d6e27d-ae7a-41b5-baf8-c4c277ef9c11', '2023-01-01T00:00:00Z'),
-                                               (JSON'{"id": 1}', '5ce60e70-98aa-4fe3-8159-67207352c4f0', '2023-01-01T00:00:00Z');
-                                             """))
+            "dataset", testDataset)).replace(
+               """
+               INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
+                 (JSON'{}', '10d6e27d-ae7a-41b5-baf8-c4c277ef9c11', '2023-01-01T00:00:00Z'),
+                 (JSON'{"id": 1}', '5ce60e70-98aa-4fe3-8159-67207352c4f0', '2023-01-01T00:00:00Z');
+               """))
         .build());
 
     // This variable is declared outside of the transaction, so we need to do it manually here
@@ -196,9 +221,9 @@ public class BigQuerySqlGeneratorIntegrationTest {
             "dataset", testDataset)).replace(
                 """
                 INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-                  (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}, "updated_at": "2023-01-01T01:00:00Z"}', '972fa08a-aa06-4b91-a6af-a371aee4cb1c', '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Diego", "state": "CA"}, "updated_at": "2023-01-01T02:00:00Z"}', '233ad43d-de50-4a47-bbe6-7a417ce60d9d', '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 2, "name": "Bob", "age": "oops", "updated_at": "2023-01-01T03:00:00Z"}', 'd4aeb036-2d95-4880-acd2-dc69b42b03c6', '2023-01-01T00:00:00Z');
+                  (JSON'{"id": 1, "updated_at": "2023-01-01T01:00:00Z", "string": "Alice", "struct": {"city": "San Francisco", "state": "CA"}}', '972fa08a-aa06-4b91-a6af-a371aee4cb1c', '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 1, "updated_at": "2023-01-01T02:00:00Z", "string": "Alice", "struct": {"city": "San Diego", "state": "CA"}}', '233ad43d-de50-4a47-bbe6-7a417ce60d9d', '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 2, "updated_at": "2023-01-01T03:00:00Z", "string": "Bob", "integer": "oops"}', 'd4aeb036-2d95-4880-acd2-dc69b42b03c6', '2023-01-01T00:00:00Z');
                 """))
         .build());
 
@@ -211,36 +236,42 @@ public class BigQuerySqlGeneratorIntegrationTest {
         List.of(
             Map.of(
                 "id", Optional.of(1L),
-                "name", Optional.of("Alice"),
-                "address", Optional.of(Jsons.deserialize("""
-                                                         {"city": "San Francisco", "state": "CA"}
-                                                         """)),
-                "age", Optional.empty(),
                 "updated_at", Optional.of(Instant.parse("2023-01-01T01:00:00Z")),
+                "string", Optional.of("Alice"),
+                "struct", Optional.of(Jsons.deserialize(
+                   """
+                   {"city": "San Francisco", "state": "CA"}
+                   """)),
+                "integer", Optional.empty(),
                 "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
-                "_airbyte_meta", Optional.of(Jsons.deserialize("""
-                                                               {"errors":[]}
-                                                               """))),
+                "_airbyte_meta", Optional.of(Jsons.deserialize(
+                   """
+                   {"errors":[]}
+                   """))),
             Map.of(
                 "id", Optional.of(1L),
-                "name", Optional.of("Alice"),
-                "address", Optional.of(Jsons.deserialize("""
-                                                         {"city": "San Diego", "state": "CA"}
-                                                         """)),
-                "age", Optional.empty(),
                 "updated_at", Optional.of(Instant.parse("2023-01-01T02:00:00Z")),
+                "string", Optional.of("Alice"),
+                "struct", Optional.of(Jsons.deserialize(
+                   """
+                   {"city": "San Diego", "state": "CA"}
+                   """)),
+                "integer", Optional.empty(),
                 "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
-                "_airbyte_meta", Optional.of(Jsons.deserialize("""
-                                                               {"errors":[]}"""))),
+                "_airbyte_meta", Optional.of(Jsons.deserialize(
+                   """
+                   {"errors":[]}
+                   """))),
             Map.of(
                 "id", Optional.of(2L),
-                "name", Optional.of("Bob"),
-                "address", Optional.empty(),
                 "updated_at", Optional.of(Instant.parse("2023-01-01T03:00:00Z")),
+                "string", Optional.of("Bob"),
+                "struct", Optional.empty(),
                 "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
-                "_airbyte_meta", Optional.of(Jsons.deserialize("""
-                                                               {"errors":["Problem with `age`"]}
-                                                               """)))),
+                "_airbyte_meta", Optional.of(Jsons.deserialize(
+                   """
+                   {"errors":["Problem with `integer`"]}
+                   """)))),
         result);
   }
 
@@ -253,14 +284,14 @@ public class BigQuerySqlGeneratorIntegrationTest {
             "dataset", testDataset)).replace(
                 """
                 INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-                  (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}, "age": 42, "updated_at": "2023-01-01T01:00:00Z"}', 'd7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Diego", "state": "CA"}, "age": 84, "updated_at": "2023-01-01T02:00:00Z"}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 2, "name": "Bob", "age": "oops", "updated_at": "2023-01-01T03:00:00Z"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
+                  (JSON'{"id": 1, "updated_at": "2023-01-01T01:00:00Z", "string": "Alice", "struct": {"city": "San Francisco", "state": "CA"}, "integer": 42}', 'd7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 1, "updated_at": "2023-01-01T02:00:00Z", "string": "Alice", "struct": {"city": "San Diego", "state": "CA"}, "integer": 84}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 2, "updated_at": "2023-01-01T03:00:00Z", "string": "Bob", "integer": "oops"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
 
-                INSERT INTO ${dataset}.users_final (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, id, updated_at, name, address, age) values
+                INSERT INTO ${dataset}.users_final (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, `id`, `updated_at`, `string`, `struct`, `integer`) values
                   ('d7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z', JSON'{"errors":[]}', 1, '2023-01-01T01:00:00Z', 'Alice', JSON'{"city": "San Francisco", "state": "CA"}', 42),
                   ('80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z', JSON'{"errors":[]}', 1, '2023-01-01T02:00:00Z', 'Alice', JSON'{"city": "San Diego", "state": "CA"}', 84),
-                  ('ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z', JSON'{"errors": ["blah blah age"]}', 2, '2023-01-01T03:00:00Z', 'Bob', NULL, NULL);
+                  ('ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z', JSON'{"errors": ["blah blah integer"]}', 2, '2023-01-01T03:00:00Z', 'Bob', NULL, NULL);
                 """))
         .build());
 
@@ -281,13 +312,13 @@ public class BigQuerySqlGeneratorIntegrationTest {
             "dataset", testDataset)).replace(
                 """
                 INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-                  (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}, "age": 42, "updated_at": "2023-01-01T01:00:00Z"}', 'd7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Diego", "state": "CA"}, "age": 84, "updated_at": "2023-01-01T02:00:00Z"}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 2, "name": "Bob", "age": "oops", "updated_at": "2023-01-01T03:00:00Z"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
+                  (JSON'{"id": 1, "updated_at": "2023-01-01T01:00:00Z", "string": "Alice", "struct": {"city": "San Francisco", "state": "CA"}, "integer": 42}', 'd7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 1, "updated_at": "2023-01-01T02:00:00Z", "string": "Alice", "struct": {"city": "San Diego", "state": "CA"}, "integer": 84}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 2, "updated_at": "2023-01-01T03:00:00Z", "string": "Bob", "integer": "oops"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
 
-                INSERT INTO ${dataset}.users_final (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, id, updated_at, name, address, age) values
+                INSERT INTO ${dataset}.users_final (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, `id`, `updated_at`, `string`, `struct`, `integer`) values
                   ('80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z', JSON'{"errors":[]}', 1, '2023-01-01T02:00:00Z', 'Alice', JSON'{"city": "San Diego", "state": "CA"}', 84),
-                  ('ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z', JSON'{"errors": ["blah blah age"]}', 2, '2023-01-01T03:00:00Z', 'Bob', NULL, NULL);
+                  ('ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z', JSON'{"errors": ["blah blah integer"]}', 2, '2023-01-01T03:00:00Z', 'Bob', NULL, NULL);
                 """))
         .build());
 
@@ -307,8 +338,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
             "dataset", testDataset)).replace(
                 """
                 INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-                  (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Diego", "state": "CA"}, "age": 84, "updated_at": "2023-01-01T02:00:00Z"}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 2, "name": "Bob", "age": "oops", "updated_at": "2023-01-01T03:00:00Z"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
+                  (JSON'{"id": 1, "updated_at": "2023-01-01T02:00:00Z", "string": "Alice", "struct": {"city": "San Diego", "state": "CA"}, "integer": 84}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 2, "updated_at": "2023-01-01T03:00:00Z", "string": "Bob", "integer": "oops"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
                 """))
         .build());
 
@@ -332,9 +363,9 @@ public class BigQuerySqlGeneratorIntegrationTest {
             "dataset", testDataset)).replace(
                 """
                 INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-                  (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}, "age": 42, "updated_at": "2023-01-01T01:00:00Z"}', 'd7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Diego", "state": "CA"}, "age": 84, "updated_at": "2023-01-01T02:00:00Z"}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 2, "name": "Bob", "age": "oops", "updated_at": "2023-01-01T03:00:00Z"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
+                  (JSON'{"id": 1, "updated_at": "2023-01-01T01:00:00Z", "string": "Alice", "struct": {"city": "San Francisco", "state": "CA"}, "integer": 42}', 'd7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 1, "updated_at": "2023-01-01T02:00:00Z", "string": "Alice", "struct": {"city": "San Diego", "state": "CA"}, "integer": 84}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 2, "updated_at": "2023-01-01T03:00:00Z", "string": "Bob", "integer": "oops"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
                 """))
         .build());
 
@@ -360,9 +391,9 @@ public class BigQuerySqlGeneratorIntegrationTest {
             "dataset", testDataset)).replace(
                 """
                 INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-                  (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}, "age": 42, "updated_at": "2023-01-01T01:00:00Z"}', 'd7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Diego", "state": "CA"}, "age": 84, "updated_at": "2023-01-01T02:00:00Z"}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 2, "name": "Bob", "age": "oops", "updated_at": "2023-01-01T03:00:00Z"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
+                  (JSON'{"id": 1, "updated_at": "2023-01-01T01:00:00Z", "string": "Alice", "struct": {"city": "San Francisco", "state": "CA"}, "integer": 42}', 'd7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 1, "updated_at": "2023-01-01T02:00:00Z", "string": "Alice", "struct": {"city": "San Diego", "state": "CA"}, "integer": 84}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 2, "updated_at": "2023-01-01T03:00:00Z", "string": "Bob", "integer": "oops"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
                 """))
         .build());
 
@@ -391,11 +422,11 @@ public class BigQuerySqlGeneratorIntegrationTest {
             "dataset", testDataset)).replace(
                 """
                 INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-                  (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Francisco", "state": "CA"}, "age": 42, "updated_at": "2023-01-01T01:00:00Z"}', 'd7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 1, "name": "Alice", "address": {"city": "San Diego", "state": "CA"}, "age": 84, "updated_at": "2023-01-01T02:00:00Z"}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 2, "name": "Bob", "age": "oops", "updated_at": "2023-01-01T03:00:00Z"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
+                  (JSON'{"id": 1, "updated_at": "2023-01-01T01:00:00Z", "string": "Alice", "struct": {"city": "San Francisco", "state": "CA"}, "integer": 42}', 'd7b81af0-01da-4846-a650-cc398986bc99', '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 1, "updated_at": "2023-01-01T02:00:00Z", "string": "Alice", "struct": {"city": "San Diego", "state": "CA"}, "integer": 84}', '80c99b54-54b4-43bd-b51b-1f67dafa2c52', '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 2, "updated_at": "2023-01-01T03:00:00Z", "string": "Bob", "integer": "oops"}', 'ad690bfb-c2c2-4172-bd73-a16c86ccbb67', '2023-01-01T00:00:00Z');
 
-                INSERT INTO ${dataset}.users_final_foo (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, id, updated_at, name, address, age) values
+                INSERT INTO ${dataset}.users_final_foo (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, `id`, `updated_at`, `string`, `struct`, `integer`) values
                   ('64f4390f-3da1-4b65-b64a-a6c67497f18d', '2022-12-31T00:00:00Z', JSON'{"errors": []}', 1, '2022-12-31T00:00:00Z', 'Alice', NULL, NULL);
                 """))
         .build());
@@ -435,18 +466,18 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 """
                 -- records from a previous sync
                 INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`, `_airbyte_loaded_at`) VALUES
-                  (JSON'{"id": 1, "_ab_cdc_lsn": 10000, "name": "spooky ghost"}', '64f4390f-3da1-4b65-b64a-a6c67497f18d', '2022-12-31T00:00:00Z', '2022-12-31T00:00:01Z'),
-                  (JSON'{"id": 0, "_ab_cdc_lsn": 9999, "name": "zombie", "_ab_cdc_deleted_at": "2022-12-31T00:O0:00Z"}', generate_uuid(), '2022-12-31T00:00:00Z', '2022-12-31T00:00:01Z');
-                INSERT INTO ${dataset}.users_final (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, id, _ab_cdc_lsn, name, address, age) values
+                  (JSON'{"id": 1, "_ab_cdc_lsn": 10000, "string": "spooky ghost"}', '64f4390f-3da1-4b65-b64a-a6c67497f18d', '2022-12-31T00:00:00Z', '2022-12-31T00:00:01Z'),
+                  (JSON'{"id": 0, "_ab_cdc_lsn": 9999, "string": "zombie", "_ab_cdc_deleted_at": "2022-12-31T00:O0:00Z"}', generate_uuid(), '2022-12-31T00:00:00Z', '2022-12-31T00:00:01Z');
+                INSERT INTO ${dataset}.users_final (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, `id`, `_ab_cdc_lsn`, `string`, `struct`, `integer`) values
                   ('64f4390f-3da1-4b65-b64a-a6c67497f18d', '2022-12-31T00:00:00Z', JSON'{}', 1, 1000, 'spooky ghost', NULL, NULL);
 
                 -- new records from the current sync
                 INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-                  (JSON'{"id": 2, "_ab_cdc_lsn": 10001, "name": "alice"}', generate_uuid(), '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 2, "_ab_cdc_lsn": 10002, "name": "alice2"}', generate_uuid(), '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 3, "_ab_cdc_lsn": 10003, "name": "bob"}', generate_uuid(), '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 2, "_ab_cdc_lsn": 10001, "string": "alice"}', generate_uuid(), '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 2, "_ab_cdc_lsn": 10002, "string": "alice2"}', generate_uuid(), '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 3, "_ab_cdc_lsn": 10003, "string": "bob"}', generate_uuid(), '2023-01-01T00:00:00Z'),
                   (JSON'{"id": 1, "_ab_cdc_lsn": 10004, "_ab_cdc_deleted_at": "2022-12-31T23:59:59Z"}', generate_uuid(), '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 0, "_ab_cdc_lsn": 10005, "name": "zombie_returned"}', generate_uuid(), '2023-01-01T00:00:00Z');
+                  (JSON'{"id": 0, "_ab_cdc_lsn": 10005, "string": "zombie_returned"}', generate_uuid(), '2023-01-01T00:00:00Z');
                 """))
         .build());
 
@@ -496,7 +527,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
                 -- insert raw record from the second record batch - this is an outdated record that should be ignored.
                 INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-                  (JSON'{"id": 1, "_ab_cdc_lsn": 10000, "name": "alice"}', generate_uuid(), '2023-01-01T00:00:00Z');
+                  (JSON'{"id": 1, "_ab_cdc_lsn": 10000, "string": "alice"}', generate_uuid(), '2023-01-01T00:00:00Z');
                 """))
         .build());
 
@@ -537,8 +568,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 """
                 -- records from the first batch
                 INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`, `_airbyte_loaded_at`) VALUES
-                  (JSON'{"id": 1, "_ab_cdc_lsn": 10002, "name": "alice_reinsert"}', '64f4390f-3da1-4b65-b64a-a6c67497f18d', '2023-01-01T00:00:00Z', '2023-01-01T00:00:01Z');
-                INSERT INTO ${dataset}.users_final (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, id, _ab_cdc_lsn, name) values
+                  (JSON'{"id": 1, "_ab_cdc_lsn": 10002, "string": "alice_reinsert"}', '64f4390f-3da1-4b65-b64a-a6c67497f18d', '2023-01-01T00:00:00Z', '2023-01-01T00:00:01Z');
+                INSERT INTO ${dataset}.users_final (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_meta, `id`, `_ab_cdc_lsn`, `string`) values
                   ('64f4390f-3da1-4b65-b64a-a6c67497f18d', '2023-01-01T00:00:00Z', JSON'{}', 1, 10002, 'alice_reinsert');
 
                 -- second record batch
@@ -578,7 +609,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
         PRIMARY_KEY,
         // Much like the rest of this class - this is purely for test purposes. Real CDC cursors may not be
         // exactly the same as this.
-        Optional.of(GENERATOR.buildColumnId("_ab_cdc_lsn")),
+        Optional.of(CDC_CURSOR),
         CDC_COLUMNS);
   }
 
@@ -617,16 +648,17 @@ public class BigQuerySqlGeneratorIntegrationTest {
   private void createRawTable() throws InterruptedException {
     bq.query(QueryJobConfiguration.newBuilder(
         new StringSubstitutor(Map.of(
-            "dataset", testDataset)).replace("""
-                                             CREATE TABLE ${dataset}.users_raw (
-                                               _airbyte_raw_id STRING NOT NULL,
-                                               _airbyte_data JSON NOT NULL,
-                                               _airbyte_extracted_at TIMESTAMP NOT NULL,
-                                               _airbyte_loaded_at TIMESTAMP
-                                             ) PARTITION BY (
-                                               DATE_TRUNC(_airbyte_extracted_at, DAY)
-                                             ) CLUSTER BY _airbyte_loaded_at;
-                                             """))
+            "dataset", testDataset)).replace(
+               """
+               CREATE TABLE ${dataset}.users_raw (
+                 _airbyte_raw_id STRING NOT NULL,
+                 _airbyte_data JSON NOT NULL,
+                 _airbyte_extracted_at TIMESTAMP NOT NULL,
+                 _airbyte_loaded_at TIMESTAMP
+               ) PARTITION BY (
+                 DATE_TRUNC(_airbyte_extracted_at, DAY)
+               ) CLUSTER BY _airbyte_loaded_at;
+               """))
         .build());
   }
 
@@ -638,41 +670,61 @@ public class BigQuerySqlGeneratorIntegrationTest {
     bq.query(QueryJobConfiguration.newBuilder(
         new StringSubstitutor(Map.of(
             "dataset", testDataset,
-            "suffix", suffix)).replace("""
-                                       CREATE TABLE ${dataset}.users_final${suffix} (
-                                         _airbyte_raw_id STRING NOT NULL,
-                                         _airbyte_extracted_at TIMESTAMP NOT NULL,
-                                         _airbyte_meta JSON NOT NULL,
-                                         id INT64,
-                                         updated_at TIMESTAMP,
-                                         name STRING,
-                                         address JSON,
-                                         age INT64
-                                       )
-                                       PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
-                                       CLUSTER BY id, _airbyte_extracted_at;
-                                       """))
+            "suffix", suffix)).replace(
+               """
+               CREATE TABLE ${dataset}.users_final${suffix} (
+                 _airbyte_raw_id STRING NOT NULL,
+                 _airbyte_extracted_at TIMESTAMP NOT NULL,
+                 _airbyte_meta JSON NOT NULL,
+                 `id` INT64,
+                 `updated_at` TIMESTAMP,
+                 `struct` JSON,
+                 `array` JSON,
+                 `string` STRING,
+                 `number` NUMERIC,
+                 `integer` INT64,
+                 `boolean` BOOL,
+                 `timestamp_with_timezone` TIMESTAMP,
+                 `timestamp_without_timezone` DATETIME,
+                 `time_with_timezone` STRING,
+                 `time_without_timezone` TIME,
+                 `date` DATE,
+                 `unknown` JSON
+               )
+               PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
+               CLUSTER BY id, _airbyte_extracted_at;
+               """))
         .build());
   }
 
   private void createFinalTableCdc() throws InterruptedException {
     bq.query(QueryJobConfiguration.newBuilder(
         new StringSubstitutor(Map.of(
-            "dataset", testDataset)).replace("""
-                                             CREATE TABLE ${dataset}.users_final (
-                                               _airbyte_raw_id STRING NOT NULL,
-                                               _airbyte_extracted_at TIMESTAMP NOT NULL,
-                                               _airbyte_meta JSON NOT NULL,
-                                               id INT64,
-                                               _ab_cdc_deleted_at TIMESTAMP,
-                                               _ab_cdc_lsn INT64,
-                                               name STRING,
-                                               address JSON,
-                                               age INT64
-                                             )
-                                             PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
-                                             CLUSTER BY id, _airbyte_extracted_at;
-                                             """))
+            "dataset", testDataset)).replace(
+               """
+               CREATE TABLE ${dataset}.users_final (
+                 _airbyte_raw_id STRING NOT NULL,
+                 _airbyte_extracted_at TIMESTAMP NOT NULL,
+                 _airbyte_meta JSON NOT NULL,
+                 `id` INT64,
+                 `_ab_cdc_deleted_at` TIMESTAMP,
+                 `_ab_cdc_lsn` INT64,
+                 `struct` JSON,
+                 `array` JSON,
+                 `string` STRING,
+                 `number` NUMERIC,
+                 `integer` INT64,
+                 `boolean` BOOL,
+                 `timestamp_with_timezone` TIMESTAMP,
+                 `timestamp_without_timezone` DATETIME,
+                 `time_with_timezone` STRING,
+                 `time_without_timezone` TIME,
+                 `date` DATE,
+                 `unknown` JSON
+               )
+               PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
+               CLUSTER BY id, _airbyte_extracted_at;
+               """))
         .build());
   }
 
