@@ -763,7 +763,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
     if (foundMultiMatch) {
       success = false;
       // TODO is this true? E.g. what if we try to write the same row twice (because of a retry)? Are we guaranteed to have some differentiator?
-      errorMessage += "Some expected rows appeared multiple times in the actual table. This is probably a bug in the test itself. \n";
+      errorMessage += "Some expected rows appeared multiple times in the actual table. This is probably a bug in the test itself.\n";
     }
     if (!missingRows.isEmpty()) {
       success = false;
@@ -778,7 +778,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
           .filter(row -> !matchedRows.contains(row))
           .map(Object::toString)
           .collect(Collectors.joining("\n"));
-      errorMessage += "There were %d rows in the actual table, which were not expected:\n%s\n".formatted(
+      errorMessage += "The actual table contained %d rows which were not expected:\n%s\n".formatted(
           actualRows.size() - matchedRows.size(),
           extraRowsRendered);
     }

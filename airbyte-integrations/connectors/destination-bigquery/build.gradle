@@ -52,6 +52,7 @@ configurations.all {
 }
 
 test {
+    // TODO does this actually do anything for us?
     maxParallelForks = Runtime.runtime.availableProcessors()
     systemProperties = [
         'junit.jupiter.execution.parallel.enabled': 'true'
