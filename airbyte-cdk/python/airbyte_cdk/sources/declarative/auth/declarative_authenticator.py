@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from abc import ABC
 from dataclasses import InitVar, dataclass
 from typing import Any, Mapping, Union
 
@@ -9,7 +10,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import
 
 
 @dataclass
-class DeclarativeAuthenticator(AbstractHeaderAuthenticator):
+class DeclarativeAuthenticator(AbstractHeaderAuthenticator, ABC):
     """
     Interface used to associate which authenticators can be used as part of the declarative framework
     """

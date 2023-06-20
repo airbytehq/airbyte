@@ -8,7 +8,7 @@ import dpath
 import pendulum
 from airbyte_cdk.config_observation import create_connector_config_control_message, emit_configuration_as_airbyte_control_message
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator, ContentType
 
 
 class Oauth2Authenticator(AbstractOauth2Authenticator):
@@ -31,6 +31,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         expires_in_name: str = "expires_in",
         refresh_request_body: Mapping[str, Any] = None,
         grant_type: str = "refresh_token",
+        refresh_request_body_content_type: ContentType = ContentType.X_WWW_FORM_URLENCODED,
     ):
         self._token_refresh_endpoint = token_refresh_endpoint
         self._client_secret = client_secret
@@ -45,6 +46,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         self._token_expiry_date = token_expiry_date or pendulum.now().subtract(days=1)
         self._token_expiry_date_format = token_expiry_date_format
         self._access_token = None
+        self._refresh_request_content_type = refresh_request_body_content_type
 
     def get_token_refresh_endpoint(self) -> str:
         return self._token_refresh_endpoint
@@ -90,6 +92,9 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
     def access_token(self, value: str):
         self._access_token = value
 
+    def get_refresh_request_body_content_type(self) -> ContentType:
+        return self._refresh_request_content_type
+
 
 class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
     """
@@ -117,6 +122,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         token_expiry_date_config_path: Sequence[str] = ("credentials", "token_expiry_date"),
         token_expiry_date_format: Optional[str] = None,
         message_repository: MessageRepository = None,
+        refresh_request_body_content_type: ContentType = ContentType.X_WWW_FORM_URLENCODED,
     ):
         """
 
@@ -228,3 +234,6 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             response_json[self.get_expires_in_name()],
             response_json[self.get_refresh_token_name()],
         )
+
+    def get_refresh_request_body_content_type(self) -> ContentType:
+        return self._refresh_request_content_type

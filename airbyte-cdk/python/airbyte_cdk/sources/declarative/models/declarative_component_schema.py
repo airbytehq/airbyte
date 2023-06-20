@@ -243,6 +243,11 @@ class CustomTransformation(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
+class RefreshRequestBodyContentType(Enum):
+    JSON = "JSON"
+    X_WWW_FORM_URLENCODED = "X_WWW_FORM_URLENCODED"
+
+
 class RefreshTokenUpdater(BaseModel):
     refresh_token_name: Optional[str] = Field(
         "refresh_token",
@@ -331,6 +336,11 @@ class OAuthAuthenticator(BaseModel):
             }
         ],
         title="Refresh Request Body",
+    )
+    refresh_request_body_content_type: Optional[RefreshRequestBodyContentType] = Field(
+        "X_WWW_FORM_URLENCODED",
+        description="Content Type of the refresh request body",
+        title="Refresh Request Body Content Type",
     )
     scopes: Optional[List[str]] = Field(
         None,

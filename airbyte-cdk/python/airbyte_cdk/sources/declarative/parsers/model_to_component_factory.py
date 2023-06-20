@@ -103,6 +103,8 @@ from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from pydantic import BaseModel
 
+from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import ContentType
+
 ComponentDefinition: Union[Literal, Mapping, List]
 
 
@@ -695,6 +697,7 @@ class ModelToComponentFactory:
                 scopes=model.scopes,
                 token_expiry_date_format=model.token_expiry_date_format,
                 message_repository=self._message_repository,
+                refresh_request_body_content_type=ContentType[model.refresh_request_body_content_type],
             )
         return DeclarativeOauth2Authenticator(
             access_token_name=model.access_token_name,
@@ -708,6 +711,7 @@ class ModelToComponentFactory:
             token_expiry_date=model.token_expiry_date,
             token_expiry_date_format=model.token_expiry_date_format,
             token_refresh_endpoint=model.token_refresh_endpoint,
+            refresh_request_body_content_type=ContentType[model.refresh_request_body_content_type],
             config=config,
             parameters=model.parameters,
         )

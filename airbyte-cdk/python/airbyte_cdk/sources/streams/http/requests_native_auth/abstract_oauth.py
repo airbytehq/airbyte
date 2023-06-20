@@ -4,6 +4,7 @@
 
 import logging
 from abc import abstractmethod
+from enum import Enum
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
@@ -14,6 +15,13 @@ from requests.auth import AuthBase
 from ..exceptions import DefaultBackoffException
 
 logger = logging.getLogger("airbyte")
+
+
+class ContentType(Enum):
+    """Body content type"""
+
+    JSON = "application/json"
+    X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded"
 
 
 class AbstractOauth2Authenticator(AuthBase):
@@ -79,12 +87,15 @@ class AbstractOauth2Authenticator(AuthBase):
     )
     def _get_refresh_access_token_response(self):
         try:
-            response = requests.request(
-                method="POST",
-                url=self.get_token_refresh_endpoint(),
-                json=self.build_refresh_request_body(),
-                headers={"Content-Type": "application/json"},
-            )
+            if self.get_refresh_request_body_content_type() == ContentType.JSON:
+                raise ValueError("not implemented")
+            else:
+                response = requests.request(
+                    method="POST",
+                    url=self.get_token_refresh_endpoint(),
+                    data=self.build_refresh_request_body(),
+                    headers={"Content-Type": self.get_refresh_request_body_content_type().value},
+                )
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -93,6 +104,10 @@ class AbstractOauth2Authenticator(AuthBase):
             raise
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
+
+    @abstractmethod
+    def get_refresh_request_body_content_type(self) -> ContentType:
+        """Returns the content-type of the refresh request body"""
 
     def refresh_access_token(self) -> Tuple[str, int]:
         """

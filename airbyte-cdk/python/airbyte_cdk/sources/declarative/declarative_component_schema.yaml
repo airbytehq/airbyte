@@ -749,6 +749,12 @@ definitions:
           - applicationId: "{{ config['application_id'] }}"
             applicationSecret: "{{ config['application_secret'] }}"
             token: "{{ config['token'] }}"
+      refresh_request_body_content_type:
+        title: Refresh Request Body Content Type
+        description: Content Type of the refresh request body
+        type: string
+        enum: [JSON, X_WWW_FORM_URLENCODED]
+        default: X_WWW_FORM_URLENCODED
       scopes:
         title: Scopes
         description: List of scopes that should be granted to the access token.

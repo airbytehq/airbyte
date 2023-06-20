@@ -9,7 +9,7 @@ import pendulum
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator, ContentType
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 
 
@@ -49,6 +49,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     expires_in_name: Union[InterpolatedString, str] = "expires_in"
     refresh_request_body: Optional[Mapping[str, Any]] = None
     grant_type: Union[InterpolatedString, str] = "refresh_token"
+    refresh_request_body_content_type: ContentType = ContentType.X_WWW_FORM_URLENCODED
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.token_refresh_endpoint = InterpolatedString.create(self.token_refresh_endpoint, parameters=parameters)
@@ -134,6 +135,9 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     @access_token.setter
     def access_token(self, value: str):
         self._access_token = value
+
+    def get_refresh_request_body_content_type(self) -> ContentType:
+        return self.refresh_request_body_content_type
 
 
 @dataclass
