@@ -1,6 +1,4 @@
-package io.airbyte.integrations.destination.bigquery.typing_deduping;
-
-import io.airbyte.integrations.base.DestinationConfig;
+package io.airbyte.integrations.base;
 
 public class TypingAndDedupingFlag {
 

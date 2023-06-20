@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,26 +12,26 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Array;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.OneOf;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 import java.util.Objects;
-import java.util.Collections;
+import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AirbyteTypeUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteTypeUtils.class);
 
-  // Map from a protocol type to what other protocol types should take precedence over it if present in a OneOf
+  // Map from a protocol type to what other protocol types should take precedence over it if present
+  // in a OneOf
   private static final Map<AirbyteProtocolType, List<AirbyteProtocolType>> EXCLUDED_PROTOCOL_TYPES_MAP = ImmutableMap.of(
       AirbyteProtocolType.BOOLEAN, ImmutableList.of(AirbyteProtocolType.STRING, AirbyteProtocolType.NUMBER, AirbyteProtocolType.INTEGER),
       AirbyteProtocolType.INTEGER, ImmutableList.of(AirbyteProtocolType.STRING, AirbyteProtocolType.NUMBER),
-      AirbyteProtocolType.NUMBER, ImmutableList.of(AirbyteProtocolType.STRING)
-  );
+      AirbyteProtocolType.NUMBER, ImmutableList.of(AirbyteProtocolType.STRING));
 
   // Protocol types in order of precedence
   private static final List<AirbyteProtocolType> ORDERED_PROTOCOL_TYPES = ImmutableList.of(
@@ -39,8 +43,7 @@ public class AirbyteTypeUtils {
       AirbyteProtocolType.DATE,
       AirbyteProtocolType.TIME_WITH_TIMEZONE,
       AirbyteProtocolType.TIME_WITHOUT_TIMEZONE,
-      AirbyteProtocolType.STRING
-  );
+      AirbyteProtocolType.STRING);
 
   protected static boolean nodeIsType(final JsonNode node, final String type) {
     if (node == null || !node.isTextual()) {

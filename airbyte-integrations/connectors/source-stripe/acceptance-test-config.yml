@@ -14,7 +14,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: "3.6.0" # new streams added: Cards, Payment Methods; no actual breaking changes; schema refactoring
+          disable_for_version: "3.8.0" # new streams added; no actual breaking changes; schemas refactoring
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -45,6 +45,8 @@ acceptance_tests:
           - name: "reviews"
             bypass_reason: "this stream can't be seeded in our sandbox account"
           - name: "transfers"
+            bypass_reason: "This stream can't be seeded in our sandbox account"
+          - name: "transactions"
             bypass_reason: "This stream can't be seeded in our sandbox account"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
@@ -77,6 +79,9 @@ acceptance_tests:
           files:
             - name: links/data
               bypass_reason: "Order of links/data elements changes on every request"
+          usage_records:
+            - name: id
+              bypass_reason: "id field is randomly generated"
   incremental:
     tests:
       - config_path: "secrets/config.json"
@@ -93,3 +98,6 @@ acceptance_tests:
               bypass_reason: "URL changes upon each request for privacy/security"
             - name: hosted_invoice_url
               bypass_reason: "URL changes upon each request for privacy/security"
+          usage_records:
+            - name: id
+              bypass_reason: "id field is randomly generated"

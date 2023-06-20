@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,25 +45,25 @@ class CatalogParserTest {
   }
 
   /**
-   * Both these streams want the same raw table name ("a_b_c"). Verify that they don't actually use the same raw table.
+   * Both these streams want the same raw table name ("a_b_c"). Verify that they don't actually use
+   * the same raw table.
    */
   @Test
   public void rawNameCollision() {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         stream("a", "b_c"),
-        stream("a_b", "c")
-    ));
+        stream("a_b", "c")));
 
     final ParsedCatalog<?> parsedCatalog = parser.parseCatalog(catalog);
 
     assertNotEquals(
         parsedCatalog.streams().get(0).id().rawName(),
-        parsedCatalog.streams().get(1).id().rawName()
-    );
+        parsedCatalog.streams().get(1).id().rawName());
   }
 
   /**
-   * Both these streams will write to the same final table name ("foofoo"). Verify that they don't actually use the same tablename.
+   * Both these streams will write to the same final table name ("foofoo"). Verify that they don't
+   * actually use the same tablename.
    */
   @Test
   public void finalNameCollision() {
@@ -74,19 +78,18 @@ class CatalogParserTest {
     });
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         stream("a", "foobarfoo"),
-        stream("a", "foofoo")
-    ));
+        stream("a", "foofoo")));
 
     final ParsedCatalog<?> parsedCatalog = parser.parseCatalog(catalog);
 
     assertNotEquals(
         parsedCatalog.streams().get(0).id().finalName(),
-        parsedCatalog.streams().get(1).id().finalName()
-    );
+        parsedCatalog.streams().get(1).id().finalName());
   }
 
   /**
-   * The schema contains two fields, which will both end up named "foofoo" after quoting. Verify that they don't actually use the same column name.
+   * The schema contains two fields, which will both end up named "foofoo" after quoting. Verify that
+   * they don't actually use the same column name.
    */
   @Test
   public void columnNameCollision() {
@@ -98,14 +101,14 @@ class CatalogParserTest {
       return new ColumnId(quotedName, originalName, quotedName);
     });
     JsonNode schema = Jsons.deserialize("""
-        {
-          "type": "object",
-          "properties": {
-            "foobarfoo": {"type": "string"},
-            "foofoo": {"type": "string"}
-          }
-        }
-        """);
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "foobarfoo": {"type": "string"},
+                                            "foofoo": {"type": "string"}
+                                          }
+                                        }
+                                        """);
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream("a", "a", schema)));
 
     final ParsedCatalog<?> parsedCatalog = parser.parseCatalog(catalog);
@@ -114,9 +117,11 @@ class CatalogParserTest {
   }
 
   /**
-   * If a stream has no cursor, then we should default to using the _airbyte_emitted_at column as the cursor.
+   * If a stream has no cursor, then we should default to using the _airbyte_emitted_at column as the
+   * cursor.
    * <p>
-   * (maybe. this might be implicit in the new behavior, and we can just kill this test. Depends on what our SQL queries look like.)
+   * (maybe. this might be implicit in the new behavior, and we can just kill this test. Depends on
+   * what our SQL queries look like.)
    */
   @Test
   public void defaultCursor() {
@@ -132,14 +137,13 @@ class CatalogParserTest {
         namespace,
         name,
         Jsons.deserialize("""
-            {
-              "type": "object",
-              "properties": {
-                "name": {"type": "string"}
-              }
-            }
-            """)
-    );
+                          {
+                            "type": "object",
+                            "properties": {
+                              "name": {"type": "string"}
+                            }
+                          }
+                          """));
   }
 
   private static ConfiguredAirbyteStream stream(String namespace, String name, JsonNode schema) {
@@ -149,4 +153,5 @@ class CatalogParserTest {
             .withName(name)
             .withJsonSchema(schema));
   }
+
 }

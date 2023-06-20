@@ -168,6 +168,7 @@ Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-re
 - Schema changes are not supported automatically for CDC sources. Reset and resync data if you make a schema change.
 - The records produced by `DELETE` statements only contain primary keys. All other data fields are unset.
 - Log-based replication only works for master instances of Postgres.  CDC cannot be run from a read-replica of your primary database.
+- An Airbyte database source using CDC replication can only be used with a single Airbyte destination.  This is due to how Postgres CDC is implemented - each destination would recieve only part of the data available in the replication slot.
 - Using logical replication increases disk space used on the database server. The additional data is stored until it is consumed.
   - Set frequent syncs for CDC to ensure that the data doesn't fill up your disk space.
   - If you stop syncing a CDC-configured Postgres instance with Airbyte, delete the replication slot. Otherwise, it may fill up your disk space.

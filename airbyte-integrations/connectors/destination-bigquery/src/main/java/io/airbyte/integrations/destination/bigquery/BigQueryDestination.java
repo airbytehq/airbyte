@@ -217,7 +217,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector)
-          throws IOException, InterruptedException {
+      throws IOException, InterruptedException {
     final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
     if (uploadingMethod == UploadingMethod.STANDARD) {
       LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
@@ -229,7 +229,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   /**
-   * Duplicates the logic of setting a default namespace from {@link #getUploaderMap(BigQuery, JsonNode, ConfiguredAirbyteCatalog, String, BigQuerySqlGenerator, boolean)}.
+   * Duplicates the logic of setting a default namespace from
+   * {@link #getUploaderMap(BigQuery, JsonNode, ConfiguredAirbyteCatalog, String, BigQuerySqlGenerator, boolean)}.
    */
   private ConfiguredAirbyteCatalog cloneAndModifyCatalogForFinalTables(final JsonNode config, final ConfiguredAirbyteCatalog catalog) {
     // Really hacky way to copy the catalog object, since we're mutating it here.
@@ -261,7 +262,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
       String originalNamespace = stream.getNamespace();
       if (use1s1t) {
-        // TODO this if-statement is probably redundant with streamId1s1t, i.e. we can just use streamId1s1t.rawNamespace()
+        // TODO this if-statement is probably redundant with streamId1s1t, i.e. we can just use
+        // streamId1s1t.rawNamespace()
         if (rawNamespaceOverride != null) {
           stream.setNamespace(rawNamespaceOverride);
         } else {
@@ -304,8 +306,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   /**
-   * This is a duplicate of {@link #putStreamIntoUploaderMap(AirbyteStream, UploaderConfig, Map)}. It would be _incredibly_ painful to refactor that
-   * method, but for 1s1t we need a method which preserves the original namespace but also allows us to override the raw namespace.
+   * This is a duplicate of {@link #putStreamIntoUploaderMap(AirbyteStream, UploaderConfig, Map)}. It
+   * would be _incredibly_ painful to refactor that method, but for 1s1t we need a method which
+   * preserves the original namespace but also allows us to override the raw namespace.
    */
   protected void putStreamIntoUploaderMapWithRawNamespaceOverride(final AirbyteStream stream,
                                                                   final UploaderConfig uploaderConfig,
@@ -380,12 +383,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         rawNamespaceOverride);
   }
 
-
-  private String resolveRawNamespace(final boolean use1s1t,  final JsonNode config) {
+  private String resolveRawNamespace(final boolean use1s1t, final JsonNode config) {
     final String rawNamespaceOverride;
     if (use1s1t) {
-      rawNamespaceOverride = config.hasNonNull(RAW_NAMESPACE_OVERRIDE) ?
-              config.get(RAW_NAMESPACE_OVERRIDE).asText() : JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA;
+      rawNamespaceOverride =
+          config.hasNonNull(RAW_NAMESPACE_OVERRIDE) ? config.get(RAW_NAMESPACE_OVERRIDE).asText() : JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA;
     } else {
       rawNamespaceOverride = null;
     }
@@ -394,7 +396,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,
                                                      final ConfiguredAirbyteCatalog catalog,
-                                                     final Consumer<AirbyteMessage> outputRecordCollector) throws InterruptedException {
+                                                     final Consumer<AirbyteMessage> outputRecordCollector)
+      throws InterruptedException {
     final boolean use1s1t = config.hasNonNull(USE_1S1T_FORMAT) && config.get(USE_1S1T_FORMAT).asBoolean();
     final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
     final BigQuery bigQuery = getBigQuery(config);

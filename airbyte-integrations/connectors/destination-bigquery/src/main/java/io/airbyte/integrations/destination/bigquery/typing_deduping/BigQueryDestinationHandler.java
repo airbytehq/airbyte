@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import com.google.cloud.bigquery.BigQuery;
@@ -43,4 +47,5 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
     bq.query(QueryJobConfiguration.newBuilder(sql).build());
     LOGGER.info("Completed sql {} in {} ms", queryId, System.currentTimeMillis() - start);
   }
+
 }

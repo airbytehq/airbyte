@@ -7,7 +7,7 @@ import platform
 from dagger import Platform
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
-
+LICENSE_SHORT_FILE_PATH = "LICENSE_SHORT"
 CONNECTOR_TESTING_REQUIREMENTS = [
     "pip==21.3.1",
     "mccabe==0.6.1",
@@ -18,6 +18,7 @@ CONNECTOR_TESTING_REQUIREMENTS = [
     "pytest==6.2.5",
     "coverage[toml]==6.3.1",
     "pytest-custom_exit_code",
+    "licenseheaders==0.8.8",
 ]
 
 DEFAULT_PYTHON_EXCLUDE = ["**/.venv", "**/__pycache__"]
