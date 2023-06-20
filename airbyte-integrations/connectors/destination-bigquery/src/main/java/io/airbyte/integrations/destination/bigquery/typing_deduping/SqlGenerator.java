@@ -12,7 +12,7 @@ public interface SqlGenerator<DialectTableDefinition, DialectType> {
 
   /**
    * In general, callers should not directly instantiate this class. Use
-   * {@link #buildStreamId(String, String)} instead.
+   * {@link #buildStreamId(String, String, String)} instead.
    * <p>
    * All names/namespaces are intended to be quoted, but do not explicitly contain quotes. For
    * example, finalName might be "foo bar"; the caller is required to wrap that in quotes before using

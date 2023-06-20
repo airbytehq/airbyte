@@ -141,18 +141,19 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
         "final_namespace", stream.id().finalNamespace(QUOTE),
         "final_table_id", stream.id().finalTableId(suffix, QUOTE),
         "column_declarations", columnDeclarations,
-        "cluster_config", clusterConfig)).replace("""
-                                                  CREATE SCHEMA IF NOT EXISTS ${final_namespace};
+        "cluster_config", clusterConfig)).replace(
+            """
+            CREATE SCHEMA IF NOT EXISTS ${final_namespace};
 
-                                                  CREATE TABLE ${final_table_id} (
-                                                  _airbyte_raw_id STRING NOT NULL,
-                                                  _airbyte_extracted_at TIMESTAMP NOT NULL,
-                                                  _airbyte_meta JSON NOT NULL,
-                                                  ${column_declarations}
-                                                  )
-                                                  PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
-                                                  CLUSTER BY ${cluster_config}
-                                                  """);
+            CREATE TABLE ${final_table_id} (
+              _airbyte_raw_id STRING NOT NULL,
+              _airbyte_extracted_at TIMESTAMP NOT NULL,
+              _airbyte_meta JSON NOT NULL,
+            ${column_declarations}
+            )
+            PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
+            CLUSTER BY ${cluster_config}
+            """);
   }
 
   @Override
@@ -408,10 +409,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition, Stand
       return Optional.of(new StringSubstitutor(Map.of(
           "final_table_id", stream.id().finalTableId(QUOTE),
           "tmp_final_table", stream.id().finalTableId(finalSuffix, QUOTE),
-          "real_final_table", stream.id().finalName(QUOTE))).replace("""
-                                                                     DROP TABLE IF EXISTS ${final_table_id};
-                                                                     ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
-                                                                     """));
+          "real_final_table", stream.id().finalName(QUOTE))).replace(
+             """
+             DROP TABLE IF EXISTS ${final_table_id};
+             ALTER TABLE ${tmp_final_table} RENAME TO ${real_final_table};
+             """));
     } else {
       return Optional.empty();
     }
