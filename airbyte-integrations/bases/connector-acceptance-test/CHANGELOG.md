@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.10.8
+Increase the connection timeout to Docker client to 2 minutes ([context](https://github.com/airbytehq/airbyte/issues/27401))
+
 ## 0.10.7
 Fix on supporting arrays in the state (ensure string are parsed as string and not int)
 
