@@ -816,9 +816,9 @@ class DatetimeBasedCursor(BaseModel):
         examples=["PT1S"],
         title="Cursor Granularity",
     )
-    end_datetime: Union[str, MinMaxDatetime] = Field(
-        ...,
-        description="The datetime that determines the last record that should be synced.",
+    end_datetime: Optional[Union[str, MinMaxDatetime]] = Field(
+        None,
+        description="The datetime that determines the last record that should be synced. If not provided, `{{ now_utc() }}` will be used.",
         examples=["2021-01-1T00:00:00Z", "{{ now_utc() }}", "{{ day_delta(-1) }}"],
         title="End Datetime",
     )
@@ -1095,6 +1095,10 @@ class DeclarativeSource(BaseModel):
     schemas: Optional[Schemas] = None
     definitions: Optional[Dict[str, Any]] = None
     spec: Optional[Spec] = None
+    metadata: Optional[Dict[str, Any]] = Field(
+        None,
+        description="For internal Airbyte use only - DO NOT modify manually. Used by consumers of declarative manifests for storing related metadata.",
+    )
 
 
 class DeclarativeStream(BaseModel):

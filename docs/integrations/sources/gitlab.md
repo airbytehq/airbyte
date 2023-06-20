@@ -105,6 +105,9 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------|
+| 1.4.0   | 2023-06-12 | [27234](https://github.com/airbytehq/airbyte/pull/27234) | Skip stream slices on 403/404 errors, do not fail syncs.                                   |
+| 1.3.1   | 2023-06-08 | [27147](https://github.com/airbytehq/airbyte/pull/27147) | Improve connectivity check for connections with no projects/groups                         |
+| 1.3.0   | 2023-06-08 | [27150](https://github.com/airbytehq/airbyte/pull/27150) | Update stream schemas                                                                      |
 | 1.2.1   | 2023-06-02 | [26947](https://github.com/airbytehq/airbyte/pull/26947) | New field `name` added to `Pipelines` and `PipelinesExtended` stream schema                |
 | 1.2.0   | 2023-05-17 | [22293](https://github.com/airbytehq/airbyte/pull/22293) | Preserve data in records with flattened keys                                               |
 | 1.1.1   | 2023-05-23 | [26422](https://github.com/airbytehq/airbyte/pull/26422) | Fix error `404 Repository Not Found` when syncing project with Repository feature disabled |
