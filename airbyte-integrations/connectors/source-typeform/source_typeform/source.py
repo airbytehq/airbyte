@@ -257,14 +257,11 @@ class SourceTypeform(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             form_ids = config.get("form_ids", []).copy()
-            if config.get("credentials"):
-                token = config["credentials"]["access_token"]
-            else:
-                token = config["token"]
+            auth = self.get_auth(config)
             # verify if form inputted by user is valid
             try:
                 url = urlparse.urljoin(TypeformStream.url_base, "me")
-                auth_headers = {"Authorization": f"Bearer {token}"}
+                auth_headers = auth.get_auth_header()
                 session = requests.get(url, headers=auth_headers)
                 session.raise_for_status()
             except Exception as e:
@@ -273,7 +270,6 @@ class SourceTypeform(AbstractSource):
                 for form in form_ids:
                     try:
                         url = urlparse.urljoin(TypeformStream.url_base, f"forms/{form}")
-                        auth_headers = {"Authorization": f"Bearer {token}"}
                         response = requests.get(url, headers=auth_headers)
                         response.raise_for_status()
                     except Exception as e:
