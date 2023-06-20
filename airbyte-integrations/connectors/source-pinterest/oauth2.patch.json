@@ -1,0 +1,14 @@
+{
+  "provider": "pinterest",
+  "authUrlTemplate": "https://www.pinterest.com/oauth/?client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&response_type=code&scope=boards:read,boards:read_secret,pins:read,pins:read_secret,ads:read,catalogs:read,user_accounts:read,&state={{#urlencode}}{{{ state }}}{{/urlencode}}",
+  "accessTokenUrlTemplate": "https://api.pinterest.com/v5/oauth/token",
+  "accessTokenBody": "grant_type=authorization_code&code={{#urlencode}}{{{ code }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{redirect_uri}}}{{/urlencode}}",
+  "accessTokenHeaders": {
+    "content-type": "application/x-www-form-urlencoded",
+    "authorization": "Basic {{#basicauth}}{{{ client_id }}}:{{{client_secret }}}{{/basicauth}}"
+  },
+  "accessTokenResponseMap": {
+    "refresh_token": "/refresh_token",
+    "access_token": "/access_token"
+  }
+}

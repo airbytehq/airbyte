@@ -149,6 +149,7 @@ jobs:
           - name: source-redshift
           - name: source-oracle
           - name: source-postgres-heroku
+          - name: source-pinterest
 
     steps:
       - uses: actions/checkout@v2
