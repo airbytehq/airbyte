@@ -20,7 +20,7 @@ from airbyte_cdk.sources.declarative.partition_routers.single_partition_router i
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorStopCondition
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorStopCondition, StopConditionPaginationStrategyDecorator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -168,6 +168,9 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
 
+        # FIXME self.state if it's only updated per slice?
+        #  deprecate
+        #  send a message
         requester_mapping = requester_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
         requester_mapping_keys = set(requester_mapping.keys())
         paginator_mapping = paginator_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
@@ -449,10 +452,12 @@ class SimpleRetriever(Retriever, HttpStream):
     def state(self, value: StreamState):
         """State setter, accept state serialized by state getter."""
         if self.cursor:
-            self.stream_slicer.set_initial_state(value)
-        if isinstance(self.paginator.pagination_strategy.stop_condition, CursorStopCondition):
+            self.cursor.set_initial_state(value)
+
+        if hasattr(self.paginator, "pagination_strategy") and isinstance(self.paginator.pagination_strategy, StopConditionPaginationStrategyDecorator) and isinstance(self.paginator.pagination_strategy._stop_condition, CursorStopCondition):
+            self.paginator.pagination_strategy.state = value
             # freezing cursor state for CursorStopCondition
-            self.paginator.pagination_strategy.stop_condition._cursor = deepcopy(self.cursor)
+            self.paginator.pagination_strategy._stop_condition._cursor = deepcopy(self.cursor)
 
     def parse_records(
         self,

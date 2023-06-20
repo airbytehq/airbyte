@@ -287,5 +287,7 @@ class PerPartitionCursor(Cursor):
         )
 
     def should_be_synced(self, record: Record) -> bool:
-        cursor = self._cursor_per_partition[self._to_partition_key(record.stream_slice.partition)]
-        return cursor.should_be_synced(Record(record.stream_slice.cursor_slice, record.data))
+        partition_key = self._to_partition_key(record.associated_slice.partition)
+        if partition_key not in self._cursor_per_partition:
+            raise ValueError("Invalid state as stream slices that are emitted should refer to an existing cursor")
+        return self._cursor_per_partition[partition_key].should_be_synced(Record(record.data, record.associated_slice.cursor_slice))

@@ -125,15 +125,16 @@ class DatetimeBasedCursor(Cursor):
         :return:
         """
         end_datetime = self._select_best_end_datetime()
-        lookback_delta = self._parse_timedelta(self.lookback_window.eval(self.config) if self.lookback_window else "P0D")
-
-        earliest_possible_start_datetime = min(self.start_datetime.get_datetime(self.config), end_datetime)
-        cursor_datetime = self._calculate_cursor_datetime_from_state(self.get_stream_state())
-        start_datetime = max(earliest_possible_start_datetime, cursor_datetime) - lookback_delta
-
+        start_datetime = self._calculate_earliest_possible_value(self._select_best_end_datetime())
         return self._partition_daterange(start_datetime, end_datetime, self._step)
 
-    def _select_best_end_datetime(self):
+    def _calculate_earliest_possible_value(self, end_datetime: datetime.datetime) -> datetime.datetime:
+        lookback_delta = self._parse_timedelta(self.lookback_window.eval(self.config) if self.lookback_window else "P0D")
+        earliest_possible_start_datetime = min(self.start_datetime.get_datetime(self.config), end_datetime)
+        cursor_datetime = self._calculate_cursor_datetime_from_state(self.get_stream_state())
+        return max(earliest_possible_start_datetime, cursor_datetime) - lookback_delta
+
+    def _select_best_end_datetime(self) -> datetime.datetime:
         now = datetime.datetime.now(tz=self._timezone)
         if not self.end_datetime:
             return now
@@ -234,6 +235,10 @@ class DatetimeBasedCursor(Cursor):
         return options
 
     def should_be_synced(self, record: Record) -> bool:
-        record_cursor_value = self.parse_date(record.get(self.cursor_field.eval(self.config)))
-        # bug fix https://github.com/airbytehq/airbyte/issues/27447 should change this as it would make self._cursor a datetime
-        return record_cursor_value <= self.parse_date(self._cursor) if self._cursor else True
+        record_cursor_value = record.get(self.cursor_field.eval(self.config))
+        if not record_cursor_value:
+            return True
+
+        latest_possible_cursor_value = self._select_best_end_datetime()
+        earliest_possible_cursor_value = self._calculate_earliest_possible_value(latest_possible_cursor_value)
+        return earliest_possible_cursor_value <= self.parse_date(record_cursor_value) <= latest_possible_cursor_value
