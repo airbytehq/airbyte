@@ -48,7 +48,8 @@
               },
               "schema_registry_password": {
                 "type": "string",
-                "default": ""
+                "default": "",
+                "airbyte_secret": true
               }
             }
           }
