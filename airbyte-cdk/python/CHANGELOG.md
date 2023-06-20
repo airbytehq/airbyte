@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.41.0
+Use x-www-urlencoded for access token refresh requests
+
 ## 0.40.5
 Replace  with  when making oauth calls
 
