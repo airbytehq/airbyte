@@ -195,11 +195,11 @@ public class BigQuerySqlGeneratorIntegrationTest {
     bq.query(QueryJobConfiguration.newBuilder(
         new StringSubstitutor(Map.of(
             "dataset", testDataset)).replace(
-               """
-               INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-                 (JSON'{}', '10d6e27d-ae7a-41b5-baf8-c4c277ef9c11', '2023-01-01T00:00:00Z'),
-                 (JSON'{"id": 1}', '5ce60e70-98aa-4fe3-8159-67207352c4f0', '2023-01-01T00:00:00Z');
-               """))
+                """
+                INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
+                  (JSON'{}', '10d6e27d-ae7a-41b5-baf8-c4c277ef9c11', '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 1}', '5ce60e70-98aa-4fe3-8159-67207352c4f0', '2023-01-01T00:00:00Z');
+                """))
         .build());
 
     // This variable is declared outside of the transaction, so we need to do it manually here
@@ -239,29 +239,29 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 "updated_at", Optional.of(Instant.parse("2023-01-01T01:00:00Z")),
                 "string", Optional.of("Alice"),
                 "struct", Optional.of(Jsons.deserialize(
-                   """
-                   {"city": "San Francisco", "state": "CA"}
-                   """)),
+                    """
+                    {"city": "San Francisco", "state": "CA"}
+                    """)),
                 "integer", Optional.empty(),
                 "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
                 "_airbyte_meta", Optional.of(Jsons.deserialize(
-                   """
-                   {"errors":[]}
-                   """))),
+                    """
+                    {"errors":[]}
+                    """))),
             Map.of(
                 "id", Optional.of(1L),
                 "updated_at", Optional.of(Instant.parse("2023-01-01T02:00:00Z")),
                 "string", Optional.of("Alice"),
                 "struct", Optional.of(Jsons.deserialize(
-                   """
-                   {"city": "San Diego", "state": "CA"}
-                   """)),
+                    """
+                    {"city": "San Diego", "state": "CA"}
+                    """)),
                 "integer", Optional.empty(),
                 "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
                 "_airbyte_meta", Optional.of(Jsons.deserialize(
-                   """
-                   {"errors":[]}
-                   """))),
+                    """
+                    {"errors":[]}
+                    """))),
             Map.of(
                 "id", Optional.of(2L),
                 "updated_at", Optional.of(Instant.parse("2023-01-01T03:00:00Z")),
@@ -269,9 +269,9 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 "struct", Optional.empty(),
                 "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
                 "_airbyte_meta", Optional.of(Jsons.deserialize(
-                   """
-                   {"errors":["Problem with `integer`"]}
-                   """)))),
+                    """
+                    {"errors":["Problem with `integer`"]}
+                    """)))),
         result);
   }
 
@@ -649,16 +649,16 @@ public class BigQuerySqlGeneratorIntegrationTest {
     bq.query(QueryJobConfiguration.newBuilder(
         new StringSubstitutor(Map.of(
             "dataset", testDataset)).replace(
-               """
-               CREATE TABLE ${dataset}.users_raw (
-                 _airbyte_raw_id STRING NOT NULL,
-                 _airbyte_data JSON NOT NULL,
-                 _airbyte_extracted_at TIMESTAMP NOT NULL,
-                 _airbyte_loaded_at TIMESTAMP
-               ) PARTITION BY (
-                 DATE_TRUNC(_airbyte_extracted_at, DAY)
-               ) CLUSTER BY _airbyte_loaded_at;
-               """))
+                """
+                CREATE TABLE ${dataset}.users_raw (
+                  _airbyte_raw_id STRING NOT NULL,
+                  _airbyte_data JSON NOT NULL,
+                  _airbyte_extracted_at TIMESTAMP NOT NULL,
+                  _airbyte_loaded_at TIMESTAMP
+                ) PARTITION BY (
+                  DATE_TRUNC(_airbyte_extracted_at, DAY)
+                ) CLUSTER BY _airbyte_loaded_at;
+                """))
         .build());
   }
 
@@ -671,29 +671,29 @@ public class BigQuerySqlGeneratorIntegrationTest {
         new StringSubstitutor(Map.of(
             "dataset", testDataset,
             "suffix", suffix)).replace(
-               """
-               CREATE TABLE ${dataset}.users_final${suffix} (
-                 _airbyte_raw_id STRING NOT NULL,
-                 _airbyte_extracted_at TIMESTAMP NOT NULL,
-                 _airbyte_meta JSON NOT NULL,
-                 `id` INT64,
-                 `updated_at` TIMESTAMP,
-                 `struct` JSON,
-                 `array` JSON,
-                 `string` STRING,
-                 `number` NUMERIC,
-                 `integer` INT64,
-                 `boolean` BOOL,
-                 `timestamp_with_timezone` TIMESTAMP,
-                 `timestamp_without_timezone` DATETIME,
-                 `time_with_timezone` STRING,
-                 `time_without_timezone` TIME,
-                 `date` DATE,
-                 `unknown` JSON
-               )
-               PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
-               CLUSTER BY id, _airbyte_extracted_at;
-               """))
+                """
+                CREATE TABLE ${dataset}.users_final${suffix} (
+                  _airbyte_raw_id STRING NOT NULL,
+                  _airbyte_extracted_at TIMESTAMP NOT NULL,
+                  _airbyte_meta JSON NOT NULL,
+                  `id` INT64,
+                  `updated_at` TIMESTAMP,
+                  `struct` JSON,
+                  `array` JSON,
+                  `string` STRING,
+                  `number` NUMERIC,
+                  `integer` INT64,
+                  `boolean` BOOL,
+                  `timestamp_with_timezone` TIMESTAMP,
+                  `timestamp_without_timezone` DATETIME,
+                  `time_with_timezone` STRING,
+                  `time_without_timezone` TIME,
+                  `date` DATE,
+                  `unknown` JSON
+                )
+                PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
+                CLUSTER BY id, _airbyte_extracted_at;
+                """))
         .build());
   }
 
@@ -701,30 +701,30 @@ public class BigQuerySqlGeneratorIntegrationTest {
     bq.query(QueryJobConfiguration.newBuilder(
         new StringSubstitutor(Map.of(
             "dataset", testDataset)).replace(
-               """
-               CREATE TABLE ${dataset}.users_final (
-                 _airbyte_raw_id STRING NOT NULL,
-                 _airbyte_extracted_at TIMESTAMP NOT NULL,
-                 _airbyte_meta JSON NOT NULL,
-                 `id` INT64,
-                 `_ab_cdc_deleted_at` TIMESTAMP,
-                 `_ab_cdc_lsn` INT64,
-                 `struct` JSON,
-                 `array` JSON,
-                 `string` STRING,
-                 `number` NUMERIC,
-                 `integer` INT64,
-                 `boolean` BOOL,
-                 `timestamp_with_timezone` TIMESTAMP,
-                 `timestamp_without_timezone` DATETIME,
-                 `time_with_timezone` STRING,
-                 `time_without_timezone` TIME,
-                 `date` DATE,
-                 `unknown` JSON
-               )
-               PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
-               CLUSTER BY id, _airbyte_extracted_at;
-               """))
+                """
+                CREATE TABLE ${dataset}.users_final (
+                  _airbyte_raw_id STRING NOT NULL,
+                  _airbyte_extracted_at TIMESTAMP NOT NULL,
+                  _airbyte_meta JSON NOT NULL,
+                  `id` INT64,
+                  `_ab_cdc_deleted_at` TIMESTAMP,
+                  `_ab_cdc_lsn` INT64,
+                  `struct` JSON,
+                  `array` JSON,
+                  `string` STRING,
+                  `number` NUMERIC,
+                  `integer` INT64,
+                  `boolean` BOOL,
+                  `timestamp_with_timezone` TIMESTAMP,
+                  `timestamp_without_timezone` DATETIME,
+                  `time_with_timezone` STRING,
+                  `time_without_timezone` TIME,
+                  `date` DATE,
+                  `unknown` JSON
+                )
+                PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
+                CLUSTER BY id, _airbyte_extracted_at;
+                """))
         .build());
   }
 
