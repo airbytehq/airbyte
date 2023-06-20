@@ -73,7 +73,7 @@ def test_add_file(files_to_add, expected_start_time, expected_state_dict):
     assert expected_state_dict == state.to_dict()
 
 
-@pytest.mark.parametrize("files, expected_files_to_sync, max_history_size, history_is_complete", [
+@pytest.mark.parametrize("files, expected_files_to_sync, max_history_size, history_is_partial", [
     pytest.param([
         RemoteFile(uri="a.csv",
                    last_modified=datetime.strptime("2021-01-01T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -95,7 +95,7 @@ def test_add_file(files_to_add, expected_start_time, expected_state_dict):
             RemoteFile(uri="c.csv",
                        last_modified=datetime.strptime("2020-12-31T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ"),
                        file_type="csv")
-        ], 3, True, id="test_all_files_should_be_synced"),
+        ], 3, False, id="test_all_files_should_be_synced"),
     pytest.param([
         RemoteFile(uri="a.csv",
                    last_modified=datetime.strptime("2021-01-01T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -117,20 +117,20 @@ def test_add_file(files_to_add, expected_start_time, expected_state_dict):
                    last_modified=datetime.strptime("2020-12-31T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ"),
                    file_type="csv")
 
-    ], 2, False, id="test_sync_more_files_than_history_size")
+    ], 2, True, id="test_sync_more_files_than_history_size")
 ])
-def test_get_files_to_sync(files, expected_files_to_sync, max_history_size, history_is_complete):
+def test_get_files_to_sync(files, expected_files_to_sync, max_history_size, history_is_partial):
     logger = MagicMock()
     state = FileBasedState(max_history_size, timedelta(days=3), logger)
 
     files_to_sync = state.get_files_to_sync(files)
 
     assert files_to_sync == expected_files_to_sync
-    assert state.is_history_complete() == history_is_complete
-    if history_is_complete:
-        logger.warning.assert_not_called()
-    else:
+    assert state.is_history_partial() == history_is_partial
+    if history_is_partial:
         logger.warning.assert_called_once()
+    else:
+        logger.warning.assert_not_called()
 
 
 @pytest.mark.parametrize("earliest_file_in_history, expected_start_time", [
@@ -144,5 +144,5 @@ def test_compute_if_history_is_partial(earliest_file_in_history, expected_start_
     logger = MagicMock()
     state = FileBasedState(3, timedelta(days=3), logger)
     state.add_file(earliest_file_in_history)
-    state._history_is_complete = False
+    state._history_is_partial = True
     assert state.compute_start_time() == expected_start_time
