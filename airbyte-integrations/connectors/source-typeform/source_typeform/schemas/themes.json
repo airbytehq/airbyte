@@ -55,6 +55,9 @@
     "name": {
       "type": ["null", "string"]
     },
+    "rounded_corners": {
+      "type": ["null", "string"]
+    },
     "screens": {
       "type": ["null", "object"],
       "properties": {
@@ -68,6 +71,14 @@
     },
     "visibility": {
       "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   },
   "$schema": "http://json-schema.org/draft-07/schema#"
