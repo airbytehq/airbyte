@@ -215,27 +215,25 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 "id", Optional.of(1L),
                 "name", Optional.of("Alice"),
                 "address", Optional.of(Jsons.deserialize("""
-                    {"city": "San Francisco", "state": "CA"}
-                    """)),
+                                                         {"city": "San Francisco", "state": "CA"}
+                                                         """)),
                 "age", Optional.empty(),
                 "updated_at", Optional.of(Instant.parse("2023-01-01T01:00:00Z")),
                 "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
                 "_airbyte_meta", Optional.of(Jsons.deserialize("""
-                    {"errors":[]}
-                    """))
-            ),
+                                                               {"errors":[]}
+                                                               """))),
             Map.of(
                 "id", Optional.of(1L),
                 "name", Optional.of("Alice"),
                 "address", Optional.of(Jsons.deserialize("""
-                    {"city": "San Diego", "state": "CA"}
-                    """)),
+                                                         {"city": "San Diego", "state": "CA"}
+                                                         """)),
                 "age", Optional.empty(),
                 "updated_at", Optional.of(Instant.parse("2023-01-01T02:00:00Z")),
                 "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
                 "_airbyte_meta", Optional.of(Jsons.deserialize("""
-                    {"errors":[]}"""))
-            ),
+                                                               {"errors":[]}"""))),
             Map.of(
                 "id", Optional.of(2L),
                 "name", Optional.of("Bob"),
@@ -243,12 +241,9 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 "updated_at", Optional.of(Instant.parse("2023-01-01T03:00:00Z")),
                 "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
                 "_airbyte_meta", Optional.of(Jsons.deserialize("""
-                    {"errors":["Problem with `age`"]}
-                    """))
-            )
-        ),
-        result
-    );
+                                                               {"errors":["Problem with `age`"]}
+                                                               """)))),
+        result);
   }
 
   @Test
@@ -762,7 +757,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
     if (foundMultiMatch) {
       success = false;
-      // TODO is this true? E.g. what if we try to write the same row twice (because of a retry)? Are we guaranteed to have some differentiator?
+      // TODO is this true? E.g. what if we try to write the same row twice (because of a retry)? Are we
+      // guaranteed to have some differentiator?
       errorMessage += "Some expected rows appeared multiple times in the actual table. This is probably a bug in the test itself.\n";
     }
     if (!missingRows.isEmpty()) {
