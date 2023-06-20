@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Typeform Spec",
     "type": "object",
-    "required": ["start_date"],
+    "required": ["credentials","start_date"],
     "additionalProperties": true,
     "properties": {
       "credentials": {
@@ -57,13 +57,13 @@
           {
             "title": "Private Token",
             "type": "object",
-            "required": ["token"],
+            "required": ["access_token"],
             "properties": {
               "auth_type": {
                 "type": "string",
                 "const": "access_token"
               },
-              "token": {
+              "access_token": {
                 "type": "string",
                 "title": "Private Token",
                 "description": "Log into your Typeform account and then generate a personal Access Token.",

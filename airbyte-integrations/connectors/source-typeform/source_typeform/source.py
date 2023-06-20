@@ -248,8 +248,9 @@ class Themes(PaginatedStream):
 
 class SourceTypeform(AbstractSource):
     def get_auth(self, config: MutableMapping) -> AuthBase:
-        if config.get("token"):
-            return TokenAuthenticator(token=config["token"])
+        credentials = config.get("credentials")
+        if credentials and credentials.get("access_token"):
+            return TokenAuthenticator(token=credentials["access_token"])
         return SingleUseRefreshTokenOauth2Authenticator(config, token_refresh_endpoint="https://api.typeform.com/oauth/token")
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
