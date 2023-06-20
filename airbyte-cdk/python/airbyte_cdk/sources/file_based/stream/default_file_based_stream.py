@@ -32,18 +32,18 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._state = FileBasedCursor(
+        self._cursor = FileBasedCursor(
             self.config.max_history_size or 10_000, timedelta(days=(self.config.days_to_sync_if_history_is_full or 3)), self.logger
         )
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return self._state.to_dict()
+        return self._cursor.to_dict()
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         """State setter, accept state serialized by state getter."""
-        self._state.set_initial_state(value)
+        self._cursor.set_initial_state(value)
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -81,7 +81,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     record[self.ab_last_mod_col] = file_datetime_string
                     record[self.ab_file_name_col] = file.uri
                     yield stream_data_to_airbyte_message(self.name, record)
-                self._state.add_file(file)
+                self._cursor.add_file(file)
             except Exception as exc:
                 raise RecordParseError(
                     f"Error reading records from file: {file_description['uri']}. Is the file valid {self.config.file_type}?"
@@ -136,8 +136,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         - Remove files that have already been read in previous syncs, according to the state
         """
 
-        all_files = self._stream_reader.list_matching_files(self.config.globs, self._state.get_start_time())
-        return self._state.get_files_to_sync(all_files)
+        all_files = self._stream_reader.list_matching_files(self.config.globs, self._cursor.get_start_time())
+        return self._cursor.get_files_to_sync(all_files)
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
