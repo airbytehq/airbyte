@@ -19,7 +19,7 @@ class FileBasedState:
 
     def set_initial_state(self, value: Mapping[str, Any]):
         self._file_to_datetime_history = value.get("history", {})
-        self._history_is_complete = not value.get("incomplete_history", False)
+        self._history_is_complete = not value.get("history_is_partial", False)
 
     def add_file(self, file: RemoteFile):
         self._file_to_datetime_history[file.uri] = file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -30,9 +30,8 @@ class FileBasedState:
     def to_dict(self):
         state = {
             "history": self._file_to_datetime_history,
+            "history_is_partial": not self._history_is_complete,
         }
-        if not self.is_history_complete():
-            state["incomplete_history"] = True
         return state
 
     def is_history_complete(self):

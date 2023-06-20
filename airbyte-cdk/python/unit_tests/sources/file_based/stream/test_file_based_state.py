@@ -33,7 +33,7 @@ from freezegun import freeze_time
                 "a.csv": "2021-01-01T00:00:00.000000Z",
                 "b.csv": "2021-01-02T00:00:00.000000Z",
                 "c.csv": "2020-12-31T00:00:00.000000Z",
-            }},
+            }, "history_is_partial": False},
             id="test_file_start_time_is_earliest_time_in_history"),
         pytest.param([
             RemoteFile(uri="a.csv",
@@ -58,7 +58,7 @@ from freezegun import freeze_time
                 "b.csv": "2021-01-02T00:00:00.000000Z",
                 "c.csv": "2021-01-03T00:00:00.000000Z",
                 "d.csv": "2021-01-04T00:00:00.000000Z",
-            }},
+            }, "history_is_partial": False},
             id="test_earliest_file_is_removed_from_history_if_history_is_full"),
     ],
 )
@@ -140,7 +140,7 @@ def test_get_files_to_sync(files, expected_files_to_sync, max_history_size, hist
                  datetime(2023, 6, 10), id="test_start_time_is_time_of_last_file_if_it_is_older_than_time_window"),
 ])
 @freeze_time("2023-06-16T00:00:00Z")
-def test_compute_if_history_is_incomplete(earliest_file_in_history, expected_start_time):
+def test_compute_if_history_is_partial(earliest_file_in_history, expected_start_time):
     logger = MagicMock()
     state = FileBasedState(3, timedelta(days=3), logger)
     state.add_file(earliest_file_in_history)

@@ -72,7 +72,8 @@ single_csv_input_state_is_earlier_scenario = (
                     "history": {
                         "some_old_file.csv": "2023-06-01T03:54:07.000000Z",
                         "a.csv": "2023-06-05T03:54:07.000000Z"
-                    }
+                    },
+                    "history_is_partial": False,
                 }
             }
         ]
@@ -84,7 +85,8 @@ single_csv_input_state_is_earlier_scenario = (
                 "stream_state": {
                     "history": {
                         "some_old_file.csv": "2023-06-01T03:54:07.000000Z"
-                    }
+                    },
+                    "history_is_partial": False,
                 },
                 "stream_descriptor": {"name": "stream1"}
             }
@@ -156,7 +158,8 @@ single_csv_no_input_state_scenario = (
                 "stream1": {
                     "history": {
                         "a.csv": "2023-06-05T03:54:07.000000Z"
-                    }
+                    },
+                    "history_is_partial": False,
                 }
             }
         ]
@@ -246,7 +249,8 @@ multi_csv_same_timestamp_scenario = (
                     "history": {
                         "a.csv": "2023-06-05T03:54:07.000000Z",
                         "b.csv": "2023-06-05T03:54:07.000000Z"
-                    }
+                    },
+                    "history_is_partial": False,
                 }
             }
         ]
@@ -317,7 +321,8 @@ single_csv_input_state_is_later_scenario = (
                 "stream1": {
                     "history": {
                         "recent_file.csv": "2023-07-15T23:59:59.000000Z"
-                    }
+                    },
+                    "history_is_partial": False,
                 }
             }
         ]
@@ -413,7 +418,8 @@ multi_csv_different_timestamps_scenario = (
                 "stream1": {
                     "history": {
                         "a.csv": "2023-06-04T03:54:07.000000Z",
-                    }
+                    },
+                    "history_is_partial": False,
                 }
             },
             {"col1": "val11b", "col2": "val12b", "col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
@@ -425,7 +431,8 @@ multi_csv_different_timestamps_scenario = (
                     "history": {
                         "a.csv": "2023-06-04T03:54:07.000000Z",
                         "b.csv": "2023-06-05T03:54:07.000000Z"
-                    }
+                    },
+                    "history_is_partial": False,
                 }
             }
         ]
@@ -434,9 +441,9 @@ multi_csv_different_timestamps_scenario = (
         input_state=[],
     ))).build()
 
-mulit_csv_per_timestamp_scenario = (
+multi_csv_per_timestamp_scenario = (
     TestScenarioBuilder()
-    .set_name("mulit_csv_per_timestamp_scenario")
+    .set_name("multi_csv_per_timestamp")
     .set_config(
         {
             "streams": [
@@ -523,7 +530,8 @@ mulit_csv_per_timestamp_scenario = (
                     "history": {
                         "a.csv": "2023-06-05T03:54:07.000000Z",
                         "b.csv": "2023-06-05T03:54:07.000000Z"
-                    }
+                    },
+                    "history_is_partial": False,
                 }
             },
             {"col1": "val11c", "col2": "val12c", "col3": "val13c", "_ab_source_file_last_modified": "2023-06-06T03:54:07Z",
@@ -536,7 +544,8 @@ mulit_csv_per_timestamp_scenario = (
                         "a.csv": "2023-06-05T03:54:07.000000Z",
                         "b.csv": "2023-06-05T03:54:07.000000Z",
                         "c.csv": "2023-06-06T03:54:07.000000Z"
-                    }
+                    },
+                    "history_is_partial": False,
                 }
             },
         ]
@@ -634,7 +643,8 @@ multi_csv_skip_file_if_already_in_history = (
                     "history": {
                         "a.csv": "2023-06-05T03:54:07.000000Z",
                         "b.csv": "2023-06-05T03:54:07.000000Z"
-                    }
+                    },
+                    "history_is_partial": False,
                 }
             },
             {"col1": "val11c", "col2": "val12c", "col3": "val13c", "_ab_source_file_last_modified": "2023-06-06T03:54:07Z",
@@ -647,7 +657,8 @@ multi_csv_skip_file_if_already_in_history = (
                         "a.csv": "2023-06-05T03:54:07.000000Z",
                         "b.csv": "2023-06-05T03:54:07.000000Z",
                         "c.csv": "2023-06-06T03:54:07.000000Z"
-                    }
+                    },
+                    "history_is_partial": False,
                 }
             },
         ]
@@ -757,7 +768,8 @@ multi_csv_include_missing_files_within_history_range = (
                         "a.csv": "2023-06-05T03:54:07.000000Z",
                         "b.csv": "2023-06-05T03:54:07.000000Z",
                         "c.csv": "2023-06-06T03:54:07.000000Z"
-                    }
+                    },
+                    "history_is_partial": False,
                 }
             },
         ]
@@ -865,7 +877,8 @@ multi_csv_remove_old_files_if_history_is_full_scenario = (
                         "very_old_file.csv": "2023-06-02T03:54:07.000000Z",
                         "old_file_same_timestamp_as_a.csv": "2023-06-06T03:54:07.000000Z",
                         "a.csv": "2023-06-06T03:54:07.000000Z",
-                    }
+                    },
+                    "history_is_partial": False,
                 }
             },
             {"col1": "val11b", "col2": "val12b", "col3": "val13b", "_ab_source_file_last_modified": "2023-06-07T03:54:07Z",
@@ -878,7 +891,8 @@ multi_csv_remove_old_files_if_history_is_full_scenario = (
                         "old_file_same_timestamp_as_a.csv": "2023-06-06T03:54:07.000000Z",
                         "a.csv": "2023-06-06T03:54:07.000000Z",
                         "b.csv": "2023-06-07T03:54:07.000000Z",
-                    }
+                    },
+                    "history_is_partial": False,
                 }
             },
             {"col1": "val11c", "col2": "val12c", "col3": "val13c", "_ab_source_file_last_modified": "2023-06-10T03:54:07Z",
@@ -891,7 +905,8 @@ multi_csv_remove_old_files_if_history_is_full_scenario = (
                         "a.csv": "2023-06-06T03:54:07.000000Z",
                         "b.csv": "2023-06-07T03:54:07.000000Z",
                         "c.csv": "2023-06-10T03:54:07.000000Z"
-                    }
+                    },
+                    "history_is_partial": False,
                 }
             },
         ]
@@ -1022,7 +1037,7 @@ multi_csv_same_timestamp_more_files_than_history_size_scenario = (
                         "c.csv": "2023-06-05T03:54:07.000000Z",
                         "d.csv": "2023-06-05T03:54:07.000000Z",
                     },
-                    "incomplete_history": True,
+                    "history_is_partial": True,
                 }
             }
         ]
@@ -1140,7 +1155,7 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario = (
                         "c.csv": "2023-06-05T03:54:07.000000Z",
                         "d.csv": "2023-06-05T03:54:07.000000Z",
                     },
-                    "incomplete_history": True,
+                    "history_is_partial": True,
                 }
             }
         ]
@@ -1155,7 +1170,7 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario = (
                         "c.csv": "2023-06-05T03:54:07.000000Z",
                         "d.csv": "2023-06-05T03:54:07.000000Z",
                     },
-                    "incomplete_history": True,
+                    "history_is_partial": True,
                 },
                 "stream_descriptor": {"name": "stream1"}
             }
@@ -1263,7 +1278,8 @@ multi_csv_sync_recent_files_if_history_is_incomplete__different_timestamps_scena
                         "b.csv": "2023-06-06T03:54:07.000000Z",
                         "c.csv": "2023-06-07T03:54:07.000000Z",
                         "d.csv": "2023-06-08T03:54:07.000000Z",
-                    }
+                    },
+                    "history_is_partial": False,
                 }
             },
             {"col1": "val11c", "col2": "val12c", "col3": "val13c", "_ab_source_file_last_modified": "2023-06-07T03:54:07Z",
@@ -1276,7 +1292,8 @@ multi_csv_sync_recent_files_if_history_is_incomplete__different_timestamps_scena
                         "b.csv": "2023-06-06T03:54:07.000000Z",
                         "c.csv": "2023-06-07T03:54:07.000000Z",
                         "d.csv": "2023-06-08T03:54:07.000000Z",
-                    }
+                    },
+                    "history_is_partial": False,
                 }
             },
             {"col1": "val11d", "col2": "val12d", "col3": "val13d", "_ab_source_file_last_modified": "2023-06-08T03:54:07Z",
@@ -1290,7 +1307,8 @@ multi_csv_sync_recent_files_if_history_is_incomplete__different_timestamps_scena
                         "c.csv": "2023-06-07T03:54:07.000000Z",
                         "d.csv": "2023-06-08T03:54:07.000000Z",
                         # History is considered complete now
-                    }
+                    },
+                    "history_is_partial": False,
                 }
             }
         ]
@@ -1304,7 +1322,7 @@ multi_csv_sync_recent_files_if_history_is_incomplete__different_timestamps_scena
                         "c.csv": "2023-06-07T03:54:07.000000Z",
                         "d.csv": "2023-06-08T03:54:07.000000Z",
                     },
-                    "incomplete_history": True,
+                    "history_is_partial": True,
                 },
                 "stream_descriptor": {"name": "stream1"}
             }

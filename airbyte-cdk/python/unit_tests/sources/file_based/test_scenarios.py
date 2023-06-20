@@ -17,7 +17,7 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     single_csv_scenario,
 )
 from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
-    mulit_csv_per_timestamp_scenario,
+    multi_csv_per_timestamp_scenario,
     multi_csv_different_timestamps_scenario,
     multi_csv_include_missing_files_within_history_range,
     multi_csv_remove_old_files_if_history_is_full_scenario,
@@ -41,7 +41,7 @@ scenarios = [
     single_csv_input_state_is_later_scenario,
     multi_csv_same_timestamp_scenario,
     multi_csv_different_timestamps_scenario,
-    mulit_csv_per_timestamp_scenario,
+    multi_csv_per_timestamp_scenario,
     multi_csv_skip_file_if_already_in_history,
     multi_csv_include_missing_files_within_history_range,
     multi_csv_remove_old_files_if_history_is_full_scenario,
