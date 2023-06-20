@@ -14,6 +14,17 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_auth0.utils import get_api_endpoint, initialize_authenticator
+from airbyte_cdk.sources.streams.core import StreamData
+
+from airbyte_cdk.models import SyncMode
+
+
+def read_full_refresh(stream_instance: Stream):
+    slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh)
+    for _slice in slices:
+        records = stream_instance.read_records(stream_slice=_slice, sync_mode=SyncMode.full_refresh)
+        for record in records:
+            yield record
 
 
 # Basic full refresh stream
@@ -123,11 +134,67 @@ class Clients(Auth0Stream):
     primary_key = "client_id"
     resource_name = "clients"
 
+
 class Users(IncrementalAuth0Stream):
     min_id = "1900-01-01T00:00:00.000Z"
     primary_key = "user_id"
     resource_name = "users"
     cursor_field = "updated_at"
+
+
+class Organizations(Auth0Stream):
+    primary_key = "id"
+    resource_name = "organizations"
+
+
+class OrganizationMembers(Auth0Stream):
+    primary_key = "id"
+    resource_name = "members"
+
+    def __init__(self, url_base: str, *args, **kwargs):
+        super().__init__(url_base=url_base, *args, **kwargs)
+        self.organizations = Organizations(url_base=url_base, *args, **kwargs)
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for org in read_full_refresh(self.organizations):
+            for member in super().read_records(stream_slice={"organization_id": org["id"]}, **kwargs):
+                yield member
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
+        return f"organizations/{stream_slice['organization_id']}/members"
+
+    def parse_response(self, response: requests.Response, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping]:
+        record = response.json().get(self.resource_name)
+        for r in record:
+            r["org_id"] = stream_slice["organization_id"]
+            r["id"] = stream_slice["organization_id"] + "_" + r["user_id"]
+            yield r
+
+
+class OrganizationMemberRoles(Auth0Stream):
+    primary_key = "id"
+    resource_name = "roles"
+
+    def __init__(self, url_base: str, *args, **kwargs):
+        super().__init__(url_base=url_base, *args, **kwargs)
+        self.organization_members = OrganizationMembers(url_base=url_base, *args, **kwargs)
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
+        return f"organizations/{stream_slice['organization_id']}/members/{stream_slice['user_id']}/roles"
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for org_member in read_full_refresh(self.organization_members):
+            for role in super().read_records(
+                stream_slice={"organization_id": org_member["org_id"], "user_id": org_member["user_id"]}, **kwargs
+            ):
+                yield role
+
+    def parse_response(self, response: requests.Response, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping]:
+        record = response.json().get(self.resource_name)
+        for r in record:
+            r["org_id"] = stream_slice["organization_id"]
+            r["user_id"] = stream_slice["user_id"]
+            yield r
 
 
 # Source
@@ -152,4 +219,10 @@ class SourceAuth0(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         initialization_params = {"authenticator": initialize_authenticator(config), "url_base": config.get("base_url")}
-        return [Clients(**initialization_params), Users(**initialization_params)]
+        return [
+            Clients(**initialization_params),
+            Organizations(**initialization_params),
+            OrganizationMembers(**initialization_params),
+            OrganizationMemberRoles(**initialization_params),
+            Users(**initialization_params),
+        ]
