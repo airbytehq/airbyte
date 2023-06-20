@@ -60,12 +60,20 @@ class OktaStream(HttpStream, ABC):
             **(next_page_token or {}),
         }
 
-    def parse_response(
-        self,
-        response: requests.Response,
-        **kwargs,
-    ) -> Iterable[Mapping]:
-        yield from response.json()
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        if isinstance(response_json, list):
+            for record in response_json:
+                yield self.transform(record=record, **kwargs)
+        else:
+            yield self.transform(record=response_json, **kwargs)
+    
+    def transform(
+        self, record: MutableMapping[str, Any],
+        stream_slice: Mapping[str, Any],
+        **kwargs
+    ) -> MutableMapping[str, Any]:
+        return record
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         # The rate limit resets on the timestamp indicated
@@ -115,9 +123,9 @@ class Groups(IncrementalOktaStream):
         return "groups"
 
 
-class GroupMembers(IncrementalOktaStream):
+class GroupMembers(OktaStream):
     cursor_field = "id"
-    primary_key = "id"
+    primary_key = ["groupId", "id"]
     use_cache = True
     min_id = "00u00000000000000000"
 
@@ -130,20 +138,13 @@ class GroupMembers(IncrementalOktaStream):
         group_id = stream_slice["group_id"]
         return f"groups/{group_id}/users"
 
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super(IncrementalOktaStream, self).request_params(stream_state, stream_slice, next_page_token)
-        latest_entry = stream_state.get(self.cursor_field) if stream_state else self.min_id
-        params["after"] = latest_entry
-        return params
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["groupId"] = stream_slice["group_id"]
+        return record
 
 
 class GroupRoleAssignments(OktaStream):
-    primary_key = "id"
+    primary_key = ["groupId", "id"]
     use_cache = True
 
     def stream_slices(self, **kwargs):
@@ -155,6 +156,9 @@ class GroupRoleAssignments(OktaStream):
         group_id = stream_slice["group_id"]
         return f"groups/{group_id}/roles"
 
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["groupId"] = stream_slice["group_id"]
+        return record
 
 class Logs(IncrementalOktaStream):
 
@@ -295,7 +299,7 @@ class CustomRoles(OktaStream):
 
 
 class UserRoleAssignments(OktaStream):
-    primary_key = "id"
+    primary_key = ["userId", "id"]
     use_cache = True
 
     def stream_slices(self, **kwargs):
@@ -306,6 +310,10 @@ class UserRoleAssignments(OktaStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         user_id = stream_slice["user_id"]
         return f"users/{user_id}/roles"
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["userId"] = stream_slice["user_id"]
+        return record
 
 
 class Permissions(OktaStream):
