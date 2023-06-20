@@ -50,8 +50,10 @@ jobs:
       - uses: dorny/paths-filter@v2
         id: filter
         with:
-          # Note, the following glob expression within a filters are ORs.
-          # Note, if no filters match, the steps are all skipped. This is why we have the any_change filter.
+          # Note: The following glob expression within a filters are ORs.
+          # Note: If no filters match, the steps are all skipped WITHOUT reported their status check back to github.
+          #       This can cause required checks to go unreported blocking PRs from being merged
+          #       and this is why we have the any_change filter.
           filters: |
             build:
               - '.github/**'
