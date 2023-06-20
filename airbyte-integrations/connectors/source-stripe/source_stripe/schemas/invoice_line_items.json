@@ -48,7 +48,7 @@
           "type": ["null", "integer"]
         },
         "end": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         }
       }
     },
