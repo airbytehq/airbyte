@@ -46,6 +46,9 @@ async def run_report_complete_pipeline(dagger_client: dagger.Client, contexts: L
     This is to denote when the pipeline is complete, useful for long running pipelines like nightlies.
     """
 
+    if not contexts:
+        return []
+
     # Repurpose the first context to be the pipeline upload context to preserve timestamps
     first_connector_context = contexts[0]
 
