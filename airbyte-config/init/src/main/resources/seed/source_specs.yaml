@@ -761,6 +761,7 @@
             - "TR"
             - "UK"
             - "US"
+            - "BE"
           type: "string"
       required:
         - "lwa_app_id"
@@ -797,6 +798,7 @@
             - "TR"
             - "UK"
             - "US"
+            - "BE"
           type: "string"
     supportsNormalization: false
     supportsDBT: false
