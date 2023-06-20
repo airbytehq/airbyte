@@ -31,14 +31,20 @@ class VersionCheck(Step, ABC):
         return f"{self.GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/{METADATA_FILE_NAME}"
 
     @cached_property
-    def master_metadata(self) -> dict:
+    def master_metadata(self) -> Optional[dict]:
         response = requests.get(self.github_master_metadata_url)
-        response.raise_for_status()
+
+        # New connectors will not have a metadata file in master
+        if not response.ok:
+            return None
         return yaml.safe_load(response.text)
 
     @property
     def master_connector_version(self) -> semver.Version:
         metadata = self.master_metadata
+        if not metadata:
+            return semver.Version.parse("0.0.0")
+
         return semver.Version.parse(str(metadata["data"]["dockerImageTag"]))
 
     @property
