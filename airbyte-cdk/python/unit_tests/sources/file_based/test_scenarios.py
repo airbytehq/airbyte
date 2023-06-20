@@ -10,10 +10,6 @@ import pytest
 from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from freezegun import freeze_time
-from typing import Any, Dict
-
-import pytest
-from airbyte_cdk.entrypoint import launch
 from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     invalid_csv_scenario,
     multi_csv_scenario,

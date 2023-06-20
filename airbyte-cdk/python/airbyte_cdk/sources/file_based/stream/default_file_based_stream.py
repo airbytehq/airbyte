@@ -7,8 +7,7 @@ import itertools
 import logging
 from datetime import timedelta
 from functools import cache
-from typing import Any, Iterable, List, Mapping, Optional, Union
-from typing import MutableMapping
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.file_based.exceptions import MissingSchemaError, RecordParseError, SchemaInferenceError
@@ -22,7 +21,6 @@ from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_messa
 
 
 class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
-
 
     """
     The default file-based stream.
@@ -109,7 +107,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     @cache
     def get_raw_json_schema(self) -> Mapping[str, Any]:
-        # FIXME: I only did the bare minimal for discovery tests to look right. I haven't verified the schema merging works
         if self.config.input_schema:
             type_mapping = self.config.input_schema
         else:

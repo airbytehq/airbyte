@@ -3,7 +3,6 @@
 #
 
 from copy import deepcopy
-from typing import Any, Dict, Literal, Mapping
 from typing import Any, Dict, List, Literal, Mapping, Union
 
 from airbyte_cdk.sources.file_based.exceptions import SchemaInferenceError

@@ -6,8 +6,6 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Mapping, Optional, Type
 
 from airbyte_cdk.models.airbyte_protocol import SyncMode
-from typing import Any, Dict, Mapping, Optional, Type
-
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_source import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser

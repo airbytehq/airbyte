@@ -87,7 +87,10 @@ class AbstractFileBasedStream(Stream):
 
     @abstractmethod
     def compute_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
-        """"""
+        """
+        Return a list of slices that will be used to read files in the current sync.
+        :return: The slices to use for the current sync.
+        """
         ...
 
     @abstractmethod
