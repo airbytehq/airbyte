@@ -61,6 +61,11 @@ class AmazonSPStream(HttpStream, ABC):
         self.marketplace_id = marketplace_id
         self.source_name = source_name
         self._session.auth = aws_signature
+        
+        # added by Jerry 2023.6.20, if replication_start_date is none, set the replication_start_date to the previous day
+        if self._replication_start_date is None:
+            self._replication_start_date = pendulum.now("utc").subtract(days=1).strftime(DATE_TIME_FORMAT)
+
 
     @property
     def url_base(self) -> str:
