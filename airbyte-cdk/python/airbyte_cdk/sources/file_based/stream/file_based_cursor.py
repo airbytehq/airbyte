@@ -40,7 +40,7 @@ class FileBasedCursor:
         return self._history_is_partial
 
     def get_files_to_sync(self, all_files: List[RemoteFile]):
-        start_time = self._compute_start_time()
+        start_time = self.get_start_time()
         files_to_sync = [
             f
             for f in all_files
