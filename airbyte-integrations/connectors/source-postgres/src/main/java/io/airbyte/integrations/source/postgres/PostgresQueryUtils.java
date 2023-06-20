@@ -130,7 +130,9 @@ public class PostgresQueryUtils {
     }
   }
 
-  public static List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> streamsUnderVacuum(final JdbcDatabase database, final List<ConfiguredAirbyteStream> streams, final String quoteString) {
+  public static List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> streamsUnderVacuum(final JdbcDatabase database,
+                                                                                                      final List<ConfiguredAirbyteStream> streams,
+                                                                                                      final String quoteString) {
     final List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> streamsUnderVacuuming = new ArrayList<>();
     streams.forEach(stream -> {
       final String streamName = stream.getStream().getName();

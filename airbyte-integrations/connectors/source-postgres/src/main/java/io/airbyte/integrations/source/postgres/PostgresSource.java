@@ -471,8 +471,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
             streamsCategorised.ctidStreams().streamsForCtidSync(), getQuoteString());
 
         final List<ConfiguredAirbyteStream> finaListOfStreamsToBeSyncedViaCtid =
-            streamsUnderVacuum.isEmpty() ? streamsCategorised.ctidStreams().streamsForCtidSync() :
-                streamsCategorised.ctidStreams().streamsForCtidSync().stream()
+            streamsUnderVacuum.isEmpty() ? streamsCategorised.ctidStreams().streamsForCtidSync()
+                : streamsCategorised.ctidStreams().streamsForCtidSync().stream()
                     .filter(c -> !streamsUnderVacuum.contains(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
                     .toList();
         final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long> fileNodes = PostgresQueryUtils.fileNodeForStreams(database,
