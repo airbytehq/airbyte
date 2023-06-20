@@ -22,6 +22,7 @@ Poland	A1C3SOZRARQ6R3	PL
 Turkey	A33AVAJ2PDY3EV	TR
 United Arab Emirates	A2VIGQ35RCS4UG	AE
 India	A21TJRUUN4KGV	IN
+Belgium    AMEN7PMS3EDWL    BE
 Far East
 
 Country	marketplaceId	Country code
@@ -60,6 +61,7 @@ class AWSRegion(str, Enum):
     TR = "TR"
     UK = "UK"
     US = "US"
+    BE = "BE"
 
 
 def get_aws_base_url(aws_env: AWSEnvironment) -> str:
@@ -85,6 +87,7 @@ def get_marketplaces(aws_env: AWSEnvironment) -> Dict[AWSRegion, Tuple[str, str,
         AWSRegion.SE: (f"{base_url}-eu.amazon.com", "A2NODRKZP88ZB9", "eu-west-1"),
         AWSRegion.TR: (f"{base_url}-eu.amazon.com", "A33AVAJ2PDY3EV", "eu-west-1"),
         AWSRegion.UK: (f"{base_url}-eu.amazon.com", "A1F83G8C2ARO7P", "eu-west-1"),
+        AWSRegion.BE: (f"{base_url}-eu.amazon.com", "AMEN7PMS3EDWL", "eu-west-1"),
         AWSRegion.AU: (f"{base_url}-fe.amazon.com", "A39IBJ37TRP1C6", "us-west-2"),
         AWSRegion.JP: (f"{base_url}-fe.amazon.com", "A1VC38T7YXB528", "us-west-2"),
         AWSRegion.SG: (f"{base_url}-fe.amazon.com", "A19VAU5U5O7RUS", "us-west-2"),
