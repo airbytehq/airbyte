@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination_async;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
@@ -128,9 +126,9 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
    * @return PartialAirbyteMessage if the message is valid, empty otherwise
    */
   @VisibleForTesting
-  public static Optional<PartialAirbyteMessage> deserializeAirbyteMessage(final String messageString) {
-    // TODO: (ryankfu) plumb in the serialized AirbyteStateMessage to match AirbyteRecordMessage and
-    // code parity
+  public static Optional<PartialAirbyteMessage> deserializeAirbyteMessage(final String messageString) throws Exception {
+    // TODO: (ryankfu) plumb in the serialized AirbyteStateMessage to match AirbyteRecordMessage code
+    // parity
     final Optional<PartialAirbyteMessage> messageOptional = Jsons.tryDeserialize(messageString, PartialAirbyteMessage.class)
         .map(partial -> {
           if (partial.getType().equals(Type.RECORD) && partial.getRecord().getData() != null) {
@@ -144,49 +142,8 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
 
     if (messageOptional.isPresent()) {
       return messageOptional;
-    } else {
-      if (isStateMessage(messageString)) {
-        throw new IllegalStateException("Invalid state message: " + messageString);
-      } else {
-        LOGGER.error("Received invalid message: " + messageString);
-        return Optional.empty();
-      }
     }
-
-  }
-
-  /**
-   * Tests whether the provided JSON string represents a state message.
-   *
-   * @param input a JSON string that represents an {@link AirbyteMessage}.
-   * @return {@code true} if the message is a state message, {@code false} otherwise.
-   */
-  @VisibleForTesting
-  public static boolean isStateMessage(final String input) {
-    final Optional<AirbyteTypeMessage> deserialized = Jsons.tryDeserialize(input, AirbyteTypeMessage.class);
-    return deserialized.filter(airbyteTypeMessage -> airbyteTypeMessage.getType() == Type.STATE).isPresent();
-  }
-
-  /**
-   * Custom class that can be used to parse a JSON message to determine the type of the represented
-   * {@link AirbyteMessage}.
-   */
-  private static class AirbyteTypeMessage {
-
-    @JsonProperty("type")
-    @JsonPropertyDescription("Message type")
-    private AirbyteMessage.Type type;
-
-    @JsonProperty("type")
-    public AirbyteMessage.Type getType() {
-      return type;
-    }
-
-    @JsonProperty("type")
-    public void setType(final AirbyteMessage.Type type) {
-      this.type = type;
-    }
-
+    throw new RuntimeException(String.format("Invalid state message: %s", messageString));
   }
 
   @Override

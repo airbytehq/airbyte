@@ -225,7 +225,7 @@ class AsyncStreamConsumerTest {
   }
 
   @Test
-  void deserializeAirbyteMessageWithAirbyteRecord() {
+  void deserializeAirbyteMessageWithAirbyteRecord() throws Exception {
     final AirbyteMessage airbyteMessage = new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
@@ -239,7 +239,7 @@ class AsyncStreamConsumerTest {
   }
 
   @Test
-  void deserializeAirbyteMessageWithEmptyAirbyteRecord() {
+  void deserializeAirbyteMessageWithEmptyAirbyteRecord() throws Exception {
     final Map emptyMap = Map.of();
     final AirbyteMessage airbyteMessage = new AirbyteMessage()
         .withType(Type.RECORD)
@@ -258,12 +258,11 @@ class AsyncStreamConsumerTest {
         .withType(Type.LOG)
         .withLog(new AirbyteLogMessage());
     final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
-    final Optional<PartialAirbyteMessage> partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
-    assertTrue(partial.isEmpty());
+    assertThrows(RuntimeException.class, () -> AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage));
   }
 
   @Test
-  void deserializeAirbyteMessageWithAirbyteState() {
+  void deserializeAirbyteMessageWithAirbyteState() throws Exception {
     final String serializedAirbyteMessage = Jsons.serialize(STATE_MESSAGE1);
     final Optional<PartialAirbyteMessage> partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
     assertEquals(serializedAirbyteMessage, partial.get().getSerialized());
@@ -276,8 +275,7 @@ class AsyncStreamConsumerTest {
             .withType(AirbyteStateType.STREAM)
             .withStream(new AirbyteStreamState().withStreamDescriptor(STREAM1_DESC).withStreamState(Jsons.jsonNode(1))));
     final String serializedAirbyteMessage = Jsons.serialize(badState);
-    final boolean isState = AsyncStreamConsumer.isStateMessage(serializedAirbyteMessage);
-    assertFalse(isState);
+    assertThrows(RuntimeException.class, () -> AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage));
   }
 
   @Nested
