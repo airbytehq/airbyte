@@ -65,11 +65,11 @@ from freezegun import freeze_time
 def test_add_file(files_to_add, expected_start_time, expected_state_dict):
     logger = MagicMock()
     state = FileBasedState(3, timedelta(days=3), logger)
-    assert state.compute_start_time() == datetime.min
+    assert state._compute_start_time() == datetime.min
 
     for index, f in enumerate(files_to_add):
         state.add_file(f)
-        assert expected_start_time[index] == state.compute_start_time()
+        assert expected_start_time[index] == state._compute_start_time()
     assert expected_state_dict == state.to_dict()
 
 
@@ -145,4 +145,4 @@ def test_compute_if_history_is_partial(earliest_file_in_history, expected_start_
     state = FileBasedState(3, timedelta(days=3), logger)
     state.add_file(earliest_file_in_history)
     state._history_is_partial = True
-    assert state.compute_start_time() == expected_start_time
+    assert state._compute_start_time() == expected_start_time

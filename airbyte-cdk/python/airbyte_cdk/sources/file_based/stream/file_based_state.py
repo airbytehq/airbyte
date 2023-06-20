@@ -16,10 +16,12 @@ class FileBasedState:
         self._time_window_if_history_is_full = time_window_if_history_is_full
         self._history_is_partial = False
         self._logger = logger
+        self._start_time = self._compute_start_time()
 
     def set_initial_state(self, value: Mapping[str, Any]):
         self._file_to_datetime_history = value.get("history", {})
         self._history_is_partial = value.get("history_is_partial", False)
+        self._start_time = self._compute_start_time()
 
     def add_file(self, file: RemoteFile):
         self._file_to_datetime_history[file.uri] = file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -38,7 +40,7 @@ class FileBasedState:
         return self._history_is_partial
 
     def get_files_to_sync(self, all_files: List[RemoteFile]):
-        start_time = self.compute_start_time()
+        start_time = self._compute_start_time()
         files_to_sync = [
             f
             for f in all_files
@@ -58,7 +60,10 @@ class FileBasedState:
             self._history_is_partial = False
         return files_to_sync
 
-    def compute_start_time(self) -> datetime:
+    def get_start_time(self):
+        return self._start_time
+
+    def _compute_start_time(self) -> datetime:
         if not self._file_to_datetime_history:
             return datetime.min
         else:

@@ -136,7 +136,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         - Remove files that have already been read in previous syncs, according to the state
         """
 
-        all_files = self._stream_reader.list_matching_files(self.config.globs)
+        all_files = self._stream_reader.list_matching_files(self.config.globs, self._state.get_start_time())
         return self._state.get_files_to_sync(all_files)
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
