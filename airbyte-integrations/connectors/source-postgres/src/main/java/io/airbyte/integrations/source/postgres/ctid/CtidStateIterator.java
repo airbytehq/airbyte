@@ -90,9 +90,11 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
+      final AirbyteStateMessage finalStateMessage = finalStateMessageSupplier.apply(pair, streamStateForIncrementalRun);
+      LOGGER.info("Emitting final state for stream {}, state is {}", pair, finalStateMessage.getStream().getStreamState());
       return new AirbyteMessage()
           .withType(Type.STATE)
-          .withState(finalStateMessageSupplier.apply(pair, streamStateForIncrementalRun));
+          .withState(finalStateMessage);
     } else {
       return endOfData();
     }
