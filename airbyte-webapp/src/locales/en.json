@@ -485,6 +485,8 @@
   "syncTable.cell.status": "Sync status",
   "syncTable.cell.fail": "When sync fails",
   "syncTable.cell.success": "When sync succeeds",
+  "paymentTable.cell.payment": "Payment",
+  "paymentTable.cell.fail": "When payment fails",
   "notification.status.enabled": "Enabled",
   "notification.status.disabled": "Disabled",
   "settings.accountSetting.password": "Password",
