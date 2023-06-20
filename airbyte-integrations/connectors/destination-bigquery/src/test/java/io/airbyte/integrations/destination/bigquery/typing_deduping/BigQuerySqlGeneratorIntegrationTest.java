@@ -63,6 +63,7 @@ import org.slf4j.LoggerFactory;
 
 // TODO this proooobably belongs in test-integration? make sure to update the build.gradle
 // concurrent runner stuff if you do this
+// TODO write test case for multi-column PK
 @Execution(ExecutionMode.CONCURRENT)
 public class BigQuerySqlGeneratorIntegrationTest {
 
@@ -352,12 +353,39 @@ public class BigQuerySqlGeneratorIntegrationTest {
     assertEquals(0, rawUntypedRows);
   }
 
-  // TODO some of these test cases don't actually need a suffix. Figure out which ones make sense and
-  // which ones don't.
+  @Test
+  public void testFullUpdateAllTypes() throws InterruptedException {
+    createRawTable();
+    createFinalTable("_foo");
+    bq.query(QueryJobConfiguration.newBuilder(
+            new StringSubstitutor(Map.of(
+                "dataset", testDataset)).replace(
+                """
+                INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
+                  (JSON'{"id": 1, "updated_at": "2023-01-01T01:00:00Z", "array": ["foo"], "struct": {"foo": "bar"}, "string": "foo", "number": 42.1, "integer": 42, "boolean": true, "timestamp_with_timezone": "2023-01-23T12:34:56Z", "timestamp_without_timezone": "2023-01-23T12:34:56", "time_with_timezone": "12:34:56Z", "time_without_timezone": "12:34:56", "date": "2023-01-23", "unknown": {}}', generate_uuid(), '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 2, "updated_at": "2023-01-01T01:00:00Z", "array": null, "struct": null, "string": null, "number": null, "integer": null, "boolean": null, "timestamp_with_timezone": null, "timestamp_without_timezone": null, "time_with_timezone": null, "time_without_timezone": null, "date": null, "unknown": null}', generate_uuid(), '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 3, "updated_at": "2023-01-01T01:00:00Z"}', generate_uuid(), '2023-01-01T00:00:00Z'),
+                  (JSON'{"id": 4, "updated_at": "2023-01-01T01:00:00Z", "array": {}, "struct": [], "string": {}, "number": {}, "integer": {}, "boolean": {}, "timestamp_with_timezone": {}, "timestamp_without_timezone": {}, "time_with_timezone": {}, "time_without_timezone": {}, "date": {}, "unknown": null}', generate_uuid(), '2023-01-01T00:00:00Z');
+                """))
+        .build());
+
+    final String sql = GENERATOR.updateTable("_foo", incrementalDedupStreamConfig());
+    logAndExecute(sql);
+
+    // TODO assert which columns have errors
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("_foo", QUOTE)).build()).getTotalRows();
+    assertEquals(4, finalRows);
+    final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
+    assertEquals(4, rawRows);
+    final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
+        "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
+    assertEquals(0, rawUntypedRows);
+  }
+
   @Test
   public void testFullUpdateIncrementalDedup() throws InterruptedException {
     createRawTable();
-    createFinalTable("_foo");
+    createFinalTable();
     bq.query(QueryJobConfiguration.newBuilder(
         new StringSubstitutor(Map.of(
             "dataset", testDataset)).replace(
@@ -369,11 +397,11 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 """))
         .build());
 
-    final String sql = GENERATOR.updateTable("_foo", incrementalDedupStreamConfig());
+    final String sql = GENERATOR.updateTable("", incrementalDedupStreamConfig());
     logAndExecute(sql);
 
     // TODO
-    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("_foo", QUOTE)).build()).getTotalRows();
+    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build()).getTotalRows();
     assertEquals(2, finalRows);
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
     assertEquals(2, rawRows);
@@ -385,7 +413,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
   @Test
   public void testFullUpdateIncrementalAppend() throws InterruptedException {
     createRawTable();
-    createFinalTable("_foo");
+    createFinalTable();
     bq.query(QueryJobConfiguration.newBuilder(
         new StringSubstitutor(Map.of(
             "dataset", testDataset)).replace(
