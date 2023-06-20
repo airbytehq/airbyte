@@ -179,11 +179,9 @@ class PerPartitionCursor(Cursor):
         for state in stream_state["states"]:
             self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
 
-    def update_state(self, record: Record):
+    def close_slice(self, stream_slice: StreamSlice) -> None:
         try:
-            stream_slice = record.associated_slice
-            record_with_cursor_slice = Record(record.data, stream_slice.cursor_slice)
-            self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].update_state(record_with_cursor_slice)
+            self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].close_slice(stream_slice.cursor_slice)
         except KeyError as exception:
             raise KeyError(
                 f"Partition {str(exception)} could not be found in current state based on the record. This is unexpected because "

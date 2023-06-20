@@ -104,16 +104,10 @@ class DatetimeBasedCursor(Cursor):
         """
         self._cursor = stream_state.get(self.cursor_field.eval(self.config)) if stream_state else None
 
-    def update_state(self, record: Record) -> None:
-        """
-        Update the cursor value to the max datetime between the last record, the start of the stream_slice, and the current cursor value.
-
-        :param record: last record read
-        :return: None
-        """
-        record_value = record.get(self.cursor_field.eval(self.config)) if record else None
-        possible_cursor_values = list(filter(lambda item: item, [record_value, self._cursor]))
-        self._cursor = max(possible_cursor_values) if possible_cursor_values else None
+    def close_slice(self, stream_slice: StreamSlice) -> None:
+        stream_slice_value_end = self.parse_date(stream_slice.get(self.partition_field_end.eval(self.config)))
+        possible_cursor_values = list(filter(lambda item: item, [stream_slice_value_end, self.parse_date(self._cursor) if self._cursor else None]))
+        self._cursor = self._format_datetime(max(possible_cursor_values)) if possible_cursor_values else None
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         """

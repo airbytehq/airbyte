@@ -726,14 +726,14 @@ def test_limit_stream_slices():
 
 
 @pytest.mark.parametrize(
-    "test_name, last_records, records, expected_stream_slicer_update_count",
+    "test_name, last_records, records",
     [
-        ("test_two_records", [{"id": -1}], records, 2),
-        ("test_no_records", [{"id": -1}], [], 1),
-        ("test_no_records_no_previous_records", [], [], 0)
+        ("test_two_records", [{"id": -1}], records),
+        ("test_no_records", [{"id": -1}], []),
+        ("test_no_records_no_previous_records", [], [])
     ]
 )
-def test_read_records_updates_stream_slicer_once_if_no_records(test_name, last_records, records, expected_stream_slicer_update_count):
+def test_read_records_then_cursor_close_slice(test_name, last_records, records):
     with patch.object(HttpStream, "_read_pages", return_value=iter(records)):
         requester = MagicMock()
         paginator = MagicMock()
@@ -751,11 +751,12 @@ def test_read_records_updates_stream_slicer_once_if_no_records(test_name, last_r
             parameters={},
             config={},
         )
-        retriever._last_records = last_records
+        retriever._last_records = records
+        stream_slice = {"repository": "airbyte"}
 
-        list(retriever.read_records(sync_mode=SyncMode.incremental, stream_slice={"repository": "airbyte"}))
+        list(retriever.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
 
-        assert cursor.update_state.call_count == expected_stream_slicer_update_count
+        cursor.close_slice.assert_called_once_with(stream_slice)
 
 
 def _generate_slices(number_of_slices):

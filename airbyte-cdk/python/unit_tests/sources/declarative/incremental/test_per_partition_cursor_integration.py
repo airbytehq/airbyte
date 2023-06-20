@@ -160,6 +160,6 @@ def test_given_record_for_partition_when_read_then_update_state():
     assert stream_instance.state == {"states": [
         {
             "partition": {"partition_field": "1"},
-            "cursor": {CURSOR_FIELD: "2022-01-15"},
+            "cursor": {CURSOR_FIELD: "2022-01-31"},
         }
     ]}

@@ -152,3 +152,14 @@ class DeclarativeStream(Stream):
         :return:
         """
         return self.retriever.stream_slices()
+
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        """
+        We explicitly disable checkpointing here. There are a couple reasons for that and not all are documented here but:
+        * In the case where records are not ordered, the granularity of what is ordered is the slice. Therefore, we will only update the
+            cursor value once at the end of every slice.
+        * Updating the state once every record would generate issues for data feed stop conditions or semi-incremental syncs (assuming there
+            where are no steps) where the important state is the one at the beginning of the slice
+        """
+        return None
