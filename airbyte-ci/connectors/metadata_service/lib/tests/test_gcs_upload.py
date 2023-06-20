@@ -120,7 +120,8 @@ def test_upload_metadata_to_gcs_valid_metadata(
         assert uploaded
 
 
-def test_upload_metadata_to_gcs_invalid_metadata(invalid_metadata_yaml_files):
+def test_upload_metadata_to_gcs_invalid_metadata(mocker, invalid_metadata_yaml_files):
+    setup_upload_mocks(mocker, None, None, "new_md5_hash")
     for invalid_metadata_file in invalid_metadata_yaml_files:
         metadata_file_path = pathlib.Path(invalid_metadata_file)
         try:
@@ -128,11 +129,15 @@ def test_upload_metadata_to_gcs_invalid_metadata(invalid_metadata_yaml_files):
                 "my_bucket",
                 metadata_file_path,
             )
-            assert False, f"Expected ValueError for invalid metadata file: {metadata_file_path}"
-        except (ValueError, StopIteration):
+        except ValueError as e:
+            assert "validation error" in e.args[0], f"Expected validation error for invalid metadata file: {metadata_file_path}. Got this instead: {e}"
+            continue
+        except StopIteration:
             continue
         except Exception as e:
             assert False, f"Expected ValueError for invalid metadata file: {metadata_file_path}. Got this instead: {e}"
+
+        assert False, f"Expected ValueError for invalid metadata file: {metadata_file_path} Got no error instead."
 
 
 def test_upload_metadata_to_gcs_non_existent_metadata_file():
