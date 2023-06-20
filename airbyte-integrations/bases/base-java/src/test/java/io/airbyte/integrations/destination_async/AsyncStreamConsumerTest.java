@@ -225,7 +225,7 @@ class AsyncStreamConsumerTest {
   }
 
   @Test
-  void deserializeAirbyteMessageWithAirbyteRecord() throws Exception {
+  void deserializeAirbyteMessageWithAirbyteRecord() {
     final AirbyteMessage airbyteMessage = new AirbyteMessage()
         .withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage()
@@ -239,7 +239,7 @@ class AsyncStreamConsumerTest {
   }
 
   @Test
-  void deserializeAirbyteMessageWithEmptyAirbyteRecord() throws Exception {
+  void deserializeAirbyteMessageWithEmptyAirbyteRecord() {
     final Map emptyMap = Map.of();
     final AirbyteMessage airbyteMessage = new AirbyteMessage()
         .withType(Type.RECORD)
@@ -262,7 +262,7 @@ class AsyncStreamConsumerTest {
   }
 
   @Test
-  void deserializeAirbyteMessageWithAirbyteState() throws Exception {
+  void deserializeAirbyteMessageWithAirbyteState() {
     final String serializedAirbyteMessage = Jsons.serialize(STATE_MESSAGE1);
     final Optional<PartialAirbyteMessage> partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
     assertEquals(serializedAirbyteMessage, partial.get().getSerialized());
