@@ -16,20 +16,9 @@ from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSo
 
 
 @dataclass
-class FileBasedStreamState:
-    mapping: Dict[str, Any] = field(default_factory=dict)
-
-    def to_dict(self):
-        return self.mapping
-
-class FileBasedPartitions:
-    pass
-
-@dataclass
 class IncrementalScenarioConfig:
-    input_state: List[FileBasedStreamState] = field(default_factory=list)
-    expected_output_state: Optional[FileBasedStreamState] = None
-    expected_slices: List[FileBasedPartitions] = field(default_factory=list)
+    input_state: List[Mapping[str, Any]] = field(default_factory=list)
+    expected_output_state: Optional[Mapping[str, Any]] = None
 
 
 class TestScenario:
@@ -86,7 +75,7 @@ class TestScenario:
 
     def input_state(self) -> List[Dict[str, Any]]:
         if self.incremental_scenario_config:
-            return [state.to_dict() for state in self.incremental_scenario_config.input_state]
+            return self.incremental_scenario_config.input_state
         else:
             return []
 

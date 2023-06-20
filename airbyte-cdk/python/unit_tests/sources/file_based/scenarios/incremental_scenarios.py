@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unit_tests.sources.file_based.scenarios._scenario_builder import FileBasedStreamState, IncrementalScenarioConfig, TestScenarioBuilder
+from unit_tests.sources.file_based.scenarios._scenario_builder import IncrementalScenarioConfig, TestScenarioBuilder
 
 ## FIXME: Need to verify this acceptance criteria:
 #  When the number of files with the same last-modified timestamp is too large, we log an appropriate warning.
@@ -78,7 +78,7 @@ single_csv_input_state_is_earlier_scenario = (
         ]
     )
     .set_incremental_scenario_config(IncrementalScenarioConfig(
-        input_state=[FileBasedStreamState(mapping={
+        input_state=[{
             "type": "STREAM",
             "stream": {
                 "stream_state": {
@@ -89,7 +89,7 @@ single_csv_input_state_is_earlier_scenario = (
                 "stream_descriptor": {"name": "stream1"}
             }
         }
-        )],
+        ],
     ))).build()
 
 single_csv_no_input_state_scenario = (
@@ -323,7 +323,7 @@ single_csv_input_state_is_later_scenario = (
         ]
     )
     .set_incremental_scenario_config(IncrementalScenarioConfig(
-        input_state=[FileBasedStreamState(mapping={
+        input_state=[{
             "type": "STREAM",
             "stream": {
                 "stream_state": {
@@ -334,7 +334,7 @@ single_csv_input_state_is_later_scenario = (
                 "stream_descriptor": {"name": "stream1"}
             }
         }
-        )],
+        ],
     ))).build()
 
 multi_csv_different_timestamps_scenario = (
@@ -653,7 +653,7 @@ multi_csv_skip_file_if_already_in_history = (
         ]
     )
     .set_incremental_scenario_config(IncrementalScenarioConfig(
-        input_state=[FileBasedStreamState(mapping={
+        input_state=[{
             "type": "STREAM",
             "stream": {
                 "stream_state": {
@@ -662,7 +662,7 @@ multi_csv_skip_file_if_already_in_history = (
                 "stream_descriptor": {"name": "stream1"}
             }
         }
-        )],
+        ],
     ))).build()
 
 multi_csv_include_missing_files_within_history_range = (
@@ -763,7 +763,7 @@ multi_csv_include_missing_files_within_history_range = (
         ]
     )
     .set_incremental_scenario_config(IncrementalScenarioConfig(
-        input_state=[FileBasedStreamState(mapping={
+        input_state=[{
             "type": "STREAM",
             "stream": {
                 "stream_state": {
@@ -775,7 +775,7 @@ multi_csv_include_missing_files_within_history_range = (
                 "stream_descriptor": {"name": "stream1"}
             }
         }
-        )],
+        ],
     ))).build()
 
 multi_csv_remove_old_files_if_history_is_full_scenario = (
@@ -897,7 +897,7 @@ multi_csv_remove_old_files_if_history_is_full_scenario = (
         ]
     )
     .set_incremental_scenario_config(IncrementalScenarioConfig(
-        input_state=[FileBasedStreamState(mapping={
+        input_state=[{
             "type": "STREAM",
             "stream": {
                 "stream_state": {
@@ -910,7 +910,7 @@ multi_csv_remove_old_files_if_history_is_full_scenario = (
                 "stream_descriptor": {"name": "stream1"}
             }
         }
-        )],
+        ],
     ))).build()
 
 multi_csv_same_timestamp_more_files_than_history_size_scenario = (
@@ -1146,7 +1146,7 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario = (
         ]
     )
     .set_incremental_scenario_config(IncrementalScenarioConfig(
-        input_state=[FileBasedStreamState(mapping={
+        input_state=[{
             "type": "STREAM",
             "stream": {
                 "stream_state": {
@@ -1160,7 +1160,7 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario = (
                 "stream_descriptor": {"name": "stream1"}
             }
         }
-        )],
+        ],
     ))).build()
 
 multi_csv_sync_recent_files_if_history_is_incomplete__different_timestamps_scenario = (
@@ -1296,7 +1296,7 @@ multi_csv_sync_recent_files_if_history_is_incomplete__different_timestamps_scena
         ]
     )
     .set_incremental_scenario_config(IncrementalScenarioConfig(
-        input_state=[FileBasedStreamState(mapping={
+        input_state=[{
             "type": "STREAM",
             "stream": {
                 "stream_state": {
@@ -1309,5 +1309,5 @@ multi_csv_sync_recent_files_if_history_is_incomplete__different_timestamps_scena
                 "stream_descriptor": {"name": "stream1"}
             }
         }
-        )],
+        ],
     ))).build()
