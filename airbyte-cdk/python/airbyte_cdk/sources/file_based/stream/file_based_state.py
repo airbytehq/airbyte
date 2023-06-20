@@ -10,11 +10,12 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 
 class FileBasedState:
-    def __init__(self, max_history_size: int, time_window_if_history_is_full: timedelta):
+    def __init__(self, max_history_size: int, time_window_if_history_is_full: timedelta, logger: logging.Logger):
         self._file_to_datetime_history: Mapping[str:datetime] = {}
         self._max_history_size = max_history_size
         self._time_window_if_history_is_full = time_window_if_history_is_full
         self._history_is_complete = True
+        self._logger = logger
 
     def set_initial_state(self, value: Mapping[str, Any]):
         self._file_to_datetime_history = value.get("history", {})
@@ -50,6 +51,10 @@ class FileBasedState:
         # If len(files_to_sync), the next sync will not be able to use the history
         if len(files_to_sync) > self._max_history_size:
             self._history_is_complete = False
+            self._logger.warning(
+                f"Found {len(files_to_sync)} files to sync, which is more than the max history size of {self._max_history_size}. The next sync won't be able to use the history to filter out duplicate files. "
+                f"It will instead use the time window of {self._time_window_if_history_is_full} to filter out files."
+            )
         else:
             self._history_is_complete = True
         return files_to_sync

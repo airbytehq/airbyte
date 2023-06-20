@@ -3,6 +3,7 @@
 #
 
 from datetime import datetime, timedelta
+from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -62,7 +63,8 @@ from freezegun import freeze_time
     ],
 )
 def test_add_file(files_to_add, expected_start_time, expected_state_dict):
-    state = FileBasedState(3, timedelta(days=3))
+    logger = MagicMock()
+    state = FileBasedState(3, timedelta(days=3), logger)
     assert state.compute_start_time() == datetime.min
 
     for index, f in enumerate(files_to_add):
@@ -118,12 +120,17 @@ def test_add_file(files_to_add, expected_start_time, expected_state_dict):
     ], 2, False, id="test_sync_more_files_than_history_size")
 ])
 def test_get_files_to_sync(files, expected_files_to_sync, max_history_size, history_is_complete):
-    state = FileBasedState(max_history_size, timedelta(days=3))
+    logger = MagicMock()
+    state = FileBasedState(max_history_size, timedelta(days=3), logger)
 
     files_to_sync = state.get_files_to_sync(files)
 
     assert files_to_sync == expected_files_to_sync
     assert state.is_history_complete() == history_is_complete
+    if history_is_complete:
+        logger.warning.assert_not_called()
+    else:
+        logger.warning.assert_called_once()
 
 
 @pytest.mark.parametrize("earliest_file_in_history, expected_start_time", [
@@ -134,7 +141,8 @@ def test_get_files_to_sync(files, expected_files_to_sync, max_history_size, hist
 ])
 @freeze_time("2023-06-16T00:00:00Z")
 def test_compute_if_history_is_incomplete(earliest_file_in_history, expected_start_time):
-    state = FileBasedState(3, timedelta(days=3))
+    logger = MagicMock()
+    state = FileBasedState(3, timedelta(days=3), logger)
     state.add_file(earliest_file_in_history)
     state._history_is_complete = False
     assert state.compute_start_time() == expected_start_time

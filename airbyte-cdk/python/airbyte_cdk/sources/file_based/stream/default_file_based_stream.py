@@ -33,7 +33,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._state = FileBasedState(
-            self.config.max_history_size or 10_000, timedelta(days=(self.config.days_to_sync_if_history_is_full or 3))
+            self.config.max_history_size or 10_000, timedelta(days=(self.config.days_to_sync_if_history_is_full or 3)), self.logger
         )
 
     @property
