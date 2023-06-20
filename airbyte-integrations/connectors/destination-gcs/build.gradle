@@ -46,3 +46,4 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
 }
 
+
