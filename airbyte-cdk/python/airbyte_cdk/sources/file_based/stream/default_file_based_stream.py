@@ -15,7 +15,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas
 from airbyte_cdk.sources.file_based.schema_validation_policies import record_passes_validation_policy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
-from airbyte_cdk.sources.file_based.stream.file_based_state import FileBasedState
+from airbyte_cdk.sources.file_based.stream.file_based_cursor import FileBasedCursor
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 
@@ -32,7 +32,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._state = FileBasedState(
+        self._state = FileBasedCursor(
             self.config.max_history_size or 10_000, timedelta(days=(self.config.days_to_sync_if_history_is_full or 3)), self.logger
         )
 
