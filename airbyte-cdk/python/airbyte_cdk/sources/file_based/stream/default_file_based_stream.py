@@ -5,19 +5,15 @@
 import asyncio
 import itertools
 import logging
-from datetime import datetime, time, timedelta
-from functools import cache
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
-import logging
-from datetime import datetime
+from datetime import timedelta
 from functools import cache
 from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import MutableMapping
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.file_based.exceptions import MissingSchemaError, RecordParseError, SchemaInferenceError
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas, type_mapping_to_jsonschema
+from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas
 from airbyte_cdk.sources.file_based.schema_validation_policies import record_passes_validation_policy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.file_based_state import FileBasedState

@@ -75,10 +75,3 @@ def conforms_to_schema(record: Mapping[str, Any], schema: Mapping[str, str]) -> 
       type in the schema.
     """
     ...
-
-
-def type_mapping_to_jsonschema(type_mapping: Mapping[str, Any]) -> Mapping[str, str]:
-    """
-    Return the user input schema (type mapping), transformed to JSON Schema format.
-    """
-    return {k: {"type": v} for k, v in type_mapping.items()}
