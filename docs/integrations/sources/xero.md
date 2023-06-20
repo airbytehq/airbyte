@@ -90,8 +90,9 @@ The connector is restricted by Xero [API rate limits](https://developer.xero.com
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                           |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------- |
-| 0.2.2   | 2023-06-06 | [27007](https://github.com/airbytehq/airbyte/pull/27007) | Update CDK                   |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------|
+| 0.2.3   | 2023-06-19 | [27471](https://github.com/airbytehq/airbyte/pull/27471) | Update CDK to 0.40                |
+| 0.2.2   | 2023-06-06 | [27007](https://github.com/airbytehq/airbyte/pull/27007) | Update CDK                        |
 | 0.2.1   | 2023-03-20 | [24217](https://github.com/airbytehq/airbyte/pull/24217) | Certify to Beta                   |
 | 0.2.0   | 2023-03-14 | [24005](https://github.com/airbytehq/airbyte/pull/24005) | Enable in Cloud                   |
 | 0.1.0   | 2021-11-11 | [18666](https://github.com/airbytehq/airbyte/pull/18666) | 🎉 New Source - Xero [python cdk] |
