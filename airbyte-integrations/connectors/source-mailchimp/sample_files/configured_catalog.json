@@ -1393,7 +1393,7 @@
     },
     {
       "stream": {
-        "name": "get member info",
+        "name": "get_member_info",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,

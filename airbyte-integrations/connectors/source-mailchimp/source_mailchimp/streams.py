@@ -155,6 +155,7 @@ class ListMembers(IncrementalMailChimpStream):
 
 class GetMemberInfo(IncrementalMailChimpStream):
     cursor_field = "last_changed"
+    data_field = ""
 
     def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
         listmembers_stream = ListMembers(authenticator=self.authenticator)        
