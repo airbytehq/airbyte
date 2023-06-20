@@ -33,11 +33,17 @@ public class XminCtidUtils {
           return;
         }
         final AirbyteStateMessage clonedState = Jsons.clone(s);
-        if (streamState.has("state_type") && streamState.get("state_type").asText().equalsIgnoreCase("ctid")) {
-          statesFromCtidSync.add(clonedState);
-          streamsStillInCtidSync.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
+        if (streamState.has("state_type")) {
+          if (streamState.get("state_type").asText().equalsIgnoreCase("ctid")) {
+            statesFromCtidSync.add(clonedState);
+            streamsStillInCtidSync.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
+          } else if (streamState.get("state_type").asText().equalsIgnoreCase("xmin")) {
+            statesFromXminSync.add(clonedState);
+          } else {
+            throw new RuntimeException("Unknown state type: " + streamState.get("state_type").asText());
+          }
         } else {
-          statesFromXminSync.add(clonedState);
+          throw new RuntimeException("State type not present");
         }
         alreadySeenStreams.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
       });
@@ -73,39 +79,19 @@ public class XminCtidUtils {
   }
 
 
-  public static class StreamsCategorised {
+  public record StreamsCategorised(CtidStreams ctidStreams,
+                                   XminStreams xminStreams) {
 
-    public final CtidStreams ctidStreams;
-    public final XminStreams xminStreams;
-
-    public StreamsCategorised(final CtidStreams ctidStreams, final XminStreams xminStreams) {
-      this.ctidStreams = ctidStreams;
-      this.xminStreams = xminStreams;
-    }
   }
 
-  public static class CtidStreams {
+  public record CtidStreams(List<ConfiguredAirbyteStream> streamsForCtidSync,
+                            List<AirbyteStateMessage> statesFromCtidSync) {
 
-    public final List<ConfiguredAirbyteStream> streamsForCtidSync;
-    public final List<AirbyteStateMessage> statesFromCtidSync;
-
-    public CtidStreams(final List<ConfiguredAirbyteStream> streamsForCtidSync,
-        final List<AirbyteStateMessage> statesFromCtidSync) {
-      this.streamsForCtidSync = streamsForCtidSync;
-      this.statesFromCtidSync = statesFromCtidSync;
-    }
   }
 
-  public static class XminStreams {
+  public record XminStreams(List<ConfiguredAirbyteStream> streamsForXminSync,
+                            List<AirbyteStateMessage> statesFromXminSync) {
 
-    public final List<ConfiguredAirbyteStream> streamsForXminSync;
-    public final List<AirbyteStateMessage> statesFromXminSync;
-
-    public XminStreams(final List<ConfiguredAirbyteStream> streamsForXminSync,
-        final List<AirbyteStateMessage> statesFromXminSync) {
-      this.streamsForXminSync = streamsForXminSync;
-      this.statesFromXminSync = statesFromXminSync;
-    }
   }
 
 }

@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.function.BiFunction;
 import javax.annotation.CheckForNull;
 import org.apache.commons.lang3.StringUtils;
@@ -26,7 +27,7 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
   public static final Integer SYNC_CHECKPOINT_RECORDS = 10_000;
 
 
-  private final Iterator<AirbyteMessage> messageIterator;
+  private final Iterator<AirbyteMessageWithCtid> messageIterator;
   private final AirbyteStreamNameNamespacePair pair;
   private boolean hasEmittedFinalState;
   private String lastCtid;
@@ -38,7 +39,7 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
   private final Duration syncCheckpointDuration;
   private final Long syncCheckpointRecords;
 
-  public CtidStateIterator(final Iterator<AirbyteMessage> messageIterator,
+  public CtidStateIterator(final Iterator<AirbyteMessageWithCtid> messageIterator,
       final AirbyteStreamNameNamespacePair pair,
       final long relationFileNode,
       final JsonNode streamStateForIncrementalRun,
@@ -59,6 +60,7 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
   protected AirbyteMessage computeNext() {
     if (messageIterator.hasNext()) {
       if ((recordCount >= syncCheckpointRecords || Duration.between(lastCheckpoint, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)
+          && Objects.nonNull(lastCtid)
           && StringUtils.isNotBlank(lastCtid)) {
         final CtidStatus ctidStatus = new CtidStatus()
             .withVersion(CTID_STATUS_VERSION)
@@ -73,12 +75,12 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
       }
       // Use try-catch to catch Exception that could occur when connection to the database fails
       try {
-        final AirbyteMessage message = messageIterator.next();
-        if (message.getRecord().getData().hasNonNull("ctid")) {
-          this.lastCtid = message.getRecord().getData().get("ctid").asText();
+        final AirbyteMessageWithCtid message = messageIterator.next();
+        if (Objects.nonNull(message.ctid())) {
+          this.lastCtid = message.ctid();
         }
         recordCount++;
-        return message;
+        return message.recordMessage();
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
