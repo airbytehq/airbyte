@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination_async.partial_messages;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
-
 import java.util.Objects;
 
 public class PartialAirbyteRecordMessage {
