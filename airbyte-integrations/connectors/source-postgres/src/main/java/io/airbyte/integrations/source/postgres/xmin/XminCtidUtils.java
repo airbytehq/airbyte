@@ -19,6 +19,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * The class mainly categorises the streams based on the state type into two categories :
+ * 1. Streams that need to be synced via ctid iterator: These
+ * are streams that are either newly added or did not complete their initial sync.
+ * 2. Streams that need to be synced via xmin iterator: These are
+ * streams that have completed their initial sync and are not syncing data incrementally.
+ */
 public class XminCtidUtils {
 
   public static StreamsCategorised categoriseStreams(final StateManager stateManager, final ConfiguredAirbyteCatalog fullCatalog) {

@@ -20,7 +20,7 @@ import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CU
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.ROW_COUNT_RESULT_COL;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TABLE_ESTIMATE_QUERY;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TOTAL_BYTES_RESULT_COL;
-import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.willVacuumingCauseIssue;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streamsUnderVacuum;
 import static io.airbyte.integrations.source.postgres.PostgresUtils.isIncrementalSyncMode;
 import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.categoriseStreams;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
@@ -467,21 +467,24 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final List<AutoCloseableIterator<AirbyteMessage>> xminIterator = new ArrayList<>();
 
       if (!streamsCategorised.ctidStreams().streamsForCtidSync().isEmpty()) {
-        if (willVacuumingCauseIssue(database, streamsCategorised.ctidStreams().streamsForCtidSync(), getQuoteString())) {
-          // TODO : should we just skip these streams instead of failing the entire sync and just LOG warning
-          // stating that we are skipping these streams
-          throw new RuntimeException("Stopping sync cause few streams are under Vacuuming, can not sync them using ctid");
-        }
-
-        final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long> fileNodes = PostgresQueryUtils.fileNodeForStreams(database,
+        final List<AirbyteStreamNameNamespacePair> streamsUnderVacuum = streamsUnderVacuum(database,
             streamsCategorised.ctidStreams().streamsForCtidSync(), getQuoteString());
+
+        final List<ConfiguredAirbyteStream> finaListOfStreamsToBeSyncedViaCtid =
+            streamsUnderVacuum.isEmpty() ? streamsCategorised.ctidStreams().streamsForCtidSync() :
+                streamsCategorised.ctidStreams().streamsForCtidSync().stream()
+                    .filter(c -> !streamsUnderVacuum.contains(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
+                    .toList();
+        final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long> fileNodes = PostgresQueryUtils.fileNodeForStreams(database,
+            finaListOfStreamsToBeSyncedViaCtid,
+            getQuoteString());
         final CtidStateManager ctidStateManager = new CtidStateManager(streamsCategorised.ctidStreams().statesFromCtidSync(), fileNodes);
         final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database, new CtidPostgresSourceOperations(), getQuoteString(),
             fileNodes, ctidStateManager,
             namespacePair -> Jsons.jsonNode(xminStatus),
             (namespacePair, jsonState) -> XminStateManager.getAirbyteStateMessage(namespacePair, Jsons.object(jsonState, XminStatus.class)));
         ctidIterator.addAll(ctidHandler.getIncrementalIterators(
-            new ConfiguredAirbyteCatalog().withStreams(streamsCategorised.ctidStreams().streamsForCtidSync()), tableNameToTable, emittedAt));
+            new ConfiguredAirbyteCatalog().withStreams(finaListOfStreamsToBeSyncedViaCtid), tableNameToTable, emittedAt));
       }
 
       if (!streamsCategorised.xminStreams().streamsForXminSync().isEmpty()) {

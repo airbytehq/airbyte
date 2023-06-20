@@ -130,8 +130,8 @@ public class PostgresQueryUtils {
     }
   }
 
-  public static boolean willVacuumingCauseIssue(final JdbcDatabase database, final List<ConfiguredAirbyteStream> streams, final String quoteString) {
-    final List<String> streamsUnderVacuuming = new ArrayList<>();
+  public static List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> streamsUnderVacuum(final JdbcDatabase database, final List<ConfiguredAirbyteStream> streams, final String quoteString) {
+    final List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> streamsUnderVacuuming = new ArrayList<>();
     streams.forEach(stream -> {
       final String streamName = stream.getStream().getName();
       final String schemaName = stream.getStream().getNamespace();
@@ -143,15 +143,16 @@ public class PostgresQueryUtils {
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
         if (jsonNodes.size() != 0) {
           Preconditions.checkState(jsonNodes.size() == 1);
-          LOGGER.warn("Full Vacuum currently in progress for table {} in {} phase", fullTableName, jsonNodes.get(0).get("phase"));
-          streamsUnderVacuuming.add(fullTableName);
+          LOGGER.warn("Full Vacuum currently in progress for table {} in {} phase, the table will be skipped from syncing data", fullTableName,
+              jsonNodes.get(0).get("phase"));
+          streamsUnderVacuuming.add(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream));
         }
       } catch (SQLException e) {
         // Assume it's safe to progress and skip relation node and vaccuum validation
         LOGGER.warn("Failed to fetch vacuum for table {} info. Going to move ahead with the sync assuming it's safe", fullTableName, e);
       }
     });
-    return !streamsUnderVacuuming.isEmpty();
+    return streamsUnderVacuuming;
   }
 
 }
