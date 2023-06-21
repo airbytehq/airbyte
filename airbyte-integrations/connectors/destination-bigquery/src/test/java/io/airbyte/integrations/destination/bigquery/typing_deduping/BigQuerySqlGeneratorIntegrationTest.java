@@ -414,7 +414,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
   @Test
   public void testFullUpdateIncrementalAppend() throws InterruptedException {
     createRawTable();
-    createFinalTable();
+    createFinalTable("_foo");
     bq.query(QueryJobConfiguration.newBuilder(
         new StringSubstitutor(Map.of(
             "dataset", testDataset)).replace(
