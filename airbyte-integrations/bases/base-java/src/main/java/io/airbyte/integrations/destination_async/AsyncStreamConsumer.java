@@ -107,7 +107,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
      */
     deserializeAirbyteMessage(messageString)
         .ifPresent(message -> {
-          if (message.getType().equals(Type.RECORD)) {
+          if (Type.RECORD.equals(message.getType())) {
             validateRecord(message);
           }
           bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
@@ -131,9 +131,9 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     // parity. https://github.com/airbytehq/airbyte/issues/27530 for additional context
     final Optional<PartialAirbyteMessage> messageOptional = Jsons.tryDeserialize(messageString, PartialAirbyteMessage.class)
         .map(partial -> {
-          if (partial.getType().equals(Type.RECORD) && partial.getRecord().getData() != null) {
+          if (Type.RECORD.equals(partial.getType()) && partial.getRecord().getData() != null) {
             return partial.withSerialized(partial.getRecord().getData().toString());
-          } else if (partial.getType().equals(Type.STATE)) {
+          } else if (Type.STATE.equals(partial.getType())) {
             return partial.withSerialized(messageString);
           } else {
             return null;

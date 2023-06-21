@@ -65,6 +65,3 @@ tasks.named("airbyteDocker") {
     // this also goes away once airbyte-ci becomes a reality.
     dependsOn project(':airbyte-integrations:bases:base-normalization').airbyteDocker
 }
-
-
-

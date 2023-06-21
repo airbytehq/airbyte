@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination_async.buffers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,7 @@ public class StreamAwareQueueTest {
 
     assertEquals(0, queue.getCurrentMemoryUsage());
     // This should be null because the queue is empty
-    assertNull(queue.getTimeOfLastMessage().orElse(null));
+    assertTrue(queue.getTimeOfLastMessage().isEmpty(), "Expected empty optional; got " + queue.getTimeOfLastMessage());
   }
 
 }
