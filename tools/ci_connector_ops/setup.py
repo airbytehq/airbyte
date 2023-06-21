@@ -14,6 +14,7 @@ MAIN_REQUIREMENTS = [
     "pydantic~=1.9",
     "PyGithub~=1.58.0",
     "rich",
+    "pydash~=7.0.4",
 ]
 
 
