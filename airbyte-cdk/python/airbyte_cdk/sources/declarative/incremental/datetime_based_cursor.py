@@ -104,9 +104,15 @@ class DatetimeBasedCursor(Cursor):
         """
         self._cursor = stream_state.get(self.cursor_field.eval(self.config)) if stream_state else None
 
-    def close_slice(self, stream_slice: StreamSlice) -> None:
-        stream_slice_value_end = self.parse_date(stream_slice.get(self.partition_field_end.eval(self.config)))
-        possible_cursor_values = list(filter(lambda item: item, [stream_slice_value_end, self.parse_date(self._cursor) if self._cursor else None]))
+    def close_slice(self, stream_slice: StreamSlice, last_record: Optional[Record]) -> None:
+        last_record_cursor_value = last_record.get(self.cursor_field.eval(self.config)) if last_record else None
+        stream_slice_value_end = stream_slice.get(self.partition_field_end.eval(self.config))
+        possible_cursor_values = list(
+            map(
+                lambda datetime_str: self.parse_date(datetime_str),
+                filter(lambda item: item, [self._cursor, last_record_cursor_value, stream_slice_value_end]),
+            )
+        )
         self._cursor = self._format_datetime(max(possible_cursor_values)) if possible_cursor_values else None
 
     def stream_slices(self) -> Iterable[StreamSlice]:

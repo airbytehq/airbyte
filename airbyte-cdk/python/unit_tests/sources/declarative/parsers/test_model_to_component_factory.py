@@ -42,7 +42,12 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy, OffsetIncrement, PageIncrement, StopConditionPaginationStrategyDecorator
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
+    CursorPaginationStrategy,
+    OffsetIncrement,
+    PageIncrement,
+    StopConditionPaginationStrategyDecorator,
+)
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath

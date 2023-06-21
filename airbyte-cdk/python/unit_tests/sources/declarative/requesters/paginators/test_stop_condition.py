@@ -1,10 +1,18 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from unittest.mock import Mock
-from pytest import fixture
 
 from airbyte_cdk.sources.declarative.incremental import Cursor
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies.stop_condition import CursorStopCondition, PaginationStopCondition, StopConditionPaginationStrategyDecorator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.stop_condition import (
+    CursorStopCondition,
+    PaginationStopCondition,
+    StopConditionPaginationStrategyDecorator,
+)
 from airbyte_cdk.sources.declarative.types import Record
+from pytest import fixture
 
 ANY_RECORD = Mock()
 NO_RECORDS = []

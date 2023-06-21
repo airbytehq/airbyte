@@ -835,7 +835,7 @@ class DatetimeBasedCursor(BaseModel):
     )
     is_data_feed: Optional[bool] = Field(
         None,
-        description="Data feed API are API that returns the content from the most recent to the least recent entry",
+        description="A Data feed API is an API that does not allow filtering and paginates the content from the most recent to the least recent. Given this, the CDK needs to know when to stop paginating and this field will generate a stop condition for pagination.",
         title="Whether the target API is formatted as a data feed",
     )
     lookback_window: Optional[str] = Field(

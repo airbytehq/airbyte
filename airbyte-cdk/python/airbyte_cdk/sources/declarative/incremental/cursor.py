@@ -3,6 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
@@ -24,11 +25,17 @@ class Cursor(ABC, StreamSlicer):
         """
 
     @abstractmethod
-    def close_slice(self, stream_slice: StreamSlice) -> None:
+    def close_slice(self, stream_slice: StreamSlice, last_record: Optional[Record]) -> None:
         """
-        Update state based on the latest record
+        Update state based on the stream slice and the latest record. Note that `stream_slice.cursor_slice` and
+        `last_record.associated_slice` are expected to be the same but we make it explicit here that `stream_slice` should be leveraged to
+        update the state.
 
         :param stream_slice: slice to close
+        :param last_record: the latest record we have received for the slice. This is important to consider because even if the cursor emits
+          a slice, some APIs are not able to enforce the upper boundary. The outcome is that the last_record might have a higher cursor
+          value than the slice upper boundary and if we want to reduce the duplication as much as possible, we need to consider the highest
+          value between the internal cursor, the stream slice upper boundary and the record cursor value.
         """
 
     @abstractmethod

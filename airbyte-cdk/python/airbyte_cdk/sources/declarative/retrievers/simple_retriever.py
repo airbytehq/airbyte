@@ -74,7 +74,8 @@ class SimpleRetriever(Retriever, HttpStream):
         self.paginator = self.paginator or NoPagination(parameters=parameters)
         HttpStream.__init__(self, self.requester.get_authenticator())
         self._last_response = None
-        self._last_records = None
+        self._records_from_last_response = None
+        self._latest_record = None
         self._parameters = parameters
         self.name = InterpolatedString(self._name, parameters=parameters)
 
@@ -364,7 +365,9 @@ class SimpleRetriever(Retriever, HttpStream):
         records = self.record_selector.select_records(
             response=response, stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token
         )
-        self._last_records = records
+        self._records_from_last_response = records
+        if records:
+            self._latest_record = records[-1]
         return records
 
     @property
@@ -385,7 +388,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
         :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
         """
-        return self.paginator.next_page_token(response, self._last_records)
+        return self.paginator.next_page_token(response, self._records_from_last_response)
 
     def read_records(
         self,
@@ -420,7 +423,7 @@ class SimpleRetriever(Retriever, HttpStream):
             slice_state,
         )
         if self.cursor:
-            self.cursor.close_slice(stream_slice)
+            self.cursor.close_slice(stream_slice, self._latest_record)
         return
 
     def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -444,11 +447,6 @@ class SimpleRetriever(Retriever, HttpStream):
         """State setter, accept state serialized by state getter."""
         if self.cursor:
             self.cursor.set_initial_state(value)
-
-        if hasattr(self.paginator, "pagination_strategy") and isinstance(self.paginator.pagination_strategy, StopConditionPaginationStrategyDecorator) and isinstance(self.paginator.pagination_strategy._stop_condition, CursorStopCondition):
-            self.paginator.pagination_strategy.state = value
-            # freezing cursor state for CursorStopCondition
-            self.paginator.pagination_strategy._stop_condition._cursor = deepcopy(self.cursor)
 
     def parse_records(
         self,

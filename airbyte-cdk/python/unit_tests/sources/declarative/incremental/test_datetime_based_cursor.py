@@ -338,50 +338,73 @@ def test_stream_slices(
 
 
 @pytest.mark.parametrize(
-    "test_name, previous_cursor, record_data, expected_state",
+    "test_name, previous_cursor, stream_slice, latest_record_data, expected_state",
     [
         (
-            "test_update_state_with_state_equals_record",
-            None,
-            {cursor_field: "2021-01-02T00:00:00.000000+0000"},
-            {cursor_field: "2021-01-02T00:00:00.000000+0000"},
+            "test_close_slice_previous_cursor_is_highest",
+            "2023-01-01",
+            {"end_time": "2022-01-01"},
+            {cursor_field: "2021-01-01"},
+            {cursor_field: "2023-01-01"},
         ),
         (
-            "test_update_state_with_slice_not_matching_record_than_use_record_cursor_field",
-            None,
-            {cursor_field: "2021-01-02T00:00:00.000000+0000"},
-            {cursor_field: "2021-01-02T00:00:00.000000+0000"},
+            "test_close_slice_stream_slice_partition_end_is_highest",
+            "2021-01-01",
+            {"end_time": "2023-01-01"},
+            {cursor_field: "2021-01-01"},
+            {cursor_field: "2023-01-01"},
         ),
         (
-            "test_update_state_with_state_less_than_record",
-            None,
-            {cursor_field: "2021-01-03T00:00:00.000000+0000"},
-            {cursor_field: "2021-01-03T00:00:00.000000+0000"},
+            "test_close_slice_latest_record_cursor_value_is_highest",
+            "2021-01-01",
+            {"end_time": "2022-01-01"},
+            {cursor_field: "2023-01-01"},
+            {cursor_field: "2023-01-01"},
         ),
         (
-            "test_update_state_with_state_less_than_previous_cursor",
-            "2021-01-03T00:00:00.000000+0000",
-            {},
-            {cursor_field: "2021-01-03T00:00:00.000000+0000"},
+            "test_close_slice_without_latest_record",
+            "2021-01-01",
+            {"end_time": "2022-01-01"},
+            None,
+            {cursor_field: "2022-01-01"},
+        ),
+        (
+            "test_close_slice_without_cursor",
+            None,
+            {"end_time": "2022-01-01"},
+            {cursor_field: "2023-01-01"},
+            {cursor_field: "2023-01-01"},
         ),
     ],
 )
-def test_update_state(test_name, previous_cursor, record_data, expected_state):
-    slicer = DatetimeBasedCursor(
+def test_close_slice(test_name, previous_cursor, stream_slice, latest_record_data, expected_state):
+    cursor = DatetimeBasedCursor(
         start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
-        end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
-        step="P1D",
         cursor_field=InterpolatedString(string=cursor_field, parameters={}),
-        datetime_format=datetime_format,
-        cursor_granularity=cursor_granularity,
-        lookback_window=InterpolatedString(string="0d", parameters={}),
+        datetime_format="%Y-%m-%d",
         config=config,
         parameters={},
     )
-    slicer._cursor = previous_cursor
-    slicer.update_state(Record(record_data, ANY_SLICE))
-    updated_state = slicer.get_stream_state()
+    cursor._cursor = previous_cursor
+    cursor.close_slice(stream_slice, Record(latest_record_data, stream_slice) if latest_record_data else None)
+    updated_state = cursor.get_stream_state()
     assert expected_state == updated_state
+
+
+def test_given_partition_end_is_specified_when_then_():
+    partition_field_end = "partition_field_end"
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
+        cursor_field=InterpolatedString(string=cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        partition_field_end=partition_field_end,
+        config=config,
+        parameters={},
+    )
+    stream_slice = {partition_field_end: "2025-01-01"}
+    cursor.close_slice(stream_slice, Record({cursor_field: "2020-01-01"}, stream_slice))
+    updated_state = cursor.get_stream_state()
+    assert {cursor_field: "2025-01-01"} == updated_state
 
 
 @pytest.mark.parametrize(
