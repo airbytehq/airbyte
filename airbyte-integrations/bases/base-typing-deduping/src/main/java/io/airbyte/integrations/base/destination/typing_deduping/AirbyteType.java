@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,AirbyteProtocolType {
+
   Logger LOGGER = LoggerFactory.getLogger(AirbyteTypeUtils.class);
 
   /**
