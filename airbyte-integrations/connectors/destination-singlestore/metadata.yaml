@@ -1,0 +1,26 @@
+data:
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 47f3c4e1-eea6-4f0a-a8e3-ef7fbe9e922a
+  dockerImageTag: 0.1.20
+  dockerRepository: airbyte/destination-mysql
+  githubIssueLabel: destination-mysql
+  icon: singlestore.svg
+  license: MIT
+  name: SingleStore
+  normalizationConfig:
+    normalizationIntegrationType: mysql
+    normalizationRepository: airbyte/normalization-mysql
+    normalizationTag: 0.4.3
+  registries:
+    cloud:
+      dockerRepository: airbyte/destination-mysql-strict-encrypt
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/singlestore
+  supportsDbt: true
+  tags:
+    - language:java
+metadataSpecVersion: "1.0"
