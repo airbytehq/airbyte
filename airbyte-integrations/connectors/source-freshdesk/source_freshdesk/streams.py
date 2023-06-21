@@ -1,8 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
+import logging
 import re
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -18,6 +17,9 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.auth import AuthBase
 from source_freshdesk.availability_strategy import FreshdeskAvailabilityStrategy
 from source_freshdesk.utils import CallCredit
+
+
+logger = logging.getLogger("airbyte")
 
 
 class FreshdeskStream(HttpStream, ABC):
@@ -97,6 +99,15 @@ class FreshdeskStream(HttpStream, ABC):
         if self.forbidden_stream:
             return []
         return response.json() or []
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == requests.codes.FORBIDDEN:
+            # Issue: https://github.com/airbytehq/airbyte/issues/26717
+            # we should skip the stream if subscription level had changed during sync
+            self.forbidden_stream = True
+            setattr(self, "raise_on_http_errors", False)
+            logger.warning(f"Stream `{self.name}` is not available. {response.text}")
+        return super().should_retry(response)
 
 
 class IncrementalFreshdeskStream(FreshdeskStream, IncrementalMixin):

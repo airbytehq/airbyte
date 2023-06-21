@@ -7,7 +7,7 @@
 from typing import List, Optional
 
 import anyio
-from ci_connector_ops.pipelines.actions import environments, run_steps, secrets
+from ci_connector_ops.pipelines.actions import environments, secrets
 from ci_connector_ops.pipelines.bases import StepResult, StepStatus
 from ci_connector_ops.pipelines.builds import LOCAL_BUILD_PLATFORM
 from ci_connector_ops.pipelines.builds.java_connectors import BuildConnectorDistributionTar, BuildConnectorImage
@@ -33,17 +33,13 @@ class IntegrationTestJava(GradleTask):
     async def _load_normalization_image(self, normalization_tar_file: File):
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
         self.context.logger.info("Load the normalization image to the docker host.")
-        await environments.load_image_to_docker_host(
-            self.context, normalization_tar_file, normalization_image_tag, docker_service_name=self.docker_service_name
-        )
+        await environments.load_image_to_docker_host(self.context, normalization_tar_file, normalization_image_tag)
         self.context.logger.info("Successfully loaded the normalization image to the docker host.")
 
     async def _load_connector_image(self, connector_tar_file: File):
         connector_image_tag = f"airbyte/{self.context.connector.technical_name}:dev"
         self.context.logger.info("Load the connector image to the docker host")
-        await environments.load_image_to_docker_host(
-            self.context, connector_tar_file, connector_image_tag, docker_service_name=self.docker_service_name
-        )
+        await environments.load_image_to_docker_host(self.context, connector_tar_file, connector_image_tag)
         self.context.logger.info("Successfully loaded the connector image to the docker host.")
 
     async def _run(self, connector_tar_file: File, normalization_tar_file: Optional[File]) -> StepResult:
@@ -104,10 +100,9 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
 
     connector_image_tar_file, _ = await export_container_to_tarball(context, build_connector_image_results.output_artifact)
 
-    return await run_steps(
-        [
-            (IntegrationTestJava(context), (connector_image_tar_file, normalization_tar_file)),
-            (AcceptanceTests(context), (connector_image_tar_file)),
-        ],
-        results=step_results,
-    )
+    integration_tests_results = await IntegrationTestJava(context).run(connector_image_tar_file, normalization_tar_file)
+    step_results.append(integration_tests_results)
+
+    acceptance_tests_results = await AcceptanceTests(context).run(connector_image_tar_file)
+    step_results.append(acceptance_tests_results)
+    return step_results

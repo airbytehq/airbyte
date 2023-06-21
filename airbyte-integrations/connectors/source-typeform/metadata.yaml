@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7eff203-90bf-43e5-a240-19ea3056c474
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-typeform
   githubIssueLabel: source-typeform
   icon: typeform.svg
@@ -17,5 +17,7 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  supportUrl: https://docs.airbyte.com/integrations/sources/typeform
+  documentationUrl: https://docs.airbyte.com/integrations/sources/typeform
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

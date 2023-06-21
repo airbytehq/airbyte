@@ -17,5 +17,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/zendesk-chat
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-chat
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

@@ -9,7 +9,7 @@ from orchestrator.templates.render import (
     test_badge_html,
     ColumnInfo,
 )
-from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTORS_TEST_RESULT_BUCKET_URL
+from orchestrator.config import CONNECTOR_REPO_NAME, CONNECTOR_TEST_SUMMARY_FOLDER, REPORT_FOLDER, get_public_metadata_service_url
 from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
 from orchestrator.utils.object_helpers import to_json_sanitized_dict
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
@@ -75,7 +75,9 @@ def test_summary_url(row: pd.DataFrame) -> str:
 
     connector = docker_repo_name.replace("airbyte/", "")
 
-    return f"{CONNECTORS_TEST_RESULT_BUCKET_URL}/tests/summary/connectors/{connector}"
+    path = f"{REPORT_FOLDER}/{CONNECTOR_TEST_SUMMARY_FOLDER}/{connector}"
+
+    return get_public_metadata_service_url(path)
 
 
 # 📊 Dataframe Augmentation
@@ -111,7 +113,6 @@ def augment_and_normalize_connector_dataframes(
 
     total_registry["issue_url"] = total_registry.apply(issue_url, axis=1)
     total_registry["test_summary_url"] = total_registry.apply(test_summary_url, axis=1)
-    total_registry["icon_url"] = total_registry.apply(icon_url, axis=1)
 
     # Merge docker repo and version into separate columns
     total_registry["docker_image_oss"] = total_registry.apply(lambda x: merge_docker_repo_and_version(x, OSS_SUFFIX), axis=1)
@@ -205,7 +206,7 @@ def connector_registry_report(context, all_destinations_dataframe, all_sources_d
             "title": "Definition Id",
         },
         {
-            "column": "icon_url",
+            "column": "iconUrl_oss",
             "title": "Icon",
             "formatter": icon_image_html,
         },

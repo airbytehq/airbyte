@@ -32,6 +32,7 @@ N.B: This project will eventually be moved to `airbyte-ci` root directory.
 - [`connectors` command subgroup](#connectors-command-subgroup)
   * [Options](#options-1)
 - [`connectors list` command](#connectors-list-command)
+- [`connectors format` command](#connectors-format-command)
 - [`connectors test` command](#connectors-test-command)
   * [Examples](#examples-)
   * [What it runs](#what-it-runs-)
@@ -113,6 +114,33 @@ List connectors with multiple filters:
 
 `airbyte-ci connectors --language=low-code --release-stage=generally_available list`
 
+### <a id="connectors-list-command"></a>`connectors format` command
+Run a code formatter on one or multiple connectors.
+
+For Python connectors we run the following tools, using the configuration defined in `pyproject.toml`:
+* `black` for code formatting
+* `isort` for import sorting
+* `licenseheaders` for adding license headers
+
+For Java connectors we run `./gradlew format`.
+
+In local CLI execution the formatted code is exported back the local repository. No commit or push is performed.
+In CI execution the formatted code is pushed to the remote branch. One format commit per connector.
+
+#### Examples
+Format a specific connector:
+
+`airbyte-ci connectors --name=source-pokeapi format`
+
+Format all Python connectors:
+
+`airbyte-ci connectors --language=python format`
+
+Format all connectors modified on the current branch:
+
+`airbyte-ci connectors --modified format`
+
+
 ### <a id="connectors-test-command"></a>`connectors test` command
 Run a test pipeline for one or multiple connectors.
 
@@ -134,14 +162,13 @@ Test connectors changed on the current branch:
 ```mermaid
 flowchart TD
     entrypoint[[For each selected connector]]
-    subgraph version ["Connector version checks"]
-        sem["Check version follows semantic versionning"]
-        incr["Check version is incremented"]
-        sem --> incr
-    end
     subgraph static ["Static code analysis"]
       qa[Run QA checks]
       fmt[Run code format checks]
+      sem["Check version follows semantic versionning"]
+      incr["Check version is incremented"]
+      metadata_validation["Run metadata validation on metadata.yaml"]
+      sem --> incr
     end
     subgraph tests ["Tests"]
         build[Build connector docker image]
@@ -157,9 +184,8 @@ flowchart TD
         build-->integration
         build-->cat
     end
-    entrypoint-->version
-    version-->static
-    version-->tests
+    entrypoint-->static
+    entrypoint-->tests
     report["Build test report"]
     tests-->report
     static-->report
