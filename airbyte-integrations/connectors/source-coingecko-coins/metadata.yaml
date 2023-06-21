@@ -10,7 +10,7 @@ data:
   name: CoinGecko Coins
   registries:
     cloud:
-      enabled: false
+      enabled: false # Did not pass acceptance tests
     oss:
       enabled: true
   releaseStage: alpha
