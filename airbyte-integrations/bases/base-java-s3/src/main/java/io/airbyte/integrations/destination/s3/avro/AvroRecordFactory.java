@@ -13,11 +13,10 @@ import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import java.util.UUID;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import tech.allegro.schema.json2avro.converter.JsonAvroConverter;
-
-import java.util.UUID;
 
 public class AvroRecordFactory {
 

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,6 +15,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 public class DestinationConfig {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationConfig.class);
 
   private static DestinationConfig config;
@@ -66,4 +71,5 @@ public class DestinationConfig {
     }
     return node.asBoolean();
   }
+
 }

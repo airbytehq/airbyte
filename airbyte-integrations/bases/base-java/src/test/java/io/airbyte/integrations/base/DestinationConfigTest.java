@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,11 +18,11 @@ import org.junit.jupiter.api.Test;
 public class DestinationConfigTest {
 
   private static final String JSON = """
-        {
-          "foo": "bar",
-          "baz": true
-        }
-        """;
+                                     {
+                                       "foo": "bar",
+                                       "baz": true
+                                     }
+                                     """;
 
   private static final JsonNode NODE = Jsons.deserialize(JSON);
 

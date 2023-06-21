@@ -22,6 +22,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -30,8 +31,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
