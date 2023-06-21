@@ -1,5 +1,8 @@
-package io.airbyte.integrations.source.postgres.xmin;
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
 
+package io.airbyte.integrations.source.postgres.xmin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,9 +16,9 @@ import io.airbyte.integrations.source.postgres.internal.models.InternalModels.St
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.StreamsCategorised;
 import io.airbyte.integrations.source.relationaldb.state.StreamStateManager;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -31,20 +34,20 @@ import org.junit.jupiter.api.Test;
 public class XminCtidUtilsTest {
 
   private static final ConfiguredAirbyteStream MODELS_STREAM = CatalogHelpers.toDefaultConfiguredStream(CatalogHelpers.createAirbyteStream(
-          "MODELS_STREAM_NAME",
-          "MODELS_SCHEMA",
-          Field.of("COL_ID", JsonSchemaType.INTEGER),
-          Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
-          Field.of("COL_MODEL", JsonSchemaType.STRING))
+      "MODELS_STREAM_NAME",
+      "MODELS_SCHEMA",
+      Field.of("COL_ID", JsonSchemaType.INTEGER),
+      Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
+      Field.of("COL_MODEL", JsonSchemaType.STRING))
       .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
       .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID"))));
 
   private static final ConfiguredAirbyteStream MODELS_STREAM_2 = CatalogHelpers.toDefaultConfiguredStream(CatalogHelpers.createAirbyteStream(
-          "MODELS_STREAM_NAME_2",
-          "MODELS_SCHEMA",
-          Field.of("COL_ID", JsonSchemaType.INTEGER),
-          Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
-          Field.of("COL_MODEL", JsonSchemaType.STRING))
+      "MODELS_STREAM_NAME_2",
+      "MODELS_SCHEMA",
+      Field.of("COL_ID", JsonSchemaType.INTEGER),
+      Field.of("COL_MAKE_ID", JsonSchemaType.INTEGER),
+      Field.of("COL_MODEL", JsonSchemaType.STRING))
       .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
       .withSourceDefinedPrimaryKey(List.of(List.of("COL_ID"))));
 
