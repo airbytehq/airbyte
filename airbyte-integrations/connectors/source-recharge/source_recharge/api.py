@@ -56,11 +56,12 @@ class RechargeStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         params = {
             "limit": self.limit,
-            "updated_at_min": (stream_slice or {}).get("start_date", self._start_date),
         }
 
         if next_page_token:
             params.update(next_page_token)
+        else:
+            params.update({"updated_at_min": (stream_slice or {}).get("start_date", self._start_date)})
 
         return params
 

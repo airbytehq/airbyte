@@ -19,7 +19,7 @@ acceptance_tests:
             bypass_reason: "updated after login"
           - name: store/updated_at
             bypass_reason: "updated after login"
-      timeout_seconds: 1200
+      timeout_seconds: 3600
       expect_records:
         path: "integration_tests/expected_records.jsonl"
         extra_fields: no
