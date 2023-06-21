@@ -49,4 +49,5 @@ public class PostgresXminHandlerTest {
     assertFalse(PostgresXminHandler.isSingleWraparound(initialStatus, doubleWrapAroundStatus));
     assertTrue(PostgresXminHandler.shouldPerformFullSync(doubleWrapAroundStatus, initialStatusAsJson));
   }
+
 }
