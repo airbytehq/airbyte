@@ -32,6 +32,36 @@ single_csv_input_state_is_earlier_scenario = (
         }
     )
     .set_file_type("csv")
+    .set_incremental_scenario_config(IncrementalScenarioConfig(
+        input_state=[{
+            "type": "STREAM",
+            "stream": {
+                "stream_state": {
+                    "history": {
+                        "some_old_file.csv": "2023-06-01T03:54:07.000000Z"
+                    },
+                    "history_is_partial": False,
+                },
+                "stream_descriptor": {"name": "stream1"}
+            }
+        }
+        ],
+    ))
+    .set_expected_records(
+        [
+            {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"},
+            {"col1": "val21", "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"},
+            {
+                "stream1": {
+                    "history": {
+                        "some_old_file.csv": "2023-06-01T03:54:07.000000Z",
+                        "a.csv": "2023-06-05T03:54:07.000000Z"
+                    },
+                    "history_is_partial": False,
+                }
+            }
+        ]
+    )
     .set_expected_catalog(
         {
             "streams": [
@@ -60,36 +90,7 @@ single_csv_input_state_is_earlier_scenario = (
             ]
         }
     )
-    .set_expected_records(
-        [
-            {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"},
-            {"col1": "val21", "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"},
-            {
-                "stream1": {
-                    "history": {
-                        "some_old_file.csv": "2023-06-01T03:54:07.000000Z",
-                        "a.csv": "2023-06-05T03:54:07.000000Z"
-                    },
-                    "history_is_partial": False,
-                }
-            }
-        ]
-    )
-    .set_incremental_scenario_config(IncrementalScenarioConfig(
-        input_state=[{
-            "type": "STREAM",
-            "stream": {
-                "stream_state": {
-                    "history": {
-                        "some_old_file.csv": "2023-06-01T03:54:07.000000Z"
-                    },
-                    "history_is_partial": False,
-                },
-                "stream_descriptor": {"name": "stream1"}
-            }
-        }
-        ],
-    ))).build()
+).build()
 
 single_csv_no_input_state_scenario = (
     TestScenarioBuilder()
@@ -921,6 +922,7 @@ multi_csv_remove_old_files_if_history_is_full_scenario = (
                         "very_old_file.csv": "2023-06-02T03:54:07.000000Z",
                         "old_file_same_timestamp_as_a.csv": "2023-06-06T03:54:07.000000Z",
                     },
+                    "history_is_partial": False
                 },
                 "stream_descriptor": {"name": "stream1"}
             }
@@ -1166,7 +1168,7 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario = (
         ],
     ))).build()
 
-multi_csv_sync_recent_files_if_history_is_incomplete__different_timestamps_scenario = (
+multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_timestamps_scenario = (
     TestScenarioBuilder()
     .set_name("multi_csv_sync_recent_files_if_history_is_incomplete__different_timestamps")
     .set_config(
@@ -1278,7 +1280,6 @@ multi_csv_sync_recent_files_if_history_is_incomplete__different_timestamps_scena
             "stream": {
                 "stream_state": {
                     "history": {
-                        "a_file_more_recent_than_a_but_less_than_b": "2023-06-06T00:00:00.000000Z",
                         "c.csv": "2023-06-07T03:54:07.000000Z",
                         "d.csv": "2023-06-08T03:54:07.000000Z",
                     },
