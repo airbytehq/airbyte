@@ -47,6 +47,7 @@ from airbyte_api_client.model.operator_dbt import OperatorDbt
 from airbyte_api_client.model.operator_normalization import OperatorNormalization
 from airbyte_api_client.model.operator_type import OperatorType
 from airbyte_api_client.model.resource_requirements import ResourceRequirements
+from airbyte_api_client.model.selected_field_info import SelectedFieldInfo
 from airbyte_api_client.model.source_create import SourceCreate
 from airbyte_api_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
 from airbyte_api_client.model.source_definition_id_with_workspace_id import SourceDefinitionIdWithWorkspaceId
@@ -742,7 +743,10 @@ class Connection(BaseResource):
             stream["stream"]["supported_sync_modes"] = [SyncMode(sm) for sm in stream["stream"]["supported_sync_modes"]]
             stream["config"]["sync_mode"] = SyncMode(stream["config"]["sync_mode"])
             stream["config"]["destination_sync_mode"] = DestinationSyncMode(stream["config"]["destination_sync_mode"])
-
+            if "selected_fields" in stream["config"]:
+                stream["config"]["selected_fields"] = [
+                    SelectedFieldInfo(field_path=selected_field["field_path"]) for selected_field in stream["config"]["selected_fields"]
+                ]
             streams_and_configurations.append(
                 AirbyteStreamAndConfiguration(
                     stream=AirbyteStream(**stream["stream"]), config=AirbyteStreamConfiguration(**stream["config"])
