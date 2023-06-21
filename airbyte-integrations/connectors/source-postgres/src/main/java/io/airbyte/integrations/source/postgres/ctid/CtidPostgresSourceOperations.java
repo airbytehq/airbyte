@@ -16,6 +16,8 @@ import java.util.Objects;
 
 public class CtidPostgresSourceOperations extends PostgresSourceOperations {
 
+  private static final String CTID = "ctid";
+
   public RowDataWithCtid recordWithCtid(final ResultSet queryContext) throws SQLException {
     // the first call communicates with the database. after that the result is cached.
     final ResultSetMetaData metadata = queryContext.getMetaData();
@@ -24,7 +26,7 @@ public class CtidPostgresSourceOperations extends PostgresSourceOperations {
     String ctid = null;
     for (int i = 1; i <= columnCount; i++) {
       final String columnName = metadata.getColumnName(i);
-      if (columnName.equalsIgnoreCase("ctid")) {
+      if (columnName.equalsIgnoreCase(CTID)) {
         ctid = queryContext.getString(i);
         continue;
       }
