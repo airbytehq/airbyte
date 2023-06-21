@@ -8,6 +8,8 @@ from typing import Any, List, Mapping
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
+DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+
 
 class FileBasedCursor:
     def __init__(self, max_history_size: int, time_window_if_history_is_full: timedelta, logger: logging.Logger):
@@ -24,7 +26,7 @@ class FileBasedCursor:
         self._start_time = self._compute_start_time()
 
     def add_file(self, file: RemoteFile):
-        self._file_to_datetime_history[file.uri] = file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        self._file_to_datetime_history[file.uri] = file.last_modified.strftime(DATE_TIME_FORMAT)
         if len(self._file_to_datetime_history) > self._max_history_size:
             oldest_file = min(self._file_to_datetime_history.items(), key=lambda f: (f[1], f[0]))[0]
             del self._file_to_datetime_history[oldest_file]

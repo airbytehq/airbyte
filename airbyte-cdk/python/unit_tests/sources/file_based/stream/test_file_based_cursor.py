@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.stream.file_based_cursor import FileBasedCursor
+from airbyte_cdk.sources.file_based.stream.file_based_cursor import DATE_TIME_FORMAT, FileBasedCursor
 from freezegun import freeze_time
 
 
@@ -131,6 +131,63 @@ def test_get_files_to_sync(files, expected_files_to_sync, max_history_size, hist
         logger.warning.assert_called_once()
     else:
         logger.warning.assert_not_called()
+
+
+@pytest.mark.parametrize("history_is_partial", [
+    pytest.param(True, id="test_history_is_partial"),
+    pytest.param(False, id="test_history_is_not_partial"),
+])
+def test_files_are_not_synced_if_they_are_in_history(history_is_partial):
+    logger = MagicMock()
+    state = FileBasedCursor(2, timedelta(days=3), logger)
+
+    files = [
+        RemoteFile(uri="a.csv", last_modified=datetime(2021, 1, 1), file_type="csv"),
+        RemoteFile(uri="b.csv", last_modified=datetime(2021, 1, 2), file_type="csv"),
+    ]
+
+    state._file_to_datetime_history = {
+        f.uri: f.last_modified for f in files
+    }
+    state._history_is_partial = history_is_partial
+
+    files_to_sync = state.get_files_to_sync(files)
+
+    assert len(files_to_sync) == 0
+
+
+@freeze_time("2023-06-16T00:00:00Z")
+def test_only_recent_files_are_synced_if_history_is_full():
+    logger = MagicMock()
+    cursor = FileBasedCursor(2, timedelta(days=3), logger)
+    cursor._history_is_partial = True
+
+    files_in_history = [
+        RemoteFile(uri="b1.csv", last_modified=datetime(2021, 1, 2), file_type="csv"),
+        RemoteFile(uri="b2.csv", last_modified=datetime(2021, 1, 3), file_type="csv"),
+    ]
+
+    state = {
+        "history": {
+            f.uri: f.last_modified.strftime(DATE_TIME_FORMAT) for f in files_in_history
+        },
+        "history_is_partial": True
+    }
+    cursor.set_initial_state(state)
+
+    files = [
+        RemoteFile(uri="a.csv", last_modified=datetime(2021, 1, 1), file_type="csv"),
+        RemoteFile(uri="c.csv", last_modified=datetime(2021, 1, 2), file_type="csv"),
+        RemoteFile(uri="d.csv", last_modified=datetime(2021, 1, 4), file_type="csv"),
+    ]
+
+    expected_files_to_sync = [
+        RemoteFile(uri="c.csv", last_modified=datetime(2021, 1, 2), file_type="csv"),
+        RemoteFile(uri="d.csv", last_modified=datetime(2021, 1, 4), file_type="csv"),
+    ]
+
+    files_to_sync = cursor.get_files_to_sync(files)
+    assert files_to_sync == expected_files_to_sync
 
 
 @pytest.mark.parametrize("earliest_file_in_history, expected_start_time", [
