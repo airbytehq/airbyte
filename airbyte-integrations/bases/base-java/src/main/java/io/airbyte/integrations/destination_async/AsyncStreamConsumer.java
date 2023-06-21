@@ -128,7 +128,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
   @VisibleForTesting
   public static Optional<PartialAirbyteMessage> deserializeAirbyteMessage(final String messageString) {
     // TODO: (ryankfu) plumb in the serialized AirbyteStateMessage to match AirbyteRecordMessage code
-    // parity
+    // parity. https://github.com/airbytehq/airbyte/issues/27530 for additional context
     final Optional<PartialAirbyteMessage> messageOptional = Jsons.tryDeserialize(messageString, PartialAirbyteMessage.class)
         .map(partial -> {
           if (partial.getType().equals(Type.RECORD) && partial.getRecord().getData() != null) {
