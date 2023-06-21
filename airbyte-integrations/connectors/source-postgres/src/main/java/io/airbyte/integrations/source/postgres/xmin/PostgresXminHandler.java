@@ -151,14 +151,19 @@ public class PostgresXminHandler {
     }
   }
 
-  private PreparedStatement getXminPreparedStatement(final Connection connection, final String wrappedColumnNames,
-      final String fullTableName, final XminStatus prevRunXminStatus, final XminStatus currentXminStatus) throws SQLException {
+  private PreparedStatement getXminPreparedStatement(final Connection connection,
+                                                     final String wrappedColumnNames,
+                                                     final String fullTableName,
+                                                     final XminStatus prevRunXminStatus,
+                                                     final XminStatus currentXminStatus)
+      throws SQLException {
 
     if (prevRunXminStatus == null) {
       throw new RuntimeException("XminStatus not found for table " + fullTableName + ", should have triggered a full sync via ctid path");
     } else if (isSingleWraparound(prevRunXminStatus, currentXminStatus)) {
       // The xmin state that we save represents the lowest XID that is still in progress. To make sure we
-      // don't miss data associated with the current transaction, we have to issue an >=. Because of the wraparound, the changes prior to the
+      // don't miss data associated with the current transaction, we have to issue an >=. Because of the
+      // wraparound, the changes prior to the
       // end xmin xid value must also be captured.
       LOGGER.info("Detect a single wraparound for {}", fullTableName);
       final String sql = String.format("SELECT %s FROM %s WHERE xmin::text::bigint >= ? OR xmin::text::bigint < ?",
