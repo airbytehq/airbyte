@@ -45,7 +45,7 @@ ENV APPLICATION destination-clickhouse
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.2.4
+LABEL io.airbyte.version=0.2.5
 LABEL io.airbyte.name=airbyte/destination-clickhouse
 
 ENV AIRBYTE_ENTRYPOINT "/airbyte/run_with_normalization.sh"

@@ -43,7 +43,7 @@ ENV APPLICATION destination-tidb
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.1.3
+LABEL io.airbyte.version=0.1.4
 LABEL io.airbyte.name=airbyte/destination-tidb
 
 ENV AIRBYTE_ENTRYPOINT "/airbyte/run_with_normalization.sh"
