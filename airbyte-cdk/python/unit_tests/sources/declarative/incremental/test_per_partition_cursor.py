@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from collections import OrderedDict
 from unittest.mock import Mock
 
 import pytest
@@ -12,26 +13,6 @@ from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import (
     PerPartitionStreamSlice,
 )
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-
-PARTITION_KEY = (
-    ("partition_key int", 1),
-    (
-        "partition_key list dict",
-        (
-            (
-                ("dict within list key 1-1", "dict within list value 1-1"),
-                ("dict within list key 1-2", "dict within list value 1-2"),
-            ),
-            (
-                ("dict within list key 2", "dict within list value 2"),
-            )
-        )
-    ),
-    ("partition_key list str", ("list item 1", "list item 2")),
-    ("partition_key nested dict", "nested_partition_key 1", "a nested value"),
-    ("partition_key nested dict", "nested_partition_key 2", "another nested value"),
-    ("partition_key string", "partition value"),
-)
 
 PARTITION = {
     "partition_key string": "partition value",
@@ -79,23 +60,28 @@ STATE = {
 }
 
 
-def test_to_partition_key():
-    assert PerPartitionKeySerializer().to_partition_key(PARTITION) == PARTITION_KEY
+def test_partition_serialization():
+    serializer = PerPartitionKeySerializer()
+    assert serializer.to_partition(serializer.to_partition_key(PARTITION)) == PARTITION
 
 
-def test_given_list_with_dict_and_other_when_to_partition_key_then_raise_error():
-    partition = {
-        "partition_key": [
-            {"a dict": "a value"},
-            "not a dict",
-        ],
-    }
-    with pytest.raises(ValueError):
-        PerPartitionKeySerializer().to_partition_key(partition)
+def test_partition_with_different_key_orders():
+    ordered_dict = OrderedDict({"1": 1, "2": 2})
+    same_dict_with_different_order = OrderedDict({"2": 2, "1": 1})
+    serializer = PerPartitionKeySerializer()
+
+    assert serializer.to_partition_key(ordered_dict) == serializer.to_partition_key(same_dict_with_different_order)
 
 
-def test_to_dict():
-    assert PerPartitionKeySerializer().to_partition(PARTITION_KEY) == PARTITION
+def test_given_tuples_in_json_then_deserialization_convert_to_list():
+    """
+    This is a known issue with the current implementation. However, the assumption is that this wouldn't be a problem as we only use the
+    immutability and we expect stream slices to be immutable anyway
+    """
+    serializer = PerPartitionKeySerializer()
+    partition_with_tuple = {"key": (1, 2, 3)}
+
+    assert partition_with_tuple != serializer.to_partition(serializer.to_partition_key(partition_with_tuple))
 
 
 def test_stream_slice_merge_dictionaries():

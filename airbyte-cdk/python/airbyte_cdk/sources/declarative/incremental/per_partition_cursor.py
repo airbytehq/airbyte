@@ -2,7 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Callable, Iterable, Mapping, Optional, Tuple
+import json
+from typing import Any, Callable, Iterable, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -13,54 +14,18 @@ class PerPartitionKeySerializer:
     """
     We are concerned of the performance of looping through the `states` list and evaluating equality on the partition. To reduce this
     concern, we wanted to use dictionaries to map `partition -> cursor`. However, partitions are dict and dict can't be used as dict keys
-    since they are not hashable. By creating tuples using the dict, we can have a use the dict as a key to the dict since tuples are
+    since they are not hashable. By creating json string using the dict, we can have a use the dict as a key to the dict since strings are
     hashable.
     """
 
     @staticmethod
-    def to_partition_key(to_serialize: Any) -> Tuple:
-        return tuple(PerPartitionKeySerializer._to_partition_key(to_serialize))
-
-    @staticmethod
-    def _to_partition_key(to_serialize: Any, previous_keys=()):
-        if isinstance(to_serialize, dict):
-            for key in sorted(to_serialize.keys()):
-                yield from PerPartitionKeySerializer._to_partition_key(to_serialize[key], previous_keys=(*previous_keys, key))
-        elif isinstance(to_serialize, list):
-            all_dict = all(isinstance(item, dict) for item in to_serialize)
-            any_dict = any(isinstance(item, dict) for item in to_serialize)
-            if any_dict and not all_dict:
-                raise ValueError(
-                    "Error trying to serialize partition key: if one dict is list, all items from list are expected to be dict"
-                )
-
-            if all_dict:
-                yield *previous_keys, tuple([PerPartitionKeySerializer.to_partition_key(dictionary) for dictionary in to_serialize])
-            else:
-                yield *previous_keys, tuple(to_serialize)
-        else:
-            yield *previous_keys, to_serialize
+    def to_partition_key(to_serialize: Any) -> str:
+        # separators have changed in Python 3.4. To avoid being impacted by further change, we explicitly specify our own value
+        return json.dumps(to_serialize, indent=None, separators=(",", ":"), sort_keys=True)
 
     @staticmethod
     def to_partition(to_deserialize: Any):
-        root = {}
-        for flattened_entry in to_deserialize:
-            previous_dict = root
-            for index, item in enumerate(flattened_entry):
-                key, value = item, flattened_entry[index + 1]
-                is_value_a_leaf = len(flattened_entry) == index + 2
-                if is_value_a_leaf:
-                    if isinstance(value, tuple):
-                        if isinstance(value[0], tuple):
-                            previous_dict.setdefault(key, [PerPartitionKeySerializer.to_partition(dictionary) for dictionary in value])
-                        else:
-                            previous_dict.setdefault(key, list(value))
-                    else:
-                        previous_dict.setdefault(key, value)
-                    break
-                else:
-                    previous_dict = previous_dict.setdefault(key, {})
-        return root
+        return json.loads(to_deserialize)
 
 
 class PerPartitionStreamSlice(StreamSlice):
