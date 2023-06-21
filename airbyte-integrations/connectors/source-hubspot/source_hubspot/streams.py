@@ -984,7 +984,6 @@ class CRMSearchStream(IncrementalStream, ABC):
     updated_at_field = "updatedAt"
     last_modified_field: str = None
     associations: List[str] = None
-    additional_search_filters: List[dict] = []
 
     @property
     def url(self):
@@ -1018,8 +1017,6 @@ class CRMSearchStream(IncrementalStream, ABC):
     ) -> Tuple[List, requests.Response]:
         stream_records = {}
         properties_list = list(self.properties.keys())
-
-
         payload = (
             {
                 "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
