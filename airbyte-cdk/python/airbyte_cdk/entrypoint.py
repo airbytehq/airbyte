@@ -2,9 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import argparse
-import functools
 import importlib
 import ipaddress
 import logging
@@ -12,8 +10,9 @@ import os.path
 import socket
 import sys
 import tempfile
-from typing import Any, Iterable, List, Mapping
-from urllib.parse import urlparse
+from functools import cache, wraps
+from typing import Any, Iterable, List, Mapping, Union
+from urllib.parse import ParseResult, ParseResultBytes, urlparse
 
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
@@ -193,26 +192,29 @@ def _init_internal_request_filter():
     """
     wrapped_fn = Session.send
 
-    @functools.wraps(wrapped_fn)
+    @wraps(wrapped_fn)
     def filtered_send(self, request, **kwargs):
         parsed_url = urlparse(request.url)
 
         if parsed_url.scheme not in VALID_URL_SCHEMES:
             raise ValueError(
                 "Invalid Protocol Scheme: The endpoint that data is being requested from is using an invalid or insecure "
-                + f"protocol {parsed_url.scheme}"
+                + f"protocol {parsed_url.scheme}. Valid protocol schemes: {','.join(VALID_URL_SCHEMES)}"
             )
 
         if not parsed_url.hostname:
             raise ValueError("Invalid URL specified: The endpoint that data is being requested from is not a valid URL")
 
         try:
-            ip_address = socket.gethostbyname(str(parsed_url.hostname))
-            is_private_ip = ipaddress.ip_address(ip_address).is_private
-            if is_private_ip:
+            # ip_address = socket.gethostbyname(str(parsed_url.hostname))
+            # ips = socket.getaddrinfo(parsed_url.hostname, parsed_url.port)
+            # ips[0].
+            # is_private_ip = ipaddress.ip_address(ip_address).is_private\
+            is_private = _is_private_url(parsed_url)
+            if is_private:
                 raise ValueError(
-                    "Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Low "
-                    + "code connectors only support requesting data from public API endpoints."
+                    "Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Source "
+                    + "connectors only support requesting data from public API endpoints."
                 )
         except socket.gaierror:
             # This is a special case where the developer specifies an IP address string that is not formatted correctly like trailing
@@ -222,6 +224,23 @@ def _init_internal_request_filter():
         return wrapped_fn(self, request, **kwargs)
 
     Session.send = filtered_send
+
+
+@cache
+def _is_private_url(parsed_url: Union[ParseResultBytes, ParseResult]) -> bool:
+    """
+    Helper method that checks if any IPs are on a private network. We also cache the result to speed up subsequent sends.
+    The size should remain relatively small since on a per-sync basis, the range of hosts should be small.
+    """
+    address_info_entries = socket.getaddrinfo(parsed_url.hostname, parsed_url.port)
+    for entry in address_info_entries:
+        # getaddrinfo() returns entries in the form of a 5-tuple where the IP is stored as the sockaddr. For IPv4 this
+        # is a 2-tuple and for IPv6 it is a 4-tuple, but the address is always the first value of the tuple at 0.
+        # See https://docs.python.org/3/library/socket.html#socket.getaddrinfo for more details.
+        ip_address = entry[4][0]
+        if ipaddress.ip_address(ip_address).is_private:
+            return True
+    return False
 
 
 def main():

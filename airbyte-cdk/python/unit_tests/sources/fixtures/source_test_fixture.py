@@ -34,10 +34,25 @@ class SourceTestFixture(AbstractSource):
         self._authenticator = authenticator
 
     def spec(self, logger: logging.Logger) -> ConnectorSpecification:
-        return ConnectorSpecification(connectionSpecification={})
+        return ConnectorSpecification(connectionSpecification={
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "title": "Test Fixture Spec",
+            "type": "object",
+            "required": ["api_token"],
+            "properties": {
+                "api_token": {
+                    "type": "string",
+                    "title": "API token",
+                    "description": "The token used to authenticate requests to the API.",
+                    "airbyte_secret": True
+                }
+            }
+        })
 
     def read_config(self, config_path: str) -> Mapping[str, Any]:
-        return {}
+        return {
+            "api_token": "just_some_token"
+        }
 
     @classmethod
     def read_catalog(cls, catalog_path: str) -> ConfiguredAirbyteCatalog:
@@ -99,6 +114,9 @@ class HttpTestStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return {}
+
 
 def fixture_mock_send(self, request, **kwargs) -> requests.Response:
     """
@@ -109,7 +127,12 @@ def fixture_mock_send(self, request, **kwargs) -> requests.Response:
     response.request = request
     response.status_code = 200
     response.headers = {"header": "value"}
-    response_body = {"records": []}
+    response_body = {"records": [
+        {"id": 1, "name": "Celine Song", "position": "director"},
+        {"id": 2, "name": "Shabier Kirchner", "position": "cinematographer"},
+        {"id": 3, "name": "Christopher Bear", "position": "composer"},
+        {"id": 4, "name": "Daniel Rossen", "position": "composer"}
+    ]}
     response._content = json.dumps(response_body).encode("utf-8")
     return response
 

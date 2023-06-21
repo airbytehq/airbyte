@@ -20,12 +20,12 @@ from unit_tests.sources.fixtures.source_test_fixture import (
 @pytest.mark.parametrize(
     "deployment_mode, url_base, expected_records, expected_error",
     [
-        pytest.param("CLOUD", "https://past-lives.net/api/v1/", [], None, id="test_cloud_read_with_public_endpoint"),
-        pytest.param("CLOUD", "http://unsecured.com/api/v1/", [], ValueError, id="test_cloud_read_with_unsecured_url"),
-        pytest.param("CLOUD", "https://172.20.105.99/api/v1/", [], ValueError, id="test_cloud_read_with_private_endpoint"),
-        pytest.param("CLOUD", "https://localhost:80/api/v1/", [], ValueError, id="test_cloud_read_with_localhost"),
-        pytest.param("OSS", "https://past-lives.net/api/v1/", [], None, id="test_oss_read_with_public_endpoint"),
-        pytest.param("OSS", "https://172.20.105.99/api/v1/", [], None, id="test_oss_read_with_private_endpoint"),
+        pytest.param("CLOUD", "https://airbyte.com/api/v1/crew", [], None, id="test_cloud_read_with_public_endpoint"),
+        pytest.param("CLOUD", "http://unsecured.com/api/v1/crew", [], ValueError, id="test_cloud_read_with_unsecured_url"),
+        pytest.param("CLOUD", "https://172.20.105.99/api/v1/crew", [], ValueError, id="test_cloud_read_with_private_endpoint"),
+        pytest.param("CLOUD", "https://localhost:80/api/v1/crew", [], ValueError, id="test_cloud_read_with_localhost"),
+        pytest.param("OSS", "https://airbyte.com/api/v1/crew", [], None, id="test_oss_read_with_public_endpoint"),
+        pytest.param("OSS", "https://172.20.105.99/api/v1/crew", [], None, id="test_oss_read_with_private_endpoint"),
     ]
 )
 @patch.object(requests.Session, "send", fixture_mock_send)
@@ -45,10 +45,10 @@ def test_external_request_source(capsys, deployment_mode, url_base, expected_rec
 @pytest.mark.parametrize(
     "deployment_mode, token_refresh_url, expected_records, expected_error",
     [
-        pytest.param("CLOUD", "https://past-lives.net/api/v1/", [], None, id="test_cloud_read_with_public_endpoint"),
+        pytest.param("CLOUD", "https://airbyte.com/api/v1/", [], None, id="test_cloud_read_with_public_endpoint"),
         pytest.param("CLOUD", "http://unsecured.com/api/v1/", [], ValueError, id="test_cloud_read_with_unsecured_url"),
         pytest.param("CLOUD", "https://172.20.105.99/api/v1/", [], ValueError, id="test_cloud_read_with_private_endpoint"),
-        pytest.param("OSS", "https://past-lives.net/api/v1/", [], None, id="test_oss_read_with_public_endpoint"),
+        pytest.param("OSS", "https://airbyte.com/api/v1/", [], None, id="test_oss_read_with_public_endpoint"),
         pytest.param("OSS", "https://172.20.105.99/api/v1/", [], None, id="test_oss_read_with_private_endpoint"),
     ]
 )

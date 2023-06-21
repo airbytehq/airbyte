@@ -186,6 +186,14 @@ CONFIGURED_CATALOG = {
     ]
 }
 
+MOCK_RESPONSE = {
+    "result": [
+        {"id": 1, "name": "Nora Moon", "position": "director"},
+        {"id": 2, "name": "Hae Sung Jung", "position": "cinematographer"},
+        {"id": 3, "name": "Arthur Zenneranski", "position": "composer"},
+    ]
+}
+
 
 @pytest.fixture
 def valid_resolve_manifest_config_file(tmp_path):
@@ -232,7 +240,7 @@ def _mocked_send(self, request, **kwargs) -> requests.Response:
     response.request = request
     response.status_code = 200
     response.headers = {"header": "value"}
-    response_body = {"records": []}
+    response_body = MOCK_RESPONSE
     response._content = json.dumps(response_body).encode("utf-8")
     return response
 
@@ -769,11 +777,11 @@ def test_read_source_single_page_single_slice(mock_http_stream):
 @pytest.mark.parametrize(
     "deployment_mode, url_base, expected_error",
     [
-        pytest.param("CLOUD", "https://past-lives.net/api/v1/", None, id="test_cloud_read_with_public_endpoint"),
+        pytest.param("CLOUD", "https://airbyte.com/api/v1/characters", None, id="test_cloud_read_with_public_endpoint"),
         pytest.param("CLOUD", "https://10.0.27.27", "ValueError", id="test_cloud_read_with_private_endpoint"),
-        pytest.param("CLOUD", "https://localhost:80/api/v1", "ValueError", id="test_cloud_read_with_localhost"),
+        pytest.param("CLOUD", "https://localhost:80/api/v1/cast", "ValueError", id="test_cloud_read_with_localhost"),
         pytest.param("CLOUD", "http://unsecured.protocol/api/v1", "ValueError", id="test_cloud_read_with_unsecured_endpoint"),
-        pytest.param("OSS", "https://past-lives.net/api/v1/", None, id="test_oss_read_with_public_endpoint"),
+        pytest.param("OSS", "https://airbyte.com/api/v1/", None, id="test_oss_read_with_public_endpoint"),
         pytest.param("OSS", "https://10.0.27.27/api/v1/", None, id="test_oss_read_with_private_endpoint"),
     ]
 )
@@ -812,15 +820,18 @@ def test_handle_read_external_requests(deployment_mode, url_base, expected_error
             error_message = output_data["logs"][0]
             assert error_message["level"] == "ERROR"
             assert expected_error in error_message["message"]
+        else:
+            page_records = output_data["slices"][0]["pages"][0]
+            assert len(page_records) == len(MOCK_RESPONSE["result"])
 
 
 @pytest.mark.parametrize(
     "deployment_mode, token_url, expected_error",
     [
-        pytest.param("CLOUD", "https://past-lives.net/tokens/bearer", None, id="test_cloud_read_with_public_endpoint"),
+        pytest.param("CLOUD", "https://airbyte.com/tokens/bearer", None, id="test_cloud_read_with_public_endpoint"),
         pytest.param("CLOUD", "https://10.0.27.27/tokens/bearer", "ValueError", id="test_cloud_read_with_private_endpoint"),
         pytest.param("CLOUD", "http://unsecured.protocol/tokens/bearer", "ValueError", id="test_cloud_read_with_unsecured_endpoint"),
-        pytest.param("OSS", "https://past-lives.net/tokens/bearer", None, id="test_oss_read_with_public_endpoint"),
+        pytest.param("OSS", "https://airbyte.com/tokens/bearer", None, id="test_oss_read_with_public_endpoint"),
         pytest.param("OSS", "https://10.0.27.27/tokens/bearer", None, id="test_oss_read_with_private_endpoint"),
     ]
 )
