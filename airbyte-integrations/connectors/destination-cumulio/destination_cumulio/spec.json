@@ -1,0 +1,40 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/cumulio",
+  "supported_destination_sync_modes": [
+    "overwrite",
+    "append"
+  ],
+  "supportsIncremental": true,
+  "supportsDBT": false,
+  "supportsNormalization": false,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination Cumulio",
+    "type": "object",
+    "required": ["api_host", "api_key", "api_token"],
+    "additionalProperties": true,
+    "properties": {
+      "api_host": {
+        "title": "Cumul.io API Host URL",
+        "description": "URL of the Cumul.io API (e.g. 'https://api.cumul.io', 'https://api.us.cumul.io', or VPC-specific API url). Defaults to 'https://api.cumul.io'.",
+        "default": "https://api.cumul.io",
+        "type": "string",
+        "order": 0
+      },
+      "api_key": {
+        "title": "Cumul.io API Key",
+        "description": "An API key generated in Cumul.io's platform (can be generated here: https://app.cumul.io/start/profile/integration).",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 1
+      },
+      "api_token": {
+        "title": "Cumul.io API Token",
+        "description": "The corresponding API token generated in Cumul.io's platform (can be generated here: https://app.cumul.io/start/profile/integration).",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 2
+      }
+    }
+  }
+}

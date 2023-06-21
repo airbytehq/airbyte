@@ -120,7 +120,7 @@ class SchemaHelpers:
                 properties.update(**{name: SchemaTypes.string})
 
         json_schema: Dict = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$schema": "https://json-schema.org/draft-07/schema#",
             "type": "object",
             "additionalProperties": True,
             "properties": properties,

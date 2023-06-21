@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.redshift;
 
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 
-public class RedshiftSQLNameTransformer extends ExtendedNameTransformer {
+public class RedshiftSQLNameTransformer extends StandardNameTransformer {
 
   @Override
   public String convertStreamName(final String input) {

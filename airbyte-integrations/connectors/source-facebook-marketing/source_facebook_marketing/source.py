@@ -8,10 +8,19 @@ from typing import Any, List, Mapping, Optional, Tuple, Type
 import facebook_business
 import pendulum
 import requests
-from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
+from airbyte_cdk.models import (
+    AdvancedAuth,
+    AuthFlowType,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    FailureType,
+    OAuthConfigSpecification,
+)
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from source_facebook_marketing.api import API
+from airbyte_cdk.utils import AirbyteTracedException
+from pydantic.error_wrappers import ValidationError
+from source_facebook_marketing.api import API, FacebookAPIException
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
     Activities,
@@ -20,9 +29,22 @@ from source_facebook_marketing.streams import (
     Ads,
     AdSets,
     AdsInsights,
+    AdsInsightsActionCarouselCard,
+    AdsInsightsActionConversionDevice,
+    AdsInsightsActionProductID,
+    AdsInsightsActionReaction,
     AdsInsightsActionType,
+    AdsInsightsActionVideoSound,
+    AdsInsightsActionVideoType,
     AdsInsightsAgeAndGender,
     AdsInsightsCountry,
+    AdsInsightsDeliveryDevice,
+    AdsInsightsDeliveryPlatform,
+    AdsInsightsDeliveryPlatformAndDevicePlatform,
+    AdsInsightsDemographicsAge,
+    AdsInsightsDemographicsCountry,
+    AdsInsightsDemographicsDMARegion,
+    AdsInsightsDemographicsGender,
     AdsInsightsDma,
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
@@ -55,14 +77,17 @@ class SourceFacebookMarketing(AbstractSource):
         :param config:  the user-input config object conforming to the connector's spec.json
         :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        config = self._validate_and_transform(config)
-        if config.end_date < config.start_date:
-            return False, "end_date must be equal or after start_date."
-
         try:
+            config = self._validate_and_transform(config)
+
+            if config.end_date > pendulum.now():
+                return False, "Date range can not be in the future."
+            if config.end_date < config.start_date:
+                return False, "end_date must be equal or after start_date."
+
             api = API(account_id=config.account_id, access_token=config.access_token)
             logger.info(f"Select account {api.account}")
-        except requests.exceptions.RequestException as e:
+        except (requests.exceptions.RequestException, ValidationError, FacebookAPIException) as e:
             return False, e
 
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
@@ -119,6 +144,19 @@ class SourceFacebookMarketing(AbstractSource):
             AdsInsightsDma(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
             AdsInsightsPlatformAndDevice(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
             AdsInsightsActionType(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsActionCarouselCard(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsActionConversionDevice(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsActionProductID(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsActionReaction(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsActionVideoSound(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsActionVideoType(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsDeliveryDevice(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsDeliveryPlatform(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsDeliveryPlatformAndDevicePlatform(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsDemographicsAge(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsDemographicsCountry(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsDemographicsDMARegion(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsightsDemographicsGender(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
             Campaigns(
                 api=api,
                 start_date=config.start_date,
@@ -172,12 +210,33 @@ class SourceFacebookMarketing(AbstractSource):
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),
-            authSpecification=AuthSpecification(
-                auth_type="oauth2.0",
-                oauth2Specification=OAuth2Specification(
-                    rootObject=[], oauthFlowInitParameters=[], oauthFlowOutputParameters=[["access_token"]]
+            advanced_auth=AdvancedAuth(
+                auth_flow_type=AuthFlowType.oauth2_0,
+                oauth_config_specification=OAuthConfigSpecification(
+                    complete_oauth_output_specification={
+                        "type": "object",
+                        "properties": {
+                            "access_token": {
+                                "type": "string",
+                                "path_in_connector_config": ["access_token"],
+                            }
+                        },
+                    },
+                    complete_oauth_server_input_specification={
+                        "type": "object",
+                        "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+                    },
+                    complete_oauth_server_output_specification={
+                        "type": "object",
+                        "additionalProperties": True,
+                        "properties": {
+                            "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
+                            "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
+                        },
+                    },
                 ),
             ),
+            authSpecification=None,
         )
 
     def get_custom_insights_streams(self, api: API, config: ConnectorConfig) -> List[Type[Stream]]:
@@ -187,11 +246,14 @@ class SourceFacebookMarketing(AbstractSource):
             insight_fields = set(insight.fields)
             if insight_fields.intersection(UNSUPPORTED_FIELDS):
                 # https://github.com/airbytehq/oncall/issues/1137
-                mes = (
-                    f"Please remove Following fields from the Custom {insight.name} fields list due to possible "
-                    f"errors on Facebook side: {insight_fields.intersection(UNSUPPORTED_FIELDS)}"
+                message = (
+                    f"The custom fields `{insight_fields.intersection(UNSUPPORTED_FIELDS)}` are not a valid configuration for"
+                    f" `{insight.name}'. Review Facebook Marketing's docs https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/ for valid breakdowns."
                 )
-                raise ValueError(mes)
+                raise AirbyteTracedException(
+                    message=message,
+                    failure_type=FailureType.config_error,
+                )
             stream = AdsInsights(
                 api=api,
                 name=f"Custom{insight.name}",
@@ -203,6 +265,7 @@ class SourceFacebookMarketing(AbstractSource):
                 start_date=insight.start_date or config.start_date,
                 end_date=insight.end_date or config.end_date,
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
+                level=insight.level,
             )
             streams.append(stream)
         return streams

@@ -8,7 +8,7 @@ To set up the Greenhouse source connector, you'll need the [Harvest API key](htt
 
 ## Set up the Greenhouse connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Greenhouse** from the Source type dropdown.
 4. Enter the name for the Greenhouse connector.
@@ -19,20 +19,25 @@ To set up the Greenhouse source connector, you'll need the [Harvest API key](htt
 
 The Greenhouse source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 * [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 * [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
+* [Activity Feed](https://developers.greenhouse.io/harvest.html#get-retrieve-activity-feed)
 * [Applications](https://developers.greenhouse.io/harvest.html#get-list-applications)
 * [Applications Interviews](https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews-for-application)
+* [Approvals](https://developers.greenhouse.io/harvest.html#get-list-approvals-for-job)
 * [Candidates](https://developers.greenhouse.io/harvest.html#get-list-candidates)
 * [Close Reasons](https://developers.greenhouse.io/harvest.html#get-list-close-reasons)
 * [Custom Fields](https://developers.greenhouse.io/harvest.html#get-list-custom-fields)
 * [Degrees](https://developers.greenhouse.io/harvest.html#get-list-degrees)
 * [Departments](https://developers.greenhouse.io/harvest.html#get-list-departments)
+* [Disciplines](https://developers.greenhouse.io/harvest.html#get-list-approvals-for-job)
+* [EEOC](https://developers.greenhouse.io/harvest.html#get-list-eeoc)
+* [Email Templates](https://developers.greenhouse.io/harvest.html#get-list-email-templates)
 * [Interviews](https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews)
 * [Job Posts](https://developers.greenhouse.io/harvest.html#get-list-job-posts)
 * [Job Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages)
@@ -40,10 +45,16 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 * [Job Openings](https://developers.greenhouse.io/harvest.html#get-list-job-openings)
 * [Jobs Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages-for-job)
 * [Offers](https://developers.greenhouse.io/harvest.html#get-list-offers)
+* [Offices](https://developers.greenhouse.io/harvest.html#get-list-offices)
+* [Prospect Pools](https://developers.greenhouse.io/harvest.html#get-list-prospect-pools)
 * [Rejection Reasons](https://developers.greenhouse.io/harvest.html#get-list-rejection-reasons)
+* [Schools](https://developers.greenhouse.io/harvest.html#get-list-schools)
 * [Scorecards](https://developers.greenhouse.io/harvest.html#get-list-scorecards)
 * [Sources](https://developers.greenhouse.io/harvest.html#get-list-sources)
+* [Tags](https://developers.greenhouse.io/harvest.html#get-list-candidate-tags)
 * [Users](https://developers.greenhouse.io/harvest.html#get-list-users)
+* [User Permissions](https://developers.greenhouse.io/harvest.html#get-list-job-permissions)
+* [User Roles](https://developers.greenhouse.io/harvest.html#the-user-role-object)
 
 ## Performance considerations
 
@@ -53,6 +64,8 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.4.0   | 2023-04-26 | [25332](https://github.com/airbytehq/airbyte/pull/25332) | Add new streams: `ActivityFeed`, `Approvals`, `Disciplines`, `Eeoc`, `EmailTemplates`, `Offices`, `ProspectPools`, `Schools`, `Tags`, `UserPermissions`, `UserRoles` |
+| 0.3.1   | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version                                        |
 | 0.3.0   | 2022-10-19 | [18154](https://github.com/airbytehq/airbyte/pull/18154) | Extend `Users` stream schema                                                   |
 | 0.2.11  | 2022-09-27 | [17239](https://github.com/airbytehq/airbyte/pull/17239) | Always install the latest version of Airbyte CDK                               |
 | 0.2.10  | 2022-09-05 | [16338](https://github.com/airbytehq/airbyte/pull/16338) | Implement incremental syncs & fix SATs                                         |

@@ -35,5 +35,5 @@ def test_streams(mocker):
     sample_config = {"api_key": "test-token", "start_date": "2023-01-25T00:00:00Z"}
     config_mock.get.side_effect = sample_config.get
     streams = source.streams(config_mock)
-    expected_streams_number = 5
+    expected_streams_number = 6
     assert len(streams) == expected_streams_number

@@ -94,7 +94,7 @@ public class MaskedDataInterceptor implements RewritePolicy {
    * @return The set of maskable properties.
    */
   private Set<String> getMaskableProperties(final String specMaskFile) {
-    logger.info("Loading mask data from '{}", specMaskFile);
+
     try {
       final String maskFileContents = IOUtils.toString(getClass().getResourceAsStream(specMaskFile), Charset.defaultCharset());
       final Map<String, Set<String>> properties = Jsons.object(Yamls.deserialize(maskFileContents), new TypeReference<>() {});

@@ -142,7 +142,7 @@ class IncrementalOrbStream(OrbStream, ABC):
         if state_based_start_timestamp:
             # This may (reasonably) override the existing `created_at[gte]` set based on the start_date
             # of the stream, as configured.
-            params["created_at[gte]"] = state_based_start_timestamp
+            params[f"{self.cursor_field}[gte]"] = state_based_start_timestamp
         return params
 
 
@@ -448,6 +448,32 @@ class Plans(IncrementalOrbStream):
         return "plans"
 
 
+class Invoices(IncrementalOrbStream):
+    """
+    Fetches non-draft invoices, including those that are paid, issued, void, or synced.
+    API Docs: https://docs.withorb.com/docs/orb-docs/api-reference/operations/list-invoices
+    """
+
+    @property
+    def cursor_field(self) -> str:
+        """
+        Invoices created in the past may be newly issued, so we store state on
+        `invoice_date` instead.
+        """
+        return "invoice_date"
+
+    def path(self, **kwargs) -> str:
+        return "invoices"
+
+    def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        request_params = super().request_params(stream_state, **kwargs)
+        # Filter to all statuses. Note that if you're currently expecting the status of the invoice
+        # to update at the sink, you should periodically still expect to re-sync this connector to
+        # fetch updates.
+        request_params["status[]"] = ["void", "paid", "issued", "synced"]
+        return request_params
+
+
 class CreditsLedgerEntries(IncrementalOrbStream):
     page_size = 500
     """
@@ -705,6 +731,7 @@ class SourceOrb(AbstractSource):
             Customers(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
             Subscriptions(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
             Plans(authenticator=authenticator, lookback_window_days=lookback_window, start_date=start_date),
+            Invoices(authenticator=authenticator, lookback_window_days=lookback_window),
             CreditsLedgerEntries(
                 authenticator=authenticator,
                 lookback_window_days=lookback_window,

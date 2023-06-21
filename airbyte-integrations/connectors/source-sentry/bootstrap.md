@@ -1,9 +1,11 @@
 ## Streams
 
-Sentry is a REST API. Connector has the following streams, and all of them support full refresh only.
+Sentry is a REST API. Connector has the following streams, and all of them support full refresh and incremental.
 
 * [Events](https://docs.sentry.io/api/events/list-a-projects-events/)
 * [Issues](https://docs.sentry.io/api/events/list-a-projects-issues/)
+* [Projects](https://docs.sentry.io/api/projects/list-your-projects/)
+* [Releases](https://docs.sentry.io/api/releases/list-an-organizations-releases/)
 
 And a [ProjectDetail](https://docs.sentry.io/api/projects/retrieve-a-project/) stream is also implemented just for connection checking.
 

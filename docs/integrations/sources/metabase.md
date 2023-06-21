@@ -37,7 +37,7 @@ authenticated query is running, which might trigger security alerts on the user'
 
 The Metabase source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 
 ## Supported Streams
 * [Activity](https://www.metabase.com/docs/latest/api/activity.html#get-apiactivity)

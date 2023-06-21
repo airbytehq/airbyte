@@ -39,7 +39,7 @@ Log into [GitLab](https://gitlab.com) and then generate a [personal access token
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **GitLab** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your GitLab account` by selecting Oauth or Personal Access Token for Authentication.
@@ -64,7 +64,7 @@ Log into [GitLab](https://gitlab.com) and then generate a [personal access token
 
 The Gitlab Source connector supports the following [ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 * [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 * [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
@@ -105,6 +105,18 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------|
+| 1.5.0   | 2023-06-15 | [27392](https://github.com/airbytehq/airbyte/pull/27392) | Make API URL an optional parameter in spec.                                                |
+| 1.4.2   | 2023-06-15 | [27346](https://github.com/airbytehq/airbyte/pull/27346) | Partially revert changes made in version 1.0.4, disallow http calls in cloud.              |
+| 1.4.1   | 2023-06-13 | [27351](https://github.com/airbytehq/airbyte/pull/27351) | Fix OAuth token expiry date.                                                               |
+| 1.4.0   | 2023-06-12 | [27234](https://github.com/airbytehq/airbyte/pull/27234) | Skip stream slices on 403/404 errors, do not fail syncs.                                   |
+| 1.3.1   | 2023-06-08 | [27147](https://github.com/airbytehq/airbyte/pull/27147) | Improve connectivity check for connections with no projects/groups                         |
+| 1.3.0   | 2023-06-08 | [27150](https://github.com/airbytehq/airbyte/pull/27150) | Update stream schemas                                                                      |
+| 1.2.1   | 2023-06-02 | [26947](https://github.com/airbytehq/airbyte/pull/26947) | New field `name` added to `Pipelines` and `PipelinesExtended` stream schema                |
+| 1.2.0   | 2023-05-17 | [22293](https://github.com/airbytehq/airbyte/pull/22293) | Preserve data in records with flattened keys                                               |
+| 1.1.1   | 2023-05-23 | [26422](https://github.com/airbytehq/airbyte/pull/26422) | Fix error `404 Repository Not Found` when syncing project with Repository feature disabled |
+| 1.1.0   | 2023-05-10 | [25948](https://github.com/airbytehq/airbyte/pull/25948) | Introduce two new fields in the `Projects` stream schema                                   |
+| 1.0.4   | 2023-04-20 | [21373](https://github.com/airbytehq/airbyte/pull/21373) | Accept api_url with or without scheme                                                      |
+| 1.0.3   | 2023-02-14 | [22992](https://github.com/airbytehq/airbyte/pull/22992) | Specified date formatting in specification                                                 |
 | 1.0.2   | 2023-01-27 | [22001](https://github.com/airbytehq/airbyte/pull/22001) | Set `AvailabilityStrategy` for streams explicitly to `None`                                |
 | 1.0.1   | 2023-01-23 | [21713](https://github.com/airbytehq/airbyte/pull/21713) | Fix missing data issue                                                                     |
 | 1.0.0   | 2022-12-05 | [7506](https://github.com/airbytehq/airbyte/pull/7506)   | Add `OAuth2.0` authentication option                                                       |

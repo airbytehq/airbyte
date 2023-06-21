@@ -3,7 +3,6 @@
 #
 
 import json
-import logging
 from dataclasses import InitVar, dataclass, field
 from itertools import islice
 from json import JSONDecodeError
@@ -51,6 +50,8 @@ class SimpleRetriever(Retriever, HttpStream):
         parameters (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
+    _DEFAULT_MAX_RETRY = 5
+
     requester: Requester
     record_selector: HttpSelector
     config: Config
@@ -61,6 +62,8 @@ class SimpleRetriever(Retriever, HttpStream):
     _primary_key: str = field(init=False, repr=False, default="")
     paginator: Optional[Paginator] = None
     stream_slicer: Optional[StreamSlicer] = SinglePartitionRouter(parameters={})
+    emit_connector_builder_messages: bool = False
+    disable_retries: bool = False
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.paginator = self.paginator or NoPagination(parameters=parameters)
@@ -94,6 +97,14 @@ class SimpleRetriever(Retriever, HttpStream):
     def raise_on_http_errors(self) -> bool:
         # never raise on http_errors because this overrides the error handler logic...
         return False
+
+    @property
+    def max_retries(self) -> Union[int, None]:
+        if self.disable_retries:
+            return 0
+        if hasattr(self.requester.error_handler, "max_retries"):
+            return self.requester.error_handler.max_retries
+        return self._DEFAULT_MAX_RETRY
 
     def should_retry(self, response: requests.Response) -> bool:
         """
@@ -139,6 +150,7 @@ class SimpleRetriever(Retriever, HttpStream):
         requester_method,
         paginator_method,
         stream_slicer_method,
+        auth_options_method,
     ):
         """
         Get the request_option from the requester and from the paginator
@@ -157,15 +169,20 @@ class SimpleRetriever(Retriever, HttpStream):
         paginator_mapping_keys = set(paginator_mapping.keys())
         stream_slicer_mapping = stream_slicer_method(stream_slice=stream_slice)
         stream_slicer_mapping_keys = set(stream_slicer_mapping.keys())
+        auth_options_mapping = auth_options_method()
+        auth_options_mapping_keys = set(auth_options_mapping.keys())
 
         intersection = (
             (requester_mapping_keys & paginator_mapping_keys)
             | (requester_mapping_keys & stream_slicer_mapping_keys)
             | (paginator_mapping_keys & stream_slicer_mapping_keys)
+            | (requester_mapping_keys & auth_options_mapping_keys)
+            | (paginator_mapping_keys & auth_options_mapping_keys)
+            | (stream_slicer_mapping_keys & auth_options_mapping_keys)
         )
         if intersection:
             raise ValueError(f"Duplicate keys found: {intersection}")
-        return {**requester_mapping, **paginator_mapping, **stream_slicer_mapping}
+        return {**requester_mapping, **paginator_mapping, **stream_slicer_mapping, **auth_options_mapping}
 
     def request_headers(
         self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
@@ -180,6 +197,8 @@ class SimpleRetriever(Retriever, HttpStream):
             self.requester.get_request_headers,
             self.paginator.get_request_headers,
             self.stream_slicer.get_request_headers,
+            # auth headers are handled separately by passing the authenticator to the HttpStream constructor
+            lambda: {},
         )
         return {str(k): str(v) for k, v in headers.items()}
 
@@ -200,6 +219,7 @@ class SimpleRetriever(Retriever, HttpStream):
             self.requester.get_request_params,
             self.paginator.get_request_params,
             self.stream_slicer.get_request_params,
+            self.requester.get_authenticator().get_request_params,
         )
 
     def request_body_data(
@@ -235,6 +255,7 @@ class SimpleRetriever(Retriever, HttpStream):
             self.requester.get_request_body_data,
             self.paginator.get_request_body_data,
             self.stream_slicer.get_request_body_data,
+            self.requester.get_authenticator().get_request_body_data,
         )
 
     def request_body_json(
@@ -255,6 +276,7 @@ class SimpleRetriever(Retriever, HttpStream):
             self.requester.get_request_body_json,
             self.paginator.get_request_body_json,
             self.stream_slicer.get_request_body_json,
+            self.requester.get_authenticator().get_request_body_json,
         )
 
     def request_kwargs(
@@ -368,16 +390,18 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_slice = stream_slice or {}  # None-check
         self.paginator.reset()
         records_generator = self._read_pages(
-            self._parse_records_and_emit_request_and_responses,
+            self.parse_records,
             stream_slice,
             stream_state,
         )
+        cursor_updated = False
         for record in records_generator:
             # Only record messages should be parsed to update the cursor which is indicated by the Mapping type
             if isinstance(record, Mapping):
                 self.stream_slicer.update_cursor(stream_slice, last_record=record)
+                cursor_updated = True
             yield record
-        else:
+        if not cursor_updated:
             last_record = self._last_records[-1] if self._last_records else None
             if last_record and isinstance(last_record, Mapping):
                 self.stream_slicer.update_cursor(stream_slice, last_record=last_record)
@@ -406,13 +430,13 @@ class SimpleRetriever(Retriever, HttpStream):
         """State setter, accept state serialized by state getter."""
         self.stream_slicer.update_cursor(value)
 
-    def _parse_records_and_emit_request_and_responses(self, request, response, stream_state, stream_slice) -> Iterable[StreamData]:
-        # Only emit requests and responses when running in debug mode
-        if self.logger.isEnabledFor(logging.DEBUG):
-            yield _prepared_request_to_airbyte_message(request)
-            yield _response_to_airbyte_message(response)
-        # Not great to need to call _read_pages which is a private method
-        # A better approach would be to extract the HTTP client from the HttpStream and call it directly from the HttpRequester
+    def parse_records(
+        self,
+        request: requests.PreparedRequest,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any],
+    ) -> Iterable[StreamData]:
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
 
 
@@ -436,6 +460,17 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Optional[StreamState] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         return islice(super().stream_slices(sync_mode=sync_mode, stream_state=stream_state), self.maximum_number_of_slices)
+
+    def parse_records(
+        self,
+        request: requests.PreparedRequest,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any],
+    ) -> Iterable[StreamData]:
+        yield _prepared_request_to_airbyte_message(request)
+        yield _response_to_airbyte_message(response)
+        yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
 
 
 def _prepared_request_to_airbyte_message(request: requests.PreparedRequest) -> AirbyteMessage:

@@ -61,9 +61,8 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
 
     final long messageSizeInBytes = recordSizeEstimator.getEstimatedByteSize(message.getRecord());
     if (bufferSizeInBytes + messageSizeInBytes > maxQueueSizeInBytes) {
-      flushAll();
+      flushAllBuffers();
       flushed = Optional.of(BufferFlushType.FLUSH_ALL);
-      bufferSizeInBytes = 0;
     }
 
     final List<AirbyteRecordMessage> bufferedRecords = streamBuffer.computeIfAbsent(stream, k -> new ArrayList<>());
@@ -74,13 +73,14 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   }
 
   @Override
-  public void flushWriter(final AirbyteStreamNameNamespacePair stream, final SerializableBuffer writer) throws Exception {
-    LOGGER.info("Flushing single stream {}: {} records", stream, streamBuffer.get(stream).size());
+  public void flushSingleBuffer(final AirbyteStreamNameNamespacePair stream, final SerializableBuffer buffer) throws Exception {
+    LOGGER.info("Flushing single stream {}: {} records", stream.getName(), streamBuffer.get(stream).size());
     recordWriter.accept(stream, streamBuffer.get(stream));
+    LOGGER.info("Flushing completed for {}", stream.getName());
   }
 
   @Override
-  public void flushAll() throws Exception {
+  public void flushAllBuffers() throws Exception {
     for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
       LOGGER.info("Flushing {}: {} records ({})", entry.getKey().getName(), entry.getValue().size(),
           FileUtils.byteCountToDisplaySize(bufferSizeInBytes));
@@ -88,9 +88,11 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
       if (checkAndRemoveRecordWriter != null) {
         fileName = checkAndRemoveRecordWriter.apply(entry.getKey(), fileName);
       }
+      LOGGER.info("Flushing completed for {}", entry.getKey().getName());
     }
     close();
     clear();
+    bufferSizeInBytes = 0;
   }
 
   @Override

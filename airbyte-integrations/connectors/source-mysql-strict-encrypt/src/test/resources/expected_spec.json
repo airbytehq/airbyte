@@ -52,6 +52,7 @@
         "description": "SSL connection modes. Read more <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html\"> in the docs</a>.",
         "type": "object",
         "order": 7,
+        "default": "required",
         "oneOf": [
           {
             "title": "preferred",
@@ -101,7 +102,8 @@
                 "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the <b>Client key</b> as well)",
                 "airbyte_secret": true,
                 "multiline": true,
-                "order": 2
+                "order": 2,
+                "always_show": true
               },
               "client_key": {
                 "type": "string",
@@ -109,7 +111,8 @@
                 "description": "Client key (this is not a required field, but if you want to use it, you will need to add the <b>Client certificate</b> as well)",
                 "airbyte_secret": true,
                 "multiline": true,
-                "order": 3
+                "order": 3,
+                "always_show": true
               },
               "client_key_password": {
                 "type": "string",
@@ -144,7 +147,8 @@
                 "description": "Client certificate (this is not a required field, but if you want to use it, you will need to add the <b>Client key</b> as well)",
                 "airbyte_secret": true,
                 "multiline": true,
-                "order": 2
+                "order": 2,
+                "always_show": true
               },
               "client_key": {
                 "type": "string",
@@ -152,7 +156,8 @@
                 "description": "Client key (this is not a required field, but if you want to use it, you will need to add the <b>Client certificate</b> as well)",
                 "airbyte_secret": true,
                 "multiline": true,
-                "order": 3
+                "order": 3,
+                "always_show": true
               },
               "client_key_password": {
                 "type": "string",

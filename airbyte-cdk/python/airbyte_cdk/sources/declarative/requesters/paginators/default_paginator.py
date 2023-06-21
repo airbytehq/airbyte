@@ -153,6 +153,7 @@ class DefaultPaginator(Paginator):
 
     def reset(self):
         self.pagination_strategy.reset()
+        self._token = None
 
     def _get_request_options(self, option_type: RequestOptionType) -> Mapping[str, Any]:
         options = {}

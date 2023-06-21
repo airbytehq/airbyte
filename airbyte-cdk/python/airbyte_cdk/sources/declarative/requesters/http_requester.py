@@ -79,7 +79,7 @@ class HttpRequester(Requester):
     ) -> str:
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
         path = self.path.eval(self.config, **kwargs)
-        return path.strip("/")
+        return path.lstrip("/")
 
     def get_method(self):
         return self._method

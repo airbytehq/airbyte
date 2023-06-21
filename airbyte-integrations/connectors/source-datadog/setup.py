@@ -8,7 +8,7 @@ from setuptools import find_packages, setup
 MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "requests==2.25.1"]
 
 TEST_REQUIREMENTS = [
-    "pytest==6.1.2",
+    "pytest",
     "connector-acceptance-test",
 ]
 

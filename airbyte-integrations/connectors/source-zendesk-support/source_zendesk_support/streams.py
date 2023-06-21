@@ -24,11 +24,13 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.streams.http.rate_limiting import TRANSIENT_EXCEPTIONS
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.auth import AuthBase
 from requests_futures.sessions import PICKLE_ERROR, FuturesSession
+from source_zendesk_support.ZendeskSupportAvailabilityStrategy import ZendeskSupportAvailabilityStrategy
 
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
@@ -120,8 +122,8 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
         self._ignore_pagination = ignore_pagination
 
     @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return HttpAvailabilityStrategy()
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
@@ -171,13 +173,20 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
     @staticmethod
     def _parse_next_page_number(response: requests.Response) -> Optional[int]:
         """Parses a response and tries to find next page number"""
-        next_page = response.json().get("next_page")
+        try:
+            next_page = response.json().get("next_page")
+        except requests.exceptions.JSONDecodeError:
+            next_page = None
+
         return dict(parse_qsl(urlparse(next_page).query)).get("page") if next_page else None
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         """try to select relevant data only"""
 
-        records = response.json().get(self.response_list_name or self.name) or []
+        try:
+            records = response.json().get(self.response_list_name or self.name) or []
+        except requests.exceptions.JSONDecodeError:
+            records = []
 
         if not self.cursor_field:
             yield from records
@@ -190,7 +199,11 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 403:
-            self.logger.error(f"Skipping stream {self.name}: Check permissions, error message: {response.json().get('error')}.")
+            try:
+                error = response.json().get("error")
+            except requests.exceptions.JSONDecodeError:
+                error = {"title": "Forbidden", "message": "Received empty JSON response"}
+            self.logger.error(f"Skipping stream {self.name}: Check permissions, error message: {error}.")
             setattr(self, "raise_on_http_errors", False)
             return False
         return super().should_retry(response)
@@ -219,6 +232,10 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
     @property
     def url_base(self) -> str:
         return f"https://{self._subdomain}.zendesk.com/api/v2/"
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return ZendeskSupportAvailabilityStrategy()
 
     def path(self, **kwargs):
         return self.name
@@ -528,6 +545,35 @@ class SourceZendeskSupportTicketEventsExportStream(SourceZendeskIncrementalExpor
                     yield event
 
 
+class OrganizationMemberships(SourceZendeskSupportCursorPaginationStream):
+    """OrganizationMemberships stream: https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/"""
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        meta = response.json().get("meta", {})
+        return meta.get("after_cursor") if meta.get("has_more", False) else None
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = {
+            "start_time": self.check_stream_state(stream_state),
+            "page[size]": self.page_size,
+        }
+        if next_page_token:
+            params.pop("start_time", None)
+            params["page[after]"] = next_page_token
+        return params
+
+
+class AuditLogs(SourceZendeskSupportCursorPaginationStream):
+    """AuditLogs stream: https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs"""
+
+    # can request a maximum of 1,00 results
+    page_size = 100
+    # audit_logs doesn't have the 'updated_by' field
+    cursor_field = "created_at"
+
+
 class Users(SourceZendeskIncrementalExportStream):
     """Users stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export"""
 
@@ -543,6 +589,14 @@ class Tickets(SourceZendeskIncrementalExportStream):
 
     response_list_name: str = "tickets"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
+    @staticmethod
+    def check_start_time_param(requested_start_time: int, value: int = 1):
+        """
+        The stream returns 400 Bad Request StartTimeTooRecent when requesting tasks 1 second before now.
+        Figured out during experiments that the most recent time needed for request to be successful is 3 seconds before now.
+        """
+        return SourceZendeskIncrementalExportStream.check_start_time_param(requested_start_time, value=3)
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
@@ -620,21 +674,28 @@ class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
     """TicketMetric stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metrics/"""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if self._ignore_pagination:
-            return None
-        next_page = self._parse_next_page_number(response)
-        return next_page if next_page else None
+        """
+        https://developer.zendesk.com/documentation/api-basics/pagination/paginating-through-lists-using-cursor-pagination/#when-to-stop-paginating
+        """
+        meta = response.json().get("meta", {})
+        return meta.get("after_cursor") if meta.get("has_more", False) else None
 
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
+        """
+        To make the Cursor Pagination to return `after_cursor` we should follow these instructions:
+        https://developer.zendesk.com/documentation/api-basics/pagination/paginating-through-lists-using-cursor-pagination/#enabling-cursor-pagination
+        """
         params = {
             "start_time": self.check_stream_state(stream_state),
-            "page": 1,
-            "per_page": self.page_size,
+            "page[size]": self.page_size,
         }
         if next_page_token:
-            params["page"] = next_page_token
+            # when cursor pagination is used, we can pass only `after` and `page size` params,
+            # other params should be omitted.
+            params.pop("start_time", None)
+            params["page[after]"] = next_page_token
         return params
 
 

@@ -145,6 +145,12 @@
     "deleted": {
       "type": ["boolean", "null"]
     },
+    "object": {
+      "type": ["string", "null"]
+    },
+    "coupon": {
+      "type": ["string", "null"]
+    },
     "cancel_reason_code": {
       "type": ["string", "null"],
       "maxLength": 100
@@ -597,6 +603,69 @@
             "maxLength": 100
           },
           "last_charged_at": {
+            "type": ["integer", "null"]
+          }
+        }
+      }
+    },
+    "discounts": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": ["string", "null"]
+          },
+          "invoice_name": {
+            "type": ["string", "null"]
+          },
+          "type": {
+            "type": ["string", "null"],
+            "enum": ["fixed_amount", "percentage"]
+          },
+          "percentage": {
+            "type": ["number", "null"]
+          },
+          "amount": {
+            "type": ["integer", "null"]
+          },
+          "currency_code": {
+            "type": ["string", "null"]
+          },
+          "duration_type": {
+            "type": ["string", "null"],
+            "enum": ["one_time", "forever", "limited_period"]
+          },
+          "period": {
+            "type": ["integer", "null"]
+          },
+          "period_unit": {
+            "type": ["string", "null"],
+            "enum": ["day", "week", "month", "year"]
+          },
+          "included_in_mrr": {
+            "type": ["boolean", "null"]
+          },
+          "apply_on": {
+            "type": ["string", "null"],
+            "enum": ["invoice_amount", "specific_item_price"]
+          },
+          "item_price_id": {
+            "type": ["string", "null"]
+          },
+          "created_at": {
+            "type": ["integer", "null"]
+          },
+          "apply_till": {
+            "type": ["integer", "null"]
+          },
+          "applied_count": {
+            "type": ["integer", "null"]
+          },
+          "coupon_id": {
+            "type": ["string", "null"]
+          },
+          "index": {
             "type": ["integer", "null"]
           }
         }

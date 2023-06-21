@@ -1,5 +1,134 @@
 # Changelog
 
+## 0.41.0
+Use x-www-urlencoded for access token refresh requests
+
+## 0.40.5
+Replace  with  when making oauth calls
+
+## 0.40.4
+Emit messages using message repository
+
+## 0.40.3
+Add utils for inferring datetime formats
+
+## 0.40.2
+Add a metadata field to the declarative component schema
+
+## 0.40.1
+make DatetimeBasedCursor.end_datetime optional
+
+## 0.40.0
+Remove SingleUseRefreshTokenOAuthAuthenticator from low code CDK and add generic injection capabilities to ApiKeyAuthenticator
+
+## 0.39.4
+Connector builder: add latest connector config control message to read calls
+
+## 0.39.3
+Add refresh token update capabilities to OAuthAuthenticator
+
+## 0.39.2
+Make step and cursor_granularity optional
+
+## 0.39.1
+Improve connector builder error messages
+
+## 0.39.0
+Align schema generation in SchemaInferrer with Airbyte platform capabilities
+
+## 0.38.0
+Allow nested objects in request_body_json
+
+## 0.37.0
+low-code: Make refresh token in oauth authenticator optional
+
+## 0.36.5
+Unfreeze requests version and test new pipeline
+
+## 0.36.4
+low-code: use jinja sandbox and restrict some methods
+
+## 0.36.3
+pin the version of the requests library
+
+## 0.36.2
+Support parsing non UTC dates and Connector Builder set slice descriptor
+
+## 0.36.1
+low-code: fix add field transformation when running from the connector builder
+
+## 0.36.0
+Emit stream status messages
+
+## 0.35.4
+low-code: remove now_local() macro because it's too unpredictable
+
+## 0.35.3
+low-code: alias stream_interval and stream_partition to stream_slice in jinja context
+
+## 0.35.2
+Connector builder scrubs secrets from raw request and response
+
+## 0.35.1
+low-code: Add title, description, and examples for all fields in the manifest schema
+
+## 0.35.0
+low-code: simplify session token authenticator interface
+
+## 0.34.3
+low-code: fix typo in ManifestDeclarativeSource
+
+## 0.34.2
+Emit slice log messages when running the connector builder
+
+## 0.34.1
+set slice and pages limit when reading from the connector builder module
+
+## 0.34.0
+Low-Code CDK: Enable use of SingleUseRefreshTokenAuthenticator
+
+## 0.33.2
+low-code: fix duplicate stream slicer update
+
+## 0.33.1
+Low-Code CDK: make RecordFilter.filter_records as generator
+
+## 0.33.0
+Enable oauth flow for low-code connectors
+
+## 0.32.0
+Remove unexpected error swallowing on abstract source's check method
+
+## 0.31.1
+connector builder: send stacktrace when error on read
+
+## 0.31.0
+Add connector builder module for handling Connector Builder server requests
+
+## 0.30.4
+CDK's read command handler supports Connector Builder list_streams requests
+
+## 0.30.3
+Fix reset pagination issue on test reads
+
+## 0.30.2
+* Low-code CDK: Override refresh_access_token logic DeclarativeOAuthAuthenticator
+
+## 0.30.1
+Releasing using the new release flow. No change to the CDK per se
+
+## 0.30.0
+OAuth: retry refresh access token requests
+
+## 0.29.3
+Low-Code CDK: duration macro added
+
+## 0.29.2
+support python3.8
+
+## 0.29.1
+Publishing Docker image for source-declarative-manifest
+
 ## 0.29.0
 **Breaking changes: We have promoted the low-code CDK to Beta. This release contains a number of breaking changes intended to improve the overall usability of the language by reorganizing certain concepts, renaming, reducing some field duplication, and removal of fields that are seldom used.**
 
