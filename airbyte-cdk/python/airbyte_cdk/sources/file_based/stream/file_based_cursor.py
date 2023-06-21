@@ -28,6 +28,7 @@ class FileBasedCursor:
     def add_file(self, file: RemoteFile):
         self._file_to_datetime_history[file.uri] = file.last_modified.strftime(DATE_TIME_FORMAT)
         if len(self._file_to_datetime_history) > self._max_history_size:
+            # Get the earliest file based on its last modified date and its uri
             oldest_file = min(self._file_to_datetime_history.items(), key=lambda f: (f[1], f[0]))[0]
             del self._file_to_datetime_history[oldest_file]
 
