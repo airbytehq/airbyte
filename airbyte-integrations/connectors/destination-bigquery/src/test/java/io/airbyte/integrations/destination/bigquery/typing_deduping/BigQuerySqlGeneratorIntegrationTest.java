@@ -307,15 +307,15 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 "updated_at", Optional.of(Instant.parse("2023-01-01T02:00:00Z")),
                 "string", Optional.of("Alice"),
                 "struct", Optional.of(Jsons.deserialize(
-                        """
-                        {"city": "San Diego", "state": "CA"}
-                        """)),
+                    """
+                    {"city": "San Diego", "state": "CA"}
+                    """)),
                 "integer", Optional.of(84L),
                 "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
                 "_airbyte_meta", Optional.of(Jsons.deserialize(
-                        """
-                        {"errors":[]}
-                        """))),
+                    """
+                    {"errors":[]}
+                    """))),
             Map.of(
                 "id", Optional.of(2L),
                 "updated_at", Optional.of(Instant.parse("2023-01-01T03:00:00Z")),
@@ -323,9 +323,9 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 "struct", Optional.empty(),
                 "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
                 "_airbyte_meta", Optional.of(Jsons.deserialize(
-                        """
-                        {"errors":["blah blah integer"]}
-                        """)))),
+                    """
+                    {"errors":["blah blah integer"]}
+                    """)))),
         result);
   }
 
@@ -419,12 +419,12 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 .put("updated_at", Optional.of(Instant.parse("2023-01-01T02:00:00Z")))
                 .put("array", Optional.of(Jsons.deserialize(
                     """
-                        ["foo"]
-                        """)))
+                    ["foo"]
+                    """)))
                 .put("struct", Optional.of(Jsons.deserialize(
                     """
-                        {"foo": "bar"}
-                        """)))
+                    {"foo": "bar"}
+                    """)))
                 .put("string", Optional.of("foo"))
                 .put("number", Optional.of(42.1))
                 .put("integer", Optional.of(42L))
@@ -493,8 +493,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
                       "Problem with `date`"
                     ]}
                     """)))
-                .build()
-        ),
+                .build()),
         finalTable);
 
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
