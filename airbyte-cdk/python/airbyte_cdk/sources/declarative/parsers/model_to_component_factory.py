@@ -23,7 +23,7 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
+from airbyte_cdk.sources.declarative.incremental import CursorFactory, DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
@@ -495,10 +495,6 @@ class ModelToComponentFactory:
         )
 
     def _merge_stream_slicers(self, model: DeclarativeStreamModel, config: Config) -> Optional[StreamSlicer]:
-        incremental_sync = (
-            self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
-        )
-
         stream_slicer = None
         if hasattr(model.retriever, "partition_router") and model.retriever.partition_router:
             stream_slicer_model = model.retriever.partition_router
@@ -510,10 +506,15 @@ class ModelToComponentFactory:
                 else self._create_component_from_model(model=stream_slicer_model, config=config)
             )
 
-        if incremental_sync and stream_slicer:
-            return CartesianProductStreamSlicer(stream_slicers=[incremental_sync, stream_slicer], parameters=model.parameters)
-        elif incremental_sync:
-            return incremental_sync
+        if model.incremental_sync and stream_slicer:
+            return PerPartitionCursor(
+                cursor_factory=CursorFactory(
+                    lambda: self._create_component_from_model(model=model.incremental_sync, config=config),
+                ),
+                partition_router=stream_slicer,
+            )
+        elif model.incremental_sync:
+            return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
         elif stream_slicer:
             return stream_slicer
         else:
