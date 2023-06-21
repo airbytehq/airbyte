@@ -143,7 +143,7 @@ class TestBackoff:
         stream = AdAccount(api=api)
         accounts = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
 
-        assert accounts == [account_data]
+        assert accounts == [{**account_data, **stream.deprecated_fields}]
 
     def test_limit_error_retry(self, fb_call_amount_data_response, requests_mock, api, account_id):
         """Error every time, check limit parameter decreases by 2 times every new call"""
