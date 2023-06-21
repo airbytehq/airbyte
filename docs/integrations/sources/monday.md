@@ -57,7 +57,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
-| 0.2.7   | 2023-06-20 | [27410](https://github.com/airbytehq/airbyte/pull/27410) | Add new streams: Tags, Workspaces. Add new fields for existing streams. |
+| 1.0.0   | 2023-06-20 | [27410](https://github.com/airbytehq/airbyte/pull/27410) | Add new streams: Tags, Workspaces. Add new fields for existing streams. |
 | 0.2.6   | 2023-06-12 | [27244](https://github.com/airbytehq/airbyte/pull/27244) | Added http error handling for `403` and `500` HTTP errors               |  
 | 0.2.5   | 2023-05-22 | [225881](https://github.com/airbytehq/airbyte/pull/25881) | Fix pagination for the items stream                                     |  
 | 0.2.4   | 2023-04-26 | [25277](https://github.com/airbytehq/airbyte/pull/25277) | Increase row limit to 100                                               |
