@@ -25,6 +25,7 @@ import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableResult;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
@@ -386,7 +387,6 @@ public class BigQuerySqlGeneratorIntegrationTest {
     final String sql = GENERATOR.commitRawTable(streamId);
     logAndExecute(sql);
 
-    // TODO more stringent asserts
     final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
         "SELECT * FROM " + streamId.rawTableId(QUOTE) + " WHERE _airbyte_loaded_at IS NULL").build()).getTotalRows();
     assertEquals(0, rawUntypedRows);
@@ -411,9 +411,92 @@ public class BigQuerySqlGeneratorIntegrationTest {
     final String sql = GENERATOR.updateTable("_foo", incrementalDedupStreamConfig());
     logAndExecute(sql);
 
-    // TODO assert which columns have errors
-    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("_foo", QUOTE)).build()).getTotalRows();
-    assertEquals(4, finalRows);
+    final TableResult finalTable = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId("_foo", QUOTE)).build());
+    assertQueryResult(
+        List.of(
+            new ImmutableMap.Builder<String, Optional<Object>>()
+                .put("id", Optional.of(1L))
+                .put("updated_at", Optional.of(Instant.parse("2023-01-01T02:00:00Z")))
+                .put("array", Optional.of(Jsons.deserialize(
+                    """
+                        ["foo"]
+                        """)))
+                .put("struct", Optional.of(Jsons.deserialize(
+                    """
+                        {"foo": "bar"}
+                        """)))
+                .put("string", Optional.of("foo"))
+                .put("number", Optional.of(42.1))
+                .put("integer", Optional.of(42L))
+                .put("boolean", Optional.of(true))
+                .put("timestamp_with_timezone", Optional.of(Instant.parse("2023-01-23T12:34:56Z")))
+                .put("_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")))
+                .put("_airbyte_meta", Optional.of(Jsons.deserialize(
+                    """
+                    {"errors":[]}
+                    """)))
+                .build(),
+            new ImmutableMap.Builder<String, Optional<Object>>()
+                .put("id", Optional.of(2L))
+                .put("updated_at", Optional.of(Instant.parse("2023-01-01T02:00:00Z")))
+                .put("array", Optional.of(Jsons.deserialize("null")))
+                .put("struct", Optional.of(Jsons.deserialize("null")))
+                .put("string", Optional.empty())
+                .put("number", Optional.empty())
+                .put("integer", Optional.empty())
+                .put("boolean", Optional.empty())
+                .put("timestamp_with_timezone", Optional.empty())
+                .put("_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")))
+                .put("_airbyte_meta", Optional.of(Jsons.deserialize(
+                    """
+                    {"errors":[]}
+                    """)))
+                .build(),
+            new ImmutableMap.Builder<String, Optional<Object>>()
+                .put("id", Optional.of(3L))
+                .put("updated_at", Optional.of(Instant.parse("2023-01-01T02:00:00Z")))
+                .put("array", Optional.empty())
+                .put("struct", Optional.empty())
+                .put("string", Optional.empty())
+                .put("number", Optional.empty())
+                .put("integer", Optional.empty())
+                .put("boolean", Optional.empty())
+                .put("timestamp_with_timezone", Optional.empty())
+                .put("_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")))
+                .put("_airbyte_meta", Optional.of(Jsons.deserialize(
+                    """
+                    {"errors":[]}
+                    """)))
+                .build(),
+            new ImmutableMap.Builder<String, Optional<Object>>()
+                .put("id", Optional.of(4L))
+                .put("updated_at", Optional.of(Instant.parse("2023-01-01T02:00:00Z")))
+                .put("array", Optional.empty())
+                .put("struct", Optional.empty())
+                .put("string", Optional.empty())
+                .put("number", Optional.empty())
+                .put("integer", Optional.empty())
+                .put("boolean", Optional.empty())
+                .put("timestamp_with_timezone", Optional.empty())
+                .put("_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")))
+                .put("_airbyte_meta", Optional.of(Jsons.deserialize(
+                    """
+                    {"errors":[
+                      "Problem with `string`",
+                      "Problem with `number`",
+                      "Problem with `integer`",
+                      "Problem with `boolean`",
+                      "Problem with `timestamp_with_timezone`",
+                      "Problem with `timestamp_without_timezone`",
+                      "Problem with `time_with_timezone`",
+                      "Problem with `time_without_timezone`",
+                      "Problem with `date`"
+                    ]}
+                    """)))
+                .build()
+        ),
+        finalTable);
+
     final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
     assertEquals(4, rawRows);
     final long rawUntypedRows = bq.query(QueryJobConfiguration.newBuilder(
