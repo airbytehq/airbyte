@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.source.postgres.xmin.XminStateManager.XMIN_STATE_VERSION;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -95,21 +96,24 @@ public class PostgresQueryUtils {
         .withNumWraparound(result.get(NUM_WRAPAROUND_COL).asLong())
         .withXminXidValue(result.get(XMIN_XID_VALUE_COL).asLong())
         .withXminRawValue(result.get(XMIN_RAW_VALUE_COL).asLong())
-        .withVersion(2L)
+        .withVersion(XMIN_STATE_VERSION)
         .withStateType(StateType.XMIN);
   }
 
-  public static Map<AirbyteStreamNameNamespacePair, Long> fileNode(final JdbcDatabase database, final List<ConfiguredAirbyteStream> streams, final String quoteString) {
+  static Map<AirbyteStreamNameNamespacePair, Long> fileNodeForStreams(final JdbcDatabase database,
+                                                                      final List<ConfiguredAirbyteStream> streams,
+                                                                      final String quoteString) {
     final Map<AirbyteStreamNameNamespacePair, Long> fileNodes = new HashMap<>();
     streams.forEach(stream -> {
-      final AirbyteStreamNameNamespacePair namespacePair = new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-      final long l = fileNode(database, namespacePair, quoteString);
+      final AirbyteStreamNameNamespacePair namespacePair =
+          new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+      final long l = fileNodeForStreams(database, namespacePair, quoteString);
       fileNodes.put(namespacePair, l);
     });
     return fileNodes;
   }
 
-  public static long fileNode(final JdbcDatabase database, final AirbyteStreamNameNamespacePair stream, final String quoteString) {
+  public static long fileNodeForStreams(final JdbcDatabase database, final AirbyteStreamNameNamespacePair stream, final String quoteString) {
     try {
       final String streamName = stream.getName();
       final String schemaName = stream.getNamespace();
@@ -127,8 +131,10 @@ public class PostgresQueryUtils {
     }
   }
 
-  public static boolean willVacuumingCauseIssue(final JdbcDatabase database, final List<ConfiguredAirbyteStream> streams, final String quoteString) {
-    final List<String> streamsUnderVacuuming = new ArrayList<>();
+  public static List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> streamsUnderVacuum(final JdbcDatabase database,
+                                                                                                      final List<ConfiguredAirbyteStream> streams,
+                                                                                                      final String quoteString) {
+    final List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> streamsUnderVacuuming = new ArrayList<>();
     streams.forEach(stream -> {
       final String streamName = stream.getStream().getName();
       final String schemaName = stream.getStream().getNamespace();
@@ -140,15 +146,16 @@ public class PostgresQueryUtils {
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
         if (jsonNodes.size() != 0) {
           Preconditions.checkState(jsonNodes.size() == 1);
-          LOGGER.warn("Full Vacuum currently in progress for table {} in {} phase", fullTableName, jsonNodes.get(0).get("phase"));
-          streamsUnderVacuuming.add(fullTableName);
+          LOGGER.warn("Full Vacuum currently in progress for table {} in {} phase, the table will be skipped from syncing data", fullTableName,
+              jsonNodes.get(0).get("phase"));
+          streamsUnderVacuuming.add(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream));
         }
       } catch (SQLException e) {
         // Assume it's safe to progress and skip relation node and vaccuum validation
         LOGGER.warn("Failed to fetch vacuum for table {} info. Going to move ahead with the sync assuming it's safe", fullTableName, e);
       }
     });
-    return !streamsUnderVacuuming.isEmpty();
+    return streamsUnderVacuuming;
   }
 
 }

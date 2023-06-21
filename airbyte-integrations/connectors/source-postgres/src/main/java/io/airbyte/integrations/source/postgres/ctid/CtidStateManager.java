@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.ctid;
 
 import io.airbyte.commons.exceptions.ConfigErrorException;
@@ -5,12 +9,12 @@ import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.Jsons;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CtidStateManager {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(CtidStateManager.class);
   public static final long CTID_STATUS_VERSION = 2;
   private final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus;
@@ -31,7 +36,7 @@ public class CtidStateManager {
   }
 
   private static Map<AirbyteStreamNameNamespacePair, CtidStatus> createPairToCtidStatusMap(final List<AirbyteStateMessage> stateMessages,
-      final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
+                                                                                           final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
     final Map<AirbyteStreamNameNamespacePair, CtidStatus> localMap = new HashMap<>();
     if (stateMessages != null) {
       for (final AirbyteStateMessage stateMessage : stateMessages) {
@@ -49,6 +54,10 @@ public class CtidStateManager {
           }
           if (validateRelationFileNode(ctidStatus, pair, fileNodes)) {
             localMap.put(pair, ctidStatus);
+          } else {
+            LOGGER.warn(
+                "The relation file node for table in source db {} is not equal to the saved ctid state, a full sync from scratch will be triggered.",
+                pair);
           }
         }
       }
@@ -56,7 +65,9 @@ public class CtidStateManager {
     return localMap;
   }
 
-  private static boolean validateRelationFileNode(final CtidStatus ctidstatus, final AirbyteStreamNameNamespacePair pair, final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
+  private static boolean validateRelationFileNode(final CtidStatus ctidstatus,
+                                                  final AirbyteStreamNameNamespacePair pair,
+                                                  final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
     if (fileNodes.containsKey(pair)) {
       final Long fileNode = fileNodes.get(pair);
       return Objects.equals(ctidstatus.getRelationFilenode(), fileNode);
@@ -68,7 +79,7 @@ public class CtidStateManager {
     return pairToCtidStatus.get(pair);
   }
 
-  //TODO : We will need a similar method to generate a GLOBAL state message for CDC
+  // TODO : We will need a similar method to generate a GLOBAL state message for CDC
   public static AirbyteMessage createPerStreamStateMessage(final AirbyteStreamNameNamespacePair pair, final CtidStatus ctidStatus) {
     final AirbyteStreamState airbyteStreamState =
         new AirbyteStreamState()
@@ -87,4 +98,5 @@ public class CtidStateManager {
         .withType(Type.STATE)
         .withState(stateMessage);
   }
+
 }

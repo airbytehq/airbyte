@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 public class XminStateManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(XminStateManager.class);
+  public static final long XMIN_STATE_VERSION = 2L;
 
   private final Map<AirbyteStreamNameNamespacePair, XminStatus> pairToXminStatus;
 
