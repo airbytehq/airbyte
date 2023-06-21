@@ -1291,7 +1291,7 @@ multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_time
 
 multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps_scenario = (
     TestScenarioBuilder()
-    .set_name("multi_csv_sync_recent_files_if_history_is_incomplete__different_timestamps")
+    .set_name("multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps")
     .set_config(
         {
             "streams": [
