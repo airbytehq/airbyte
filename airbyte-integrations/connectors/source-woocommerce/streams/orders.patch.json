@@ -1,13 +1,19 @@
 {
-  "properties": {
-    "tax_lines": {
-      "items": {
-        "properties": {
-          "rate_id": {
-            "type": ["null", "integer"]
-          }
-        }
-      }
-    }
-  }
+	"properties": {
+		"fee_lines": {
+			"items": {
+				"properties": {
+					"taxes": {
+						"items": {
+							"properties": {
+								"rate_id": {
+									"type": ["null", "integer"]
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
