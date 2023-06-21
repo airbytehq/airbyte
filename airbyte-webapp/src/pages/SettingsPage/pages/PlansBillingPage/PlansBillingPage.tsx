@@ -18,6 +18,7 @@ import { RoutePaths } from "pages/routePaths";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 import { useUserPlanDetail, useAsyncAction } from "services/payments/PaymentsService";
 
+import { useHealth } from "../../../../hooks/services/Health";
 import { PlanClause } from "./components/PlanClause";
 import styles from "./style.module.scss";
 
@@ -53,6 +54,8 @@ const PlansBillingPage: React.FC = () => {
   const { user, updateUserStatus } = useUser();
   const { onPauseSubscription } = useAsyncAction();
   const authService = useAuthenticationService();
+  const { healthData } = useHealth();
+  const { isUpdatePaymentMethod } = healthData;
   const userPlanDetail = useUserPlanDetail();
   const prevUserPlanDetail = usePrevious(userPlanDetail);
 
@@ -91,6 +94,8 @@ const PlansBillingPage: React.FC = () => {
   }, []);
 
   const upgradePlan = () => push(`/${RoutePaths.Payment}`);
+
+  const onFailedPaymentPage = () => push(`/${RoutePaths.FailedPayment}`);
 
   const manipulatePlanDetail = (planItem: PlanItem): string | React.ReactElement => {
     if (planItem.planItemType === PlanItemTypeEnum.Features) {
@@ -190,11 +195,19 @@ const PlansBillingPage: React.FC = () => {
             </CancelSubscriptionBtn>
           )}
           <ButtonSeparator />
-          <Button size="xl" onClick={upgradePlan}>
-            <BtnText>
-              <FormattedMessage id="plan.upgrade.btn" />
-            </BtnText>
-          </Button>
+          {isUpdatePaymentMethod ? (
+            <Button size="xl" onClick={onFailedPaymentPage}>
+              <BtnText>
+                <FormattedMessage id="update.payment.button" />
+              </BtnText>
+            </Button>
+          ) : (
+            <Button size="xl" onClick={upgradePlan}>
+              <BtnText>
+                <FormattedMessage id="plan.upgrade.btn" />
+              </BtnText>
+            </Button>
+          )}
         </div>
       </div>
     </>
