@@ -6,7 +6,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
-  dockerImageTag: 1.0.18
+  dockerImageTag: 1.0.19
   dockerRepository: airbyte/source-mssql
   githubIssueLabel: source-mssql
   icon: mssql.svg
