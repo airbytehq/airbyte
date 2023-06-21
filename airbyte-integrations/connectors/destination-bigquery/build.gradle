@@ -23,6 +23,7 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java-s3')
+    implementation project(':airbyte-integrations:bases:base-typing-deduping')
     implementation project(':airbyte-integrations:connectors:destination-gcs')
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
@@ -60,9 +61,3 @@ test {
         // 'junit.jupiter.execution.parallel.mode.default': 'concurrent'
     ]
 }
-
-
-
-
-
-

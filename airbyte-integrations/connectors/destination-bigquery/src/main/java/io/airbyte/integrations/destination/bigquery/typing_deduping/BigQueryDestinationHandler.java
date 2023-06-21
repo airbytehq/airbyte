@@ -9,14 +9,15 @@ import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.StreamId;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // TODO this stuff almost definitely exists somewhere else in our codebase.
-public class BigQueryDestinationHandler implements DestinationHandler<TableDefinition> {
+public class BigQueryDestinationHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationHandler.class);
 
@@ -26,7 +27,6 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
     this.bq = bq;
   }
 
-  @Override
   public Optional<TableDefinition> findExistingTable(StreamId id) {
     final Table table = bq.getTable(id.finalNamespace(), id.finalName());
     return Optional.ofNullable(table).map(Table::getDefinition);
@@ -36,7 +36,6 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
     return bq.getTable(TableId.of(id.finalNamespace(), id.finalName()));
   }
 
-  @Override
   public void execute(final String sql) throws InterruptedException {
     if ("".equals(sql)) {
       return;

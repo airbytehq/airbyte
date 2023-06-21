@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.bigquery.typing_deduping;
+package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -11,9 +11,9 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedCatalog;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.ColumnId;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.ColumnId;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.StreamId;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;

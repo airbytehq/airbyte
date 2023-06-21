@@ -31,9 +31,9 @@ import io.airbyte.integrations.destination.bigquery.formatter.GcsAvroBigQueryRec
 import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQueryDestinationHandler;
 import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlGenerator;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.CatalogParser.ParsedCatalog;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.SqlGenerator.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
+import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator.StreamId;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;

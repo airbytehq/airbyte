@@ -2,16 +2,16 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.bigquery.typing_deduping;
+package io.airbyte.integrations.base.destination.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.AirbyteProtocolType;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Array;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.OneOf;
-import io.airbyte.integrations.destination.bigquery.typing_deduping.AirbyteType.Struct;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.OneOf;
+import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Struct;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -109,7 +109,7 @@ public class AirbyteTypeUtils {
   }
 
   // Pick which type in a OneOf has precedence
-  protected static AirbyteType chooseOneOfType(final OneOf o) {
+  public static AirbyteType chooseOneOfType(final OneOf o) {
     final List<AirbyteType> options = o.options();
 
     // record what types are present
