@@ -5,10 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import static com.google.cloud.bigquery.LegacySQLTypeName.legacySQLTypeName;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -25,6 +22,7 @@ import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableResult;
+import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
@@ -38,20 +36,15 @@ import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
+
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.AfterEach;
@@ -400,11 +393,11 @@ public class BigQuerySqlGeneratorIntegrationTest {
         new StringSubstitutor(Map.of(
             "dataset", testDataset)).replace(
                 """
-                INSERT INTO ${dataset}.users_raw (`_airbyte_data`, `_airbyte_raw_id`, `_airbyte_extracted_at`) VALUES
-                  (JSON'{"id": 1, "updated_at": "2023-01-01T01:00:00Z", "array": ["foo"], "struct": {"foo": "bar"}, "string": "foo", "number": 42.1, "integer": 42, "boolean": true, "timestamp_with_timezone": "2023-01-23T12:34:56Z", "timestamp_without_timezone": "2023-01-23T12:34:56", "time_with_timezone": "12:34:56Z", "time_without_timezone": "12:34:56", "date": "2023-01-23", "unknown": {}}', generate_uuid(), '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 2, "updated_at": "2023-01-01T01:00:00Z", "array": null, "struct": null, "string": null, "number": null, "integer": null, "boolean": null, "timestamp_with_timezone": null, "timestamp_without_timezone": null, "time_with_timezone": null, "time_without_timezone": null, "date": null, "unknown": null}', generate_uuid(), '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 3, "updated_at": "2023-01-01T01:00:00Z"}', generate_uuid(), '2023-01-01T00:00:00Z'),
-                  (JSON'{"id": 4, "updated_at": "2023-01-01T01:00:00Z", "array": {}, "struct": [], "string": {}, "number": {}, "integer": {}, "boolean": {}, "timestamp_with_timezone": {}, "timestamp_without_timezone": {}, "time_with_timezone": {}, "time_without_timezone": {}, "date": {}, "unknown": null}', generate_uuid(), '2023-01-01T00:00:00Z');
+                INSERT INTO ${dataset}.users_raw (`_airbyte_raw_id`, `_airbyte_extracted_at`, `_airbyte_data`) VALUES
+                  (generate_uuid(), '2023-01-01T00:00:00Z', JSON'{"id": 1, "updated_at": "2023-01-01T01:00:00Z", "array": ["foo"], "struct": {"foo": "bar"}, "string": "foo", "number": 42.1, "integer": 42, "boolean": true, "timestamp_with_timezone": "2023-01-23T12:34:56Z", "timestamp_without_timezone": "2023-01-23T12:34:56", "time_with_timezone": "12:34:56Z", "time_without_timezone": "12:34:56", "date": "2023-01-23", "unknown": {}}'),
+                  (generate_uuid(), '2023-01-01T00:00:00Z', JSON'{"id": 2, "updated_at": "2023-01-01T01:00:00Z", "array": null, "struct": null, "string": null, "number": null, "integer": null, "boolean": null, "timestamp_with_timezone": null, "timestamp_without_timezone": null, "time_with_timezone": null, "time_without_timezone": null, "date": null, "unknown": null}'),
+                  (generate_uuid(), '2023-01-01T00:00:00Z', JSON'{"id": 3, "updated_at": "2023-01-01T01:00:00Z"}'),
+                  (generate_uuid(), '2023-01-01T00:00:00Z', JSON'{"id": 4, "updated_at": "2023-01-01T01:00:00Z", "array": {}, "struct": [], "string": {}, "number": {}, "integer": {}, "boolean": {}, "timestamp_with_timezone": {}, "timestamp_without_timezone": {}, "time_with_timezone": {}, "time_without_timezone": {}, "date": {}, "unknown": null}');
                 """))
         .build());
 
@@ -416,7 +409,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
         List.of(
             new ImmutableMap.Builder<String, Optional<Object>>()
                 .put("id", Optional.of(1L))
-                .put("updated_at", Optional.of(Instant.parse("2023-01-01T02:00:00Z")))
+                .put("updated_at", Optional.of(Instant.parse("2023-01-01T01:00:00Z")))
                 .put("array", Optional.of(Jsons.deserialize(
                     """
                     ["foo"]
@@ -426,10 +419,14 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     {"foo": "bar"}
                     """)))
                 .put("string", Optional.of("foo"))
-                .put("number", Optional.of(42.1))
+                .put("number", Optional.of(new BigDecimal("42.1")))
                 .put("integer", Optional.of(42L))
                 .put("boolean", Optional.of(true))
                 .put("timestamp_with_timezone", Optional.of(Instant.parse("2023-01-23T12:34:56Z")))
+                .put("timestamp_without_timezone", Optional.of("2023-01-23T12:34:56"))
+                .put("time_with_timezone", Optional.of("12:34:56Z"))
+                .put("time_without_timezone", Optional.of("12:34:56"))
+                .put("date", Optional.of("2023-01-23"))
                 .put("_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")))
                 .put("_airbyte_meta", Optional.of(Jsons.deserialize(
                     """
@@ -438,7 +435,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 .build(),
             new ImmutableMap.Builder<String, Optional<Object>>()
                 .put("id", Optional.of(2L))
-                .put("updated_at", Optional.of(Instant.parse("2023-01-01T02:00:00Z")))
+                .put("updated_at", Optional.of(Instant.parse("2023-01-01T01:00:00Z")))
                 .put("array", Optional.of(Jsons.deserialize("null")))
                 .put("struct", Optional.of(Jsons.deserialize("null")))
                 .put("string", Optional.empty())
@@ -446,6 +443,10 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 .put("integer", Optional.empty())
                 .put("boolean", Optional.empty())
                 .put("timestamp_with_timezone", Optional.empty())
+                .put("timestamp_without_timezone", Optional.empty())
+                .put("time_with_timezone", Optional.empty())
+                .put("time_without_timezone", Optional.empty())
+                .put("date", Optional.empty())
                 .put("_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")))
                 .put("_airbyte_meta", Optional.of(Jsons.deserialize(
                     """
@@ -454,7 +455,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 .build(),
             new ImmutableMap.Builder<String, Optional<Object>>()
                 .put("id", Optional.of(3L))
-                .put("updated_at", Optional.of(Instant.parse("2023-01-01T02:00:00Z")))
+                .put("updated_at", Optional.of(Instant.parse("2023-01-01T01:00:00Z")))
                 .put("array", Optional.empty())
                 .put("struct", Optional.empty())
                 .put("string", Optional.empty())
@@ -462,6 +463,10 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 .put("integer", Optional.empty())
                 .put("boolean", Optional.empty())
                 .put("timestamp_with_timezone", Optional.empty())
+                .put("timestamp_without_timezone", Optional.empty())
+                .put("time_with_timezone", Optional.empty())
+                .put("time_without_timezone", Optional.empty())
+                .put("date", Optional.empty())
                 .put("_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")))
                 .put("_airbyte_meta", Optional.of(Jsons.deserialize(
                     """
@@ -470,7 +475,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 .build(),
             new ImmutableMap.Builder<String, Optional<Object>>()
                 .put("id", Optional.of(4L))
-                .put("updated_at", Optional.of(Instant.parse("2023-01-01T02:00:00Z")))
+                .put("updated_at", Optional.of(Instant.parse("2023-01-01T01:00:00Z")))
                 .put("array", Optional.empty())
                 .put("struct", Optional.empty())
                 .put("string", Optional.empty())
@@ -478,6 +483,10 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 .put("integer", Optional.empty())
                 .put("boolean", Optional.empty())
                 .put("timestamp_with_timezone", Optional.empty())
+                .put("timestamp_without_timezone", Optional.empty())
+                .put("time_with_timezone", Optional.empty())
+                .put("time_without_timezone", Optional.empty())
+                .put("date", Optional.empty())
                 .put("_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")))
                 .put("_airbyte_meta", Optional.of(Jsons.deserialize(
                     """
@@ -915,7 +924,6 @@ public class BigQuerySqlGeneratorIntegrationTest {
 
   private void assertQueryResult(final List<Map<String, Optional<Object>>> expectedRows, final TableResult result) {
     List<Map<String, Object>> actualRows = result.streamAll().map(row -> toMap(result.getSchema(), row)).toList();
-    LOGGER.info("Got rows: {}", actualRows);
     List<Map<String, Optional<Object>>> missingRows = new ArrayList<>();
     Set<Map<String, Object>> matchedRows = new HashSet<>();
     boolean foundMultiMatch = false;
@@ -962,8 +970,17 @@ public class BigQuerySqlGeneratorIntegrationTest {
     }
     if (!missingRows.isEmpty()) {
       success = false;
+
+      // Blindly sort on all the interesting columns. This is kind of hacky, but it guarantees that we'll get the output in a nice order.
+      // Intellij is complaining that all of these might be null... but ComparisonChain can handle that just fine?
+      missingRows.sort((row1, row2) -> ComparisonChain.start()
+          .compare((Comparable<?>) row1.getOrDefault(ID_COLUMN.name(), Optional.empty()).orElse(null), (Comparable<?>) row2.getOrDefault(ID_COLUMN.name(), Optional.empty()).orElse(null))
+          .compare((Comparable<?>) row1.getOrDefault(CURSOR.name(), Optional.empty()).orElse(null), (Comparable<?>) row2.getOrDefault(CURSOR.name(), Optional.empty()).orElse(null))
+          .compare((Comparable<?>) row1.getOrDefault(CDC_CURSOR.name(), Optional.empty()).orElse(null), (Comparable<?>) row2.getOrDefault(CDC_CURSOR.name(), Optional.empty()).orElse(null))
+          .result());
+
       final String missingRowsRendered = missingRows.stream()
-          .map(Object::toString)
+          .map(row -> sortedToString(row, value -> value.orElse(null)))
           .collect(Collectors.joining("\n"));
       errorMessage += "There were %d rows missing from the actual table:\n%s\n".formatted(missingRows.size(), missingRowsRendered);
     }
@@ -971,13 +988,33 @@ public class BigQuerySqlGeneratorIntegrationTest {
       success = false;
       final String extraRowsRendered = actualRows.stream()
           .filter(row -> !matchedRows.contains(row))
-          .map(Object::toString)
+          // Same as the previous branch - there's no guarantee that all of these columns actually exist, but we'll blindly sort on them anyway.
+          .sorted((row1, row2) -> ComparisonChain.start()
+              .compare((Comparable<?>) row1.get(ID_COLUMN.name()), (Comparable<?>) row2.get(ID_COLUMN.name()))
+              .compare((Comparable<?>) row1.get(CURSOR.name()), (Comparable<?>) row2.get(CURSOR.name()))
+              .compare((Comparable<?>) row1.get(CDC_CURSOR.name()), (Comparable<?>) row2.get(CDC_CURSOR.name()))
+              .result())
+          .map(BigQuerySqlGeneratorIntegrationTest::sortedToString)
           .collect(Collectors.joining("\n"));
       errorMessage += "The actual table contained %d rows which were not expected:\n%s\n".formatted(
           actualRows.size() - matchedRows.size(),
           extraRowsRendered);
     }
-    assertTrue(success, errorMessage);
+    if (!success) {
+      fail(errorMessage);
+    }
   }
 
+  private static String sortedToString(Map<String, Object> record) {
+    return sortedToString(record, Function.identity());
+  }
+
+  private static <T> String sortedToString(Map<String, T> record, Function<T, ?> valueMapper) {
+    return "{"
+        + record.entrySet().stream()
+        .sorted(Entry.comparingByKey())
+        .map(entry -> entry.getKey() + "=" + valueMapper.apply(entry.getValue()))
+        .collect(Collectors.joining(", "))
+        + "}";
+  }
 }
