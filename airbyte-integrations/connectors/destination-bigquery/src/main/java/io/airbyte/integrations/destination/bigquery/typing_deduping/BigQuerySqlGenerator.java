@@ -11,8 +11,6 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
-import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
-import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.OneOf;
@@ -20,6 +18,8 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Stru
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.UnsupportedOneOf;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteTypeUtils;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser.StreamConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
+import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.LinkedHashMap;
 import java.util.List;
