@@ -33,6 +33,9 @@ class FBMarketingStream(Stream, ABC):
 
     primary_key = "id"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    # field-value map to stay compatible with previos versions. these fields should not be queried from facebook,
+    # instead they should be filled in with the default values
+    deprecated_fields = {}
 
     # use batch API to retrieve details for each record in a stream
     use_batch = True
@@ -55,7 +58,7 @@ class FBMarketingStream(Stream, ABC):
     @cached_property
     def fields(self) -> List[str]:
         """List of fields that we want to query, for now just all properties from stream's schema"""
-        return list(self.get_json_schema().get("properties", {}).keys())
+        return [key for key in self.get_json_schema().get("properties", {}).keys() if key not in self.deprecated_fields]
 
     def _execute_batch(self, batch: FacebookAdsApiBatch) -> None:
         """Execute batch, retry in case of failures"""
@@ -112,9 +115,9 @@ class FBMarketingStream(Stream, ABC):
 
         for record in loaded_records_iter:
             if isinstance(record, AbstractObject):
-                yield record.export_all_data()  # convert FB object to dict
-            else:
-                yield record  # execute_in_batch will emmit dicts
+                record = record.export_all_data()  # convert FB object to dict
+            record.update(self.deprecated_fields)
+            yield record
 
     @abstractmethod
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
