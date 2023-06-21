@@ -1,0 +1,99 @@
+{
+      "type": ["null", "object"],
+      "properties": {
+        "flight": {
+          "type": ["null", "object"],
+          "properties": {
+            "departure_at": {
+              "type": ["null", "integer"]
+            },
+            "passenger_name": {
+              "type": ["null", "string"]
+            },
+            "refundable": {
+              "type": ["null", "boolean"]
+            },
+            "segments": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "arrival_airport_code": {
+                    "type": ["null", "string"]
+                  },
+                  "carrier": {
+                    "type": ["null", "string"]
+                  },
+                  "departure_airport_code": {
+                    "type": ["null", "string"]
+                  },
+                  "flight_number": {
+                    "type": ["null", "string"]
+                  },
+                  "service_class": {
+                    "type": ["null", "string"]
+                  },
+                  "stopover_allowed": {
+                    "type": ["null", "boolean"]
+                  }
+                }
+              }
+            }
+          },
+          "travel_agency": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "fuel": {
+        "type": ["null", "object"],
+        "properties": {
+          "type": {
+            "type": ["null", "string"]
+          },
+          "unit": {
+            "type": ["null", "string"]
+          },
+          "unit_cost_decimal": {
+            "type": ["null", "string"]
+          },
+          "volume_decimal": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "lodging": {
+        "type": ["null", "object"],
+        "properties": {
+          "check_in_at": {
+            "type": ["null", "integer"]
+          },
+          "nights": {
+            "type": ["null", "integer"]
+          }
+        }
+      },
+      "receipt": {
+        "items": {
+          "type": ["null", "object"],
+          "properties": {
+            "description": {
+              "type": ["null", "string"]
+            },
+            "quantity": {
+              "type": ["null", "number"]
+            },
+            "total": {
+              "type": ["null", "integer"]
+            },
+            "unit_cost": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "type": ["null", "array"]
+      },
+      "reference": {
+        "type": ["null", "string"]
+      }
+    }
