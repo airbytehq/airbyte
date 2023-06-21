@@ -19,7 +19,6 @@ class DatetimeFormatInferrer:
         self._formats = [
             "%Y-%m-%d",
             "%Y-%m-%d %H:%M:%S",
-            "%Y-%m-%d %H:%M:%S.%f+00:00",
             "%Y-%m-%dT%H:%M:%S.%f%z",
             "%s",
             "%d/%m/%Y %H:%M",
