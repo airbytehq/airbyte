@@ -583,6 +583,7 @@ class Transfers(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/transfers/list
     """
+
     use_cache = True
     cursor_field = "created"
 
