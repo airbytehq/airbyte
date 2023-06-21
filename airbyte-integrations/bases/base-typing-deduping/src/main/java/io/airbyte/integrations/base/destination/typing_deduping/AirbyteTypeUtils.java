@@ -139,7 +139,7 @@ public class AirbyteTypeUtils {
           boolean foundExcludedTypes = false;
           final List<AirbyteProtocolType> excludedTypes = EXCLUDED_PROTOCOL_TYPES_MAP.getOrDefault(protocolType, Collections.emptyList());
           for (final AirbyteProtocolType excludedType : excludedTypes) {
-            if (typePresenceMap.get(excludedType)) {
+            if (typePresenceMap.getOrDefault(excludedType, false)) {
               foundExcludedTypes = true;
               break;
             }

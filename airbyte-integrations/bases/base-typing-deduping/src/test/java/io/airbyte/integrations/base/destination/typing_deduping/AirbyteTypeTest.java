@@ -6,6 +6,8 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
@@ -164,6 +166,36 @@ public class AirbyteTypeTest {
                                      }
                                      """;
     assertEquals(AirbyteProtocolType.UNKNOWN, AirbyteType.fromJsonSchema(Jsons.deserialize(invalidTypeSchema)));
+  }
+
+  @Test
+  public void testChooseOneOf() {
+    // test ordering
+
+    OneOf o = new OneOf(ImmutableList.of(AirbyteProtocolType.STRING, AirbyteProtocolType.DATE));
+    assertEquals(AirbyteProtocolType.DATE, AirbyteTypeUtils.chooseOneOfType(o));
+
+    final Array a = new Array(AirbyteProtocolType.TIME_WITH_TIMEZONE);
+    o = new OneOf(ImmutableList.of(AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE, a));
+    assertEquals(a, AirbyteTypeUtils.chooseOneOfType(o));
+
+    final LinkedHashMap<String, AirbyteType> properties = new LinkedHashMap<>();
+    properties.put("key1", AirbyteProtocolType.UNKNOWN);
+    properties.put("key2", AirbyteProtocolType.TIME_WITHOUT_TIMEZONE);
+    final Struct s = new Struct(properties);
+    o = new OneOf(ImmutableList.of(AirbyteProtocolType.TIMESTAMP_WITHOUT_TIMEZONE, s));
+    assertEquals(s, AirbyteTypeUtils.chooseOneOfType(o));
+
+    // test exclusion
+
+    o = new OneOf(ImmutableList.of(AirbyteProtocolType.BOOLEAN, AirbyteProtocolType.INTEGER));
+    assertEquals(AirbyteProtocolType.INTEGER, AirbyteTypeUtils.chooseOneOfType(o));
+
+    o = new OneOf(ImmutableList.of(AirbyteProtocolType.INTEGER, AirbyteProtocolType.NUMBER, AirbyteProtocolType.DATE));
+    assertEquals(AirbyteProtocolType.NUMBER, AirbyteTypeUtils.chooseOneOfType(o));
+
+    o = new OneOf(ImmutableList.of(AirbyteProtocolType.BOOLEAN, AirbyteProtocolType.NUMBER, AirbyteProtocolType.STRING));
+    assertEquals(AirbyteProtocolType.STRING, AirbyteTypeUtils.chooseOneOfType(o));
   }
 
 }
