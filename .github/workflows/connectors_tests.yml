@@ -30,18 +30,18 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
         id: extract_branch
-      - name: Format connectors [PULL REQUESTS]
-        if: github.event_name == 'pull_request'
-        uses: ./.github/actions/run-dagger-pipeline
-        with:
-          context: "pull_request"
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          git_branch: ${{ github.head_ref }}
-          git_revision: ${{ github.sha }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          subcommand: "connectors --modified format"
+#      - name: Format connectors [PULL REQUESTS]
+#        if: github.event_name == 'pull_request'
+#        uses: ./.github/actions/run-dagger-pipeline
+#        with:
+#          context: "pull_request"
+#          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+#          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+#          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+#          git_branch: ${{ github.head_ref }}
+#          git_revision: ${{ github.sha }}
+#          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+#          subcommand: "connectors --modified format"
       - name: Fetch last commit id from remote branch [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         id: fetch_last_commit_id_pr
