@@ -97,7 +97,7 @@ class PullConnectorImageFromRegistry(Step):
                 raise Exception(f"Failed to inspect {self.context.docker_image_name}: {inspect_stderr}")
             try:
                 for layer in json.loads(inspect_stdout)["layers"]:
-                    if not layer["mediaType"].endswith(".gzip"):
+                    if not layer["mediaType"].endswith("gzip"):
                         return False
                 return True
             except (KeyError, json.JSONDecodeError) as e:
