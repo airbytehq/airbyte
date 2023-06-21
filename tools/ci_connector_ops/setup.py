@@ -53,6 +53,7 @@ PIPELINES_REQUIREMENTS = [
     "semver",
     "airbyte-protocol-models",
     "tabulate",
+    "jinja2",
 ]
 
 setup(
@@ -70,7 +71,7 @@ setup(
         "qa_engine": MAIN_REQUIREMENTS + QA_ENGINE_REQUIREMENTS,
     },
     # python_requires=">=3.10", TODO upgrade all our CI packages + GHA env to 3.10
-    package_data={"ci_connector_ops.qa_engine": ["connector_adoption.sql"]},
+    package_data={"ci_connector_ops.qa_engine": ["connector_adoption.sql"], "ci_connector_ops.pipelines.tests": ["templates/*.j2"]},
     entry_points={
         "console_scripts": [
             "check-test-strictness-level = ci_connector_ops.acceptance_test_config_checks:check_test_strictness_level",
