@@ -1,0 +1,8 @@
+{
+    "type": ["null", "array"],
+    "items": {
+        "rate_id": {
+          "type": ["null", "integer"]
+        }
+    }
+}
