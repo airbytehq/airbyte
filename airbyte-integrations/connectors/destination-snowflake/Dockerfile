@@ -19,7 +19,8 @@ FROM airbyte/integration-base-java:dev
 RUN yum install -y python3 python3-devel jq sshpass git gcc-c++ && \
   alternatives --install /usr/bin/python python /usr/bin/python3 60 && \
   python -m ensurepip --upgrade && \
-  pip3 install dbt-snowflake==1.0.0 "urllib3<2"
+  pip3 install dbt-snowflake==1.0.0 "urllib3<2" && \
+  yum clean all
 
 COPY --from=airbyte/normalization-snowflake:dev /airbyte /airbyte
 # Install python dependencies
