@@ -18,16 +18,6 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class AirbyteTypeTest {
-  /*
-   *
-   * map of JsonNode schema to expected AirbyteType run fromJsonSchema and assert equivalence
-   *
-   * more edge cases
-   *
-   *
-   * map of AirbyteType to ParsedType run toDialectType and assert equivalence
-   *
-   */
 
   @Test
   public void testStruct() {
