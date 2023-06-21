@@ -160,11 +160,13 @@ class GetMemberInfo(IncrementalMailChimpStream):
     def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Mapping[str, Any]]:
         listmembers_stream = ListMembers(authenticator=self.authenticator)        
         for list_record in listmembers_stream.read_records(sync_mode=SyncMode.full_refresh):
+            list_id = list_record["id"]
             subscriber_hash = list_record["email_address"]
-            yield from super().read_records(sync_mode=SyncMode.full_refresh, stream_slice={"email_address": email_address})
+            yield from super().read_records(sync_mode=SyncMode.full_refresh, stream_slice={"email_address": subscriber_hash, "list_id": list_id})
 
     def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
         subscriber_hash = stream_slice["email_address"]
+        list_id = stream_slice["list_id"]
         return f"lists/{list_id}/members/{subscriber_hash}"
 
 
