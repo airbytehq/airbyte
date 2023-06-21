@@ -198,8 +198,18 @@ class Connector:
         return self._get_type_and_name_from_technical_name()[0]
 
     @property
+    def documentation_directory(self) -> Path:
+        return Path(f"./docs/integrations/{self.connector_type}s")
+
+    @property
     def documentation_file_path(self) -> Path:
-        return Path(f"./docs/integrations/{self.connector_type}s/{self.name}.md")
+        readme_file_name = f"{self.name}.md"
+        return self.documentation_directory / readme_file_name
+
+    @property
+    def migration_guide_file_path(self) -> Path:
+        migration_guide_file_name = f"{self.name}-migrations.md"
+        return self.documentation_directory / migration_guide_file_name
 
     @property
     def icon_path(self) -> Path:

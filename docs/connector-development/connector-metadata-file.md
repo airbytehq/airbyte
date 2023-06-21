@@ -34,7 +34,7 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  supportUrl: https://docs.airbyte.com/integrations/sources/postgres
+  documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
 metadataSpecVersion: "1.0"
 ```
 

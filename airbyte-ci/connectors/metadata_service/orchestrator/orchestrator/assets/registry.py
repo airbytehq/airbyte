@@ -11,7 +11,7 @@ from dagster import asset, OpExecutionContext, MetadataValue, Output
 
 from metadata_service.spec_cache import get_cached_spec
 
-from orchestrator.models.metadata import MetadataDefinition, LatestMetadataEntry
+from orchestrator.models.metadata import LatestMetadataEntry
 from orchestrator.utils.dagster_helpers import OutputDataFrame
 from orchestrator.utils.object_helpers import deep_copy_params
 
@@ -64,7 +64,7 @@ def calculate_migration_documentation_url(releases_or_breaking_change: dict, doc
         str: The migration documentation url.
     """
 
-    base_url = f"{documentation_url}/migration_guide"
+    base_url = f"{documentation_url}-migrations"
     default_migration_documentation_url = f"{base_url}#{version}" if version is not None else base_url
 
     return releases_or_breaking_change.get("migrationDocumentationUrl", default_migration_documentation_url)
