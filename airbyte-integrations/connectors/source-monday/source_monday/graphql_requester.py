@@ -76,7 +76,7 @@ class MondayGraphqlRequester(HttpRequester):
     def _build_teams_query(self, object_name: str, field_schema: dict, **object_arguments) -> str:
         """
         Special optimization needed for tests to pass successfully because of rate limits.
-        It makes a query cost less points and should not be used to production
+        It makes a query cost less points, but it is never used in production
         """
         teams_limit = self.config.get("teams_limit")
         if teams_limit:

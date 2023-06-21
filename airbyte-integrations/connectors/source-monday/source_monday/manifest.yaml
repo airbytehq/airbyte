@@ -96,6 +96,11 @@ definitions:
       name: "boards"
       path: ""
       items_per_page: 100
+  tags_stream:
+    $ref: "#/definitions/base_nopagination_stream"
+    $parameters:
+      name: "tags"
+      path: ""
   teams_stream:
     $ref: "#/definitions/base_nopagination_stream"
     $parameters:
@@ -111,13 +116,20 @@ definitions:
     $parameters:
       name: "users"
       path: ""
+  workspaces_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "workspaces"
+      path: ""
 
 streams:
   - "#/definitions/items_stream"
   - "#/definitions/boards_stream"
+  - "#/definitions/tags_stream"
   - "#/definitions/teams_stream"
   - "#/definitions/updates_stream"
   - "#/definitions/users_stream"
+  - "#/definitions/workspaces_stream"
 
 check:
   stream_names:
