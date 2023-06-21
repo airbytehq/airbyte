@@ -647,4 +647,5 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     Preconditions.checkState(jsonNodes.size() == 1);
     return jsonNodes;
   }
+
 }

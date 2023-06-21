@@ -13,7 +13,7 @@ data:
     oss:
       enabled: false
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.io/integrations/sources/salesforce
+  documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   tags:
     - language:unknown
 metadataSpecVersion: "1.0"

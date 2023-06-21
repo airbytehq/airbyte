@@ -174,6 +174,9 @@ class IncrementalConfig(BaseConfig):
         description="Determines whether to skip more granular testing for incremental syncs", default=False
     )
 
+    class Config:
+        smart_union = True
+
 
 class GenericTestConfig(GenericModel, Generic[TestConfigT]):
     bypass_reason: Optional[str]
