@@ -432,7 +432,7 @@ def config_timeseries_fixture():
 
 
 @fixture(name="config_timeseries_invalid")
-def config_timeseries_fixture():
+def config_timeseries_invalid_fixture():
     return {
         "site": "datadoghq.eu",
         "api_key": "test_api_key",

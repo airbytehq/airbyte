@@ -73,7 +73,7 @@ class SourceDatadog(AbstractSource):
                 )
                 query_streams.append(new_stream)
             else:
-                logging.info(f"Query fields are missing, Streams not created")
+                logging.info("Query fields are missing, Streams not created")
 
         # Combine the base streams and query streams
         return base_streams + query_streams
