@@ -1,16 +1,10 @@
 {
 	"properties": {
-		"fee_lines": {
+		"tax_lines": {
 			"items": {
 				"properties": {
-					"taxes": {
-						"items": {
-							"properties": {
-								"rate_id": {
-									"type": ["null", "integer"]
-								}
-							}
-						}
+					"rate_id": {
+						"type": ["null", "integer"]
 					}
 				}
 			}
