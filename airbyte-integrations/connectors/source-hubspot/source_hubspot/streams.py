@@ -10,7 +10,6 @@ from abc import ABC, abstractmethod
 from functools import cached_property, lru_cache
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
-from airbyte_cdk.sources.streams.http.http import HttpStream
 
 import backoff
 import pendulum as pendulum
@@ -1020,11 +1019,10 @@ class CRMSearchStream(IncrementalStream, ABC):
         stream_records = {}
         properties_list = list(self.properties.keys())
 
-        filters = [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}] + self.additional_search_filters
 
         payload = (
             {
-                "filters": filters,
+                "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
                 "sorts": [{"propertyName": self.last_modified_field, "direction": "ASCENDING"}],
                 "properties": properties_list,
                 "limit": 100,
@@ -1684,7 +1682,6 @@ class Contacts(CRMSearchStream):
 class ContactsMergedAudit(HttpSubStream, Stream):
 
     primary_key = "vid-to-merge"
-    additional_search_filters = [{"propertyName": "hs_merged_object_ids", "operator": "HAS_PROPERTY"}]
     scopes = {"crm.objects.contacts.read"}
     url = "/contacts/v1/contact/vids/batch/"
     filter_old_records = False
@@ -1692,10 +1689,8 @@ class ContactsMergedAudit(HttpSubStream, Stream):
     def __init__(self, **kwargs):
         super().__init__(parent=Contacts, **kwargs)
         self.parent = Contacts(**kwargs)
-        # self._sync_mode = "incremental"
+        self.parent.associations = []
         self.parent._sync_mode = "incremental"
-        # self.parent._state = self.parent.state if self.parent.state else self.parent._start_date
-
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """Override get_json_schema defined in Stream class
@@ -1705,8 +1700,9 @@ class ContactsMergedAudit(HttpSubStream, Stream):
         """
         return super(Stream, self).get_json_schema()
 
-
-    def stream_slices(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any] | None]:
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any] | None]:
         slices = []
 
         # we can query a max of 100 contacts at a time
@@ -1724,16 +1720,24 @@ class ContactsMergedAudit(HttpSubStream, Stream):
                     counter = 0
                     contact_batch = []
 
-        if contact_batch: slices.append({"vid": contact_batch})
+        if contact_batch:
+            slices.append({"vid": contact_batch})
 
         return slices
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
-        return {
-            "vid": stream_slice["vid"]
-        }
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {"vid": stream_slice["vid"]}
 
-    def parse_response(self, response: requests.Response, *, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Iterable[Mapping]:
+    def parse_response(
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
         response = self._parse_response(response)
         if response.get("status", None) == "error":
             self.logger.warning(f"Stream `{self.name}` cannot be procced. {response.get('message')}")
