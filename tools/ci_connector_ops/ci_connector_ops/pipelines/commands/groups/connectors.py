@@ -220,6 +220,7 @@ def test(
             ci_context=ctx.obj.get("ci_context"),
             pull_request=ctx.obj.get("pull_request"),
             ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+            should_save_report=True,
         )
         for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
     ]
@@ -489,6 +490,8 @@ def format(ctx: click.Context) -> bool:
             ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
             ci_git_user=ctx.obj["ci_git_user"],
             ci_github_access_token=ctx.obj["ci_github_access_token"],
+            pull_request=ctx.obj.get("pull_request"),
+            should_save_report=False,
         )
         for connector, modified_files in connectors_and_files_to_format
     ]
