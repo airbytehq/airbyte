@@ -9,6 +9,9 @@ on:
       test-connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors test' command"
         default: "--modified"
+      runner:
+        description: "The runner to use for this job"
+        default: "dev-medium-runner"
   pull_request:
     types:
       - opened
@@ -18,134 +21,62 @@ jobs:
   connectors_ci:
     name: Connectors CI
     timeout-minutes: 1440 # 24 hours
-    runs-on: dev-medium-runner
+    runs-on: ${{ inputs.runner || 'dev-medium-runner'}}
     steps:
-      - name: Check if PR is from a fork
-        if: github.event_name == 'pull_request'
-        run: |
-          if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
-            echo "PR is from a fork. Exiting workflow..."
-            exit 78
-          fi
-      - name: Get start timestamp
-        id: get-start-timestamp
-        run: echo "::set-output name=start-timestamp::$(date +%s)"
-      - name: Login to DockerHub
-        run: "docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}"
-        env:
-          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Checkout Airbyte
         uses: actions/checkout@v3
-        with:
-          repository: ${{ github.event.inputs.repo }}
-          ref: ${{ github.event.inputs.gitref }}
-      - name: Extract branch name
+      - name: Extract branch name [WORKFLOW DISPATCH]
         shell: bash
         if: github.event_name == 'workflow_dispatch'
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
         id: extract_branch
-      - name: Install Python 3.10
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-      - name: Install ci-connector-ops package
-        run: pip install -e ./tools/ci_connector_ops\[pipelines]\
-      - name: Run airbyte-ci connectors format [WORKFLOW DISPATCH]
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-          DAGGER_CLI_COMMIT="6ed6264f1c4efbf84d310a104b57ef1bc57d57b0"
-          DAGGER_TMP_BINDIR="/tmp/dagger_${DAGGER_CLI_COMMIT}"
-          export _EXPERIMENTAL_DAGGER_CLI_BIN="$DAGGER_TMP_BINDIR/dagger"
-          if [ ! -f  "$_EXPERIMENTAL_DAGGER_CLI_BIN" ]; then
-            mkdir -p "$DAGGER_TMP_BINDIR"
-            curl "https://dl.dagger.io/dagger/main/${DAGGER_CLI_COMMIT}/dagger_${DAGGER_CLI_COMMIT}_$(uname -s | tr A-Z a-z)_$(uname -m | sed s/x86_64/amd64/).tar.gz" | tar xvz -C "$DAGGER_TMP_BINDIR"
-          fi
-          airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} connectors ${{ github.event.inputs.test-connectors-options }} format
-        env:
-          _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
-          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          CI_REPORT_BUCKET_NAME: "airbyte-ci-reports"
-          CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
-          CI_GIT_REVISION: ${{ github.sha }}
-          CI_CONTEXT: "manual"
-          CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
-          PRODUCTION: "True"
-      - name: Run airbyte-ci connectors format [PULL REQUESTS]
+      - name: Format connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
-        run: |
-          export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-          DAGGER_CLI_COMMIT="6ed6264f1c4efbf84d310a104b57ef1bc57d57b0"
-          DAGGER_TMP_BINDIR="/tmp/dagger_${DAGGER_CLI_COMMIT}"
-          export _EXPERIMENTAL_DAGGER_CLI_BIN="$DAGGER_TMP_BINDIR/dagger"
-          if [ ! -f  "$_EXPERIMENTAL_DAGGER_CLI_BIN" ]; then
-            mkdir -p "$DAGGER_TMP_BINDIR"
-            curl "https://dl.dagger.io/dagger/main/${DAGGER_CLI_COMMIT}/dagger_${DAGGER_CLI_COMMIT}_$(uname -s | tr A-Z a-z)_$(uname -m | sed s/x86_64/amd64/).tar.gz" | tar xvz -C "$DAGGER_TMP_BINDIR"
-          fi
-          airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} connectors --modified format
-        env:
-          _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
-          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          CI_REPORT_BUCKET_NAME: "airbyte-ci-reports"
-          CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          CI_GIT_BRANCH: ${{ github.head_ref }}
-          CI_CONTEXT: "pull_request"
-          CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
-          PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
-          PRODUCTION: "True"
-      - name: "Fetch last commit id from remote branch"
-        id: fetch_last_commit_id
-        run: |
-          commit_id=$(git ls-remote --heads origin augustin/connectors-ci/python-auto-format | cut -f 1)
-          echo "::set-output name=commit_id::$commit_id"
-      - name: Checkout Airbyte
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          context: "pull_request"
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          git_branch: ${{ github.head_ref }}
+          git_revision: ${{ github.sha }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          subcommand: "connectors --modified format"
+      - name: Fetch last commit id from remote branch [PULL REQUESTS]
+        if: github.event_name == 'pull_request'
+        id: fetch_last_commit_id_pr
+        run: echo "commit_id=$(git ls-remote --heads origin ${{ github.head_ref }} | cut -f 1)" >> $GITHUB_OUTPUT
+      - name: Fetch last commit id from remote branch [WORKFLOW DISPATCH]
+        if: github.event_name == 'workflow_dispatch'
+        id: fetch_last_commit_id_wd
+        run: echo "commit_id=$(git ls-remote --heads origin ${{ steps.extract_branch.outputs.branch }} | cut -f 1)" >> $GITHUB_OUTPUT
+      - name: Pull formatting changes [PULL REQUESTS]
+        if: github.event_name == 'pull_request'
         uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
-          ref: ${{ steps.fetch_last_commit_id.outputs.commit_id }}
-      - name: Run airbyte-ci connectors test [WORKFLOW DISPATCH]
+          ref: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
+      - name: Test connectors [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch'
-        run: |
-          export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-          DAGGER_CLI_COMMIT="6ed6264f1c4efbf84d310a104b57ef1bc57d57b0"
-          DAGGER_TMP_BINDIR="/tmp/dagger_${DAGGER_CLI_COMMIT}"
-          export _EXPERIMENTAL_DAGGER_CLI_BIN="$DAGGER_TMP_BINDIR/dagger"
-          if [ ! -f  "$_EXPERIMENTAL_DAGGER_CLI_BIN" ]; then
-            mkdir -p "$DAGGER_TMP_BINDIR"
-            curl "https://dl.dagger.io/dagger/main/${DAGGER_CLI_COMMIT}/dagger_${DAGGER_CLI_COMMIT}_$(uname -s | tr A-Z a-z)_$(uname -m | sed s/x86_64/amd64/).tar.gz" | tar xvz -C "$DAGGER_TMP_BINDIR"
-          fi
-          airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} connectors ${{ github.event.inputs.test-connectors-options }} test
-        env:
-          _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
-          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          CI_REPORT_BUCKET_NAME: "airbyte-ci-reports"
-          CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
-          CI_CONTEXT: "manual"
-          CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
-          PRODUCTION: "True"
-      - name: Run airbyte-ci connectors test [PULL REQUESTS]
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          context: "manual"
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          git_branch: ${{ steps.extract_branch.outputs.branch }}
+          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          subcommand: "connectors ${{ github.event.inputs.test-connectors-options }} test"
+      - name: Test connectors [PULL REQUESTS]
         if: github.event_name == 'pull_request'
-        run: |
-          export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-          DAGGER_CLI_COMMIT="6ed6264f1c4efbf84d310a104b57ef1bc57d57b0"
-          DAGGER_TMP_BINDIR="/tmp/dagger_${DAGGER_CLI_COMMIT}"
-          export _EXPERIMENTAL_DAGGER_CLI_BIN="$DAGGER_TMP_BINDIR/dagger"
-          if [ ! -f  "$_EXPERIMENTAL_DAGGER_CLI_BIN" ]; then
-            mkdir -p "$DAGGER_TMP_BINDIR"
-            curl "https://dl.dagger.io/dagger/main/${DAGGER_CLI_COMMIT}/dagger_${DAGGER_CLI_COMMIT}_$(uname -s | tr A-Z a-z)_$(uname -m | sed s/x86_64/amd64/).tar.gz" | tar xvz -C "$DAGGER_TMP_BINDIR"
-          fi
-          airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} connectors --modified test
-        env:
-          _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
-          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          CI_REPORT_BUCKET_NAME: "airbyte-ci-reports"
-          CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          CI_GIT_BRANCH: ${{ github.head_ref }}
-          CI_CONTEXT: "pull_request"
-          CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
-          PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
-          PRODUCTION: "True"
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          context: "pull_request"
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          git_branch: ${{ github.head_ref }}
+          git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          subcommand: "connectors --modified test"
