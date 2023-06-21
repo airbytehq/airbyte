@@ -10,7 +10,7 @@ data:
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-outbrain-amplify
   githubIssueLabel: source-outbrain-amplify
-  icon: outbrain-amplify.svg
+  icon: icon.svg
   license: MIT
   name: Outbrain Amplify
   releaseStage: alpha
