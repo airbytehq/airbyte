@@ -64,7 +64,7 @@ def calculate_migration_documentation_url(releases_or_breaking_change: dict, doc
         str: The migration documentation url.
     """
 
-    base_url = f"{documentation_url}/migration_guide"
+    base_url = f"{documentation_url}-migrations"
     default_migration_documentation_url = f"{base_url}#{version}" if version is not None else base_url
 
     return releases_or_breaking_change.get("migrationDocumentationUrl", default_migration_documentation_url)
