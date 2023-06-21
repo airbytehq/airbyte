@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from functools import cached_property, lru_cache
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
+from airbyte_cdk.sources.streams.http.http import HttpStream
 
 import backoff
 import pendulum as pendulum
@@ -20,7 +21,7 @@ from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -984,6 +985,7 @@ class CRMSearchStream(IncrementalStream, ABC):
     updated_at_field = "updatedAt"
     last_modified_field: str = None
     associations: List[str] = None
+    additional_search_filters: List[dict] = []
 
     @property
     def url(self):
@@ -1017,9 +1019,12 @@ class CRMSearchStream(IncrementalStream, ABC):
     ) -> Tuple[List, requests.Response]:
         stream_records = {}
         properties_list = list(self.properties.keys())
+
+        filters = [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}] + self.additional_search_filters
+
         payload = (
             {
-                "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
+                "filters": filters,
                 "sorts": [{"propertyName": self.last_modified_field, "direction": "ASCENDING"}],
                 "properties": properties_list,
                 "limit": 100,
@@ -1676,34 +1681,21 @@ class Contacts(CRMSearchStream):
     scopes = {"crm.objects.contacts.read"}
 
 
-class ContactsMergedAudit(CRMSearchStream):
-    entity = "contact"
-    last_modified_field = "lastmodifieddate"
-    associations = []
-    data_field = "results"
+class ContactsMergedAudit(HttpSubStream, Stream):
+
     primary_key = "vid-to-merge"
+    additional_search_filters = [{"propertyName": "hs_merged_object_ids", "operator": "HAS_PROPERTY"}]
     scopes = {"crm.objects.contacts.read"}
-
-    @property
-    def url_search(self):
-        return f"/crm/v3/objects/{self.entity}/search"
-
-    @property
-    def url(self):
-        """Get batch Contacts Endpoint, API v1
-        Is used to get merge-audits field for all contacts with merge history
-        Note: CRM API V3 do not return this field
-        Docs: https://legacydocs.hubspot.com/docs/methods/contacts/get_batch_by_vid
-        """
-        return "/contacts/v1/contact/vids/batch/"
+    url = "/contacts/v1/contact/vids/batch/"
+    filter_old_records = False
 
     def __init__(self, **kwargs):
-        """Override Stream init function
-        To use read_records from CRMSearchStream with Search endpoint only, we define _state value
-        """
-        super().__init__(**kwargs)
-        self._sync_mode = "incremental"
-        self._state = self.state if self.state else self._start_date
+        super().__init__(parent=Contacts, **kwargs)
+        self.parent = Contacts(**kwargs)
+        # self._sync_mode = "incremental"
+        self.parent._sync_mode = "incremental"
+        # self.parent._state = self.parent.state if self.parent.state else self.parent._start_date
+
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """Override get_json_schema defined in Stream class
@@ -1713,59 +1705,42 @@ class ContactsMergedAudit(CRMSearchStream):
         """
         return super(Stream, self).get_json_schema()
 
-    def _get_search_payload(self, next_page_token: Mapping[str, Any] = None):
-        """Create payload for CRM Search API
-        Filter contacts with hs_merged_object_ids is not null
-        and last_modified_field > state
-        """
-        payload = {
-            "filters": [
-                {"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"},
-                {"propertyName": "hs_merged_object_ids", "operator": "HAS_PROPERTY"},
-            ],
-            "sorts": [{"propertyName": self.last_modified_field, "direction": "ASCENDING"}],
-            "limit": 100,
+
+    def stream_slices(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any] | None]:
+        slices = []
+
+        # we can query a max of 100 contacts at a time
+        max_contacts = 100
+
+        counter = 0
+        contact_batch = []
+        for contact in self.parent.read_records(sync_mode=SyncMode.incremental):
+            if contact["properties"].get("hs_merged_object_ids"):
+                if counter < max_contacts:
+                    contact_batch.append(contact["id"])
+                    counter += 1
+                else:
+                    slices.extend([{"vid": contact_batch}])
+                    counter = 0
+                    contact_batch = []
+
+        if contact_batch: slices.append({"vid": contact_batch})
+
+        return slices
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+        return {
+            "vid": stream_slice["vid"]
         }
-        if next_page_token:
-            payload.update(next_page_token["payload"])
 
-        return payload
+    def parse_response(self, response: requests.Response, *, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Iterable[Mapping]:
+        response = self._parse_response(response)
+        if response.get("status", None) == "error":
+            self.logger.warning(f"Stream `{self.name}` cannot be procced. {response.get('message')}")
+            return
 
-    @retry_connection_handler(max_tries=5, factor=5)
-    @retry_after_handler(fixed_retry_after=1, max_tries=3)
-    def _get_contact_merge_audit(
-        self, contacts_ids: List[str]
-    ) -> Tuple[Union[Mapping[str, Any], List[Mapping[str, Any]]], requests.Response]:
-        return self._api.get(url=self.url, params={"vid": contacts_ids})
-
-    def _process_search(
-        self,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Tuple[List, requests.Response]:
-        stream_records = {}
-
-        # Get contacts with a merge history using CRM Search endpoint API V3
-        search_payload = self._get_search_payload(next_page_token=next_page_token)
-        response_search, raw_response = self.search(url=self.url_search, data=search_payload)
-
-        if len(response_search.get(self.data_field, [])) == 0:
-            return [], raw_response
-
-        # Get merge-audit details using Contact API V1
-        contact_ids = list(map(lambda d: d["id"], response_search[self.data_field]))
-        response, _ = self._get_contact_merge_audit(contacts_ids=contact_ids)
-
-        for record in response_search[self.data_field]:
-            hs_object_id = record["id"]
-            for merge_audit in response[hs_object_id]["merge-audits"]:
-                primary_key = merge_audit["vid-to-merge"]
-                stream_records[primary_key] = merge_audit
-                stream_records[primary_key]["id"] = hs_object_id
-                stream_records[primary_key]["updatedAt"] = record["updatedAt"]
-
-        return list(stream_records.values()), raw_response
+        for contact_id in list(response.keys()):
+            yield from response[contact_id]["merge-audits"]
 
 
 class EngagementsCalls(CRMSearchStream):
