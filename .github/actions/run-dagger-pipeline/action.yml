@@ -4,32 +4,86 @@ inputs:
   subcommand:
     description: "Subcommand for airbyte-ci"
     required: true
-  options:
-    description: "Options for the subcommand"
-    required: false
   context:
     description: "CI context (e.g., pull_request, manual)"
     required: true
   github_token:
     description: "GitHub token"
     required: true
+  docker_hub_username:
+    description: "Dockerhub username"
+    required: true
+  docker_hub_password:
+    description: "Dockerhub password"
+    required: true
+  options:
+    description: "Options for the subcommand"
+    required: false
+  production:
+    description: "Whether to run in production mode"
+    required: false
+    default: "True"
+  report_bucket_name:
+    description: "Bucket name for CI reports"
+    required: false
+    default: "airbyte-ci-reports"
+  gcp_gsm_credentials:
+    description: "GCP credentials for GCP Secret Manager"
+    required: false
+    default: ""
+  git_branch:
+    description: "Git branch to checkout"
+    required: false
+  git_revision:
+    description: "Git revision to checkout"
+    required: false
+  slack_webhook_url:
+    description: "Slack webhook URL"
+    required: false
+  metadata_service_gcs_credentials:
+    description: "GCP credentials for metadata service"
+    required: false
+  metadata_service_bucket_name:
+    description: "Bucket name for metadata service"
+    required: false
+    default: "prod-airbyte-cloud-connector-metadata-service"
+  spec_cache_bucket_name:
+    description: "Bucket name for GCS spec cache"
+    required: false
+    default: "io-airbyte-cloud-spec-cache"
+  spec_cache_gcs_credentials:
+    description: "GCP credentials for GCS spec cache"
+    required: false
+  gcs_credentials:
+    description: "GCP credentials for GCS"
+    required: false
+  dagger_cli_commit:
+    description: "Commit SHA of dagger-cli to use"
+    required: false
+    default: "6ed6264f1c4efbf84d310a104b57ef1bc57d57b0"
+  ci_job_key:
+    description: "CI job key"
+    required: false
 runs:
   using: "composite"
   steps:
+    - name: Check if PR is from a fork
+      if: github.event_name == 'pull_request'
+      shell: bash
+      run: |
+        if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
+          echo "PR is from a fork. Exiting workflow..."
+          exit 78
+        fi
+    - name: Docker login
+      uses: docker/login-action@v1
+      with:
+        username: ${{ inputs.docker_hub_username }}
+        password: ${{ inputs.docker_hub_password }}
     - name: Get start timestamp
       id: get-start-timestamp
-      run: echo "::set-output name=start-timestamp::$(date +%s)"
       shell: bash
-    - name: Checkout Airbyte
-      uses: actions/checkout@v3
-      with:
-        repository: ${{ github.event.inputs.repo }}
-        ref: ${{ github.event.inputs.gitref }}
-    - name: Extract branch name
-      shell: bash
-      if: github.event_name == 'workflow_dispatch'
-      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-      id: extract_branch
+      run: echo "name=start-timestamp=$(date +%s)" >> $GITHUB_OUTPUT
     - name: Install Python 3.10
       uses: actions/setup-python@v4
       with:
@@ -42,7 +96,7 @@ runs:
       shell: bash
       run: |
         export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-        DAGGER_CLI_COMMIT="2370d5eb65e511cf7f1611aebaacc6d48cf0907a"
+        DAGGER_CLI_COMMIT=${{ inputs.dagger_cli_commit }}
         DAGGER_TMP_BINDIR="/tmp/dagger_${DAGGER_CLI_COMMIT}"
         export _EXPERIMENTAL_DAGGER_CLI_BIN="$DAGGER_TMP_BINDIR/dagger"
         if [ ! -f  "$_EXPERIMENTAL_DAGGER_CLI_BIN" ]; then
@@ -50,9 +104,23 @@ runs:
           curl "https://dl.dagger.io/dagger/main/${DAGGER_CLI_COMMIT}/dagger_${DAGGER_CLI_COMMIT}_$(uname -s | tr A-Z a-z)_$(uname -m | sed s/x86_64/amd64/).tar.gz" | tar xvz -C "$DAGGER_TMP_BINDIR"
         fi
         airbyte-ci --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
-
       env:
-        CI_GIT_BRANCH: ${{ github.head_ref }}
-        CI_GIT_REVISION: ${{ github.event.pull_request.head.sha }}
+        _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
         CI_CONTEXT: "${{ inputs.context }}"
+        CI_GIT_BRANCH: ${{ inputs.git_branch || github.head_ref }}
+        CI_GIT_REVISION: ${{ inputs.git_revision || github.sha }}
+        CI_GITHUB_ACCESS_TOKEN: ${{ inputs.github_token }}
+        CI_JOB_KEY: ${{ inputs.ci_job_key }}
         CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
+        CI_REPORT_BUCKET_NAME: ${{ inputs.report_bucket_name }}
+        GCP_GSM_CREDENTIALS: ${{ inputs.gcp_gsm_credentials }}
+        GCS_CREDENTIALS: ${{ inputs.gcs_credentials }}
+        METADATA_SERVICE_GCS_BUCKET_NAME: ${{ inputs.metadata_service_bucket_name }}
+        METADATA_SERVICE_GCS_CREDENTIALS: ${{ inputs.metadata_service_gcs_credentials }}
+        PRODUCTION: ${{ inputs.production }}
+        PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+        SLACK_WEBHOOK: ${{ inputs.slack_webhook_url }}
+        SPEC_CACHE_BUCKET_NAME: ${{ inputs.spec_cache_bucket_name }}
+        SPEC_CACHE_GCS_CREDENTIALS: ${{ inputs.spec_cache_gcs_credentials }}
+        DOCKER_HUB_USERNAME: ${{ inputs.docker_hub_username }}
+        DOCKER_HUB_PASSWORD: ${{ inputs.docker_hub_password }}
