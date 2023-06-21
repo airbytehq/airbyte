@@ -486,6 +486,8 @@
   "syncTable.cell.status": "同步状态",
   "syncTable.cell.fail": "同步失败时",
   "syncTable.cell.success": "同步成功时",
+  "paymentTable.cell.payment": "付款",
+  "paymentTable.cell.fail": "支付失败时",
   "notification.status.enabled": "已开启",
   "notification.status.disabled": "已关闭",
   "settings.accountSetting.password": "密码",

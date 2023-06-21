@@ -553,6 +553,7 @@ export interface HealthCheckRead {
   syncSuccess?: string[];
   usage?: number;
   isPaymentFailed?: boolean;
+  isUpdatePaymentMethod?: boolean;
 }
 
 export interface Pagination {

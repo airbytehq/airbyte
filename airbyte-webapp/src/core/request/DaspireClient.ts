@@ -32,6 +32,7 @@ export const NotificationType = {
   USAGE: "USAGE",
   SYNC_FAIL: "SYNC_FAIL",
   SYNC_SUCCESS: "SYNC_SUCCESS",
+  PAYMENT_FAIL: "PAYMENT_FAIL",
 } as const;
 
 export type NotificationType = typeof NotificationType[keyof typeof NotificationType];
@@ -49,6 +50,7 @@ export interface NotificationSetting {
   usageList: NotificationItem[];
   syncFail: NotificationItem;
   syncSuccess: NotificationItem;
+  paymentFail: NotificationItem;
 }
 
 export interface NotificationSettingRead {
