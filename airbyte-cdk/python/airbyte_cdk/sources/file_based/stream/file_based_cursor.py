@@ -26,7 +26,7 @@ class FileBasedCursor:
     def add_file(self, file: RemoteFile):
         self._file_to_datetime_history[file.uri] = file.last_modified.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         if len(self._file_to_datetime_history) > self._max_history_size:
-            oldest_file = min(self._file_to_datetime_history, key=self._file_to_datetime_history.get)
+            oldest_file = min(self._file_to_datetime_history.items(), key=lambda f: (f[1], f[0]))[0]
             del self._file_to_datetime_history[oldest_file]
 
     def to_dict(self):
@@ -39,25 +39,23 @@ class FileBasedCursor:
     def is_history_partial(self):
         return self._history_is_partial
 
+    def _should_sync_file(self, file: RemoteFile) -> bool:
+        if file.uri in self._file_to_datetime_history:
+            return False
+        elif self.is_history_partial():
+            return file.last_modified >= self.get_start_time()
+        else:
+            return True
+
     def get_files_to_sync(self, all_files: List[RemoteFile]):
-        start_time = self.get_start_time()
-        files_to_sync = [
-            f
-            for f in all_files
-            if (
-                f.last_modified >= start_time
-                and (not self._file_to_datetime_history or self.is_history_partial() or f.uri not in self._file_to_datetime_history)
-            )
-        ]
-        # If len(files_to_sync), the next sync will not be able to use the history
-        if len(files_to_sync) > self._max_history_size:
+        files_to_sync = [f for f in all_files if self._should_sync_file(f)]
+        # If the size of the resulting history is > max history size, the next sync will not be able to use the history
+        if len(files_to_sync) + len(self._file_to_datetime_history) > self._max_history_size:
             self._history_is_partial = True
             self._logger.warning(
                 f"Found {len(files_to_sync)} files to sync, which is more than the max history size of {self._max_history_size}. The next sync won't be able to use the history to filter out duplicate files. "
                 f"It will instead use the time window of {self._time_window_if_history_is_full} to filter out files."
             )
-        else:
-            self._history_is_partial = False
         return files_to_sync
 
     def get_start_time(self):
