@@ -4,7 +4,7 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
@@ -29,7 +29,7 @@ class FileBasedCursor:
         self._file_to_datetime_history[file.uri] = file.last_modified.strftime(DATE_TIME_FORMAT)
         if len(self._file_to_datetime_history) > self._max_history_size:
             # Get the earliest file based on its last modified date and its uri
-            oldest_file = min(self._file_to_datetime_history.items(), key=lambda f: (f[1], f[0]))[0]
+            oldest_file = self.get_earliest_file_and_datetime()[0]
             del self._file_to_datetime_history[oldest_file]
 
     def get_state(self):
@@ -44,9 +44,19 @@ class FileBasedCursor:
 
     def _should_sync_file(self, file: RemoteFile) -> bool:
         if file.uri in self._file_to_datetime_history:
+            # If the file's uri is in the history, we should not sync the file
             return False
         elif self.is_history_partial():
-            return file.last_modified >= self.get_start_time()
+            if file.last_modified > self.get_start_time():
+                # If the history is partial and the file's datetime is strictly greater than the start time, we should sync the file
+                return True
+            else:
+                # If the history is partial and the file's datetime is less than or equal to the start time,
+                # we should sync the file if its timestamp is equal to the earliest timestamp in the history,
+                # and it's URI is greater than the earliest URI in the history.
+                earliest_file_uri, earliest_datetime = self.get_earliest_file_and_datetime()
+                earliest_datetime = datetime.strptime(earliest_datetime, DATE_TIME_FORMAT)
+                return file.last_modified == earliest_datetime and file.uri > earliest_file_uri
         else:
             return True
 
@@ -63,6 +73,9 @@ class FileBasedCursor:
 
     def get_start_time(self):
         return self._start_time
+
+    def get_earliest_file_and_datetime(self) -> Tuple[str, str]:
+        return min(self._file_to_datetime_history.items(), key=lambda f: (f[1], f[0]))
 
     def _compute_start_time(self) -> datetime:
         if not self._file_to_datetime_history:

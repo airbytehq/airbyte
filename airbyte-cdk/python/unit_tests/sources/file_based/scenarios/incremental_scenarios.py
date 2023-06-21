@@ -1136,8 +1136,6 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario = (
     )
     .set_expected_records(
         [
-            {"col1": "val11a", "col2": "val12a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"},
-            {"col1": "val21a", "col2": "val22a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z", "_ab_source_file_url": "a.csv"},
             {
                 "stream1": {
                     "history": {
