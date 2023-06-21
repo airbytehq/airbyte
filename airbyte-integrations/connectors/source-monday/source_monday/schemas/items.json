@@ -8,21 +8,7 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "created_at": { "type": ["null", "string"], "format": "date-time" },
-          "file_extension": { "type": ["null", "string"] },
-          "file_size": { "type": ["null", "integer"] },
-          "id": { "type": ["null", "string"] },
-          "name": { "type": ["null", "string"] },
-          "original_geometry": { "type": ["null", "string"] },
-          "public_url": { "type": ["null", "string"] },
-          "uploaded_by": {
-            "type": ["null", "object"],
-            "properties": {
-              "id": { "type": ["null", "integer"] }
-            }
-          },
-          "url": { "type": ["null", "string"] },
-          "url_thumbnail": { "type": ["null", "string"] }
+          "id": { "type": ["null", "string"] }
         }
       }
     },
@@ -38,13 +24,12 @@
         "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
-          "additional_info": { "type": ["null", "string"] },
-          "description": { "type": ["null", "string"] },
           "id": { "type": ["null", "string"] },
+          "value": { "type": ["null", "string"] },
+          "additional_info": { "type": ["null", "string"] },
           "text": { "type": ["null", "string"] },
           "title": { "type": ["null", "string"] },
-          "type": { "type": ["null", "string"] },
-          "value": { "type": ["null", "string"] }
+          "type": { "type": ["null", "string"] }
         }
       }
     },

@@ -19,10 +19,8 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         # `boards`, `items`, `updates` streams schemas were modified
-        #  changed type of id for assets in items and updates
-        #  change deprecated owner to owners in boards
-        # All changes described in corresponding pr
-        # Changes applies to all configs
+        # when `type: array` is used, the `items` should be set, instead of `properties`.
+        # this change applies for all configs bellow.
         backward_compatibility_tests_config:
           disable_for_version: "0.2.6"
       - config_path: "secrets/config_api_token.json"
@@ -42,13 +40,6 @@ acceptance_tests:
         empty_streams:
           - name: teams
             bypass_reason: "unable to populate"
-        ignored_fields:
-          items:
-            - name: assets/*/public_url
-              bypass_reason: "Unstable data"
-          updates:
-            - name: assets/*/public_url
-              bypass_reason: "Unstable data"
       - config_path: "secrets/config_oauth.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
@@ -58,13 +49,6 @@ acceptance_tests:
         empty_streams:
           - name: teams
             bypass_reason: "unable to populate"
-        ignored_fields:
-          items:
-            - name: assets/*/public_url
-              bypass_reason: "Unstable data"
-          updates:
-            - name: assets/*/public_url
-              bypass_reason: "Unstable data"
   full_refresh:
     tests:
       - config_path: "secrets/config_api_token.json"
