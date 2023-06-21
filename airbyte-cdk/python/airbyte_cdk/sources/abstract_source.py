@@ -254,10 +254,7 @@ class AbstractSource(Source, ABC):
         for _slice in slices:
             has_slices = True
             if self.should_log_slice_message(logger):
-                yield AirbyteMessage(
-                    type=MessageType.LOG,
-                    log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(_slice, default=str)}"),
-                )
+                yield self._create_slice_log_message(_slice)
             records = stream_instance.read_records(
                 sync_mode=SyncMode.incremental,
                 stream_slice=_slice,
@@ -321,10 +318,7 @@ class AbstractSource(Source, ABC):
         total_records_counter = 0
         for _slice in slices:
             if self.should_log_slice_message(logger):
-                yield AirbyteMessage(
-                    type=MessageType.LOG,
-                    log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(_slice, default=str)}"),
-                )
+                yield self._create_slice_log_message(_slice)
             record_data_or_messages = stream_instance.read_records(
                 stream_slice=_slice,
                 sync_mode=SyncMode.full_refresh,
@@ -337,6 +331,17 @@ class AbstractSource(Source, ABC):
                     total_records_counter += 1
                     if self._limit_reached(internal_config, total_records_counter):
                         return
+
+    def _create_slice_log_message(self, _slice: Optional[Mapping[str, Any]]) -> AirbyteMessage:
+        """
+        Mapping is an interface that can be implemented in various ways. However, json.dumps will just do a `str(<object>)` if
+        the slice is a class implementing Mapping. Therefore, we want to cast this as a dict before passing this to json.dump
+        """
+        printable_slice = dict(_slice) if _slice else _slice
+        return AirbyteMessage(
+            type=MessageType.LOG,
+            log=AirbyteLogMessage(level=Level.INFO, message=f"{self.SLICE_LOG_PREFIX}{json.dumps(printable_slice, default=str)}"),
+        )
 
     def _checkpoint_state(self, stream: Stream, stream_state, state_manager: ConnectorStateManager):
         # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
