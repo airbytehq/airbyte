@@ -13,8 +13,11 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Unsu
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,AirbyteProtocolType {
+  Logger LOGGER = LoggerFactory.getLogger(AirbyteTypeUtils.class);
 
   /**
    * The most common call pattern is probably to use this method on the stream schema, verify that
@@ -39,24 +42,16 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
         } else if (AirbyteTypeUtils.nodeIsType(topLevelType, "array")) {
           final JsonNode items = schema.get("items");
           return new Array(fromJsonSchema(items));
-        } else {
-          return AirbyteTypeUtils.getAirbyteProtocolType(schema);
         }
       } else if (topLevelType.isArray()) {
         final List<AirbyteType> options = new ArrayList<>();
-        topLevelType.elements().forEachRemaining(element -> {
-          options.add(fromJsonSchema(element));
-        });
+        topLevelType.elements().forEachRemaining(element -> options.add(fromJsonSchema(element)));
         return new OneOf(options);
       }
     } else if (schema.get("oneOf") != null) {
       final List<AirbyteType> options = new ArrayList<>();
-      schema.get("oneOf").elements().forEachRemaining(element -> {
-        options.add(fromJsonSchema(element));
-      });
+      schema.get("oneOf").elements().forEachRemaining(element -> options.add(fromJsonSchema(element)));
       return new UnsupportedOneOf(options);
-    } else {
-      return AirbyteTypeUtils.getAirbyteProtocolType(schema);
     }
     return AirbyteTypeUtils.getAirbyteProtocolType(schema);
   }
@@ -74,11 +69,11 @@ public sealed interface AirbyteType permits Array,OneOf,Struct,UnsupportedOneOf,
     DATE,
     UNKNOWN;
 
-    public static AirbyteProtocolType matches(String type) {
+    public static AirbyteProtocolType matches(final String type) {
       try {
         return AirbyteProtocolType.valueOf(type.toUpperCase());
-      } catch (IllegalArgumentException e) {
-        // TODO: Log exception
+      } catch (final IllegalArgumentException e) {
+        LOGGER.error(String.format("Could not find matching AirbyteProtocolType for \"%s\": %s", type, e));
         return UNKNOWN;
       }
     }
