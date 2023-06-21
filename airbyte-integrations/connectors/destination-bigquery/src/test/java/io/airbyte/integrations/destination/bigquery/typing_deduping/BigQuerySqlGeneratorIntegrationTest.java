@@ -350,9 +350,24 @@ public class BigQuerySqlGeneratorIntegrationTest {
     final String sql = GENERATOR.dedupRawTable(streamId, "", CDC_COLUMNS);
     logAndExecute(sql);
 
-    // TODO more stringent asserts
-    final long rawRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build()).getTotalRows();
-    assertEquals(2, rawRows);
+    final TableResult result = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.rawTableId(QUOTE)).build());
+    assertQueryResult(
+        List.of(
+            Map.of(
+                "_airbyte_raw_id", Optional.of("80c99b54-54b4-43bd-b51b-1f67dafa2c52"),
+                "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
+                "_airbyte_data", Optional.of(Jsons.deserialize(
+                    """
+                    {"id": 1, "updated_at": "2023-01-01T02:00:00Z", "string": "Alice", "struct": {"city": "San Diego", "state": "CA"}, "integer": 84}
+                    """))),
+            Map.of(
+                "_airbyte_raw_id", Optional.of("ad690bfb-c2c2-4172-bd73-a16c86ccbb67"),
+                "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
+                "_airbyte_data", Optional.of(Jsons.deserialize(
+                    """
+                    {"id": 2, "updated_at": "2023-01-01T03:00:00Z", "string": "Bob", "integer": "oops"}
+                    """)))),
+        result);
   }
 
   @Test
