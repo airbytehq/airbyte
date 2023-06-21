@@ -32,7 +32,7 @@ class FileBasedCursor:
             oldest_file = min(self._file_to_datetime_history.items(), key=lambda f: (f[1], f[0]))[0]
             del self._file_to_datetime_history[oldest_file]
 
-    def to_dict(self):
+    def get_state(self):
         state = {
             "history": self._file_to_datetime_history,
             "history_is_partial": self._history_is_partial,

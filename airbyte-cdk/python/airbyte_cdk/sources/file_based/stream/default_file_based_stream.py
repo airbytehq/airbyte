@@ -38,7 +38,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return self._cursor.to_dict()
+        return self._cursor.get_state()
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):

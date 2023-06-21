@@ -100,7 +100,7 @@ def test_add_file(files_to_add, expected_start_time, expected_state_dict):
     for index, f in enumerate(files_to_add):
         state.add_file(f)
         assert expected_start_time[index] == state._compute_start_time()
-    assert expected_state_dict == state.to_dict()
+    assert expected_state_dict == state.get_state()
 
 
 @pytest.mark.parametrize("files, expected_files_to_sync, max_history_size, history_is_partial", [
