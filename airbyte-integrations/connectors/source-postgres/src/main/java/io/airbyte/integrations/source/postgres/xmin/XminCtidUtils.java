@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.postgres.xmin;
 
+import static io.airbyte.integrations.source.postgres.xmin.PostgresXminHandler.shouldPerformFullSync;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
@@ -86,12 +88,6 @@ public class XminCtidUtils {
         .toList();
 
     return new StreamsCategorised(new CtidStreams(streamsForCtidSync, statesFromCtidSync), new XminStreams(streamsForXminSync, statesFromXminSync));
-  }
-
-  @VisibleForTesting
-  static boolean shouldPerformFullSync(final XminStatus currentXminStatus, final JsonNode streamState) {
-    // Detects whether source Postgres DB has undergone multiple wraparound events between syncs.
-    return streamState.has("num_wraparound") && (currentXminStatus.getNumWraparound() - streamState.get("num_wraparound").asLong() >= 2);
   }
 
   private static List<ConfiguredAirbyteStream> identifyNewlyAddedStreams(final ConfiguredAirbyteCatalog fullCatalog,
