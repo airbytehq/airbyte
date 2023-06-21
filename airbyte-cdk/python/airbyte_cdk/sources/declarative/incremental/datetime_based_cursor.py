@@ -50,7 +50,7 @@ class DatetimeBasedCursor(Cursor):
     datetime_format: str
     config: Config
     parameters: InitVar[Mapping[str, Any]]
-    _cursor: dict = field(repr=False, default=None)  # tracks current datetime
+    _cursor: str = field(repr=False, default=None)  # tracks current datetime
     end_datetime: Optional[Union[MinMaxDatetime, str]] = None
     step: Optional[Union[InterpolatedString, str]] = None
     cursor_granularity: Optional[str] = None
@@ -104,17 +104,10 @@ class DatetimeBasedCursor(Cursor):
         """
         self._cursor = stream_state.get(self.cursor_field.eval(self.config)) if stream_state else None
 
-    def update_state(self, record: Record) -> None:
-        """
-        Update the cursor value to the max datetime between the last record, the start of the stream_slice, and the current cursor value.
-
-        :param record: last record read
-        :return: None
-        """
-        record_value = record.get(self.cursor_field.eval(self.config)) if record else None
-
-        possible_cursor_values = list(filter(lambda item: item, [record_value, self._cursor]))
-        self._cursor = max(possible_cursor_values) if possible_cursor_values else None
+    def close_slice(self, stream_slice: StreamSlice) -> None:
+        stream_slice_value_end = self.parse_date(stream_slice.get(self.partition_field_end.eval(self.config)))
+        possible_cursor_values = list(filter(lambda item: item, [stream_slice_value_end, self.parse_date(self._cursor) if self._cursor else None]))
+        self._cursor = self._format_datetime(max(possible_cursor_values)) if possible_cursor_values else None
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         """
@@ -126,15 +119,16 @@ class DatetimeBasedCursor(Cursor):
         :return:
         """
         end_datetime = self._select_best_end_datetime()
-        lookback_delta = self._parse_timedelta(self.lookback_window.eval(self.config) if self.lookback_window else "P0D")
-
-        earliest_possible_start_datetime = min(self.start_datetime.get_datetime(self.config), end_datetime)
-        cursor_datetime = self._calculate_cursor_datetime_from_state(self.get_stream_state())
-        start_datetime = max(earliest_possible_start_datetime, cursor_datetime) - lookback_delta
-
+        start_datetime = self._calculate_earliest_possible_value(self._select_best_end_datetime())
         return self._partition_daterange(start_datetime, end_datetime, self._step)
 
-    def _select_best_end_datetime(self):
+    def _calculate_earliest_possible_value(self, end_datetime: datetime.datetime) -> datetime.datetime:
+        lookback_delta = self._parse_timedelta(self.lookback_window.eval(self.config) if self.lookback_window else "P0D")
+        earliest_possible_start_datetime = min(self.start_datetime.get_datetime(self.config), end_datetime)
+        cursor_datetime = self._calculate_cursor_datetime_from_state(self.get_stream_state())
+        return max(earliest_possible_start_datetime, cursor_datetime) - lookback_delta
+
+    def _select_best_end_datetime(self) -> datetime.datetime:
         now = datetime.datetime.now(tz=self._timezone)
         if not self.end_datetime:
             return now
@@ -233,3 +227,12 @@ class DatetimeBasedCursor(Cursor):
         if self.end_time_option and self.end_time_option.inject_into == option_type:
             options[self.end_time_option.field_name] = stream_slice.get(self.partition_field_end.eval(self.config))
         return options
+
+    def should_be_synced(self, record: Record) -> bool:
+        record_cursor_value = record.get(self.cursor_field.eval(self.config))
+        if not record_cursor_value:
+            return True
+
+        latest_possible_cursor_value = self._select_best_end_datetime()
+        earliest_possible_cursor_value = self._calculate_earliest_possible_value(latest_possible_cursor_value)
+        return earliest_possible_cursor_value <= self.parse_date(record_cursor_value) <= latest_possible_cursor_value

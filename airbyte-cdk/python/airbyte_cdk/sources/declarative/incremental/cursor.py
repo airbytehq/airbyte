@@ -5,7 +5,7 @@
 from abc import ABC, abstractmethod
 
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Record, StreamState
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
 class Cursor(ABC, StreamSlicer):
@@ -24,11 +24,11 @@ class Cursor(ABC, StreamSlicer):
         """
 
     @abstractmethod
-    def update_state(self, record: Record) -> None:
+    def close_slice(self, stream_slice: StreamSlice) -> None:
         """
         Update state based on the latest record
 
-        :param record: record read from the source
+        :param stream_slice: slice to close
         """
 
     @abstractmethod
@@ -42,4 +42,10 @@ class Cursor(ABC, StreamSlicer):
 
         For the first case, we are probably stuck with exposing the stream state. For the second, we can probably expose a method that
         allows for emitting the state to the platform.
+        """
+
+    @abstractmethod
+    def should_be_synced(self, record: Record) -> bool:
+        """
+        Evaluating if a record should be synced allows for filtering and stop condition on pagination
         """

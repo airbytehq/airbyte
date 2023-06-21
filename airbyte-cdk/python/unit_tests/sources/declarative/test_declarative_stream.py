@@ -142,3 +142,18 @@ def test_declarative_stream_with_add_fields_transform():
     assert stream.get_json_schema() == json_schema
     assert stream.state == state
     assert list(stream.read_records(SyncMode.full_refresh, cursor_field, input_slice, state)) == expected_records
+
+
+def test_state_checkpoint_interval():
+    stream = DeclarativeStream(
+        name="any name",
+        primary_key="any primary key",
+        stream_cursor_field="{{ parameters['cursor_field'] }}",
+        schema_loader=MagicMock(),
+        retriever=MagicMock(),
+        config={},
+        transformations=MagicMock(),
+        parameters={},
+    )
+
+    assert stream.state_checkpoint_interval is None

@@ -179,11 +179,9 @@ class PerPartitionCursor(Cursor):
         for state in stream_state["states"]:
             self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
 
-    def update_state(self, record: Record):
+    def close_slice(self, stream_slice: StreamSlice) -> None:
         try:
-            stream_slice = record.associated_slice
-            record_with_cursor_slice = Record(record.data, stream_slice.cursor_slice)
-            self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].update_state(record_with_cursor_slice)
+            self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].close_slice(stream_slice.cursor_slice)
         except KeyError as exception:
             raise KeyError(
                 f"Partition {str(exception)} could not be found in current state based on the record. This is unexpected because "
@@ -285,3 +283,9 @@ class PerPartitionCursor(Cursor):
         ) | self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].get_request_body_json(
             stream_state=stream_state, stream_slice=stream_slice.cursor_slice, next_page_token=next_page_token
         )
+
+    def should_be_synced(self, record: Record) -> bool:
+        partition_key = self._to_partition_key(record.associated_slice.partition)
+        if partition_key not in self._cursor_per_partition:
+            raise ValueError("Invalid state as stream slices that are emitted should refer to an existing cursor")
+        return self._cursor_per_partition[partition_key].should_be_synced(Record(record.data, record.associated_slice.cursor_slice))

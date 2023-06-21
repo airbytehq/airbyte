@@ -3,6 +3,7 @@
 #
 
 import json
+from copy import deepcopy
 from dataclasses import InitVar, dataclass, field
 from itertools import islice
 from json import JSONDecodeError
@@ -19,6 +20,7 @@ from airbyte_cdk.sources.declarative.partition_routers.single_partition_router i
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorStopCondition, StopConditionPaginationStrategyDecorator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -166,6 +168,9 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
 
+        # FIXME self.state if it's only updated per slice?
+        #  deprecate
+        #  send a message
         requester_mapping = requester_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
         requester_mapping_keys = set(requester_mapping.keys())
         paginator_mapping = paginator_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
@@ -409,23 +414,14 @@ class SimpleRetriever(Retriever, HttpStream):
         else:
             slice_state = {}
 
-        records_generator = self._read_pages(
+        yield from self._read_pages(
             self.parse_records,
             stream_slice,
             slice_state,
         )
-        cursor_updated = False
-        for record in records_generator:
-            # Only record messages should be parsed to update the cursor which is indicated by the Mapping type
-            if self.cursor and isinstance(record, Mapping):
-                self.cursor.update_state(record=record)
-                cursor_updated = True
-            yield record
-        if self.cursor and not cursor_updated:
-            last_record = self._last_records[-1] if self._last_records else None
-            if last_record and isinstance(last_record, Mapping):
-                self.cursor.update_state(record=last_record)
-            yield from []
+        if self.cursor:
+            self.cursor.close_slice(stream_slice)
+        return
 
     def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         """
@@ -447,7 +443,12 @@ class SimpleRetriever(Retriever, HttpStream):
     def state(self, value: StreamState):
         """State setter, accept state serialized by state getter."""
         if self.cursor:
-            self.stream_slicer.set_initial_state(value)
+            self.cursor.set_initial_state(value)
+
+        if hasattr(self.paginator, "pagination_strategy") and isinstance(self.paginator.pagination_strategy, StopConditionPaginationStrategyDecorator) and isinstance(self.paginator.pagination_strategy._stop_condition, CursorStopCondition):
+            self.paginator.pagination_strategy.state = value
+            # freezing cursor state for CursorStopCondition
+            self.paginator.pagination_strategy._stop_condition._cursor = deepcopy(self.cursor)
 
     def parse_records(
         self,

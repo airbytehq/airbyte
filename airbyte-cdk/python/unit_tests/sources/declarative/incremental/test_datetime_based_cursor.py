@@ -443,9 +443,6 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
         parameters={},
     )
     stream_slice = {"start_time": "2021-01-01T00:00:00.000000+0000", "end_time": "2021-01-04T00:00:00.000000+0000"}
-
-    slicer.set_initial_state(stream_slice)
-
     assert expected_req_params == slicer.get_request_params(stream_slice=stream_slice)
     assert expected_headers == slicer.get_request_headers(stream_slice=stream_slice)
     assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
@@ -562,6 +559,75 @@ def test_no_end_datetime(mock_datetime_now):
     )
     stream_slices = cursor.stream_slices()
     assert stream_slices == [{"start_time": "2021-01-01", "end_time": FAKE_NOW.strftime("%Y-%m-%d")}]
+
+
+def test_given_no_state_and_start_before_cursor_value_when_should_be_synced_then_return_true():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2021-01-01", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert cursor.should_be_synced(Record({cursor_field: "2022-01-01"}, ANY_SLICE))
+
+
+def test_given_no_state_and_start_after_cursor_value_when_should_be_synced_then_return_false():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2022-01-01", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert not cursor.should_be_synced(Record({cursor_field: "2021-01-01"}, ANY_SLICE))
+
+
+def test_given_state_earliest_to_start_datetime_when_should_be_synced_then_use_state_as_earliest_boundary():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2021-01-01", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    cursor.set_initial_state({cursor_field: "2023-01-01"})
+    assert not cursor.should_be_synced(Record({cursor_field: "2022-01-01"}, ANY_SLICE))
+
+
+def test_given_start_datetime_earliest_to_state_when_should_be_synced_then_use_start_datetime_as_earliest_boundary():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2023-01-01", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    cursor.set_initial_state({cursor_field: "2021-01-01"})
+    assert not cursor.should_be_synced(Record({cursor_field: "2022-01-01"}, ANY_SLICE))
+
+
+def test_given_end_datetime_before_cursor_value_when_should_be_synced_then_return_false():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2023-01-01", parameters={}),
+        end_datetime=MinMaxDatetime("2025-01-01", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert not cursor.should_be_synced(Record({cursor_field: "2030-01-01"}, ANY_SLICE))
+
+
+def test_given_record_without_cursor_value_when_should_be_synced_then_return_true():
+    cursor = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("3000-01-01", parameters={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
+        datetime_format="%Y-%m-%d",
+        config=config,
+        parameters={},
+    )
+    assert cursor.should_be_synced(Record({"record without cursor value": "any"}, ANY_SLICE))
 
 
 if __name__ == "__main__":
