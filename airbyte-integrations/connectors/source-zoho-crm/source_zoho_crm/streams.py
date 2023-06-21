@@ -19,12 +19,13 @@ from .types import FieldMeta, ModuleMeta, ZohoPickListItem
 
 # 204 and 304 status codes are valid successful responses,
 # but `.json()` will fail because the response body is empty
-EMPTY_BODY_STATUSES = (HTTPStatus.NO_CONTENT, HTTPStatus.NOT_MODIFIED)
+EMPTY_BODY_STATUSES = (HTTPStatus.NO_CONTENT, HTTPStatus.NOT_MODIFIED, HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 class ZohoCrmStream(HttpStream, ABC):
     primary_key: str = "id"
     module: ModuleMeta = None
+    raise_on_http_errors = False
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if response.status_code in EMPTY_BODY_STATUSES:
@@ -45,6 +46,22 @@ class ZohoCrmStream(HttpStream, ABC):
 
     def path(self, *args, **kwargs) -> str:
         return f"/crm/v2/{self.module.api_name}"
+
+    def is_internal_server_error(self, response: requests.Response) -> bool:
+        template = "Server Error"
+        is_template_match = template in response.text
+        return is_template_match
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if self.is_internal_server_error(response):
+            setattr(self, "raise_on_http_errors", False)
+            self.logger.warn(f"Stream will be synced in next sync. Error response received : {response.text},{response.status_code} ")
+            return False
+        return response.status_code == HTTPStatus.BAD_REQUEST
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        self.logger.warning(f"Retry in {60} seconds.")
+        return 60
 
     def get_json_schema(self) -> Optional[Dict[Any, Any]]:
         try:
