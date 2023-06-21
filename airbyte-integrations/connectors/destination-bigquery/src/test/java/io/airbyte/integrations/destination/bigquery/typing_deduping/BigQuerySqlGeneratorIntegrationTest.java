@@ -233,7 +233,6 @@ public class BigQuerySqlGeneratorIntegrationTest {
     logAndExecute(sql);
 
     final TableResult result = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build());
-
     assertQueryResult(
         List.of(
             Map.of(
@@ -244,7 +243,6 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     """
                     {"city": "San Francisco", "state": "CA"}
                     """)),
-                "integer", Optional.empty(),
                 "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
                 "_airbyte_meta", Optional.of(Jsons.deserialize(
                     """
@@ -258,7 +256,6 @@ public class BigQuerySqlGeneratorIntegrationTest {
                     """
                     {"city": "San Diego", "state": "CA"}
                     """)),
-                "integer", Optional.empty(),
                 "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
                 "_airbyte_meta", Optional.of(Jsons.deserialize(
                     """
@@ -269,6 +266,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 "updated_at", Optional.of(Instant.parse("2023-01-01T03:00:00Z")),
                 "string", Optional.of("Bob"),
                 "struct", Optional.empty(),
+                "integer", Optional.empty(),
                 "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
                 "_airbyte_meta", Optional.of(Jsons.deserialize(
                     """
@@ -300,9 +298,34 @@ public class BigQuerySqlGeneratorIntegrationTest {
     final String sql = GENERATOR.dedupFinalTable(streamId, "", PRIMARY_KEY, CURSOR, COLUMNS);
     logAndExecute(sql);
 
-    // TODO more stringent asserts
-    final long finalRows = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build()).getTotalRows();
-    assertEquals(2, finalRows);
+    final TableResult result = bq.query(QueryJobConfiguration.newBuilder("SELECT * FROM " + streamId.finalTableId(QUOTE)).build());
+    assertQueryResult(
+        List.of(
+            Map.of(
+                "id", Optional.of(1L),
+                "updated_at", Optional.of(Instant.parse("2023-01-01T02:00:00Z")),
+                "string", Optional.of("Alice"),
+                "struct", Optional.of(Jsons.deserialize(
+                        """
+                        {"city": "San Diego", "state": "CA"}
+                        """)),
+                "integer", Optional.of(84L),
+                "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
+                "_airbyte_meta", Optional.of(Jsons.deserialize(
+                        """
+                        {"errors":[]}
+                        """))),
+            Map.of(
+                "id", Optional.of(2L),
+                "updated_at", Optional.of(Instant.parse("2023-01-01T03:00:00Z")),
+                "string", Optional.of("Bob"),
+                "struct", Optional.empty(),
+                "_airbyte_extracted_at", Optional.of(Instant.parse("2023-01-01T00:00:00Z")),
+                "_airbyte_meta", Optional.of(Jsons.deserialize(
+                        """
+                        {"errors":["blah blah integer"]}
+                        """)))),
+        result);
   }
 
   @Test
