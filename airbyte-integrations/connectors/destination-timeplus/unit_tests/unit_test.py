@@ -1,7 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from destination_timeplus import DestinationTimeplus
+
 
 def test_type_mapping():
     expected={
