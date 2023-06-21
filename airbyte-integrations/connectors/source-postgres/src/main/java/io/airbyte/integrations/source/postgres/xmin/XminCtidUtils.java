@@ -36,19 +36,19 @@ public class XminCtidUtils {
     final Set<AirbyteStreamNameNamespacePair> streamsStillInCtidSync = new HashSet<>();
 
     if (rawStateMessages != null) {
-      rawStateMessages.forEach(s -> {
-        final JsonNode streamState = s.getStream().getStreamState();
-        final StreamDescriptor streamDescriptor = s.getStream().getStreamDescriptor();
+      rawStateMessages.forEach(stateMessage -> {
+        final JsonNode streamState = stateMessage.getStream().getStreamState();
+        final StreamDescriptor streamDescriptor = stateMessage.getStream().getStreamDescriptor();
         if (streamState == null || streamDescriptor == null) {
           return;
         }
-        final AirbyteStateMessage clonedState = Jsons.clone(s);
+
         if (streamState.has("state_type")) {
           if (streamState.get("state_type").asText().equalsIgnoreCase("ctid")) {
-            statesFromCtidSync.add(clonedState);
+            statesFromCtidSync.add(stateMessage);
             streamsStillInCtidSync.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
           } else if (streamState.get("state_type").asText().equalsIgnoreCase("xmin")) {
-            statesFromXminSync.add(clonedState);
+            statesFromXminSync.add(stateMessage);
           } else {
             throw new RuntimeException("Unknown state type: " + streamState.get("state_type").asText());
           }

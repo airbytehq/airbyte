@@ -271,7 +271,7 @@ class XminPostgresSourceTest {
     final List<AirbyteStateMessage> stateAfterSyncWithCtidState = extractStateMessage(recordsFromSyncRunningWithACtidState);
     // Since only 2 records should be emitted so 2 state messages are expected
     assertEquals(2, stateAfterSyncWithCtidState.size());
-    assertEqualsCtidState(secondStateMessage.getStream().getStreamState(), stateAfterSyncWithCtidState.get(0).getStream().getStreamState());
+    assertEquals(secondStateMessage, stateAfterSyncWithCtidState.get(0));
     assertEquals(thirdStateMessage, stateAfterSyncWithCtidState.get(1));
 
     assertMessageSequence(recordsFromSyncRunningWithACtidState);
@@ -317,22 +317,6 @@ class XminPostgresSourceTest {
         .get("xmin_xid_value").asLong());
     assertTrue(finalStateMesssage.getStream().getStreamState().get("xmin_raw_value").asLong() > thirdStateMessage.getStream().getStreamState()
         .get("xmin_raw_value").asLong());
-  }
-
-  private void assertEqualsCtidState(final JsonNode left, final JsonNode right) {
-    assertEquals(left.get("version").asText(), right.get("version").asText());
-    assertEquals(left.get("state_type").asText(), right.get("state_type").asText());
-    assertEquals(left.get("ctid").asText(), right.get("ctid").asText());
-    assertEqualsXminState(left.get("incremental_state"), right.get("incremental_state"));
-    assertEquals(left.get("relation_filenode"), right.get("relation_filenode"));
-  }
-
-  private void assertEqualsXminState(final JsonNode left, final JsonNode right) {
-    assertEquals(left.get("version").asText(), right.get("version").asText());
-    assertEquals(left.get("state_type").asText(), right.get("state_type").asText());
-    assertEquals(left.get("num_wraparound").asText(), right.get("num_wraparound").asText());
-    assertEquals(left.get("xmin_xid_value").asText(), right.get("xmin_xid_value").asText());
-    assertEquals(left.get("xmin_raw_value").asText(), right.get("xmin_raw_value").asText());
   }
 
   // Assert that the state message is the last message to be emitted.

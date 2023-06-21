@@ -54,6 +54,10 @@ public class CtidStateManager {
           }
           if (validateRelationFileNode(ctidStatus, pair, fileNodes)) {
             localMap.put(pair, ctidStatus);
+          } else {
+            LOGGER.warn(
+                "The relation file node for table in source db {} is not equal to the saved ctid state, a full sync from scratch will be triggered.",
+                pair);
           }
         }
       }

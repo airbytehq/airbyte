@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.source.postgres.xmin.XminStateManager.XMIN_STATE_VERSION;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -95,7 +96,7 @@ public class PostgresQueryUtils {
         .withNumWraparound(result.get(NUM_WRAPAROUND_COL).asLong())
         .withXminXidValue(result.get(XMIN_XID_VALUE_COL).asLong())
         .withXminRawValue(result.get(XMIN_RAW_VALUE_COL).asLong())
-        .withVersion(2L)
+        .withVersion(XMIN_STATE_VERSION)
         .withStateType(StateType.XMIN);
   }
 
