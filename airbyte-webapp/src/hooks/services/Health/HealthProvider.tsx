@@ -10,7 +10,11 @@ export interface Context {
 const HealthContext = createContext<Context | null>(null);
 
 export const HealthProvider: React.FC = ({ children }) => {
-  const [healthData, setHealthData] = useState<HealthCheckRead>({ available: false, isPaymentFailed: false });
+  const [healthData, setHealthData] = useState<HealthCheckRead>({
+    available: false,
+    isPaymentFailed: false,
+    isUpdatePaymentMethod: false,
+  });
 
   const ctx = useMemo<Context>(() => ({ healthData, setHealthData }), [healthData]);
 
