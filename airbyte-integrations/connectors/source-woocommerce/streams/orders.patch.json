@@ -2,8 +2,10 @@
   "properties": {
     "tax_lines": {
       "items": {
-        "rate_id": {
-          "type": ["null", "integer"]
+        "properties": {
+          "rate_id": {
+            "type": ["null", "integer"]
+          }
         }
       }
     }
