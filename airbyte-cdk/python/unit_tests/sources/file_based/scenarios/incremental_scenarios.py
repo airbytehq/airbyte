@@ -1288,3 +1288,139 @@ multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_time
         }
         ],
     ))).build()
+
+multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps_scenario = (
+    TestScenarioBuilder()
+    .set_name("multi_csv_sync_recent_files_if_history_is_incomplete__different_timestamps")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "file_type": "csv",
+                    "globs": ["*.csv"],
+                    "validation_policy": "emit_record_on_schema_mismatch",
+                    "max_history_size": 3,
+                    "days_to_sync_if_history_is_full": 3,
+                }
+            ]
+        }
+    )
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("val11a", "val12a"),
+                    ("val21a", "val22a"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000000Z",
+            },
+            "b.csv": {
+                "contents": [
+                    ("col1", "col2", "col3"),
+                    ("val11b", "val12b", "val13b"),
+                    ("val21b", "val22b", "val23b"),
+                ],
+                "last_modified": "2023-06-06T03:54:07.000000Z",
+            },
+            "c.csv": {
+                "contents": [
+                    ("col1", "col2", "col3"),
+                    ("val11c", "val12c", "val13c"),
+                    ("val21c", "val22c", "val23c"),
+                ],
+                "last_modified": "2023-06-07T03:54:07.000000Z",
+            },
+            "d.csv": {
+                "contents": [
+                    ("col1", "col2", "col3"),
+                    ("val11d", "val12d", "val13d"),
+                    ("val21d", "val22d", "val23d"),
+                ],
+                "last_modified": "2023-06-08T03:54:07.000000Z",
+            },
+        }
+    )
+    .set_file_type("csv")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "col1": {
+                                "type": ["null", "string"]
+                            },
+                            "col2": {
+                                "type": ["null", "string"]
+                            },
+                            "col3": {
+                                "type": ["null", "string"]
+                            },
+                            "_ab_source_file_last_modified": {
+                                "type": "string"
+                            },
+                            "_ab_source_file_url": {
+                                "type": "string"
+                            },
+                        }
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                }
+            ]
+        }
+    )
+    .set_expected_records(
+        [
+            {"col1": "val11a", "col2": "val12a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+             "_ab_source_file_url": "a.csv"},
+            {"col1": "val21a", "col2": "val22a", "_ab_source_file_last_modified": "2023-06-05T03:54:07Z",
+             "_ab_source_file_url": "a.csv"},
+            {
+                "stream1": {
+                    "history": {
+                        "a.csv": "2023-06-05T03:54:07.000000Z",
+                        "c.csv": "2023-06-07T03:54:07.000000Z",
+                        "d.csv": "2023-06-08T03:54:07.000000Z",
+                    },
+                    "history_is_partial": True,
+                }
+            },
+            {"col1": "val11b", "col2": "val12b", "col3": "val13b", "_ab_source_file_last_modified": "2023-06-06T03:54:07Z",
+             "_ab_source_file_url": "b.csv"},
+            {"col1": "val21b", "col2": "val22b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-06T03:54:07Z",
+             "_ab_source_file_url": "b.csv"},
+            {
+                "stream1": {
+                    "history": {
+                        "b.csv": "2023-06-06T03:54:07.000000Z",
+                        "c.csv": "2023-06-07T03:54:07.000000Z",
+                        "d.csv": "2023-06-08T03:54:07.000000Z",
+                    },
+                    "history_is_partial": True,
+                }
+            },
+        ]
+    )
+    .set_incremental_scenario_config(IncrementalScenarioConfig(
+        input_state=[{
+            "type": "STREAM",
+            "stream": {
+                "stream_state": {
+                    "history": {
+                        "old_file.csv": "2023-06-05T00:00:00.000000Z",
+                        "c.csv": "2023-06-07T03:54:07.000000Z",
+                        "d.csv": "2023-06-08T03:54:07.000000Z",
+                    },
+                    "history_is_partial": True,
+                },
+                "stream_descriptor": {"name": "stream1"}
+            }
+        }
+        ],
+    ))).build()
