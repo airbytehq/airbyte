@@ -16,5 +16,5 @@ data:
   name: Gainsight Px
   releaseDate: TODO
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/gainsight-px
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gainsight-px
 metadataSpecVersion: "1.0"
