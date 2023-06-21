@@ -30,7 +30,9 @@ class PerPartitionKeySerializer:
             all_dict = all(isinstance(item, dict) for item in to_serialize)
             any_dict = any(isinstance(item, dict) for item in to_serialize)
             if any_dict and not all_dict:
-                raise ValueError("Error trying to serialize partition key: if one dict is list, all items from list are expected to be dict")
+                raise ValueError(
+                    "Error trying to serialize partition key: if one dict is list, all items from list are expected to be dict"
+                )
 
             if all_dict:
                 yield *previous_keys, tuple([PerPartitionKeySerializer.to_partition_key(dictionary) for dictionary in to_serialize])
