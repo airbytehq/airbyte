@@ -132,6 +132,7 @@ Airbyte has the ability to connect to the Oracle source with 3 network connectiv
 
 | Version | Date       | Pull Request | Subject                                         |
 |:--------|:-----------| :--- |:------------------------------------------------|
+| 0.3.25  | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212) | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                                                  |
 | 0.3.24  | 2023-03-22 | [20760](https://github.com/airbytehq/airbyte/pull/20760)   | Removed redundant date-time datatypes formatting   |
 | 0.3.23  | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455)   | For network isolation, source connector accepts a list of hosts it is allowed to connect to |
 | 0.3.22  | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346)   | Consolidate date/time values mapping for JDBC sources                          |

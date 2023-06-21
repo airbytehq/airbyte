@@ -389,10 +389,22 @@ class SimpleRetriever(Retriever, HttpStream):
         # Warning: use self.state instead of the stream_state passed as argument!
         stream_slice = stream_slice or {}  # None-check
         self.paginator.reset()
+        # Note: Adding the state per partition led to a difficult situation where the state for a partition is not the same as the
+        # stream_state. This means that if any class downstream wants to access the state, it would need to perform some kind of selection
+        # based on the partition. To short circuit this, we do the selection here which avoid downstream classes to know about it the
+        # partition. We have generified the problem to the stream slice instead of the partition because it is the level of abstraction
+        # streams know (they don't know about partitions). However, we're still unsure as how it will evolve since we can't see any other
+        # cursor doing selection per slice. We don't want to pollute the interface. Therefore, we will keep the `hasattr` hack for now.
+        # * What is the information we need to clean the hasattr? Once we will have another case where we need to select a state, we will
+        #    know if the abstraction using `stream_slice` so select to state is the right one and validate if the interface makes sense.
+        # * Why is this abstraction not on the DeclarativeStream level? DeclarativeStream does not have a notion of stream slicers and we
+        #    would like to avoid exposing the stream state outside of the cursor. This case is needed as of 2023-06-14 because of
+        #    interpolation.
+        slice_state = self.stream_slicer.select_state(stream_slice) if hasattr(self.stream_slicer, "select_state") else stream_state
         records_generator = self._read_pages(
             self.parse_records,
             stream_slice,
-            stream_state,
+            slice_state,
         )
         cursor_updated = False
         for record in records_generator:

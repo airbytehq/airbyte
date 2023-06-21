@@ -12,7 +12,7 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
@@ -585,10 +585,9 @@ list_stream:
 
     assert isinstance(stream, DeclarativeStream)
     assert isinstance(stream.retriever, SimpleRetriever)
-    assert isinstance(stream.retriever.stream_slicer, CartesianProductStreamSlicer)
-    assert len(stream.retriever.stream_slicer.stream_slicers) == 2
+    assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
 
-    datetime_stream_slicer = stream.retriever.stream_slicer.stream_slicers[0]
+    datetime_stream_slicer = stream.retriever.stream_slicer._cursor_factory.create()
     assert isinstance(datetime_stream_slicer, DatetimeBasedCursor)
     assert isinstance(datetime_stream_slicer.start_datetime, MinMaxDatetime)
     assert datetime_stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
@@ -597,7 +596,7 @@ list_stream:
     assert datetime_stream_slicer.step == "P10D"
     assert datetime_stream_slicer.cursor_field.string == "created"
 
-    list_stream_slicer = stream.retriever.stream_slicer.stream_slicers[1]
+    list_stream_slicer = stream.retriever.stream_slicer._partition_router
     assert isinstance(list_stream_slicer, ListPartitionRouter)
     assert list_stream_slicer.values == ["airbyte", "airbyte-cloud"]
     assert list_stream_slicer.cursor_field.string == "a_key"
@@ -1260,7 +1259,7 @@ class TestCreateTransformations:
 
 
 @pytest.mark.parametrize(
-    "incremental, partition_router, expected_type, expected_slicer_count",
+    "incremental, partition_router, expected_type",
     [
         pytest.param(
             {
@@ -1274,7 +1273,6 @@ class TestCreateTransformations:
             },
             None,
             DatetimeBasedCursor,
-            1,
             id="test_create_simple_retriever_with_incremental",
         ),
         pytest.param(
@@ -1285,7 +1283,6 @@ class TestCreateTransformations:
                 "cursor_field": "a_key",
             },
             ListPartitionRouter,
-            1,
             id="test_create_simple_retriever_with_partition_router",
         ),
         pytest.param(
@@ -1303,8 +1300,7 @@ class TestCreateTransformations:
                 "values": "{{config['repos']}}",
                 "cursor_field": "a_key",
             },
-            CartesianProductStreamSlicer,
-            2,
+            PerPartitionCursor,
             id="test_create_simple_retriever_with_incremental_and_partition_router",
         ),
         pytest.param(
@@ -1329,14 +1325,13 @@ class TestCreateTransformations:
                     "cursor_field": "b_key",
                 },
             ],
-            CartesianProductStreamSlicer,
-            2,
+            PerPartitionCursor,
             id="test_create_simple_retriever_with_partition_routers_multiple_components",
         ),
-        pytest.param(None, None, SinglePartitionRouter, 1, id="test_create_simple_retriever_with_no_incremental_or_partition_router"),
+        pytest.param(None, None, SinglePartitionRouter, id="test_create_simple_retriever_with_no_incremental_or_partition_router"),
     ],
 )
-def test_merge_incremental_and_partition_router(incremental, partition_router, expected_type, expected_slicer_count):
+def test_merge_incremental_and_partition_router(incremental, partition_router, expected_type):
     stream_model = {
         "type": "DeclarativeStream",
         "retriever": {
@@ -1369,9 +1364,14 @@ def test_merge_incremental_and_partition_router(incremental, partition_router, e
     assert isinstance(stream.retriever, SimpleRetriever)
     assert isinstance(stream.retriever.stream_slicer, expected_type)
 
-    if expected_slicer_count > 1:
-        assert isinstance(stream.retriever.stream_slicer, CartesianProductStreamSlicer)
-        assert len(stream.retriever.stream_slicer.stream_slicers) == expected_slicer_count
+    if incremental and partition_router:
+        assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
+        if type(partition_router) == list and len(partition_router) > 1:
+            assert type(stream.retriever.stream_slicer._partition_router) == CartesianProductStreamSlicer
+            assert len(stream.retriever.stream_slicer._partition_router.stream_slicers) == len(partition_router)
+    elif partition_router and type(partition_router) == list and len(partition_router) > 1:
+        assert isinstance(stream.retriever.stream_slicer, PerPartitionCursor)
+        assert len(stream.retriever.stream_slicer.stream_slicerS) == len(partition_router)
 
 
 def test_simple_retriever_emit_log_messages():
