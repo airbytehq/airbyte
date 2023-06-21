@@ -93,7 +93,10 @@ class AsyncFlush implements DestinationFlushFunction {
 
   @Override
   public long getOptimalBatchSizeBytes() {
-    // todo(davin): this should be per-destination specific. currently this is for Snowflake.
+    // todo(ryankfu): this should be per-destination specific. currently this is for Snowflake.
+    // The size chosen is currently for improving the performance of low memory connectors. With 1 Gi of resources
+    // the connector will usually at most fill up around 150 MB in a single queue. By lowering the batch size, the AsyncFlusher
+    // will flush in smaller batches which allows for memory to be freed earlier similar to a sliding window effect
     return 50 * 1024 * 1024;
   }
 
