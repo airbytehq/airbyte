@@ -31,8 +31,8 @@ from source_stripe.streams import (
     Events,
     ExternalAccountBankAccounts,
     ExternalAccountCards,
-    Files,
     FileLinks,
+    Files,
     InvoiceItems,
     InvoiceLineItems,
     Invoices,
@@ -51,9 +51,9 @@ from source_stripe.streams import (
     SubscriptionSchedule,
     TopUps,
     Transactions,
-    Transfers,
     TransferReversals,
-    UsageRecords
+    Transfers,
+    UsageRecords,
 )
 
 
