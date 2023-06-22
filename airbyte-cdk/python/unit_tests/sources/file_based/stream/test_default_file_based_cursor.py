@@ -237,5 +237,6 @@ def test_should_sync_file(file_name, last_modified, earliest_dt_in_history, shou
 
     cursor.add_file(RemoteFile(uri="b.csv", last_modified=earliest_dt_in_history, file_type="csv"))
     cursor._start_time = cursor._compute_start_time()
+    cursor._initial_earliest_file_in_history = cursor._compute_earliest_file_in_history()
 
     assert bool(list(cursor.get_files_to_sync([RemoteFile(uri=file_name, last_modified=last_modified, file_type="csv")]))) == should_sync_file

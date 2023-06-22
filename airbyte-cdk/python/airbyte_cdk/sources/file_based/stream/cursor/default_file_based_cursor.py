@@ -34,13 +34,14 @@ class DefaultFileBasedCursor(FileBasedCursor):
     def set_initial_state(self, value: Mapping[str, Any]):
         self._file_to_datetime_history = value.get("history", {})
         self._start_time = self._compute_start_time()
+        self._initial_earliest_file_in_history = self._compute_earliest_file_in_history()
 
     def add_file(self, file: RemoteFile):
         self._file_to_datetime_history[file.uri] = file.last_modified.strftime(DATE_TIME_FORMAT)
         if len(self._file_to_datetime_history) > self._max_history_size:
             # Get the earliest file based on its last modified date and its uri
-            oldest_file = self._get_earliest_file_and_datetime()[0]
-            del self._file_to_datetime_history[oldest_file]
+            oldest_file = self._compute_earliest_file_in_history()
+            del self._file_to_datetime_history[oldest_file.uri]
 
     def get_state(self):
         state = {
@@ -65,9 +66,9 @@ class DefaultFileBasedCursor(FileBasedCursor):
                 # -> Only sync if the file is lexically greater than the earliest file in the state's history
                 # 2. last_modified == start_time < earliest datetime in the state's history
                 # -> Sync the file
-                earliest_file_uri, earliest_datetime = self._get_earliest_file_and_datetime()
-                earliest_datetime = datetime.strptime(earliest_datetime, DATE_TIME_FORMAT)
-                return file.last_modified < earliest_datetime or (file.uri > earliest_file_uri)
+                return file.last_modified < self._initial_earliest_file_in_history.last_modified or (
+                    file.uri > self._initial_earliest_file_in_history.uri
+                )
             else:  # file.last_modified < self.get_start_time()
                 return False
         else:
@@ -87,15 +88,16 @@ class DefaultFileBasedCursor(FileBasedCursor):
     def get_start_time(self):
         return self._start_time
 
-    def _get_earliest_file_and_datetime(self) -> Tuple[str, str]:
-        return min(self._file_to_datetime_history.items(), key=lambda f: (f[1], f[0]))
+    def _compute_earliest_file_in_history(self) -> RemoteFile:
+        filename, last_modified = min(self._file_to_datetime_history.items(), key=lambda f: (f[1], f[0]))
+        return RemoteFile(uri=filename, last_modified=datetime.strptime(last_modified, DATE_TIME_FORMAT))
 
     def _compute_start_time(self) -> datetime:
         if not self._file_to_datetime_history:
             return datetime.min
         else:
             earliest = min(self._file_to_datetime_history.values())
-            earliest_dt = datetime.strptime(earliest, "%Y-%m-%dT%H:%M:%S.%fZ")
+            earliest_dt = datetime.strptime(earliest, DATE_TIME_FORMAT)
             if self.is_history_partial():
                 time_window = datetime.now() - self._time_window_if_history_is_full
                 earliest_dt = min(earliest_dt, time_window)
