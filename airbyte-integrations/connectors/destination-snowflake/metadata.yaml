@@ -22,8 +22,8 @@ data:
     jobSpecific:
       - jobType: sync
         resourceRequirements:
-          memory_limit: 1Gi
-          memory_request: 1Gi
+          memory_limit: 2Gi
+          memory_request: 2Gi
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   supportsDbt: true
   tags:

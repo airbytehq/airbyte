@@ -19,6 +19,12 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  resourceRequirements:
+    jobSpecific:
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 500Mi
+          memory_request: 500Mi
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-data-api
   tags:
     - language:python

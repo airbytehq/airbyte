@@ -9,12 +9,12 @@ import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUti
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.setEmittedAtToNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
@@ -38,9 +38,12 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -92,12 +95,12 @@ class XminPostgresSourceTest {
 
   private static final ConfiguredAirbyteCatalog CONFIGURED_XMIN_CATALOG = toConfiguredXminCatalog(CATALOG);
 
-  private static final Set<AirbyteMessage> INITIAL_RECORD_MESSAGES = Sets.newHashSet(
+  private static final List<AirbyteMessage> INITIAL_RECORD_MESSAGES = Arrays.asList(
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", null, "name", "piccolo", "power", null)));
 
-  private static final Set<AirbyteMessage> NEXT_RECORD_MESSAGES = Sets.newHashSet(
+  private static final List<AirbyteMessage> NEXT_RECORD_MESSAGES = Arrays.asList(
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "gohan", "power", 222.1)));
 
   private static PostgreSQLContainer<?> PSQL_DB;
@@ -128,7 +131,7 @@ class XminPostgresSourceTest {
             "CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");
         ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
         ctx.fetch(
-            "INSERT INTO id_and_name (id, name, power) VALUES (2, 'vegeta', 9000.1), (1,'goku', 'Infinity'), ('NaN', 'piccolo', '-Infinity');");
+            "INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'), (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
         ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
         ctx.fetch(
@@ -169,6 +172,7 @@ class XminPostgresSourceTest {
         .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
         .put(JdbcUtils.SSL_KEY, false)
         .put("replication_method", getReplicationMethod())
+        .put("sync_checkpoint_records", 1)
         .build());
   }
 
@@ -202,30 +206,88 @@ class XminPostgresSourceTest {
         CONFIGURED_XMIN_CATALOG
             .withStreams(CONFIGURED_XMIN_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(
                 Collectors.toList()));
-    final List<AirbyteMessage> actualMessages =
+    final List<AirbyteMessage> recordsFromFirstSync =
         MoreIterators.toList(new PostgresSource().read(getXminConfig(PSQL_DB, dbName), configuredCatalog, null));
-    setEmittedAtToNull(actualMessages);
-    assertThat(filterRecords(actualMessages)).containsExactlyInAnyOrderElementsOf(INITIAL_RECORD_MESSAGES);
+    setEmittedAtToNull(recordsFromFirstSync);
+    assertThat(filterRecords(recordsFromFirstSync)).containsExactlyElementsOf(INITIAL_RECORD_MESSAGES);
 
     // Extract the state message and assert that it exists. It contains the xmin value, so validating
     // the actual value isn't useful right now.
-    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(actualMessages);
-    assertThat(stateAfterFirstBatch.size()).isEqualTo(1);
-    JsonNode state = Jsons.jsonNode(stateAfterFirstBatch);
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(recordsFromFirstSync);
+    // We should have 3 state messages because we have set state emission frequency after each record in
+    // the test
+    assertEquals(3, stateAfterFirstBatch.size());
+
+    final AirbyteStateMessage firstStateMessage = stateAfterFirstBatch.get(0);
+    final String stateTypeFromFirstStateMessage = firstStateMessage.getStream().getStreamState().get("state_type").asText();
+    final String ctidFromFirstStateMessage = firstStateMessage.getStream().getStreamState().get("ctid").asText();
+    final JsonNode incrementalStateFromFirstStateMessage = firstStateMessage.getStream().getStreamState().get("incremental_state");
+
+    final AirbyteStateMessage secondStateMessage = stateAfterFirstBatch.get(1);
+    final String stateTypeFromSecondStateMessage = secondStateMessage.getStream().getStreamState().get("state_type").asText();
+    final String ctidFromSecondStateMessage = secondStateMessage.getStream().getStreamState().get("ctid").asText();
+    final JsonNode incrementalStateFromSecondStateMessage = secondStateMessage.getStream().getStreamState().get("incremental_state");
+
+    final AirbyteStateMessage thirdStateMessage = stateAfterFirstBatch.get(2);
+    final String stateTypeFromThirdStateMessage = thirdStateMessage.getStream().getStreamState().get("state_type").asText();
+
+    // First two state messages should be of ctid type
+    assertEquals("ctid", stateTypeFromFirstStateMessage);
+    assertEquals("ctid", stateTypeFromSecondStateMessage);
+
+    // Since the third state message would be the final, it should be of xmin type
+    assertEquals("xmin", stateTypeFromThirdStateMessage);
+
+    // The ctid value from second state message should be bigger than first state message
+    assertEquals(1, ctidFromSecondStateMessage.compareTo(ctidFromFirstStateMessage));
+
+    // The incremental state value from first and second state message should be the same
+    assertNotNull(incrementalStateFromFirstStateMessage);
+    assertNotNull(incrementalStateFromSecondStateMessage);
+    assertEquals(incrementalStateFromFirstStateMessage, incrementalStateFromSecondStateMessage);
+
+    // The third state message should be equal to incremental_state of first two state messages
+    assertEquals(incrementalStateFromFirstStateMessage, thirdStateMessage.getStream().getStreamState());
 
     // Assert that the last message in the sequence is a state message
-    assertMessageSequence(actualMessages);
+    assertMessageSequence(recordsFromFirstSync);
 
-    // Second read, should return no data
-    final List<AirbyteMessage> nextMessages =
-        MoreIterators.toList(new PostgresSource().read(getXminConfig(PSQL_DB, dbName), configuredCatalog, state));
-    setEmittedAtToNull(nextMessages);
-    assertThat(filterRecords(nextMessages)).isEmpty();
+    // Sync should work with a ctid state
+    final List<AirbyteMessage> recordsFromSyncRunningWithACtidState =
+        MoreIterators.toList(new PostgresSource().read(getXminConfig(PSQL_DB, dbName), configuredCatalog,
+            Jsons.jsonNode(Collections.singletonList(firstStateMessage))));
+    setEmittedAtToNull(recordsFromSyncRunningWithACtidState);
+    final List<AirbyteMessage> expectedDataFromSyncUsingFirstCtidState = new ArrayList<>(2);
+    final AtomicBoolean skippedFirstRecord = new AtomicBoolean(false);
+    INITIAL_RECORD_MESSAGES.forEach(c -> {
+      if (!skippedFirstRecord.get()) {
+        skippedFirstRecord.set(true);
+        return;
+      }
+      expectedDataFromSyncUsingFirstCtidState.add(c);
+    });
+    assertThat(filterRecords(recordsFromSyncRunningWithACtidState)).containsExactlyElementsOf(expectedDataFromSyncUsingFirstCtidState);
+
+    final List<AirbyteStateMessage> stateAfterSyncWithCtidState = extractStateMessage(recordsFromSyncRunningWithACtidState);
+    // Since only 2 records should be emitted so 2 state messages are expected
+    assertEquals(2, stateAfterSyncWithCtidState.size());
+    assertEquals(secondStateMessage, stateAfterSyncWithCtidState.get(0));
+    assertEquals(thirdStateMessage, stateAfterSyncWithCtidState.get(1));
+
+    assertMessageSequence(recordsFromSyncRunningWithACtidState);
+
+    // Read with the final xmin state message should return no data
+    final List<AirbyteMessage> syncWithXminStateType =
+        MoreIterators.toList(new PostgresSource().read(getXminConfig(PSQL_DB, dbName), configuredCatalog,
+            Jsons.jsonNode(Collections.singletonList(thirdStateMessage))));
+    setEmittedAtToNull(syncWithXminStateType);
+    assertEquals(0, filterRecords(syncWithXminStateType).size());
 
     // Even though no records were emitted, a state message is still expected
-    final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessage(nextMessages);
-    assertThat(stateAfterFirstBatch.size()).isEqualTo(1);
-    state = Jsons.jsonNode(stateAfterSecondBatch);
+    final List<AirbyteStateMessage> stateAfterXminSync = extractStateMessage(syncWithXminStateType);
+    assertEquals(1, stateAfterXminSync.size());
+    // Since no records were returned so the state should be the same as before
+    assertEquals(thirdStateMessage, stateAfterXminSync.get(0));
 
     // We add some data and perform a third read. We should verify that (i) a delete is not captured and
     // (ii) the new record that is inserted into the
@@ -239,21 +301,27 @@ class XminPostgresSourceTest {
       });
     }
 
-    final List<AirbyteMessage> lastMessages =
-        MoreIterators.toList(new PostgresSource().read(getXminConfig(PSQL_DB, dbName), configuredCatalog, state));
-    setEmittedAtToNull(lastMessages);
-    assertThat(filterRecords(lastMessages)).containsExactlyInAnyOrderElementsOf(NEXT_RECORD_MESSAGES);
-    assertMessageSequence(lastMessages);
+    final List<AirbyteMessage> recordsAfterLastSync =
+        MoreIterators.toList(new PostgresSource().read(getXminConfig(PSQL_DB, dbName), configuredCatalog,
+            Jsons.jsonNode(Collections.singletonList(stateAfterXminSync.get(0)))));
+    setEmittedAtToNull(recordsAfterLastSync);
+    assertThat(filterRecords(recordsAfterLastSync)).containsExactlyElementsOf(NEXT_RECORD_MESSAGES);
+    assertMessageSequence(recordsAfterLastSync);
+    final List<AirbyteStateMessage> stateAfterLastSync = extractStateMessage(recordsAfterLastSync);
+    assertEquals(1, stateAfterLastSync.size());
+
+    final AirbyteStateMessage finalStateMesssage = stateAfterLastSync.get(0);
+    final String stateTypeFromFinalStateMessage = finalStateMesssage.getStream().getStreamState().get("state_type").asText();
+    assertEquals("xmin", stateTypeFromFinalStateMessage);
+    assertTrue(finalStateMesssage.getStream().getStreamState().get("xmin_xid_value").asLong() > thirdStateMessage.getStream().getStreamState()
+        .get("xmin_xid_value").asLong());
+    assertTrue(finalStateMesssage.getStream().getStreamState().get("xmin_raw_value").asLong() > thirdStateMessage.getStream().getStreamState()
+        .get("xmin_raw_value").asLong());
   }
 
   // Assert that the state message is the last message to be emitted.
   private static void assertMessageSequence(final List<AirbyteMessage> messages) {
-    for (int i = 0; i < messages.size(); i++) {
-      final AirbyteMessage message = messages.get(i);
-      if (message.getType().equals(Type.STATE)) {
-        assertThat(i).isEqualTo(messages.size() - 1);
-      }
-    }
+    assertEquals(Type.STATE, messages.get(messages.size() - 1).getType());
   }
 
   private static List<AirbyteStateMessage> extractStateMessage(final List<AirbyteMessage> messages) {
