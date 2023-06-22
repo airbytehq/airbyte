@@ -2,13 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
+import os
 from argparse import Namespace
 from copy import deepcopy
 from typing import Any, List, Mapping, MutableMapping, Union
-from unittest.mock import MagicMock
+from unittest import mock
+from unittest.mock import MagicMock, patch
 
 import pytest
+import requests
 from airbyte_cdk import AirbyteEntrypoint
 from airbyte_cdk import entrypoint as entrypoint_module
 from airbyte_cdk.models import (
@@ -258,3 +260,39 @@ def test_run_read_with_exception(entrypoint: AirbyteEntrypoint, mocker, spec_moc
 def test_invalid_command(entrypoint: AirbyteEntrypoint, config_mock):
     with pytest.raises(Exception):
         list(entrypoint.run(Namespace(command="invalid", config="conf")))
+
+
+@pytest.mark.parametrize(
+    "deployment_mode, url, expected_error",
+    [
+        pytest.param("CLOUD", "https://airbyte.com", None, id="test_cloud_public_endpoint_is_successful"),
+        pytest.param("CLOUD", "https://192.168.27.30", ValueError, id="test_cloud_private_ip_address_is_rejected"),
+        pytest.param("CLOUD", "https://localhost:8080/api/v1/cast", ValueError, id="test_cloud_private_endpoint_is_rejected"),
+        pytest.param("CLOUD", "http://past.lives.net/api/v1/inyun", ValueError, id="test_cloud_unsecured_endpoint_is_rejected"),
+        pytest.param("CLOUD", "https://not:very/cash:443.money", ValueError, id="test_cloud_invalid_url_format"),
+        pytest.param("CLOUD", "https://192.168.27.30    ", ValueError, id="test_cloud_incorrect_ip_format_is_rejected"),
+        pytest.param("cloud", "https://192.168.27.30", ValueError, id="test_case_insensitive_cloud_environment_variable"),
+        pytest.param("OSS", "https://airbyte.com", None, id="test_oss_public_endpoint_is_successful"),
+        pytest.param("OSS", "https://192.168.27.30", None, id="test_oss_private_endpoint_is_successful"),
+        pytest.param("OSS", "https://localhost:8080/api/v1/cast", None, id="test_oss_private_endpoint_is_successful"),
+        pytest.param("OSS", "http://past.lives.net/api/v1/inyun", None, id="test_oss_unsecured_endpoint_is_successful"),
+    ]
+)
+@patch.object(requests.Session, "send", lambda self, request, **kwargs: requests.Response())
+def test_filter_internal_requests(deployment_mode, url, expected_error):
+    with mock.patch.dict(os.environ, {"DEPLOYMENT_MODE": deployment_mode}, clear=False):
+        AirbyteEntrypoint(source=MockSource())
+
+        session = requests.Session()
+
+        prepared_request = requests.PreparedRequest()
+        prepared_request.method = "GET"
+        prepared_request.headers = {"header": "value"}
+        prepared_request.url = url
+
+        if expected_error:
+            with pytest.raises(expected_error):
+                session.send(request=prepared_request)
+        else:
+            actual_response = session.send(request=prepared_request)
+            assert isinstance(actual_response, requests.Response)
