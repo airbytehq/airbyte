@@ -49,7 +49,7 @@ jobs:
       - name: Fetch last commit id from remote branch [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch'
         id: fetch_last_commit_id_wd
-        run: echo "commit_id=$(git ls-remote --heads origin ${{ steps.extract_branch.outputs.branch }} | cut -f 1)" >> $GITHUB_OUTPUT
+        run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
       - name: Pull formatting changes [PULL REQUESTS]
         if: github.event_name == 'pull_request'
         uses: actions/checkout@v3
