@@ -6,6 +6,7 @@
   "databricks_personal_access_token": "test_token",
   "database" : "test",
   "schema": "test",
+  "enable_schema_evolution": "true",
   "data_source": {
     "data_source_type": "S3_STORAGE",
     "s3_bucket_name": "required",
