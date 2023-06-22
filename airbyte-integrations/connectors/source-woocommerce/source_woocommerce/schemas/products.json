@@ -273,6 +273,9 @@
               },
               "height": {
                 "type": ["null", "integer"]
+              },
+              "srcset": {
+                "type": ["null", "string"]
               }
             }
           },
