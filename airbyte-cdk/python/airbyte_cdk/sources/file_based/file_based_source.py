@@ -5,7 +5,7 @@
 import logging
 import traceback
 from abc import ABC
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.file_based.default_file_based_availability_strategy import DefaultFileBasedAvailabilityStrategy
@@ -15,6 +15,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, DefaultFileBasedStream
+from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from pydantic.error_wrappers import ValidationError
@@ -31,11 +32,13 @@ class FileBasedSource(AbstractSource, ABC):
         availability_strategy: AvailabilityStrategy,
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
         parsers: Dict[str, FileTypeParser] = None,
+        cursor_factory: Callable[[FileBasedStreamConfig, logging.Logger], DefaultFileBasedCursor] = DefaultFileBasedCursor.create,
     ):
         self.stream_reader = stream_reader
         self.availability_strategy = availability_strategy or DefaultFileBasedAvailabilityStrategy(stream_reader)
         self.parsers = parsers or default_parsers
         self.discovery_policy = discovery_policy
+        self.cursor_factory = cursor_factory
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
@@ -83,6 +86,7 @@ class FileBasedSource(AbstractSource, ABC):
                     availability_strategy=self.availability_strategy,
                     discovery_policy=self.discovery_policy,
                     parsers=self.parsers,
+                    cursor_factory=self.cursor_factory,
                 )
                 for stream in config["streams"]
             ]
