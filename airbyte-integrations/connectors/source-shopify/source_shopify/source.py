@@ -856,7 +856,7 @@ class SourceShopify(AbstractSource):
             Transactions(config),
             CustomerSavedSearch(config),
             CustomerAddress(config),
-            Countries(config)
+            Countries(config),
         ]
 
         return [stream_instance for stream_instance in stream_instances if self.format_name(stream_instance.name) in permitted_streams]

@@ -11,12 +11,7 @@ from typing import Dict, List, Optional
 import requests
 
 SCOPES_MAPPING = {
-    "read_customers": [
-        "Customers",
-        "MetafieldCustomers",
-        "CustomerSavedSearch",
-        "CustomerAddress"
-    ],
+    "read_customers": ["Customers", "MetafieldCustomers", "CustomerSavedSearch", "CustomerAddress"],
     "read_orders": [
         "Orders",
         "AbandonedCheckouts",
