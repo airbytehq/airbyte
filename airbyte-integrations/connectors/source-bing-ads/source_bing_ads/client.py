@@ -7,7 +7,7 @@ import ssl
 import sys
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
-from typing import Any, Iterator, Mapping, Optional
+from typing import Any, Iterator, Mapping, Optional, Union
 from urllib.error import URLError
 
 import backoff
@@ -96,7 +96,7 @@ class Client:
         token_updated_expires_in: int = self.oauth.access_token_expires_in_seconds - token_total_lifetime.seconds
         return False if token_updated_expires_in > self.refresh_token_safe_delta else True
 
-    def should_give_up(self, error: WebFault | URLError) -> bool:
+    def should_give_up(self, error: Union[WebFault, URLError]) -> bool:
         if isinstance(error, URLError):
             if (
                 isinstance(error.reason, socket.timeout)
