@@ -25,6 +25,10 @@ from airbyte_cdk.sources.declarative.retrievers.simple_retriever import (
 )
 from airbyte_cdk.sources.streams.http.http import HttpStream
 
+A_SLICE_STATE = {"slice_state": "slice state value"}
+A_STREAM_SLICE = {"stream slice": "slice value"}
+A_STREAM_STATE = {"stream state": "state value"}
+
 primary_key = "pk"
 records = [{"id": 1}, {"id": 2}]
 request_response_logs = [
@@ -754,6 +758,29 @@ def test_read_records_updates_stream_slicer_once_if_no_records(test_name, last_r
 
 def _generate_slices(number_of_slices):
     return [{"date": f"2022-01-0{day + 1}"} for day in range(number_of_slices)]
+
+
+@patch.object(HttpStream, "_read_pages", return_value=iter([]))
+def test_given_state_selector_when_read_records_use_slice_state(http_stream_read_pages):
+    requester = MagicMock()
+    paginator = MagicMock()
+    record_selector = MagicMock()
+    stream_slicer = MagicMock()
+    stream_slicer.select_state.return_value = A_SLICE_STATE
+
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        paginator=paginator,
+        record_selector=record_selector,
+        stream_slicer=stream_slicer,
+        parameters={},
+        config={},
+    )
+    list(retriever.read_records(SyncMode.incremental, stream_slice=A_STREAM_SLICE, stream_state=A_STREAM_STATE))
+
+    http_stream_read_pages.assert_called_once_with(retriever.parse_records, A_STREAM_SLICE, A_SLICE_STATE)
 
 
 def test_emit_log_request_response_messages():

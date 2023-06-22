@@ -267,6 +267,7 @@ class FileStream(Stream, ABC):
         """
         for file_item in stream_slice["files"]:
             storage_file: StorageFile = file_item["storage_file"]
+            LOGGER.info(f"Reading from file: {storage_file.file_info}")
             try:
                 with storage_file.open(file_reader.is_binary) as f:
                     # TODO: make this more efficient than mutating every record one-by-one as they stream
