@@ -8,7 +8,7 @@ import logging
 from functools import cache
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.file_based.exceptions import MissingSchemaError, RecordParseError, SchemaInferenceError
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas
