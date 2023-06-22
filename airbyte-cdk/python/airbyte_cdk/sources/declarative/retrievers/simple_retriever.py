@@ -3,7 +3,6 @@
 #
 
 import json
-from copy import deepcopy
 from dataclasses import InitVar, dataclass, field
 from itertools import islice
 from json import JSONDecodeError
@@ -20,7 +19,6 @@ from airbyte_cdk.sources.declarative.partition_routers.single_partition_router i
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorStopCondition, StopConditionPaginationStrategyDecorator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
