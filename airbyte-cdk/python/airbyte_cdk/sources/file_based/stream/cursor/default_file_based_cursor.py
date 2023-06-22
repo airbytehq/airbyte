@@ -4,11 +4,12 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Iterable, Mapping, Tuple
+from typing import Iterable, Mapping
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor.file_based_cursor import FileBasedCursor
 from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.types import StreamState
 
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
@@ -31,7 +32,7 @@ class DefaultFileBasedCursor(FileBasedCursor):
         self._logger = logger
         self._start_time = self._compute_start_time()
 
-    def set_initial_state(self, value: Mapping[str, Any]):
+    def set_initial_state(self, value: StreamState):
         self._file_to_datetime_history = value.get("history", {})
         self._start_time = self._compute_start_time()
         self._initial_earliest_file_in_history = self._compute_earliest_file_in_history()
@@ -43,7 +44,7 @@ class DefaultFileBasedCursor(FileBasedCursor):
             oldest_file = self._compute_earliest_file_in_history()
             del self._file_to_datetime_history[oldest_file.uri]
 
-    def get_state(self):
+    def get_state(self) -> StreamState:
         state = {
             "history": self._file_to_datetime_history,
         }
@@ -66,6 +67,9 @@ class DefaultFileBasedCursor(FileBasedCursor):
                 # -> Only sync if the file is lexically greater than the earliest file in the state's history
                 # 2. last_modified == start_time < earliest datetime in the state's history
                 # -> Sync the file
+
+                # Instead of computing the earliest file in the history again, we can use the one we computed when we set the initial state
+                # since this method is only called at the start of a sync
                 return file.last_modified < self._initial_earliest_file_in_history.last_modified or (
                     file.uri > self._initial_earliest_file_in_history.uri
                 )
