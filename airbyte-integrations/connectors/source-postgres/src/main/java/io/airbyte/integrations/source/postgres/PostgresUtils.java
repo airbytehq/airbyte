@@ -43,7 +43,7 @@ public class PostgresUtils {
   private static final String PGOUTPUT_PLUGIN = "pgoutput";
 
   public static final Duration MIN_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(2);
-  public static final Duration MAX_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(20);
+  public static final Duration MAX_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(40);
   public static final Duration DEFAULT_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(5);
   private static final int MIN_QUEUE_SIZE = 1000;
   private static final int MAX_QUEUE_SIZE = 10000;

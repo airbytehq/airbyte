@@ -278,7 +278,7 @@
                 "default": 300,
                 "order": 5,
                 "min": 120,
-                "max": 1200
+                "max": 2400
               },
               "queue_size": {
                 "type": "integer",

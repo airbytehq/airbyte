@@ -197,8 +197,8 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
   private boolean heartbeatPosNotChanging() {
     final Duration timeElapsedSinceLastHeartbeatTs = Duration.between(this.tsLastHeartbeat, LocalDateTime.now());
     LOGGER.debug("Time since last hb_pos change {}s", timeElapsedSinceLastHeartbeatTs.toSeconds());
-    // wait time for no change in heartbeat position is half of initial waitTime
-    return timeElapsedSinceLastHeartbeatTs.compareTo(this.firstRecordWaitTime.dividedBy(2)) > 0;
+    // wait time for no change in heartbeat position is
+    return timeElapsedSinceLastHeartbeatTs.compareTo(this.firstRecordWaitTime) > 0;
   }
 
   private void requestClose(final String closeLogMessage) {
