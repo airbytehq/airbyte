@@ -14,7 +14,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas
 from airbyte_cdk.sources.file_based.schema_validation_policies import record_passes_validation_policy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
-from airbyte_cdk.sources.file_based.stream.file_based_cursor import FileBasedCursor
+from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
@@ -30,7 +30,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_last_mod_col, ab_file_name_col]
 
-    def __init__(self, cursor_factory: Callable[[FileBasedStreamConfig, logging.Logger], FileBasedCursor], **kwargs):
+    def __init__(self, cursor_factory: Callable[[FileBasedStreamConfig, logging.Logger], DefaultFileBasedCursor], **kwargs):
         super().__init__(**kwargs)
         self._cursor = cursor_factory(self.config, self.logger)
 

@@ -15,7 +15,7 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
-from airbyte_cdk.sources.file_based.stream.file_based_cursor import FileBasedCursor
+from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
@@ -29,7 +29,7 @@ class InMemoryFilesSource(FileBasedSource):
             discovery_policy: AbstractDiscoveryPolicy,
             parsers: Dict[str, FileTypeParser],
             stream_cls: Type[AbstractFileBasedStream],
-            cursor_factory: Callable[[FileBasedStreamConfig, Logger], FileBasedCursor]
+            cursor_factory: Callable[[FileBasedStreamConfig, Logger], DefaultFileBasedCursor]
     ):
         super().__init__(
             InMemoryFilesStreamReader(files=files, file_type=file_type),

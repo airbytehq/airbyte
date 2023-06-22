@@ -10,7 +10,7 @@ from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPol
 from airbyte_cdk.sources.file_based.file_based_source import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, DefaultFileBasedStream
-from airbyte_cdk.sources.file_based.stream.file_based_cursor import FileBasedCursor
+from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from unit_tests.sources.file_based.helpers import DefaultTestAvailabilityStrategy
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
@@ -52,7 +52,7 @@ class TestScenario:
             discovery_policy,
             parsers,
             stream_cls,
-            FileBasedCursor.create
+            DefaultFileBasedCursor.create
         )
         self.incremental_scenario_config = incremental_scenario_config
         self.validate()

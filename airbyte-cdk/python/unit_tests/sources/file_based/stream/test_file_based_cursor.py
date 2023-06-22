@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.stream.file_based_cursor import DATE_TIME_FORMAT, FileBasedCursor
+from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DATE_TIME_FORMAT, DefaultFileBasedCursor
 from freezegun import freeze_time
 
 
@@ -94,7 +94,7 @@ from freezegun import freeze_time
 )
 def test_add_file(files_to_add, expected_start_time, expected_state_dict):
     logger = MagicMock()
-    cursor = FileBasedCursor(3, timedelta(days=3), logger)
+    cursor = DefaultFileBasedCursor(3, timedelta(days=3), logger)
     assert cursor._compute_start_time() == datetime.min
 
     for index, f in enumerate(files_to_add):
@@ -151,7 +151,7 @@ def test_add_file(files_to_add, expected_start_time, expected_state_dict):
 ])
 def test_get_files_to_sync(files, expected_files_to_sync, max_history_size, history_is_partial):
     logger = MagicMock()
-    cursor = FileBasedCursor(max_history_size, timedelta(days=3), logger)
+    cursor = DefaultFileBasedCursor(max_history_size, timedelta(days=3), logger)
 
     files_to_sync = cursor.get_files_to_sync(files)
 
@@ -169,7 +169,7 @@ def test_get_files_to_sync(files, expected_files_to_sync, max_history_size, hist
 ])
 def test_files_are_not_synced_if_they_are_in_history(history_is_partial):
     logger = MagicMock()
-    cursor = FileBasedCursor(2, timedelta(days=3), logger)
+    cursor = DefaultFileBasedCursor(2, timedelta(days=3), logger)
 
     files = [
         RemoteFile(uri="a.csv", last_modified=datetime(2021, 1, 1), file_type="csv"),
@@ -189,7 +189,7 @@ def test_files_are_not_synced_if_they_are_in_history(history_is_partial):
 @freeze_time("2023-06-16T00:00:00Z")
 def test_only_recent_files_are_synced_if_history_is_full():
     logger = MagicMock()
-    cursor = FileBasedCursor(2, timedelta(days=3), logger)
+    cursor = DefaultFileBasedCursor(2, timedelta(days=3), logger)
     cursor._history_is_partial = True
 
     files_in_history = [
@@ -229,7 +229,7 @@ def test_only_recent_files_are_synced_if_history_is_full():
 @freeze_time("2023-06-16T00:00:00Z")
 def test_compute_if_history_is_partial(earliest_file_in_history, expected_start_time):
     logger = MagicMock()
-    cursor = FileBasedCursor(3, timedelta(days=3), logger)
+    cursor = DefaultFileBasedCursor(3, timedelta(days=3), logger)
     cursor.add_file(earliest_file_in_history)
     cursor._history_is_partial = True
     assert cursor._compute_start_time() == expected_start_time
