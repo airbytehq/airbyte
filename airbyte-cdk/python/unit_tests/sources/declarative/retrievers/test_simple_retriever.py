@@ -757,7 +757,6 @@ def test_read_records_then_cursor_close_slice(test_name, last_records, records, 
         list(retriever.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice))
         cursor.close_slice.assert_called_once_with(stream_slice, latest_record)
 
-
 def parse_two_pages_and_return_records(retriever, stream_slice, records):
     list(retriever.parse_records(request=MagicMock(), response=MagicMock(), stream_state=None, stream_slice=stream_slice))
     list(retriever.parse_records(request=MagicMock(), response=MagicMock(), stream_state=None, stream_slice=stream_slice))
