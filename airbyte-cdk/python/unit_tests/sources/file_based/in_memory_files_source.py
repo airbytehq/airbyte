@@ -6,7 +6,7 @@ import csv
 import io
 from datetime import datetime
 from io import IOBase
-from typing import Dict, List, Optional, Type
+from typing import Dict, Iterable, List, Optional, Type
 
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
@@ -42,12 +42,12 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
     files: Dict[str, dict]
     file_type: str
 
-    def list_matching_files(
+    def get_matching_files(
         self,
         globs: List[str],
         from_date: Optional[datetime] = None,
-    ) -> List[RemoteFile]:
-        return AbstractFileBasedStreamReader.filter_files_by_globs([
+    ) -> Iterable[RemoteFile]:
+        yield from AbstractFileBasedStreamReader.filter_files_by_globs([
             RemoteFile(f, datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"), self.file_type)
             for f, data in self.files.items()
         ], globs)

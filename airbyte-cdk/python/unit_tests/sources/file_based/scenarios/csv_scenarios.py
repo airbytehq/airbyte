@@ -15,7 +15,7 @@ single_csv_scenario = (
                 {
                     "name": "stream1",
                     "file_type": "csv",
-                    "globs": [],
+                    "globs": ["*"],
                     "validation_policy": "emit_record_on_schema_mismatch",
                 }
             ]
@@ -73,7 +73,7 @@ multi_csv_scenario = (
                 {
                     "name": "stream1",
                     "file_type": "csv",
-                    "globs": [],
+                    "globs": ["*"],
                     "validation_policy": "emit_record_on_schema_mismatch",
                 }
             ]
@@ -144,7 +144,7 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
                 {
                     "name": "stream1",
                     "file_type": "csv",
-                    "globs": [],
+                    "globs": ["*"],
                     "validation_policy": "emit_record_on_schema_mismatch",
                 }
             ]
@@ -213,7 +213,7 @@ invalid_csv_scenario = (
                 {
                     "name": "stream1",
                     "file_type": "csv",
-                    "globs": [],
+                    "globs": ["*"],
                     "validation_policy": "emit_record_on_schema_mismatch",
                 }
             ]
