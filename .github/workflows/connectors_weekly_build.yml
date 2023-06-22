@@ -8,7 +8,7 @@ on:
     inputs:
       runs-on:
         type: string
-        default: dev-xlarge-runner
+        default: conn-nightly-xlarge-runner
         required: true
       test-connectors-options:
         default: --concurrency=3 --release-stage=alpha
@@ -20,7 +20,7 @@ jobs:
   test_connectors:
     name: "Test connectors: ${{ inputs.test-connectors-options || 'weekly build for Alpha connectors' }} - on ${{ inputs.runs-on || 'dev-large-runner' }}"
     timeout-minutes: 8640 # 6 days
-    runs-on: ${{ inputs.runs-on || 'dev-large-runner' }}
+    runs-on: ${{ inputs.runs-on || 'conn-nightly-xlarge-runner' }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
