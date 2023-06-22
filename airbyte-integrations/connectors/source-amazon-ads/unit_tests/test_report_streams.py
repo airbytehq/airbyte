@@ -295,6 +295,7 @@ def test_brands_report_stream(config):
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
 
+
 @responses.activate
 def test_brands_v3_report_stream(config):
     setup_responses(
