@@ -163,7 +163,6 @@ class AdAccount(FBMarketingStream):
 
     use_batch = False
     enable_deleted = False
-    deprecated_fields = {"has_advertiser_opted_in_odax": True}
 
     def get_task_permissions(self) -> Set[str]:
         """https://developers.facebook.com/docs/marketing-api/reference/ad-account/assigned_users/"""

@@ -89,12 +89,10 @@
                   "account_name",
                   "action_values",
                   "actions",
-                  "ad_bid_value",
                   "ad_click_actions",
                   "ad_id",
                   "ad_impression_actions",
                   "ad_name",
-                  "adset_bid_value",
                   "adset_end",
                   "adset_id",
                   "adset_name",
@@ -214,7 +212,10 @@
                   "video_time_watched_actions",
                   "website_ctr",
                   "website_purchase_roas",
-                  "wish_bid"
+                  "wish_bid",
+                  "creative_media_type",
+                  "total_postbacks_detailed_v4",
+                  "instagram_upcoming_event_reminders_set"
                 ]
               }
             },
@@ -253,7 +254,12 @@
                   "skan_campaign_id",
                   "skan_conversion_id",
                   "title_asset",
-                  "video_asset"
+                  "video_asset",
+                  "redownload",
+                  "coarse_conversion_value",
+                  "fidelity_type",
+                  "hsid",
+                  "postback_sequence_index"
                 ]
               }
             },
