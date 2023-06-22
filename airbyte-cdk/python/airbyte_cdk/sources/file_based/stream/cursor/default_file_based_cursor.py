@@ -32,12 +32,12 @@ class DefaultFileBasedCursor(FileBasedCursor):
         self._logger = logger
         self._start_time = self._compute_start_time()
 
-    def set_initial_state(self, value: StreamState):
+    def set_initial_state(self, value: StreamState) -> None:
         self._file_to_datetime_history = value.get("history", {})
         self._start_time = self._compute_start_time()
         self._initial_earliest_file_in_history = self._compute_earliest_file_in_history()
 
-    def add_file(self, file: RemoteFile):
+    def add_file(self, file: RemoteFile) -> None:
         self._file_to_datetime_history[file.uri] = file.last_modified.strftime(DATE_TIME_FORMAT)
         if len(self._file_to_datetime_history) > self._max_history_size:
             # Get the earliest file based on its last modified date and its uri
@@ -50,7 +50,7 @@ class DefaultFileBasedCursor(FileBasedCursor):
         }
         return state
 
-    def is_history_partial(self):
+    def is_history_partial(self) -> bool:
         return len(self._file_to_datetime_history) >= self._max_history_size
 
     def _should_sync_file(self, file: RemoteFile) -> bool:
@@ -78,7 +78,7 @@ class DefaultFileBasedCursor(FileBasedCursor):
         else:
             return True
 
-    def get_files_to_sync(self, all_files: Iterable[RemoteFile]):
+    def get_files_to_sync(self, all_files: Iterable[RemoteFile]) -> Iterable[RemoteFile]:
         if self.is_history_partial():
             self._logger.warning(
                 f"The state history is full. "
@@ -89,7 +89,7 @@ class DefaultFileBasedCursor(FileBasedCursor):
             if self._should_sync_file(f):
                 yield f
 
-    def get_start_time(self):
+    def get_start_time(self) -> datetime:
         return self._start_time
 
     def _compute_earliest_file_in_history(self) -> RemoteFile:
