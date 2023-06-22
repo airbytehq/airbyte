@@ -5,9 +5,8 @@
 import asyncio
 import itertools
 import logging
-from datetime import timedelta
 from functools import cache
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.file_based.exceptions import MissingSchemaError, RecordParseError, SchemaInferenceError
@@ -16,6 +15,7 @@ from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas
 from airbyte_cdk.sources.file_based.schema_validation_policies import record_passes_validation_policy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.file_based_cursor import FileBasedCursor
+from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 
@@ -30,11 +30,9 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_last_mod_col, ab_file_name_col]
 
-    def __init__(self, **kwargs):
+    def __init__(self, cursor_factory: Callable[[FileBasedStreamConfig, logging.Logger], FileBasedCursor], **kwargs):
         super().__init__(**kwargs)
-        self._cursor = FileBasedCursor(
-            self.config.max_history_size or 10_000, timedelta(days=(self.config.days_to_sync_if_history_is_full or 3)), self.logger
-        )
+        self._cursor = cursor_factory(self.config, self.logger)
 
     @property
     def state(self) -> MutableMapping[str, Any]:

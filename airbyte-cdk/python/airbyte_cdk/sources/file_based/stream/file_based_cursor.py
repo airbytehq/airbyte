@@ -7,15 +7,26 @@ from datetime import datetime, timedelta
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig
 
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 class FileBasedCursor:
+    @staticmethod
+    def create(stream_config: FileBasedStreamConfig, logger: logging.Logger):
+        return FileBasedCursor(
+            max_history_size=stream_config.max_history_size,
+            time_window_if_history_is_full=timedelta(days=stream_config.days_to_sync_if_history_is_full)
+            if stream_config.days_to_sync_if_history_is_full
+            else None,
+            logger=logger,
+        )
+
     def __init__(self, max_history_size: int, time_window_if_history_is_full: timedelta, logger: logging.Logger):
         self._file_to_datetime_history: Mapping[str:datetime] = {}
-        self._max_history_size = max_history_size
-        self._time_window_if_history_is_full = time_window_if_history_is_full
+        self._max_history_size = max_history_size or 10_000
+        self._time_window_if_history_is_full = time_window_if_history_is_full or timedelta(days=3)
         self._history_is_partial = False
         self._logger = logger
         self._start_time = self._compute_start_time()
