@@ -77,7 +77,7 @@ class AbstractFileBasedStream(Stream):
         ...
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: StreamState = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         This method acts as an adapter between the generic Stream interface and the file-based's
@@ -86,7 +86,7 @@ class AbstractFileBasedStream(Stream):
         return self.compute_slices()
 
     @abstractmethod
-    def compute_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
+    def compute_slices(self) -> Iterable[Optional[StreamSlice]]:
         """
         Return a list of slices that will be used to read files in the current sync.
         :return: The slices to use for the current sync.

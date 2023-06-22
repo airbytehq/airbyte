@@ -8,7 +8,6 @@ import logging
 from functools import cache
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.file_based.exceptions import MissingSchemaError, RecordParseError, SchemaInferenceError
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas
@@ -16,6 +15,7 @@ from airbyte_cdk.sources.file_based.schema_validation_policies import record_pas
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 
@@ -78,9 +78,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     yield stream_data_to_airbyte_message(self.name, record)
                 self._cursor.add_file(file)
             except Exception as exc:
-                raise RecordParseError(
-                    f"Error reading records from file: {file.uri}. Is the file valid {self.config.file_type}?"
-                ) from exc
+                raise RecordParseError(f"Error reading records from file: {file.uri}. Is the file valid {self.config.file_type}?") from exc
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
