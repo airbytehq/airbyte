@@ -423,6 +423,8 @@ class ModelToComponentFactory:
             model.start_datetime if isinstance(model.start_datetime, str) else self.create_min_max_datetime(model.start_datetime, config)
         )
         end_datetime = None
+        if model.is_data_feed and model.end_datetime:
+            raise ValueError("Data feed does not support end_datetime")
         if model.end_datetime:
             end_datetime = (
                 model.end_datetime if isinstance(model.end_datetime, str) else self.create_min_max_datetime(model.end_datetime, config)
@@ -563,7 +565,7 @@ class ModelToComponentFactory:
         )
 
     def create_default_paginator(
-        self, model: DefaultPaginatorModel, config: Config, *, url_base: str, cursor_used_for_stop_condition: Cursor = None
+        self, model: DefaultPaginatorModel, config: Config, *, url_base: str, cursor_used_for_stop_condition: Optional[Cursor] = None
     ) -> DefaultPaginator:
         decoder = self._create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
         page_size_option = (

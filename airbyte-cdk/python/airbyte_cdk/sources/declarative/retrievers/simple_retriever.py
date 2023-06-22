@@ -167,9 +167,7 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
 
-        # FIXME self.state if it's only updated per slice?
-        #  deprecate
-        #  send a message
+        # FIXME we should eventually remove the usage of stream_state as part of the interpolation
         requester_mapping = requester_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
         requester_mapping_keys = set(requester_mapping.keys())
         paginator_mapping = paginator_method(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
