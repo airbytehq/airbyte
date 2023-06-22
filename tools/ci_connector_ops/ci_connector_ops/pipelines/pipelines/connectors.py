@@ -4,10 +4,12 @@
 """This module groups the functions to run full pipelines for connector testing."""
 
 import sys
+from pathlib import Path
 from typing import Callable, List, Optional
 
 import anyio
 import dagger
+from ci_connector_ops.pipelines import main_logger
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import NoOpStep, Report, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import ConnectorContext, ContextState
@@ -16,7 +18,6 @@ from dagger import Config
 
 GITHUB_GLOBAL_CONTEXT = "[POC please ignore] Connectors CI"
 GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"
-
 
 CONNECTOR_LANGUAGE_TO_FORCED_CONCURRENCY_MAPPING = {
     # We run the Java connectors tests sequentially because we currently have memory issues when Java integration tests are run in parallel.
@@ -73,13 +74,17 @@ async def run_connectors_pipelines(
     connector_pipeline: Callable,
     pipeline_name: str,
     concurrency: int,
+    dagger_logs_path: Optional[Path],
     execute_timeout: Optional[int],
     *args,
 ) -> List[ConnectorContext]:
     """Run a connector pipeline for all the connector contexts."""
 
     default_connectors_semaphore = anyio.Semaphore(concurrency)
-    async with dagger.Connection(Config(log_output=sys.stderr, execute_timeout=execute_timeout)) as dagger_client:
+    dagger_logs_output = sys.stderr if not dagger_logs_path else open(dagger_logs_path, "w")
+    if not dagger_logs_path:
+        main_logger.info(f"Dagger logs will be saved in {dagger_logs_path}")
+    async with dagger.Connection(Config(log_output=dagger_logs_output, execute_timeout=execute_timeout)) as dagger_client:
         # HACK: This is to get a long running dockerd service to be shared across all the connectors pipelines
         # Using the "normal" service binding leads to restart of dockerd during pipeline run that can cause corrupted docker state
         # See https://github.com/airbytehq/airbyte/issues/27233

@@ -3,6 +3,7 @@
 #
 
 import platform
+from pathlib import Path
 
 from dagger import Platform
 
@@ -33,3 +34,4 @@ GRADLE_CACHE_PATH = "/root/.gradle/caches"
 GRADLE_BUILD_CACHE_PATH = f"{GRADLE_CACHE_PATH}/build-cache-1"
 GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH = "/root/gradle_dependency_cache"
 LOCAL_REPORTS_PATH_ROOT = "tools/ci_connector_ops/pipeline_reports/"
+Path(LOCAL_REPORTS_PATH_ROOT).mkdir(parents=True, exist_ok=True)

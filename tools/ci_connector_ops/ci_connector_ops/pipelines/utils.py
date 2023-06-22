@@ -18,8 +18,11 @@ import anyio
 import asyncer
 import click
 import git
+from ci_connector_ops.pipelines import main_logger
 from ci_connector_ops.utils import get_all_released_connectors, get_changed_connectors
 from dagger import Config, Connection, Container, DaggerError, File, ImageLayerCompression, QueryError
+from google.cloud import storage
+from google.oauth2 import service_account
 from more_itertools import chunked
 
 if TYPE_CHECKING:
@@ -339,8 +342,8 @@ class DaggerPipelineCommand(click.Command):
             Any: The invocation return value.
         """
         command_name = self.name
-        click.secho(f"Running Dagger Command {command_name}...")
-        click.secho(
+        main_logger.info(f"Running Dagger Command {command_name}...")
+        main_logger.info(
             "If you're running this command for the first time the Dagger engine image will be pulled, it can take a short minute..."
         )
         try:
@@ -348,7 +351,7 @@ class DaggerPipelineCommand(click.Command):
             if not pipeline_success:
                 raise DaggerError(f"Dagger Command {command_name} failed.")
         except DaggerError as e:
-            click.secho(str(e), err=True, fg="red")
+            main_logger.error(f"Dagger Command {command_name} failed", exc_info=e)
             sys.exit(1)
 
 
@@ -402,3 +405,29 @@ def sanitize_gcs_credentials(raw_value: Optional[str]) -> Optional[str]:
     if raw_value is None:
         return None
     return json.dumps(json.loads(raw_value))
+
+
+def format_duration(time_delta: datetime.timedelta) -> str:
+    total_seconds = time_delta.total_seconds()
+    if total_seconds < 60:
+        return "{:.2f}s".format(total_seconds)
+    minutes = int(total_seconds // 60)
+    seconds = int(total_seconds % 60)
+    return "{:02d}mn{:02d}s".format(minutes, seconds)
+
+
+def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentials: str) -> None:
+    """Upload a file to a GCS bucket.
+
+    Args:
+        file_path (Path): The path to the file to upload.
+        bucket_name (str): The name of the GCS bucket.
+        object_name (str): The name of the object in the GCS bucket.
+        credentials (str): The GCS credentials as a JSON string.
+    """
+    credentials = service_account.Credentials.from_service_account_info(json.loads(credentials))
+
+    client = storage.Client(credentials=credentials)
+    bucket = client.get_bucket(bucket_name)
+    blob = bucket.blob(object_name)
+    blob.upload_from_filename(str(file_path))

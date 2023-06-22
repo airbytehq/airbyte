@@ -4,7 +4,6 @@
 
 """This module declares the CLI commands to run the connectors CI pipelines."""
 
-import logging
 import os
 import sys
 from pathlib import Path
@@ -12,6 +11,7 @@ from typing import Any, Dict, Tuple
 
 import anyio
 import click
+from ci_connector_ops.pipelines import main_logger
 from ci_connector_ops.pipelines.builds import run_connector_build_pipeline
 from ci_connector_ops.pipelines.contexts import ConnectorContext, ContextState, PublishConnectorContext
 from ci_connector_ops.pipelines.format import run_connectors_format_pipelines
@@ -19,16 +19,10 @@ from ci_connector_ops.pipelines.github import update_global_commit_status_check_
 from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_pipelines
 from ci_connector_ops.pipelines.publish import reorder_contexts, run_connector_publish_pipeline
 from ci_connector_ops.pipelines.tests import run_connector_test_pipeline
-from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors, get_modified_metadata_files
+from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors, get_modified_metadata_files, upload_to_gcs
 from ci_connector_ops.utils import ConnectorLanguage, console, get_all_released_connectors
-from rich.logging import RichHandler
 from rich.table import Table
 from rich.text import Text
-
-logging.basicConfig(level=logging.INFO, format="%(name)s: %(message)s", datefmt="[%X]", handlers=[RichHandler(rich_tracebacks=True)])
-
-logger = logging.getLogger(__name__)
-
 
 # HELPERS
 
@@ -193,14 +187,14 @@ def test(
         ctx (click.Context): The click context.
     """
     if ctx.obj["is_ci"] and ctx.obj["pull_request"] and ctx.obj["pull_request"].draft:
-        click.echo("Skipping connectors tests for draft pull request.")
+        main_logger.info("Skipping connectors tests for draft pull request.")
         sys.exit(0)
 
-    click.secho(f"Will run the test pipeline for the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
+    main_logger.info(f"Will run the test pipeline for the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}")
     if ctx.obj["selected_connectors_and_files"]:
         update_global_commit_status_check_for_tests(ctx.obj, "pending")
     else:
-        click.secho("No connector were selected for testing.", fg="yellow")
+        main_logger.warn("No connector were selected for testing.")
         update_global_commit_status_check_for_tests(ctx.obj, "success")
         return True
 
@@ -231,15 +225,30 @@ def test(
             run_connector_test_pipeline,
             "Test Pipeline",
             ctx.obj["concurrency"],
+            ctx.obj["dagger_logs_path"],
             ctx.obj["execute_timeout"],
         )
-
     except Exception as e:
-        click.secho(str(e), err=True, fg="red")
+        main_logger.error("An error occurred while running the test pipeline", exc_info=e)
         update_global_commit_status_check_for_tests(ctx.obj, "failure")
         return False
-    global_success = all(connector_context.state is ContextState.SUCCESSFUL for connector_context in connectors_tests_contexts)
-    update_global_commit_status_check_for_tests(ctx.obj, "success" if global_success else "failure")
+    finally:
+        # We always want to save the dagger logs, even if the pipeline failed.
+        if ctx.obj["is_local"] and ctx.obj["dagger_logs_path"]:
+            main_logger.info(f"Dagger logs saved to {ctx.obj['dagger_logs_path']}")
+        if ctx.obj["is_ci"]:
+            global_success = all(connector_context.state is ContextState.SUCCESSFUL for connector_context in connectors_tests_contexts)
+            update_global_commit_status_check_for_tests(ctx.obj, "success" if global_success else "failure")
+
+            if ctx.obj["dagger_logs_path"]:
+                dagger_logs_gcs_key = f"{ctx.obj['report_output_prefix']}/dagger-logs.txt"
+                upload_to_gcs(
+                    ctx.obj["dagger_logs_path"], ctx.obj["ci_report_bucket_name"], dagger_logs_gcs_key, ctx.obj["ci_gcs_credentials"]
+                )
+                gcs_uri = f"gs://{ctx.obj['ci_report_bucket_name']}/{dagger_logs_gcs_key}"
+                public_url = f"https://storage.googleapis.com/{ctx.obj['ci_report_bucket_name']}/{dagger_logs_gcs_key}"
+                main_logger.info(f"Dagger logs saved to {gcs_uri}. Public URL: {public_url}")
+
     # If we reach this point, it means that all the connectors have been tested so the pipeline did its job and can exit with success.
     return True
 
@@ -247,7 +256,7 @@ def test(
 @connectors.command(cls=DaggerPipelineCommand, help="Build all images for the selected connectors.")
 @click.pass_context
 def build(ctx: click.Context) -> bool:
-    click.secho(f"Will build the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
+    main_logger.info(f"Will build the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.")
     connectors_contexts = [
         ConnectorContext(
             pipeline_name="Build connector {connector.technical_name}",
@@ -272,6 +281,7 @@ def build(ctx: click.Context) -> bool:
         run_connector_build_pipeline,
         "Build Pipeline",
         ctx.obj["concurrency"],
+        ctx.obj["dagger_logs_path"],
         ctx.obj["execute_timeout"],
     )
 
@@ -366,8 +376,7 @@ def publish(
         selected_connectors_and_files = ctx.obj["selected_connectors_and_files"]
         selected_connectors_names = ctx.obj["selected_connectors_names"]
 
-    click.secho(f"Will publish the following connectors: {', '.join(selected_connectors_names)}.", fg="green")
-
+    main_logger.info(f"Will publish the following connectors: {', '.join(selected_connectors_names)}")
     publish_connector_contexts = reorder_contexts(
         [
             PublishConnectorContext(
@@ -397,14 +406,16 @@ def publish(
         ]
     )
 
-    click.secho("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.", fg="yellow")
+    main_logger.warn("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.")
     ctx.obj["concurrency"] = 1
+
     publish_connector_contexts = anyio.run(
         run_connectors_pipelines,
         publish_connector_contexts,
         run_connector_publish_pipeline,
-        "Publish pipeline",
+        "Publishing connectors",
         ctx.obj["concurrency"],
+        ctx.obj["dagger_logs_path"],
         ctx.obj["execute_timeout"],
     )
     return all(context.state is ContextState.SUCCESSFUL for context in publish_connector_contexts)
@@ -466,13 +477,11 @@ def format(ctx: click.Context) -> bool:
         ]
 
     if connectors_and_files_to_format:
-        click.secho(
-            f"Will format the following connectors: {', '.join([connector.technical_name for connector, _ in connectors_and_files_to_format])}.",
-            fg="green",
+        main_logger.info(
+            f"Will format the following connectors: {', '.join([connector.technical_name for connector, _ in connectors_and_files_to_format])}."
         )
     else:
-        click.secho("No connectors to format.", fg="yellow")
-
+        main_logger.info("No connectors to format.")
     connectors_contexts = [
         ConnectorContext(
             pipeline_name=f"Format connector {connector.technical_name}",

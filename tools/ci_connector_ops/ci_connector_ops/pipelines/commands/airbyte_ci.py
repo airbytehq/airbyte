@@ -4,11 +4,13 @@
 
 """This module is the CLI entrypoint to the airbyte-ci commands."""
 
+from pathlib import Path
 from typing import List
 
 import click
-from ci_connector_ops.pipelines import github
+from ci_connector_ops.pipelines import github, main_logger
 from ci_connector_ops.pipelines.bases import CIContext
+from ci_connector_ops.pipelines.consts import LOCAL_REPORTS_PATH_ROOT
 from ci_connector_ops.pipelines.utils import (
     get_current_epoch_time,
     get_current_git_branch,
@@ -70,6 +72,7 @@ def get_modified_files(
 @click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str)
 @click.option("--ci-report-bucket-name", envvar="CI_REPORT_BUCKET_NAME", type=str)
 @click.option("--ci-job-key", envvar="CI_JOB_KEY", type=str)
+@click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
 @click.pass_context
 def airbyte_ci(
     ctx: click.Context,
@@ -85,6 +88,7 @@ def airbyte_ci(
     ci_github_access_token: str,
     ci_report_bucket_name: str,
     ci_job_key: str,
+    show_dagger_logs: bool,
 ):  # noqa D103
     ctx.ensure_object(dict)
     ctx.obj["is_local"] = is_local
@@ -101,6 +105,7 @@ def airbyte_ci(
     ctx.obj["ci_github_access_token"] = ci_github_access_token
     ctx.obj["ci_job_key"] = ci_job_key
     ctx.obj["pipeline_start_timestamp"] = pipeline_start_timestamp
+    ctx.obj["dagger_logs_path"] = Path(f"{LOCAL_REPORTS_PATH_ROOT}/dagger.log") if not show_dagger_logs else None
 
     if pull_request_number and ci_github_access_token:
         ctx.obj["pull_request"] = github.get_pull_request(pull_request_number, ci_github_access_token)
@@ -110,16 +115,16 @@ def airbyte_ci(
     ctx.obj["modified_files"] = get_modified_files(git_branch, git_revision, diffed_branch, is_local, ci_context, ctx.obj["pull_request"])
 
     if not is_local:
-        click.echo("Running airbyte-ci in CI mode.")
-        click.echo(f"CI Context: {ci_context}")
-        click.echo(f"CI Report Bucket Name: {ci_report_bucket_name}")
-        click.echo(f"Git Branch: {git_branch}")
-        click.echo(f"Git Revision: {git_revision}")
-        click.echo(f"GitHub Workflow Run ID: {gha_workflow_run_id}")
-        click.echo(f"GitHub Workflow Run URL: {ctx.obj['gha_workflow_run_url']}")
-        click.echo(f"Pull Request Number: {pull_request_number}")
-        click.echo(f"Pipeline Start Timestamp: {pipeline_start_timestamp}")
-        click.echo(f"Modified Files: {ctx.obj['modified_files']}")
+        main_logger.info("Running airbyte-ci in CI mode.")
+        main_logger.info(f"CI Context: {ci_context}")
+        main_logger.info(f"CI Report Bucket Name: {ci_report_bucket_name}")
+        main_logger.info(f"Git Branch: {git_branch}")
+        main_logger.info(f"Git Revision: {git_revision}")
+        main_logger.info(f"GitHub Workflow Run ID: {gha_workflow_run_id}")
+        main_logger.info(f"GitHub Workflow Run URL: {ctx.obj['gha_workflow_run_url']}")
+        main_logger.info(f"Pull Request Number: {pull_request_number}")
+        main_logger.info(f"Pipeline Start Timestamp: {pipeline_start_timestamp}")
+        main_logger.info(f"Modified Files: {ctx.obj['modified_files']}")
 
 
 airbyte_ci.add_command(connectors)
