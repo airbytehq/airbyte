@@ -4,32 +4,20 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Iterable, Mapping
+from typing import Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor.file_based_cursor import FileBasedCursor
-from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.types import StreamState
 
 DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 class DefaultFileBasedCursor(FileBasedCursor):
-    @staticmethod
-    def create(stream_config: FileBasedStreamConfig, logger: logging.Logger):
-        return DefaultFileBasedCursor(
-            max_history_size=stream_config.max_history_size,
-            time_window_if_history_is_full=timedelta(days=stream_config.days_to_sync_if_history_is_full)
-            if stream_config.days_to_sync_if_history_is_full
-            else None,
-            logger=logger,
-        )
-
-    def __init__(self, max_history_size: int, time_window_if_history_is_full: timedelta, logger: logging.Logger):
+    def __init__(self, max_history_size: Optional[int], days_to_sync_if_history_is_full: Optional[int]):
         self._file_to_datetime_history: Mapping[str:datetime] = {}
         self._max_history_size = max_history_size or 10_000
-        self._time_window_if_history_is_full = time_window_if_history_is_full or timedelta(days=3)
-        self._logger = logger
+        self._time_window_if_history_is_full = timedelta(days=days_to_sync_if_history_is_full or 3)
         self._start_time = self._compute_start_time()
 
     def set_initial_state(self, value: StreamState) -> None:
@@ -73,9 +61,9 @@ class DefaultFileBasedCursor(FileBasedCursor):
             # The file is not in the history and the history is complete. We know we need to sync the file
             return True
 
-    def get_files_to_sync(self, all_files: Iterable[RemoteFile]) -> Iterable[RemoteFile]:
+    def get_files_to_sync(self, all_files: Iterable[RemoteFile], logger: logging.Logger) -> Iterable[RemoteFile]:
         if self.is_history_partial():
-            self._logger.warning(
+            logger.warning(
                 f"The state history is full. "
                 f"This sync and future syncs won't be able to use the history to filter out duplicate files. "
                 f"It will instead use the time window of {self._time_window_if_history_is_full} to filter out files."

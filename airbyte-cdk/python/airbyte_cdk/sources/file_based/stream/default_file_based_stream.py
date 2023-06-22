@@ -6,15 +6,14 @@ import asyncio
 import itertools
 import logging
 from functools import cache
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.file_based.exceptions import MissingSchemaError, RecordParseError, SchemaInferenceError
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import merge_schemas
 from airbyte_cdk.sources.file_based.schema_validation_policies import record_passes_validation_policy
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
-from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
-from airbyte_cdk.sources.file_based.stream.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.stream.cursor import FileBasedCursor
 from airbyte_cdk.sources.file_based.types import StreamSlice
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
@@ -30,9 +29,9 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_last_mod_col, ab_file_name_col]
 
-    def __init__(self, cursor_factory: Callable[[FileBasedStreamConfig, logging.Logger], DefaultFileBasedCursor], **kwargs):
+    def __init__(self, cursor: FileBasedCursor, **kwargs):
         super().__init__(**kwargs)
-        self._cursor = cursor_factory(self.config, self.logger)
+        self._cursor = cursor
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -129,7 +128,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         - Remove files that have already been read in previous syncs, according to the state
         """
         all_files = self._stream_reader.get_matching_files(self.config.globs, self._cursor.get_start_time())
-        yield from self._cursor.get_files_to_sync(all_files)
+        yield from self._cursor.get_files_to_sync(all_files, self.logger)
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
