@@ -18,12 +18,13 @@ import anyio
 import asyncer
 import click
 import git
-from ci_connector_ops.utils import get_all_released_connectors
+from ci_connector_ops.utils import get_all_released_connectors, get_changed_connectors
 from dagger import Config, Connection, Container, DaggerError, File, ImageLayerCompression, QueryError
 from more_itertools import chunked
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext
+    from github import PullRequest
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"
@@ -224,6 +225,16 @@ def get_modified_files_in_commit(current_git_branch: str, current_git_revision: 
         return anyio.run(get_modified_files_in_commit_remote, current_git_branch, current_git_revision)
 
 
+def get_modified_files_in_pull_request(pull_request: PullRequest) -> List[str]:
+    """Retrieve the list of modified files in a pull request."""
+    return [f.filename for f in pull_request.get_files()]
+
+
+def get_last_commit_message() -> str:
+    """Retrieve the last commit message."""
+    return git.Repo().head.commit.message
+
+
 def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
     """Create a mapping of modified connectors (key) and modified files (value).
     As we call connector.get_local_dependencies_paths() any modification to a dependency will trigger connector pipeline for all connectors that depend on it.
@@ -235,13 +246,18 @@ def get_modified_connectors(modified_files: Set[Union[str, Path]]) -> dict:
     modified_connectors = {}
     all_connector_dependencies = [(connector, connector.get_local_dependencies_paths()) for connector in get_all_released_connectors()]
     for modified_file in modified_files:
+        if str(modified_file).endswith(".md"):
+            continue
         for connector, connector_dependencies in all_connector_dependencies:
             for connector_dependency in connector_dependencies:
                 connector_dependency_parts = connector_dependency.parts
                 modified_file_parts = Path(modified_file).parts
                 # The modified file is a dependency of the connector if the modified file path starts with the connector dependency path.
                 if modified_file_parts[: len(connector_dependency_parts)] == connector_dependency_parts:
-                    modified_connectors.setdefault(connector, []).append(modified_file)
+                    modified_connectors.setdefault(connector, [])
+                    connector_directory_parts = Path(connector.code_directory).parts
+                    if modified_file_parts[: len(connector_directory_parts)] == connector_directory_parts:
+                        modified_connectors[connector].append(modified_file)
     return modified_connectors
 
 
@@ -251,6 +267,11 @@ def get_modified_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Pa
         for f in modified_files
         if str(f).endswith(METADATA_FILE_NAME) and str(f).startswith("airbyte-integrations/connectors") and "-scaffold-" not in str(f)
     }
+
+
+def get_expected_metadata_files(modified_files: Set[Union[str, Path]]) -> Set[Path]:
+    changed_connectors = get_changed_connectors(modified_files=modified_files)
+    return {changed_connector.metadata_file_path for changed_connector in changed_connectors}
 
 
 def get_all_metadata_files() -> Set[Path]:

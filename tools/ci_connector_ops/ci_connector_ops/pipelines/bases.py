@@ -7,17 +7,22 @@
 from __future__ import annotations
 
 import json
+import webbrowser
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 
+import anyio
 import asyncer
-from ci_connector_ops.pipelines.consts import PYPROJECT_TOML_FILE_PATH
-from ci_connector_ops.pipelines.utils import check_path_in_workdir, with_exit_code, with_stderr, with_stdout
+from anyio import Path
+from ci_connector_ops.pipelines.actions import remote_storage
+from ci_connector_ops.pipelines.consts import LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
+from ci_connector_ops.pipelines.utils import check_path_in_workdir, slugify, with_exit_code, with_stderr, with_stdout
 from ci_connector_ops.utils import console
 from dagger import Container, QueryError
+from jinja2 import Environment, PackageLoader, select_autoescape
 from rich.console import Group
 from rich.panel import Panel
 from rich.style import Style
@@ -26,7 +31,7 @@ from rich.text import Text
 from tabulate import tabulate
 
 if TYPE_CHECKING:
-    from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
+    from ci_connector_ops.pipelines.contexts import PipelineContext
 
 
 class CIContext(str, Enum):
@@ -36,6 +41,9 @@ class CIContext(str, Enum):
     PULL_REQUEST = "pull_request"
     NIGHTLY_BUILDS = "nightly_builds"
     MASTER = "master"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 class StepStatus(Enum):
@@ -92,9 +100,11 @@ class Step(ABC):
 
     title: ClassVar[str]
     started_at: ClassVar[datetime]
+    max_retries: ClassVar[int] = 0
 
-    def __init__(self, context: ConnectorContext) -> None:  # noqa D107
+    def __init__(self, context: PipelineContext) -> None:  # noqa D107
         self.context = context
+        self.retry_count = 0
 
     async def run(self, *args, **kwargs) -> StepResult:
         """Public method to run the step. It output a step result.
@@ -106,7 +116,15 @@ class Step(ABC):
         """
         self.started_at = datetime.utcnow()
         try:
-            return await self._run(*args, **kwargs)
+            result = await self._run(*args, **kwargs)
+            if result.status is StepStatus.FAILURE and self.retry_count <= self.max_retries and self.max_retries > 0:
+                self.retry_count += 1
+                await anyio.sleep(10)
+                self.context.logger.warn(
+                    f"Retry #{self.retry_count} for {self.title} step on connector {self.context.connector.technical_name}"
+                )
+                return await self.run(*args, **kwargs)
+            return result
         except QueryError as e:
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
@@ -157,6 +175,13 @@ class Step(ABC):
 class PytestStep(Step, ABC):
     """An abstract class to run pytest tests and evaluate success or failure according to pytest logs."""
 
+    async def write_log_file(self, logs) -> str:
+        """Return the path to the pytest log file."""
+        log_directory = Path(f"{self.context.connector.code_directory}/airbyte_ci_logs")
+        await log_directory.mkdir(exist_ok=True)
+        await Path(f"{log_directory}/{slugify(self.title).replace('-', '_')}.log").write_text(logs)
+        self.context.logger.info(f"Pytest logs written to {log_directory}/{slugify(self.title)}.log")
+
     # TODO this is not very robust if pytest crashes and does not outputs its expected last log line.
     def pytest_logs_to_step_result(self, logs: str) -> StepResult:
         """Parse pytest log and infer failure, success or skipping.
@@ -202,10 +227,26 @@ class PytestStep(Step, ABC):
                     test_config,
                 ]
             )
-            return self.pytest_logs_to_step_result(await tester.stdout())
+            logs = await tester.stdout()
+            if self.context.is_local:
+                await self.write_log_file(logs)
+            return self.pytest_logs_to_step_result(logs)
 
         else:
             return StepResult(self, StepStatus.SKIPPED)
+
+
+class NoOpStep(Step):
+    """A step that does nothing."""
+
+    title = "No Op"
+
+    def __init__(self, context: PipelineContext, step_status: StepStatus) -> None:
+        super().__init__(context)
+        self.step_status = step_status
+
+    async def _run(self, *args, **kwargs) -> StepResult:
+        return StepResult(self, self.step_status)
 
 
 @dataclass(frozen=True)
@@ -222,6 +263,20 @@ class StepResult:
     def __repr__(self) -> str:  # noqa D105
         return f"{self.step.title}: {self.status.value}"
 
+    def __str__(self) -> str:  # noqa D105
+        return f"{self.step.title}: {self.status.value}\n\nSTDOUT:\n{self.stdout}\n\nSTDERR:\n{self.stderr}"
+
+    def __post_init__(self):
+        if self.stderr:
+            super().__setattr__("stderr", self.redact_secrets_from_string(self.stderr))
+        if self.stdout:
+            super().__setattr__("stdout", self.redact_secrets_from_string(self.stdout))
+
+    def redact_secrets_from_string(self, value: str) -> str:
+        for secret in self.step.context.secrets_to_mask:
+            value = value.replace(secret, "********")
+        return value
+
 
 @dataclass(frozen=True)
 class Report:
@@ -231,6 +286,19 @@ class Report:
     steps_results: List[StepResult]
     created_at: datetime = field(default_factory=datetime.utcnow)
     name: str = "REPORT"
+    filename: str = "output"
+
+    @property
+    def report_output_prefix(self) -> str:  # noqa D102
+        return self.pipeline_context.report_output_prefix
+
+    @property
+    def json_report_file_name(self) -> str:  # noqa D102
+        return self.filename + ".json"
+
+    @property
+    def json_report_remote_storage_key(self) -> str:  # noqa D102
+        return f"{self.report_output_prefix}/{self.json_report_file_name}"
 
     @property
     def failed_steps(self) -> List[StepResult]:  # noqa D102
@@ -250,7 +318,45 @@ class Report:
 
     @property
     def run_duration(self) -> int:  # noqa D102
-        return (self.created_at - self.pipeline_context.created_at).total_seconds()
+        return (self.pipeline_context.stopped_at - self.pipeline_context.started_at).total_seconds()
+
+    @property
+    def lead_duration(self) -> int:  # noqa D102
+        return (self.pipeline_context.stopped_at - self.pipeline_context.created_at).total_seconds()
+
+    @property
+    def remote_storage_enabled(self) -> bool:  # noqa D102
+        return self.pipeline_context.is_ci
+
+    async def save_local(self, filename: str, content: str) -> Path:
+        """Save the report files locally."""
+        local_path = anyio.Path(f"{LOCAL_REPORTS_PATH_ROOT}/{self.report_output_prefix}/{filename}")
+        await local_path.parents[0].mkdir(parents=True, exist_ok=True)
+        await local_path.write_text(content)
+        return local_path
+
+    async def save_remote(self, local_path: Path, remote_key: str, content_type: str = None) -> int:
+        gcs_cp_flags = None if content_type is None else [f"--content-type={content_type}"]
+        local_file = self.pipeline_context.dagger_client.host().directory(".", include=[str(local_path)]).file(str(local_path))
+        report_upload_exit_code, _, _ = await remote_storage.upload_to_gcs(
+            dagger_client=self.pipeline_context.dagger_client,
+            file_to_upload=local_file,
+            key=remote_key,
+            bucket=self.pipeline_context.ci_report_bucket,
+            gcs_credentials=self.pipeline_context.ci_gcs_credentials_secret,
+            flags=gcs_cp_flags,
+        )
+        if report_upload_exit_code != 0:
+            self.pipeline_context.logger.error(f"Uploading {local_path} to GCS Bucket: {self.pipeline_context.ci_report_bucket} failed.")
+        return report_upload_exit_code
+
+    async def save(self) -> None:
+        """Save the report files."""
+        local_json_path = await self.save_local(self.json_report_file_name, self.to_json())
+        self.pipeline_context.logger.info(f"Report saved locally at {local_json_path}")
+        if self.remote_storage_enabled:
+            await self.save_remote(local_json_path, self.json_report_remote_storage_key, "application/json")
+            self.pipeline_context.logger.info(f"Report saved remotely at {self.json_report_remote_storage_key}")
 
     def to_json(self) -> str:
         """Create a JSON representation of the report.
@@ -261,7 +367,7 @@ class Report:
         return json.dumps(
             {
                 "pipeline_name": self.pipeline_context.pipeline_name,
-                "run_timestamp": self.created_at.isoformat(),
+                "run_timestamp": self.pipeline_context.started_at.isoformat(),
                 "run_duration": self.run_duration,
                 "success": self.success,
                 "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
@@ -269,8 +375,8 @@ class Report:
                 "skipped_steps": [s.step.__class__.__name__ for s in self.skipped_steps],
                 "gha_workflow_run_url": self.pipeline_context.gha_workflow_run_url,
                 "pipeline_start_timestamp": self.pipeline_context.pipeline_start_timestamp,
-                "pipeline_end_timestamp": round(self.created_at.timestamp()),
-                "pipeline_duration": round(self.created_at.timestamp()) - self.pipeline_context.pipeline_start_timestamp,
+                "pipeline_end_timestamp": round(self.pipeline_context.stopped_at.timestamp()),
+                "pipeline_duration": round(self.pipeline_context.stopped_at.timestamp()) - self.pipeline_context.pipeline_start_timestamp,
                 "git_branch": self.pipeline_context.git_branch,
                 "git_revision": self.pipeline_context.git_revision,
                 "ci_context": self.pipeline_context.ci_context,
@@ -322,12 +428,29 @@ class ConnectorReport(Report):
     """A dataclass to build connector test reports to share pipelines executions results with the user."""
 
     @property
-    def should_be_saved(self) -> bool:  # noqa D102
-        return self.pipeline_context.is_ci
+    def report_output_prefix(self) -> str:  # noqa D102
+        return f"{self.pipeline_context.report_output_prefix}/{self.pipeline_context.connector.technical_name}/{self.pipeline_context.connector.version}"
+
+    @property
+    def html_report_file_name(self) -> str:  # noqa D102
+        return self.filename + ".html"
+
+    @property
+    def html_report_remote_storage_key(self) -> str:  # noqa D102
+        return f"{self.report_output_prefix}/{self.html_report_file_name}"
+
+    @property
+    def html_report_url(self) -> str:  # noqa D102
+        return f"https://storage.googleapis.com/{self.pipeline_context.ci_report_bucket}/{self.html_report_remote_storage_key}"
 
     @property
     def should_be_commented_on_pr(self) -> bool:  # noqa D102
-        return self.pipeline_context.is_ci and self.pipeline_context.pull_request and self.pipeline_context.PRODUCTION
+        return (
+            self.pipeline_context.should_save_report
+            and self.pipeline_context.is_ci
+            and self.pipeline_context.pull_request
+            and self.pipeline_context.PRODUCTION
+        )
 
     def to_json(self) -> str:
         """Create a JSON representation of the connector test report.
@@ -353,6 +476,7 @@ class ConnectorReport(Report):
                 "git_revision": self.pipeline_context.git_revision,
                 "ci_context": self.pipeline_context.ci_context,
                 "cdk_version": self.pipeline_context.cdk_version,
+                "html_report_url": self.html_report_url,
             }
         )
 
@@ -368,11 +492,50 @@ class ConnectorReport(Report):
             if step_result.status is not StepStatus.SKIPPED
         ]
         markdown_comment += tabulate(report_data, headers=["Step", "Result"], tablefmt="pipe") + "\n\n"
-        markdown_comment += f"🔗 [View the logs here]({self.pipeline_context.gha_workflow_run_url})\n\n"
+        markdown_comment += f"🔗 [View the logs here]({self.html_report_url})\n\n"
         markdown_comment += "*Please note that tests are only run on PR ready for review. Please set your PR to draft mode to not flood the CI engine and upstream service on following commits.*\n"
         markdown_comment += "**You can run the same pipeline locally on this branch with the [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/README.md) tool with the following command**\n"
         markdown_comment += f"```bash\nairbyte-ci connectors --name={self.pipeline_context.connector.technical_name} test\n```\n\n"
         self.pipeline_context.pull_request.create_issue_comment(markdown_comment)
+
+    async def to_html(self) -> str:
+        env = Environment(
+            loader=PackageLoader("ci_connector_ops.pipelines.tests"), autoescape=select_autoescape(), trim_blocks=False, lstrip_blocks=True
+        )
+        template = env.get_template("test_report.html.j2")
+        template.globals["StepStatus"] = StepStatus
+        local_icon_path = await Path(f"{self.pipeline_context.connector.code_directory}/icon.svg").resolve()
+        template_context = {
+            "connector_name": self.pipeline_context.connector.technical_name,
+            "step_results": self.steps_results,
+            "run_duration": round(self.run_duration),
+            "created_at": self.created_at.isoformat(),
+            "connector_version": self.pipeline_context.connector.version,
+            "gha_workflow_run_url": None,
+            "git_branch": self.pipeline_context.git_branch,
+            "git_revision": self.pipeline_context.git_revision,
+            "commit_url": None,
+            "icon_url": local_icon_path.as_uri(),
+        }
+
+        if self.pipeline_context.is_ci:
+            template_context["commit_url"] = f"https://github.com/airbytehq/airbyte/commit/{self.pipeline_context.git_revision}"
+            template_context["gha_workflow_run_url"] = self.pipeline_context.gha_workflow_run_url
+            template_context[
+                "icon_url"
+            ] = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
+        return template.render(template_context)
+
+    async def save(self) -> None:
+        local_html_path = await self.save_local(self.html_report_file_name, await self.to_html())
+        if self.pipeline_context.is_local:
+            absolute_path = await local_html_path.resolve()
+            self.pipeline_context.logger.info(f"Opening HTML report in browser: {absolute_path}")
+            webbrowser.open(absolute_path.as_uri())
+        if self.remote_storage_enabled:
+            await self.save_remote(local_html_path, self.html_report_remote_storage_key, "text/html")
+            self.pipeline_context.logger.info(f"HTML report uploaded to {self.html_report_url}")
+        await super().save()
 
     def print(self):
         """Print the test report to the console in a nice way."""

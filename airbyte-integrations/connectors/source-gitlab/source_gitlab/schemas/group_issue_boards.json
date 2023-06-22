@@ -56,6 +56,20 @@
     },
     "group_id": {
       "type": ["null", "integer"]
+    },
+    "group": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "web_url": {
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }
