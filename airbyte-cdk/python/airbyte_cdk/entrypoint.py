@@ -10,7 +10,7 @@ import os.path
 import socket
 import sys
 import tempfile
-from functools import cache, wraps
+from functools import wraps
 from typing import Any, Iterable, List, Mapping
 from urllib.parse import urlparse
 
@@ -222,12 +222,9 @@ def _init_internal_request_filter():
     Session.send = filtered_send
 
 
-@cache
 def _is_private_url(hostname: str, port: int) -> bool:
     """
-    Helper method that checks if any IPs are on a private network. We specifically only pass hostname and port
-    parameters because it will maximize the hit rate across different request permutations and keep the size of
-    of cache lower since the range of hostname and port should be small on a per-sync basis.
+    Helper method that checks if any of the IP addresses associated with a hostname belong to a private network.
     """
     address_info_entries = socket.getaddrinfo(hostname, port)
     for entry in address_info_entries:
