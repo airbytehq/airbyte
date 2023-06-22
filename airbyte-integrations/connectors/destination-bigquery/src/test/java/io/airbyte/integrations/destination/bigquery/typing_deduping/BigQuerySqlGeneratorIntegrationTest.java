@@ -1008,6 +1008,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
    * Mismatched row: id=3;
    *   foo_column expected String arst, got Long 42
    * }
+   *
+   * Assumes that rows with the same id and cursor are the same row.
    */
   private static String diff(List<Map<String, Optional<Object>>> missingRowsRaw, Set<Map<String, Object>> extraRowsRaw) {
     List<Map<String, Object>> missingRows = missingRowsRaw.stream()
