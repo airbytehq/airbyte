@@ -68,7 +68,7 @@ class DefaultFileBasedCursor(FileBasedCursor):
                 earliest_file_uri, earliest_datetime = self._get_earliest_file_and_datetime()
                 earliest_datetime = datetime.strptime(earliest_datetime, DATE_TIME_FORMAT)
                 return file.last_modified < earliest_datetime or (file.uri > earliest_file_uri)
-            else:
+            else:  # file.last_modified < self.get_start_time()
                 return False
         else:
             return True
