@@ -1,6 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "additionalProperties": true,
   "properties": {
     "address1": {
@@ -49,6 +48,12 @@
       "type": ["null", "string"]
     },
     "zip": {
+      "type": ["null", "string"]
+    },
+    "default": {
+      "type": ["null", "boolean"]
+    },
+    "shop_url": {
       "type": ["null", "string"]
     }
   }

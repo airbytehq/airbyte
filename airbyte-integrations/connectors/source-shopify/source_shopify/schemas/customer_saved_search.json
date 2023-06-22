@@ -1,6 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "additionalProperties": true,
   "properties": {
     "created_at": {
@@ -14,6 +13,9 @@
       "type": ["null", "string"]
     },
     "query": {
+      "type": ["null", "string"]
+    },
+    "shop_url": {
       "type": ["null", "string"]
     },
     "updated_at": {

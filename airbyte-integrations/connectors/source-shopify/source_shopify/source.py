@@ -754,7 +754,10 @@ class MetafieldShops(IncrementalShopifyStream):
 
 class CustomerSavedSearch(IncrementalShopifyStream):
     api_version = "2022-01"
+    cursor_field = "id"
+    order_field = "id"
     data_field = "customer_saved_searches"
+    filter_field = "since_id"
 
     def path(self, **kwargs) -> str:
         return f"{self.data_field}.json"

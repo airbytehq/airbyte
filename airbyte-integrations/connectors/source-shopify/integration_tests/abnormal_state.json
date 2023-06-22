@@ -479,7 +479,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "updated_at": "2025-07-08T05:24:10-07:00"
+        "id": 99999999999999
       },
       "stream_descriptor": {
         "name": "customer_saved_search"
