@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
 import static com.google.cloud.bigquery.LegacySQLTypeName.legacySQLTypeName;
+import static java.util.stream.Collectors.toSet;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -68,6 +69,22 @@ public class BigQuerySqlGeneratorIntegrationTest {
   public static final List<ColumnId> PRIMARY_KEY = List.of(ID_COLUMN);
   public static final ColumnId CURSOR = GENERATOR.buildColumnId("updated_at");
   public static final ColumnId CDC_CURSOR = GENERATOR.buildColumnId("_ab_cdc_lsn");
+  /**
+   * Super hacky way to sort rows represented as {@code Map<String, Object>}
+   */
+  public static final Comparator<Map<String, Object>> ROW_COMPARATOR = (row1, row2) -> {
+    int cmp;
+    cmp = compareRowsOnColumn(ID_COLUMN.name(), row1, row2);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = compareRowsOnColumn(CURSOR.name(), row1, row2);
+    if (cmp != 0) {
+      return cmp;
+    }
+    cmp = compareRowsOnColumn(CDC_CURSOR.name(), row1, row2);
+    return cmp;
+  };
   public static final String QUOTE = "`";
   private static final LinkedHashMap<ColumnId, AirbyteType> COLUMNS;
   private static final LinkedHashMap<ColumnId, AirbyteType> CDC_COLUMNS;
@@ -922,6 +939,9 @@ public class BigQuerySqlGeneratorIntegrationTest {
     return map;
   }
 
+  /**
+   * Asserts that the expected rows match the query result. Please don't read this code. Trust the logs.
+   */
   private void assertQueryResult(final List<Map<String, Optional<Object>>> expectedRows, final TableResult result) {
     List<Map<String, Object>> actualRows = result.streamAll().map(row -> toMap(result.getSchema(), row)).toList();
     List<Map<String, Optional<Object>>> missingRows = new ArrayList<>();
@@ -959,49 +979,11 @@ public class BigQuerySqlGeneratorIntegrationTest {
       matchedRows.addAll(matchingRows);
     }
 
-    boolean success = true;
-    String errorMessage = "";
 
-    if (foundMultiMatch) {
-      success = false;
-      // TODO is this true? E.g. what if we try to write the same row twice (because of a retry)? Are we
-      // guaranteed to have some differentiator?
-      errorMessage += "Some expected rows appeared multiple times in the actual table. This is probably a bug in the test itself.\n";
-    }
-    if (!missingRows.isEmpty()) {
-      success = false;
-
-      // Blindly sort on all the interesting columns. This is kind of hacky, but it guarantees that we'll get the output in a nice order.
-      // Intellij is complaining that all of these might be null... but ComparisonChain can handle that just fine?
-      missingRows.sort((row1, row2) -> ComparisonChain.start()
-          .compare((Comparable<?>) row1.getOrDefault(ID_COLUMN.name(), Optional.empty()).orElse(null), (Comparable<?>) row2.getOrDefault(ID_COLUMN.name(), Optional.empty()).orElse(null))
-          .compare((Comparable<?>) row1.getOrDefault(CURSOR.name(), Optional.empty()).orElse(null), (Comparable<?>) row2.getOrDefault(CURSOR.name(), Optional.empty()).orElse(null))
-          .compare((Comparable<?>) row1.getOrDefault(CDC_CURSOR.name(), Optional.empty()).orElse(null), (Comparable<?>) row2.getOrDefault(CDC_CURSOR.name(), Optional.empty()).orElse(null))
-          .result());
-
-      final String missingRowsRendered = missingRows.stream()
-          .map(row -> sortedToString(row, value -> value.orElse(null)))
-          .collect(Collectors.joining("\n"));
-      errorMessage += "There were %d rows missing from the actual table:\n%s\n".formatted(missingRows.size(), missingRowsRendered);
-    }
-    if (matchedRows.size() != actualRows.size()) {
-      success = false;
-      final String extraRowsRendered = actualRows.stream()
-          .filter(row -> !matchedRows.contains(row))
-          // Same as the previous branch - there's no guarantee that all of these columns actually exist, but we'll blindly sort on them anyway.
-          .sorted((row1, row2) -> ComparisonChain.start()
-              .compare((Comparable<?>) row1.get(ID_COLUMN.name()), (Comparable<?>) row2.get(ID_COLUMN.name()))
-              .compare((Comparable<?>) row1.get(CURSOR.name()), (Comparable<?>) row2.get(CURSOR.name()))
-              .compare((Comparable<?>) row1.get(CDC_CURSOR.name()), (Comparable<?>) row2.get(CDC_CURSOR.name()))
-              .result())
-          .map(BigQuerySqlGeneratorIntegrationTest::sortedToString)
-          .collect(Collectors.joining("\n"));
-      errorMessage += "The actual table contained %d rows which were not expected:\n%s\n".formatted(
-          actualRows.size() - matchedRows.size(),
-          extraRowsRendered);
-    }
-    if (!success) {
-      fail(errorMessage);
+    // TODO is the foundMultiMatch condition correct? E.g. what if we try to write the same row twice (because of a retry)? Are we
+    // guaranteed to have some differentiator?
+    if (foundMultiMatch || !missingRows.isEmpty() || matchedRows.size() != actualRows.size()) {
+      fail(diff(missingRows, actualRows.stream().filter(row -> !matchedRows.contains(row)).collect(toSet())));
     }
   }
 
@@ -1016,5 +998,117 @@ public class BigQuerySqlGeneratorIntegrationTest {
         .map(entry -> entry.getKey() + "=" + valueMapper.apply(entry.getValue()))
         .collect(Collectors.joining(", "))
         + "}";
+  }
+
+  /**
+   * Attempts to generate a pretty-print diff of the rows. Output will look something like:
+   * {@code
+   * Missing row: {id=1}
+   * Extra row: {id=2}
+   * Mismatched row: id=3;
+   *   foo_column expected String arst, got Long 42
+   * }
+   */
+  private static String diff(List<Map<String, Optional<Object>>> missingRowsRaw, Set<Map<String, Object>> extraRowsRaw) {
+    List<Map<String, Object>> missingRows = missingRowsRaw.stream()
+        .map(row -> {
+          // Extract everything from inside the optionals.
+          Map<String, Object> newRow = new HashMap<>();
+          for (Entry<String, Optional<Object>> entry : row.entrySet()) {
+            newRow.put(entry.getKey(), entry.getValue().orElse(null));
+          }
+          return newRow;
+        }).sorted(ROW_COMPARATOR)
+        .toList();
+
+    List<Map<String, Object>> extraRows = extraRowsRaw.stream().sorted(ROW_COMPARATOR).toList();
+
+    String output = "";
+    int missingIndex = 0;
+    int extraIndex = 0;
+    while (missingIndex < missingRows.size() && extraIndex < extraRows.size()) {
+      Map<String, Object> missingRow = missingRows.get(missingIndex);
+      Map<String, Object> extraRow = extraRows.get(extraIndex);
+      int compare = ROW_COMPARATOR.compare(missingRow, extraRow);
+      if (compare < 0) {
+        // missing row is too low - we should print extra rows until we catch up
+        output += "Missing row: " + sortedToString(missingRow) + "\n";
+        missingIndex++;
+      } else if (compare == 0) {
+        // rows match - we should print the diff between them
+        output += "Mismatched row: ";
+        if (missingRow.containsKey(ID_COLUMN.name())) {
+          output += "id=" + missingRow.get(ID_COLUMN.name()) + "; ";
+        }
+        if (missingRow.containsKey(CURSOR.name())) {
+          output += "updated_at=" + missingRow.get(CURSOR.name()) + "; ";
+        }
+        if (missingRow.containsKey(CDC_CURSOR.name())) {
+          output += "_ab_cdc_lsn=" + missingRow.get(CDC_CURSOR.name()) + "; ";
+        }
+        output += "\n";
+        for (String key : missingRow.keySet().stream().sorted().toList()) {
+          Object missingValue = missingRow.get(key);
+          Object extraValue = extraRow.get(key);
+          if (!Objects.equals(missingValue, extraValue)) {
+            output += "  " + key + " expected " + getClassAndValue(missingValue) + ", got " + getClassAndValue(extraValue) + "\n";
+          }
+        }
+
+        missingIndex++;
+        extraIndex++;
+      } else {
+        // extra row is too low - we should print missing rows until we catch up
+        output += "Extra row: " + sortedToString(extraRow) + "\n";
+        extraIndex++;
+      }
+    }
+    while (missingIndex < missingRows.size()) {
+      Map<String, Object> missingRow = missingRows.get(missingIndex);
+      output += "Missing row: " + sortedToString(missingRow) + "\n";
+      missingIndex++;
+    }
+    while (extraIndex < extraRows.size()) {
+      Map<String, Object> extraRow = extraRows.get(extraIndex);
+      output += "Extra row: " + sortedToString(extraRow) + "\n";
+      extraIndex++;
+    }
+    return output;
+  }
+
+  /**
+   * Compare two rows on the given column. Sorts nulls first. If the values are not the same type, assumes the left
+   * value is smaller.
+   */
+  private static int compareRowsOnColumn(String column, Map<String, Object> row1, Map<String, Object> row2) {
+    Comparable<?> r1id = (Comparable<?>) row1.get(column);
+    Comparable<?> r2id = (Comparable<?>) row2.get(column);
+    if (r1id == null) {
+      if (r2id == null) {
+        return 0;
+      } else {
+        return -1;
+      }
+    } else {
+      if (r2id == null) {
+        return 1;
+      } else {
+        if (r1id.getClass().equals(r2id.getClass())) {
+          // We're doing some very sketchy type-casting nonsense here, but it's guarded by the class equality check.
+          return ((Comparable) r1id).compareTo(r2id);
+        } else {
+          // Both values are non-null, but they're not the same type. Assume left is smaller.
+          return -1;
+        }
+      }
+    }
+  }
+
+  private static String getClassAndValue(Object o) {
+    if (o == null) {
+      return null;
+    } else {
+      return o.getClass().getSimpleName() + " " + o;
+    }
   }
 }
