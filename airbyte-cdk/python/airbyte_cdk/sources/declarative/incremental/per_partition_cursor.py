@@ -5,7 +5,7 @@
 import json
 from typing import Any, Callable, Iterable, Mapping, Optional
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
@@ -94,7 +94,7 @@ class CursorFactory:
         return self._create_function()
 
 
-class PerPartitionCursor(StreamSlicer):
+class PerPartitionCursor(Cursor):
     """
     Given a stream has many partitions, it is important to provide a state per partition.
 
@@ -126,45 +126,32 @@ class PerPartitionCursor(StreamSlicer):
         self._cursor_per_partition = {}
         self._partition_serializer = PerPartitionKeySerializer()
 
-    def stream_slices(self, sync_mode: SyncMode, _: StreamState) -> Iterable[PerPartitionStreamSlice]:
-        """
-        We knowingly avoid using stream_state as we want PerPartitionCursor to manage its own state.
-        """
-        slices = self._partition_router.stream_slices(sync_mode, self._NO_STATE)
+    def stream_slices(self) -> Iterable[PerPartitionStreamSlice]:
+        slices = self._partition_router.stream_slices()
         for partition in slices:
             cursor = self._cursor_per_partition.get(self._to_partition_key(partition))
             if not cursor:
                 cursor = self._create_cursor(self._NO_CURSOR_STATE)
                 self._cursor_per_partition[self._to_partition_key(partition)] = cursor
 
-            for cursor_slice in cursor.stream_slices(sync_mode, self._get_state_for_partition(partition)):
+            for cursor_slice in cursor.stream_slices():
                 yield PerPartitionStreamSlice(partition, cursor_slice)
 
-    def update_cursor(self, stream_slice: PerPartitionStreamSlice, last_record: Optional[Record] = None):
-        if not last_record:
-            # The `update_cursor` method is called without `last_record` in order to set the initial state. In that case, stream_slice is
-            # not a PerPartitionStreamSlice but is a dict representing the state
-            self._init_state(stream_slice)
-        else:
-            try:
-                self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].update_cursor(
-                    stream_slice.cursor_slice, last_record
-                )
-            except KeyError as exception:
-                raise KeyError(
-                    f"Partition {str(exception)} could not be found in current state based on the record. This is unexpected because "
-                    f"we should only update cursor for partition that where emitted during `stream_slices`"
-                )
-
-    def _init_state(self, stream_state: dict) -> None:
+    def set_initial_state(self, stream_state: StreamState) -> None:
         if not stream_state:
             return
 
-        if "states" not in stream_state:
-            raise ValueError("Incompatible state format: please reset your connection and run another sync")
-
         for state in stream_state["states"]:
             self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
+
+    def update_state(self, stream_slice: PerPartitionStreamSlice, last_record: Record):
+        try:
+            self._cursor_per_partition[self._to_partition_key(stream_slice.partition)].update_state(stream_slice.cursor_slice, last_record)
+        except KeyError as exception:
+            raise KeyError(
+                f"Partition {str(exception)} could not be found in current state based on the record. This is unexpected because "
+                f"we should only update state for partition that where emitted during `stream_slices`"
+            )
 
     def get_stream_state(self) -> StreamState:
         states = []
@@ -207,7 +194,7 @@ class PerPartitionCursor(StreamSlicer):
 
     def _create_cursor(self, cursor_state: Any) -> StreamSlicer:
         cursor = self._cursor_factory.create()
-        cursor.update_cursor(cursor_state)
+        cursor.set_initial_state(cursor_state)
         return cursor
 
     def get_request_params(

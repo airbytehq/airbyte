@@ -143,7 +143,7 @@ def test_given_record_for_partition_when_read_then_update_state():
             ).build()
     )
     stream_instance = source.streams({})[0]
-    list(stream_instance.stream_slices(sync_mode=SYNC_MODE, stream_state={}))
+    list(stream_instance.stream_slices(sync_mode=SYNC_MODE))
 
     with patch.object(HttpStream, "_read_pages", side_effect=[[{"a record key": "a record value", CURSOR_FIELD: "2022-01-15"}]]):
         list(
