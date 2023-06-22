@@ -76,6 +76,7 @@ class DefaultFileBasedCursor(FileBasedCursor):
             else:  # file.last_modified < self.get_start_time()
                 return False
         else:
+            # The file is not in the history and the history is complete. We know we need to sync the file
             return True
 
     def get_files_to_sync(self, all_files: Iterable[RemoteFile]) -> Iterable[RemoteFile]:
