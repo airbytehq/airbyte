@@ -99,8 +99,38 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       // This is guaranteed to not be a OneOf, so we won't recurse infinitely
       final AirbyteType chosenType = AirbyteTypeUtils.chooseOneOfType(o);
       return extractAndCast(column, chosenType);
-    } else if (airbyteType instanceof Struct || airbyteType instanceof Array || airbyteType instanceof UnsupportedOneOf
-        || airbyteType == AirbyteProtocolType.UNKNOWN) {
+    } else if (airbyteType instanceof Struct) {
+      // We need to validate that the struct is actually a struct.
+      // Note that struct columns are actually nullable in two ways. For a column `foo`:
+      // {foo: null} and {} are both valid, and are both written to the final table as a SQL NULL (_not_ a JSON null).
+      // JSON_QUERY(JSON'{}', '$.foo') returns a SQL null.
+      // JSON_QUERY(JSON'{"foo": null}', '$.foo') returns a JSON null.
+      return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+          """
+               CASE
+                 WHEN JSON_QUERY(`_airbyte_data`, '$.${column_name}') IS NULL
+                   OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$.${column_name}')) != 'object'
+                   THEN NULL
+                 ELSE JSON_QUERY(`_airbyte_data`, '$.${column_name}')
+               END
+               """
+      );
+    } else if (airbyteType instanceof Array) {
+      // Much like the Struct case above, arrays need special handling.
+      return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
+          """
+               CASE
+                 WHEN JSON_QUERY(`_airbyte_data`, '$.${column_name}') IS NULL
+                   OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$.${column_name}')) != 'array'
+                   THEN NULL
+                 ELSE JSON_QUERY(`_airbyte_data`, '$.${column_name}')
+               END
+               """
+      );
+    } else if (airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
+      // JSON_VALUE converts JSON types to native SQL types (int64, string, etc.)
+      // We use JSON_QUERY rather than JSON_VALUE so that we can extract a JSON-typed value.
+      // This is to avoid needing to convert the raw SQL type back into JSON.
       return "JSON_QUERY(`_airbyte_data`, '$." + column.originalName() + "')";
     } else {
       final StandardSQLTypeName dialectType = toDialectType(airbyteType);
@@ -263,10 +293,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             "raw_col_name", col.getKey().originalName(),
             "col_type", toDialectType(col.getValue()).name(),
             "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
-                // TODO check that json_extract is an object/array
                 """
                 CASE
-                  WHEN (JSON_VALUE(`_airbyte_data`, '$.${raw_col_name}') IS NOT NULL) AND (${json_extract} IS NULL) THEN ["Problem with `${raw_col_name}`"]
+                  WHEN (JSON_QUERY(`_airbyte_data`, '$.${raw_col_name}') IS NOT NULL)
+                    AND (JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$.${raw_col_name}')) != 'null')
+                    AND (${json_extract} IS NULL)
+                    THEN ["Problem with `${raw_col_name}`"]
                   ELSE []
                 END"""))
         .collect(joining(",\n"));

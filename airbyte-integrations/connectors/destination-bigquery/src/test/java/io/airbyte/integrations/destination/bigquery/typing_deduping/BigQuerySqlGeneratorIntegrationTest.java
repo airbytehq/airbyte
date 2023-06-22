@@ -4,26 +4,11 @@
 
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
-import static com.google.cloud.bigquery.LegacySQLTypeName.legacySQLTypeName;
-import static java.util.stream.Collectors.toSet;
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryException;
-import com.google.cloud.bigquery.BigQueryOptions;
-import com.google.cloud.bigquery.DatasetInfo;
-import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.*;
 import com.google.cloud.bigquery.Field.Mode;
-import com.google.cloud.bigquery.FieldValue;
-import com.google.cloud.bigquery.FieldValueList;
-import com.google.cloud.bigquery.QueryJobConfiguration;
-import com.google.cloud.bigquery.Schema;
-import com.google.cloud.bigquery.StandardSQLTypeName;
-import com.google.cloud.bigquery.Table;
-import com.google.cloud.bigquery.TableResult;
-import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
@@ -37,6 +22,15 @@ import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
+import org.apache.commons.text.StringSubstitutor;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -47,15 +41,10 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.apache.commons.text.StringSubstitutor;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static com.google.cloud.bigquery.LegacySQLTypeName.legacySQLTypeName;
+import static java.util.stream.Collectors.toSet;
+import static org.junit.jupiter.api.Assertions.*;
 
 // TODO this proooobably belongs in test-integration? make sure to update the build.gradle
 // concurrent runner stuff if you do this
@@ -453,8 +442,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
             new ImmutableMap.Builder<String, Optional<Object>>()
                 .put("id", Optional.of(2L))
                 .put("updated_at", Optional.of(Instant.parse("2023-01-01T01:00:00Z")))
-                .put("array", Optional.of(Jsons.deserialize("null")))
-                .put("struct", Optional.of(Jsons.deserialize("null")))
+                .put("array", Optional.empty())
+                .put("struct", Optional.empty())
                 .put("string", Optional.empty())
                 .put("number", Optional.empty())
                 .put("integer", Optional.empty())
@@ -508,6 +497,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
                 .put("_airbyte_meta", Optional.of(Jsons.deserialize(
                     """
                     {"errors":[
+                      "Problem with `struct`",
+                      "Problem with `array`",
                       "Problem with `string`",
                       "Problem with `number`",
                       "Problem with `integer`",
