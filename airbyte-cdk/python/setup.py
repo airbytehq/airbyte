@@ -62,6 +62,7 @@ setup(
         "Deprecated~=1.2",
         "Jinja2~=3.1.2",
         "cachetools",
+        "wcmatch==8.4",
     ],
     python_requires=">=3.8",
     extras_require={
