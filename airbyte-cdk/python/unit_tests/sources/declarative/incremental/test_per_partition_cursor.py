@@ -147,6 +147,13 @@ def test_given_partition_router_without_state_has_one_partition_then_return_one_
     assert list(slices) == [PerPartitionStreamSlice(partition, cursor_slice) for cursor_slice in cursor_slices]
 
 
+def test_given_previous_state_format_when_update_cursor_then_raise_error(mocked_cursor_factory, mocked_partition_router):
+    cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)
+
+    with pytest.raises(ValueError):
+        cursor.update_cursor({"start_datetime": "2022-08-18T08:35:49.540Z"})
+
+
 def test_given_partition_associated_with_state_when_stream_slices_then_do_not_recreate_cursor(mocked_cursor_factory, mocked_partition_router):
     partition = {"partition_field_1": "a value", "partition_field_2": "another value"}
     mocked_partition_router.stream_slices.return_value = [partition]
