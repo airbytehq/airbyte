@@ -3,16 +3,24 @@
 #
 
 
+from logging import getLogger
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, DestinationSyncMode, Type, AirbyteStream
-
-from logging import getLogger
-from timeplus import Stream, Environment
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    DestinationSyncMode,
+    Status,
+    Type,
+)
+from timeplus import Environment, Stream
 
 logger = getLogger("airbyte")
+
 
 class DestinationTimeplus(Destination):
     def write(
@@ -34,8 +42,8 @@ class DestinationTimeplus(Destination):
         """
         endpoint = config["endpoint"]
         apikey = config["apikey"]
-        if endpoint[-1] == '/':
-            endpoint = endpoint[0:len(endpoint)-1]
+        if endpoint[-1] == "/":
+            endpoint = endpoint[0 : len(endpoint) - 1]
         env = Environment().address(endpoint).apikey(apikey)
         stream_list = Stream(env=env).list()
         all_streams = {s.name for s in stream_list}
@@ -65,13 +73,11 @@ class DestinationTimeplus(Destination):
 
             if need_delete_stream:
                 # delete the existing stream
-                Stream(env=env).name(
-                    configured_stream.stream.name).get().delete()
+                Stream(env=env).name(configured_stream.stream.name).get().delete()
                 logger.info(f"Stream {configured_stream.stream.name} deleted successfully")
             if need_create_stream:
                 # create a new stream
-                DestinationTimeplus.create_stream(
-                    env, configured_stream.stream)
+                DestinationTimeplus.create_stream(env, configured_stream.stream)
                 logger.info(f"Stream {configured_stream.stream.name} created successfully")
 
         for message in input_messages:
@@ -85,8 +91,7 @@ class DestinationTimeplus(Destination):
                 # this code is to send data to a single-column stream
                 # Stream(env=env).name(record.stream).column("raw", "string").ingest(payload=record.data)
 
-                Stream(env=env).name(record.stream).ingest(
-                    payload=record.data, format="streaming")
+                Stream(env=env).name(record.stream).ingest(payload=record.data, format="streaming")
             else:
                 # ignore other message types for now
                 continue
@@ -97,32 +102,32 @@ class DestinationTimeplus(Destination):
         # Stream(env=env).name(stream.name).column('raw','string').create()
 
         tp_stream = Stream(env=env).name(stream.name.strip())
-        for name, v in stream.json_schema['properties'].items():
+        for name, v in stream.json_schema["properties"].items():
             tp_stream.column(name.strip(), DestinationTimeplus.type_mapping(v))
         tp_stream.create()
 
     @staticmethod
     def type_mapping(v) -> str:
-        airbyte_type = v['type']
+        airbyte_type = v["type"]
         if type(airbyte_type) is list:
             for t in list(airbyte_type):
-                if t != 'null':
-                    type_def = {'type': t}
-                    if t == 'array':
-                        type_def['items'] = v['items']
+                if t != "null":
+                    type_def = {"type": t}
+                    if t == "array":
+                        type_def["items"] = v["items"]
                     return DestinationTimeplus.type_mapping(type_def)
-        if airbyte_type == 'number':
-            return 'float'
-        elif airbyte_type == 'integer':
-            return 'integer'
-        elif airbyte_type == 'boolean':
-            return 'bool'
-        elif airbyte_type == 'object':
-            return 'string'
-        elif airbyte_type == 'array':
+        if airbyte_type == "number":
+            return "float"
+        elif airbyte_type == "integer":
+            return "integer"
+        elif airbyte_type == "boolean":
+            return "bool"
+        elif airbyte_type == "object":
+            return "string"
+        elif airbyte_type == "array":
             return f"array({DestinationTimeplus.type_mapping(v['items'])})"
         else:
-            return 'string'
+            return "string"
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -143,11 +148,13 @@ class DestinationTimeplus(Destination):
                 return AirbyteConnectionStatus(status=Status.FAILED, message="Endpoint must start with http or https")
             if len(apikey) != 60:
                 return AirbyteConnectionStatus(status=Status.FAILED, message="API Key must be 60 characters")
-            if endpoint[-1] == '/':
-                endpoint = endpoint[0:len(endpoint)-1]
+            if endpoint[-1] == "/":
+                endpoint = endpoint[0 : len(endpoint) - 1]
             env = Environment().address(endpoint).apikey(apikey)
             Stream(env=env).list()
-            logger.info("Successfully connected to "+endpoint)
+            logger.info("Successfully connected to " + endpoint)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"Fail to connect to Timeplus endpoint with the given API key: {repr(e)}")
+            return AirbyteConnectionStatus(
+                status=Status.FAILED, message=f"Fail to connect to Timeplus endpoint with the given API key: {repr(e)}"
+            )
