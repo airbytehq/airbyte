@@ -65,12 +65,10 @@ class TestBaseInsightsStream:
             name="CustomName",
             breakdowns=["test1", "test2"],
             action_breakdowns=["field1", "field2"],
-            action_report_time="conversion",
             insights_lookback_window=28,
         )
 
         assert stream.breakdowns == ["test1", "test2"]
-        assert stream.action_report_time == "conversion"
         assert stream.name == "custom_name"
         assert stream.primary_key == ["date_start", "account_id", "ad_id", "test1", "test2"]
 
