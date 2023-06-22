@@ -16,11 +16,10 @@ FROM airbyte/integration-base-java:dev
 #  rm /tmp/YourKit-JavaProfiler-2021.3-docker.zip
 
 # amazon linux 2 isn't compatible with urllib3 2.x, so force 1.26.15
-RUN yum install -y python3 python3-devel jq sshpass git gcc-c++ && \
+RUN yum install -y python3 python3-devel jq sshpass git gcc-c++ && yum clean all && \
   alternatives --install /usr/bin/python python /usr/bin/python3 60 && \
   python -m ensurepip --upgrade && \
-  pip3 install dbt-snowflake==1.0.0 "urllib3<2" && \
-  yum clean all
+  pip3 install dbt-snowflake==1.0.0 "urllib3<2"
 
 COPY --from=airbyte/normalization-snowflake:dev /airbyte /airbyte
 # Install python dependencies
