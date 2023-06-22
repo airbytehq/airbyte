@@ -402,7 +402,7 @@ class Events(IncrementalKlaviyoStreamV1):
 
     @property
     def look_back_window_in_seconds(self) -> Optional[int]:
-        return timedelta(minutes=30).seconds
+        return timedelta(minutes=120).seconds
 
     def path(self, **kwargs) -> str:
         return "metrics/timeline"
