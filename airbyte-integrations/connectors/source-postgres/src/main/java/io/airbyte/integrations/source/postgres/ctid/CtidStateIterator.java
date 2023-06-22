@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.postgres.ctid;
 
-import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.CTID_STATUS_VERSION;
+import static io.airbyte.integrations.source.postgres.ctid.CtidPerStreamStateManager.CTID_STATUS_VERSION;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
@@ -75,7 +75,7 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
         LOGGER.info("Emitting ctid state for stream {}, state is {}", pair, ctidStatus);
         recordCount = 0L;
         lastCheckpoint = Instant.now();
-        return CtidStateManager.createPerStreamStateMessage(pair, ctidStatus);
+        return CtidPerStreamStateManager.createPerStreamStateMessage(pair, ctidStatus);
       }
       // Use try-catch to catch Exception that could occur when connection to the database fails
       try {

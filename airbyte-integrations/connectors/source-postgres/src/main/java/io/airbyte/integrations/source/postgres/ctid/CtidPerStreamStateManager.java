@@ -22,16 +22,16 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class CtidStateManager {
+public class CtidPerStreamStateManager {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CtidStateManager.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CtidPerStreamStateManager.class);
   public static final long CTID_STATUS_VERSION = 2;
   private final Map<AirbyteStreamNameNamespacePair, CtidStatus> pairToCtidStatus;
   private final static AirbyteStateMessage EMPTY_STATE = new AirbyteStateMessage()
       .withType(AirbyteStateType.STREAM)
       .withStream(new AirbyteStreamState());
 
-  public CtidStateManager(final List<AirbyteStateMessage> stateMessages, final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
+  public CtidPerStreamStateManager(final List<AirbyteStateMessage> stateMessages, final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {
     this.pairToCtidStatus = createPairToCtidStatusMap(stateMessages, fileNodes);
   }
 

@@ -58,8 +58,12 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
+import io.airbyte.integrations.source.postgres.cdc.PostgresCdcConnectorMetadataInjector;
+import io.airbyte.integrations.source.postgres.cdc.PostgresCdcProperties;
+import io.airbyte.integrations.source.postgres.cdc.PostgresCdcSavedInfoFetcher;
+import io.airbyte.integrations.source.postgres.cdc.PostgresCdcStateHandler;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations;
-import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
+import io.airbyte.integrations.source.postgres.ctid.CtidPerStreamStateManager;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.integrations.source.postgres.xmin.PostgresXminHandler;
@@ -477,7 +481,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Long> fileNodes = PostgresQueryUtils.fileNodeForStreams(database,
             finalListOfStreamsToBeSyncedViaCtid,
             getQuoteString());
-        final CtidStateManager ctidStateManager = new CtidStateManager(streamsCategorised.ctidStreams().statesFromCtidSync(), fileNodes);
+        final CtidPerStreamStateManager ctidStateManager = new CtidPerStreamStateManager(streamsCategorised.ctidStreams().statesFromCtidSync(), fileNodes);
         final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database, new CtidPostgresSourceOperations(), getQuoteString(),
             fileNodes, ctidStateManager,
             namespacePair -> Jsons.jsonNode(xminStatus),
@@ -609,7 +613,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return toSslJdbcParamInternal(sslMode);
   }
 
-  protected static String toSslJdbcParamInternal(final SslMode sslMode) {
+  public static String toSslJdbcParamInternal(final SslMode sslMode) {
     final var result = switch (sslMode) {
       case DISABLED -> org.postgresql.jdbc.SslMode.DISABLE.value;
       case ALLOWED -> org.postgresql.jdbc.SslMode.ALLOW.value;

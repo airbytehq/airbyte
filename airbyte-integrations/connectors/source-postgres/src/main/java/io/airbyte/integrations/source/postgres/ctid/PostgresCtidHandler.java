@@ -51,7 +51,7 @@ public class PostgresCtidHandler {
   private final JdbcDatabase database;
   private final CtidPostgresSourceOperations sourceOperations;
   private final String quoteString;
-  private final CtidStateManager ctidStateManager;
+  private final CtidPerStreamStateManager ctidStateManager;
   private final Map<AirbyteStreamNameNamespacePair, Long> fileNodes;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
   private final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier;
@@ -61,7 +61,7 @@ public class PostgresCtidHandler {
                              final CtidPostgresSourceOperations sourceOperations,
                              final String quoteString,
                              final Map<AirbyteStreamNameNamespacePair, Long> fileNodes,
-                             final CtidStateManager ctidStateManager,
+                             final CtidPerStreamStateManager ctidStateManager,
                              final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
                              final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier) {
     this.config = config;

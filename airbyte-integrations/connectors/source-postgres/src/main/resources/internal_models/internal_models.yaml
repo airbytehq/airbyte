@@ -10,6 +10,8 @@ properties:
     "$ref": "#/definitions/XminStatus"
   ctid_state:
     "$ref": "#/definitions/CtidStatus"
+  cdc_per_stream_state:
+    "$ref": "#/definitions/CDCPerStreamState"
 definitions:
   StateType:
     description: Enum to define the sync mode of state.
@@ -17,6 +19,7 @@ definitions:
     enum:
       - xmin
       - ctid
+      - cdc
   XminStatus:
     type: object
     properties:
@@ -51,3 +54,21 @@ definitions:
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
       relation_filenode:
         type: integer
+  CDCPerStreamState:
+    type: object
+    additionalProperties: true
+    required:
+      - stream_name
+      - stream_namespace
+    properties:
+      version:
+        description: Version of state.
+        type: integer
+      state_type:
+        "$ref": "#/definitions/StateType"
+      stream_name:
+        description: name of the stream
+        type: string
+      stream_namespace:
+        description: namespace of the stream
+        type: string
