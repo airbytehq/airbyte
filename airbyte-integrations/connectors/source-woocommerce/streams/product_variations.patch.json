@@ -1,7 +1,10 @@
 {
 	"properties": {
-    "image": {
-      "type": ["null", "object"]
+        "image": {
+            "type": ["null", "object"]
+        },
+        "manage_stock": {
+            "type": ["null", "boolean"]
+        }
     }
   }
-}

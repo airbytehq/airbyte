@@ -1,0 +1,7 @@
+{
+	"properties": {
+        "paying": {
+            "type": ["null", "string"]
+        }
+    }
+}
