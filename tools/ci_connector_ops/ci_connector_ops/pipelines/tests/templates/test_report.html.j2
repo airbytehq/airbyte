@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ connector_name }} test report</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #131226;
+      color: #fff;
+    }
+    a {
+      color: #fff;
+    }
+    h1 {
+      color: #fff;
+    }
+    ul {
+      list-style-type: none;
+      padding-inline-start: 0px;
+    }
+    li {
+      margin-bottom: 5px;
+    }
+    table {
+      border-collapse: collapse;
+      margin-top: 20px;
+      color: #fff;
+      border: 1px solid rgba(203, 203, 221, 0.25);
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border: 1px solid rgba(203, 203, 221, 0.25);
+    }
+    caption {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    pre {
+      background-color: #222;
+      padding: 10px;
+      color: #fff;
+      overflow: auto;
+    }
+    .wrap-collabsible {
+      margin-bottom: 10px;
+      border: 1px solid rgba(203, 203, 221, 0.25);
+    }
+    input[type='checkbox'] {
+      display: none;
+    }
+    .lbl-toggle {
+      display: block;
+      padding: 1rem;
+      cursor: pointer;
+      border-radius: 0;
+      transition: all 0.25s ease-out;
+    }
+    .lbl-toggle:hover {
+      color: black;
+    }
+    .lbl-toggle::before {
+      content: ' ';
+      display: inline-block;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-left: 5px solid currentColor;
+      vertical-align: middle;
+      margin-right: .7rem;
+      transform: translateY(-2px);
+      transition: transform .2s ease-out;
+    }
+    .toggle:checked + .lbl-toggle::before {
+      transform: rotate(90deg) translateX(-3px);
+    }
+    .collapsible-content {
+      max-height: 0px;
+      overflow: auto;
+      transition: max-height .25s ease-in-out;
+    }
+    .toggle:checked + .lbl-toggle + .collapsible-content {
+      max-height: 100vh;
+    }
+    .toggle:checked + .lbl-toggle {
+      border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+    .collapsible-content .content-inner {
+      background-color: rgba(43, 47, 70, 0.25);
+      padding: .5rem 1rem;
+    }
+    pre {
+      background-color: rgba(43, 47, 70, 0.25);
+    }
+    .success {
+      background-color: #366a3e;
+    }
+    .failure {
+      background-color: #88083C;
+    }
+    .skipped {
+      background-color: #c0c02b;
+    }
+    .std {
+      font-style: italic;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1><img src="{{ icon_url }}" width="40" height="40"> {{ connector_name }} test report</h1>
+  <ul>
+    <li><b>Created at:</b> {{ created_at }}</li>
+    <li><b>Run duration:</b> {{ run_duration }} seconds</li>
+    {% if commit_url %}
+    <li><b>Commit:</b> <a href="{{ commit_url }}">{{ git_revision[:10] }}</a></li>
+    {% else %}
+    <li><b>Commit:</b> {{ git_revision[:10] }}</li>
+    {% endif %}
+    <li><b>Branch:</b> {{ git_branch }}</li>
+    {% if gha_workflow_run_url %}
+    <li><b>Github Actions run:</b> <a href="{{ gha_workflow_run_url }}">{{ gha_workflow_run_url }}</a></li>
+    {% endif %}
+  </ul>
+  <h2>Summary</h2>
+  <table>
+    <tr>
+      <th>Step Name</th>
+      <th>Status</th>
+    </tr>
+    {% for step_result in step_results %}
+    <tr>
+      <td>{{ step_result.step.title }}</td>
+      <td>{{ step_result.status }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <h2>Step details</h2>
+  {% for step_result in step_results %}
+  <div class="wrap-collabsible">
+    <input id="{{ step_result.step.title }}" class="toggle" type="checkbox">
+    {% if step_result.status == StepStatus.SUCCESS %}
+      <label for="{{ step_result.step.title }}" class="lbl-toggle success">{{ step_result.step.title }}</label>
+    {% elif step_result.status == StepStatus.FAILURE %}
+      <label for="{{ step_result.step.title }}" class="lbl-toggle failure">{{ step_result.step.title }}</label>
+    {% else %}
+      <label for="{{ step_result.step.title }}" class="lbl-toggle">{{ step_result.step.title }}</label>
+    {% endif %}
+    <div class="collapsible-content">
+      <div class="content-inner">
+        {% if step_result.stdout %}
+        <span class="std">Standard output:</span>
+        <pre>{{ step_result.stdout }}</pre>
+        {% endif %}
+        {% if step_result.stderr %}
+        <span class="std">Standard error:</span>
+        <pre>{{ step_result.stderr }}</pre>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  <p style="margin-top: 50px"><em>These reports are generated from <a href="https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/tests/templates/test_report.html.j2">this code</a>, please reach out to the Connector Operations team for support.</em></p>
+</body>
+</html>
