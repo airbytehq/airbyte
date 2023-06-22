@@ -1,0 +1,7 @@
+{
+	"properties": {
+    "image": {
+      "type": ["null", "object"]
+    }
+  }
+}
