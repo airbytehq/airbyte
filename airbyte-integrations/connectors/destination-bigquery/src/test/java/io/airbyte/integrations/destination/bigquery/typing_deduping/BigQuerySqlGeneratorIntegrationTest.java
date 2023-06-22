@@ -983,7 +983,8 @@ public class BigQuerySqlGeneratorIntegrationTest {
     // TODO is the foundMultiMatch condition correct? E.g. what if we try to write the same row twice (because of a retry)? Are we
     // guaranteed to have some differentiator?
     if (foundMultiMatch || !missingRows.isEmpty() || matchedRows.size() != actualRows.size()) {
-      fail(diff(missingRows, actualRows.stream().filter(row -> !matchedRows.contains(row)).collect(toSet())));
+      Set<Map<String, Object>> extraRows = actualRows.stream().filter(row -> !matchedRows.contains(row)).collect(toSet());
+      fail(diff(missingRows, extraRows));
     }
   }
 
@@ -1033,7 +1034,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
       Map<String, Object> extraRow = extraRows.get(extraIndex);
       int compare = ROW_COMPARATOR.compare(missingRow, extraRow);
       if (compare < 0) {
-        // missing row is too low - we should print extra rows until we catch up
+        // missing row is too low - we should print missing rows until we catch up
         output += "Missing row: " + sortedToString(missingRow) + "\n";
         missingIndex++;
       } else if (compare == 0) {
@@ -1060,7 +1061,7 @@ public class BigQuerySqlGeneratorIntegrationTest {
         missingIndex++;
         extraIndex++;
       } else {
-        // extra row is too low - we should print missing rows until we catch up
+        // extra row is too low - we should print extra rows until we catch up
         output += "Extra row: " + sortedToString(extraRow) + "\n";
         extraIndex++;
       }
