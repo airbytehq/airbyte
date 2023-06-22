@@ -463,8 +463,9 @@ class VerifyServices(TwilioStream):
     https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources
     """
 
-# Unlike other endpoints, this one won't accept requests where pageSize >100
+    # Unlike other endpoints, this one won't accept requests where pageSize >100
     page_size = 100
+    data_field = "services"
     url_base = TWILIO_VERIFY_BASE_V2
 
     def path(self, **kwargs):
