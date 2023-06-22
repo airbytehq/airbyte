@@ -106,7 +106,7 @@ class TestSourceFacebookMarketing:
 
     def test_get_custom_insights_streams(self, api, config):
         config["custom_insights"] = [
-            {"name": "test", "fields": ["account_id"], "breakdowns": ["ad_format_asset"], "action_breakdowns": ["action_device"], "action_report_time": "mixed"},
+            {"name": "test", "fields": ["account_id"], "breakdowns": ["ad_format_asset"], "action_breakdowns": ["action_device"]},
         ]
         config = ConnectorConfig.parse_obj(config)
         assert SourceFacebookMarketing().get_custom_insights_streams(api, config)
