@@ -66,9 +66,7 @@ class RMSCloudAPIStream(IncrementalMixin, Stream):
 
     def _post(self, url: str, payload: dict) -> dict:
         response = requests.post(
-            url,
-            json=payload,
-            headers={'authtoken': self.auth_token}
+            url, json=payload, headers={"authtoken": self.auth_token}
         )
         return response.json()
 
@@ -94,51 +92,37 @@ class RMSCloudAPIStream(IncrementalMixin, Stream):
             data = self._post(
                 "https://restapi8.rmscloud.com/reports/npsResults",
                 payload={
-                    "propertyIds": [prop['id']],
+                    "propertyIds": [prop["id"]],
                     "reportBy": "surveyDate",
                     "dateFrom": "2022-01-01 00:00:00",
                     "dateTo": "2023-06-15 00:00:00",
-                    "npsRating": [
-                        0,
-                        1,
-                        2,
-                        3,
-                        4,
-                        5,
-                        6,
-                        7,
-                        8,
-                        9,
-                        10
-                    ]
+                    "npsRating": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
                 },
             )
-            results = data['npsResults']
+            results = data["npsResults"]
             for r in results:
-                #do_once('r', lambda: print(json.dumps(r, indent=2)))
+                # do_once('r', lambda: print(json.dumps(r, indent=2)))
                 # Each "npsResult" will correspond to a single category
-                surveys = r['surveyDetails']
+                surveys = r["surveyDetails"]
                 for s in surveys:
                     # Within that "npsResult" there are many survey
                     # responses known as "surveyDetails"
-                    cat = categories[s['categoryId']]
+                    cat = categories[s["categoryId"]]
                     r = {
-                        'Property ID': prop['id'],
-                        'Park Name': prop['name'],
-                        'Reservation ID': s['reservationId'],
-                        'Comments': s['comments'],
-                        'Arrival Date': s['arrive'],
-                        'Departure Date': s['depart'],
-                        'Category Class': cat['categoryClass'],
-                        'Number of Areas': cat['numberOfAreas'],
-                        'Max Occupants Per Category': cat['maxOccupantsPerCategory'],
-                        'Category': cat['name']
-
-
+                        "Property ID": prop["id"],
+                        "Park Name": prop["name"],
+                        "Reservation ID": s["reservationId"],
+                        "Comments": s["comments"],
+                        "Arrival Date": s["arrive"],
+                        "Departure Date": s["depart"],
+                        "Category Class": cat["categoryClass"],
+                        "Number of Areas": cat["numberOfAreas"],
+                        "Max Occupants Per Category": cat["maxOccupantsPerCategory"],
+                        "Category": cat["name"],
                     }
                     # Score (NPS, Service, Facility, Site, Value)
-                    for name, value in s['score'].items():
-                        r[f'{name.title()} Rating'] = value
+                    for name, value in s["score"].items():
+                        r[f"{name.title()} Rating"] = value
 
                     # Fetch the specific reservation associated with the
                     # survey response.
@@ -175,10 +159,7 @@ class RMSCloudAPIStream(IncrementalMixin, Stream):
         self.logger.info(f"{len(properties)} retrieved")
         return {p["id"]: p for p in properties}
 
-    def _fetch_categories(
-            self,
-            properties: dict[int, dict]
-    ) -> dict[int, dict]:
+    def _fetch_categories(self, properties: dict[int, dict]) -> dict[int, dict]:
         """
         Fetch a list of categories, which provide metadata for
         NPS survey responses. A category represents an accomodation
@@ -215,7 +196,9 @@ class RMSCloudAPIStream(IncrementalMixin, Stream):
         for prop_id, prop in properties.items():
             property_ids.append(prop_id)
 
-            self.logger.info(f"Fetching categories for property {prop['name']} ({prop['id']})")
+            self.logger.info(
+                f"Fetching categories for property {prop['name']} ({prop['id']})"
+            )
             response = requests.get(
                 f"https://restapi8.rmscloud.com/categories?modelType=basic&propertyId={prop['id']}",
                 headers={"authtoken": self.auth_token},
@@ -243,9 +226,9 @@ class Source(AbstractSource):
             successfully, (False, error) otherwise.
         """
         auth_body = {
-            "agentId": config['agent_id'],
+            "agentId": config["agent_id"],
             "agentPassword": config["agent_password"],
-            "clientId": config['client_id'],
+            "clientId": config["client_id"],
             "clientPassword": config["client_password"],
             "moduleType": ["guestServices"],
         }

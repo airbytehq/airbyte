@@ -4,14 +4,24 @@ connectionSpecification:
   type: object
   title: RMS Spec
   required:
+    - agent_id
     - agent_password
+    - client_id
     - client_password
   properties:
+    agent_id:
+      description: Agent id for RMS
+      title: AGENT ID
+      type: number
     agent_password:
       airbyte_secret: true
       description: Agent password for RMS
       title: AGENT PASSWORD
       type: string
+    client_id:
+      description: Client id for RMS
+      title: CLIENT ID
+      type: number
     client_password:
       airbyte_secret: true
       description: Client password for RMS
