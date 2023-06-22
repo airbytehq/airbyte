@@ -175,8 +175,8 @@ public class AutoCloseableIterators {
   }
 
   public static <T, F> AutoCloseableIterator<F> transformIterator(final Function<AutoCloseableIterator<T>, Iterator<F>> iteratorCreator,
-      final AutoCloseableIterator<T> autoCloseableIterator,
-      final AirbyteStreamNameNamespacePair airbyteStream) {
+                                                                  final AutoCloseableIterator<T> autoCloseableIterator,
+                                                                  final AirbyteStreamNameNamespacePair airbyteStream) {
     return new DefaultAutoCloseableIterator<F>(iteratorCreator.apply(autoCloseableIterator), autoCloseableIterator::close, airbyteStream);
   }
 

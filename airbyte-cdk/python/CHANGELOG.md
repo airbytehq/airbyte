@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.42.1
+Error message on state per partition state discrepancy
+
 ## 0.42.0
 Supporting state per partition given incremental sync and partition router
 
