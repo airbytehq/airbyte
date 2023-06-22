@@ -160,6 +160,9 @@ class PerPartitionCursor(StreamSlicer):
         if not stream_state:
             return
 
+        if "states" not in stream_state:
+            raise ValueError("Incompatible state format: please reset your connection and run another sync")
+
         for state in stream_state["states"]:
             self._cursor_per_partition[self._to_partition_key(state["partition"])] = self._create_cursor(state["cursor"])
 
