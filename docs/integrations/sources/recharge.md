@@ -76,7 +76,7 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------|
-| 1.0.0   | 2023-06-22 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Change data type of the `shopify_variant_id_not_found` field of the `Charges` stream      |
+| 1.0.0   | 2023-06-22 | [27612](https://github.com/airbytehq/airbyte/pull/27612) | Change data type of the `shopify_variant_id_not_found` field of the `Charges` stream      |
 | 0.2.9   | 2023-04-10 | [25009](https://github.com/airbytehq/airbyte/pull/25009) | Fix owner slicing for `Metafields` stream                                                 |      
 | 0.2.8   | 2023-04-07 | [24990](https://github.com/airbytehq/airbyte/pull/24990) | Add slicing to connector                                                                  |      
 | 0.2.7   | 2023-02-13 | [22901](https://github.com/airbytehq/airbyte/pull/22901) | Specified date formatting in specification                                                |      
