@@ -49,10 +49,10 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     def compute_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         # Group all files by timestamps and return them as slices
-        files = [{"uri": f.uri, "last_modified": f.last_modified, "file_type": f.file_type} for f in self.list_files_for_this_sync()]
+        files = self.list_files_for_this_sync()
 
-        slices = [{"files": list(group[1])} for group in itertools.groupby(files, lambda f: f["last_modified"])]
-        slices.sort(key=lambda s: s["files"][0]["last_modified"])
+        slices = [{"files": list(group[1])} for group in itertools.groupby(files, lambda f: f.last_modified)]
+        slices.sort(key=lambda s: s["files"][0].last_modified)
 
         return slices
 
@@ -65,9 +65,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             # On read requests we should always have the catalog available
             raise MissingSchemaError("Expected `json_schema` in the configured catalog but it is missing.")
         parser = self.get_parser(self.config.file_type)
-        for file_description in stream_slice["files"]:
-            file = RemoteFile.from_file_partition(file_description)
-
+        for file in stream_slice["files"]:
             # only serialize the datetime once
             file_datetime_string = file.last_modified.strftime("%Y-%m-%dT%H:%M:%SZ")
             try:
@@ -81,7 +79,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                 self._cursor.add_file(file)
             except Exception as exc:
                 raise RecordParseError(
-                    f"Error reading records from file: {file_description['uri']}. Is the file valid {self.config.file_type}?"
+                    f"Error reading records from file: {file.uri}. Is the file valid {self.config.file_type}?"
                 ) from exc
 
     @property
