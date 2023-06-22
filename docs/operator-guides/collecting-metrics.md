@@ -268,3 +268,46 @@ Visit [OssMetricsRegistry.java](https://github.com/airbytehq/airbyte-platform/bl
 
 ## Additional information
 Suppose you are looking for a non-production way of collecting metrics with dbt and Metabase, the tutorial [Airbyte Monitoring with dbt and Metabase](https://airbyte.com/blog/airbyte-monitoring-with-dbt-and-metabase) by accessing Airbyte's Postgres DB. The source code is open on [airbytehq/open-data-stack](https://github.com/airbytehq/open-data-stack). Think of it as an exploratory for data analysts and data engineers of building a dashboard on top of the existing Airbyte Postgres database versus the Prometheus more for DevOps engineers in production.
+
+# Scaling Airbyte
+
+## Metrics
+Airbyte supports exporting built-in metrics to Datadog or OpenTelemetry.
+
+### Key Metrics
+
+| Key Metrics                     | Description                                                                                                                                      |
+|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| ``oldest_pending_job_age_secs`` | Shows how long a pending job waits before it is scheduled. If a job is in pending state for a long time, more workers may be required.           |
+| ``oldest_running_job_age_secs`` | Shows how long the oldest job has been running. A running job that is too large can indicate stuck jobs. This is relative to each job’s runtime. |
+| ``job_failed_by_release_stage`` | Shows jobs that have failed in that release stage and is tagged as alpha, beta, or GA.                                                           |
+
+:::note
+
+Metrics with ``by_release_stage`` in their name are tagged by connector release stage (alpha, beta, or GA). These tags allow you to filter by release stage. Alpha and beta connectors are less stable and have a higher failure rate than GA connectors, so filtering by those release stages can help you find failed jobs.
+
+:::
+
+### Recommended Metrics
+
+| Recommended Metrics          | Description                                                                                                                           |
+|-----------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
+| ``num_running_jobs & num_pending_jobs`` | Shows how many jobs are currently running and how many jobs are in pending state. These metrics help you understand the general system state. |
+| ``job_succeeded_by_release_stage``      | Shows successful jobs in that release stage and is tagged as alpha, beta, or GA.                                                      |
+| ``job_created_by_release_stage``        | Shows the jobs created in that release stage and is tagged as alpha, beta, or GA.                                                     |
+
+### Example
+If a job was created for an Alpha source to a Beta destination and the outcome of the job is a success, the following metrics are displayed:
+
+```
+job_created_by_release_stage[“alpha”] = 1;
+job_created_by_release_stage[“beta”] = 1;
+job_failed_by_release_stage[“alpha”] = 1;
+job_succeeded_by_release_stage[“beta”] = 1;
+```
+
+:::note
+
+Each job has a source and destination, so each metric is counted twice — once for source and once for destination.
+
+:::
