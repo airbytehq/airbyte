@@ -33,7 +33,7 @@ from freezegun import freeze_time
                 "a.csv": "2021-01-01T00:00:00.000000Z",
                 "b.csv": "2021-01-02T00:00:00.000000Z",
                 "c.csv": "2020-12-31T00:00:00.000000Z",
-            },},
+            }, },
             id="test_file_start_time_is_earliest_time_in_history"),
         pytest.param([
             RemoteFile(uri="a.csv",
@@ -58,7 +58,7 @@ from freezegun import freeze_time
                 "b.csv": "2021-01-02T00:00:00.000000Z",
                 "c.csv": "2021-01-03T00:00:00.000000Z",
                 "d.csv": "2021-01-04T00:00:00.000000Z",
-            },},
+            }, },
             id="test_earliest_file_is_removed_from_history_if_history_is_full"),
         pytest.param([
             RemoteFile(uri="a.csv",
@@ -88,7 +88,7 @@ from freezegun import freeze_time
                 "file_with_same_timestamp_as_b.csv": "2021-01-02T00:00:00.000000Z",
                 "c.csv": "2021-01-03T00:00:00.000000Z",
                 "d.csv": "2021-01-04T00:00:00.000000Z",
-            },},
+            }, },
             id="test_files_are_sorted_by_timestamp_and_by_name"),
     ],
 )
@@ -147,7 +147,7 @@ def test_add_file(files_to_add, expected_start_time, expected_state_dict):
                    last_modified=datetime.strptime("2020-12-31T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ"),
                    file_type="csv")
 
-    ], 2, True, id="test_sync_more_files_than_history_size")
+    ], 2, True, id="test_sync_more_files_than_history_size"),
 ])
 def test_get_files_to_sync(files, expected_files_to_sync, max_history_size, history_is_partial):
     logger = MagicMock()
@@ -159,29 +159,6 @@ def test_get_files_to_sync(files, expected_files_to_sync, max_history_size, hist
 
     assert files_to_sync == expected_files_to_sync
     assert cursor.is_history_partial() == history_is_partial
-
-
-@pytest.mark.parametrize("history_is_partial", [
-    pytest.param(True, id="test_history_is_partial"),
-    pytest.param(False, id="test_history_is_not_partial"),
-])
-def test_files_are_not_synced_if_they_are_in_history(history_is_partial):
-    logger = MagicMock()
-    cursor = DefaultFileBasedCursor(2, timedelta(days=3), logger)
-
-    files = [
-        RemoteFile(uri="a.csv", last_modified=datetime(2021, 1, 1), file_type="csv"),
-        RemoteFile(uri="b.csv", last_modified=datetime(2021, 1, 2), file_type="csv"),
-    ]
-
-    cursor._file_to_datetime_history = {
-        f.uri: f.last_modified.strftime(DATE_TIME_FORMAT) for f in files
-    }
-    cursor._history_is_partial = history_is_partial
-
-    files_to_sync = cursor.get_files_to_sync(files)
-
-    assert len(files_to_sync) == 0
 
 
 @freeze_time("2023-06-16T00:00:00Z")
@@ -244,3 +221,21 @@ def test_sync_file_already_present_in_history(modified_at_delta, should_sync_fil
 
     files_to_sync = cursor.get_files_to_sync(files)
     assert bool(files_to_sync) == should_sync_file
+
+
+@freeze_time("2023-06-06T00:00:00Z")
+@pytest.mark.parametrize(
+    "file_name, last_modified, earliest_dt_in_history, should_sync_file", [
+        pytest.param("a.csv", datetime(2023, 6, 3), datetime(2023, 6, 6), True, id="test_last_modified_is_equal_to_time_buffer"),
+        pytest.param("a.csv", datetime(2023, 6, 3), datetime(2023, 6, 3), False, id="test_last_modified_is_equal_to_earliest_dt_in_history_and_lexicographically_smaller"),
+        pytest.param("c.csv", datetime(2023, 6, 3), datetime(2023, 6, 3), True, id="test_last_modified_is_equal_to_earliest_dt_in_history_and_lexicographically_greater"),
+    ]
+)
+def test_should_sync_file(file_name, last_modified, earliest_dt_in_history, should_sync_file):
+    logger = MagicMock()
+    cursor = DefaultFileBasedCursor(1, timedelta(days=3), logger)
+
+    cursor.add_file(RemoteFile(uri="b.csv", last_modified=earliest_dt_in_history, file_type="csv"))
+    cursor._start_time = cursor._compute_start_time()
+
+    assert bool(cursor.get_files_to_sync([RemoteFile(uri=file_name, last_modified=last_modified, file_type="csv")])) == should_sync_file

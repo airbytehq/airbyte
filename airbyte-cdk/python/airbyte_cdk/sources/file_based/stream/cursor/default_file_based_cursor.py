@@ -60,12 +60,14 @@ class DefaultFileBasedCursor(FileBasedCursor):
                 # If the history is partial and the file's datetime is strictly greater than the start time, we should sync the file
                 return True
             elif file.last_modified == self.get_start_time():
-                # If the file's datetime is equal to the start time,
-                # we should sync the file if it has the same datetime as the earliest file in history,
-                # and is lexically greater than the earliest file in history
+                # There are two scenarios to consider if last_modified == start_time
+                # 1. last_modified == start_time == earliest datetime in the state's history
+                # -> Only sync if the file is lexically greater than the earliest file in the state's history
+                # 2. last_modified == start_time < earliest datetime in the state's history
+                # -> Sync the file
                 earliest_file_uri, earliest_datetime = self._get_earliest_file_and_datetime()
                 earliest_datetime = datetime.strptime(earliest_datetime, DATE_TIME_FORMAT)
-                return file.last_modified == earliest_datetime and file.uri > earliest_file_uri
+                return file.last_modified < earliest_datetime or (file.uri > earliest_file_uri)
             else:
                 return False
         else:
