@@ -29,7 +29,7 @@ class FileBasedCursor:
         self._file_to_datetime_history[file.uri] = file.last_modified.strftime(DATE_TIME_FORMAT)
         if len(self._file_to_datetime_history) > self._max_history_size:
             # Get the earliest file based on its last modified date and its uri
-            oldest_file = self.get_earliest_file_and_datetime()[0]
+            oldest_file = self._get_earliest_file_and_datetime()[0]
             del self._file_to_datetime_history[oldest_file]
 
     def get_state(self):
@@ -54,7 +54,7 @@ class FileBasedCursor:
                 # If the history is partial and the file's datetime is less than or equal to the start time,
                 # we should sync the file if its timestamp is equal to the earliest timestamp in the history,
                 # and it's URI is greater than the earliest URI in the history.
-                earliest_file_uri, earliest_datetime = self.get_earliest_file_and_datetime()
+                earliest_file_uri, earliest_datetime = self._get_earliest_file_and_datetime()
                 earliest_datetime = datetime.strptime(earliest_datetime, DATE_TIME_FORMAT)
                 return file.last_modified == earliest_datetime and file.uri > earliest_file_uri
         else:
@@ -66,7 +66,8 @@ class FileBasedCursor:
         if len(files_to_sync) + len(self._file_to_datetime_history) > self._max_history_size:
             self._history_is_partial = True
             self._logger.warning(
-                f"Found {len(files_to_sync)} files to sync, which is more than the max history size of {self._max_history_size}. The next sync won't be able to use the history to filter out duplicate files. "
+                f"Found {len(files_to_sync)} files to sync, which is more than the max history size of {self._max_history_size}. "
+                f"The next sync won't be able to use the history to filter out duplicate files. "
                 f"It will instead use the time window of {self._time_window_if_history_is_full} to filter out files."
             )
         return files_to_sync
@@ -74,7 +75,7 @@ class FileBasedCursor:
     def get_start_time(self):
         return self._start_time
 
-    def get_earliest_file_and_datetime(self) -> Tuple[str, str]:
+    def _get_earliest_file_and_datetime(self) -> Tuple[str, str]:
         return min(self._file_to_datetime_history.items(), key=lambda f: (f[1], f[0]))
 
     def _compute_start_time(self) -> datetime:

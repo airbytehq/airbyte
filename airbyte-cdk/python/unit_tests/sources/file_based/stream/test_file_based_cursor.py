@@ -94,13 +94,13 @@ from freezegun import freeze_time
 )
 def test_add_file(files_to_add, expected_start_time, expected_state_dict):
     logger = MagicMock()
-    state = FileBasedCursor(3, timedelta(days=3), logger)
-    assert state._compute_start_time() == datetime.min
+    cursor = FileBasedCursor(3, timedelta(days=3), logger)
+    assert cursor._compute_start_time() == datetime.min
 
     for index, f in enumerate(files_to_add):
-        state.add_file(f)
-        assert expected_start_time[index] == state._compute_start_time()
-    assert expected_state_dict == state.get_state()
+        cursor.add_file(f)
+        assert expected_start_time[index] == cursor._compute_start_time()
+    assert expected_state_dict == cursor.get_state()
 
 
 @pytest.mark.parametrize("files, expected_files_to_sync, max_history_size, history_is_partial", [
@@ -151,12 +151,12 @@ def test_add_file(files_to_add, expected_start_time, expected_state_dict):
 ])
 def test_get_files_to_sync(files, expected_files_to_sync, max_history_size, history_is_partial):
     logger = MagicMock()
-    state = FileBasedCursor(max_history_size, timedelta(days=3), logger)
+    cursor = FileBasedCursor(max_history_size, timedelta(days=3), logger)
 
-    files_to_sync = state.get_files_to_sync(files)
+    files_to_sync = cursor.get_files_to_sync(files)
 
     assert files_to_sync == expected_files_to_sync
-    assert state.is_history_partial() == history_is_partial
+    assert cursor.is_history_partial() == history_is_partial
     if history_is_partial:
         logger.warning.assert_called_once()
     else:
@@ -169,19 +169,19 @@ def test_get_files_to_sync(files, expected_files_to_sync, max_history_size, hist
 ])
 def test_files_are_not_synced_if_they_are_in_history(history_is_partial):
     logger = MagicMock()
-    state = FileBasedCursor(2, timedelta(days=3), logger)
+    cursor = FileBasedCursor(2, timedelta(days=3), logger)
 
     files = [
         RemoteFile(uri="a.csv", last_modified=datetime(2021, 1, 1), file_type="csv"),
         RemoteFile(uri="b.csv", last_modified=datetime(2021, 1, 2), file_type="csv"),
     ]
 
-    state._file_to_datetime_history = {
+    cursor._file_to_datetime_history = {
         f.uri: f.last_modified for f in files
     }
-    state._history_is_partial = history_is_partial
+    cursor._history_is_partial = history_is_partial
 
-    files_to_sync = state.get_files_to_sync(files)
+    files_to_sync = cursor.get_files_to_sync(files)
 
     assert len(files_to_sync) == 0
 
@@ -229,7 +229,7 @@ def test_only_recent_files_are_synced_if_history_is_full():
 @freeze_time("2023-06-16T00:00:00Z")
 def test_compute_if_history_is_partial(earliest_file_in_history, expected_start_time):
     logger = MagicMock()
-    state = FileBasedCursor(3, timedelta(days=3), logger)
-    state.add_file(earliest_file_in_history)
-    state._history_is_partial = True
-    assert state._compute_start_time() == expected_start_time
+    cursor = FileBasedCursor(3, timedelta(days=3), logger)
+    cursor.add_file(earliest_file_in_history)
+    cursor._history_is_partial = True
+    assert cursor._compute_start_time() == expected_start_time

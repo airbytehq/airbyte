@@ -51,7 +51,6 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     def compute_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         # Group all files by timestamps and return them as slices
-        # TODO: Partition the files by glob patterns to enable better checkpointing
         files = [{"uri": f.uri, "last_modified": f.last_modified, "file_type": f.file_type} for f in self.list_files_for_this_sync()]
 
         slices = [{"files": list(group[1])} for group in itertools.groupby(files, lambda f: f["last_modified"])]
