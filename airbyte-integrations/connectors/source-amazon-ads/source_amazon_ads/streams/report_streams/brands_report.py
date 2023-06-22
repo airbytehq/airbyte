@@ -2,7 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from .report_streams import ReportStream
+from http import HTTPStatus
+from typing import List
+
+from .products_report import SponsoredProductsReportStream
+from .report_streams import ReportInfo, ReportStream
 
 METRICS_MAP = {
     "keywords": [
@@ -99,7 +103,6 @@ METRICS_MAP = {
     ],
 }
 
-
 METRICS_TYPE_TO_ID_MAP = {
     "keywords": "keywordBid",
     "adGroups": "adGroupId",
@@ -124,3 +127,74 @@ class SponsoredBrandsReportStream(ReportStream):
             "reportDate": report_date,
         }
         return {**body, "metrics": ",".join(metrics_list)}
+
+
+METRICS_MAP_V3 = {
+    "purchasedAsin": [
+        "campaignBudgetCurrencyCode",
+        "campaignName",
+        "adGroupName",
+        "attributionType",
+        "purchasedAsin",
+        "productName",
+        "productCategory",
+        "sales14d",
+        "orders14d",
+        "unitsSold14d",
+        "newToBrandSales14d",
+        "newToBrandPurchases14d",
+        "newToBrandUnitsSold14d",
+        "newToBrandSalesPercentage14d",
+        "newToBrandPurchasesPercentage14d",
+        "newToBrandUnitsSoldPercentage14d",
+    ]
+}
+
+METRICS_TYPE_TO_ID_MAP_V3 = {
+    "purchasedAsin": "purchasedAsin",
+}
+
+
+class SponsoredBrandsV3ReportStream(SponsoredProductsReportStream):
+    """
+    https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types#purchased-product-reports
+    """
+
+    API_VERSION = "reporting"  # v3
+    REPORT_DATE_FORMAT = "YYYY-MM-DD"
+    ad_product = "SPONSORED_BRANDS"
+    report_is_created = HTTPStatus.OK
+    metrics_map = METRICS_MAP_V3
+    metrics_type_to_id_map = METRICS_TYPE_TO_ID_MAP_V3
+
+    def report_init_endpoint(self, record_type: str) -> str:
+        return f"/{self.API_VERSION}/reports"
+
+    def _download_report(self, report_info: ReportInfo, url: str) -> List[dict]:
+        """
+        Download and parse report result
+        """
+        return super()._download_report(None, url)
+
+    def _get_init_report_body(self, report_date: str, record_type: str, profile):
+        metrics_list = self.metrics_map[record_type]
+
+        reportTypeId = "sbPurchasedProduct"
+        group_by = ["purchasedAsin"]
+
+        body = {
+            "name": f"{record_type} report {report_date}",
+            "startDate": report_date,
+            "endDate": report_date,
+            "configuration": {
+                "adProduct": self.ad_product,
+                "groupBy": group_by,
+                "columns": metrics_list,
+                "reportTypeId": reportTypeId,
+                "filters": [],
+                "timeUnit": "SUMMARY",
+                "format": "GZIP_JSON",
+            },
+        }
+
+        return body

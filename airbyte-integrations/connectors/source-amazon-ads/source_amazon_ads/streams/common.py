@@ -40,6 +40,7 @@ airbyte_cdk.sources.streams.core.Stream
     │           └── SponsoredBrandsKeywords
     └── ReportStream
         ├── SponsoredBrandsReportStream
+        ├── SponsoredBrandsV3ReportStream
         ├── SponsoredDisplayReportStream
         └── SponsoredProductsReportStream
 
