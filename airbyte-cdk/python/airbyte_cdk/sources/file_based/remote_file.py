@@ -3,6 +3,7 @@
 #
 
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -14,4 +15,4 @@ class RemoteFile(BaseModel):
 
     uri: str
     last_modified: datetime
-    file_type: str
+    file_type: Optional[str] = None

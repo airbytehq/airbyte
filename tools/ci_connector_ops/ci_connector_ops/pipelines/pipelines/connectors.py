@@ -9,7 +9,7 @@ from typing import Callable, List, Optional
 import anyio
 import dagger
 from ci_connector_ops.pipelines.actions import environments
-from ci_connector_ops.pipelines.bases import Report, StepResult, StepStatus
+from ci_connector_ops.pipelines.bases import NoOpStep, Report, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import ConnectorContext, ContextState
 from ci_connector_ops.utils import ConnectorLanguage
 from dagger import Config
@@ -25,17 +25,17 @@ CONNECTOR_LANGUAGE_TO_FORCED_CONCURRENCY_MAPPING = {
 }
 
 
-def context_state_to_step_result(state: ContextState) -> StepResult:
-    if state == ContextState.SUCCESSFUL:
-        return StepResult(step=None, status=StepStatus.SUCCESS)
+async def context_to_step_result(context: ConnectorContext) -> StepResult:
+    if context.state == ContextState.SUCCESSFUL:
+        return await NoOpStep(context, StepStatus.SUCCESS).run()
 
-    if state == ContextState.FAILURE:
-        return StepResult(step=None, status=StepStatus.FAILURE)
+    if context.state == ContextState.FAILURE:
+        return await NoOpStep(context, StepStatus.FAILURE).run()
 
-    if state == ContextState.ERROR:
-        return StepResult(step=None, status=StepStatus.FAILURE)
+    if context.state == ContextState.ERROR:
+        return await NoOpStep(context, StepStatus.FAILURE).run()
 
-    raise ValueError(f"Could not convert context state: {state} to step status")
+    raise ValueError(f"Could not convert context state: {context.state} to step status")
 
 
 # HACK: This is to avoid wrapping the whole pipeline in a dagger pipeline to avoid instability just prior to launch
@@ -54,16 +54,15 @@ async def run_report_complete_pipeline(dagger_client: dagger.Client, contexts: L
 
     pipeline_name = f"Report upload {first_connector_context.report_output_prefix}"
     first_connector_context.pipeline_name = pipeline_name
-    file_path_key = f"{first_connector_context.report_output_prefix}/complete.json"
 
     # Transform contexts into a list of steps
-    steps_results = [context_state_to_step_result(context.state) for context in contexts]
+    steps_results = [await context_to_step_result(context) for context in contexts]
 
     report = Report(
         name=pipeline_name,
         pipeline_context=first_connector_context,
         steps_results=steps_results,
-        _file_path_key=file_path_key,
+        filename="complete",
     )
 
     return await report.save()

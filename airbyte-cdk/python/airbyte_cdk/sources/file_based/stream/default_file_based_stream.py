@@ -117,7 +117,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         """
         List all files that belong to the stream as defined by the stream's globs.
         """
-        return list(self._stream_reader.list_matching_files(self.config.globs))
+        return list(self._stream_reader.get_matching_files(self.config.globs))
 
     def list_files_for_this_sync(self) -> Iterable[RemoteFile]:
         """
@@ -128,9 +128,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         - Take the output of `list_files`
         - Remove files that have already been read in previous syncs, according to the state
         """
-
-        all_files = self._stream_reader.list_matching_files(self.config.globs, self._cursor.get_start_time())
-        return self._cursor.get_files_to_sync(all_files)
+        all_files = self._stream_reader.get_matching_files(self.config.globs, self._cursor.get_start_time())
+        yield from self._cursor.get_files_to_sync(all_files)
 
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()

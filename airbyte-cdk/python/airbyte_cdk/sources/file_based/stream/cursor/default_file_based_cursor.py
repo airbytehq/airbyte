@@ -4,7 +4,7 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, List, Mapping, Tuple
+from typing import Any, Iterable, Mapping, Tuple
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor.file_based_cursor import FileBasedCursor
@@ -73,16 +73,16 @@ class DefaultFileBasedCursor(FileBasedCursor):
         else:
             return True
 
-    def get_files_to_sync(self, all_files: List[RemoteFile]):
+    def get_files_to_sync(self, all_files: Iterable[RemoteFile]):
         if self.is_history_partial():
             self._logger.warning(
                 f"The state history is full. "
                 f"This sync and future syncs won't be able to use the history to filter out duplicate files. "
                 f"It will instead use the time window of {self._time_window_if_history_is_full} to filter out files."
             )
-        files_to_sync = [f for f in all_files if self._should_sync_file(f)]
-        # If the size of the resulting history is > max history size, the next sync will not be able to use the history
-        return files_to_sync
+        for f in all_files:
+            if self._should_sync_file(f):
+                yield f
 
     def get_start_time(self):
         return self._start_time

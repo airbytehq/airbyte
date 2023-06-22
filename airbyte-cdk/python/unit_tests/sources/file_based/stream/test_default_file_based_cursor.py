@@ -153,7 +153,7 @@ def test_get_files_to_sync(files, expected_files_to_sync, max_history_size, hist
     logger = MagicMock()
     cursor = DefaultFileBasedCursor(max_history_size, timedelta(days=3), logger)
 
-    files_to_sync = cursor.get_files_to_sync(files)
+    files_to_sync = list(cursor.get_files_to_sync(files))
     for f in files_to_sync:
         cursor.add_file(f)
 
@@ -189,7 +189,7 @@ def test_only_recent_files_are_synced_if_history_is_full():
         RemoteFile(uri="d.csv", last_modified=datetime(2021, 1, 4), file_type="csv"),
     ]
 
-    files_to_sync = cursor.get_files_to_sync(files)
+    files_to_sync = list(cursor.get_files_to_sync(files))
     assert files_to_sync == expected_files_to_sync
     logger.warning.assert_called_once()
 
@@ -219,7 +219,7 @@ def test_sync_file_already_present_in_history(modified_at_delta, should_sync_fil
         RemoteFile(uri=filename, last_modified=original_modified_at + modified_at_delta, file_type="csv"),
     ]
 
-    files_to_sync = cursor.get_files_to_sync(files)
+    files_to_sync = list(cursor.get_files_to_sync(files))
     assert bool(files_to_sync) == should_sync_file
 
 
@@ -238,4 +238,4 @@ def test_should_sync_file(file_name, last_modified, earliest_dt_in_history, shou
     cursor.add_file(RemoteFile(uri="b.csv", last_modified=earliest_dt_in_history, file_type="csv"))
     cursor._start_time = cursor._compute_start_time()
 
-    assert bool(cursor.get_files_to_sync([RemoteFile(uri=file_name, last_modified=last_modified, file_type="csv")])) == should_sync_file
+    assert bool(list(cursor.get_files_to_sync([RemoteFile(uri=file_name, last_modified=last_modified, file_type="csv")]))) == should_sync_file

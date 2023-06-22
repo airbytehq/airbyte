@@ -24,6 +24,7 @@ from source_stripe.streams import (
     CheckoutSessions,
     CheckoutSessionsLineItems,
     Coupons,
+    CreditNotes,
     CustomerBalanceTransactions,
     Customers,
     Disputes,
@@ -31,8 +32,8 @@ from source_stripe.streams import (
     Events,
     ExternalAccountBankAccounts,
     ExternalAccountCards,
-    Files,
     FileLinks,
+    Files,
     InvoiceItems,
     InvoiceLineItems,
     Invoices,
@@ -51,9 +52,9 @@ from source_stripe.streams import (
     SubscriptionSchedule,
     TopUps,
     Transactions,
-    Transfers,
     TransferReversals,
-    UsageRecords
+    Transfers,
+    UsageRecords,
 )
 
 
@@ -89,6 +90,7 @@ class SourceStripe(AbstractSource):
             CheckoutSessions(**args),
             CheckoutSessionsLineItems(**args),
             Coupons(**incremental_args),
+            CreditNotes(**args),
             CustomerBalanceTransactions(**args),
             Customers(**incremental_args),
             Disputes(**incremental_args),

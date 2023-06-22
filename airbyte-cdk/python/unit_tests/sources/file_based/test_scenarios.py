@@ -11,6 +11,8 @@ from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from freezegun import freeze_time
 from unit_tests.sources.file_based.scenarios.csv_scenarios import (
+    csv_multi_stream_scenario,
+    csv_single_stream_scenario,
     invalid_csv_scenario,
     multi_csv_scenario,
     multi_csv_stream_n_file_exceeds_limit_for_inference,
@@ -35,6 +37,8 @@ from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
 )
 
 scenarios = [
+    csv_multi_stream_scenario,
+    csv_single_stream_scenario,
     invalid_csv_scenario,
     single_csv_scenario,
     multi_csv_scenario,
@@ -84,7 +88,8 @@ def run_test_read_full_refresh(capsys, tmp_path, scenario):
         expected_output = scenario.expected_records
         assert len(output) == len(expected_output)
         for actual, expected in zip(output, expected_output):
-            assert actual["record"]["data"] == expected
+            assert actual["record"]["data"] == expected["data"]
+            assert actual["record"]["stream"] == expected["stream"]
 
 
 def run_test_read_incremental(capsys, tmp_path, scenario):
