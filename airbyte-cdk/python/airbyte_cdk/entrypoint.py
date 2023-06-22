@@ -11,8 +11,8 @@ import socket
 import sys
 import tempfile
 from functools import cache, wraps
-from typing import Any, Iterable, List, Mapping, Union
-from urllib.parse import ParseResult, ParseResultBytes, urlparse
+from typing import Any, Iterable, List, Mapping
+from urllib.parse import urlparse
 
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
