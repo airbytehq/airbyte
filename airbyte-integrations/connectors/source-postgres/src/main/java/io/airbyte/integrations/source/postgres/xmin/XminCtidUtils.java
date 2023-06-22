@@ -4,9 +4,12 @@
 
 package io.airbyte.integrations.source.postgres.xmin;
 
+import static io.airbyte.integrations.source.postgres.xmin.PostgresXminHandler.shouldPerformFullSync;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -18,6 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The class mainly categorises the streams based on the state type into two categories : 1. Streams
@@ -27,7 +32,11 @@ import java.util.stream.Collectors;
  */
 public class XminCtidUtils {
 
-  public static StreamsCategorised categoriseStreams(final StateManager stateManager, final ConfiguredAirbyteCatalog fullCatalog) {
+  private static final Logger LOGGER = LoggerFactory.getLogger(XminCtidUtils.class);
+
+  public static StreamsCategorised categoriseStreams(final StateManager stateManager,
+                                                     final ConfiguredAirbyteCatalog fullCatalog,
+                                                     final XminStatus currentXminStatus) {
     final List<AirbyteStateMessage> rawStateMessages = stateManager.getRawStateMessages();
     final List<AirbyteStateMessage> statesFromCtidSync = new ArrayList<>();
     final List<AirbyteStateMessage> statesFromXminSync = new ArrayList<>();
@@ -48,7 +57,14 @@ public class XminCtidUtils {
             statesFromCtidSync.add(stateMessage);
             streamsStillInCtidSync.add(new AirbyteStreamNameNamespacePair(streamDescriptor.getName(), streamDescriptor.getNamespace()));
           } else if (streamState.get("state_type").asText().equalsIgnoreCase("xmin")) {
-            statesFromXminSync.add(stateMessage);
+            if (shouldPerformFullSync(currentXminStatus, streamState)) {
+              final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamDescriptor.getName(),
+                  streamDescriptor.getNamespace());
+              LOGGER.info("Detected multiple wraparounds. Will perform a full sync for {}", pair);
+              streamsStillInCtidSync.add(pair);
+            } else {
+              statesFromXminSync.add(stateMessage);
+            }
           } else {
             throw new RuntimeException("Unknown state type: " + streamState.get("state_type").asText());
           }

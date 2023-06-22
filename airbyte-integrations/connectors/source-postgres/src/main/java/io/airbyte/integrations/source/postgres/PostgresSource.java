@@ -459,7 +459,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)));
 
     } else if (PostgresUtils.isXmin(sourceConfig) && isIncrementalSyncMode(catalog)) {
-      final StreamsCategorised streamsCategorised = categoriseStreams(stateManager, catalog);
+      final StreamsCategorised streamsCategorised = categoriseStreams(stateManager, catalog, xminStatus);
 
       final List<AutoCloseableIterator<AirbyteMessage>> ctidIterator = new ArrayList<>();
       final List<AutoCloseableIterator<AirbyteMessage>> xminIterator = new ArrayList<>();
