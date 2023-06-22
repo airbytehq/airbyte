@@ -79,7 +79,7 @@ class SourceTestFixture(AbstractSource):
 
 
 class HttpTestStream(HttpStream, ABC):
-    url_base = "https://past-lives.net/api/v1/"
+    url_base = "https://airbyte.com/api/v1/"
 
     def supports_incremental(self):
         return True

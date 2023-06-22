@@ -206,11 +206,7 @@ def _init_internal_request_filter():
             raise ValueError("Invalid URL specified: The endpoint that data is being requested from is not a valid URL")
 
         try:
-            # ip_address = socket.gethostbyname(str(parsed_url.hostname))
-            # ips = socket.getaddrinfo(parsed_url.hostname, parsed_url.port)
-            # ips[0].
-            # is_private_ip = ipaddress.ip_address(ip_address).is_private\
-            is_private = _is_private_url(parsed_url)
+            is_private = _is_private_url(parsed_url.hostname, parsed_url.port)
             if is_private:
                 raise ValueError(
                     "Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Source "
@@ -227,12 +223,13 @@ def _init_internal_request_filter():
 
 
 @cache
-def _is_private_url(parsed_url: Union[ParseResultBytes, ParseResult]) -> bool:
+def _is_private_url(hostname: str, port: int) -> bool:
     """
-    Helper method that checks if any IPs are on a private network. We also cache the result to speed up subsequent sends.
-    The size should remain relatively small since on a per-sync basis, the range of hosts should be small.
+    Helper method that checks if any IPs are on a private network. We specifically only pass hostname and port
+    parameters because it will maximize the hit rate across different request permutations and keep the size of
+    of cache lower since the range of hostname and port should be small on a per-sync basis.
     """
-    address_info_entries = socket.getaddrinfo(parsed_url.hostname, parsed_url.port)
+    address_info_entries = socket.getaddrinfo(hostname, port)
     for entry in address_info_entries:
         # getaddrinfo() returns entries in the form of a 5-tuple where the IP is stored as the sockaddr. For IPv4 this
         # is a 2-tuple and for IPv6 it is a 4-tuple, but the address is always the first value of the tuple at 0.
