@@ -101,7 +101,7 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
         .withCdc(isCdc)
         .withCdcState(getCdcStateManager().getCdcState());
 
-    LOGGER.info("Generated legacy state for {} streams", dbState.getStreams().size());
+    LOGGER.debug("Generated legacy state for {} streams", dbState.getStreams().size());
     return new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(dbState));
   }
 

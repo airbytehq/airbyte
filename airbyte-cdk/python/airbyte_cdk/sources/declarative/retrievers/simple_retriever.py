@@ -13,6 +13,7 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMod
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
+from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
@@ -47,6 +48,7 @@ class SimpleRetriever(Retriever, HttpStream):
         record_selector (HttpSelector): The record selector
         paginator (Optional[Paginator]): The paginator
         stream_slicer (Optional[StreamSlicer]): The stream slicer
+        cursor (Optional[cursor]): The cursor
         parameters (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
@@ -62,6 +64,7 @@ class SimpleRetriever(Retriever, HttpStream):
     _primary_key: str = field(init=False, repr=False, default="")
     paginator: Optional[Paginator] = None
     stream_slicer: Optional[StreamSlicer] = SinglePartitionRouter(parameters={})
+    cursor: Optional[Cursor] = None
     emit_connector_builder_messages: bool = False
     disable_retries: bool = False
 
@@ -384,32 +387,47 @@ class SimpleRetriever(Retriever, HttpStream):
         sync_mode: SyncMode,
         cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[StreamSlice] = None,
-        stream_state: Optional[StreamState] = None,
     ) -> Iterable[StreamData]:
         # Warning: use self.state instead of the stream_state passed as argument!
         stream_slice = stream_slice or {}  # None-check
         self.paginator.reset()
+        # Note: Adding the state per partition led to a difficult situation where the state for a partition is not the same as the
+        # stream_state. This means that if any class downstream wants to access the state, it would need to perform some kind of selection
+        # based on the partition. To short circuit this, we do the selection here which avoid downstream classes to know about it the
+        # partition. We have generified the problem to the stream slice instead of the partition because it is the level of abstraction
+        # streams know (they don't know about partitions). However, we're still unsure as how it will evolve since we can't see any other
+        # cursor doing selection per slice. We don't want to pollute the interface. Therefore, we will keep the `hasattr` hack for now.
+        # * What is the information we need to clean the hasattr? Once we will have another case where we need to select a state, we will
+        #    know if the abstraction using `stream_slice` so select to state is the right one and validate if the interface makes sense.
+        # * Why is this abstraction not on the DeclarativeStream level? DeclarativeStream does not have a notion of stream slicers and we
+        #    would like to avoid exposing the stream state outside of the cursor. This case is needed as of 2023-06-14 because of
+        #    interpolation.
+        if self.cursor and hasattr(self.cursor, "select_state"):
+            slice_state = self.cursor.select_state(stream_slice)
+        elif self.cursor:
+            slice_state = self.cursor.get_stream_state()
+        else:
+            slice_state = {}
+
         records_generator = self._read_pages(
             self.parse_records,
             stream_slice,
-            stream_state,
+            slice_state,
         )
         cursor_updated = False
         for record in records_generator:
             # Only record messages should be parsed to update the cursor which is indicated by the Mapping type
-            if isinstance(record, Mapping):
-                self.stream_slicer.update_cursor(stream_slice, last_record=record)
+            if self.cursor and isinstance(record, Mapping):
+                self.cursor.update_state(stream_slice, last_record=record)
                 cursor_updated = True
             yield record
-        if not cursor_updated:
+        if self.cursor and not cursor_updated:
             last_record = self._last_records[-1] if self._last_records else None
             if last_record and isinstance(last_record, Mapping):
-                self.stream_slicer.update_cursor(stream_slice, last_record=last_record)
+                self.cursor.update_state(stream_slice, last_record=last_record)
             yield from []
 
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Optional[StreamState] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
         """
         Specifies the slices for this stream. See the stream slicing section of the docs for more information.
 
@@ -419,16 +437,17 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self.stream_slicer.stream_slices(sync_mode, self.state)
+        return self.stream_slicer.stream_slices()
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return self.stream_slicer.get_stream_state()
+        return self.cursor.get_stream_state() if self.cursor else {}
 
     @state.setter
     def state(self, value: StreamState):
         """State setter, accept state serialized by state getter."""
-        self.stream_slicer.update_cursor(value)
+        if self.cursor:
+            self.stream_slicer.set_initial_state(value)
 
     def parse_records(
         self,
@@ -456,10 +475,8 @@ class SimpleRetrieverTestReadDecorator(SimpleRetriever):
                 f"The maximum number of slices on a test read needs to be strictly positive. Got {self.maximum_number_of_slices}"
             )
 
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Optional[StreamState] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        return islice(super().stream_slices(sync_mode=sync_mode, stream_state=stream_state), self.maximum_number_of_slices)
+    def stream_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
+        return islice(super().stream_slices(), self.maximum_number_of_slices)
 
     def parse_records(
         self,
