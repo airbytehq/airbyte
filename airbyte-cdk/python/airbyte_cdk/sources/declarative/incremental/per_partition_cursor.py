@@ -3,7 +3,6 @@
 #
 
 import json
-
 from typing import Any, Callable, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor

@@ -6,7 +6,6 @@ from collections import OrderedDict
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.incremental.cursor import Cursor
 from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import (
     PerPartitionCursor,
@@ -14,7 +13,6 @@ from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import (
     PerPartitionStreamSlice,
 )
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-
 
 PARTITION = {
     "partition_key string": "partition value",
