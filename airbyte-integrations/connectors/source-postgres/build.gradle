@@ -57,3 +57,6 @@ jsonSchema2Pojo {
     includeSetters = true
 }
 
+
+
+
