@@ -250,7 +250,7 @@ def build(ctx: click.Context) -> bool:
     click.secho(f"Will build the following connectors: {', '.join(ctx.obj['selected_connectors_names'])}.", fg="green")
     connectors_contexts = [
         ConnectorContext(
-            pipeline_name="Build connector {connector.technical_name}",
+            pipeline_name=f"Build connector {connector.technical_name}",
             connector=connector,
             is_local=ctx.obj["is_local"],
             git_branch=ctx.obj["git_branch"],

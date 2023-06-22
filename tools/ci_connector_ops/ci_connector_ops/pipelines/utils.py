@@ -18,6 +18,7 @@ import anyio
 import asyncer
 import click
 import git
+import requests
 from ci_connector_ops.utils import get_all_released_connectors, get_changed_connectors
 from dagger import Config, Connection, Container, DaggerError, File, ImageLayerCompression, QueryError
 from more_itertools import chunked
@@ -402,3 +403,14 @@ def sanitize_gcs_credentials(raw_value: Optional[str]) -> Optional[str]:
     if raw_value is None:
         return None
     return json.dumps(json.loads(raw_value))
+
+
+def get_latest_cdk_version_from_pypi():
+    """Get the latest version of the CDK from PyPI.
+
+    Returns:
+        str: The latest version of the CDK.
+    """
+    response = requests.get("https://pypi.org/pypi/airbyte-cdk/json")
+    response.raise_for_status()
+    return response.json()["info"]["version"]
