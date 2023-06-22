@@ -58,23 +58,17 @@ class DefaultFileBasedCursor(FileBasedCursor):
             # If the file's uri is in the history, we should sync the file if it has been modified since it was synced
             return file.last_modified > datetime.strptime(self._file_to_datetime_history.get(file.uri), DATE_TIME_FORMAT)
         if self.is_history_partial():
-            if file.last_modified > self.get_start_time():
-                # If the history is partial and the file's datetime is strictly greater than the start time, we should sync the file
+            if file.last_modified > self._initial_earliest_file_in_history.last_modified:
+                # If the history is partial and the file's datetime is strictly greater than the earliest file in the history,
+                # we should sync it
                 return True
-            elif file.last_modified == self.get_start_time():
-                # There are two scenarios to consider if last_modified == start_time
-                # 1. last_modified == start_time == earliest datetime in the state's history
-                # -> Only sync if the file is lexically greater than the earliest file in the state's history
-                # 2. last_modified == start_time < earliest datetime in the state's history
-                # -> Sync the file
-
-                # Instead of computing the earliest file in the history again, we can use the one we computed when we set the initial state
-                # since this method is only called at the start of a sync
-                return file.last_modified < self._initial_earliest_file_in_history.last_modified or (
-                    file.uri > self._initial_earliest_file_in_history.uri
-                )
-            else:  # file.last_modified < self.get_start_time()
-                return False
+            elif file.last_modified == self._initial_earliest_file_in_history.last_modified:
+                # If the history is partial and the file's datetime is equal to the earliest file in the history,
+                # we should sync it if its uri is strictly greater than the earliest file in the history
+                return file.uri > self._initial_earliest_file_in_history.uri
+            else:
+                # Otherwise, only sync the file if it has been modified since the start of the time window
+                return file.last_modified >= self.get_start_time()
         else:
             # The file is not in the history and the history is complete. We know we need to sync the file
             return True
