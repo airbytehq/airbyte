@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Objects;
 
+// TODO: (ryankfu) remove this and test with low memory resources to ensure OOM is still not a factor, shouldn't be
+// but weird things have happened
 public class PartialAirbyteRecordMessage {
 
   @JsonProperty("namespace")
