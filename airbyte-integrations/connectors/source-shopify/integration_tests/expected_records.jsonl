@@ -78,4 +78,3 @@
 {"stream": "customer_address", "data": {"id": 8092523135165, "customer_id": 6569096478909, "first_name": "New Test", "last_name": "Customer", "company": "Test Company", "address1": "My Best Accent", "address2": "", "city": "Fair Lawn", "province": "New Jersey", "country": "United States", "zip": "07410", "phone": "", "name": "New Test Customer", "province_code": "NJ", "country_code": "US", "country_name": "United States", "default": true, "shop_url": "airbyte-integration-test"}, "emitted_at": 1685623249683}
 {"stream": "countries", "data": {"id": 417014841533, "name": "Rest of World", "code": "*", "tax_name": "Tax", "tax": 0.0, "provinces": [], "shop_url": "airbyte-integration-test"}, "emitted_at": 1685624604846}
 {"stream": "countries", "data": {"id": 417014808765, "name": "Ukraine", "code": "UA", "tax_name": "PDV", "tax": 0.2, "provinces": [], "shop_url": "airbyte-integration-test"}, "emitted_at": 1685624604847}
-

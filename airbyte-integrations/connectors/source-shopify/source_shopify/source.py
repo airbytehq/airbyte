@@ -764,6 +764,7 @@ class CustomerAddress(ShopifySubstream):
     parent_stream_class: object = Customers
     slice_key = "id"
     data_field = "addresses"
+    cursor_field = "id"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         customer_id = stream_slice[self.slice_key]
