@@ -7,7 +7,6 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType.Array;
