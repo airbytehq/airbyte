@@ -16,13 +16,11 @@ class FileBasedCursor:
         self._file_to_datetime_history: Mapping[str:datetime] = {}
         self._max_history_size = max_history_size
         self._time_window_if_history_is_full = time_window_if_history_is_full
-        self._history_is_partial = False
         self._logger = logger
         self._start_time = self._compute_start_time()
 
     def set_initial_state(self, value: Mapping[str, Any]):
         self._file_to_datetime_history = value.get("history", {})
-        self._history_is_partial = value.get("history_is_partial", False)
         self._start_time = self._compute_start_time()
 
     def add_file(self, file: RemoteFile):
@@ -35,18 +33,17 @@ class FileBasedCursor:
     def get_state(self):
         state = {
             "history": self._file_to_datetime_history,
-            "history_is_partial": self._history_is_partial,
         }
         return state
 
     def is_history_partial(self):
-        return self._history_is_partial
+        return len(self._file_to_datetime_history) >= self._max_history_size
 
     def _should_sync_file(self, file: RemoteFile) -> bool:
         if file.uri in self._file_to_datetime_history:
-            # If the file's uri is in the history, we should not sync the file
-            return False
-        elif self.is_history_partial():
+            # If the file's uri is in the history, we should sync the file if it has been modified since it was synced
+            return file.last_modified > datetime.strptime(self._file_to_datetime_history.get(file.uri), DATE_TIME_FORMAT)
+        if self.is_history_partial():
             if file.last_modified > self.get_start_time():
                 # If the history is partial and the file's datetime is strictly greater than the start time, we should sync the file
                 return True
@@ -60,15 +57,14 @@ class FileBasedCursor:
             return True
 
     def get_files_to_sync(self, all_files: List[RemoteFile]):
-        files_to_sync = [f for f in all_files if self._should_sync_file(f)]
-        # If the size of the resulting history is > max history size, the next sync will not be able to use the history
-        if len(files_to_sync) + len(self._file_to_datetime_history) > self._max_history_size:
-            self._history_is_partial = True
+        if self.is_history_partial():
             self._logger.warning(
-                f"Found {len(files_to_sync)} files to sync, which is more than the max history size of {self._max_history_size}. "
-                f"The next sync won't be able to use the history to filter out duplicate files. "
+                f"The state history is full. "
+                f"This sync and future syncs won't be able to use the history to filter out duplicate files. "
                 f"It will instead use the time window of {self._time_window_if_history_is_full} to filter out files."
             )
+        files_to_sync = [f for f in all_files if self._should_sync_file(f)]
+        # If the size of the resulting history is > max history size, the next sync will not be able to use the history
         return files_to_sync
 
     def get_start_time(self):

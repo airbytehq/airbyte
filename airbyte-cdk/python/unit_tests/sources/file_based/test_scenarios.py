@@ -27,6 +27,8 @@ from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps_scenario,
     multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_timestamps_scenario,
     multi_csv_sync_recent_files_if_history_is_incomplete_scenario,
+    single_csv_file_is_skipped_if_same_modified_at_as_in_history,
+    single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history,
     single_csv_input_state_is_earlier_scenario,
     single_csv_input_state_is_later_scenario,
     single_csv_no_input_state_scenario,
@@ -49,7 +51,9 @@ scenarios = [
     multi_csv_same_timestamp_more_files_than_history_size_scenario,
     multi_csv_sync_recent_files_if_history_is_incomplete_scenario,
     multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_timestamps_scenario,
-    multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps_scenario
+    multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_different_timestamps_scenario,
+    single_csv_file_is_skipped_if_same_modified_at_as_in_history,
+    single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history,
 ]
 
 
