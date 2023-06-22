@@ -71,7 +71,8 @@ The Zenloop connector should not run into Zenloop API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                                                 |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------|
-| 0.1.7   | 2023-06-15 | [27243](https://github.com/airbytehq/airbyte/pull/27243) | State per partition (breaking change - require reset)   |
+| 0.1.8   | 2023-06-22 | [27243](https://github.com/airbytehq/airbyte/pull/27243) | Improving error message on state discrepancy            |
+| 0.1.7   | 2023-06-22 | [27243](https://github.com/airbytehq/airbyte/pull/27243) | State per partition (breaking change - require reset)   |
 | 0.1.6   | 2023-03-06 | [23231](https://github.com/airbytehq/airbyte/pull/23231) | Publish using low-code CDK Beta version                 |
 | 0.1.5   | 2023-02-08 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Fix unhashable type in ZenloopSubstreamSlicer component |
 | 0.1.4   | 2022-11-18 | [19624](https://github.com/airbytehq/airbyte/pull/19624) | Migrate to low code                                     |

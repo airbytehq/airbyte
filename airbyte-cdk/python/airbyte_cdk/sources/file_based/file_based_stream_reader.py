@@ -4,12 +4,12 @@
 
 from abc import abstractmethod
 from datetime import datetime
-from fnmatch import fnmatch
 from io import IOBase
-from typing import List, Optional
+from typing import Iterable, List, Optional
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from pydantic import BaseModel
+from wcmatch.glob import GLOBSTAR, globmatch
 
 
 class AbstractFileBasedStreamReader(BaseModel):
@@ -27,11 +27,11 @@ class AbstractFileBasedStreamReader(BaseModel):
         ...
 
     @abstractmethod
-    def list_matching_files(
+    def get_matching_files(
         self,
         globs: List[str],
         from_date: Optional[datetime] = None,
-    ) -> List[RemoteFile]:
+    ) -> Iterable[RemoteFile]:
         """
         Return all files that match any of the globs. If a from_date provided,
         return only files last modified after that date.
@@ -50,15 +50,25 @@ class AbstractFileBasedStreamReader(BaseModel):
         ...
 
     @staticmethod
-    def filter_files_by_globs(files: List[RemoteFile], globs: List[str]) -> List[RemoteFile]:
+    def filter_files_by_globs(files: List[RemoteFile], globs: List[str]) -> Iterable[RemoteFile]:
         """
         Utility method for filtering files based on globs.
         """
-        return [file for file in files if any(fnmatch(file.uri, glob) for glob in globs)]
+        seen = set()
+
+        for file in files:
+            for g in globs:
+                # Use the GLOBSTAR flag to enable recursive ** matching
+                # (https://facelessuser.github.io/wcmatch/wcmatch/#globstar)
+                if globmatch(file.uri, g, flags=GLOBSTAR):
+                    if file.uri not in seen:
+                        seen.add(file.uri)
+                        yield file
 
     @staticmethod
-    def get_prefixes_from_globs(files: List[RemoteFile], globs: List[str]) -> List[str]:
+    def get_prefixes_from_globs(globs: List[str]) -> List[str]:
         """
         Utility method for extracting prefixes from the globs.
         """
-        ...
+        prefixes = {glob.split("*")[0].rstrip("/") for glob in globs}
+        return list(filter(lambda x: bool(x), prefixes))
