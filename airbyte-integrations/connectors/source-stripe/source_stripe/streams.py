@@ -764,9 +764,11 @@ class CreditNotes(StripeStream):
     def path(self, **kwargs) -> str:
         return "credit_notes"
 
-    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
         return next_page_token or {}
-    
+
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
