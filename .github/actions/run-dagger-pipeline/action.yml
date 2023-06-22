@@ -115,7 +115,7 @@ runs:
         CI_REPORT_BUCKET_NAME: ${{ inputs.report_bucket_name }}
         GCP_GSM_CREDENTIALS: ${{ inputs.gcp_gsm_credentials }}
         GCS_CREDENTIALS: ${{ inputs.gcs_credentials }}
-        METADATA_SERVICE_GCS_BUCKET_NAME: ${{ inputs.metadata_service_bucket_name }}
+        METADATA_SERVICE_BUCKET_NAME: ${{ inputs.metadata_service_bucket_name }}
         METADATA_SERVICE_GCS_CREDENTIALS: ${{ inputs.metadata_service_gcs_credentials }}
         PRODUCTION: ${{ inputs.production }}
         PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
