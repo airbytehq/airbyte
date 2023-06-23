@@ -17,7 +17,7 @@ class HttpResponse:
 class HttpRequest:
     url: str
     parameters: Optional[Dict[str, Any]]
-    body: Optional[Dict[str, Any]]
+    body: Optional[str] = None
     headers: Optional[Dict[str, Any]]
     http_method: str
 
