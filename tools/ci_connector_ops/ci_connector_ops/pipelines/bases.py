@@ -234,8 +234,9 @@ class PytestStep(Step, ABC):
         """Return the path to the pytest log file."""
         log_directory = Path(f"{self.context.connector.code_directory}/airbyte_ci_logs")
         await log_directory.mkdir(exist_ok=True)
-        await Path(f"{log_directory}/{slugify(self.title).replace('-', '_')}.log").write_text(logs)
-        self.context.logger.info(f"Pytest logs written to {log_directory}/{slugify(self.title)}.log")
+        log_path = await (log_directory / f"{slugify(self.title).replace('-', '_')}.log").resolve()
+        await log_path.write_text(logs)
+        self.logger.info(f"Pytest logs written to {log_path}")
 
     # TODO this is not very robust if pytest crashes and does not outputs its expected last log line.
     def pytest_logs_to_step_result(self, logs: str) -> StepResult:
@@ -390,7 +391,7 @@ class Report:
         local_path = anyio.Path(f"{LOCAL_REPORTS_PATH_ROOT}/{self.report_output_prefix}/{filename}")
         await local_path.parents[0].mkdir(parents=True, exist_ok=True)
         await local_path.write_text(content)
-        return local_path
+        return await local_path.resolve()
 
     async def save_remote(self, local_path: Path, remote_key: str, content_type: str = None) -> int:
         gcs_cp_flags = None if content_type is None else [f"--content-type={content_type}"]
