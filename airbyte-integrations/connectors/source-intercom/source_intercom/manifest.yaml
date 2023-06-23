@@ -131,15 +131,19 @@ definitions:
   stream_semi_incremental:
     $ref: "#/definitions/stream_full_refresh"
     incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_intercom.components.IncrementalSingleSlice
+      type: DatetimeBasedCursor
       cursor_field: "updated_at"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: "%s"
     retriever:
       $ref: "#/definitions/stream_full_refresh/retriever"
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
-          condition: "{{ record['updated_at'] >= ( stream_state.get('prior_state', {}).get('updated_at', 0) if stream_state else stream_slice.get('prior_state', {}).get('updated_at', 0) ) }}"
+          condition: "{{ record['updated_at'] >= stream_slice['start_time'] and record['updated_at'] <= stream_slice['end_time'] }}"
   segments:
     description: "https://developers.intercom.com/intercom-api-reference/reference#list-segments"
     $ref: "#/definitions/stream_semi_incremental"
@@ -208,7 +212,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
         record_filter:
-          condition: "{{ record['updated_at'] >= stream_state.get('prior_state', {}).get('updated_at', 0) }}"
+          condition: "{{ record['updated_at'] >= stream_slice['start_time'] }}"
   conversation_parts:
     $ref: "#/definitions/substream_semi_incremental"
     incremental_sync:
@@ -268,9 +272,6 @@ definitions:
         $ref: "#/definitions/requester_incremental_search"
       record_selector:
         $ref: "#/definitions/selector"
-        record_filter:
-          description: "https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search#pagination"
-          condition: "{{ record['updated_at'] >= ( stream_state.get('prior_state', {}).get('updated_at', 0) if stream_state else stream_slice.get('prior_state', {}).get('updated_at', 0) ) }}"
       paginator:
         type: "DefaultPaginator"
         url_base: "#/definitions/requester/url_base"
