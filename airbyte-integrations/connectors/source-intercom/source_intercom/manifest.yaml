@@ -182,7 +182,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: '{{ config[''access_token''] }}'
         request_body_json:
           query:
             value:
@@ -287,7 +287,7 @@ streams:
           Intercom-Version: '2.9'
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: '{{ config[''access_token''] }}'
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -388,7 +388,7 @@ streams:
           Intercom-Version: '2.9'
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: '{{ config[''access_token''] }}'
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -459,7 +459,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: '{{ config[''access_token''] }}'
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -513,7 +513,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: '{{ config[''access_token''] }}'
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -621,7 +621,7 @@ streams:
                       Intercom-Version: '2.9'
                     authenticator:
                       type: BearerAuthenticator
-                      api_token: '{{ config[''api_key''] }}'
+                      api_token: '{{ config[''access_token''] }}'
                     request_body_json: {}
                   record_selector:
                     type: RecordSelector
@@ -692,7 +692,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: '{{ config[''access_token''] }}'
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -874,7 +874,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: '{{ config[''access_token''] }}'
         request_body_json:
           query:
             value:
@@ -1140,7 +1140,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: '{{ config[''access_token''] }}'
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1316,7 +1316,7 @@ streams:
                     request_headers: {}
                     authenticator:
                       type: BearerAuthenticator
-                      api_token: '{{ config[''api_key''] }}'
+                      api_token: '{{ config[''access_token''] }}'
                     request_body_json:
                       query:
                         value:
@@ -1401,7 +1401,7 @@ streams:
         request_headers: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: '{{ config[''access_token''] }}'
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1451,7 +1451,7 @@ streams:
           Intercom-Version: '2.9'
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: '{{ config[''access_token''] }}'
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1505,7 +1505,7 @@ streams:
           Intercom-Version: '2.9'
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''api_key''] }}'
+          api_token: '{{ config[''access_token''] }}'
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -1533,7 +1533,7 @@ spec:
     type: object
     required:
       - start_date
-      - api_key
+      - access_token
     properties:
       start_date:
         type: string
@@ -1541,7 +1541,7 @@ spec:
         format: date-time
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         order: 0
-      api_key:
+      access_token:
         type: string
         title: API Key
         airbyte_secret: true
