@@ -142,8 +142,9 @@ public class ConcurrentStreamConsumer implements Consumer<AutoCloseableIterator<
     final Integer defaultPoolSize = Optional.ofNullable(System.getenv("DEFAULT_CONCURRENT_STREAM_CONSUMER_THREADS"))
         .map(Integer::parseInt)
         .orElseGet(() -> Runtime.getRuntime().availableProcessors());
+    LOGGER.info("Default parallelism: {}, Requested parallelism: {}", defaultPoolSize, requestedParallelism);
     final Integer parallelism = Math.min(defaultPoolSize, requestedParallelism > 0 ? requestedParallelism : 1);
-    LOGGER.debug("Computed concurrent stream consumer parallelism: {}", parallelism);
+    LOGGER.info("Computed concurrent stream consumer parallelism: {}", parallelism);
     return parallelism;
   }
 
