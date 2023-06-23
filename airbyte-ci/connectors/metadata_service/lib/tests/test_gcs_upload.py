@@ -14,7 +14,8 @@ from metadata_service.constants import METADATA_FILE_NAME
 
 
 def stub_is_image_on_docker_hub(image_name: str, version: str) -> bool:
-    return "exists" in image_name and "exists" in version
+    # Version exists by default, but "666" is bad! (6.0.0 since breaking changes regex tho)
+    return "exists" in image_name and version not in ["6.6.6", "6.0.0"]
 
 
 def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash):
