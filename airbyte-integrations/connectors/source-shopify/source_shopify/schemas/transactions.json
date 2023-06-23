@@ -98,6 +98,33 @@
     },
     "shop_url": {
       "type": ["null", "string"]
+    },
+    "total_unsettled_set": {
+      "type": ["null", "object"],
+      "properties": {
+        "shop_money": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "number"]
+            },
+            "currency_code": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "presentment_money": {
+          "type": ["null", "object"],
+          "properties": {
+            "amount": {
+              "type": ["null", "number"]
+            },
+            "currency_code": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
     }
   },
   "additionalProperties": true,
