@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.postgres.ctid;
 
-import static io.airbyte.integrations.source.postgres.ctid.CtidPerStreamStateManager.CTID_STATUS_VERSION;
+import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.CTID_STATUS_VERSION;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;

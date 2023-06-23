@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class CdcCtidUtils {
+public class PostgresCdcCtidUtils {
 
   public static CtidStreams streamsToSyncViaCtid(final CdcStateManager stateManager, final ConfiguredAirbyteCatalog fullCatalog,
       boolean savedOffsetAfterReplicationSlotLSN) {
