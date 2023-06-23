@@ -18,10 +18,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -31,7 +29,7 @@ import static org.mockito.Mockito.mock;
 public class BigQueryRecordConsumerTest extends PerStreamStateMessageTest {
 
   @Mock
-  private Map<BigQueryRecordConsumer.StreamWriteTargets, AbstractBigQueryUploader<?>> uploaderMap;
+  private Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap;
   @Mock
   private Consumer<AirbyteMessage> outputRecordCollector;
 
@@ -46,9 +44,7 @@ public class BigQueryRecordConsumerTest extends PerStreamStateMessageTest {
         "test-dataset-id",
         mock(BigQuerySqlGenerator.class),
         mock(BigQueryDestinationHandler.class),
-        new CatalogParser.ParsedCatalog(Collections.emptyList()),
-        false,
-        "test-namespace-override"
+        new CatalogParser.ParsedCatalog(Collections.emptyList())
     );
   }
 

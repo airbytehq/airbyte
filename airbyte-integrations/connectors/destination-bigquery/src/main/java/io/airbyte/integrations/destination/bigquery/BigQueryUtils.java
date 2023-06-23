@@ -357,15 +357,6 @@ public class BigQueryUtils {
         : null);
   }
 
-  /**
-   * @return BigQuery dataset ID
-   */
-  public static String getSchema(final JsonNode config, final ConfiguredAirbyteStream stream) {
-    final String srcNamespace = stream.getStream().getNamespace();
-    final String schemaName = srcNamespace == null ? getDatasetId(config) : srcNamespace;
-    return sanitizeDatasetId(schemaName);
-  }
-
   public static String sanitizeDatasetId(final String datasetId) {
     return NAME_TRANSFORMER.getNamespace(datasetId);
   }
