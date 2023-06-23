@@ -148,7 +148,7 @@ class Step(ABC):
         """
         try:
             self.started_at = datetime.utcnow()
-            self.logger.info(f"🚀 Start step {self.title}")
+            self.logger.info(f"🚀 Start {self.title}")
             completion_event = anyio.Event()
             async with asyncer.create_task_group() as task_group:
                 soon_result = task_group.soonify(self.run_with_completion)(completion_event, *args, **kwargs)
@@ -391,7 +391,7 @@ class Report:
         local_path = anyio.Path(f"{LOCAL_REPORTS_PATH_ROOT}/{self.report_output_prefix}/{filename}")
         await local_path.parents[0].mkdir(parents=True, exist_ok=True)
         await local_path.write_text(content)
-        return await local_path.resolve()
+        return local_path
 
     async def save_remote(self, local_path: Path, remote_key: str, content_type: str = None) -> int:
         gcs_cp_flags = None if content_type is None else [f"--content-type={content_type}"]
@@ -415,7 +415,8 @@ class Report:
     async def save(self) -> None:
         """Save the report files."""
         local_json_path = await self.save_local(self.json_report_file_name, self.to_json())
-        self.pipeline_context.logger.info(f"Report saved locally at {local_json_path}")
+        absolute_path = await local_json_path.absolute()
+        self.pipeline_context.logger.info(f"Report saved locally at {absolute_path}")
         if self.remote_storage_enabled:
             await self.save_remote(local_json_path, self.json_report_remote_storage_key, "application/json")
             for extra_file_path, extra_file_name in self.extra_files_to_upload:
@@ -596,8 +597,8 @@ class ConnectorReport(Report):
 
     async def save(self) -> None:
         local_html_path = await self.save_local(self.html_report_file_name, await self.to_html())
+        absolute_path = await local_html_path.resolve()
         if self.pipeline_context.is_local:
-            absolute_path = await local_html_path.resolve()
             self.pipeline_context.logger.info(f"HTML report saved locally: {absolute_path}")
             self.pipeline_context.logger.info("Opening HTML report in browser.")
             webbrowser.open(absolute_path.as_uri())
