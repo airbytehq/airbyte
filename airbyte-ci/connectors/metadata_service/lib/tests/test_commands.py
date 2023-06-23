@@ -18,7 +18,6 @@ def test_valid_metadata_yaml_files(valid_metadata_yaml_files):
         assert result.exit_code == 0, f"Validation failed for {file_path} with error: {result.output}"
 
 
-
 def test_invalid_metadata_yaml_files(invalid_metadata_yaml_files):
     runner = CliRunner()
 

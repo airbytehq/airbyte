@@ -3,7 +3,7 @@ data:
   name: AlloyDB for PostgreSQL
   definitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   connectorType: source
-  dockerRepository: airbyte/exists-1
+  dockerRepository: airbyte/does-not-exist-1
   githubIssueLabel: source-alloydb-strict-encrypt
   dockerImageTag: 0.0.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
@@ -17,16 +17,7 @@ data:
   registries:
     cloud:
       enabled: true
-      dockerRepository: airbyte/exists-3
-      dockerImageTag: 0.0.1
     oss:
       enabled: true
-      dockerRepository: airbyte/exists-4
-      dockerImageTag: 0.0.1
-  releases:
-    breakingChanges:
-      2.0.0:
-        upgradeDeadline: 2023-08-22
-        message: "This version made a change."
   tags:
     - language:java

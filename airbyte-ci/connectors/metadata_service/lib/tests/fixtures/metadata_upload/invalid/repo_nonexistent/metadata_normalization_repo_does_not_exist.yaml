@@ -12,7 +12,7 @@ data:
   license: MIT
   normalizationConfig:
     normalizationIntegrationType: postgres
-    normalizationRepository: airbyte/exists-2
+    normalizationRepository: airbyte/does-not-exist-2
     normalizationTag: 0.0.1
   registries:
     cloud:
@@ -23,10 +23,5 @@ data:
       enabled: true
       dockerRepository: airbyte/exists-4
       dockerImageTag: 0.0.1
-  releases:
-    breakingChanges:
-      2.0.0:
-        upgradeDeadline: 2023-08-22
-        message: "This version made a change."
   tags:
     - language:java

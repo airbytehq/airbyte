@@ -24,18 +24,20 @@ def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadata
     normalization_docker_image = get(metadata_definition_dict, "data.normalizationConfig.normalizationRepository", None)
     normalization_docker_version = get(metadata_definition_dict, "data.normalizationConfig.normalizationTag", None)
 
+    breaking_change_versions = get(metadata_definition_dict, "data.releases.breakingChanges", {}).keys()
+
     possible_docker_images = [
         (base_docker_image, base_docker_version),
         (oss_docker_image, oss_docker_version),
         (cloud_docker_image, cloud_docker_version),
         (normalization_docker_image, normalization_docker_version),
     ]
+    possible_docker_images.extend([(base_docker_image, version) for version in breaking_change_versions])
 
     # Filter out tuples with None and remove duplicates
     images_to_check = list(set(filter(lambda x: None not in x, possible_docker_images)))
 
     print(f"Checking that the following images are on dockerhub: {images_to_check}")
-
     for image, version in images_to_check:
         if not is_image_on_docker_hub(image, version):
             return False, f"Image {image}:{version} does not exist in DockerHub"
@@ -82,6 +84,7 @@ def validate_and_load(
     If the metadata file is valid, metadata_model will be populated.
     Otherwise, error_message will be populated with a string describing the error.
     """
+
     try:
         # Load the metadata file - this implicitly runs jsonschema validation
         metadata = yaml.safe_load(file_path.read_text())
