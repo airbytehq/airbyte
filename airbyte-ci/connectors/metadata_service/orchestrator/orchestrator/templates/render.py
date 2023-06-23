@@ -210,6 +210,11 @@ def render_connector_test_summary_html(connector_name: str, connector_test_summa
             "title": "Success",
         },
         {
+            "column": "html_report_url",
+            "title": "Test report",
+            "formatter": simple_link_html,
+        },
+        {
             "column": "gha_workflow_run_url",
             "title": "Github Action",
             "formatter": simple_link_html,

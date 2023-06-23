@@ -44,3 +44,4 @@ class ConnectorPipelineReport:
     git_revision: Optional[str] = None
     ci_context: Optional[str] = None
     cdk_version: Optional[str] = None
+    html_report_url: Optional[str] = None
