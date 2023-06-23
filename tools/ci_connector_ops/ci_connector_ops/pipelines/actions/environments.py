@@ -655,6 +655,7 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
     return (
         with_integration_base_java(context, build_platform)
         .with_exec(["yum", "install", "-y"] + yum_packages_to_install)
+        .with_exec(["yum", "clean", "all"])
         .with_exec(["alternatives", "--install", "/usr/bin/python", "python", "/usr/bin/python3", "60"])
         .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(["python", "-m", "ensurepip", "--upgrade"])

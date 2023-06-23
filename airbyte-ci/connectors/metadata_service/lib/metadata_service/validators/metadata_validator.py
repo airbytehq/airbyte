@@ -8,7 +8,7 @@ from metadata_service.docker_hub import is_image_on_docker_hub
 from pydash.objects import get
 
 ValidationResult = Tuple[bool, Optional[Union[ValidationError, str]]]
-ValidationFunction = Callable[[ConnectorMetadataDefinitionV0], ValidationResult]
+Validator = Callable[[ConnectorMetadataDefinitionV0], ValidationResult]
 
 
 def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
@@ -25,18 +25,20 @@ def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadata
     normalization_docker_image = get(metadata_definition_dict, "data.normalizationConfig.normalizationRepository", None)
     normalization_docker_version = get(metadata_definition_dict, "data.normalizationConfig.normalizationTag", None)
 
+    breaking_change_versions = get(metadata_definition_dict, "data.releases.breakingChanges", {}).keys()
+
     possible_docker_images = [
         (base_docker_image, base_docker_version),
         (oss_docker_image, oss_docker_version),
         (cloud_docker_image, cloud_docker_version),
         (normalization_docker_image, normalization_docker_version),
     ]
+    possible_docker_images.extend([(base_docker_image, version) for version in breaking_change_versions])
 
     # Filter out tuples with None and remove duplicates
     images_to_check = list(set(filter(lambda x: None not in x, possible_docker_images)))
 
     print(f"Checking that the following images are on dockerhub: {images_to_check}")
-
     for image, version in images_to_check:
         if not is_image_on_docker_hub(image, version):
             return False, f"Image {image}:{version} does not exist in DockerHub"
@@ -83,8 +85,6 @@ def validate_major_version_bump_has_breaking_change_entry(metadata_definition: C
     if image_tag not in breaking_changes.keys():
         return False, f"Major version {image_tag} needs a 'releases.breakingChanges' entry indicating what changed."
 
-    return True, None
-
 
 DIFF_VALIDATORS = [validate_major_version_bump_has_breaking_change_entry]
 
@@ -100,7 +100,7 @@ POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
 
 def validate_and_load(
     file_path: pathlib.Path,
-    extra_validators_to_run: Optional[List[ValidationFunction]] = None
+    validators_to_run: List[Validator]
 ) -> Tuple[Optional[ConnectorMetadataDefinitionV0], Optional[ValidationError]]:
     """Load a metadata file from a path (runs jsonschema validation) and run optional extra validators.
 
@@ -116,11 +116,9 @@ def validate_and_load(
     except ValidationError as e:
         return None, f"Validation error: {e}"
 
-    # Run extra validators
-    if extra_validators_to_run:
-        for validator in extra_validators_to_run:
-            is_valid, error = validator(metadata_model)
-            if not is_valid:
-                return None, f"Validation error: {error}"
+    for validator in validators_to_run:
+        is_valid, error = validator(metadata_model)
+        if not is_valid:
+            return None, f"Validation error: {error}"
 
     return metadata_model, None
