@@ -10,23 +10,35 @@ from source.source import RmsCloudApiKapicheSource
 logger = logging.getLogger("airbyte")
 
 
-def test_check_connection():
-    logger.info('blah')
+@pytest.mark.parametrize('side_effect,status', [
+    ("123", Status.SUCCEEDED),
+    (Exception("oops"), Status.FAILED)
+])
+def test_check_connection(side_effect, status):
     source = RmsCloudApiKapicheSource()
     with mock.patch(
         "source.source.RmsCloudApiKapicheSource.get_auth_token"
     ) as get_auth_token:
-        get_auth_token.return_value = "123"
+        get_auth_token.side_effect = side_effect
         result = source.check(logger, {})
-        assert result.status is Status.SUCCEEDED
+        assert result.status is status
 
 
 def test_discover():
     source = RmsCloudApiKapicheSource()
     config = defaultdict(str)
     catalog = source.discover(logger, config)
-    print(catalog)
     assert catalog
+    assert catalog.streams[0].name == "RMSNPS"
+    """
+    (Pdb++) catalog.streams[0].supported_sync_modes
+    [<SyncMode.full_refresh: 'full_refresh'>, <SyncMode.incremental: 'incremental'>]
+    (Pdb++) catalog.streams[0].source_defined_cursor
+    False
+    (Pdb++) catalog.streams[0].default_cursor_field
+    (Pdb++) catalog.streams[0].source_defined_primary_key
+    (Pdb++)
+    """
 
 
 # def test_streams(mocker):
