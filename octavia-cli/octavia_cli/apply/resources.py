@@ -633,8 +633,16 @@ class Connection(BaseResource):
         self._check_for_legacy_connection_configuration_keys(configuration)
         configuration["sync_catalog"] = self._create_configured_catalog(configuration["sync_catalog"])
         configuration["namespace_definition"] = NamespaceDefinitionType(configuration["namespace_definition"])
-        configuration["non_breaking_changes_preference"] = NonBreakingChangesPreference(configuration["non_breaking_changes_preference"])
-        configuration["geography"] = Geography(configuration["geography"])
+        if "non_breaking_changes_preference" in configuration:
+            configuration["non_breaking_changes_preference"] = NonBreakingChangesPreference(
+                configuration["non_breaking_changes_preference"]
+            )
+        else:
+            configuration["non_breaking_changes_preference"] = NonBreakingChangesPreference("ignore")
+        if "geography" in configuration:
+            configuration["geography"] = Geography(configuration["geography"])
+        else:
+            configuration["geography"] = Geography("auto")
 
         if "schedule_type" in configuration:
             # If schedule type is manual we do not expect a schedule_data field to be set
