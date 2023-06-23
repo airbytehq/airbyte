@@ -11,7 +11,6 @@ import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.nio.charset.Charset;
 import java.util.function.Consumer;
 
 /**
@@ -28,7 +27,7 @@ public class ConcurrentMessageConsumer implements Consumer<AirbyteMessage>, Auto
 
   public ConcurrentMessageConsumer() {
     out = new PrintWriter(
-        new BufferedWriter(new OutputStreamWriter(new FileOutputStream(FileDescriptor.out), Charset.defaultCharset())));
+        new BufferedWriter(new OutputStreamWriter(new FileOutputStream(FileDescriptor.out))));
   }
 
   @Override
