@@ -4,7 +4,6 @@
 from pathlib import Path
 from typing import Tuple
 
-import yaml
 import base64
 import hashlib
 import json
@@ -13,9 +12,8 @@ import os
 from google.cloud import storage
 from google.oauth2 import service_account
 
-from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER, ICON_FILE_NAME
-from metadata_service.validators.metadata_validator import validate_metadata_images_in_dockerhub
+from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, validate_and_load
 
 
 def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
@@ -101,14 +99,9 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path) -> Tuple[
     Returns:
         Tuple[bool, str]: Whether the metadata file was uploaded and its blob id.
     """
-
-    raw_metadata = yaml.safe_load(metadata_file_path.read_text())
-    metadata = ConnectorMetadataDefinitionV0.parse_obj(raw_metadata)
-
-    print("Validating that the images are on DockerHub...")
-    is_valid, error = validate_metadata_images_in_dockerhub(metadata)
-    if not is_valid:
-        raise ValueError(error)
+    metadata, error = validate_and_load(metadata_file_path, POST_UPLOAD_VALIDATORS)
+    if metadata is None:
+        raise ValueError(f"Metadata file {metadata_file_path} is invalid for uploading: {error}")
 
     service_account_info = json.loads(os.environ.get("GCS_CREDENTIALS"))
     credentials = service_account.Credentials.from_service_account_info(service_account_info)

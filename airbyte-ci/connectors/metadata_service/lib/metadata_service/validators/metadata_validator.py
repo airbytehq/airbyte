@@ -2,7 +2,7 @@ import yaml
 import pathlib
 from pydantic import ValidationError
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, List, Callable
 from metadata_service.docker_hub import is_image_on_docker_hub
 from pydash.objects import get
 
@@ -61,30 +61,31 @@ def validate_all_tags_are_keyvalue_pairs(metadata_definition: ConnectorMetadataD
     return True, None
 
 
-def pre_upload_validations(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
-    """
-    Runs all validations that should be run before uploading a connector to the registry.
-    """
-    validations = [
-        validate_all_tags_are_keyvalue_pairs,
-        validate_at_least_one_langauge_tag,
-    ]
+PRE_UPLOAD_VALIDATORS = [
+    validate_all_tags_are_keyvalue_pairs,
+    validate_at_least_one_langauge_tag,
+]
 
-    for validation in validations:
-        valid, error = validation(metadata_definition)
-        if not valid:
-            return False, error
-
-    return True, None
+POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
+    validate_metadata_images_in_dockerhub,
+]
 
 
-def validate_metadata_file(file_path: pathlib.Path) -> ValidationResult:
-    """
-    Validates a metadata YAML file against a metadata Pydantic model.
-    """
+def validate_and_load(file_path: pathlib.Path, validators_to_run: List[Callable]) -> Tuple[Optional[ConnectorMetadataDefinitionV0], Optional[ValidationError]]:
+    """Run the given validations on the metadata file at the given path. Runs jsonschema validations as a
+    side effect of loading the file."""
+
     try:
+        # Load the metadata file - this implicitly runs jsonschema validation
         metadata = yaml.safe_load(file_path.read_text())
         metadata_model = ConnectorMetadataDefinitionV0.parse_obj(metadata)
-        return pre_upload_validations(metadata_model)
     except ValidationError as e:
-        return False, e
+        return None, f"Validation error: {e}"
+
+    # Run extra validators
+    for validator in validators_to_run:
+        is_valid, error = validator(metadata_model)
+        if not is_valid:
+            return None, f"Validation error: {error}"
+
+    return metadata_model, None
