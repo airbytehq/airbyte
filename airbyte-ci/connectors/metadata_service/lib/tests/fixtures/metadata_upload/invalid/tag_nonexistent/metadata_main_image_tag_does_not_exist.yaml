@@ -5,7 +5,7 @@ data:
   connectorType: source
   dockerRepository: airbyte/exists-1
   githubIssueLabel: source-alloydb-strict-encrypt
-      dockerImageTag: 6.6.6 # tag does not exist
+  dockerImageTag: 6.6.6 # tag does not exist
   documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
   connectorSubtype: database
   releaseStage: generally_available
