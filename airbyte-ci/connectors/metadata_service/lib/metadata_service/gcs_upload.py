@@ -4,49 +4,15 @@
 from pathlib import Path
 from typing import Tuple
 
-import base64
-import hashlib
 import json
 import os
 
 from google.cloud import storage
 from google.oauth2 import service_account
 
-from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER, ICON_FILE_NAME
+from metadata_service.constants import ICON_FILE_NAME
+from metadata_service.gcs_utils import compute_gcs_md5, get_metadata_remote_file_path, get_icon_remote_file_path
 from metadata_service.validators.metadata_validator import POST_UPLOAD_VALIDATORS, validate_and_load
-
-
-def get_metadata_remote_file_path(dockerRepository: str, version: str) -> str:
-    """Get the path to the metadata file for a specific version of a connector.
-
-    Args:
-        dockerRepository (str): Name of the connector docker image.
-        version (str): Version of the connector.
-    Returns:
-        str: Path to the metadata file.
-    """
-    return f"{METADATA_FOLDER}/{dockerRepository}/{version}/{METADATA_FILE_NAME}"
-
-
-def get_icon_remote_file_path(dockerRepository: str, version: str) -> str:
-    """Get the path to the icon file for a specific version of a connector.
-
-    Args:
-        dockerRepository (str): Name of the connector docker image.
-        version (str): Version of the connector.
-    Returns:
-        str: Path to the icon file.
-    """
-    return f"{METADATA_FOLDER}/{dockerRepository}/{version}/{ICON_FILE_NAME}"
-
-
-def compute_gcs_md5(file_name: str) -> str:
-    hash_md5 = hashlib.md5()
-    with open(file_name, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-
-    return base64.b64encode(hash_md5.digest()).decode("utf8")
 
 
 def _save_blob_to_gcs(blob_to_save: storage.blob.Blob, file_path: str, disable_cache: bool = False) -> bool:

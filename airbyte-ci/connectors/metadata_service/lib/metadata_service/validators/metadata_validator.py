@@ -8,18 +8,7 @@ from metadata_service.docker_hub import is_image_on_docker_hub
 from pydash.objects import get
 
 ValidationResult = Tuple[bool, Optional[Union[ValidationError, str]]]
-
-# These connectors were already on N.0.0 versions when the validation checking for breakingChanges entries
-# on major version bumps was added - therefore they are exempt from the check. These connectors should be
-# removed from the list as soon as their version is bumped to something else (ideally before their next
-# major version bump).
-MAJOR_VERSION_BREAKING_CHANGE_CHECK_EXCEPTIONS = [
-    ("airbyte/destination-csv", "1.0.0"),
-    ("airbyte/destination-meilisearch", "1.0.0"),
-    ("airbyte/source-s3", "3.0.0"),
-    ("airbyte/source-yandex-metrica", "1.0.0"),
-    ("airbyte/source-onesignal", "1.0.0"),
-]
+ValidationFunction = Callable[[ConnectorMetadataDefinitionV0], ValidationResult]
 
 
 def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
@@ -78,16 +67,12 @@ def is_major_version(version: str) -> bool:
     return re.match(r"^\d+\.0\.0$", version) is not None
 
 
-def validate_major_version_has_breaking_change_entry(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
+def validate_major_version_bump_has_breaking_change_entry(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
     """Ensure that if the major version is incremented, there is a breaking change entry for that version."""
     metadata_definition_dict = metadata_definition.dict()
     image_tag = get(metadata_definition_dict, "data.dockerImageTag")
 
     if not is_major_version(image_tag):
-        return True, None
-
-    base_docker_image = get(metadata_definition_dict, "data.dockerRepository")
-    if (base_docker_image, image_tag) in MAJOR_VERSION_BREAKING_CHANGE_CHECK_EXCEPTIONS:
         return True, None
 
     releases = get(metadata_definition_dict, "data.releases")
@@ -101,10 +86,11 @@ def validate_major_version_has_breaking_change_entry(metadata_definition: Connec
     return True, None
 
 
-PRE_UPLOAD_VALIDATORS = [
+DIFF_VALIDATORS = [validate_major_version_bump_has_breaking_change_entry]
+
+PRE_UPLOAD_VALIDATORS = DIFF_VALIDATORS + [
     validate_all_tags_are_keyvalue_pairs,
     validate_at_least_one_language_tag,
-    validate_major_version_has_breaking_change_entry,
 ]
 
 POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
@@ -112,7 +98,10 @@ POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
 ]
 
 
-def validate_and_load(file_path: pathlib.Path, extra_validators_to_run: Optional[List[Callable]] = None) -> Tuple[Optional[ConnectorMetadataDefinitionV0], Optional[ValidationError]]:
+def validate_and_load(
+    file_path: pathlib.Path,
+    extra_validators_to_run: Optional[List[ValidationFunction]] = None
+) -> Tuple[Optional[ConnectorMetadataDefinitionV0], Optional[ValidationError]]:
     """Load a metadata file from a path (runs jsonschema validation) and run optional extra validators.
 
     Returns a tuple of (metadata_model, error_message).
