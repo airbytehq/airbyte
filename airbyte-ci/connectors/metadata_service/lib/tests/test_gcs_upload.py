@@ -6,9 +6,10 @@ import pathlib
 import pytest
 import json
 import yaml
+from pydantic.error_wrappers import ValidationError
+
 from metadata_service import gcs_upload
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
-from pydantic import ValidationError
 from metadata_service.constants import METADATA_FILE_NAME
 
 
@@ -120,21 +121,6 @@ def test_upload_metadata_to_gcs_valid_metadata(
         assert uploaded
 
 
-def test_upload_metadata_to_gcs_invalid_metadata(invalid_metadata_yaml_files):
-    for invalid_metadata_file in invalid_metadata_yaml_files:
-        metadata_file_path = pathlib.Path(invalid_metadata_file)
-        try:
-            gcs_upload.upload_metadata_to_gcs(
-                "my_bucket",
-                metadata_file_path,
-            )
-            assert False, f"Expected ValueError for invalid metadata file: {metadata_file_path}"
-        except (ValueError, StopIteration):
-            continue
-        except Exception as e:
-            assert False, f"Expected ValueError for invalid metadata file: {metadata_file_path}. Got this instead: {e}"
-
-
 def test_upload_metadata_to_gcs_non_existent_metadata_file():
     metadata_file_path = pathlib.Path("./i_dont_exist.yaml")
     with pytest.raises(FileNotFoundError):
@@ -144,17 +130,24 @@ def test_upload_metadata_to_gcs_non_existent_metadata_file():
         )
 
 
+def test_upload_invalid_metadata_to_gcs(invalid_metadata_yaml_files):
+    for invalid_metadata_file in invalid_metadata_yaml_files:
+        metadata_file_path = pathlib.Path(invalid_metadata_file)
+        with pytest.raises(ValueError, match="Validation error"):
+            gcs_upload.upload_metadata_to_gcs(
+                "my_bucket",
+                metadata_file_path,
+            )
+
+
 def test_upload_metadata_to_gcs_invalid_docker_images(mocker, invalid_metadata_upload_files):
     setup_upload_mocks(mocker, None, None, "new_md5_hash")
 
     # Test that all invalid metadata files throw a ValueError
     for invalid_metadata_file in invalid_metadata_upload_files:
         metadata_file_path = pathlib.Path(invalid_metadata_file)
-        try:
+        with pytest.raises(ValueError, match="does not exist in DockerHub"):
             gcs_upload.upload_metadata_to_gcs(
                 "my_bucket",
                 metadata_file_path,
             )
-            assert False, f"Expected ValueError for: {invalid_metadata_file}"
-        except (ValueError, StopIteration):
-            continue
