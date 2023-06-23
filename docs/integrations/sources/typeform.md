@@ -4,9 +4,22 @@ This page guides you through the process of setting up the Typeform source conne
 
 ## Prerequisites
 
-* token - The Typeform API key token.
-* start\_date - Date to start fetching Responses stream data from.
-* form_ids (Optional) - List of Form Ids to sync. If not passed - sync all account`s forms.
+- [Typeform Account](https://www.typeform.com/)
+- Start Date - Date to start fetching Responses stream data from.
+- form_ids (Optional) - List of Form Ids to sync. If not passed - sync all account`s forms.
+
+<!-- env:cloud -->
+**For Airbyte Cloud:**
+
+- Personal Access Token (see [personal access token](https://www.typeform.com/developers/get-started/personal-access-token/))
+- OAuth
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+**For Airbyte Open Source:**
+
+- Personal Access Token (see [personal access token](https://www.typeform.com/developers/get-started/personal-access-token/))
+<!-- /env:oss -->
 
 ## Setup guide
 
@@ -19,7 +32,7 @@ To get the API token for your application follow this [steps](https://developer.
 * In the left menu, click Personal tokens.
 * Click Generate a new token.
 * In the Token name field, type a name for the token to help you identify it.
-* Choose needed scopes \(API actions this token can perform - or permissions it has\). See here for more details on scopes.
+* Choose needed scopes \(API actions this token can perform - or permissions it has\). See [here](https://www.typeform.com/developers/get-started/scopes/) for more details on scopes.
 * Click Generate token.
 
 ### Step 2: Set up the source connector in Airbyte
@@ -28,20 +41,23 @@ To get the API token for your application follow this [steps](https://developer.
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New Source**.
 3. On the source setup page, select **Typeform** from the Source type dropdown and enter a name for this connector.
-4. Fill-in 'API Token' and 'Start Date'
-5. click `Set up source`.
+4. Click `Authenticate your Typeform account` by selecting Oauth or Personal Access Token for Authentication.
+5. Log in and Authorize to the Typeform account.
+6. **Start date** - Date to start fetching Responses stream data from.
+7. **Form IDs (Optional)** - List of Form Ids to sync. If not passed - sync all account`s forms.
+8. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 **For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the Set up the source page, enter the name for the connector and select **Tiktok Marketing** from the Source type dropdown.
-4. Fill-in 'API Token' and 'Start Date'
-5. click `Set up source`.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New Source**.
+3. On the Set up the source page, enter the name for the connector and select **Typeform** from the Source type dropdown.
+4. Fill-in **API Token** and **Start Date**
+5. click **Set up source**
 <!-- /env:oss -->
 
 ## Supported streams and sync modes
