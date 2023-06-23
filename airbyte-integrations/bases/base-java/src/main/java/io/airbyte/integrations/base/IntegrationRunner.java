@@ -121,7 +121,7 @@ public class IntegrationRunner {
   @Trace(operationName = "RUN_OPERATION")
   public void run(final String[] args) throws Exception {
     final IntegrationConfig parsed = cliParser.parse(args);
-    try {
+    try (concurrentMessageConsumer) {
       runInternal(parsed);
     } catch (final Exception e) {
       throw e;

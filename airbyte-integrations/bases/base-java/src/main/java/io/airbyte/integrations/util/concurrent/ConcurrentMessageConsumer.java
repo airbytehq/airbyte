@@ -22,7 +22,7 @@ import java.util.function.Consumer;
  * improve performance in a multi-threaded environment.
  * </p>
  */
-public class ConcurrentMessageConsumer implements Consumer<AirbyteMessage> {
+public class ConcurrentMessageConsumer implements Consumer<AirbyteMessage>, AutoCloseable {
 
   private final PrintWriter out;
 
@@ -38,4 +38,8 @@ public class ConcurrentMessageConsumer implements Consumer<AirbyteMessage> {
     out.flush();
   }
 
+  @Override
+  public void close() throws Exception {
+    out.close();
+  }
 }
