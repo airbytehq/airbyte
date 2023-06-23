@@ -43,4 +43,5 @@ public class ConcurrentMessageConsumer implements Consumer<AirbyteMessage>, Auto
     out.flush();
     out.close();
   }
+
 }
