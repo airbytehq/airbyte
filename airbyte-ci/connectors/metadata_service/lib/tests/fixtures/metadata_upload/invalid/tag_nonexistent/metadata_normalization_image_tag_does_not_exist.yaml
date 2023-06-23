@@ -13,7 +13,7 @@ data:
   normalizationConfig:
     normalizationIntegrationType: postgres
     normalizationRepository: airbyte/exists-2
-      dockerImageTag: 6.6.6 # tag does not exist
+    dockerImageTag: 6.6.6 # tag does not exist
   registries:
     cloud:
       enabled: true
