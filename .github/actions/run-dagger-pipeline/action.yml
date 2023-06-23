@@ -54,6 +54,9 @@ inputs:
   spec_cache_gcs_credentials:
     description: "GCP credentials for GCS spec cache"
     required: false
+  dagster_cloud_metadata_api_token:
+    description: "Dagster Cloud API token"
+    required: false
   gcs_credentials:
     description: "GCP credentials for GCS"
     required: false
@@ -115,6 +118,7 @@ runs:
         CI_REPORT_BUCKET_NAME: ${{ inputs.report_bucket_name }}
         GCP_GSM_CREDENTIALS: ${{ inputs.gcp_gsm_credentials }}
         GCS_CREDENTIALS: ${{ inputs.gcs_credentials }}
+        DAGSTER_CLOUD_METADATA_API_TOKEN: ${{ inputs.dagster_cloud_metadata_api_token }}
         METADATA_SERVICE_BUCKET_NAME: ${{ inputs.metadata_service_bucket_name }}
         METADATA_SERVICE_GCS_CREDENTIALS: ${{ inputs.metadata_service_gcs_credentials }}
         PRODUCTION: ${{ inputs.production }}
