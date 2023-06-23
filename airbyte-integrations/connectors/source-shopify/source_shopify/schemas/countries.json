@@ -1,0 +1,56 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "code": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "provinces": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "code": {
+            "type": ["null", "string"]
+          },
+          "country_id": {
+            "type": ["null", "integer"]
+          },
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "tax": {
+            "type": ["null", "number"]
+          },
+          "tax_name": {
+            "type": ["null", "string"]
+          },
+          "tax_type": {
+            "type": ["null", "string"]
+          },
+          "tax_percentage": {
+            "type": ["null", "integer"]
+          }
+        }
+      }
+    },
+    "tax": {
+      "type": ["null", "number"]
+    },
+    "tax_name": {
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "type": ["null", "string"]
+    }
+  }
+}

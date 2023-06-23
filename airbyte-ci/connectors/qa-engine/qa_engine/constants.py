@@ -29,6 +29,7 @@ INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS = [
     "4528e960-6f7b-4412-8555-7e0097e1da17",  # destination-starburst-galaxy, no strict-encrypt variant
     "aa8ba6fd-4875-d94e-fc8d-4e1e09aa2503",  # source-teradata, no strict-encrypt variant
     "447e0381-3780-4b46-bb62-00a4e3c8b8e2",  # source-db2, no strict-encrypt variant
+    "0eeee7fb-518f-4045-bacc-9619e31c43ea",  # destination-amazon-sqs, hide Amazon SQS Destination https://github.com/airbytehq/airbyte/issues/16316
 ]
 
 GCS_QA_REPORT_PATH = "gs://airbyte-data-connectors-qa-engine/"
