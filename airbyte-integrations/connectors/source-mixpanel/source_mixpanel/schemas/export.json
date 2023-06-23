@@ -237,9 +237,6 @@
     "URL": {
       "type": ["null", "string"]
     },
-    "insert_id": {
-      "type": ["null", "string"]
-    },
     "mp_api_timestamp_ms": {
       "type": ["null", "string"]
     },
