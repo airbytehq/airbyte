@@ -34,8 +34,8 @@ def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadata
 
     # Filter out tuples with None and remove duplicates
     images_to_check = list(set(filter(lambda x: None not in x, possible_docker_images)))
-    print(f"Checking that the following images are on dockerhub: {images_to_check}")
 
+    print(f"Checking that the following images are on dockerhub: {images_to_check}")
     for image, version in images_to_check:
         if not is_image_on_docker_hub(image, version):
             return False, f"Image {image}:{version} does not exist in DockerHub"
