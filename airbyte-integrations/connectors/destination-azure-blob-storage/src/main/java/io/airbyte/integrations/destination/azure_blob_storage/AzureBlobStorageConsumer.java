@@ -64,7 +64,8 @@ public class AzureBlobStorageConsumer extends FailureTrackingAirbyteMessageConsu
     for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
 
       final String blobName = configuredStream.getStream().getName() + "/" +
-          getOutputFilename(new Timestamp(System.currentTimeMillis()));
+              getOutputFilename(new Timestamp(System.currentTimeMillis())) + "." +
+              azureBlobStorageDestinationConfig.getFormatConfig().getFormat().getFileExtension();
       final AppendBlobClient appendBlobClient = specializedBlobClientBuilder
           .blobName(blobName)
           .buildAppendBlobClient();
