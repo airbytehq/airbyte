@@ -5,5 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_kapiche_export_api'
+    moduleDirectory 'source'
 }
