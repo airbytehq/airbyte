@@ -331,7 +331,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               FROM ${raw_table_id}
               WHERE
                 _airbyte_loaded_at IS NULL
-                AND JSON_EXTRACT(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
+                AND (
+                  JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
+                  OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) = 'null'
+                )
             )
             SELECT
             ${column_list}
@@ -381,7 +384,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                   )
                   FROM ${raw_table_id}
                   WHERE
-                    JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+                    JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+                    AND JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) != 'null'
                     AND ${cursor_name} < ${cursor_cast}
                 )
               );""");
@@ -403,7 +407,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
      */
     String cdcDeletedAtClause;
     if (streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
-      cdcDeletedAtClause = "AND JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL";
+      cdcDeletedAtClause = """
+          AND (
+            JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
+            OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) = 'null'
+          )
+          """;
     } else {
       cdcDeletedAtClause = "";
     }
