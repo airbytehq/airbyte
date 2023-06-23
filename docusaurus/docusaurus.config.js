@@ -169,7 +169,7 @@ const config = {
             position: "left",
           },
           {
-            href: "https://discuss.airbyte.io/",
+            href: "https://support.airbyte.com/",
             label: "Support",
             position: "left",
           },
