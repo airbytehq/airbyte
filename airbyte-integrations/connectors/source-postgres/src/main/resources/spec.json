@@ -33,7 +33,7 @@
       },
       "schemas": {
         "title": "Schemas",
-        "description": "The list of schemas (case sensitive) to sync from. Defaults to public.",
+        "description": "The list of schemas (case sensitive) to sync from. Defaults to public. Multiple schemas may be chosen. If left empty, then all schemas will be included.",
         "type": "array",
         "items": {
           "type": "string"

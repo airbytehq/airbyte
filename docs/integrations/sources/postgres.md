@@ -89,7 +89,7 @@ This issue is tracked in [#9771](https://github.com/airbytehq/airbyte/issues/977
 5. For the **Host**, **Port**, and **DB Name**, enter the hostname, port number, and name for your Postgres database.
 6. List the **Schemas** you want to sync.
    :::note
-   The schema names are case sensitive. The 'public' schema is set by default. Multiple schemas may be used at one time. No schemas set explicitly - will sync all of existing.
+   The schema names are case sensitive. The 'public' schema is set by default. Multiple schemas may be chosen. If left empty, then all schemas will be included.
    :::
 7. For **User** and **Password**, enter the username and password you created in [Step 1](#step-1-optional-create-a-dedicated-read-only-user).
 8. To customize the JDBC connection beyond common options, specify additional supported [JDBC URL parameters](https://jdbc.postgresql.org/documentation/head/connect.html) as key-value pairs separated by the symbol & in the **JDBC URL Parameters (Advanced)** field.
