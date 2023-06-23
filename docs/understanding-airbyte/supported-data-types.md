@@ -46,7 +46,7 @@ For example, a source could produce this `AirbyteStream` (remember that the `jso
         "items": {
           "type": "string",
           "format": "date-time",
-          "airbyte_type": "timestampt_with_timezone"
+          "airbyte_type": "timestamp_with_timezone"
         }
       }
     }
