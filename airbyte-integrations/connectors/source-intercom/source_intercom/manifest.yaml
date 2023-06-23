@@ -1,4 +1,4 @@
-version: "0.1.0"
+version: "0.40.5"
 
 definitions:
 
@@ -13,8 +13,7 @@ definitions:
       field_path: ["{{ parameters.get('data_field', 'data')}}"] 
   requester:
     description: "Base Requester for Full Refresh streams"
-    type: CustomRequester
-    class_name: source_intercom.components.HttpRequesterWithRateLimiter
+    type: HttpRequester
     url_base: "https://api.intercom.io/"
     http_method: "GET"
     authenticator:
@@ -46,27 +45,28 @@ definitions:
     $ref: "#/definitions/requester"
     http_method: "POST"
     request_body_json:
-      query: "{
-          'operator': 'OR',
-          'value': [
-              {
-                  'field': 'updated_at',
-                  'operator': '>',
-                  'value': {{ stream_slice.get('prior_state', stream_state.get('prior_state', {})).get('updated_at') or format_datetime(config['start_date'], '%s') }}
-              },
-              {
-                  'field': 'updated_at',
-                  'operator': '=',
-                  'value': {{ stream_slice.get('prior_state', stream_state.get('prior_state', {})).get('updated_at') or format_datetime(config['start_date'], '%s') }}
-              },
-          ],
-      }"
-      sort: "{'field': 'updated_at', 'order': 'ascending'}"
-      pagination: "{
-        'per_page': {{ parameters.get('page_size') }},
-        'page': {{ next_page_token.get('next_page_token').get('page') }},
-        'starting_after': '{{ next_page_token.get('next_page_token').get('starting_after') }}'
-      }"
+      query:
+        value:
+          - operator: OR
+            value:
+              - field: updated_at
+                operator: '='
+                value: "{{ stream_slice['end_time'] }}"
+              - field: updated_at
+                operator: <
+                value: "{{ stream_slice['end_time'] }}"
+          - operator: OR
+            value:
+              - field: updated_at
+                operator: '='
+                value: "{{ stream_slice['start_time'] }}"
+              - field: updated_at
+                operator: '>'
+                value: "{{ stream_slice['start_time'] }}"
+        operator: AND
+      sort:
+        field: updated_at
+        order: ascending
   
   ## streams
   # full-refresh
@@ -255,9 +255,13 @@ definitions:
     description: "https://developers.intercom.com/intercom-api-reference/reference/pagination-sorting-search"
     $ref: "#/definitions/stream_full_refresh"
     incremental_sync:
-      type: CustomIncrementalSync
-      class_name: source_intercom.components.IncrementalSingleSlice
+      type: DatetimeBasedCursor
       cursor_field: "updated_at"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      datetime_format: "%s"
     retriever:
       $ref: "#/definitions/stream_full_refresh/retriever"
       requester:

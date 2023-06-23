@@ -136,7 +136,7 @@ class IncrementalSingleSlice(StreamSlicer):
         self._update_cursor_with_prior_state()
         self._update_stream_cursor(stream_slice, last_record)
 
-    def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(self) -> Iterable[Mapping[str, Any]]:
         yield {}
 
 
@@ -309,7 +309,7 @@ class IncrementalSubstreamSlicer(StreamSlicer):
         self, sync_mode: SyncMode, cursor_field: Optional[str], stream_state: Mapping[str, Any]
     ) -> Iterable[Mapping[str, Any]]:
 
-        for parent_slice in self.parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
+        for parent_slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
             empty_parent_slice = True
 
             # update slice with parent state, to pass the initial parent state to the parent instance
@@ -346,7 +346,7 @@ class IncrementalSubstreamSlicer(StreamSlicer):
             if empty_parent_slice:
                 yield from []
 
-    def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(self) -> Iterable[Mapping[str, Any]]:
         stream_state = self.initial_state or {}
         parent_state = stream_state.get(self.parent_stream_name, {})
         parent_state.update(**{"prior_state": self._cursor.get("prior_state", {}).get(self.parent_stream_name, {})})
