@@ -142,8 +142,5 @@ class SourceHubspot(AbstractSource):
         return available_streams
 
     def get_custom_object_streams(self, api: API, common_params: Mapping[str, Any]):
-        schemas = api.get_custom_object_schemas()
-        streams = []
-        for entity, schema in schemas.items():
-            streams.append(CustomObject(entity=entity, schema=schema, **common_params))
-        return streams
+        for (entity, fully_qualified_name, schema) in api.get_custom_objects_metadata():
+            yield CustomObject(entity=entity, schema=schema, fully_qualified_name=fully_qualified_name, **common_params)
