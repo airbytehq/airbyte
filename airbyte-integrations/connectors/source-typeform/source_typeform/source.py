@@ -198,7 +198,7 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
             response["form_id"] = stream_slice["form_id"]
         return responses
 
-    
+
 class Webhooks(TrimFormsMixin, TypeformStream):
     """
     This stream is responsible for fetching webhooks for particular form_id.
