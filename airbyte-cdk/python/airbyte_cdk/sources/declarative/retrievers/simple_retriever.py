@@ -5,7 +5,6 @@
 import json
 from dataclasses import InitVar, dataclass, field
 from itertools import islice
-from json import JSONDecodeError
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
