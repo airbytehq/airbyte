@@ -40,6 +40,7 @@ public class ConcurrentMessageConsumer implements Consumer<AirbyteMessage>, Auto
 
   @Override
   public void close() throws Exception {
+    out.flush();
     out.close();
   }
 }
