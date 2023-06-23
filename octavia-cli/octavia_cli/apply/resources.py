@@ -40,7 +40,9 @@ from airbyte_api_client.model.destination_id_request_body import DestinationIdRe
 from airbyte_api_client.model.destination_read import DestinationRead
 from airbyte_api_client.model.destination_sync_mode import DestinationSyncMode
 from airbyte_api_client.model.destination_update import DestinationUpdate
+from airbyte_api_client.model.geography import Geography
 from airbyte_api_client.model.namespace_definition_type import NamespaceDefinitionType
+from airbyte_api_client.model.non_breaking_changes_preference import NonBreakingChangesPreference
 from airbyte_api_client.model.operation_create import OperationCreate
 from airbyte_api_client.model.operator_configuration import OperatorConfiguration
 from airbyte_api_client.model.operator_dbt import OperatorDbt
@@ -631,6 +633,8 @@ class Connection(BaseResource):
         self._check_for_legacy_connection_configuration_keys(configuration)
         configuration["sync_catalog"] = self._create_configured_catalog(configuration["sync_catalog"])
         configuration["namespace_definition"] = NamespaceDefinitionType(configuration["namespace_definition"])
+        configuration["non_breaking_changes_preference"] = NonBreakingChangesPreference(configuration["non_breaking_changes_preference"])
+        configuration["geography"] = Geography(configuration["geography"])
 
         if "schedule_type" in configuration:
             # If schedule type is manual we do not expect a schedule_data field to be set
