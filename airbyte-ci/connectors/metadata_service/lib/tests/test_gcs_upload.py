@@ -12,10 +12,12 @@ from metadata_service import gcs_upload
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.constants import METADATA_FILE_NAME
 
+# Version exists by default, but "666" is bad! (6.0.0 too since breaking changes regex tho)
+MOCK_VERSIONS_THAT_DO_NOT_EXIST = ["6.6.6", "6.0.0"]
+
 
 def stub_is_image_on_docker_hub(image_name: str, version: str) -> bool:
-    # Version exists by default, but "666" is bad! (6.0.0 since breaking changes regex tho)
-    return "exists" in image_name and version not in ["6.6.6", "6.0.0"]
+    return "exists" in image_name and version not in MOCK_VERSIONS_THAT_DO_NOT_EXIST
 
 
 def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash):
