@@ -43,7 +43,6 @@ class AdsInsights(FBMarketingIncrementalStream):
         "action_target_id",
         "action_destination",
     ]
-    action_report_time = "mixed"
 
     # Facebook store metrics maximum of 37 months old. Any time range that
     # older that 37 months from current date would result in 400 Bad request
@@ -61,7 +60,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         breakdowns: List[str] = None,
         action_breakdowns: List[str] = None,
         action_breakdowns_allow_empty: bool = False,
-        action_report_time: str = None,
+        action_report_time: str = "mixed",
         time_increment: Optional[int] = None,
         insights_lookback_window: int = None,
         level: str = "ad",
@@ -80,7 +79,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         if breakdowns is not None:
             self.breakdowns = breakdowns
         self.time_increment = time_increment or self.time_increment
-        self.action_report_time = action_report_time or self.action_report_time
+        self.action_report_time = action_report_time
         self._new_class_name = name
         self._insights_lookback_window = insights_lookback_window
         self.level = level
