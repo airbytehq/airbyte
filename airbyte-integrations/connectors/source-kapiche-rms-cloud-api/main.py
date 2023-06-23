@@ -1,7 +1,7 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-import source
+from source.source import RmsCloudApiKapicheSource
 
 if __name__ == "__main__":
-    launch(source.RmsCloudApiKapicheSource(), sys.argv[1:])
+    launch(RmsCloudApiKapicheSource(), sys.argv[1:])

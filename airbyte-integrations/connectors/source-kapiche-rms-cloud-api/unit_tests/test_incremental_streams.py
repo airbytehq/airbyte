@@ -1,6 +1,6 @@
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source import (
+from source.source import (
     RmsCloudApiKapicheSource,
 )
 

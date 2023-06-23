@@ -1,11 +1,21 @@
 from __future__ import annotations
 
-import pickle
+import logging
 from datetime import datetime
-from pathlib import Path
-from typing import Dict, Generator
+from typing import (
+    Dict,
+    Generator,
+    Any,
+    Iterable,
+    List,
+    Mapping,
+    MutableMapping,
+    Optional,
+    Tuple,
+    Union,
+)
 
-from airbyte_cdk.logger import AirbyteLogger
+import requests
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -22,47 +32,19 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import Source
 
+from .utils import cache
 
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import IncrementalMixin
-
-import requests
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from airbyte_cdk.sources.streams.core import Stream, StreamData
-
-logger = AirbyteLogger()
-
-
-def cache(path: str):
-    def outer(f):
-        def inner(*args, **kwargs):
-            cache = Path(f"cache-{path}")
-            if cache.exists():
-                logger.info(f"Using cache for {path}")
-                pickled = cache.read_bytes()
-                return pickle.loads(cache.read_bytes())
-            else:
-                result = f(*args, **kwargs)
-                pickled = pickle.dumps(result)
-                cache.write_bytes(pickled)
-                return result
-
-        return inner
-
-    return outer
+logger = logging.getLogger("airbyte")
 
 
 class RmsCloudApiKapicheSource(Source):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        # Initialize only. It actually gets set in `check_connection`
         self.auth_token = None
 
     def check(
-        self, logger: AirbyteLogger, config: Mapping[str, Any]
+        self, logger: logging.Logger, config: Mapping[str, Any]
     ) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
@@ -89,7 +71,7 @@ class RmsCloudApiKapicheSource(Source):
             return AirbyteConnectionStatus(status=Status.FAILED, message=msg)
 
     def discover(
-        self, logger: AirbyteLogger, config: Mapping[str, Any]
+        self, logger: logging.Logger, config: Mapping[str, Any]
     ) -> AirbyteCatalog:
         """
         Returns an AirbyteCatalog representing the available streams and fields in this integration.
@@ -159,7 +141,7 @@ class RmsCloudApiKapicheSource(Source):
 
     def read(
         self,
-        logger: AirbyteLogger,
+        logger: logging.Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
         state: Dict[str, Any],
@@ -236,7 +218,7 @@ class RmsCloudApiKapicheSource(Source):
 
     def get_auth_token(
         self,
-        logger: AirbyteLogger,
+        logger: logging.Logger,
         config: Mapping[str, Any],
     ):
         auth_body = {
@@ -260,7 +242,7 @@ class RmsCloudApiKapicheSource(Source):
 
     def _fetch_nps(
         self,
-        logger: AirbyteLogger,
+        logger: logging.Logger,
         properties: dict[int, dict],
         categories: dict[int, dict],
     ) -> Iterable[dict[str, Any]]:
@@ -337,13 +319,13 @@ class RmsCloudApiKapicheSource(Source):
 
                     yield r
 
-    def reservation_data_by_id(self, logger: AirbyteLogger, reservation_ids: list[int]):
+    def reservation_data_by_id(self, logger: logging.Logger, reservation_ids: list[int]):
         items = self._fetch_reservations(logger, reservation_ids)
         return {r["id"] for r in items}
 
     # @cache("_fetch_reservations")
     def _fetch_reservations(
-        self, logger: AirbyteLogger, reservation_ids: list[int]
+        self, logger: logging.Logger, reservation_ids: list[int]
     ) -> list[dict[str, Any]]:
         response = requests.post(
             "https://restapi8.rmscloud.com/reservations/search?modelType=basic",
@@ -353,7 +335,7 @@ class RmsCloudApiKapicheSource(Source):
         return response.json()
 
     @cache("_fetch_properties")
-    def _fetch_properties(self, logger: AirbyteLogger) -> dict[int, dict]:
+    def _fetch_properties(self, logger: logging.Logger) -> dict[int, dict]:
         # Fetch a list of properties, which will be used to retrieve
         # NPS survey responses. A property represents a physical
         # location (holiday park)
@@ -370,7 +352,7 @@ class RmsCloudApiKapicheSource(Source):
 
     @cache("_fetch_categories")
     def _fetch_categories(
-        self, logger: AirbyteLogger, properties: dict[int, dict]
+        self, logger: logging.Logger, properties: dict[int, dict]
     ) -> dict[int, dict]:
         """
         Fetch a list of categories, which provide metadata for
