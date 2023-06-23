@@ -6,10 +6,6 @@ This destination writes data to GCS bucket.
 
 The Airbyte GCS destination allows you to sync data to cloud storage buckets. Each stream is written to its own directory under the bucket.
 
-:::info
-Cloud storage may incur egress costs. Egress refers to data that is transferred out of the cloud storage system, such as when you download files or access them from a different location. For more information, see the [Google Cloud Storage pricing guide](https://cloud.google.com/storage/pricing).
-:::
-
 ### Sync overview
 
 #### Features
