@@ -18,11 +18,19 @@ jobs:
         id: metadata-lib-test-pipeline
         uses: ./.github/actions/run-dagger-pipeline
         with:
-          subcommand: "metadata test lib"
           context: "pull_request"
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          subcommand: "metadata test lib"
       - name: Run test for the metadata orchestrator
         id: metadata-orchestrator-test-pipeline
         uses: ./.github/actions/run-dagger-pipeline
         with:
-          subcommand: "metadata test orchestrator"
           context: "pull_request"
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          subcommand: "metadata test orchestrator"
