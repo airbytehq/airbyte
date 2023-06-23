@@ -1,9 +1,9 @@
 from unittest import mock
-from source_kapiche_export_api.source import SourceKapicheExportApi
+from source import RmsCloudApiKapicheSource
 
 
 def test_check_connection(mocker):
-    source = SourceKapicheExportApi()
+    source = RmsCloudApiKapicheSource()
     with mock.patch("source_kapiche_export_api.source.ExportDataList") as list_endpoint:
         logger_mock = mock.MagicMock()
         config_mock = {
@@ -19,7 +19,7 @@ def test_check_connection(mocker):
 
 
 def test_streams(mocker):
-    source = SourceKapicheExportApi()
+    source = RmsCloudApiKapicheSource()
     with mock.patch("source_kapiche_export_api.source.ExportDataList") as list_endpoint:
         config_mock = {
             "api_token": "some-token",

@@ -36,6 +36,7 @@ from airbyte_cdk.sources.streams.core import Stream, StreamData
 
 logger = AirbyteLogger()
 
+
 def cache(path: str):
     def outer(f):
         def inner(*args, **kwargs):
@@ -192,13 +193,14 @@ class RmsCloudApiKapicheSource(Source):
 
         logger.info(f"catalog: {catalog}")
         logger.info(f"state: {state}")
-        state['last_date'] = 123
+        state["last_date"] = 123
 
         properties = self._fetch_properties(logger)
         categories = self._fetch_categories(logger, properties)
         gen = self._fetch_nps(logger, properties, categories)
 
         from itertools import islice
+
         for record in islice(gen, 1):
             yield AirbyteMessage(
                 type=Type.RECORD,
@@ -209,7 +211,7 @@ class RmsCloudApiKapicheSource(Source):
                     emitted_at=int(datetime.now().timestamp()) * 1000,
                 ),
             )
-            state['last_date'] = 456
+            state["last_date"] = 456
 
             yield AirbyteMessage(
                 type=Type.STATE,
@@ -219,7 +221,7 @@ class RmsCloudApiKapicheSource(Source):
                         stream_descriptor=StreamDescriptor(name=stream_name),
                         stream_state=state,
                     ),
-                )
+                ),
             )
 
     def _get(self, url: str, payload: dict) -> dict:
