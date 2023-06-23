@@ -7,6 +7,8 @@ from typing import Optional, Tuple, Union, List, Callable
 from metadata_service.docker_hub import is_image_on_docker_hub
 from pydash.objects import get
 
+from metadata_service import gcs_utils
+
 ValidationResult = Tuple[bool, Optional[Union[ValidationError, str]]]
 Validator = Callable[[ConnectorMetadataDefinitionV0], ValidationResult]
 
@@ -115,6 +117,17 @@ def validate_and_load(
         metadata_model = ConnectorMetadataDefinitionV0.parse_obj(metadata)
     except ValidationError as e:
         return None, f"Validation error: {e}"
+
+    # if any(validator in DIFF_VALIDATORS for validator in extra_validators_to_run):
+    #     latest_path = gcs_utils.get_metadata_remote_file_path(metadata.data.dockerRepository, "latest")
+    #     remote_blob = gcs_utils.get_remote_blob("test", latest_path)
+    #     if remote_blob.exists():
+    #       if gcs_utils.file_changed(file_path, remote_blob):
+    #           for validator in DIFF_VALIDATORS:
+    #               is_valid, error = validator(metadata_model)
+    #               if not is_valid:
+    #                   return None, f"Validation error: {error}"
+    #     validators_to_run.pop()
 
     for validator in validators_to_run:
         is_valid, error = validator(metadata_model)

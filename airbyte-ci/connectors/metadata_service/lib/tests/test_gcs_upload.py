@@ -6,9 +6,8 @@ import pathlib
 import pytest
 import json
 import yaml
-from pydantic.error_wrappers import ValidationError
 
-from metadata_service import gcs_upload
+from metadata_service import gcs_upload, gcs_utils
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.constants import METADATA_FILE_NAME
 

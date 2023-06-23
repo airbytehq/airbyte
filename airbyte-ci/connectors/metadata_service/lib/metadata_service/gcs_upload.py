@@ -35,7 +35,7 @@ def upload_file_if_changed_or_new(
 ) -> Tuple[bool, str]:
     remote_blob = gcs_utils.get_remote_blob(bucket, blob_path)
 
-    if gcs_utils.blob_does_not_exist(remote_blob) or gcs_utils.file_changed(local_file_path, remote_blob):
+    if not remote_blob.exists() or gcs_utils.file_changed(local_file_path, remote_blob):
         uploaded = _save_blob_to_gcs(remote_blob, local_file_path, disable_cache=disable_cache)
         return uploaded, remote_blob.id
 
