@@ -54,7 +54,7 @@
     "Balance": {
       "type": [
         "null",
-        "integer"
+        "number"
       ]
     },
     "CustomerMemo": {
@@ -421,7 +421,7 @@
     "RemainingCredit": {
       "type": [
         "null",
-        "integer"
+        "number"
       ]
     },
     "ExchangeRate": {
