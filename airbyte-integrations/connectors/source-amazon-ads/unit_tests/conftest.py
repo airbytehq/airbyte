@@ -37,11 +37,13 @@ def profiles_response():
 [{"profileId":3991703629696934,"countryCode":"CA","currencyCode":"CAD","dailyBudget":9.99999999E8,"timezone":"America/Los_Angeles","accountInfo":{"marketplaceStringId":"A2EUQ1WTGCTBG2","id":"A3LUQZ2NBMFGO4","type":"seller","name":"The Airbyte Store","validPaymentMethod":true}},{"profileId":2935840597082037,"countryCode":"CA","currencyCode":"CAD","timezone":"America/Los_Angeles","accountInfo":{"marketplaceStringId":"A2EUQ1WTGCTBG2","id":"ENTITY1T4PQ8E0Y1LVJ","type":"vendor","name":"test","validPaymentMethod":false}},{"profileId":3664951271230581,"countryCode":"MX","currencyCode":"MXN","dailyBudget":9.99999999E8,"timezone":"America/Los_Angeles","accountInfo":{"marketplaceStringId":"A1AM78C64UM0Y8","id":"A3LUQZ2NBMFGO4","type":"seller","name":"The Airbyte Store","validPaymentMethod":true}},{"profileId":3312910465837761,"countryCode":"US","currencyCode":"USD","dailyBudget":9.99999999E8,"timezone":"America/Los_Angeles","accountInfo":{"marketplaceStringId":"ATVPDKIKX0DER","id":"A3LUQZ2NBMFGO4","type":"seller","name":"The Airbyte Store","validPaymentMethod":true}}]
 """
 
+
 @fixture
 def portfolios_response():
     return """
 [{"portfolioId":253945852845204,"name":"Test Portfolio 2","inBudget":true,"state":"enabled","creationDate":1687510907465,"lastUpdatedDate":1687510907465,"servingStatus":"PORTFOLIO_STATUS_ENABLED"},{"portfolioId":270076898441727,"name":"Test Portfolio","budget":{"amount":1.0,"currencyCode":"USD","policy":"dateRange","startDate":"20230623","endDate":"20230624"},"inBudget":true,"state":"enabled","creationDate":1687510616329,"lastUpdatedDate":1687514774484,"servingStatus":"PORTFOLIO_STATUS_ENABLED"}]
 """
+
 
 @fixture
 def campaigns_response():
