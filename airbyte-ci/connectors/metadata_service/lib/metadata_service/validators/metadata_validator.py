@@ -71,9 +71,13 @@ POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
 ]
 
 
-def validate_and_load(file_path: pathlib.Path, validators_to_run: List[Callable]) -> Tuple[Optional[ConnectorMetadataDefinitionV0], Optional[ValidationError]]:
-    """Run the given validations on the metadata file at the given path. Runs jsonschema validations as a
-    side effect of loading the file."""
+def validate_and_load(file_path: pathlib.Path, extra_validators_to_run: Optional[List[Callable]] = None) -> Tuple[Optional[ConnectorMetadataDefinitionV0], Optional[ValidationError]]:
+    """Load a metadata file from a path (runs jsonschema validation) and run optional extra validators.
+
+    Returns a tuple of (metadata_model, error_message).
+    If the metadata file is valid, metadata_model will be populated.
+    Otherwise, error_message will be populated with a string describing the error.
+    """
 
     try:
         # Load the metadata file - this implicitly runs jsonschema validation
@@ -83,9 +87,10 @@ def validate_and_load(file_path: pathlib.Path, validators_to_run: List[Callable]
         return None, f"Validation error: {e}"
 
     # Run extra validators
-    for validator in validators_to_run:
-        is_valid, error = validator(metadata_model)
-        if not is_valid:
-            return None, f"Validation error: {error}"
+    if extra_validators_to_run:
+        for validator in extra_validators_to_run:
+            is_valid, error = validator(metadata_model)
+            if not is_valid:
+                return None, f"Validation error: {error}"
 
     return metadata_model, None
