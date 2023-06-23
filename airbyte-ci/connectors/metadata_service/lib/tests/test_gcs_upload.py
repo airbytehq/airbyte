@@ -8,7 +8,7 @@ import json
 import yaml
 from pydantic.error_wrappers import ValidationError
 
-from metadata_service import gcs_upload
+from metadata_service import gcs_upload, gcs_utils
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.constants import METADATA_FILE_NAME
 
@@ -39,7 +39,7 @@ def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, loca
     mocker.patch.object(gcs_upload.storage, "Client", mocker.Mock(return_value=mock_storage_client))
 
     # Mock md5 hash
-    mocker.patch.object(gcs_upload, "compute_gcs_md5", mocker.Mock(return_value=local_file_md5_hash))
+    mocker.patch.object(gcs_utils, "compute_gcs_md5", mocker.Mock(return_value=local_file_md5_hash))
 
     return {
         "mock_credentials": mock_credentials,
