@@ -170,11 +170,7 @@ class PipelineContext:
     def get_repo_dir(self, subdir: str = ".", exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
         """Get a directory from the current repository.
 
-        If running in the CI:
-        The directory is extracted from the git branch.
-
-        If running locally:
-        The directory is extracted from your host file system.
+        The directory is extracted from the host file system.
         A couple of files or directories that could corrupt builds are exclude by default (check DEFAULT_EXCLUDED_FILES).
 
         Args:
