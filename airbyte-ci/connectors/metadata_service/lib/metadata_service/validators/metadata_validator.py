@@ -42,7 +42,7 @@ def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadata
     return True, None
 
 
-def validate_at_least_one_langauge_tag(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
+def validate_at_least_one_language_tag(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
     """Ensure that there is at least one tag in the data.tags field that matches language:<LANG>."""
     tags = get(metadata_definition, "data.tags", [])
     if not any([tag.startswith("language:") for tag in tags]):
@@ -63,7 +63,7 @@ def validate_all_tags_are_keyvalue_pairs(metadata_definition: ConnectorMetadataD
 
 PRE_UPLOAD_VALIDATORS = [
     validate_all_tags_are_keyvalue_pairs,
-    validate_at_least_one_langauge_tag,
+    validate_at_least_one_language_tag,
 ]
 
 POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
