@@ -16,7 +16,7 @@ data:
   releaseStage: alpha
   releases:
     breakingChanges:
-      6.0.0:  # tag does not exist
+      6.0.0: # tag does not exist
         upgradeDeadline: 2023-08-22
         message: "This version made a change."
   documentationUrl: https://docs.airbyte.com/integrations/sources/onesignal
