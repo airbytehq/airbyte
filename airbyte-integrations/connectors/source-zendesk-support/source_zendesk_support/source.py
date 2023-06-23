@@ -14,12 +14,14 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from source_zendesk_support.streams import DATETIME_FORMAT, SourceZendeskException
 
 from .streams import (
+    AuditLogs,
     Brands,
     CustomRoles,
     GroupMemberships,
     Groups,
     Macros,
     Organizations,
+    OrganizationMemberships,
     SatisfactionRatings,
     Schedules,
     SlaPolicies,
@@ -111,10 +113,12 @@ class SourceZendeskSupport(AbstractSource):
         """
         args = self.convert_config2stream_args(config)
         streams = [
+            AuditLogs(**args),
             GroupMemberships(**args),
             Groups(**args),
             Macros(**args),
             Organizations(**args),
+            OrganizationMemberships(**args),
             SatisfactionRatings(**args),
             SlaPolicies(**args),
             Tags(**args),

@@ -363,13 +363,6 @@ module.exports = function (plop) {
         path: `${javaDestinationOutputRoot}/src/main/resources/spec.json`
       },
       {
-        type: 'append',
-        abortOnFail: true,
-        path: `${definitionRoot}/seed/destination_definitions.yaml`,
-        pattern: '# DESTINATION DEFINITION BY CODE GENERATOR',
-        templateFile: `${javaDestinationInput}/definition.yaml.hbs`,
-      },
-      {
         type: 'emitSuccess',
         outputPath: javaDestinationOutputRoot,
       }

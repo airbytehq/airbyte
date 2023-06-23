@@ -14,5 +14,8 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/gnews
+  documentationUrl: https://docs.airbyte.com/integrations/sources/gnews
+  tags:
+    - language:low-code
+    - language:python
 metadataSpecVersion: "1.0"

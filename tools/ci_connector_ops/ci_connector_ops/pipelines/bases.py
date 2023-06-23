@@ -7,25 +7,43 @@
 from __future__ import annotations
 
 import json
+import webbrowser
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 
+import anyio
 import asyncer
-from ci_connector_ops.pipelines.actions import environments
+from anyio import Path
+from ci_connector_ops.pipelines.actions import remote_storage
+from ci_connector_ops.pipelines.consts import LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
 from ci_connector_ops.pipelines.utils import check_path_in_workdir, slugify, with_exit_code, with_stderr, with_stdout
-from ci_connector_ops.utils import Connector, console
-from dagger import CacheVolume, Container, Directory, QueryError
+from ci_connector_ops.utils import console
+from dagger import Container, QueryError
+from jinja2 import Environment, PackageLoader, select_autoescape
 from rich.console import Group
 from rich.panel import Panel
 from rich.style import Style
 from rich.table import Table
 from rich.text import Text
+from tabulate import tabulate
 
 if TYPE_CHECKING:
-    from ci_connector_ops.pipelines.contexts import ConnectorContext, PipelineContext
+    from ci_connector_ops.pipelines.contexts import PipelineContext
+
+
+class CIContext(str, Enum):
+    """An enum for Ci context values which can be ["manual", "pull_request", "nightly_builds"]."""
+
+    MANUAL = "manual"
+    PULL_REQUEST = "pull_request"
+    NIGHTLY_BUILDS = "nightly_builds"
+    MASTER = "master"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 class StepStatus(Enum):
@@ -64,6 +82,15 @@ class StepStatus(Enum):
         if self is StepStatus.SKIPPED:
             return Style(color="yellow")
 
+    def get_emoji(self) -> str:
+        """Match emoji used in the console output to the step status."""
+        if self is StepStatus.SUCCESS:
+            return "✅"
+        if self is StepStatus.FAILURE:
+            return "❌"
+        if self is StepStatus.SKIPPED:
+            return "🟡"
+
     def __str__(self) -> str:  # noqa D105
         return self.value
 
@@ -73,9 +100,11 @@ class Step(ABC):
 
     title: ClassVar[str]
     started_at: ClassVar[datetime]
+    max_retries: ClassVar[int] = 0
 
-    def __init__(self, context: ConnectorContext) -> None:  # noqa D107
+    def __init__(self, context: PipelineContext) -> None:  # noqa D107
         self.context = context
+        self.retry_count = 0
 
     async def run(self, *args, **kwargs) -> StepResult:
         """Public method to run the step. It output a step result.
@@ -87,7 +116,15 @@ class Step(ABC):
         """
         self.started_at = datetime.utcnow()
         try:
-            return await self._run(*args, **kwargs)
+            result = await self._run(*args, **kwargs)
+            if result.status is StepStatus.FAILURE and self.retry_count <= self.max_retries and self.max_retries > 0:
+                self.retry_count += 1
+                await anyio.sleep(10)
+                self.context.logger.warn(
+                    f"Retry #{self.retry_count} for {self.title} step on connector {self.context.connector.technical_name}"
+                )
+                return await self.run(*args, **kwargs)
+            return result
         except QueryError as e:
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
@@ -138,6 +175,13 @@ class Step(ABC):
 class PytestStep(Step, ABC):
     """An abstract class to run pytest tests and evaluate success or failure according to pytest logs."""
 
+    async def write_log_file(self, logs) -> str:
+        """Return the path to the pytest log file."""
+        log_directory = Path(f"{self.context.connector.code_directory}/airbyte_ci_logs")
+        await log_directory.mkdir(exist_ok=True)
+        await Path(f"{log_directory}/{slugify(self.title).replace('-', '_')}.log").write_text(logs)
+        self.context.logger.info(f"Pytest logs written to {log_directory}/{slugify(self.title)}.log")
+
     # TODO this is not very robust if pytest crashes and does not outputs its expected last log line.
     def pytest_logs_to_step_result(self, logs: str) -> StepResult:
         """Parse pytest log and infer failure, success or skipping.
@@ -168,9 +212,7 @@ class PytestStep(Step, ABC):
         Returns:
             Tuple[StepStatus, Optional[str], Optional[str]]: Tuple of StepStatus, stderr and stdout.
         """
-        test_config = (
-            "pytest.ini" if await check_path_in_workdir(connector_under_test, "pytest.ini") else "/" + environments.PYPROJECT_TOML_FILE_PATH
-        )
+        test_config = "pytest.ini" if await check_path_in_workdir(connector_under_test, "pytest.ini") else "/" + PYPROJECT_TOML_FILE_PATH
         if await check_path_in_workdir(connector_under_test, test_directory):
             tester = connector_under_test.with_exec(
                 [
@@ -185,10 +227,26 @@ class PytestStep(Step, ABC):
                     test_config,
                 ]
             )
-            return self.pytest_logs_to_step_result(await tester.stdout())
+            logs = await tester.stdout()
+            if self.context.is_local:
+                await self.write_log_file(logs)
+            return self.pytest_logs_to_step_result(logs)
 
         else:
             return StepResult(self, StepStatus.SKIPPED)
+
+
+class NoOpStep(Step):
+    """A step that does nothing."""
+
+    title = "No Op"
+
+    def __init__(self, context: PipelineContext, step_status: StepStatus) -> None:
+        super().__init__(context)
+        self.step_status = step_status
+
+    async def _run(self, *args, **kwargs) -> StepResult:
+        return StepResult(self, self.step_status)
 
 
 @dataclass(frozen=True)
@@ -205,6 +263,20 @@ class StepResult:
     def __repr__(self) -> str:  # noqa D105
         return f"{self.step.title}: {self.status.value}"
 
+    def __str__(self) -> str:  # noqa D105
+        return f"{self.step.title}: {self.status.value}\n\nSTDOUT:\n{self.stdout}\n\nSTDERR:\n{self.stderr}"
+
+    def __post_init__(self):
+        if self.stderr:
+            super().__setattr__("stderr", self.redact_secrets_from_string(self.stderr))
+        if self.stdout:
+            super().__setattr__("stdout", self.redact_secrets_from_string(self.stdout))
+
+    def redact_secrets_from_string(self, value: str) -> str:
+        for secret in self.step.context.secrets_to_mask:
+            value = value.replace(secret, "********")
+        return value
+
 
 @dataclass(frozen=True)
 class Report:
@@ -214,6 +286,19 @@ class Report:
     steps_results: List[StepResult]
     created_at: datetime = field(default_factory=datetime.utcnow)
     name: str = "REPORT"
+    filename: str = "output"
+
+    @property
+    def report_output_prefix(self) -> str:  # noqa D102
+        return self.pipeline_context.report_output_prefix
+
+    @property
+    def json_report_file_name(self) -> str:  # noqa D102
+        return self.filename + ".json"
+
+    @property
+    def json_report_remote_storage_key(self) -> str:  # noqa D102
+        return f"{self.report_output_prefix}/{self.json_report_file_name}"
 
     @property
     def failed_steps(self) -> List[StepResult]:  # noqa D102
@@ -229,11 +314,49 @@ class Report:
 
     @property
     def success(self) -> bool:  # noqa D102
-        return len(self.failed_steps) == 0 and len(self.steps_results) > 0
+        return len(self.failed_steps) == 0
 
     @property
     def run_duration(self) -> int:  # noqa D102
-        return (self.created_at - self.pipeline_context.created_at).total_seconds()
+        return (self.pipeline_context.stopped_at - self.pipeline_context.started_at).total_seconds()
+
+    @property
+    def lead_duration(self) -> int:  # noqa D102
+        return (self.pipeline_context.stopped_at - self.pipeline_context.created_at).total_seconds()
+
+    @property
+    def remote_storage_enabled(self) -> bool:  # noqa D102
+        return self.pipeline_context.is_ci
+
+    async def save_local(self, filename: str, content: str) -> Path:
+        """Save the report files locally."""
+        local_path = anyio.Path(f"{LOCAL_REPORTS_PATH_ROOT}/{self.report_output_prefix}/{filename}")
+        await local_path.parents[0].mkdir(parents=True, exist_ok=True)
+        await local_path.write_text(content)
+        return local_path
+
+    async def save_remote(self, local_path: Path, remote_key: str, content_type: str = None) -> int:
+        gcs_cp_flags = None if content_type is None else [f"--content-type={content_type}"]
+        local_file = self.pipeline_context.dagger_client.host().directory(".", include=[str(local_path)]).file(str(local_path))
+        report_upload_exit_code, _, _ = await remote_storage.upload_to_gcs(
+            dagger_client=self.pipeline_context.dagger_client,
+            file_to_upload=local_file,
+            key=remote_key,
+            bucket=self.pipeline_context.ci_report_bucket,
+            gcs_credentials=self.pipeline_context.ci_gcs_credentials_secret,
+            flags=gcs_cp_flags,
+        )
+        if report_upload_exit_code != 0:
+            self.pipeline_context.logger.error(f"Uploading {local_path} to GCS Bucket: {self.pipeline_context.ci_report_bucket} failed.")
+        return report_upload_exit_code
+
+    async def save(self) -> None:
+        """Save the report files."""
+        local_json_path = await self.save_local(self.json_report_file_name, self.to_json())
+        self.pipeline_context.logger.info(f"Report saved locally at {local_json_path}")
+        if self.remote_storage_enabled:
+            await self.save_remote(local_json_path, self.json_report_remote_storage_key, "application/json")
+            self.pipeline_context.logger.info(f"Report saved remotely at {self.json_report_remote_storage_key}")
 
     def to_json(self) -> str:
         """Create a JSON representation of the report.
@@ -244,7 +367,7 @@ class Report:
         return json.dumps(
             {
                 "pipeline_name": self.pipeline_context.pipeline_name,
-                "run_timestamp": self.created_at.isoformat(),
+                "run_timestamp": self.pipeline_context.started_at.isoformat(),
                 "run_duration": self.run_duration,
                 "success": self.success,
                 "failed_steps": [s.step.__class__.__name__ for s in self.failed_steps],
@@ -252,11 +375,12 @@ class Report:
                 "skipped_steps": [s.step.__class__.__name__ for s in self.skipped_steps],
                 "gha_workflow_run_url": self.pipeline_context.gha_workflow_run_url,
                 "pipeline_start_timestamp": self.pipeline_context.pipeline_start_timestamp,
-                "pipeline_end_timestamp": round(self.created_at.timestamp()),
-                "pipeline_duration": round(self.created_at.timestamp()) - self.pipeline_context.pipeline_start_timestamp,
+                "pipeline_end_timestamp": round(self.pipeline_context.stopped_at.timestamp()),
+                "pipeline_duration": round(self.pipeline_context.stopped_at.timestamp()) - self.pipeline_context.pipeline_start_timestamp,
                 "git_branch": self.pipeline_context.git_branch,
                 "git_revision": self.pipeline_context.git_revision,
                 "ci_context": self.pipeline_context.ci_context,
+                "pull_request_url": self.pipeline_context.pull_request.html_url if self.pipeline_context.pull_request else None,
             }
         )
 
@@ -304,8 +428,29 @@ class ConnectorReport(Report):
     """A dataclass to build connector test reports to share pipelines executions results with the user."""
 
     @property
-    def should_be_saved(self) -> bool:  # noqa D102
-        return self.pipeline_context.is_ci
+    def report_output_prefix(self) -> str:  # noqa D102
+        return f"{self.pipeline_context.report_output_prefix}/{self.pipeline_context.connector.technical_name}/{self.pipeline_context.connector.version}"
+
+    @property
+    def html_report_file_name(self) -> str:  # noqa D102
+        return self.filename + ".html"
+
+    @property
+    def html_report_remote_storage_key(self) -> str:  # noqa D102
+        return f"{self.report_output_prefix}/{self.html_report_file_name}"
+
+    @property
+    def html_report_url(self) -> str:  # noqa D102
+        return f"https://storage.googleapis.com/{self.pipeline_context.ci_report_bucket}/{self.html_report_remote_storage_key}"
+
+    @property
+    def should_be_commented_on_pr(self) -> bool:  # noqa D102
+        return (
+            self.pipeline_context.should_save_report
+            and self.pipeline_context.is_ci
+            and self.pipeline_context.pull_request
+            and self.pipeline_context.PRODUCTION
+        )
 
     def to_json(self) -> str:
         """Create a JSON representation of the connector test report.
@@ -330,8 +475,67 @@ class ConnectorReport(Report):
                 "git_branch": self.pipeline_context.git_branch,
                 "git_revision": self.pipeline_context.git_revision,
                 "ci_context": self.pipeline_context.ci_context,
+                "cdk_version": self.pipeline_context.cdk_version,
+                "html_report_url": self.html_report_url,
             }
         )
+
+    def post_comment_on_pr(self) -> None:
+        icon_url = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
+        global_status_emoji = "✅" if self.success else "❌"
+        commit_url = f"{self.pipeline_context.pull_request.html_url}/commits/{self.pipeline_context.git_revision}"
+        markdown_comment = f'## <img src="{icon_url}" width="40" height="40"> {self.pipeline_context.connector.technical_name} test report (commit [`{self.pipeline_context.git_revision[:10]}`]({commit_url})) - {global_status_emoji}\n\n'
+        markdown_comment += f"⏲️  Total pipeline duration: {round(self.run_duration)} seconds\n\n"
+        report_data = [
+            [step_result.step.title, step_result.status.get_emoji()]
+            for step_result in self.steps_results
+            if step_result.status is not StepStatus.SKIPPED
+        ]
+        markdown_comment += tabulate(report_data, headers=["Step", "Result"], tablefmt="pipe") + "\n\n"
+        markdown_comment += f"🔗 [View the logs here]({self.html_report_url})\n\n"
+        markdown_comment += "*Please note that tests are only run on PR ready for review. Please set your PR to draft mode to not flood the CI engine and upstream service on following commits.*\n"
+        markdown_comment += "**You can run the same pipeline locally on this branch with the [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/README.md) tool with the following command**\n"
+        markdown_comment += f"```bash\nairbyte-ci connectors --name={self.pipeline_context.connector.technical_name} test\n```\n\n"
+        self.pipeline_context.pull_request.create_issue_comment(markdown_comment)
+
+    async def to_html(self) -> str:
+        env = Environment(
+            loader=PackageLoader("ci_connector_ops.pipelines.tests"), autoescape=select_autoescape(), trim_blocks=False, lstrip_blocks=True
+        )
+        template = env.get_template("test_report.html.j2")
+        template.globals["StepStatus"] = StepStatus
+        local_icon_path = await Path(f"{self.pipeline_context.connector.code_directory}/icon.svg").resolve()
+        template_context = {
+            "connector_name": self.pipeline_context.connector.technical_name,
+            "step_results": self.steps_results,
+            "run_duration": round(self.run_duration),
+            "created_at": self.created_at.isoformat(),
+            "connector_version": self.pipeline_context.connector.version,
+            "gha_workflow_run_url": None,
+            "git_branch": self.pipeline_context.git_branch,
+            "git_revision": self.pipeline_context.git_revision,
+            "commit_url": None,
+            "icon_url": local_icon_path.as_uri(),
+        }
+
+        if self.pipeline_context.is_ci:
+            template_context["commit_url"] = f"https://github.com/airbytehq/airbyte/commit/{self.pipeline_context.git_revision}"
+            template_context["gha_workflow_run_url"] = self.pipeline_context.gha_workflow_run_url
+            template_context[
+                "icon_url"
+            ] = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
+        return template.render(template_context)
+
+    async def save(self) -> None:
+        local_html_path = await self.save_local(self.html_report_file_name, await self.to_html())
+        if self.pipeline_context.is_local:
+            absolute_path = await local_html_path.resolve()
+            self.pipeline_context.logger.info(f"Opening HTML report in browser: {absolute_path}")
+            webbrowser.open(absolute_path.as_uri())
+        if self.remote_storage_enabled:
+            await self.save_remote(local_html_path, self.html_report_remote_storage_key, "text/html")
+            self.pipeline_context.logger.info(f"HTML report uploaded to {self.html_report_url}")
+        await super().save()
 
     def print(self):
         """Print the test report to the console in a nice way."""
@@ -365,130 +569,3 @@ class ConnectorReport(Report):
 
         main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
         console.print(main_panel)
-
-
-class GradleTask(Step, ABC):
-    """
-    A step to run a Gradle task.
-
-    Attributes:
-        task_name (str): The Gradle task name to run.
-        title (str): The step title.
-    """
-
-    DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker"]
-    BIND_TO_DOCKER_HOST = True
-    gradle_task_name: ClassVar
-
-    # TODO more robust way to find all projects on which the task depends?
-    JAVA_BUILD_INCLUDE = [
-        "airbyte-api",
-        "airbyte-commons-cli",
-        "airbyte-commons-protocol",
-        "airbyte-commons",
-        "airbyte-config",
-        "airbyte-connector-test-harnesses",
-        "airbyte-db",
-        "airbyte-integrations/bases",
-        "airbyte-json-validation",
-        "airbyte-protocol",
-        "airbyte-test-utils",
-        "airbyte-config-oss",
-    ]
-
-    SOURCE_BUILD_INCLUDE = [
-        "airbyte-integrations/connectors/source-jdbc",
-        "airbyte-integrations/connectors/source-relational-db",
-    ]
-
-    DESTINATION_BUILD_INCLUDE = [
-        "airbyte-integrations/bases/bases-destination-jdbc",
-        "airbyte-integrations/connectors/destination-gcs",
-        "airbyte-integrations/connectors/destination-azure-blob-storage",
-    ]
-
-    # These are the lines we remove from the connector gradle file to ignore specific tasks / plugins.
-    LINES_TO_REMOVE_FROM_GRADLE_FILE = [
-        # Do not build normalization with Gradle - we build normalization with Dagger in the BuildOrPullNormalization step.
-        "project(':airbyte-integrations:bases:base-normalization').airbyteDocker.output",
-    ]
-
-    @property
-    def docker_service_name(self) -> str:
-        return slugify(f"gradle-{self.title}")
-
-    @property
-    def connector_java_build_cache(self) -> CacheVolume:
-        return self.context.dagger_client.cache_volume("connector_java_build_cache")
-
-    def get_related_connectors(self) -> List[Connector]:
-        """Retrieve the list of related connectors.
-        This is used to include source code of non strict-encrypt connectors when running build for a strict-encrypt connector.
-
-        Returns:
-            List[Connector]: The list of related connectors.
-        """
-        if self.context.connector.technical_name.endswith("-strict-encrypt"):
-            return [Connector(self.context.connector.technical_name.replace("-strict-encrypt", ""))]
-        if self.context.connector.technical_name == "source-file-secure":
-            return [Connector("source-file")]
-        return []
-
-    @property
-    def build_include(self) -> List[str]:
-        """Retrieve the list of source code directory required to run a Java connector Gradle task.
-
-        The list is different according to the connector type.
-
-        Returns:
-            List[str]: List of directories or files to be mounted to the container to run a Java connector Gradle task.
-        """
-        to_include = self.JAVA_BUILD_INCLUDE
-
-        if self.context.connector.connector_type == "source":
-            to_include += self.SOURCE_BUILD_INCLUDE
-        elif self.context.connector.connector_type == "destination":
-            to_include += self.DESTINATION_BUILD_INCLUDE
-        else:
-            raise ValueError(f"{self.context.connector.connector_type} is not supported")
-
-        with_related_connectors_source_code = to_include + [str(connector.code_directory) for connector in self.get_related_connectors()]
-        return with_related_connectors_source_code
-
-    async def _get_patched_connector_dir(self) -> Directory:
-        """Patch the build.gradle file of the connector under test by removing the lines declared in LINES_TO_REMOVE_FROM_GRADLE_FILE.
-
-        Returns:
-            Directory: The patched connector directory
-        """
-
-        gradle_file_content = await self.context.get_connector_dir(include=["build.gradle"]).file("build.gradle").contents()
-        patched_file_content = ""
-        for line in gradle_file_content.split("\n"):
-            if not any(line_to_remove in line for line_to_remove in self.LINES_TO_REMOVE_FROM_GRADLE_FILE):
-                patched_file_content += line + "\n"
-        return self.context.get_connector_dir().with_new_file("build.gradle", patched_file_content)
-
-    def _get_gradle_command(self, extra_options: Tuple[str] = ("--no-daemon", "--scan")) -> List:
-        command = (
-            ["./gradlew"]
-            + list(extra_options)
-            + [f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"]
-        )
-        for task in self.DEFAULT_TASKS_TO_EXCLUDE:
-            command += ["-x", task]
-        return command
-
-    async def _run(self) -> StepResult:
-        connector_under_test = (
-            environments.with_gradle(
-                self.context, self.build_include, docker_service_name=self.docker_service_name, bind_to_docker_host=self.BIND_TO_DOCKER_HOST
-            )
-            .with_mounted_directory(str(self.context.connector.code_directory), await self._get_patched_connector_dir())
-            # Disable the Ryuk container because it needs privileged docker access that does not work:
-            .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
-            .with_directory(f"{self.context.connector.code_directory}/secrets", self.context.secrets_dir)
-            .with_exec(self._get_gradle_command())
-        )
-
-        return await self.get_step_result(connector_under_test)

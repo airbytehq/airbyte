@@ -14,5 +14,7 @@ data:
   license: MIT
   name: PagerDuty
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/pagerduty
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pagerduty
+  tags:
+    - language:unknown
 metadataSpecVersion: "1.0"

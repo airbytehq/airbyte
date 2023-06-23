@@ -241,6 +241,15 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .addExpectedValues("1700000.01")
             .build());
 
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("decimal")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .fullSourceDataType("decimal(32,0)")
+            .addInsertValues("1700000.01")
+            .addExpectedValues("1700000")
+            .build());
+
     for (final String type : Set.of("date", "date not null default '0000-00-00'")) {
       addDataTypeTestData(
           TestDataHolder.builder()

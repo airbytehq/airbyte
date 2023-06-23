@@ -1,15 +1,14 @@
 import sys
 import os
 import os.path
-import yaml
 import re
 from typing import Any, Dict, Text, List
+import requests
 
+CONNECTOR_REGISTRY_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 CONNECTORS_PATH = "./airbyte-integrations/connectors/"
 NORMALIZATION_PATH = "./airbyte-integrations/bases/base-normalization/"
 DOC_PATH = "docs/integrations/"
-SOURCE_DEFINITIONS_PATH = "./airbyte-config-oss/init-oss/src/main/resources/seed/source_definitions.yaml"
-DESTINATION_DEFINITIONS_PATH = "./airbyte-config-oss/init-oss/src/main/resources/seed/destination_definitions.yaml"
 IGNORE_LIST = [
     # Java
     "/src/test/","/src/test-integration/", "/src/testFixtures/",
@@ -34,6 +33,12 @@ IGNORED_DESTINATIONS = [
     re.compile("^bases-destination-jdbc$")
 ]
 COMMENT_TEMPLATE_PATH = ".github/comment_templates/connector_dependency_template.md"
+
+
+def download_and_parse_registry_json():
+    response = requests.get(CONNECTOR_REGISTRY_URL)
+    response.raise_for_status()
+    return response.json()
 
 
 def main():
@@ -211,10 +216,9 @@ def write_report(depended_connectors):
     with open(COMMENT_TEMPLATE_PATH, "r") as f:
         template = f.read()
 
-    with open(SOURCE_DEFINITIONS_PATH, 'r') as stream:
-        source_definitions = yaml.safe_load(stream)
-    with open(DESTINATION_DEFINITIONS_PATH, 'r') as stream:
-        destination_definitions = yaml.safe_load(stream)
+    registry_data = download_and_parse_registry_json()
+    source_definitions = registry_data["sources"]
+    destination_definitions = registry_data["destinations"]
 
     affected_sources.sort()
     affected_destinations.sort()

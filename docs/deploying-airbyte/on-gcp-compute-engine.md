@@ -83,8 +83,9 @@ gcloud --project=$PROJECT_ID beta compute ssh $INSTANCE_NAME
 
 ```bash
 mkdir airbyte && cd airbyte
-curl -sOO https://raw.githubusercontent.com/airbytehq/airbyte-platform/main/{.env,flags.yml,docker-compose.yaml}
-docker compose up -d
+wget https://raw.githubusercontent.com/airbytehq/airbyte/master/run-ab-platform.sh
+chmod +x run-ab-platform.sh
+./run-ab-platform.sh -b
 ```
 
 ## Connect to Airbyte

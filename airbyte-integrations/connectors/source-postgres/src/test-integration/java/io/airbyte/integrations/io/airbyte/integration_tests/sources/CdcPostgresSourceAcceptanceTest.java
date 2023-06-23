@@ -45,7 +45,7 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
   protected static final String PUBLICATION = "publication";
-  protected static final int INITIAL_WAITING_SECONDS = 5;
+  protected static final int INITIAL_WAITING_SECONDS = 30;
 
   protected PostgreSQLContainer<?> container;
   protected JsonNode config;
@@ -63,6 +63,7 @@ public class CdcPostgresSourceAcceptanceTest extends AbstractPostgresSourceAccep
         .put("publication", PUBLICATION)
         .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
         .build());
+
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
         .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))

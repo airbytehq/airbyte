@@ -4,6 +4,7 @@
 
 
 import json
+import logging
 import sys
 import tempfile
 import traceback
@@ -20,6 +21,7 @@ import google
 import numpy as np
 import pandas as pd
 import smart_open
+import smart_open.ssh
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import AirbyteStream, FailureType, SyncMode
 from airbyte_cdk.utils import AirbyteTracedException
@@ -29,12 +31,17 @@ from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
 from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
+from pandas.errors import ParserError
+from paramiko import SSHException
 from urllib3.exceptions import ProtocolError
 from yaml import safe_load
 
 from .utils import backoff_handler
 
 SSH_TIMEOUT = 60
+
+# Force the log level of the smart-open logger to ERROR - https://github.com/airbytehq/airbyte/pull/27157
+logging.getLogger("smart_open").setLevel(logging.ERROR)
 
 
 class ConfigurationError(Exception):
@@ -92,10 +99,21 @@ class URLFile:
             self._file.close()
             self._file = None
 
+    def backoff_giveup(self, error):
+        # https://github.com/airbytehq/oncall/issues/1954
+        if isinstance(error, SSHException) and str(error).startswith("Error reading SSH protocol banner"):
+            # We need to clear smart_open internal _SSH cache from the previous attempt, otherwise:
+            # SSHException('SSH session not active')
+            # will be raised
+            smart_open.ssh._SSH.clear()
+            return False
+        return True
+
     def open(self):
         self.close()
+        _open = backoff.on_exception(backoff.expo, Exception, max_tries=5, giveup=self.backoff_giveup)(self._open)
         try:
-            self._file = self._open()
+            self._file = _open()
         except google.api_core.exceptions.NotFound as err:
             raise FileNotFoundError(self.url) from err
         return self
@@ -376,7 +394,7 @@ class Client:
         if dtype == "bool" and (not current_type or current_type == "boolean"):
             return "boolean"
         if dtype == "datetime64[ns]":
-            return "datetime"
+            return "date-time"
         return "string"
 
     @property
@@ -413,6 +431,10 @@ class Client:
                 )
                 logger.error(f"{error_msg}\n{traceback.format_exc()}")
                 raise ConfigurationError(error_msg) from err
+            except ParserError as err:
+                error_msg = f"File {fp} can not be parsed. Please check your reader_options. https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html"
+                logger.error(f"{error_msg}\n{traceback.format_exc()}")
+                raise ConfigurationError(error_msg) from err
 
     def _cache_stream(self, fp):
         """cache stream to file"""
@@ -442,7 +464,7 @@ class Client:
                 fields[col] = self.dtype_to_json_type(prev_frame_column_type, df_type)
         return {
             field: (
-                {"type": ["string", "null"], "format": "date-time"} if fields[field] == "datetime" else {"type": [fields[field], "null"]}
+                {"type": ["string", "null"], "format": "date-time"} if fields[field] == "date-time" else {"type": [fields[field], "null"]}
             )
             for field in fields
         }

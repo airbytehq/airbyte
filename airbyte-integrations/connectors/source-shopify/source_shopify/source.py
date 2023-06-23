@@ -752,6 +752,35 @@ class MetafieldShops(IncrementalShopifyStream):
         return f"{self.data_field}.json"
 
 
+class CustomerSavedSearch(IncrementalShopifyStream):
+    api_version = "2022-01"
+    cursor_field = "id"
+    order_field = "id"
+    data_field = "customer_saved_searches"
+    filter_field = "since_id"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
+class CustomerAddress(ShopifySubstream):
+    parent_stream_class: object = Customers
+    slice_key = "id"
+    data_field = "addresses"
+    cursor_field = "id"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        customer_id = stream_slice[self.slice_key]
+        return f"customers/{customer_id}/{self.data_field}.json"
+
+
+class Countries(ShopifyStream):
+    data_field = "countries"
+
+    def path(self, **kwargs) -> str:
+        return f"{self.data_field}.json"
+
+
 class SourceShopify(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
@@ -774,7 +803,7 @@ class SourceShopify(AbstractSource):
         """
         config["authenticator"] = ShopifyAuthenticator(config)
         user_scopes = self.get_user_scopes(config)
-        always_permitted_streams = ["MetafieldShops", "Shop"]
+        always_permitted_streams = ["MetafieldShops", "Shop", "Countries"]
         permitted_streams = [
             stream
             for user_scope in user_scopes
@@ -825,6 +854,9 @@ class SourceShopify(AbstractSource):
             SmartCollections(config),
             TenderTransactions(config),
             Transactions(config),
+            CustomerSavedSearch(config),
+            CustomerAddress(config),
+            Countries(config),
         ]
 
         return [stream_instance for stream_instance in stream_instances if self.format_name(stream_instance.name) in permitted_streams]

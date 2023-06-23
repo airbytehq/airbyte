@@ -114,15 +114,60 @@
         "type": "string",
         "title": "Custom Reports",
         "description": "A JSON array describing the custom reports you want to sync from Google Search Console. See <a href=\"https://docs.airbyte.com/integrations/sources/google-search-console#step-2-set-up-the-google-search-console-connector-in-airbyte\">the docs</a> for more information about the exact format you can use to fill out this field."
+      },
+      "data_state": {
+        "type": "string",
+        "title": "Data State",
+        "enum": ["final", "all"],
+        "description": "If \"final\" or if this parameter is omitted, the returned data will include only finalized data. Setting this parameter to \"all\" should not be used with Incremental Sync mode as it may cause data loss. If \"all\", data will include fresh data.",
+        "examples": ["final"],
+        "default": "final",
+        "order": 5
       }
     }
   },
-  "authSpecification": {
-    "auth_type": "oauth2.0",
-    "oauth2Specification": {
-      "rootObject": ["authorization", 0],
-      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["authorization", "auth_type"],
+    "predicate_value": "Client",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": ["authorization", "access_token"]
+          },
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": ["authorization", "refresh_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["authorization", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["authorization", "client_secret"]
+          }
+        }
+      }
     }
   }
 }

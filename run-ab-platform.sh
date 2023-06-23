@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=0.44.3
+VERSION=0.50.4
 # Run away from anything even a little scary
 set -o nounset # -u exit if a variable is not set
 set -o errexit # -f exit for any command failure"
@@ -30,6 +30,7 @@ Help()
    echo -e "   -r --refresh     ${red_text}DELETE${default_text} existing assets and re-download new ones"
    echo -e "   -h --help        Print this Help."
    echo -e "   -x --debug       Verbose mode."
+   echo -e "   -b --background  Run docker compose up in detached mode."
    echo -e ""
 }
 
@@ -82,6 +83,7 @@ DeleteLocalAssets()
   done
 }
 
+dockerDetachedMode=""
 
 # $0 is the currently running program (this file)
 this_file_directory=$(dirname $0)
@@ -105,6 +107,9 @@ for argument in $@; do
       ;;
     -x | --debug)
       set -o xtrace  # -x display every line before execution; enables PS4
+      ;;
+    -b | --background)
+      dockerDetachedMode="-d"
       ;;
     *)
       echo "$argument is not a known command."
@@ -155,7 +160,7 @@ done
 echo
 echo -e "$blue_text""Starting Docker Compose""$default_text"
 
-docker compose up
+docker compose up $dockerDetachedMode
 
 # $? is the exit code of the last command. So here: docker compose up
 if test $? -ne 0; then
@@ -164,6 +169,8 @@ if test $? -ne 0; then
 fi
 
 ########## Ending Docker ##########
-docker compose down
-
-echo -e "$blue_text""Stopping Docker Compose""$default_text"
+if [ -z "$dockerDetachedMode" ]; then
+  docker compose down
+else
+  echo -e "$blue_text""Airbyte containers are running!""$default_text"
+fi
