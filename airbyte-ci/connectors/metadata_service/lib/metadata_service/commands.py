@@ -11,13 +11,22 @@ from pydantic import ValidationError
 
 
 @click.group(help="Airbyte Metadata Service top-level command group.")
-def metadata_service():
-    pass
+@click.option("--bucket-name", envvar="METADATA_BUCKET_NAME", type=str)
+def metadata_service(
+    ctx: click.Context,
+    bucket_name: str,
+):
+    ctx.ensure_object(dict)
+    ctx.obj["bucket_name"] = bucket_name
 
 
 @metadata_service.command(help="Validate a given metadata YAML file.")
 @click.argument("file_path", type=click.Path(exists=True, path_type=pathlib.Path))
-def validate(file_path: pathlib.Path):
+def validate(
+    ctx: click.Context,
+    file_path: pathlib.Path,
+):
+    bucket_name = ctx.obj["bucket_name"]
     file_path = file_path if not file_path.is_dir() else file_path / METADATA_FILE_NAME
 
     click.echo(f"Validating {file_path}...")
@@ -33,8 +42,11 @@ def validate(file_path: pathlib.Path):
 
 @metadata_service.command(help="Upload a metadata YAML file to a GCS bucket.")
 @click.argument("metadata-file-path", type=click.Path(exists=True, path_type=pathlib.Path))
-@click.argument("bucket-name", type=click.STRING)
-def upload(metadata_file_path: pathlib.Path, bucket_name: str):
+def upload(
+    ctx: click.Context,
+    metadata_file_path: pathlib.Path,
+):
+    bucket_name = ctx.obj["bucket_name"]
     metadata_file_path = metadata_file_path if not metadata_file_path.is_dir() else metadata_file_path / METADATA_FILE_NAME
     try:
         uploaded, blob_id = upload_metadata_to_gcs(bucket_name, metadata_file_path)
