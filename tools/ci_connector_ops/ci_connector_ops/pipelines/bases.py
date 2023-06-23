@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import webbrowser
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -115,6 +116,28 @@ class Step(ABC):
         else:
             return timedelta(seconds=0)
 
+    @property
+    def logger(self) -> logging.Logger:
+        if self.should_log:
+            return self.context.logger
+        else:
+            disabled_logger = logging.getLogger()
+            disabled_logger.disabled = True
+            return disabled_logger
+
+    async def log_progress(self, completion_event) -> None:
+        while not completion_event.is_set():
+            duration = datetime.utcnow() - self.started_at
+            elapsed_seconds = duration.total_seconds()
+            if elapsed_seconds > 30 and round(elapsed_seconds) % 30 == 0:
+                self.logger.info(f"⏳ Still running {self.title}... (duration: {format_duration(duration)})")
+            await anyio.sleep(1)
+
+    async def run_with_completion(self, completion_event, *args, **kwargs) -> StepResult:
+        result = await self._run(*args, **kwargs)
+        completion_event.set()
+        return result
+
     async def run(self, *args, **kwargs) -> StepResult:
         """Public method to run the step. It output a step result.
 
@@ -123,24 +146,27 @@ class Step(ABC):
         Returns:
             StepResult: The step result following the step run.
         """
-        self.started_at = datetime.utcnow()
-        if self.should_log:
-            self.context.logger.info(f"⏳ Running {self.title}")
         try:
-            result = await self._run(*args, **kwargs)
+            self.started_at = datetime.utcnow()
+            self.logger.info(f"🚀 Start step {self.title}")
+            completion_event = anyio.Event()
+            async with asyncer.create_task_group() as task_group:
+                soon_result = task_group.soonify(self.run_with_completion)(completion_event, *args, **kwargs)
+                task_group.soonify(self.log_progress)(completion_event)
+
+            result = soon_result.value
+
             if result.status is StepStatus.FAILURE and self.retry_count <= self.max_retries and self.max_retries > 0:
                 self.retry_count += 1
                 await anyio.sleep(10)
-                self.context.logger.warn(
-                    f"Retry #{self.retry_count} for {self.title} step on connector {self.context.connector.technical_name}."
-                )
+                self.logger.warn(f"Retry #{self.retry_count} for {self.title} step on connector {self.context.connector.technical_name}.")
                 return await self.run(*args, **kwargs)
             self.stopped_at = datetime.utcnow()
             self.log_step_result(result)
             return result
         except QueryError as e:
             self.stopped_at = datetime.utcnow()
-            self.context.logger.error(f"QueryError on step {self.title}: {e}")
+            self.logger.error(f"QueryError on step {self.title}: {e}")
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
 
     def log_step_result(self, result: StepResult) -> None:
@@ -149,15 +175,13 @@ class Step(ABC):
         Args:
             result (StepResult): The step result to log.
         """
-        if not self.should_log:
-            return
         duration = format_duration(self.run_duration)
         if result.status is StepStatus.FAILURE:
-            self.context.logger.error(f"{result.status.get_emoji()} {self.title} failed (duration: {duration})")
+            self.logger.error(f"{result.status.get_emoji()} {self.title} failed (duration: {duration})")
         if result.status is StepStatus.SKIPPED:
-            self.context.logger.info(f"{result.status.get_emoji()} {self.title} was skipped (duration: {duration})")
+            self.logger.info(f"{result.status.get_emoji()} {self.title} was skipped (duration: {duration})")
         if result.status is StepStatus.SUCCESS:
-            self.context.logger.info(f"{result.status.get_emoji()} {self.title} was successful (duration: {duration})")
+            self.logger.info(f"{result.status.get_emoji()} {self.title} was successful (duration: {duration})")
 
     @abstractmethod
     async def _run(self, *args, **kwargs) -> StepResult:
