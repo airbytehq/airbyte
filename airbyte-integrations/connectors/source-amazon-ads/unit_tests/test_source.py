@@ -112,6 +112,7 @@ def test_source_streams(config):
             "attribution_report_performance_campaign",
             "attribution_report_performance_creative",
             "attribution_report_products",
+            "sponsored_display_budget_rules"
         ]
     )
     assert not expected_stream_names - actual_stream_names
