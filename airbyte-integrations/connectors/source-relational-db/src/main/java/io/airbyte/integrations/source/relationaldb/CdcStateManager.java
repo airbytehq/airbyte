@@ -39,6 +39,10 @@ public class CdcStateManager {
     return currentState != null ? Jsons.clone(currentState) : null;
   }
 
+  public AirbyteStateMessage getRawStateMessage() {
+    return rawStateMessage;
+  }
+
   public Set<AirbyteStreamNameNamespacePair> getInitialStreamsSynced() {
     return initialStreamsSynced != null ? Collections.unmodifiableSet(initialStreamsSynced) : null;
   }

@@ -37,7 +37,7 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
   private String lastCtid;
   private final JsonNode streamStateForIncrementalRun;
   private final long relationFileNode;
-  private final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier;
+  private final CtidStateManager stateManager;
   private long recordCount = 0L;
   private Instant lastCheckpoint = Instant.now();
   private final Duration syncCheckpointDuration;
@@ -46,15 +46,15 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
   public CtidStateIterator(final Iterator<AirbyteMessageWithCtid> messageIterator,
                            final AirbyteStreamNameNamespacePair pair,
                            final long relationFileNode,
+                           final CtidStateManager stateManager,
                            final JsonNode streamStateForIncrementalRun,
-                           final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier,
                            final Duration checkpointDuration,
                            final Long checkpointRecords) {
     this.messageIterator = messageIterator;
     this.pair = pair;
     this.relationFileNode = relationFileNode;
+    this.stateManager = stateManager;
     this.streamStateForIncrementalRun = streamStateForIncrementalRun;
-    this.finalStateMessageSupplier = finalStateMessageSupplier;
     this.syncCheckpointDuration = checkpointDuration;
     this.syncCheckpointRecords = checkpointRecords;
   }
@@ -75,7 +75,9 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
         LOGGER.info("Emitting ctid state for stream {}, state is {}", pair, ctidStatus);
         recordCount = 0L;
         lastCheckpoint = Instant.now();
-        return CtidPerStreamStateManager.createPerStreamStateMessage(pair, ctidStatus);
+        return new AirbyteMessage()
+            .withType(Type.STATE)
+            .withState(stateManager.createCtidStateMessage(pair, ctidStatus));
       }
       // Use try-catch to catch Exception that could occur when connection to the database fails
       try {
@@ -90,8 +92,8 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
       }
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
-      final AirbyteStateMessage finalStateMessage = finalStateMessageSupplier.apply(pair, streamStateForIncrementalRun);
-      LOGGER.info("Emitting final state for stream {}, state is {}", pair, finalStateMessage.getStream().getStreamState());
+      final AirbyteStateMessage finalStateMessage = stateManager.createFinalStateMessage(pair, streamStateForIncrementalRun);
+      LOGGER.info("Emitting final state for stream {}, state is {}", pair, finalStateMessage);
       return new AirbyteMessage()
           .withType(Type.STATE)
           .withState(finalStateMessage);

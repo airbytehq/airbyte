@@ -51,19 +51,17 @@ public class PostgresCtidHandler {
   private final JdbcDatabase database;
   private final CtidPostgresSourceOperations sourceOperations;
   private final String quoteString;
-  private final CtidPerStreamStateManager ctidStateManager;
+  private final CtidStateManager ctidStateManager;
   private final Map<AirbyteStreamNameNamespacePair, Long> fileNodes;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
-  private final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier;
 
   public PostgresCtidHandler(final JsonNode config,
                              final JdbcDatabase database,
                              final CtidPostgresSourceOperations sourceOperations,
                              final String quoteString,
                              final Map<AirbyteStreamNameNamespacePair, Long> fileNodes,
-                             final CtidPerStreamStateManager ctidStateManager,
-                             final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
-                             final BiFunction<AirbyteStreamNameNamespacePair, JsonNode, AirbyteStateMessage> finalStateMessageSupplier) {
+                             final CtidStateManager ctidStateManager,
+                             final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier) {
     this.config = config;
     this.database = database;
     this.sourceOperations = sourceOperations;
@@ -71,7 +69,6 @@ public class PostgresCtidHandler {
     this.fileNodes = fileNodes;
     this.ctidStateManager = ctidStateManager;
     this.streamStateForIncrementalRunSupplier = streamStateForIncrementalRunSupplier;
-    this.finalStateMessageSupplier = finalStateMessageSupplier;
   }
 
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
@@ -205,7 +202,7 @@ public class PostgresCtidHandler {
         : CtidStateIterator.SYNC_CHECKPOINT_RECORDS;
 
     return AutoCloseableIterators.transformIterator(
-        r -> new CtidStateIterator(r, pair, latestFileNode, incrementalState, finalStateMessageSupplier,
+        r -> new CtidStateIterator(r, pair, latestFileNode, ctidStateManager, incrementalState,
             syncCheckpointDuration, syncCheckpointRecords),
         recordIterator, pair);
   }
