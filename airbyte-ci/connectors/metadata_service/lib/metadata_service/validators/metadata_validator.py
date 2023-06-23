@@ -7,6 +7,7 @@ from metadata_service.docker_hub import is_image_on_docker_hub
 from pydash.objects import get
 
 ValidationResult = Tuple[bool, Optional[Union[ValidationError, str]]]
+Validator = Callable[[ConnectorMetadataDefinitionV0], ValidationResult]
 
 
 def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadataDefinitionV0) -> ValidationResult:
@@ -71,14 +72,16 @@ POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
 ]
 
 
-def validate_and_load(file_path: pathlib.Path, extra_validators_to_run: Optional[List[Callable]] = None) -> Tuple[Optional[ConnectorMetadataDefinitionV0], Optional[ValidationError]]:
+def validate_and_load(
+    file_path: pathlib.Path,
+    validators_to_run: List[Validator]
+) -> Tuple[Optional[ConnectorMetadataDefinitionV0], Optional[ValidationError]]:
     """Load a metadata file from a path (runs jsonschema validation) and run optional extra validators.
 
     Returns a tuple of (metadata_model, error_message).
     If the metadata file is valid, metadata_model will be populated.
     Otherwise, error_message will be populated with a string describing the error.
     """
-
     try:
         # Load the metadata file - this implicitly runs jsonschema validation
         metadata = yaml.safe_load(file_path.read_text())
@@ -86,11 +89,9 @@ def validate_and_load(file_path: pathlib.Path, extra_validators_to_run: Optional
     except ValidationError as e:
         return None, f"Validation error: {e}"
 
-    # Run extra validators
-    if extra_validators_to_run:
-        for validator in extra_validators_to_run:
-            is_valid, error = validator(metadata_model)
-            if not is_valid:
-                return None, f"Validation error: {error}"
+    for validator in validators_to_run:
+        is_valid, error = validator(metadata_model)
+        if not is_valid:
+            return None, f"Validation error: {error}"
 
     return metadata_model, None
