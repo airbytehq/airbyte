@@ -240,7 +240,7 @@ jobs:
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
-        uses: Wandalen/wretry.action@master
+        uses: Wandalen/wretry.action@v1.0.42
         with:
           command: |
             docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}

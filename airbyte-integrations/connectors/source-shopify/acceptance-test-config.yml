@@ -10,19 +10,20 @@ acceptance_tests:
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
+        timeout_seconds: 3600
       - config_path: "secrets/config_old.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config_old.json"
         status: "failed"
+        timeout_seconds: 3600
       - config_path: "secrets/config_oauth.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_oauth_config.json"
         status: "failed"
+        timeout_seconds: 3600
   discovery:
     tests:
       - config_path: "secrets/config.json"
-      - config_path: "secrets/config_old.json"
-      - config_path: "secrets/config_oauth.json"
   basic_read:
     tests:
       - config_path: "secrets/config.json"

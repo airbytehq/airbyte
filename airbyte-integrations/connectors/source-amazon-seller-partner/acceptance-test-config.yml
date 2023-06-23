@@ -3,8 +3,9 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "integration_tests/spec.json"
+        # massively refactored `spec` 
         backward_compatibility_tests_config:
-          disable_for_version: "1.1.0"
+          disable_for_version: "1.2.0"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -16,8 +17,9 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+         # refactored `spec`, but `app_id` is required for `1.2.0`
         backward_compatibility_tests_config:
-          disable_for_version: "0.2.33"
+          disable_for_version: "1.2.0"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -29,8 +31,6 @@ acceptance_tests:
           extra_records: yes
         # TODO: Add records for empty streams - https://github.com/airbytehq/airbyte/issues/21555
         empty_streams:
-          - name: Orders
-            bypass_reason: "no records"
           - name: GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL
             bypass_reason: "no records"
           - name: GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL

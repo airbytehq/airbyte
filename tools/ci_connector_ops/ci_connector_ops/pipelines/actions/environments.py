@@ -18,6 +18,7 @@ from ci_connector_ops.pipelines.consts import (
     CI_CREDENTIALS_SOURCE_PATH,
     CONNECTOR_TESTING_REQUIREMENTS,
     DEFAULT_PYTHON_EXCLUDE,
+    LICENSE_SHORT_FILE_PATH,
     PYPROJECT_TOML_FILE_PATH,
 )
 from ci_connector_ops.pipelines.utils import get_file_contents
@@ -67,8 +68,30 @@ def with_testing_dependencies(context: PipelineContext) -> Container:
     """
     python_environment: Container = with_python_base(context)
     pyproject_toml_file = context.get_repo_dir(".", include=[PYPROJECT_TOML_FILE_PATH]).file(PYPROJECT_TOML_FILE_PATH)
-    return python_environment.with_exec(["pip", "install"] + CONNECTOR_TESTING_REQUIREMENTS).with_file(
-        f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file
+    license_short_file = context.get_repo_dir(".", include=[LICENSE_SHORT_FILE_PATH]).file(LICENSE_SHORT_FILE_PATH)
+
+    return (
+        python_environment.with_exec(["pip", "install"] + CONNECTOR_TESTING_REQUIREMENTS)
+        .with_file(f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file)
+        .with_file(f"/{LICENSE_SHORT_FILE_PATH}", license_short_file)
+    )
+
+
+def with_git(dagger_client, ci_github_access_token_secret, ci_git_user) -> Container:
+    return (
+        dagger_client.container()
+        .from_("alpine:latest")
+        .with_secret_variable("GITHUB_TOKEN", ci_github_access_token_secret)
+        .with_exec(["apk", "update"])
+        .with_exec(["apk", "add", "git", "tar", "wget"])
+        .with_workdir("/ghcli")
+        .with_exec(["wget", "https://github.com/cli/cli/releases/download/v2.30.0/gh_2.30.0_linux_amd64.tar.gz", "-O", "ghcli.tar.gz"])
+        .with_exec(["tar", "--strip-components=1", "-xf", "ghcli.tar.gz"])
+        .with_exec(["rm", "ghcli.tar.gz"])
+        .with_exec(["cp", "bin/gh", "/usr/local/bin/gh"])
+        .with_exec(["git", "config", "--global", "user.email", f"{ci_git_user}@users.noreply.github.com"])
+        .with_exec(["git", "config", "--global", "user.name", ci_git_user])
+        .with_exec(["git", "config", "--global", "--add", "--bool", "push.autoSetupRemote", "true"])
     )
 
 
@@ -293,11 +316,6 @@ def with_global_dockerd_service(dagger_client: Client) -> Container:
         dagger_client.container()
         .from_(consts.DOCKER_DIND_IMAGE)
         .with_mounted_cache(
-            "/var/lib/docker",
-            dagger_client.cache_volume("docker-lib"),
-            sharing=CacheSharingMode.SHARED,
-        )
-        .with_mounted_cache(
             "/tmp",
             dagger_client.cache_volume("shared-tmp"),
         )
@@ -315,21 +333,16 @@ def with_bound_docker_host(
     Args:
         context (ConnectorContext): The current connector context.
         container (Container): The container to bind to the docker host.
-        shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be both mounted to the container and the dockerd container. Defaults to None.
-        docker_service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to None.
-
     Returns:
         Container: The container bound to the docker host.
     """
     dockerd = context.dockerd_service
     docker_hostname = "global-docker-host"
-    bound = (
+    return (
         container.with_env_variable("DOCKER_HOST", f"tcp://{docker_hostname}:2375")
         .with_service_binding(docker_hostname, dockerd)
         .with_mounted_cache("/tmp", context.dagger_client.cache_volume("shared-tmp"))
     )
-
-    return bound
 
 
 def with_docker_cli(context: ConnectorContext) -> Container:
@@ -337,8 +350,6 @@ def with_docker_cli(context: ConnectorContext) -> Container:
 
     Args:
         context (ConnectorContext): The current connector context.
-        shared_volume (Optional, optional): A tuple in the form of (mounted path, cache volume) that will be both mounted to the container and the dockerd container. Defaults to None.
-        docker_service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to None.
 
     Returns:
         Container: A docker cli container bound to a docker host.
@@ -357,7 +368,7 @@ async def with_connector_acceptance_test(context: ConnectorContext, connector_un
         Container: A container with connector acceptance tests installed.
     """
     connector_under_test_image_name = context.connector.acceptance_test_config["connector_image"]
-    await load_image_to_docker_host(context, connector_under_test_image_tar, connector_under_test_image_name, docker_service_name="cat")
+    await load_image_to_docker_host(context, connector_under_test_image_tar, connector_under_test_image_name)
 
     if context.connector_acceptance_test_image.endswith(":dev"):
         cat_container = context.connector_acceptance_test_source_dir.docker_build()
@@ -381,7 +392,6 @@ def with_gradle(
     context: ConnectorContext,
     sources_to_include: List[str] = None,
     bind_to_docker_host: bool = True,
-    docker_service_name: Optional[str] = "gradle",
 ) -> Container:
     """Create a container with Gradle installed and bound to a persistent docker host.
 
@@ -389,7 +399,6 @@ def with_gradle(
         context (ConnectorContext): The current connector context.
         sources_to_include (List[str], optional): List of additional source path to mount to the container. Defaults to None.
         bind_to_docker_host (bool): Whether to bind the gradle container to a docker host.
-        docker_service_name (Optional[str], optional): The name of the docker service, useful context isolation. Defaults to "gradle".
 
     Returns:
         Container: A container with Gradle installed and Java sources from the repository.
@@ -412,11 +421,12 @@ def with_gradle(
         "buildSrc",
         "tools/bin/build_image.sh",
         "tools/lib/lib.sh",
+        "tools/gradle/codestyle",
+        "pyproject.toml",
     ]
 
     if sources_to_include:
         include += sources_to_include
-
     gradle_dependency_cache: CacheVolume = context.dagger_client.cache_volume("gradle-dependencies-caching")
     gradle_build_cache: CacheVolume = context.dagger_client.cache_volume(f"{context.connector.technical_name}-gradle-build-cache")
 
@@ -424,7 +434,7 @@ def with_gradle(
         context.dagger_client.container()
         .from_("openjdk:17.0.1-jdk-slim")
         .with_exec(["apt-get", "update"])
-        .with_exec(["apt-get", "install", "-y", "curl", "jq", "rsync"])
+        .with_exec(["apt-get", "install", "-y", "curl", "jq", "rsync", "npm", "pip"])
         .with_env_variable("VERSION", consts.DOCKER_VERSION)
         .with_exec(["sh", "-c", "curl -fsSL https://get.docker.com | sh"])
         .with_env_variable("GRADLE_HOME", "/root/.gradle")
@@ -443,14 +453,13 @@ def with_gradle(
         return openjdk_with_docker
 
 
-async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str, docker_service_name: Optional[str] = None):
+async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, image_tag: str):
     """Load a docker image tar archive to the docker host.
 
     Args:
         context (ConnectorContext): The current connector context.
         tar_file (File): The file object holding the docker image tar archive.
         image_tag (str): The tag to create on the image if it has no tag.
-        docker_service_name (str): Name of the docker service, useful for context isolation.
     """
     # Hacky way to make sure the image is always loaded
     tar_name = f"{str(uuid.uuid4())}.tar"

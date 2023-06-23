@@ -23,7 +23,7 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
+from airbyte_cdk.sources.declarative.incremental import Cursor, CursorFactory, DatetimeBasedCursor, PerPartitionCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
@@ -100,6 +100,7 @@ from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStrea
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.message import InMemoryMessageRepository
 from pydantic import BaseModel
 
 ComponentDefinition: Union[Literal, Mapping, List]
@@ -121,6 +122,7 @@ class ModelToComponentFactory:
         self._limit_slices_fetched = limit_slices_fetched
         self._emit_connector_builder_messages = emit_connector_builder_messages
         self._disable_retries = disable_retries
+        self._message_repository = InMemoryMessageRepository()
 
     def _init_mappings(self):
         self.PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
@@ -493,10 +495,6 @@ class ModelToComponentFactory:
         )
 
     def _merge_stream_slicers(self, model: DeclarativeStreamModel, config: Config) -> Optional[StreamSlicer]:
-        incremental_sync = (
-            self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
-        )
-
         stream_slicer = None
         if hasattr(model.retriever, "partition_router") and model.retriever.partition_router:
             stream_slicer_model = model.retriever.partition_router
@@ -508,10 +506,15 @@ class ModelToComponentFactory:
                 else self._create_component_from_model(model=stream_slicer_model, config=config)
             )
 
-        if incremental_sync and stream_slicer:
-            return CartesianProductStreamSlicer(stream_slicers=[incremental_sync, stream_slicer], parameters=model.parameters)
-        elif incremental_sync:
-            return incremental_sync
+        if model.incremental_sync and stream_slicer:
+            return PerPartitionCursor(
+                cursor_factory=CursorFactory(
+                    lambda: self._create_component_from_model(model=model.incremental_sync, config=config),
+                ),
+                partition_router=stream_slicer,
+            )
+        elif model.incremental_sync:
+            return self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
         elif stream_slicer:
             return stream_slicer
         else:
@@ -675,8 +678,7 @@ class ModelToComponentFactory:
     def create_no_pagination(model: NoPaginationModel, config: Config, **kwargs) -> NoPagination:
         return NoPagination(parameters={})
 
-    @staticmethod
-    def create_oauth_authenticator(model: OAuthAuthenticatorModel, config: Config, **kwargs) -> DeclarativeOauth2Authenticator:
+    def create_oauth_authenticator(self, model: OAuthAuthenticatorModel, config: Config, **kwargs) -> DeclarativeOauth2Authenticator:
         if model.refresh_token_updater:
             return DeclarativeSingleUseRefreshTokenOauth2Authenticator(
                 config,
@@ -693,6 +695,7 @@ class ModelToComponentFactory:
                 refresh_request_body=InterpolatedMapping(model.refresh_request_body or {}, parameters=model.parameters).eval(config),
                 scopes=model.scopes,
                 token_expiry_date_format=model.token_expiry_date_format,
+                message_repository=self._message_repository,
             )
         return DeclarativeOauth2Authenticator(
             access_token_name=model.access_token_name,
@@ -788,6 +791,8 @@ class ModelToComponentFactory:
             else NoPagination(parameters={})
         )
 
+        stream_slicer = stream_slicer or SinglePartitionRouter(parameters={})
+        cursor = stream_slicer if isinstance(stream_slicer, Cursor) else None
         if self._limit_slices_fetched or self._emit_connector_builder_messages:
             return SimpleRetrieverTestReadDecorator(
                 name=name,
@@ -795,7 +800,8 @@ class ModelToComponentFactory:
                 primary_key=primary_key,
                 requester=requester,
                 record_selector=record_selector,
-                stream_slicer=stream_slicer or SinglePartitionRouter(parameters={}),
+                stream_slicer=stream_slicer,
+                cursor=cursor,
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched,
                 parameters=model.parameters,
@@ -807,7 +813,8 @@ class ModelToComponentFactory:
             primary_key=primary_key,
             requester=requester,
             record_selector=record_selector,
-            stream_slicer=stream_slicer or SinglePartitionRouter(parameters={}),
+            stream_slicer=stream_slicer,
+            cursor=cursor,
             config=config,
             parameters=model.parameters,
             disable_retries=self._disable_retries,
@@ -845,3 +852,6 @@ class ModelToComponentFactory:
         return WaitUntilTimeFromHeaderBackoffStrategy(
             header=model.header, parameters=model.parameters, config=config, min_wait=model.min_wait, regex=model.regex
         )
+
+    def get_message_repository(self):
+        return self._message_repository
