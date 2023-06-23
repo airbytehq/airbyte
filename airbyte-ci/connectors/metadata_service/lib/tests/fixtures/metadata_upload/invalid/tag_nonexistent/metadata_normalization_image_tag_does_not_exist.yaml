@@ -13,7 +13,7 @@ data:
   normalizationConfig:
     normalizationIntegrationType: postgres
     normalizationRepository: airbyte/exists-2
-    normalizationTag: 0.0.1
+      dockerImageTag: 6.6.6 # tag does not exist
   registries:
     cloud:
       enabled: true
@@ -23,10 +23,5 @@ data:
       enabled: true
       dockerRepository: airbyte/exists-4
       dockerImageTag: 0.0.1
-  releases:
-    breakingChanges:
-      2.0.0:
-        upgradeDeadline: 2023-08-22
-        message: "This version made a change."
   tags:
     - language:java
