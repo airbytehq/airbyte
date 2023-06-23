@@ -6,7 +6,7 @@ check:
     - contacts (incremental)
 streams:
   - type: DeclarativeStream
-    name: contacts (incremental)
+    name: contacts
     primary_key:
       - id
     schema_loader:
@@ -239,7 +239,7 @@ streams:
         datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
         datetime_format: '%Y-%m-%dT%H:%M:%SZ'
   - type: DeclarativeStream
-    name: admins (full refresh)
+    name: admins
     primary_key:
       - id
     schema_loader:
@@ -310,7 +310,7 @@ streams:
           start_from_page: 1
           page_size: 100
   - type: DeclarativeStream
-    name: companies (requires semi-incremental)
+    name: companies
     primary_key:
       - id
     schema_loader:
@@ -411,7 +411,7 @@ streams:
           start_from_page: 1
           page_size: 50
   - type: DeclarativeStream
-    name: company_attributes (full refresh)
+    name: company_attributes
     primary_key: []
     schema_loader:
       type: InlineSchemaLoader
@@ -482,7 +482,7 @@ streams:
           start_from_page: 15
           page_size: 1
   - type: DeclarativeStream
-    name: company_segments (full refresh)
+    name: company_segments
     primary_key: []
     schema_loader:
       type: InlineSchemaLoader
@@ -543,7 +543,7 @@ streams:
               partition_field: parent_id
               stream:
                 type: DeclarativeStream
-                name: companies (requires semi-incremental)
+                name: companies
                 primary_key:
                   - id
                 schema_loader:
@@ -644,7 +644,7 @@ streams:
                       start_from_page: 1
                       page_size: 50
   - type: DeclarativeStream
-    name: contact_attributes (full refresh)
+    name: contact_attributes
     primary_key: []
     schema_loader:
       type: InlineSchemaLoader
@@ -715,7 +715,7 @@ streams:
           start_from_page: 15
           page_size: 1
   - type: DeclarativeStream
-    name: conversations (incremental)
+    name: conversations
     primary_key:
       - id
     schema_loader:
@@ -1157,7 +1157,7 @@ streams:
               partition_field: parent_id
               stream:
                 type: DeclarativeStream
-                name: conversations (incremental)
+                name: conversations
                 primary_key:
                   - id
                 schema_loader:
@@ -1369,7 +1369,7 @@ streams:
                     datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%SZ'') }}'
                     datetime_format: '%Y-%m-%dT%H:%M:%SZ'
   - type: DeclarativeStream
-    name: segments (requires semi-incremental)
+    name: segments
     primary_key:
       - id
     schema_loader:
@@ -1424,7 +1424,7 @@ streams:
           start_from_page: 1
           page_size: 50
   - type: DeclarativeStream
-    name: tags (full refresh)
+    name: tags
     primary_key:
       - id
     schema_loader:
@@ -1474,7 +1474,7 @@ streams:
           start_from_page: 1
           page_size: 100
   - type: DeclarativeStream
-    name: teams (full refresh)
+    name: teams
     primary_key:
       - id
     schema_loader:
