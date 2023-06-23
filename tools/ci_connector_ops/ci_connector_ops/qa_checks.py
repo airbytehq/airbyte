@@ -8,6 +8,52 @@ from pathlib import Path
 from typing import Iterable, Optional, Set, Tuple
 
 from ci_connector_ops.utils import Connector
+from pydash.objects import get
+
+
+def check_migration_guide(connector: Connector) -> bool:
+    """Check if a migration guide is available for the connector if a breaking change was introduced."""
+
+    breaking_changes = get(connector.metadata, f"releases.breakingChanges")
+    if not breaking_changes:
+        return True
+
+    migration_guide_file_path = connector.migration_guide_file_path
+    if not migration_guide_file_path.exists():
+        print(f"Migration guide file is missing for {connector.name}.")
+        return False
+
+    # Check that the migration guide begins with # {connector name} Migration Guide
+    expected_title = f"# {connector.name} Migration Guide"
+    expected_version_header_start = f"## Upgrading to "
+    with open(migration_guide_file_path) as f:
+        first_line = f.readline().strip()
+        if not first_line == expected_title:
+            print(f"Migration guide file for {connector.name} does not start with the correct header.")
+            return False
+
+        # Check that the migration guide contains a section for each breaking change key ## Upgrading to {version}
+        # Note that breaking change is a dict where the version is the key
+        # Note that the migration guide must have the sections in order of the version descending
+        # 3.0.0, 2.0.0, 1.0.0, etc
+        # This means we have to record the headings in the migration guide and then check that they are in order
+        # We also have to check that the headings are in the breaking changes dict
+
+        ordered_breaking_changes = sorted(breaking_changes.keys(), reverse=True)
+        ordered_heading_versions = []
+        for line in f:
+            stripped_line = line.strip()
+            if stripped_line.startswith(expected_version_header_start):
+                version = stripped_line.replace(expected_version_header_start, "")
+                ordered_heading_versions.append(version)
+
+        if ordered_breaking_changes != ordered_heading_versions:
+            print(f"Migration guide file for {connector.name} has missing or misordered version headings.")
+            print(f"Expected: {ordered_breaking_changes}")
+            print(f"Actual: {ordered_heading_versions}")
+            return False
+
+    return True
 
 
 def check_documentation_file_exists(connector: Connector) -> bool:
@@ -188,6 +234,7 @@ def check_metadata_version_matches_dockerfile_label(connector: Connector) -> boo
 
 QA_CHECKS = [
     check_documentation_file_exists,
+    check_migration_guide,
     # Disabling the following check because it's likely to not pass on a lot of connectors.
     # check_documentation_follows_guidelines,
     check_changelog_entry_is_updated,

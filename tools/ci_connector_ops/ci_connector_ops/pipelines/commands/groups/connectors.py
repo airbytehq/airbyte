@@ -19,7 +19,7 @@ from ci_connector_ops.pipelines.github import update_global_commit_status_check_
 from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_pipelines
 from ci_connector_ops.pipelines.publish import reorder_contexts, run_connector_publish_pipeline
 from ci_connector_ops.pipelines.tests import run_connector_test_pipeline
-from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors, get_modified_metadata_files
+from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors, get_modified_metadata_files, slugify
 from ci_connector_ops.utils import ConnectorLanguage, console, get_all_released_connectors
 from rich.logging import RichHandler
 from rich.table import Table
@@ -69,7 +69,7 @@ def render_report_output_prefix(ctx: click.Context) -> str:
     ci_context = ctx.obj["ci_context"]
     ci_job_key = ctx.obj["ci_job_key"] if ctx.obj.get("ci_job_key") else ci_context
 
-    sanitized_branch = git_branch.replace("/", "_")
+    sanitized_branch = slugify(git_branch.replace("/", "_"))
 
     # get the command name for the current context, if a group then prepend the parent command name
     invoked_subcommand = ctx.invoked_subcommand
@@ -220,6 +220,7 @@ def test(
             ci_context=ctx.obj.get("ci_context"),
             pull_request=ctx.obj.get("pull_request"),
             ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+            should_save_report=True,
         )
         for connector, modified_files in ctx.obj["selected_connectors_and_files"].items()
     ]
@@ -489,6 +490,8 @@ def format(ctx: click.Context) -> bool:
             ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
             ci_git_user=ctx.obj["ci_git_user"],
             ci_github_access_token=ctx.obj["ci_github_access_token"],
+            pull_request=ctx.obj.get("pull_request"),
+            should_save_report=False,
         )
         for connector, modified_files in connectors_and_files_to_format
     ]

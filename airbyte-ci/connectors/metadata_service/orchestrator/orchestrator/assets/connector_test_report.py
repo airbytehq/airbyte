@@ -44,7 +44,7 @@ def json_blob_to_model(blob: storage.Blob, Model: Type[T]) -> T:
 
 def blobs_to_typed_df(blobs: List[storage.Blob], Model: Type[T]) -> pd.DataFrame:
     # read each blob into a model
-    models = [json_blob_to_model(blob, Model) for blob in blobs]
+    models = [json_blob_to_model(blob, Model).dict() for blob in blobs]
 
     # convert to dataframe
     models_df = pd.DataFrame(models)
