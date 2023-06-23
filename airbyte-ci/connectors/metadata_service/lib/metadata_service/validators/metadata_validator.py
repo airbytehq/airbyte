@@ -26,6 +26,7 @@ def validate_metadata_images_in_dockerhub(metadata_definition: ConnectorMetadata
     breaking_change_versions = get(metadata_definition_dict, "data.releases.breakingChanges", {}).keys()
 
     possible_docker_images = [
+        (base_docker_image, base_docker_version),
         (oss_docker_image, oss_docker_version),
         (cloud_docker_image, cloud_docker_version),
         (normalization_docker_image, normalization_docker_version),
