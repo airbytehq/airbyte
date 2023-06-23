@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import static org.mockito.Mockito.mock;
+
 import com.google.cloud.bigquery.BigQuery;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
@@ -13,17 +15,13 @@ import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUpl
 import io.airbyte.integrations.standardtest.destination.PerStreamStateMessageTest;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 public class BigQueryRecordConsumerTest extends PerStreamStateMessageTest {
@@ -44,8 +42,7 @@ public class BigQueryRecordConsumerTest extends PerStreamStateMessageTest {
         "test-dataset-id",
         mock(BigQuerySqlGenerator.class),
         mock(BigQueryDestinationHandler.class),
-        new CatalogParser.ParsedCatalog(Collections.emptyList())
-    );
+        new CatalogParser.ParsedCatalog(Collections.emptyList()));
   }
 
   @Override

@@ -60,7 +60,8 @@ public class BigQueryUploaderFactory {
     if (TypingAndDedupingFlag.isDestinationV2()) {
       dataset = uploaderConfig.getParsedStream().id().rawNamespace();
     } else {
-      // This previously needed to handle null namespaces. That's now happening at the top of the connector, so we can assume namespace is non-null here.
+      // This previously needed to handle null namespaces. That's now happening at the top of the
+      // connector, so we can assume namespace is non-null here.
       dataset = BigQueryUtils.sanitizeDatasetId(uploaderConfig.getConfigStream().getStream().getNamespace());
     }
     final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());

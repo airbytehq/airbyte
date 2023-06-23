@@ -44,6 +44,12 @@ import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import org.apache.avro.Schema;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -51,13 +57,6 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class BigQueryDestination extends BaseConnector implements Destination {
 
@@ -205,8 +204,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException, InterruptedException {
-    // Set the default namespace on streams with null namespace. This means we don't need to repeat this logic in the rest of the connector.
-    // (record messages still need to handle null namespaces though, which currently happens in e.g. BigQueryRecordConsumer#acceptTracked)
+    // Set the default namespace on streams with null namespace. This means we don't need to repeat this
+    // logic in the rest of the connector.
+    // (record messages still need to handle null namespaces though, which currently happens in e.g.
+    // BigQueryRecordConsumer#acceptTracked)
     // This probably should be shared logic amongst destinations eventually.
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
@@ -234,11 +235,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   protected Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(
-      final BigQuery bigquery,
-      final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final ParsedCatalog parsedCatalog,
-      final boolean use1s1t)
+                                                                                            final BigQuery bigquery,
+                                                                                            final JsonNode config,
+                                                                                            final ConfiguredAirbyteCatalog catalog,
+                                                                                            final ParsedCatalog parsedCatalog,
+                                                                                            final boolean use1s1t)
       throws IOException {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
@@ -328,8 +329,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         config,
         catalog,
         parsedCatalog,
-        TypingAndDedupingFlag.isDestinationV2()
-    );
+        TypingAndDedupingFlag.isDestinationV2());
 
     return new BigQueryRecordConsumer(
         bigquery,
@@ -338,8 +338,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         BigQueryUtils.getDatasetId(config),
         sqlGenerator,
         new BigQueryDestinationHandler(bigquery),
-        parsedCatalog
-    );
+        parsedCatalog);
   }
 
   public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,
@@ -386,11 +385,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     // TODO refactor and share this with the standard inserts consumer
     final BigQuery bigquery = getBigQuery(config);
     // TODO
-    final ConfiguredAirbyteCatalog catalogForTypingAndDeduping = null; //cloneAndModifyCatalogForFinalTables(config, catalog);
+    final ConfiguredAirbyteCatalog catalogForTypingAndDeduping = null; // cloneAndModifyCatalogForFinalTables(config, catalog);
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator();
     LOGGER.info("Got raw catalog {}", catalogForTypingAndDeduping);
     final CatalogParser catalogParser;
-    final String rawNamespaceOverride = null; //resolveRawNamespace(use1s1t, config);
+    final String rawNamespaceOverride = null; // resolveRawNamespace(use1s1t, config);
     if (rawNamespaceOverride != null) {
       catalogParser = new CatalogParser(sqlGenerator, rawNamespaceOverride);
     } else {

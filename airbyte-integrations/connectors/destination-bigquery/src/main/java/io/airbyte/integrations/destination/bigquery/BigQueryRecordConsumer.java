@@ -20,7 +20,6 @@ import io.airbyte.integrations.destination.bigquery.typing_deduping.BigQuerySqlG
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;

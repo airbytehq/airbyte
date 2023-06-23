@@ -102,31 +102,30 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     } else if (airbyteType instanceof Struct) {
       // We need to validate that the struct is actually a struct.
       // Note that struct columns are actually nullable in two ways. For a column `foo`:
-      // {foo: null} and {} are both valid, and are both written to the final table as a SQL NULL (_not_ a JSON null).
+      // {foo: null} and {} are both valid, and are both written to the final table as a SQL NULL (_not_ a
+      // JSON null).
       // JSON_QUERY(JSON'{}', '$.foo') returns a SQL null.
       // JSON_QUERY(JSON'{"foo": null}', '$.foo') returns a JSON null.
       return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
           """
-               CASE
-                 WHEN JSON_QUERY(`_airbyte_data`, '$.${column_name}') IS NULL
-                   OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$.${column_name}')) != 'object'
-                   THEN NULL
-                 ELSE JSON_QUERY(`_airbyte_data`, '$.${column_name}')
-               END
-               """
-      );
+          CASE
+            WHEN JSON_QUERY(`_airbyte_data`, '$.${column_name}') IS NULL
+              OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$.${column_name}')) != 'object'
+              THEN NULL
+            ELSE JSON_QUERY(`_airbyte_data`, '$.${column_name}')
+          END
+          """);
     } else if (airbyteType instanceof Array) {
       // Much like the Struct case above, arrays need special handling.
       return new StringSubstitutor(Map.of("column_name", column.originalName())).replace(
           """
-               CASE
-                 WHEN JSON_QUERY(`_airbyte_data`, '$.${column_name}') IS NULL
-                   OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$.${column_name}')) != 'array'
-                   THEN NULL
-                 ELSE JSON_QUERY(`_airbyte_data`, '$.${column_name}')
-               END
-               """
-      );
+          CASE
+            WHEN JSON_QUERY(`_airbyte_data`, '$.${column_name}') IS NULL
+              OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$.${column_name}')) != 'array'
+              THEN NULL
+            ELSE JSON_QUERY(`_airbyte_data`, '$.${column_name}')
+          END
+          """);
     } else if (airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
       // JSON_VALUE converts JSON types to native SQL types (int64, string, etc.)
       // We use JSON_QUERY rather than JSON_VALUE so that we can extract a JSON-typed value.
@@ -408,11 +407,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     String cdcDeletedAtClause;
     if (streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
       cdcDeletedAtClause = """
-          AND (
-            JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
-            OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) = 'null'
-          )
-          """;
+                           AND (
+                             JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NULL
+                             OR JSON_TYPE(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at')) = 'null'
+                           )
+                           """;
     } else {
       cdcDeletedAtClause = "";
     }
