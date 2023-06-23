@@ -9,6 +9,8 @@ from typing import Any, Dict
 import pytest
 from airbyte_cdk.entrypoint import launch
 from unit_tests.sources.file_based.scenarios.csv_scenarios import (
+    csv_multi_stream_scenario,
+    csv_single_stream_scenario,
     invalid_csv_scenario,
     multi_csv_scenario,
     multi_csv_stream_n_file_exceeds_limit_for_inference,
@@ -16,6 +18,8 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
 )
 
 scenarios = [
+    csv_multi_stream_scenario,
+    csv_single_stream_scenario,
     invalid_csv_scenario,
     multi_csv_scenario,
     multi_csv_stream_n_file_exceeds_limit_for_inference,
@@ -42,7 +46,8 @@ def test_read(capsys, tmp_path, json_spec, scenario):
         expected_output = scenario.expected_records
         assert len(output) == len(expected_output)
         for actual, expected in zip(output, expected_output):
-            assert actual["record"]["data"] == expected
+            assert actual["record"]["data"] == expected["data"]
+            assert actual["record"]["stream"] == expected["stream"]
 
 
 def discover(capsys, tmp_path, scenario) -> Dict[str, Any]:

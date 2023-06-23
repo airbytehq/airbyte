@@ -807,6 +807,27 @@ class Accounts(BasePaginationStripeStream):
         return "accounts"
 
 
+class CreditNotes(StripeStream):
+    """
+    API docs: https://stripe.com/docs/api/credit_notes/list
+    """
+
+    name = "credit_notes"
+
+    def path(self, **kwargs) -> str:
+        return "credit_notes"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return next_page_token or {}
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from [{}]
+
+
 class Cards(IncrementalStripeStream):
     """
     Docs: https://stripe.com/docs/api/issuing/cards/list
