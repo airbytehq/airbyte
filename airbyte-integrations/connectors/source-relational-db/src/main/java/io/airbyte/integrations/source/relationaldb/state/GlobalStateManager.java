@@ -11,7 +11,6 @@ import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUt
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.relationaldb.CdcStateManager;
-import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
@@ -25,7 +24,6 @@ import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -79,13 +77,10 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
     // Populate global state
     final AirbyteGlobalState globalState = new AirbyteGlobalState();
     globalState.setSharedState(Jsons.jsonNode(getCdcStateManager().getCdcState()));
-    Map<AirbyteStreamNameNamespacePair, CursorInfo> pairToCursorInfoMap = getPairToCursorInfoMap();
-
-
-    globalState.setStreamStates(StateGeneratorUtils.generateStreamStateList(pairToCursorInfoMap));
+    globalState.setStreamStates(StateGeneratorUtils.generateStreamStateList(getPairToCursorInfoMap()));
 
     // Generate the legacy state for backwards compatibility
-    final DbState dbState = StateGeneratorUtils.generateDbState(pairToCursorInfoMap)
+    final DbState dbState = StateGeneratorUtils.generateDbState(getPairToCursorInfoMap())
         .withCdc(true)
         .withCdcState(getCdcStateManager().getCdcState());
 
