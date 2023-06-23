@@ -16,7 +16,7 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: beta
+  releaseStage: generally_available
   documentationUrl: https://docs.airbyte.com/integrations/sources/monday
   tags:
     - language:low-code
