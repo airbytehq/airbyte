@@ -97,7 +97,10 @@ class DeclarativeStream(Stream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        for record in self.retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
+        """
+        :param: stream_state We knowingly avoid using stream_state as we want cursors to manage their own state.
+        """
+        for record in self.retriever.read_records(sync_mode, cursor_field, stream_slice):
             yield self._apply_transformations(record, self.config, stream_slice)
 
     def _apply_transformations(
@@ -143,8 +146,7 @@ class DeclarativeStream(Stream):
 
         :param sync_mode:
         :param cursor_field:
-        :param stream_state:
+        :param stream_state: we knowingly avoid using stream_state as we want cursors to manage their own state
         :return:
         """
-        # this is not passing the cursor field because it is known at init time
-        return self.retriever.stream_slices(sync_mode=sync_mode, stream_state=stream_state)
+        return self.retriever.stream_slices()
