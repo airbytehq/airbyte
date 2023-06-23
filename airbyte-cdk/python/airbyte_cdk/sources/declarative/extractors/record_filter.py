@@ -33,6 +33,4 @@ class RecordFilter:
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> List[Record]:
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
-        return [
-            record for record in records if self._filter_interpolator.eval(self.config, record=record, **kwargs)
-        ]
+        return [record for record in records if self._filter_interpolator.eval(self.config, record=record, **kwargs)]
