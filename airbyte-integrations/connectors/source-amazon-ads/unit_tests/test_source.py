@@ -95,6 +95,7 @@ def test_source_streams(config):
     expected_stream_names = set(
         [
             "profiles",
+            "portfolios",
             "sponsored_display_campaigns",
             "sponsored_product_campaigns",
             "sponsored_product_ad_groups",

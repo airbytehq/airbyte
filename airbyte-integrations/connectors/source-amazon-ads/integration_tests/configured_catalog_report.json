@@ -12,6 +12,7 @@
           ["recordId"]
         ]
       },
+      "cursor_field": ["reportDate"],
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
@@ -27,6 +28,7 @@
           ["recordId"]
         ]
       },
+      "cursor_field": ["reportDate"],
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     }

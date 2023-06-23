@@ -3,10 +3,9 @@
 #
 
 from http import HTTPStatus
-from typing import List
 
 from .products_report import SponsoredProductsReportStream
-from .report_streams import ReportInfo, ReportStream
+from .report_streams import ReportStream
 
 METRICS_MAP = {
     "keywords": [
@@ -166,15 +165,6 @@ class SponsoredBrandsV3ReportStream(SponsoredProductsReportStream):
     report_is_created = HTTPStatus.OK
     metrics_map = METRICS_MAP_V3
     metrics_type_to_id_map = METRICS_TYPE_TO_ID_MAP_V3
-
-    def report_init_endpoint(self, record_type: str) -> str:
-        return f"/{self.API_VERSION}/reports"
-
-    def _download_report(self, report_info: ReportInfo, url: str) -> List[dict]:
-        """
-        Download and parse report result
-        """
-        return super()._download_report(None, url)
 
     def _get_init_report_body(self, report_date: str, record_type: str, profile):
         metrics_list = self.metrics_map[record_type]
