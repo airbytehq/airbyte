@@ -10,8 +10,8 @@ from source_amazon_ads.streams.common import AmazonAdsStream
 
 class Portfolios(AmazonAdsStream):
     """
-    This stream corresponds to Amazon Advertising API - Profiles
-    https://advertising.amazon.com/API/docs/en-us/reference/2/profiles#/Profiles
+    This stream corresponds to Amazon Advertising API - Portfolios
+    https://advertising.amazon.com/API/docs/en-us/reference/2/portfolios
     """
 
     primary_key = "portfolioId"
