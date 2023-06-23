@@ -17,6 +17,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.util.ApmTraceUtils;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
+import io.airbyte.integrations.util.concurrent.ConcurrentMessageConsumer;
 import io.airbyte.integrations.util.concurrent.ConcurrentStreamConsumer;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -78,6 +79,7 @@ public class IntegrationRunner {
   private final Source source;
   private final FeatureFlags featureFlags;
   private static JsonSchemaValidator validator;
+  private final ConcurrentMessageConsumer concurrentMessageConsumer;
 
   public IntegrationRunner(final Destination destination) {
     this(new IntegrationCliParser(), Destination::defaultOutputRecordCollector, destination, null);
@@ -101,6 +103,7 @@ public class IntegrationRunner {
     this.destination = destination;
     this.featureFlags = new EnvVariableFeatureFlags();
     validator = new JsonSchemaValidator();
+    concurrentMessageConsumer = new ConcurrentMessageConsumer();
 
     Thread.setDefaultUncaughtExceptionHandler(new AirbyteExceptionHandler());
   }
@@ -262,7 +265,7 @@ public class IntegrationRunner {
   private void consumeFromStream(final AutoCloseableIterator<AirbyteMessage> stream) {
     try {
       final Consumer<AirbyteMessage> streamStatusTrackingRecordConsumer = StreamStatusUtils.statusTrackingRecordCollector(stream,
-          outputRecordCollector, Optional.of(AirbyteTraceMessageUtility::emitStreamStatusTrace));
+          concurrentMessageConsumer, Optional.of(AirbyteTraceMessageUtility::emitStreamStatusTrace));
       produceMessages(stream, streamStatusTrackingRecordConsumer);
     } catch (final Exception e) {
       stream.getAirbyteStream().ifPresent(s -> LOGGER.error("Failed to consume from stream {}.", s));
