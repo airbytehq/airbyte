@@ -19,7 +19,7 @@ from ci_connector_ops.pipelines.github import update_global_commit_status_check_
 from ci_connector_ops.pipelines.pipelines.connectors import run_connectors_pipelines
 from ci_connector_ops.pipelines.publish import reorder_contexts, run_connector_publish_pipeline
 from ci_connector_ops.pipelines.tests import run_connector_test_pipeline
-from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors, get_modified_metadata_files
+from ci_connector_ops.pipelines.utils import DaggerPipelineCommand, get_modified_connectors, get_modified_metadata_files, slugify
 from ci_connector_ops.utils import ConnectorLanguage, console, get_all_released_connectors
 from rich.logging import RichHandler
 from rich.table import Table
@@ -69,7 +69,7 @@ def render_report_output_prefix(ctx: click.Context) -> str:
     ci_context = ctx.obj["ci_context"]
     ci_job_key = ctx.obj["ci_job_key"] if ctx.obj.get("ci_job_key") else ci_context
 
-    sanitized_branch = git_branch.replace("/", "_")
+    sanitized_branch = slugify(git_branch.replace("/", "_"))
 
     # get the command name for the current context, if a group then prepend the parent command name
     invoked_subcommand = ctx.invoked_subcommand
