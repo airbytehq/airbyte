@@ -121,7 +121,6 @@ def compute_connector_nightly_report_history(
 
     return matrix_df
 
-
 # ASSETS
 
 
@@ -140,11 +139,9 @@ def generate_nightly_report(context: OpExecutionContext) -> Output[pd.DataFrame]
 
     nightly_report_complete_df = blobs_to_typed_df(latest_10_nightly_complete_file_blobs, ConnectorNightlyReport)
     nightly_report_test_output_df = blobs_to_typed_df(relevant_nightly_test_output_file_blobs, ConnectorPipelineReport)
-
     nightly_report_connector_matrix_df = compute_connector_nightly_report_history(nightly_report_complete_df, nightly_report_test_output_df)
 
     nightly_report_complete_md = render_connector_nightly_report_md(nightly_report_connector_matrix_df, nightly_report_complete_df)
-
     slack_webhook_url = os.getenv("NIGHTLY_REPORT_SLACK_WEBHOOK_URL")
     if slack_webhook_url:
         send_slack_webhook(slack_webhook_url, nightly_report_complete_md)
@@ -187,8 +184,9 @@ def last_10_connector_test_results(context: OpExecutionContext) -> OutputDataFra
     report_status["model"] = report_status["blob"].apply(lambda blob: json_blob_to_model(blob, ConnectorPipelineReport))
     report_status["success"] = report_status["model"].apply(lambda model: model.success)
     report_status["gha_workflow_run_url"] = report_status["model"].apply(lambda model: model.gha_workflow_run_url)
+    report_status["html_report_url"] = report_status["model"].apply(lambda model: model.html_report_url)
 
-    # Drop the blob column
+    # Drop the blob and model column
     report_status = report_status.drop(columns=["blob", "model"])
 
     return output_dataframe(report_status)
@@ -202,7 +200,7 @@ def persist_connectors_test_summary_files(context: OpExecutionContext, last_10_c
     all_connector_names = last_10_connector_test_results["connector_name"].unique()
     for connector_name in all_connector_names:
         all_connector_test_results = last_10_connector_test_results[last_10_connector_test_results["connector_name"] == connector_name]
-        connector_test_summary = all_connector_test_results[["timestamp", "connector_version", "success", "gha_workflow_run_url"]]
+        connector_test_summary = all_connector_test_results[["timestamp", "connector_version", "success", "gha_workflow_run_url", "html_report_url"]]
 
         # Order by timestamp descending
         connector_test_summary = connector_test_summary.sort_values("timestamp", ascending=False)
