@@ -217,6 +217,7 @@ def test_with_purchases():
     assert latest_state.state.data["products"] == {'id': 100, 'seed': None}
     assert latest_state.state.data["purchases"]["user_id"] > 0
 
+
 def test_read_with_seed():
     """
     This test asserts that setting a seed always returns the same values
