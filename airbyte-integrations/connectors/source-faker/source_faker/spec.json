@@ -22,21 +22,13 @@
         "default": -1,
         "order": 1
       },
-      "records_per_sync": {
-        "title": "Records Per Sync",
-        "description": "How many fake records will be returned for each sync, for each stream?  By default, it will take 2 syncs to create the requested 1000 records.",
-        "type": "integer",
-        "minimum": 1,
-        "default": 500,
-        "order": 2
-      },
       "records_per_slice": {
         "title": "Records Per Stream Slice",
         "description": "How many fake records will be in each page (stream slice), before a state message is emitted?",
         "type": "integer",
         "minimum": 1,
         "default": 1000,
-        "order": 3
+        "order": 2
       },
       "parallelism": {
         "title": "Parallelism",
@@ -44,7 +36,7 @@
         "type": "integer",
         "minimum": 1,
         "default": 4,
-        "order": 4
+        "order": 3
       }
     }
   }
