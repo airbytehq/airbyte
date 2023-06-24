@@ -488,6 +488,27 @@ FAILING_SPEC_TRANSITIONS = [
         should_fail=True,
         is_valid_json_schema=False,
     ),
+    Transition(
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string_1": {"type": "string"},
+                    "my_string_2": {"type": "string"},
+                },
+            }
+        ),
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string_1": {"type": "string"},
+                },
+            }
+        ),
+        name="Removing a field should fail.",
+        should_fail=True,
+    ),
 ]
 
 VALID_SPEC_TRANSITIONS = [
