@@ -1,273 +1,5336 @@
-version: "0.29.0"
-
-definitions:
-  selector:
-    extractor:
-      field_path: []
-  schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_woocommerce/schemas/{{ parameters['name'] }}.json"
-  requester:
-    url_base: "https://{{ config['shop'] }}/wp-json/wc/v3"
-    http_method: "GET"
-    authenticator:
-      type: BasicHttpAuthenticator
-      username: "{{ config['api_key'] }}"
-      password: "{{ config['api_secret'] }}"
-    request_parameters:
-      orderby: "id"
-      order: "asc"
-      dates_are_gmt: "true"
-  date_incremental_sync:
-    type: DatetimeBasedCursor
-    start_datetime:
-      datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S"
-    end_datetime:
-      datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S"
-    datetime_format: "%Y-%m-%dT%H:%M:%S"
-    cursor_granularity: PT1S
-    step: P30D
-    start_time_option:
-      field_name: modified_after
-      inject_into: request_parameter
-    end_time_option:
-      field_name: modified_before
-      inject_into: request_parameter
-    cursor_field: "date_modified_gmt"
-  retriever:
-    record_selector:
-      $ref: "#/definitions/selector"
-    paginator:
-      type: DefaultPaginator
-      pagination_strategy:
-        type: "OffsetIncrement"
-        page_size: 100
-      page_token_option:
-        type: RequestOption
-        inject_into: "request_parameter"
-        field_name: "offset"
-      page_size_option:
-        inject_into: "request_parameter"
-        field_name: "per_page"
-    requester:
-      $ref: "#/definitions/requester"
-  base_stream:
+version: 0.42.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - system_status_tools
+streams:
+  - type: DeclarativeStream
+    name: customers
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          avatar_url:
+            type: string
+          billing:
+            properties:
+              address_1:
+                type: string
+              address_2:
+                type: string
+              city:
+                type: string
+              company:
+                type: string
+              country:
+                type: string
+              email:
+                type: string
+              first_name:
+                type: string
+              last_name:
+                type: string
+              phone:
+                type: string
+              postcode:
+                type: string
+              state:
+                type: string
+            type: object
+          date_created:
+            type: string
+          date_created_gmt:
+            type: string
+          date_modified:
+            type: string
+          date_modified_gmt:
+            type: string
+          email:
+            type: string
+          first_name:
+            type: string
+          id:
+            type: number
+          is_paying_customer:
+            type: boolean
+          last_name:
+            type: string
+          meta_data:
+            items:
+              properties:
+                id:
+                  type: number
+                key:
+                  type: string
+                value:
+                  type: array
+              type: object
+            type: array
+          role:
+            type: string
+          shipping:
+            properties:
+              address_1:
+                type: string
+              address_2:
+                type: string
+              city:
+                type: string
+              company:
+                type: string
+              country:
+                type: string
+              first_name:
+                type: string
+              last_name:
+                type: string
+              phone:
+                type: string
+              postcode:
+                type: string
+              state:
+                type: string
+            type: object
+          username:
+            type: string
+        type: object
     retriever:
-      $ref: "#/definitions/retriever"
-  base_incremental_stream:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /customers
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: customers
+          path: /customers
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        pagination_strategy:
+          name: customers
+          path: /customers
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+  - type: DeclarativeStream
+    name: coupons
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          amount:
+            type: string
+          code:
+            type: string
+          date_created:
+            type: string
+          date_created_gmt:
+            type: string
+          date_modified:
+            type: string
+          date_modified_gmt:
+            type: string
+          description:
+            type: string
+          discount_type:
+            type: string
+          email_restrictions:
+            type: array
+          exclude_sale_items:
+            type: boolean
+          excluded_product_categories:
+            type: array
+          excluded_product_ids:
+            type: array
+          free_shipping:
+            type: boolean
+          id:
+            type: number
+          individual_use:
+            type: boolean
+          maximum_amount:
+            type: string
+          meta_data:
+            type: array
+          minimum_amount:
+            type: string
+          product_categories:
+            type: array
+          product_ids:
+            type: array
+          status:
+            type: string
+          usage_count:
+            type: number
+          used_by:
+            items:
+              type: string
+            type: array
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /coupons
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: coupons
+          path: /coupons
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: coupons
+            path: /coupons
+            primary_key: id
+        pagination_strategy:
+          name: coupons
+          path: /coupons
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: coupons
+            path: /coupons
+            primary_key: id
     incremental_sync:
-      $ref: "#/definitions/date_incremental_sync"
-    retriever:
-      $ref: "#/definitions/retriever"
-  customers_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "customers"
-      primary_key: "id"
-      path: "/customers"
-  coupons_stream:
-    $ref: "#/definitions/base_incremental_stream"
-    $parameters:
-      name: "coupons"
-      primary_key: "id"
-      path: "/coupons"
-  orders_stream:
-    $ref: "#/definitions/base_incremental_stream"
-    $parameters:
-      name: "orders"
-      primary_key: "id"
-      path: "/orders"
-  order_notes_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - stream: "#/definitions/orders_stream"
-            parent_key: id
-            partition_field: id
-    $parameters:
-      name: "order_notes"
-      primary_key: "id"
-      path: "/orders/{{ stream_slice.id }}/notes"
-  products_stream:
-    $ref: "#/definitions/base_incremental_stream"
-    $parameters:
-      name: "products"
-      primary_key: "id"
-      path: "/products"
-  product_variations_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - stream: "#/definitions/products_stream"
-            parent_key: id
-            partition_field: id
-    $parameters:
-      name: "product_variations"
-      primary_key: "id"
-      path: "/products/{{ stream_slice.id }}/variations"
-  payment_gateways_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "payment_gateways"
-      primary_key: "id"
-      path: "/payment_gateways"
-  product_attributes_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "product_attributes"
-      primary_key: "id"
-      path: "/products/attributes"
-  product_attribute_terms_stream:
-    $ref: "#/definitions/base_stream"
-    retriever:
-      $ref: "#/definitions/retriever"
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - stream: "#/definitions/product_attributes_stream"
-            parent_key: id
-            partition_field: id
-    $parameters:
-      name: "product_attribute_terms"
-      primary_key: "id"
-      path: "/products/attributes/{{ stream_slice.id }}/terms"
-  product_categories_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "product_categories"
-      primary_key: "id"
-      path: "/products/categories"
-  product_reviews_stream:
-    $ref: "#/definitions/base_incremental_stream"
-    incremental_sync:
-      $ref: "#/definitions/date_incremental_sync"
-      start_time_option:
-        field_name: after
-        inject_into: request_parameter
+      type: DatetimeBasedCursor
+      name: coupons
+      path: /coupons
+      primary_key: id
+      cursor_field: date_modified_gmt
+      datetime_format: '%Y-%m-%dT%H:%M:%S'
       end_time_option:
+        name: coupons
+        path: /coupons
+        type: RequestOption
+        field_name: modified_before
+        inject_into: request_parameter
+        primary_key: id
+        $parameters:
+          name: coupons
+          path: /coupons
+          primary_key: id
+      start_time_option:
+        name: coupons
+        path: /coupons
+        type: RequestOption
+        field_name: modified_after
+        inject_into: request_parameter
+        primary_key: id
+        $parameters:
+          name: coupons
+          path: /coupons
+          primary_key: id
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      step: P30D
+      cursor_granularity: PT1S
+  - type: DeclarativeStream
+    name: orders
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              customer:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          billing:
+            properties:
+              address_1:
+                type: string
+              address_2:
+                type: string
+              city:
+                type: string
+              company:
+                type: string
+              country:
+                type: string
+              email:
+                type: string
+              first_name:
+                type: string
+              last_name:
+                type: string
+              phone:
+                type: string
+              postcode:
+                type: string
+              state:
+                type: string
+            type: object
+          cart_hash:
+            type: string
+          cart_tax:
+            type: string
+          coupon_lines:
+            items:
+              properties:
+                code:
+                  type: string
+                discount:
+                  type: string
+                discount_tax:
+                  type: string
+                id:
+                  type: number
+                meta_data:
+                  items:
+                    properties:
+                      display_key:
+                        type: string
+                      display_value:
+                        properties:
+                          amount:
+                            type: string
+                          code:
+                            type: string
+                          date_created:
+                            properties:
+                              date:
+                                type: string
+                              timezone:
+                                type: string
+                              timezone_type:
+                                type: number
+                            type: object
+                          date_modified:
+                            properties:
+                              date:
+                                type: string
+                              timezone:
+                                type: string
+                              timezone_type:
+                                type: number
+                            type: object
+                          description:
+                            type: string
+                          discount_type:
+                            type: string
+                          email_restrictions:
+                            type: array
+                          exclude_sale_items:
+                            type: boolean
+                          excluded_product_categories:
+                            type: array
+                          excluded_product_ids:
+                            type: array
+                          free_shipping:
+                            type: boolean
+                          id:
+                            type: number
+                          individual_use:
+                            type: boolean
+                          maximum_amount:
+                            type: string
+                          meta_data:
+                            type: array
+                          minimum_amount:
+                            type: string
+                          product_categories:
+                            type: array
+                          product_ids:
+                            type: array
+                          status:
+                            type: string
+                          usage_count:
+                            type: number
+                          usage_limit:
+                            type: number
+                          usage_limit_per_user:
+                            type: number
+                          virtual:
+                            type: boolean
+                        type: object
+                      id:
+                        type: number
+                      key:
+                        type: string
+                      value:
+                        properties:
+                          amount:
+                            type: string
+                          code:
+                            type: string
+                          date_created:
+                            properties:
+                              date:
+                                type: string
+                              timezone:
+                                type: string
+                              timezone_type:
+                                type: number
+                            type: object
+                          date_modified:
+                            properties:
+                              date:
+                                type: string
+                              timezone:
+                                type: string
+                              timezone_type:
+                                type: number
+                            type: object
+                          description:
+                            type: string
+                          discount_type:
+                            type: string
+                          email_restrictions:
+                            type: array
+                          exclude_sale_items:
+                            type: boolean
+                          excluded_product_categories:
+                            type: array
+                          excluded_product_ids:
+                            type: array
+                          free_shipping:
+                            type: boolean
+                          id:
+                            type: number
+                          individual_use:
+                            type: boolean
+                          maximum_amount:
+                            type: string
+                          meta_data:
+                            type: array
+                          minimum_amount:
+                            type: string
+                          product_categories:
+                            type: array
+                          product_ids:
+                            type: array
+                          status:
+                            type: string
+                          usage_count:
+                            type: number
+                          usage_limit:
+                            type: number
+                          usage_limit_per_user:
+                            type: number
+                          virtual:
+                            type: boolean
+                        type: object
+                    type: object
+                  type: array
+              type: object
+            type: array
+          created_via:
+            type: string
+          currency:
+            type: string
+          currency_symbol:
+            type: string
+          customer_id:
+            type: number
+          customer_ip_address:
+            type: string
+          customer_note:
+            type: string
+          customer_user_agent:
+            type: string
+          date_created:
+            type: string
+          date_created_gmt:
+            type: string
+          date_modified:
+            type: string
+          date_modified_gmt:
+            type: string
+          discount_tax:
+            type: string
+          discount_total:
+            type: string
+          fee_lines:
+            type: array
+          id:
+            type: number
+          is_editable:
+            type: boolean
+          line_items:
+            items:
+              properties:
+                id:
+                  type: number
+                image:
+                  properties:
+                    id:
+                      type: string
+                    src:
+                      type: string
+                  type: object
+                meta_data:
+                  type: array
+                name:
+                  type: string
+                price:
+                  type: number
+                product_id:
+                  type: number
+                quantity:
+                  type: number
+                sku:
+                  type: string
+                subtotal:
+                  type: string
+                subtotal_tax:
+                  type: string
+                tax_class:
+                  type: string
+                taxes:
+                  type: array
+                total:
+                  type: string
+                total_tax:
+                  type: string
+                variation_id:
+                  type: number
+              type: object
+            type: array
+          meta_data:
+            items:
+              properties:
+                id:
+                  type: number
+                key:
+                  type: string
+                value:
+                  type: string
+              type: object
+            type: array
+          needs_payment:
+            type: boolean
+          needs_processing:
+            type: boolean
+          number:
+            type: string
+          order_key:
+            type: string
+          parent_id:
+            type: number
+          payment_method:
+            type: string
+          payment_method_title:
+            type: string
+          payment_url:
+            type: string
+          prices_include_tax:
+            type: boolean
+          refunds:
+            items:
+              properties:
+                id:
+                  type: number
+                reason:
+                  type: string
+                total:
+                  type: string
+              type: object
+            type: array
+          shipping:
+            properties:
+              address_1:
+                type: string
+              address_2:
+                type: string
+              city:
+                type: string
+              company:
+                type: string
+              country:
+                type: string
+              first_name:
+                type: string
+              last_name:
+                type: string
+              phone:
+                type: string
+              postcode:
+                type: string
+              state:
+                type: string
+            type: object
+          shipping_lines:
+            type: array
+          shipping_tax:
+            type: string
+          shipping_total:
+            type: string
+          status:
+            type: string
+          tax_lines:
+            type: array
+          total:
+            type: string
+          total_tax:
+            type: string
+          transaction_id:
+            type: string
+          version:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /orders
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: orders
+          path: /orders
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: orders
+            path: /orders
+            primary_key: id
+        pagination_strategy:
+          name: orders
+          path: /orders
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: orders
+            path: /orders
+            primary_key: id
+    incremental_sync:
+      type: DatetimeBasedCursor
+      name: orders
+      path: /orders
+      primary_key: id
+      cursor_field: date_modified_gmt
+      datetime_format: '%Y-%m-%dT%H:%M:%S'
+      end_time_option:
+        name: orders
+        path: /orders
+        type: RequestOption
+        field_name: modified_before
+        inject_into: request_parameter
+        primary_key: id
+        $parameters:
+          name: orders
+          path: /orders
+          primary_key: id
+      start_time_option:
+        name: orders
+        path: /orders
+        type: RequestOption
+        field_name: modified_after
+        inject_into: request_parameter
+        primary_key: id
+        $parameters:
+          name: orders
+          path: /orders
+          primary_key: id
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      step: P30D
+      cursor_granularity: PT1S
+  - type: DeclarativeStream
+    name: order_notes
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              up:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          author:
+            type: string
+          customer_note:
+            type: boolean
+          date_created:
+            type: string
+          date_created_gmt:
+            type: string
+          id:
+            type: number
+          note:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /orders/{{ stream_slice.id }}/notes
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: order_notes
+          path: /orders/{{ stream_slice.id }}/notes
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: order_notes
+            path: /orders/{{ stream_slice.id }}/notes
+            primary_key: id
+        pagination_strategy:
+          name: order_notes
+          path: /orders/{{ stream_slice.id }}/notes
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: order_notes
+            path: /orders/{{ stream_slice.id }}/notes
+            primary_key: id
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                type: DeclarativeStream
+                name: orders
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      _links:
+                        properties:
+                          collection:
+                            items:
+                              properties:
+                                href:
+                                  type: string
+                              type: object
+                            type: array
+                          customer:
+                            items:
+                              properties:
+                                href:
+                                  type: string
+                              type: object
+                            type: array
+                          self:
+                            items:
+                              properties:
+                                href:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                      billing:
+                        properties:
+                          address_1:
+                            type: string
+                          address_2:
+                            type: string
+                          city:
+                            type: string
+                          company:
+                            type: string
+                          country:
+                            type: string
+                          email:
+                            type: string
+                          first_name:
+                            type: string
+                          last_name:
+                            type: string
+                          phone:
+                            type: string
+                          postcode:
+                            type: string
+                          state:
+                            type: string
+                        type: object
+                      cart_hash:
+                        type: string
+                      cart_tax:
+                        type: string
+                      coupon_lines:
+                        items:
+                          properties:
+                            code:
+                              type: string
+                            discount:
+                              type: string
+                            discount_tax:
+                              type: string
+                            id:
+                              type: number
+                            meta_data:
+                              items:
+                                properties:
+                                  display_key:
+                                    type: string
+                                  display_value:
+                                    properties:
+                                      amount:
+                                        type: string
+                                      code:
+                                        type: string
+                                      date_created:
+                                        properties:
+                                          date:
+                                            type: string
+                                          timezone:
+                                            type: string
+                                          timezone_type:
+                                            type: number
+                                        type: object
+                                      date_modified:
+                                        properties:
+                                          date:
+                                            type: string
+                                          timezone:
+                                            type: string
+                                          timezone_type:
+                                            type: number
+                                        type: object
+                                      description:
+                                        type: string
+                                      discount_type:
+                                        type: string
+                                      email_restrictions:
+                                        type: array
+                                      exclude_sale_items:
+                                        type: boolean
+                                      excluded_product_categories:
+                                        type: array
+                                      excluded_product_ids:
+                                        type: array
+                                      free_shipping:
+                                        type: boolean
+                                      id:
+                                        type: number
+                                      individual_use:
+                                        type: boolean
+                                      maximum_amount:
+                                        type: string
+                                      meta_data:
+                                        type: array
+                                      minimum_amount:
+                                        type: string
+                                      product_categories:
+                                        type: array
+                                      product_ids:
+                                        type: array
+                                      status:
+                                        type: string
+                                      usage_count:
+                                        type: number
+                                      usage_limit:
+                                        type: number
+                                      usage_limit_per_user:
+                                        type: number
+                                      virtual:
+                                        type: boolean
+                                    type: object
+                                  id:
+                                    type: number
+                                  key:
+                                    type: string
+                                  value:
+                                    properties:
+                                      amount:
+                                        type: string
+                                      code:
+                                        type: string
+                                      date_created:
+                                        properties:
+                                          date:
+                                            type: string
+                                          timezone:
+                                            type: string
+                                          timezone_type:
+                                            type: number
+                                        type: object
+                                      date_modified:
+                                        properties:
+                                          date:
+                                            type: string
+                                          timezone:
+                                            type: string
+                                          timezone_type:
+                                            type: number
+                                        type: object
+                                      description:
+                                        type: string
+                                      discount_type:
+                                        type: string
+                                      email_restrictions:
+                                        type: array
+                                      exclude_sale_items:
+                                        type: boolean
+                                      excluded_product_categories:
+                                        type: array
+                                      excluded_product_ids:
+                                        type: array
+                                      free_shipping:
+                                        type: boolean
+                                      id:
+                                        type: number
+                                      individual_use:
+                                        type: boolean
+                                      maximum_amount:
+                                        type: string
+                                      meta_data:
+                                        type: array
+                                      minimum_amount:
+                                        type: string
+                                      product_categories:
+                                        type: array
+                                      product_ids:
+                                        type: array
+                                      status:
+                                        type: string
+                                      usage_count:
+                                        type: number
+                                      usage_limit:
+                                        type: number
+                                      usage_limit_per_user:
+                                        type: number
+                                      virtual:
+                                        type: boolean
+                                    type: object
+                                type: object
+                              type: array
+                          type: object
+                        type: array
+                      created_via:
+                        type: string
+                      currency:
+                        type: string
+                      currency_symbol:
+                        type: string
+                      customer_id:
+                        type: number
+                      customer_ip_address:
+                        type: string
+                      customer_note:
+                        type: string
+                      customer_user_agent:
+                        type: string
+                      date_created:
+                        type: string
+                      date_created_gmt:
+                        type: string
+                      date_modified:
+                        type: string
+                      date_modified_gmt:
+                        type: string
+                      discount_tax:
+                        type: string
+                      discount_total:
+                        type: string
+                      fee_lines:
+                        type: array
+                      id:
+                        type: number
+                      is_editable:
+                        type: boolean
+                      line_items:
+                        items:
+                          properties:
+                            id:
+                              type: number
+                            image:
+                              properties:
+                                id:
+                                  type: string
+                                src:
+                                  type: string
+                              type: object
+                            meta_data:
+                              type: array
+                            name:
+                              type: string
+                            price:
+                              type: number
+                            product_id:
+                              type: number
+                            quantity:
+                              type: number
+                            sku:
+                              type: string
+                            subtotal:
+                              type: string
+                            subtotal_tax:
+                              type: string
+                            tax_class:
+                              type: string
+                            taxes:
+                              type: array
+                            total:
+                              type: string
+                            total_tax:
+                              type: string
+                            variation_id:
+                              type: number
+                          type: object
+                        type: array
+                      meta_data:
+                        items:
+                          properties:
+                            id:
+                              type: number
+                            key:
+                              type: string
+                            value:
+                              type: string
+                          type: object
+                        type: array
+                      needs_payment:
+                        type: boolean
+                      needs_processing:
+                        type: boolean
+                      number:
+                        type: string
+                      order_key:
+                        type: string
+                      parent_id:
+                        type: number
+                      payment_method:
+                        type: string
+                      payment_method_title:
+                        type: string
+                      payment_url:
+                        type: string
+                      prices_include_tax:
+                        type: boolean
+                      refunds:
+                        items:
+                          properties:
+                            id:
+                              type: number
+                            reason:
+                              type: string
+                            total:
+                              type: string
+                          type: object
+                        type: array
+                      shipping:
+                        properties:
+                          address_1:
+                            type: string
+                          address_2:
+                            type: string
+                          city:
+                            type: string
+                          company:
+                            type: string
+                          country:
+                            type: string
+                          first_name:
+                            type: string
+                          last_name:
+                            type: string
+                          phone:
+                            type: string
+                          postcode:
+                            type: string
+                          state:
+                            type: string
+                        type: object
+                      shipping_lines:
+                        type: array
+                      shipping_tax:
+                        type: string
+                      shipping_total:
+                        type: string
+                      status:
+                        type: string
+                      tax_lines:
+                        type: array
+                      total:
+                        type: string
+                      total_tax:
+                        type: string
+                      transaction_id:
+                        type: string
+                      version:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                    path: /orders
+                    http_method: GET
+                    request_parameters:
+                      order: asc
+                      orderby: id
+                      dates_are_gmt: 'true'
+                    request_headers: {}
+                    authenticator:
+                      name: customers
+                      path: /customers
+                      type: BasicHttpAuthenticator
+                      password: '{{ config[''api_secret''] }}'
+                      username: '{{ config[''api_key''] }}'
+                      primary_key: id
+                      $parameters:
+                        name: customers
+                        path: /customers
+                        primary_key: id
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: offset
+                    page_size_option:
+                      name: orders
+                      path: /orders
+                      type: RequestOption
+                      field_name: per_page
+                      inject_into: request_parameter
+                      primary_key: id
+                      $parameters:
+                        name: orders
+                        path: /orders
+                        primary_key: id
+                    pagination_strategy:
+                      name: orders
+                      path: /orders
+                      type: OffsetIncrement
+                      page_size: 100
+                      primary_key: id
+                      $parameters:
+                        name: orders
+                        path: /orders
+                        primary_key: id
+                incremental_sync:
+                  type: DatetimeBasedCursor
+                  name: orders
+                  path: /orders
+                  primary_key: id
+                  cursor_field: date_modified_gmt
+                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  end_time_option:
+                    name: orders
+                    path: /orders
+                    type: RequestOption
+                    field_name: modified_before
+                    inject_into: request_parameter
+                    primary_key: id
+                    $parameters:
+                      name: orders
+                      path: /orders
+                      primary_key: id
+                  start_time_option:
+                    name: orders
+                    path: /orders
+                    type: RequestOption
+                    field_name: modified_after
+                    inject_into: request_parameter
+                    primary_key: id
+                    $parameters:
+                      name: orders
+                      path: /orders
+                      primary_key: id
+                  start_datetime:
+                    type: MinMaxDatetime
+                    datetime: >-
+                      {{ format_datetime(config['start_date'],
+                      '%Y-%m-%dT%H:%M:%S') }}
+                    datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  end_datetime:
+                    type: MinMaxDatetime
+                    datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+                    datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  step: P30D
+                  cursor_granularity: PT1S
+  - type: DeclarativeStream
+    name: payment_gateways
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          connection_url:
+            type:
+              - 'null'
+              - string
+          description:
+            type: string
+          enabled:
+            type: boolean
+          id:
+            type: string
+          method_description:
+            type: string
+          method_supports:
+            items:
+              type: string
+            type: array
+          method_title:
+            type: string
+          needs_setup:
+            type: boolean
+          order:
+            type:
+              - number
+              - string
+          post_install_scripts:
+            type: array
+          required_settings_keys:
+            type: array
+          settings:
+            properties:
+              account_statement_descriptor:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              accounts:
+                properties:
+                  id:
+                    type: string
+                  value:
+                    type: array
+                type: object
+              enable_for_methods:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  options:
+                    properties:
+                      Flat rate:
+                        properties:
+                          flat_rate:
+                            type: string
+                        type: object
+                      Free shipping:
+                        properties:
+                          free_shipping:
+                            type: string
+                        type: object
+                      Local pickup:
+                        properties:
+                          local_pickup:
+                            type: string
+                          local_pickup:1:
+                            type: string
+                        type: object
+                    type: object
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              enable_for_virtual:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              enable_logging:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              instructions:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              manual_capture:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              payment_request:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              payment_request_button_height:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              payment_request_button_label:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              payment_request_button_locations:
+                properties:
+                  default:
+                    items:
+                      type: string
+                    type: array
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  options:
+                    properties:
+                      cart:
+                        type: string
+                      checkout:
+                        type: string
+                      product:
+                        type: string
+                    type: object
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    items:
+                      type: string
+                    type: array
+                type: object
+              payment_request_button_size:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  options:
+                    properties:
+                      default:
+                        type: string
+                      large:
+                        type: string
+                      medium:
+                        type: string
+                    type: object
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              payment_request_button_theme:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  options:
+                    properties:
+                      dark:
+                        type: string
+                      light:
+                        type: string
+                      light-outline:
+                        type: string
+                    type: object
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              payment_request_button_type:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  options:
+                    properties:
+                      book:
+                        type: string
+                      buy:
+                        type: string
+                      default:
+                        type: string
+                      donate:
+                        type: string
+                    type: object
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              payment_request_details:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              saved_cards:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              test_mode:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              title:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              upe_enabled_payment_method_ids:
+                properties:
+                  default:
+                    items:
+                      type: string
+                    type: array
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    items:
+                      type: string
+                    type: array
+                type: object
+            type: object
+          settings_url:
+            type: string
+          setup_help_text:
+            type:
+              - 'null'
+              - string
+          title:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /payment_gateways
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: payment_gateways
+          path: /payment_gateways
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: payment_gateways
+            path: /payment_gateways
+            primary_key: id
+        pagination_strategy:
+          name: payment_gateways
+          path: /payment_gateways
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: payment_gateways
+            path: /payment_gateways
+            primary_key: id
+  - type: DeclarativeStream
+    name: products
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          attributes:
+            items:
+              properties:
+                id:
+                  type: number
+                name:
+                  type: string
+                options:
+                  items:
+                    type: string
+                  type: array
+                position:
+                  type: number
+                variation:
+                  type: boolean
+                visible:
+                  type: boolean
+              type: object
+            type: array
+          average_rating:
+            type: string
+          backordered:
+            type: boolean
+          backorders:
+            type: string
+          backorders_allowed:
+            type: boolean
+          button_text:
+            type: string
+          catalog_visibility:
+            type: string
+          categories:
+            items:
+              properties:
+                id:
+                  type: number
+                name:
+                  type: string
+                slug:
+                  type: string
+              type: object
+            type: array
+          cross_sell_ids:
+            type: array
+          date_created:
+            type: string
+          date_created_gmt:
+            type: string
+          date_modified:
+            type: string
+          date_modified_gmt:
+            type: string
+          default_attributes:
+            type: array
+          description:
+            type: string
+          dimensions:
+            properties:
+              height:
+                type: string
+              length:
+                type: string
+              width:
+                type: string
+            type: object
+          download_expiry:
+            type: number
+          download_limit:
+            type: number
+          downloadable:
+            type: boolean
+          downloads:
+            type: array
+          external_url:
+            type: string
+          featured:
+            type: boolean
+          grouped_products:
+            type: array
+          has_options:
+            type: boolean
+          id:
+            type: number
+          images:
+            items:
+              properties:
+                alt:
+                  type: string
+                date_created:
+                  type: string
+                date_created_gmt:
+                  type: string
+                date_modified:
+                  type: string
+                date_modified_gmt:
+                  type: string
+                id:
+                  type: number
+                name:
+                  type: string
+                src:
+                  type: string
+              type: object
+            type: array
+          jetpack-related-posts:
+            items:
+              properties:
+                author:
+                  type: string
+                block_context:
+                  properties:
+                    link:
+                      type: string
+                    text:
+                      type: string
+                  type: object
+                classes:
+                  type: array
+                context:
+                  type: string
+                date:
+                  type: string
+                excerpt:
+                  type: string
+                format:
+                  type: boolean
+                id:
+                  type: number
+                img:
+                  properties:
+                    alt_text:
+                      type: string
+                    height:
+                      type: number
+                    src:
+                      type: string
+                    srcset:
+                      type: string
+                    width:
+                      type: number
+                  type: object
+                rel:
+                  type: string
+                title:
+                  type: string
+                url:
+                  type: string
+                url_meta:
+                  properties:
+                    origin:
+                      type: number
+                    position:
+                      type: number
+                  type: object
+              type: object
+            type: array
+          jetpack_likes_enabled:
+            type: boolean
+          jetpack_publicize_connections:
+            type: array
+          jetpack_sharing_enabled:
+            type: boolean
+          manage_stock:
+            type: boolean
+          menu_order:
+            type: number
+          meta_data:
+            items:
+              properties:
+                id:
+                  type: number
+                key:
+                  type: string
+                value:
+                  type: string
+              type: object
+            type: array
+          name:
+            type: string
+          on_sale:
+            type: boolean
+          parent_id:
+            type: number
+          permalink:
+            type: string
+          price:
+            type: string
+          price_html:
+            type: string
+          purchasable:
+            type: boolean
+          purchase_note:
+            type: string
+          rating_count:
+            type: number
+          regular_price:
+            type: string
+          related_ids:
+            items:
+              type: number
+            type: array
+          reviews_allowed:
+            type: boolean
+          sale_price:
+            type: string
+          shipping_class:
+            type: string
+          shipping_class_id:
+            type: number
+          shipping_required:
+            type: boolean
+          shipping_taxable:
+            type: boolean
+          short_description:
+            type: string
+          sku:
+            type: string
+          slug:
+            type: string
+          sold_individually:
+            type: boolean
+          status:
+            type: string
+          stock_quantity:
+            type:
+              - 'null'
+              - number
+          stock_status:
+            type: string
+          tags:
+            items:
+              properties:
+                id:
+                  type: number
+                name:
+                  type: string
+                slug:
+                  type: string
+              type: object
+            type: array
+          tax_class:
+            type: string
+          tax_status:
+            type: string
+          total_sales:
+            type: number
+          type:
+            type: string
+          upsell_ids:
+            type: array
+          variations:
+            items:
+              type: number
+            type: array
+          virtual:
+            type: boolean
+          weight:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /products
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: products
+          path: /products
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: products
+            path: /products
+            primary_key: id
+        pagination_strategy:
+          name: products
+          path: /products
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: products
+            path: /products
+            primary_key: id
+    incremental_sync:
+      type: DatetimeBasedCursor
+      name: products
+      path: /products
+      primary_key: id
+      cursor_field: date_modified_gmt
+      datetime_format: '%Y-%m-%dT%H:%M:%S'
+      end_time_option:
+        name: products
+        path: /products
+        type: RequestOption
+        field_name: modified_before
+        inject_into: request_parameter
+        primary_key: id
+        $parameters:
+          name: products
+          path: /products
+          primary_key: id
+      start_time_option:
+        name: products
+        path: /products
+        type: RequestOption
+        field_name: modified_after
+        inject_into: request_parameter
+        primary_key: id
+        $parameters:
+          name: products
+          path: /products
+          primary_key: id
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      step: P30D
+      cursor_granularity: PT1S
+  - type: DeclarativeStream
+    name: product_attributes
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          has_archives:
+            type: boolean
+          id:
+            type: number
+          name:
+            type: string
+          order_by:
+            type: string
+          slug:
+            type: string
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /products/attributes
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: product_attributes
+          path: /products/attributes
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: product_attributes
+            path: /products/attributes
+            primary_key: id
+        pagination_strategy:
+          name: product_attributes
+          path: /products/attributes
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: product_attributes
+            path: /products/attributes
+            primary_key: id
+  - type: DeclarativeStream
+    name: product_attribute_terms
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          count:
+            type: number
+          description:
+            type: string
+          id:
+            type: number
+          menu_order:
+            type: number
+          name:
+            type: string
+          slug:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /products/attributes/{{ stream_slice.id }}/terms
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: product_attribute_terms
+          path: /products/attributes/{{ stream_slice.id }}/terms
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: product_attribute_terms
+            path: /products/attributes/{{ stream_slice.id }}/terms
+            primary_key: id
+        pagination_strategy:
+          name: product_attribute_terms
+          path: /products/attributes/{{ stream_slice.id }}/terms
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: product_attribute_terms
+            path: /products/attributes/{{ stream_slice.id }}/terms
+            primary_key: id
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                type: DeclarativeStream
+                name: product_attributes
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      _links:
+                        properties:
+                          collection:
+                            items:
+                              properties:
+                                href:
+                                  type: string
+                              type: object
+                            type: array
+                          self:
+                            items:
+                              properties:
+                                href:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                      has_archives:
+                        type: boolean
+                      id:
+                        type: number
+                      name:
+                        type: string
+                      order_by:
+                        type: string
+                      slug:
+                        type: string
+                      type:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                    path: /products/attributes
+                    http_method: GET
+                    request_parameters:
+                      order: asc
+                      orderby: id
+                      dates_are_gmt: 'true'
+                    request_headers: {}
+                    authenticator:
+                      name: customers
+                      path: /customers
+                      type: BasicHttpAuthenticator
+                      password: '{{ config[''api_secret''] }}'
+                      username: '{{ config[''api_key''] }}'
+                      primary_key: id
+                      $parameters:
+                        name: customers
+                        path: /customers
+                        primary_key: id
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: offset
+                    page_size_option:
+                      name: product_attributes
+                      path: /products/attributes
+                      type: RequestOption
+                      field_name: per_page
+                      inject_into: request_parameter
+                      primary_key: id
+                      $parameters:
+                        name: product_attributes
+                        path: /products/attributes
+                        primary_key: id
+                    pagination_strategy:
+                      name: product_attributes
+                      path: /products/attributes
+                      type: OffsetIncrement
+                      page_size: 100
+                      primary_key: id
+                      $parameters:
+                        name: product_attributes
+                        path: /products/attributes
+                        primary_key: id
+  - type: DeclarativeStream
+    name: product_categories
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          count:
+            type: number
+          description:
+            type: string
+          display:
+            type: string
+          id:
+            type: number
+          menu_order:
+            type: number
+          name:
+            type: string
+          parent:
+            type: number
+          slug:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /products/categories
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: product_categories
+          path: /products/categories
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: product_categories
+            path: /products/categories
+            primary_key: id
+        pagination_strategy:
+          name: product_categories
+          path: /products/categories
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: product_categories
+            path: /products/categories
+            primary_key: id
+  - type: DeclarativeStream
+    name: product_reviews
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              reviewer:
+                items:
+                  properties:
+                    embeddable:
+                      type: boolean
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              up:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          date_created:
+            type: string
+          date_created_gmt:
+            type: string
+          id:
+            type: number
+          product_id:
+            type: number
+          product_name:
+            type: string
+          product_permalink:
+            type: string
+          rating:
+            type: number
+          review:
+            type: string
+          reviewer:
+            type: string
+          reviewer_avatar_urls:
+            properties:
+              '24':
+                type: string
+              '48':
+                type: string
+              '96':
+                type: string
+            type: object
+          reviewer_email:
+            type: string
+          status:
+            type: string
+          verified:
+            type: boolean
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /products/reviews
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: product_reviews
+          path: /products/reviews
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: product_reviews
+            path: /products/reviews
+            primary_key: id
+        pagination_strategy:
+          name: product_reviews
+          path: /products/reviews
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: product_reviews
+            path: /products/reviews
+            primary_key: id
+    incremental_sync:
+      type: DatetimeBasedCursor
+      name: product_reviews
+      path: /products/reviews
+      primary_key: id
+      cursor_field: date_created_gmt
+      datetime_format: '%Y-%m-%dT%H:%M:%S'
+      end_time_option:
+        name: product_reviews
+        path: /products/reviews
+        type: RequestOption
         field_name: before
         inject_into: request_parameter
-      cursor_field: "date_created_gmt"
+        primary_key: id
+        $parameters:
+          name: product_reviews
+          path: /products/reviews
+          primary_key: id
+      start_time_option:
+        name: product_reviews
+        path: /products/reviews
+        type: RequestOption
+        field_name: after
+        inject_into: request_parameter
+        primary_key: id
+        $parameters:
+          name: product_reviews
+          path: /products/reviews
+          primary_key: id
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ format_datetime(config[''start_date''], ''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%S'
+      step: P30D
+      cursor_granularity: PT1S
+  - type: DeclarativeStream
+    name: product_shipping_classes
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          count:
+            type: number
+          description:
+            type: string
+          id:
+            type: number
+          name:
+            type: string
+          slug:
+            type: string
+        type: object
     retriever:
-      $ref: "#/definitions/retriever"
-    $parameters:
-      name: "product_reviews"
-      primary_key: "id"
-      path: "/products/reviews"
-  product_shipping_classes_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "product_shipping_classes"
-      primary_key: "id"
-      path: "/products/shipping_classes"
-  product_tags_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "product_tags"
-      primary_key: "id"
-      path: "/products/tags"
-  refunds_stream:
-    $ref: "#/definitions/base_stream"
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /products/shipping_classes
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: product_shipping_classes
+          path: /products/shipping_classes
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: product_shipping_classes
+            path: /products/shipping_classes
+            primary_key: id
+        pagination_strategy:
+          name: product_shipping_classes
+          path: /products/shipping_classes
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: product_shipping_classes
+            path: /products/shipping_classes
+            primary_key: id
+  - type: DeclarativeStream
+    name: product_tags
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          count:
+            type: number
+          description:
+            type: string
+          id:
+            type: number
+          name:
+            type: string
+          slug:
+            type: string
+        type: object
     retriever:
-      $ref: "#/definitions/retriever"
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /products/tags
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: product_tags
+          path: /products/tags
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: product_tags
+            path: /products/tags
+            primary_key: id
+        pagination_strategy:
+          name: product_tags
+          path: /products/tags
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: product_tags
+            path: /products/tags
+            primary_key: id
+  - type: DeclarativeStream
+    name: product_variations
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              up:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          attributes:
+            items:
+              properties:
+                id:
+                  type: number
+                name:
+                  type: string
+                option:
+                  type: string
+              type: object
+            type: array
+          backordered:
+            type: boolean
+          backorders:
+            type: string
+          backorders_allowed:
+            type: boolean
+          date_created:
+            type: string
+          date_created_gmt:
+            type: string
+          date_modified:
+            type: string
+          date_modified_gmt:
+            type: string
+          description:
+            type: string
+          dimensions:
+            properties:
+              height:
+                type: string
+              length:
+                type: string
+              width:
+                type: string
+            type: object
+          download_expiry:
+            type: number
+          download_limit:
+            type: number
+          downloadable:
+            type: boolean
+          downloads:
+            type: array
+          id:
+            type: number
+          manage_stock:
+            type: string
+          menu_order:
+            type: number
+          meta_data:
+            items:
+              properties:
+                id:
+                  type: number
+                key:
+                  type: string
+                value:
+                  type: string
+              type: object
+            type: array
+          on_sale:
+            type: boolean
+          permalink:
+            type: string
+          price:
+            type: string
+          purchasable:
+            type: boolean
+          regular_price:
+            type: string
+          sale_price:
+            type: string
+          shipping_class:
+            type: string
+          shipping_class_id:
+            type: number
+          sku:
+            type: string
+          status:
+            type: string
+          stock_quantity:
+            type: number
+          stock_status:
+            type: string
+          tax_class:
+            type: string
+          tax_status:
+            type: string
+          virtual:
+            type: boolean
+          weight:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /products/{{ stream_slice.id }}/variations
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: product_variations
+          path: /products/{{ stream_slice.id }}/variations
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: product_variations
+            path: /products/{{ stream_slice.id }}/variations
+            primary_key: id
+        pagination_strategy:
+          name: product_variations
+          path: /products/{{ stream_slice.id }}/variations
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: product_variations
+            path: /products/{{ stream_slice.id }}/variations
+            primary_key: id
       partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - stream: "#/definitions/orders_stream"
-            parent_key: id
-            partition_field: id
-    $parameters:
-      name: "refunds"
-      primary_key: "id"
-      path: "/orders/{{ stream_slice.id }}/refunds"
-  shipping_methods_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "shipping_methods"
-      primary_key: "id"
-      path: "/shipping_methods"
-  shipping_zones_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "shipping_zones"
-      primary_key: "id"
-      path: "/shipping/zones"
-  shipping_partition_router:
-    type: SubstreamPartitionRouter
-    parent_stream_configs:
-      - stream: "#/definitions/shipping_zones_stream"
-        parent_key: id
-        partition_field: id
-  shipping_zone_locations_stream:
-    $ref: "#/definitions/base_stream"
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                type: DeclarativeStream
+                name: products
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      _links:
+                        properties:
+                          collection:
+                            items:
+                              properties:
+                                href:
+                                  type: string
+                              type: object
+                            type: array
+                          self:
+                            items:
+                              properties:
+                                href:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                      attributes:
+                        items:
+                          properties:
+                            id:
+                              type: number
+                            name:
+                              type: string
+                            options:
+                              items:
+                                type: string
+                              type: array
+                            position:
+                              type: number
+                            variation:
+                              type: boolean
+                            visible:
+                              type: boolean
+                          type: object
+                        type: array
+                      average_rating:
+                        type: string
+                      backordered:
+                        type: boolean
+                      backorders:
+                        type: string
+                      backorders_allowed:
+                        type: boolean
+                      button_text:
+                        type: string
+                      catalog_visibility:
+                        type: string
+                      categories:
+                        items:
+                          properties:
+                            id:
+                              type: number
+                            name:
+                              type: string
+                            slug:
+                              type: string
+                          type: object
+                        type: array
+                      cross_sell_ids:
+                        type: array
+                      date_created:
+                        type: string
+                      date_created_gmt:
+                        type: string
+                      date_modified:
+                        type: string
+                      date_modified_gmt:
+                        type: string
+                      default_attributes:
+                        type: array
+                      description:
+                        type: string
+                      dimensions:
+                        properties:
+                          height:
+                            type: string
+                          length:
+                            type: string
+                          width:
+                            type: string
+                        type: object
+                      download_expiry:
+                        type: number
+                      download_limit:
+                        type: number
+                      downloadable:
+                        type: boolean
+                      downloads:
+                        type: array
+                      external_url:
+                        type: string
+                      featured:
+                        type: boolean
+                      grouped_products:
+                        type: array
+                      has_options:
+                        type: boolean
+                      id:
+                        type: number
+                      images:
+                        items:
+                          properties:
+                            alt:
+                              type: string
+                            date_created:
+                              type: string
+                            date_created_gmt:
+                              type: string
+                            date_modified:
+                              type: string
+                            date_modified_gmt:
+                              type: string
+                            id:
+                              type: number
+                            name:
+                              type: string
+                            src:
+                              type: string
+                          type: object
+                        type: array
+                      jetpack-related-posts:
+                        items:
+                          properties:
+                            author:
+                              type: string
+                            block_context:
+                              properties:
+                                link:
+                                  type: string
+                                text:
+                                  type: string
+                              type: object
+                            classes:
+                              type: array
+                            context:
+                              type: string
+                            date:
+                              type: string
+                            excerpt:
+                              type: string
+                            format:
+                              type: boolean
+                            id:
+                              type: number
+                            img:
+                              properties:
+                                alt_text:
+                                  type: string
+                                height:
+                                  type: number
+                                src:
+                                  type: string
+                                srcset:
+                                  type: string
+                                width:
+                                  type: number
+                              type: object
+                            rel:
+                              type: string
+                            title:
+                              type: string
+                            url:
+                              type: string
+                            url_meta:
+                              properties:
+                                origin:
+                                  type: number
+                                position:
+                                  type: number
+                              type: object
+                          type: object
+                        type: array
+                      jetpack_likes_enabled:
+                        type: boolean
+                      jetpack_publicize_connections:
+                        type: array
+                      jetpack_sharing_enabled:
+                        type: boolean
+                      manage_stock:
+                        type: boolean
+                      menu_order:
+                        type: number
+                      meta_data:
+                        items:
+                          properties:
+                            id:
+                              type: number
+                            key:
+                              type: string
+                            value:
+                              type: string
+                          type: object
+                        type: array
+                      name:
+                        type: string
+                      on_sale:
+                        type: boolean
+                      parent_id:
+                        type: number
+                      permalink:
+                        type: string
+                      price:
+                        type: string
+                      price_html:
+                        type: string
+                      purchasable:
+                        type: boolean
+                      purchase_note:
+                        type: string
+                      rating_count:
+                        type: number
+                      regular_price:
+                        type: string
+                      related_ids:
+                        items:
+                          type: number
+                        type: array
+                      reviews_allowed:
+                        type: boolean
+                      sale_price:
+                        type: string
+                      shipping_class:
+                        type: string
+                      shipping_class_id:
+                        type: number
+                      shipping_required:
+                        type: boolean
+                      shipping_taxable:
+                        type: boolean
+                      short_description:
+                        type: string
+                      sku:
+                        type: string
+                      slug:
+                        type: string
+                      sold_individually:
+                        type: boolean
+                      status:
+                        type: string
+                      stock_quantity:
+                        type:
+                          - 'null'
+                          - number
+                      stock_status:
+                        type: string
+                      tags:
+                        items:
+                          properties:
+                            id:
+                              type: number
+                            name:
+                              type: string
+                            slug:
+                              type: string
+                          type: object
+                        type: array
+                      tax_class:
+                        type: string
+                      tax_status:
+                        type: string
+                      total_sales:
+                        type: number
+                      type:
+                        type: string
+                      upsell_ids:
+                        type: array
+                      variations:
+                        items:
+                          type: number
+                        type: array
+                      virtual:
+                        type: boolean
+                      weight:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                    path: /products
+                    http_method: GET
+                    request_parameters:
+                      order: asc
+                      orderby: id
+                      dates_are_gmt: 'true'
+                    request_headers: {}
+                    authenticator:
+                      name: customers
+                      path: /customers
+                      type: BasicHttpAuthenticator
+                      password: '{{ config[''api_secret''] }}'
+                      username: '{{ config[''api_key''] }}'
+                      primary_key: id
+                      $parameters:
+                        name: customers
+                        path: /customers
+                        primary_key: id
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: offset
+                    page_size_option:
+                      name: products
+                      path: /products
+                      type: RequestOption
+                      field_name: per_page
+                      inject_into: request_parameter
+                      primary_key: id
+                      $parameters:
+                        name: products
+                        path: /products
+                        primary_key: id
+                    pagination_strategy:
+                      name: products
+                      path: /products
+                      type: OffsetIncrement
+                      page_size: 100
+                      primary_key: id
+                      $parameters:
+                        name: products
+                        path: /products
+                        primary_key: id
+                incremental_sync:
+                  type: DatetimeBasedCursor
+                  name: products
+                  path: /products
+                  primary_key: id
+                  cursor_field: date_modified_gmt
+                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  end_time_option:
+                    name: products
+                    path: /products
+                    type: RequestOption
+                    field_name: modified_before
+                    inject_into: request_parameter
+                    primary_key: id
+                    $parameters:
+                      name: products
+                      path: /products
+                      primary_key: id
+                  start_time_option:
+                    name: products
+                    path: /products
+                    type: RequestOption
+                    field_name: modified_after
+                    inject_into: request_parameter
+                    primary_key: id
+                    $parameters:
+                      name: products
+                      path: /products
+                      primary_key: id
+                  start_datetime:
+                    type: MinMaxDatetime
+                    datetime: >-
+                      {{ format_datetime(config['start_date'],
+                      '%Y-%m-%dT%H:%M:%S') }}
+                    datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  end_datetime:
+                    type: MinMaxDatetime
+                    datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+                    datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  step: P30D
+                  cursor_granularity: PT1S
+  - type: DeclarativeStream
+    name: refunds
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              up:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          amount:
+            type: string
+          date_created:
+            type: string
+          date_created_gmt:
+            type: string
+          fee_lines:
+            type: array
+          id:
+            type: number
+          line_items:
+            items:
+              properties:
+                id:
+                  type: number
+                image:
+                  properties:
+                    id:
+                      type: string
+                    src:
+                      type: string
+                  type: object
+                meta_data:
+                  items:
+                    properties:
+                      display_key:
+                        type: string
+                      display_value:
+                        type: string
+                      id:
+                        type: number
+                      key:
+                        type: string
+                      value:
+                        type: string
+                    type: object
+                  type: array
+                name:
+                  type: string
+                price:
+                  type: number
+                product_id:
+                  type: number
+                quantity:
+                  type: number
+                sku:
+                  type: string
+                subtotal:
+                  type: string
+                subtotal_tax:
+                  type: string
+                tax_class:
+                  type: string
+                taxes:
+                  type: array
+                total:
+                  type: string
+                total_tax:
+                  type: string
+                variation_id:
+                  type: number
+              type: object
+            type: array
+          meta_data:
+            type: array
+          reason:
+            type: string
+          refunded_by:
+            type: number
+          refunded_payment:
+            type: boolean
+          shipping_lines:
+            type: array
+          tax_lines:
+            type: array
+        type: object
     retriever:
-      $ref: "#/definitions/retriever"
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /orders/{{ stream_slice.id }}/refunds
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: refunds
+          path: /orders/{{ stream_slice.id }}/refunds
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: refunds
+            path: /orders/{{ stream_slice.id }}/refunds
+            primary_key: id
+        pagination_strategy:
+          name: refunds
+          path: /orders/{{ stream_slice.id }}/refunds
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: refunds
+            path: /orders/{{ stream_slice.id }}/refunds
+            primary_key: id
       partition_router:
-        $ref: "#/definitions/shipping_partition_router"
-    $parameters:
-      name: "shipping_zone_locations"
-      primary_key: ["code", "type"]
-      path: "/shipping/zones/{{ stream_slice.id }}/locations"
-  shipping_zone_methods_stream:
-    $ref: "#/definitions/base_stream"
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                type: DeclarativeStream
+                name: orders
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      _links:
+                        properties:
+                          collection:
+                            items:
+                              properties:
+                                href:
+                                  type: string
+                              type: object
+                            type: array
+                          customer:
+                            items:
+                              properties:
+                                href:
+                                  type: string
+                              type: object
+                            type: array
+                          self:
+                            items:
+                              properties:
+                                href:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                      billing:
+                        properties:
+                          address_1:
+                            type: string
+                          address_2:
+                            type: string
+                          city:
+                            type: string
+                          company:
+                            type: string
+                          country:
+                            type: string
+                          email:
+                            type: string
+                          first_name:
+                            type: string
+                          last_name:
+                            type: string
+                          phone:
+                            type: string
+                          postcode:
+                            type: string
+                          state:
+                            type: string
+                        type: object
+                      cart_hash:
+                        type: string
+                      cart_tax:
+                        type: string
+                      coupon_lines:
+                        items:
+                          properties:
+                            code:
+                              type: string
+                            discount:
+                              type: string
+                            discount_tax:
+                              type: string
+                            id:
+                              type: number
+                            meta_data:
+                              items:
+                                properties:
+                                  display_key:
+                                    type: string
+                                  display_value:
+                                    properties:
+                                      amount:
+                                        type: string
+                                      code:
+                                        type: string
+                                      date_created:
+                                        properties:
+                                          date:
+                                            type: string
+                                          timezone:
+                                            type: string
+                                          timezone_type:
+                                            type: number
+                                        type: object
+                                      date_modified:
+                                        properties:
+                                          date:
+                                            type: string
+                                          timezone:
+                                            type: string
+                                          timezone_type:
+                                            type: number
+                                        type: object
+                                      description:
+                                        type: string
+                                      discount_type:
+                                        type: string
+                                      email_restrictions:
+                                        type: array
+                                      exclude_sale_items:
+                                        type: boolean
+                                      excluded_product_categories:
+                                        type: array
+                                      excluded_product_ids:
+                                        type: array
+                                      free_shipping:
+                                        type: boolean
+                                      id:
+                                        type: number
+                                      individual_use:
+                                        type: boolean
+                                      maximum_amount:
+                                        type: string
+                                      meta_data:
+                                        type: array
+                                      minimum_amount:
+                                        type: string
+                                      product_categories:
+                                        type: array
+                                      product_ids:
+                                        type: array
+                                      status:
+                                        type: string
+                                      usage_count:
+                                        type: number
+                                      usage_limit:
+                                        type: number
+                                      usage_limit_per_user:
+                                        type: number
+                                      virtual:
+                                        type: boolean
+                                    type: object
+                                  id:
+                                    type: number
+                                  key:
+                                    type: string
+                                  value:
+                                    properties:
+                                      amount:
+                                        type: string
+                                      code:
+                                        type: string
+                                      date_created:
+                                        properties:
+                                          date:
+                                            type: string
+                                          timezone:
+                                            type: string
+                                          timezone_type:
+                                            type: number
+                                        type: object
+                                      date_modified:
+                                        properties:
+                                          date:
+                                            type: string
+                                          timezone:
+                                            type: string
+                                          timezone_type:
+                                            type: number
+                                        type: object
+                                      description:
+                                        type: string
+                                      discount_type:
+                                        type: string
+                                      email_restrictions:
+                                        type: array
+                                      exclude_sale_items:
+                                        type: boolean
+                                      excluded_product_categories:
+                                        type: array
+                                      excluded_product_ids:
+                                        type: array
+                                      free_shipping:
+                                        type: boolean
+                                      id:
+                                        type: number
+                                      individual_use:
+                                        type: boolean
+                                      maximum_amount:
+                                        type: string
+                                      meta_data:
+                                        type: array
+                                      minimum_amount:
+                                        type: string
+                                      product_categories:
+                                        type: array
+                                      product_ids:
+                                        type: array
+                                      status:
+                                        type: string
+                                      usage_count:
+                                        type: number
+                                      usage_limit:
+                                        type: number
+                                      usage_limit_per_user:
+                                        type: number
+                                      virtual:
+                                        type: boolean
+                                    type: object
+                                type: object
+                              type: array
+                          type: object
+                        type: array
+                      created_via:
+                        type: string
+                      currency:
+                        type: string
+                      currency_symbol:
+                        type: string
+                      customer_id:
+                        type: number
+                      customer_ip_address:
+                        type: string
+                      customer_note:
+                        type: string
+                      customer_user_agent:
+                        type: string
+                      date_created:
+                        type: string
+                      date_created_gmt:
+                        type: string
+                      date_modified:
+                        type: string
+                      date_modified_gmt:
+                        type: string
+                      discount_tax:
+                        type: string
+                      discount_total:
+                        type: string
+                      fee_lines:
+                        type: array
+                      id:
+                        type: number
+                      is_editable:
+                        type: boolean
+                      line_items:
+                        items:
+                          properties:
+                            id:
+                              type: number
+                            image:
+                              properties:
+                                id:
+                                  type: string
+                                src:
+                                  type: string
+                              type: object
+                            meta_data:
+                              type: array
+                            name:
+                              type: string
+                            price:
+                              type: number
+                            product_id:
+                              type: number
+                            quantity:
+                              type: number
+                            sku:
+                              type: string
+                            subtotal:
+                              type: string
+                            subtotal_tax:
+                              type: string
+                            tax_class:
+                              type: string
+                            taxes:
+                              type: array
+                            total:
+                              type: string
+                            total_tax:
+                              type: string
+                            variation_id:
+                              type: number
+                          type: object
+                        type: array
+                      meta_data:
+                        items:
+                          properties:
+                            id:
+                              type: number
+                            key:
+                              type: string
+                            value:
+                              type: string
+                          type: object
+                        type: array
+                      needs_payment:
+                        type: boolean
+                      needs_processing:
+                        type: boolean
+                      number:
+                        type: string
+                      order_key:
+                        type: string
+                      parent_id:
+                        type: number
+                      payment_method:
+                        type: string
+                      payment_method_title:
+                        type: string
+                      payment_url:
+                        type: string
+                      prices_include_tax:
+                        type: boolean
+                      refunds:
+                        items:
+                          properties:
+                            id:
+                              type: number
+                            reason:
+                              type: string
+                            total:
+                              type: string
+                          type: object
+                        type: array
+                      shipping:
+                        properties:
+                          address_1:
+                            type: string
+                          address_2:
+                            type: string
+                          city:
+                            type: string
+                          company:
+                            type: string
+                          country:
+                            type: string
+                          first_name:
+                            type: string
+                          last_name:
+                            type: string
+                          phone:
+                            type: string
+                          postcode:
+                            type: string
+                          state:
+                            type: string
+                        type: object
+                      shipping_lines:
+                        type: array
+                      shipping_tax:
+                        type: string
+                      shipping_total:
+                        type: string
+                      status:
+                        type: string
+                      tax_lines:
+                        type: array
+                      total:
+                        type: string
+                      total_tax:
+                        type: string
+                      transaction_id:
+                        type: string
+                      version:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                    path: /orders
+                    http_method: GET
+                    request_parameters:
+                      order: asc
+                      orderby: id
+                      dates_are_gmt: 'true'
+                    request_headers: {}
+                    authenticator:
+                      name: customers
+                      path: /customers
+                      type: BasicHttpAuthenticator
+                      password: '{{ config[''api_secret''] }}'
+                      username: '{{ config[''api_key''] }}'
+                      primary_key: id
+                      $parameters:
+                        name: customers
+                        path: /customers
+                        primary_key: id
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: offset
+                    page_size_option:
+                      name: orders
+                      path: /orders
+                      type: RequestOption
+                      field_name: per_page
+                      inject_into: request_parameter
+                      primary_key: id
+                      $parameters:
+                        name: orders
+                        path: /orders
+                        primary_key: id
+                    pagination_strategy:
+                      name: orders
+                      path: /orders
+                      type: OffsetIncrement
+                      page_size: 100
+                      primary_key: id
+                      $parameters:
+                        name: orders
+                        path: /orders
+                        primary_key: id
+                incremental_sync:
+                  type: DatetimeBasedCursor
+                  name: orders
+                  path: /orders
+                  primary_key: id
+                  cursor_field: date_modified_gmt
+                  datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  end_time_option:
+                    name: orders
+                    path: /orders
+                    type: RequestOption
+                    field_name: modified_before
+                    inject_into: request_parameter
+                    primary_key: id
+                    $parameters:
+                      name: orders
+                      path: /orders
+                      primary_key: id
+                  start_time_option:
+                    name: orders
+                    path: /orders
+                    type: RequestOption
+                    field_name: modified_after
+                    inject_into: request_parameter
+                    primary_key: id
+                    $parameters:
+                      name: orders
+                      path: /orders
+                      primary_key: id
+                  start_datetime:
+                    type: MinMaxDatetime
+                    datetime: >-
+                      {{ format_datetime(config['start_date'],
+                      '%Y-%m-%dT%H:%M:%S') }}
+                    datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  end_datetime:
+                    type: MinMaxDatetime
+                    datetime: '{{ now_utc().strftime(''%Y-%m-%dT%H:%M:%S'') }}'
+                    datetime_format: '%Y-%m-%dT%H:%M:%S'
+                  step: P30D
+                  cursor_granularity: PT1S
+  - type: DeclarativeStream
+    name: shipping_methods
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          description:
+            type: string
+          id:
+            type: string
+          title:
+            type: string
+        type: object
     retriever:
-      $ref: "#/definitions/retriever"
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /shipping_methods
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: shipping_methods
+          path: /shipping_methods
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: shipping_methods
+            path: /shipping_methods
+            primary_key: id
+        pagination_strategy:
+          name: shipping_methods
+          path: /shipping_methods
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: shipping_methods
+            path: /shipping_methods
+            primary_key: id
+  - type: DeclarativeStream
+    name: shipping_zone_locations
+    primary_key:
+      - code
+      - type
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              describes:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          code:
+            type: string
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /shipping/zones/{{ stream_slice.id }}/locations
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: shipping_zone_locations
+          path: /shipping/zones/{{ stream_slice.id }}/locations
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key:
+            - code
+            - type
+          $parameters:
+            name: shipping_zone_locations
+            path: /shipping/zones/{{ stream_slice.id }}/locations
+            primary_key:
+              - code
+              - type
+        pagination_strategy:
+          name: shipping_zone_locations
+          path: /shipping/zones/{{ stream_slice.id }}/locations
+          type: OffsetIncrement
+          page_size: 100
+          primary_key:
+            - code
+            - type
+          $parameters:
+            name: shipping_zone_locations
+            path: /shipping/zones/{{ stream_slice.id }}/locations
+            primary_key:
+              - code
+              - type
       partition_router:
-        $ref: "#/definitions/shipping_partition_router"
-    $parameters:
-      name: "shipping_zone_methods"
-      primary_key: "instance_id"
-      path: "/shipping/zones/{{ stream_slice.id }}/methods"
-  system_status_tools_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "system_status_tools"
-      primary_key: "id"
-      path: "/system_status/tools"
-  tax_classes_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "tax_classes"
-      primary_key: ["slug", "name"]
-      path: "/taxes/classes"
-  tax_rates_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "tax_rates"
-      primary_key: "id"
-      path: "/taxes"
-
-streams:
-  - "#/definitions/customers_stream"
-  - "#/definitions/coupons_stream"
-  - "#/definitions/orders_stream"
-  - "#/definitions/order_notes_stream"
-  - "#/definitions/payment_gateways_stream"
-  - "#/definitions/products_stream"
-  - "#/definitions/product_attributes_stream"
-  - "#/definitions/product_attribute_terms_stream"
-  - "#/definitions/product_categories_stream"
-  - "#/definitions/product_reviews_stream"
-  - "#/definitions/product_shipping_classes_stream"
-  - "#/definitions/product_tags_stream"
-  - "#/definitions/product_variations_stream"
-  - "#/definitions/refunds_stream"
-  - "#/definitions/shipping_methods_stream"
-  - "#/definitions/shipping_zone_locations_stream"
-  - "#/definitions/shipping_zone_methods_stream"
-  - "#/definitions/shipping_zones_stream"
-  - "#/definitions/system_status_tools_stream"
-  - "#/definitions/tax_classes_stream"
-  - "#/definitions/tax_rates_stream"
-
-check:
-  stream_names:
-    - "system_status_tools"
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                type: DeclarativeStream
+                name: shipping_zones
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      _links:
+                        properties:
+                          collection:
+                            items:
+                              properties:
+                                href:
+                                  type: string
+                              type: object
+                            type: array
+                          describedby:
+                            items:
+                              properties:
+                                href:
+                                  type: string
+                              type: object
+                            type: array
+                          self:
+                            items:
+                              properties:
+                                href:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                      id:
+                        type: number
+                      name:
+                        type: string
+                      order:
+                        type: number
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                    path: /shipping/zones
+                    http_method: GET
+                    request_parameters:
+                      order: asc
+                      orderby: id
+                      dates_are_gmt: 'true'
+                    request_headers: {}
+                    authenticator:
+                      name: customers
+                      path: /customers
+                      type: BasicHttpAuthenticator
+                      password: '{{ config[''api_secret''] }}'
+                      username: '{{ config[''api_key''] }}'
+                      primary_key: id
+                      $parameters:
+                        name: customers
+                        path: /customers
+                        primary_key: id
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: offset
+                    page_size_option:
+                      name: shipping_zones
+                      path: /shipping/zones
+                      type: RequestOption
+                      field_name: per_page
+                      inject_into: request_parameter
+                      primary_key: id
+                      $parameters:
+                        name: shipping_zones
+                        path: /shipping/zones
+                        primary_key: id
+                    pagination_strategy:
+                      name: shipping_zones
+                      path: /shipping/zones
+                      type: OffsetIncrement
+                      page_size: 100
+                      primary_key: id
+                      $parameters:
+                        name: shipping_zones
+                        path: /shipping/zones
+                        primary_key: id
+  - type: DeclarativeStream
+    name: shipping_zone_methods
+    primary_key:
+      - instance_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              describes:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          enabled:
+            type: boolean
+          id:
+            type: number
+          instance_id:
+            type: number
+          method_description:
+            type: string
+          method_id:
+            type: string
+          method_title:
+            type: string
+          order:
+            type: number
+          settings:
+            properties:
+              cost:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              tax_status:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  options:
+                    properties:
+                      none:
+                        type: string
+                      taxable:
+                        type: string
+                    type: object
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+              title:
+                properties:
+                  default:
+                    type: string
+                  description:
+                    type: string
+                  id:
+                    type: string
+                  label:
+                    type: string
+                  placeholder:
+                    type: string
+                  tip:
+                    type: string
+                  type:
+                    type: string
+                  value:
+                    type: string
+                type: object
+            type: object
+          title:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /shipping/zones/{{ stream_slice.id }}/methods
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: shipping_zone_methods
+          path: /shipping/zones/{{ stream_slice.id }}/methods
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: instance_id
+          $parameters:
+            name: shipping_zone_methods
+            path: /shipping/zones/{{ stream_slice.id }}/methods
+            primary_key: instance_id
+        pagination_strategy:
+          name: shipping_zone_methods
+          path: /shipping/zones/{{ stream_slice.id }}/methods
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: instance_id
+          $parameters:
+            name: shipping_zone_methods
+            path: /shipping/zones/{{ stream_slice.id }}/methods
+            primary_key: instance_id
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: id
+              stream:
+                type: DeclarativeStream
+                name: shipping_zones
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      _links:
+                        properties:
+                          collection:
+                            items:
+                              properties:
+                                href:
+                                  type: string
+                              type: object
+                            type: array
+                          describedby:
+                            items:
+                              properties:
+                                href:
+                                  type: string
+                              type: object
+                            type: array
+                          self:
+                            items:
+                              properties:
+                                href:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                      id:
+                        type: number
+                      name:
+                        type: string
+                      order:
+                        type: number
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+                    path: /shipping/zones
+                    http_method: GET
+                    request_parameters:
+                      order: asc
+                      orderby: id
+                      dates_are_gmt: 'true'
+                    request_headers: {}
+                    authenticator:
+                      name: customers
+                      path: /customers
+                      type: BasicHttpAuthenticator
+                      password: '{{ config[''api_secret''] }}'
+                      username: '{{ config[''api_key''] }}'
+                      primary_key: id
+                      $parameters:
+                        name: customers
+                        path: /customers
+                        primary_key: id
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                  paginator:
+                    type: DefaultPaginator
+                    page_token_option:
+                      type: RequestOption
+                      inject_into: request_parameter
+                      field_name: offset
+                    page_size_option:
+                      name: shipping_zones
+                      path: /shipping/zones
+                      type: RequestOption
+                      field_name: per_page
+                      inject_into: request_parameter
+                      primary_key: id
+                      $parameters:
+                        name: shipping_zones
+                        path: /shipping/zones
+                        primary_key: id
+                    pagination_strategy:
+                      name: shipping_zones
+                      path: /shipping/zones
+                      type: OffsetIncrement
+                      page_size: 100
+                      primary_key: id
+                      $parameters:
+                        name: shipping_zones
+                        path: /shipping/zones
+                        primary_key: id
+  - type: DeclarativeStream
+    name: shipping_zones
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              describedby:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          id:
+            type: number
+          name:
+            type: string
+          order:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /shipping/zones
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: shipping_zones
+          path: /shipping/zones
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: shipping_zones
+            path: /shipping/zones
+            primary_key: id
+        pagination_strategy:
+          name: shipping_zones
+          path: /shipping/zones
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: shipping_zones
+            path: /shipping/zones
+            primary_key: id
+  - type: DeclarativeStream
+    name: system_status_tools
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              item:
+                items:
+                  properties:
+                    embeddable:
+                      type: boolean
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          action:
+            type: string
+          description:
+            type: string
+          id:
+            type: string
+          name:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /system_status/tools
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: system_status_tools
+          path: /system_status/tools
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: system_status_tools
+            path: /system_status/tools
+            primary_key: id
+        pagination_strategy:
+          name: system_status_tools
+          path: /system_status/tools
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: system_status_tools
+            path: /system_status/tools
+            primary_key: id
+  - type: DeclarativeStream
+    name: tax_classes
+    primary_key:
+      - slug
+      - name
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          name:
+            type: string
+          slug:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /taxes/classes
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: tax_classes
+          path: /taxes/classes
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key:
+            - slug
+            - name
+          $parameters:
+            name: tax_classes
+            path: /taxes/classes
+            primary_key:
+              - slug
+              - name
+        pagination_strategy:
+          name: tax_classes
+          path: /taxes/classes
+          type: OffsetIncrement
+          page_size: 100
+          primary_key:
+            - slug
+            - name
+          $parameters:
+            name: tax_classes
+            path: /taxes/classes
+            primary_key:
+              - slug
+              - name
+  - type: DeclarativeStream
+    name: tax_rates
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: {}
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /taxes
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: tax_rates
+          path: /taxes
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: tax_rates
+            path: /taxes
+            primary_key: id
+        pagination_strategy:
+          name: tax_rates
+          path: /taxes
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: tax_rates
+            path: /taxes
+            primary_key: id
+  - type: DeclarativeStream
+    name: customers (copy)
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              collection:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+              self:
+                items:
+                  properties:
+                    href:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          avatar_url:
+            type: string
+          billing:
+            properties:
+              address_1:
+                type: string
+              address_2:
+                type: string
+              city:
+                type: string
+              company:
+                type: string
+              country:
+                type: string
+              email:
+                type: string
+              first_name:
+                type: string
+              last_name:
+                type: string
+              phone:
+                type: string
+              postcode:
+                type: string
+              state:
+                type: string
+            type: object
+          date_created:
+            type: string
+          date_created_gmt:
+            type: string
+          date_modified:
+            type: string
+          date_modified_gmt:
+            type: string
+          email:
+            type: string
+          first_name:
+            type: string
+          id:
+            type: number
+          is_paying_customer:
+            type: boolean
+          last_name:
+            type: string
+          meta_data:
+            items:
+              properties:
+                id:
+                  type: number
+                key:
+                  type: string
+                value:
+                  type: array
+              type: object
+            type: array
+          role:
+            type: string
+          shipping:
+            properties:
+              address_1:
+                type: string
+              address_2:
+                type: string
+              city:
+                type: string
+              company:
+                type: string
+              country:
+                type: string
+              first_name:
+                type: string
+              last_name:
+                type: string
+              phone:
+                type: string
+              postcode:
+                type: string
+              state:
+                type: string
+            type: object
+          username:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://{{ config['shop'] }}/wp-json/wc/v3
+        path: /customers
+        http_method: GET
+        request_parameters:
+          order: asc
+          orderby: id
+          dates_are_gmt: 'true'
+        request_headers: {}
+        authenticator:
+          name: customers
+          path: /customers
+          type: BasicHttpAuthenticator
+          password: '{{ config[''api_secret''] }}'
+          username: '{{ config[''api_key''] }}'
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: offset
+        page_size_option:
+          name: customers
+          path: /customers
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+        pagination_strategy:
+          name: customers
+          path: /customers
+          type: OffsetIncrement
+          page_size: 100
+          primary_key: id
+          $parameters:
+            name: customers
+            path: /customers
+            primary_key: id
+metadata:
+  autoImportSchema:
+    customers: true
+    coupons: true
+    orders: true
+    order_notes: true
+    payment_gateways: true
+    products: true
+    product_attributes: true
+    product_attribute_terms: true
+    product_categories: true
+    product_reviews: true
+    product_shipping_classes: true
+    product_tags: true
+    product_variations: true
+    refunds: true
+    shipping_methods: true
+    shipping_zone_locations: true
+    shipping_zone_methods: true
+    shipping_zones: true
+    system_status_tools: true
+    tax_classes: true
+    tax_rates: false
+    customers (copy): true
