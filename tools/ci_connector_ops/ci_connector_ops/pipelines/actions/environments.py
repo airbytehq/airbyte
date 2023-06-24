@@ -466,12 +466,10 @@ async def load_image_to_docker_host(context: ConnectorContext, tar_file: File, i
     docker_cli = with_docker_cli(context).with_mounted_file(tar_name, tar_file)
 
     image_load_output = await docker_cli.with_exec(["docker", "load", "--input", tar_name]).stdout()
-    context.logger.info(image_load_output)
     # Not tagged images only have a sha256 id the load output shares.
     if "sha256:" in image_load_output:
         image_id = image_load_output.replace("\n", "").replace("Loaded image ID: sha256:", "")
-        docker_tag_output = await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).stdout()
-        context.logger.info(docker_tag_output)
+        await docker_cli.with_exec(["docker", "tag", image_id, image_tag]).exit_code()
 
 
 def with_poetry(context: PipelineContext) -> Container:
