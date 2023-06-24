@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
 import os
 from multiprocessing import Pool
 from typing import Any, Dict, Iterable, List, Mapping, Optional
@@ -10,7 +11,7 @@ from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 
 from .purchase_generator import PurchaseGenerator
 from .user_generator import UserGenerator
-from .utils import generate_estimate, read_json
+from .utils import format_airbyte_time, generate_estimate, read_json
 
 
 class Products(Stream, IncrementalMixin):
@@ -52,6 +53,7 @@ class Products(Stream, IncrementalMixin):
 
         for product in products:
             if product["id"] > total_records:
+                product["updated_at"] = format_airbyte_time(datetime.datetime.now())
                 yield product
                 total_records = product["id"]
 

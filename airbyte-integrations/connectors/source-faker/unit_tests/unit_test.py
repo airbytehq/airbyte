@@ -111,6 +111,40 @@ def test_read_small_random_data():
     assert latest_state.state.data == {"users": {"id": 10, "seed": None}}
 
 
+def test_read_products():
+    source = SourceFaker()
+    config = {"count": 999, "parallelism": 1}
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            {
+                "stream": {"name": "products", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
+                "sync_mode": "incremental",
+                "destination_sync_mode": "overwrite",
+            }
+        ]
+    )
+    state = {}
+    iterator = source.read(logger, config, catalog, state)
+
+    estimate_row_count = 0
+    record_rows_count = 0
+    state_rows_count = 0
+    latest_state = {}
+    for row in iterator:
+        if row.type is Type.TRACE:
+            estimate_row_count = estimate_row_count + 1
+        if row.type is Type.RECORD:
+            record_rows_count = record_rows_count + 1
+        if row.type is Type.STATE:
+            state_rows_count = state_rows_count + 1
+            latest_state = row
+
+    assert estimate_row_count == 4
+    assert record_rows_count == 100  # only 100 products, no matter the count
+    assert state_rows_count == 2
+    assert latest_state.state.data == {'products': {'id': 100, 'seed': None}}
+
+
 def test_no_read_limit_hit():
     source = SourceFaker()
     config = {"count": 10, "parallelism": 1}
