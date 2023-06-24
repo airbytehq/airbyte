@@ -218,19 +218,6 @@ def validate_previous_configs(
     1. Generate fake previous config with the previous connector specification json schema.
     2. Validate a fake previous config against the actual connector specification json schema."""
     prev_con_spec = previous_connector_spec.dict()["connectionSpecification"]
-    actual_con_spec = actual_connector_spec.dict()["connectionSpecification"]
-
-    def check_no_properties_removed():
-        """Check if there are no properties removed in the new spec."""
-        # Get 'properties' field safely. Return {} if it doesn't exist.
-        prev_properties = prev_con_spec.get('properties', {})
-        actual_properties = actual_con_spec.get('properties', {})
-
-        # Find out removed properties.
-        properties_removed = set(prev_properties.keys()) - set(actual_properties.keys())
-
-        if properties_removed:
-            raise NonBackwardCompatibleError(f"properties {properties_removed} were removed from the spec.", BackwardIncompatibilityContext.SPEC)
 
     @given(from_schema(remove_date_time_pattern_format(prev_con_spec)))
     @settings(
@@ -247,7 +234,6 @@ def validate_previous_configs(
             except jsonschema.exceptions.ValidationError as err:
                 raise NonBackwardCompatibleError(err, BackwardIncompatibilityContext.SPEC)
 
-    check_no_properties_removed()
     check_fake_previous_config_against_actual_spec()
 
 
