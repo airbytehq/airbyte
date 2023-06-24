@@ -238,8 +238,8 @@ def test_read_with_seed():
     iterator = source.read(logger, config, catalog, state)
 
     records = [row for row in iterator if row.type is Type.RECORD]
-    assert records[0].record.data["occupation"] == "Cartoonist"
-    assert records[0].record.data["email"] == "reflect1958+1@yahoo.com"
+    assert records[0].record.data["occupation"] == "Sheriff Principal"
+    assert records[0].record.data["email"] == "alleged2069+1@example.com"
 
 
 def test_ensure_no_purchases_without_users():
