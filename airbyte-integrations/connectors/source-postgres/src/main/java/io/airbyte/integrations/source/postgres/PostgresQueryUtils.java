@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
  */
 public class PostgresQueryUtils {
 
+  public static record TableBlockSize(Long tableSize, Long blockSize) { }
+
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresQueryUtils.class);
 
   public static final String NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY =
@@ -78,6 +80,11 @@ public class PostgresQueryUtils {
   public static final String ROW_COUNT_RESULT_COL = "rowcount";
 
   public static final String TOTAL_BYTES_RESULT_COL = "totalbytes";
+
+  public static final String CTID_TABLE_BLOCK_SIZE =
+    """
+    WITH block_sz AS (SELECT current_setting('block_size')::int), rel_sz AS (select pg_relation_size('%s')) SELECT * from block_sz, rel_sz
+    """;
 
   /**
    * Logs the current xmin status : 1. The number of wraparounds the source DB has undergone. (These
@@ -157,5 +164,41 @@ public class PostgresQueryUtils {
     });
     return streamsUnderVacuuming;
   }
+
+  public static Map<AirbyteStreamNameNamespacePair, TableBlockSize> getTableBlockSizeForStream(final JdbcDatabase database,
+      final List<ConfiguredAirbyteStream> streams,
+      final String quoteString) {
+    final Map<AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes = new HashMap<>();
+    streams.forEach(stream -> {
+      final AirbyteStreamNameNamespacePair namespacePair =
+          new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+      final TableBlockSize sz = getTableBlockSizeForStream(database, namespacePair, quoteString);
+      tableBlockSizes.put(namespacePair, sz);
+    });
+    return tableBlockSizes;
+
+  }
+  public static TableBlockSize getTableBlockSizeForStream(final JdbcDatabase database,
+    final AirbyteStreamNameNamespacePair stream,
+    final String quoteString) {
+  try {
+    final String streamName = stream.getName();
+    final String schemaName = stream.getNamespace();
+    final String fullTableName =
+        getFullyQualifiedTableNameWithQuoting(schemaName, streamName, quoteString);
+    final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
+        conn -> conn.prepareStatement(CTID_TABLE_BLOCK_SIZE.formatted(fullTableName)).executeQuery(),
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+    Preconditions.checkState(jsonNodes.size() == 1);
+    final long relationSize = jsonNodes.get(0).get("pg_relation_size").asLong();
+    final long blockSize = jsonNodes.get(0).get("current_setting").asLong();
+    LOGGER.info("Stream {} relation size is {}. block size {}", fullTableName, relationSize, blockSize);
+    return new TableBlockSize(relationSize, blockSize);
+  } catch (SQLException e) {
+    throw new RuntimeException(e);
+  }
+}
+
+
 
 }
