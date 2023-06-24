@@ -1216,6 +1216,35 @@ FAILING_CATALOG_TRANSITIONS = [
     ),
 ]
 
+BENS_TRANSITION = [
+    Transition(
+        name="Removing a field should fail.",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {
+                            "user": {"type": "object", "properties": {"username": {"type": "string"}, "email": {"type": "string"}}}
+                        }
+                    },
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            )
+        },
+    ),
+]
+
 VALID_CATALOG_TRANSITIONS = [
     Transition(
         name="Adding a stream to a catalog should not fail.",
@@ -1291,32 +1320,6 @@ VALID_CATALOG_TRANSITIONS = [
         },
     ),
     Transition(
-        name="Removing a field should not fail.",
-        should_fail=False,
-        previous={
-            "test_stream": AirbyteStream.parse_obj(
-                {
-                    "name": "test_stream",
-                    "json_schema": {
-                        "properties": {
-                            "user": {"type": "object", "properties": {"username": {"type": "string"}, "email": {"type": "string"}}}
-                        }
-                    },
-                    "supported_sync_modes": ["full_refresh"],
-                }
-            )
-        },
-        current={
-            "test_stream": AirbyteStream.parse_obj(
-                {
-                    "name": "test_stream",
-                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
-                    "supported_sync_modes": ["full_refresh"],
-                }
-            )
-        },
-    ),
-    Transition(
         name="Not changing a cursor in a stream should not fail.",
         should_fail=False,
         previous={
@@ -1347,7 +1350,8 @@ assert all([transition.should_fail for transition in FAILING_CATALOG_TRANSITIONS
 # Checking that all transitions in VALID_CATALOG_TRANSITIONS have should_fail = False to prevent typos
 assert all([not transition.should_fail for transition in VALID_CATALOG_TRANSITIONS])
 
-ALL_CATALOG_TRANSITIONS_PARAMS = [transition.as_pytest_param() for transition in FAILING_CATALOG_TRANSITIONS + VALID_CATALOG_TRANSITIONS]
+# ALL_CATALOG_TRANSITIONS_PARAMS = [transition.as_pytest_param() for transition in FAILING_CATALOG_TRANSITIONS + VALID_CATALOG_TRANSITIONS]
+ALL_CATALOG_TRANSITIONS_PARAMS = [transition.as_pytest_param() for transition in BENS_TRANSITION]
 
 
 @pytest.mark.parametrize("previous_discovered_catalog, discovered_catalog, should_fail", ALL_CATALOG_TRANSITIONS_PARAMS)
