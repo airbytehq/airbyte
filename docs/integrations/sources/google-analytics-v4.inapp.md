@@ -4,7 +4,7 @@
 
 Google is phasing out Universal Analytics in favor of Google Analytics 4 (GA4). In consequence, we are deprecating the Google Analytics (Universal Analytics) connector and recommend that you migrate to the [Google Analytics 4 (GA4) connector](https://docs.airbyte.com/integrations/sources/google-analytics-data-api) as soon as possible to ensure your syncs are not affected.
 
-Due to this deprecation, we will not be accepting new contributions for this source, and OAuth is no longer supported as an authentication method for new connections in Airbyte Cloud.
+Due to this deprecation, we will not be accepting new contributions for this source.
 
 For more information, see ["Universal Analytics is going away"](https://support.google.com/analytics/answer/11583528).
 
@@ -31,41 +31,46 @@ A custom report is formatted as: `[{"name": "<report-name>", "dimensions": ["<di
 
 Example of a custom report:
 ```
-[{ "name" : "page_views_and_users",    
-	"dimensions" :[ 
-		"date",
-		"pagePath",      
-      "sessionDefaultChannelGrouping"
-      ],
-   "metrics" :[
-      "screenPageViews",
-      "totalUsers"
-      ]
+[{
+  "name" : "page_views_and_users",    
+  "dimensions" :[ 
+    "ga:date",
+    "ga:pagePath",      
+    "ga:sessionDefaultChannelGrouping"
+  ],
+  "metrics" :[
+    "ga:screenPageViews",
+    "ga:totalUsers"
+  ]
 }]
 ```
 Multiple custom reports should be entered with a comma separator. Each custom report is created as it's own stream. 
 Example of multiple custom reports:
 ```
-[{ "name" : "page_views_and_users",    
-	"dimensions" :[ 
-		"date",
-		"pagePath"
-      ],
-   "metrics" :[
-      "screenPageViews",
-      "totalUsers"
-      ]
-}],
-[{ "name" : "sessions_by_region",    
-	"dimensions" :[ 
-		"date",
-		"region"
-      ],
-   "metrics" :[
-      "totalUsers",
-      "sessions"
-      ]
-}]
+[
+  {
+    "name" : "page_views_and_users",    
+    "dimensions" :[ 
+      "ga:date",
+      "ga:pagePath"
+    ],
+    "metrics" :[
+      "ga:screenPageViews",
+      "ga:totalUsers"
+    ]
+  },
+  {
+    "name" : "sessions_by_region",    
+    "dimensions" :[ 
+      "ga:date",
+      "ga:region"
+    ],
+    "metrics" :[
+      "ga:totalUsers",
+      "ga:sessions"
+    ]
+  }
+]
 ```
 
 Custom reports can also include segments and filters to pull a subset of your data. The report should be formatted as: `[{"name": "<report-name>", "dimensions": ["<dimension-name>", ...], "metrics": ["<metric-name>", ...], "segments":  ["<segment-id-or-dynamic-segment-name]", "filter": "<filter-name>"}]`
@@ -76,13 +81,13 @@ Example of a custom report with segments and/or filters:
 ```
 [{ "name" : "page_views_and_users",    
 	"dimensions" :[ 
-		"date",
-		"pagePath",      
+		"ga:date",
+		"ga:pagePath",      
       "ga:segment"
    ],
    "metrics" :[
-      "sessions",
-      "totalUsers"
+      "ga:sessions",
+      "ga:totalUsers"
    ],
    "segments" :[
       "ga:sessionSource!=(direct)"
