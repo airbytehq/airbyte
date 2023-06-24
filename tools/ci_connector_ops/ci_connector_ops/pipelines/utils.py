@@ -369,11 +369,9 @@ class DaggerPipelineCommand(click.Command):
                     main_logger.info(f"Dagger logs saved to {ctx.obj['dagger_logs_path']}")
                 if ctx.obj["is_ci"]:
                     dagger_logs_gcs_key = f"{ctx.obj['report_output_prefix']}/dagger-logs.txt"
-                    upload_to_gcs(
+                    gcs_uri, public_url = upload_to_gcs(
                         ctx.obj["dagger_logs_path"], ctx.obj["ci_report_bucket_name"], dagger_logs_gcs_key, ctx.obj["ci_gcs_credentials"]
                     )
-                    gcs_uri = f"gs://{ctx.obj['ci_report_bucket_name']}/{dagger_logs_gcs_key}"
-                    public_url = f"https://storage.googleapis.com/{ctx.obj['ci_report_bucket_name']}/{dagger_logs_gcs_key}"
                     main_logger.info(f"Dagger logs saved to {gcs_uri}. Public URL: {public_url}")
 
     @staticmethod
@@ -475,7 +473,7 @@ def format_duration(time_delta: datetime.timedelta) -> str:
     return "{:02d}mn{:02d}s".format(minutes, seconds)
 
 
-def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentials: str) -> None:
+def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentials: str) -> Tuple[str, str]:
     """Upload a file to a GCS bucket.
 
     Args:
@@ -490,3 +488,6 @@ def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentia
     bucket = client.get_bucket(bucket_name)
     blob = bucket.blob(object_name)
     blob.upload_from_filename(str(file_path))
+    gcs_uri = f"gs://{bucket_name}/{object_name}"
+    public_url = f"https://storage.googleapis.com/{bucket_name}/{object_name}"
+    return gcs_uri, public_url

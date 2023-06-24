@@ -13,7 +13,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import TYPE_CHECKING, Any, ClassVar, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, ClassVar, List, Optional
 
 import anyio
 import asyncer
@@ -344,7 +344,6 @@ class Report:
     created_at: datetime = field(default_factory=datetime.utcnow)
     name: str = "REPORT"
     filename: str = "output"
-    extra_files_to_upload: Optional[List[Tuple[Path, str]]] = field(default_factory=list)
 
     @property
     def report_output_prefix(self) -> str:  # noqa D102
@@ -419,12 +418,6 @@ class Report:
         self.pipeline_context.logger.info(f"Report saved locally at {absolute_path}")
         if self.remote_storage_enabled:
             await self.save_remote(local_json_path, self.json_report_remote_storage_key, "application/json")
-            for extra_file_path, extra_file_name in self.extra_files_to_upload:
-                await self.save_remote(extra_file_path, self.get_extra_file_remote_key(extra_file_name))
-
-    def get_extra_file_remote_key(self, filename: str) -> str:
-        """Get the remote key for an extra file."""
-        return f"{self.report_output_prefix}/{filename}"
 
     def to_json(self) -> str:
         """Create a JSON representation of the report.
