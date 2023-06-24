@@ -64,3 +64,6 @@ class CursorPatch(Cursor):
 
         self._queue = self.build_objects_from_response(response)
         return len(self._queue) > 0
+
+    def clear(self):
+        del self._queue

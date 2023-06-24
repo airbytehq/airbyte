@@ -68,9 +68,11 @@ class FBMarketingStream(Stream, ABC):
     def execute_batch(self, pending_requests: Iterable[FacebookRequest]) -> Iterable[MutableMapping[str, Any]]:
         """Execute list of requests in batches"""
         requests_q = Queue()
+        batch_size = 0
         records = []
         for r in pending_requests:
             requests_q.put(r)
+            batch_size += 1
 
         def success(response: FacebookResponse):
             records.append(response.json())
@@ -79,14 +81,19 @@ class FBMarketingStream(Stream, ABC):
             # although it is Optional in the signature for compatibility, we need it always
             assert request, "Missing a request object"
             resp_body = response.json()
-            logger.warning(f"Batch request failed with response, will be retried: {resp_body}")
+            logger.warning(f"Batch request failed (will be retried) with response: {resp_body}")
             requests_q.put(request)
+            nonlocal batch_size
+            # reduce current batch size
+            if batch_size > 1:
+                batch_size -= 1
+                logger.debug(f"Reducing batch size to {batch_size}")
 
         api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
         while not requests_q.empty():
             request = requests_q.get()
             api_batch.add_request(request, success=success, failure=partial(failure, request=request))
-            if requests_q.empty():
+            if requests_q.empty() or len(api_batch) >= batch_size:
                 self._execute_batch(api_batch)
                 api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
         return records
@@ -107,6 +114,8 @@ class FBMarketingStream(Stream, ABC):
             for job in completed_jobs:
                 if job.value:
                     yield from job.value
+                    # To force eager release of memory
+                    job.value.clear()
 
     def read_records(
         self,
@@ -211,8 +220,9 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         potentially_new_records_in_the_past = self._include_deleted and not stream_state.get("include_deleted", False)
         if potentially_new_records_in_the_past:
             self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
-            filter_value = self._start_date
-
+            filter_value = None
+        if not filter_value:
+            return {}
         return {
             "filtering": [
                 {

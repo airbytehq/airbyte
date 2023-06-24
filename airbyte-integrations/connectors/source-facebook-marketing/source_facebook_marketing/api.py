@@ -21,7 +21,6 @@ from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.adobjects.user import User
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
-from urllib3 import Retry
 
 from source_facebook_marketing.streams.common import retry_pattern
 

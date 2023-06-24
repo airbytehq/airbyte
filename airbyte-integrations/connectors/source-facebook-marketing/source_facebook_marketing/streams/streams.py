@@ -4,7 +4,6 @@
 
 import base64
 import logging
-import itertools
 from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import gevent
@@ -74,6 +73,7 @@ class AdCreatives(FBMarketingStream):
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
                 yield from job.value
+                job.value.clear()
 
 
 class CustomConversions(FBMarketingStream):
@@ -87,6 +87,7 @@ class CustomConversions(FBMarketingStream):
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
                 yield from job.value
+                job.value.clear()
 
 
 class Ads(FBMarketingIncrementalStream):
@@ -99,6 +100,7 @@ class Ads(FBMarketingIncrementalStream):
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
                 yield from job.value
+                job.value.clear()
 
 
 class AdSets(FBMarketingIncrementalStream):
@@ -111,6 +113,7 @@ class AdSets(FBMarketingIncrementalStream):
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
                 yield from job.value
+                job.value.clear()
 
 
 class Campaigns(FBMarketingIncrementalStream):
@@ -123,6 +126,7 @@ class Campaigns(FBMarketingIncrementalStream):
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
                 yield from job.value
+                job.value.clear()
 
 
 class Activities(FBMarketingIncrementalStream):
@@ -137,6 +141,7 @@ class Activities(FBMarketingIncrementalStream):
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
                 yield from job.value
+                job.value.clear()
 
     def read_records(
         self,
@@ -178,6 +183,7 @@ class Videos(FBMarketingReversedIncrementalStream):
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
                 yield from job.value
+                job.value.clear()
 
 
 class AdAccounts(FBMarketingStream):
@@ -222,6 +228,7 @@ class Images(FBMarketingReversedIncrementalStream):
         with gevent.iwait(jobs) as completed_jobs:
             for job in completed_jobs:
                 yield from job.value
+                job.value.clear()
 
     def get_record_deleted_status(self, record) -> bool:
         return record[AdImage.Field.status] == AdImage.Status.deleted
