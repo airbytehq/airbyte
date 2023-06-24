@@ -461,8 +461,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     } else if (PostgresUtils.isXmin(sourceConfig) && isIncrementalSyncMode(catalog)) {
       final StreamsCategorised streamsCategorised = categoriseStreams(stateManager, catalog, xminStatus);
 
-      final List<AutoCloseableIterator<AirbyteMessage>> ctidIterator = new ArrayList<>();
-      final List<AutoCloseableIterator<AirbyteMessage>> xminIterator = new ArrayList<>();
+      final List<AutoCloseableIterator<AirbyteMessage>> ctidIterators = new ArrayList<>();
+      final List<AutoCloseableIterator<AirbyteMessage>> xminIterators = new ArrayList<>();
 
       if (!streamsCategorised.ctidStreams().streamsForCtidSync().isEmpty()) {
         final List<AirbyteStreamNameNamespacePair> streamsUnderVacuum = streamsUnderVacuum(database,
@@ -482,7 +482,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
             fileNodes, ctidStateManager,
             namespacePair -> Jsons.jsonNode(xminStatus),
             (namespacePair, jsonState) -> XminStateManager.getAirbyteStateMessage(namespacePair, Jsons.object(jsonState, XminStatus.class)));
-        ctidIterator.addAll(ctidHandler.getIncrementalIterators(
+        ctidIterators.addAll(ctidHandler.getIncrementalIterators(
             new ConfiguredAirbyteCatalog().withStreams(finalListOfStreamsToBeSyncedViaCtid), tableNameToTable, emittedAt));
       } else {
         LOGGER.info("No Streams will be synced via ctid.");
@@ -493,17 +493,20 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         final XminStateManager xminStateManager = new XminStateManager(streamsCategorised.xminStreams().statesFromXminSync());
         final PostgresXminHandler xminHandler = new PostgresXminHandler(database, sourceOperations, getQuoteString(), xminStatus, xminStateManager);
 
-        xminIterator.addAll(xminHandler.getIncrementalIterators(
+        xminIterators.addAll(xminHandler.getIncrementalIterators(
             new ConfiguredAirbyteCatalog().withStreams(streamsCategorised.xminStreams().streamsForXminSync()), tableNameToTable, emittedAt));
       } else {
         LOGGER.info("No Streams will be synced via xmin.");
       }
 
       return Stream
-          .of(ctidIterator, xminIterator)
+          .of(ctidIterators, xminIterators)
           .flatMap(Collection::stream)
           .collect(Collectors.toList());
     } else {
+      // get all the streams that needs to go through ctid
+      // get all the streams that can be passed to super
+      final List<AutoCloseableIterator<AirbyteMessage>> ctidIterators = new ArrayList<>();
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
   }

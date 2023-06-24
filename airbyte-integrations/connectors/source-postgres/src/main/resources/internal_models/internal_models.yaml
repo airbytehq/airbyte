@@ -10,13 +10,24 @@ properties:
     "$ref": "#/definitions/XminStatus"
   ctid_state:
     "$ref": "#/definitions/CtidStatus"
+#  standard_state:
+#    "$ref": "#/definitions/StandardStatus"
 definitions:
   StateType:
     description: Enum to define the sync mode of state.
     type: string
     enum:
+#      - standard
       - xmin
       - ctid
+#  StandardStatus:
+#    type: object
+#    extends:
+#      type: object
+#      existingJavaType: "io.airbyte.integrations.source.relationaldb.models.DbStreamState"
+#    properties:
+#      state_type:
+#        "$ref": "#/definitions/StateType"
   XminStatus:
     type: object
     properties:
