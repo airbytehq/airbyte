@@ -90,7 +90,6 @@ public class PostgresCtidHandler {
       final String streamName = stream.getName();
       final String namespace = stream.getNamespace();
       final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
-
       final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(namespace, streamName);
       if (!tableNameToTable.containsKey(fullyQualifiedTableName)) {
         LOGGER.info("Skipping stream {} because it is not in the source", fullyQualifiedTableName);
