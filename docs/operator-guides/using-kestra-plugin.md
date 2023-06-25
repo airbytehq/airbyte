@@ -96,4 +96,6 @@ triggers:
 
 ## That's it!
 
+If you liked that demo, check out [the blog post](https://airbyte.com/blog/everything-as-code-for-data-infrastructure-with-airbyte-and-kestra-terraform-providers) about using Airbyte and Kestra Terraform providers together to manage Everything as Code.
+
 If you encounter anything unexpected while reproducing this tutorial, you can open [a GitHub issue](https://github.com/kestra-io/kestra) or [ask via Kestra Community Slack](https://kestra.io/slack). Lastly, give us [a GitHub star](https://github.com/kestra-io/kestra) if you like the project.
