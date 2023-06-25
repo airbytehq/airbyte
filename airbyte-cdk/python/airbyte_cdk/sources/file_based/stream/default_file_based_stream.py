@@ -47,12 +47,9 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
         return self.config.primary_key
 
     def compute_slices(self) -> Iterable[Optional[Mapping[str, Any]]]:
-        # Group all files by timestamps and return them as slices
-        files = self.list_files_for_this_sync()
-
+        # Sort files by last_modified, uri and return them grouped by last_modified
+        files = sorted(self.list_files_for_this_sync(), key=lambda f: (f.last_modified, f.uri))
         slices = [{"files": list(group[1])} for group in itertools.groupby(files, lambda f: f.last_modified)]
-        slices.sort(key=lambda s: s["files"][0].last_modified)
-
         return slices
 
     def read_records_from_slice(self, stream_slice: StreamSlice) -> Iterable[Mapping[str, Any]]:

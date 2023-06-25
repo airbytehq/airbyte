@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DATE_TIME_FORMAT, DefaultFileBasedCursor
+from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from freezegun import freeze_time
 
 
@@ -157,7 +157,7 @@ def test_get_files_to_sync(files, expected_files_to_sync, max_history_size, hist
         cursor.add_file(f)
 
     assert files_to_sync == expected_files_to_sync
-    assert cursor.is_history_partial() == history_is_partial
+    assert cursor._is_history_full() == history_is_partial
 
 
 @freeze_time("2023-06-16T00:00:00Z")
@@ -172,7 +172,7 @@ def test_only_recent_files_are_synced_if_history_is_full():
 
     state = {
         "history": {
-            f.uri: f.last_modified.strftime(DATE_TIME_FORMAT) for f in files_in_history
+            f.uri: f.last_modified.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT) for f in files_in_history
         },
     }
     cursor.set_initial_state(state)
@@ -209,7 +209,7 @@ def test_sync_file_already_present_in_history(modified_at_delta, should_sync_fil
 
     state = {
         "history": {
-            f.uri: f.last_modified.strftime(DATE_TIME_FORMAT) for f in files_in_history
+            f.uri: f.last_modified.strftime(DefaultFileBasedCursor.DATE_TIME_FORMAT) for f in files_in_history
         },
     }
     cursor.set_initial_state(state)
@@ -226,6 +226,9 @@ def test_sync_file_already_present_in_history(modified_at_delta, should_sync_fil
 @pytest.mark.parametrize(
     "file_name, last_modified, earliest_dt_in_history, should_sync_file", [
         pytest.param("a.csv", datetime(2023, 6, 3), datetime(2023, 6, 6), True, id="test_last_modified_is_equal_to_time_buffer"),
+        pytest.param("b.csv", datetime(2023, 6, 6), datetime(2023, 6, 6), False, id="test_file_was_already_synced"),
+        pytest.param("b.csv", datetime(2023, 6, 7), datetime(2023, 6, 6), True, id="test_file_was_synced_in_the_past"),
+        pytest.param("b.csv", datetime(2023, 6, 3), datetime(2023, 6, 6), False, id="test_file_was_synced_in_the_past_but_last_modified_is_earlier_in_history"),
         pytest.param("a.csv", datetime(2023, 6, 3), datetime(2023, 6, 3), False, id="test_last_modified_is_equal_to_earliest_dt_in_history_and_lexicographically_smaller"),
         pytest.param("c.csv", datetime(2023, 6, 3), datetime(2023, 6, 3), True, id="test_last_modified_is_equal_to_earliest_dt_in_history_and_lexicographically_greater"),
     ]
@@ -239,3 +242,16 @@ def test_should_sync_file(file_name, last_modified, earliest_dt_in_history, shou
     cursor._initial_earliest_file_in_history = cursor._compute_earliest_file_in_history()
 
     assert bool(list(cursor.get_files_to_sync([RemoteFile(uri=file_name, last_modified=last_modified, file_type="csv")], logger))) == should_sync_file
+
+
+def test_set_initial_state_no_history():
+    cursor = DefaultFileBasedCursor(1, 3)
+    cursor.set_initial_state({})
+
+
+def test_instantiate_with_negative_values():
+    with pytest.raises(ValueError):
+        DefaultFileBasedCursor(-1, 3)
+
+    with pytest.raises(ValueError):
+        DefaultFileBasedCursor(1, -3)

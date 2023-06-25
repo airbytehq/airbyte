@@ -1101,19 +1101,19 @@ multi_csv_same_timestamp_more_files_than_history_size_scenario = (
     )
     .set_files(
         {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
             "b.csv": {
                 "contents": [
                     ("col1", "col2", "col3"),
                     ("val11b", "val12b", "val13b"),
                     ("val21b", "val22b", "val23b"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000000Z",
+            },
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("val11a", "val12a"),
+                    ("val21a", "val22a"),
                 ],
                 "last_modified": "2023-06-05T03:54:07.000000Z",
             },
