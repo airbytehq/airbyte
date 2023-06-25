@@ -8,7 +8,7 @@
 # Please reach out to the Connectors Operations team if you have any question.
 FROM airbyte/integration-base-java:dev AS build
 
-RUN yum install -y python3 python3-devel jq sshpass git && \
+RUN yum install -y python3 python3-devel jq sshpass git && yum clean all && \
   alternatives --install /usr/bin/python python /usr/bin/python3 60 && \
   python -m ensurepip --upgrade && \
   pip3 install dbt-clickhouse>=1.4.0
@@ -44,7 +44,7 @@ ENV APPLICATION destination-clickhouse
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.2.4
+LABEL io.airbyte.version=0.2.5
 LABEL io.airbyte.name=airbyte/destination-clickhouse
 
 ENV AIRBYTE_ENTRYPOINT "/airbyte/run_with_normalization.sh"
