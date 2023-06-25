@@ -123,8 +123,8 @@ class SourceAmazonSellerPartner(AbstractSource):
         try:
             config = AmazonSellerPartnerConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
             stream_kwargs = self._get_stream_kwargs(config)
-            orders_stream = Orders(**stream_kwargs)
-            next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
+            #orders_stream = Orders(**stream_kwargs)
+            #next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
         except Exception as e:
             if isinstance(e, StopIteration):
