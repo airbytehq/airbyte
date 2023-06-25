@@ -7,6 +7,7 @@ import { EditNotificationRead, NotificationItem } from "core/request/DaspireClie
 import { useAppNotification } from "hooks/services/AppNotification";
 import { useNotificationSetting, useAsyncActions } from "services/notificationSetting/NotificationSettingService";
 
+import { PaymentTable } from "./components/PaymentTable";
 import { SyncTable } from "./components/SyncTable";
 import { UsageTable } from "./components/UsageTable";
 
@@ -25,7 +26,7 @@ export const CharacterInID = "__";
 
 const NotificationPage: React.FC = () => {
   const { setNotification } = useAppNotification();
-  const { usageList, syncFail, syncSuccess } = useNotificationSetting();
+  const { usageList, syncFail, syncSuccess, paymentFail } = useNotificationSetting();
 
   const [usageNotificationList, setUsageNotificationList] = useState<NotificationItem[]>([]);
   const newUsageItem: NotificationItem = {
@@ -106,6 +107,12 @@ const NotificationPage: React.FC = () => {
       <SyncTable
         syncFail={syncFail}
         syncSuccess={syncSuccess}
+        updateLoading={updateLoading}
+        updateNotificationSetting={updateNotificationSetting}
+      />
+      <Separator height="30px" />
+      <PaymentTable
+        paymentFail={paymentFail}
         updateLoading={updateLoading}
         updateNotificationSetting={updateNotificationSetting}
       />

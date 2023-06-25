@@ -5477,7 +5477,8 @@
                 "SG",
                 "TR",
                 "UK",
-                "US"
+                "US",
+                "BE"
               ],
               "type": "string"
             }
@@ -5525,7 +5526,8 @@
                 "SG",
                 "TR",
                 "UK",
-                "US"
+                "US",
+                "BE"
               ],
               "type": "string"
             }

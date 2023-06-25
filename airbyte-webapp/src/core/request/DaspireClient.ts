@@ -32,6 +32,7 @@ export const NotificationType = {
   USAGE: "USAGE",
   SYNC_FAIL: "SYNC_FAIL",
   SYNC_SUCCESS: "SYNC_SUCCESS",
+  PAYMENT_FAIL: "PAYMENT_FAIL",
 } as const;
 
 export type NotificationType = typeof NotificationType[keyof typeof NotificationType];
@@ -49,6 +50,7 @@ export interface NotificationSetting {
   usageList: NotificationItem[];
   syncFail: NotificationItem;
   syncSuccess: NotificationItem;
+  paymentFail: NotificationItem;
 }
 
 export interface NotificationSettingRead {
@@ -147,6 +149,28 @@ export const upgradeSubscription = (options?: SecondParameter<typeof apiOverride
     {
       url: `/sub/upgrade`,
       method: "post",
+      headers: { "Content-Type": "application/json" },
+    },
+    options
+  );
+};
+
+export const failedPaymentDetails = (options?: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<UpgradeSubscription>(
+    {
+      url: `/sub/getFailedPaymentDetails?`,
+      method: "get",
+      headers: { "Content-Type": "application/json" },
+    },
+    options
+  );
+};
+
+export const updatePaymentMethod = (paymentOrderId: string, options?: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<UpgradeSubscription>(
+    {
+      url: `/sub/updatePaymentMethod?paymentOrderId=${paymentOrderId}`,
+      method: "get",
       headers: { "Content-Type": "application/json" },
     },
     options

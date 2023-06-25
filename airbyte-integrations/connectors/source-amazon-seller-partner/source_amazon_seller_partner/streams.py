@@ -61,6 +61,11 @@ class AmazonSPStream(HttpStream, ABC):
         self.marketplace_id = marketplace_id
         self.source_name = source_name
         self._session.auth = aws_signature
+        
+        # added by Jerry 2023.6.20, if replication_start_date is none, set the replication_start_date to the previous day
+        if self._replication_start_date is None:
+            self._replication_start_date = pendulum.now("utc").subtract(days=1).strftime(DATE_TIME_FORMAT)
+
 
     @property
     def url_base(self) -> str:
@@ -168,7 +173,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         self,
         url_base: str,
         aws_signature: AWSSignature,
-        replication_start_date: str,
+        replication_start_date: Optional[str],
         marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
@@ -188,6 +193,10 @@ class ReportsAmazonSPStream(Stream, ABC):
         self._report_options = report_options
         self.max_wait_seconds = max_wait_seconds
         self.source_name = source_name
+        
+        # added by Jerry 2023.6.15, if replication_start_date is none, set the replication_start_date to the previous day
+        if self._replication_start_date is None:
+            self._replication_start_date = pendulum.now("utc").subtract(days=1).strftime(DATE_TIME_FORMAT)
 
     @property
     def url_base(self) -> str:
@@ -320,6 +329,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         )
 
         results = []
+        """
         if self.name == "GET_SALES_AND_TRAFFIC_REPORT":
             result_json = json.loads(document)
             result_json["source_name"] = self.source_name
@@ -329,6 +339,12 @@ class ReportsAmazonSPStream(Stream, ABC):
             for item in document_records:
                 item["source_name"] = self.source_name
                 results.append(item)
+        """
+        document_records = self.parse_document(document)
+        for item in document_records:
+            item["source_name"] = self.source_name
+            results.append(item)
+                   
         yield from results
 
     def parse_document(self, document):
@@ -418,12 +434,6 @@ class LedgerDetailViewDataReports(ReportsAmazonSPStream):
 
     name = "GET_LEDGER_DETAIL_VIEW_DATA"
 
-class SalesAndTrafficReports(ReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120
-    """
-
-    name = "GET_SALES_AND_TRAFFIC_REPORT"
 
 class FbaInventoryReports(ReportsAmazonSPStream):
     """
@@ -512,9 +522,10 @@ class BrandAnalyticsStream(ReportsAmazonSPStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-        options = self.report_options()
-        if options is not None:
-            data.update(self._augmented_data(options))
+        if self._report_options:
+            options = self.report_options()
+            if options is not None:
+                data.update(self._augmented_data(options))
 
         return data
 
@@ -584,6 +595,32 @@ class BrandAnalyticsItemComparisonReports(BrandAnalyticsStream):
     name = "GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT"
     result_key = "dataByAsin"
 
+
+class SalesAndTrafficReports(ReportsAmazonSPStream):
+    name = "GET_SALES_AND_TRAFFIC_REPORT"
+    
+    def parse_document(self, document):
+        results = []
+        parsed = json_lib.loads(document)
+        results.append(parsed)
+        return results
+    
+    def _report_data(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
+        if self._report_options:
+            options = self.report_options()
+            if options is not None:
+                data["reportOptions"] = options
+                
+        logger.info(f"****** the data with report options is {data}")
+
+        return data
 
 class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
     @property
@@ -669,6 +706,7 @@ class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
         A2NODRKZP88ZB9="YYYY-MM-DD",  # SE
         A33AVAJ2PDY3EV="D/M/YY",  # TR
         A1F83G8C2ARO7P="D/M/YY",  # UK
+        AMEN7PMS3EDWL="D/M/YY",  # BE
         # fe
         A39IBJ37TRP1C6="D/M/YY",  # AU
         A1VC38T7YXB528="YY/M/D",  # JP

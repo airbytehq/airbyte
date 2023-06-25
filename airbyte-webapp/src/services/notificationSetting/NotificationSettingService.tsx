@@ -42,8 +42,8 @@ export const useCreateNotificationSetting = () => {
     mutationFn: (notificationUsage: SaveNotificationUsageBody) => service.createUsage(notificationUsage),
     onSuccess(data) {
       queryClient.setQueryData(notificationSettingKeys.get(), (setting: any) => {
-        const { usageList, syncFail, syncSuccess }: NotificationSetting = setting.data;
-        return { data: { usageList: [data.data, ...usageList], syncFail, syncSuccess } };
+        const { usageList, syncFail, syncSuccess, paymentFail }: NotificationSetting = setting.data;
+        return { data: { usageList: [data.data, ...usageList], syncFail, syncSuccess, paymentFail } };
       });
     },
   });
@@ -58,21 +58,25 @@ export const useUpdateNotificationSetting = () => {
     onSuccess(data) {
       const response = data.data;
       queryClient.setQueryData(notificationSettingKeys.get(), (setting: any) => {
-        const { usageList, syncFail, syncSuccess }: NotificationSetting = setting.data;
+        const { usageList, syncFail, syncSuccess, paymentFail }: NotificationSetting = setting.data;
         let mySyncFail = { ...syncFail };
         let mySyncSuccess = { ...syncSuccess };
+        let myPaymentFail = { ...paymentFail };
         if (response.type === "SYNC_FAIL") {
           mySyncFail = response;
         } else if (response.type === "SYNC_SUCCESS") {
           mySyncSuccess = response;
+        } else if (response.type === "PAYMENT_FAIL") {
+          myPaymentFail = response;
         } else {
-          return { data: { usageList, syncFail, syncSuccess } };
+          return { data: { usageList, syncFail, syncSuccess, paymentFail } };
         }
         return {
           data: {
             usageList,
             syncFail: mySyncFail,
             syncSuccess: mySyncSuccess,
+            paymentFail: myPaymentFail,
           },
         };
       });
@@ -88,12 +92,13 @@ export const useDeleteNotificationSetting = () => {
     mutationFn: (notificationSettingId: string) => service.delete(notificationSettingId),
     onSuccess(_, variables) {
       queryClient.setQueryData(notificationSettingKeys.get(), (setting: any) => {
-        const { usageList, syncFail, syncSuccess }: NotificationSetting = setting.data;
+        const { usageList, syncFail, syncSuccess, paymentFail }: NotificationSetting = setting.data;
         return {
           data: {
             usageList: usageList.filter((usageItem) => usageItem.id !== variables),
             syncFail,
             syncSuccess,
+            paymentFail,
           },
         };
       });
