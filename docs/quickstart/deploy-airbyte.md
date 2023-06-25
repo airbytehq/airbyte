@@ -15,7 +15,7 @@ Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000]
 
 Alternatively, if you have an Airbyte Cloud invite, just follow [these steps.](../deploying-airbyte/on-cloud.md)
 
-If you need direct access to our team for any kind of assistance, don't hesitate to [talk to our team](https://airbyte.com/talk-to-sales-premium-support) to discuss about our premium support offers."
+If you need direct access to our team for any kind of assistance, don't hesitate to [talk to our team](https://airbyte.com/talk-to-sales-premium-support) to discuss about our premium support offers.
 
 ## FAQ
 
