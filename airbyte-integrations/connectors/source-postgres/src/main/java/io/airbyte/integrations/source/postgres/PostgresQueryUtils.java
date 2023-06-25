@@ -9,10 +9,14 @@ import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
+import io.airbyte.integrations.source.postgres.internal.models.StandardStatus;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
+import io.airbyte.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.sql.SQLException;
@@ -20,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +65,10 @@ public class PostgresQueryUtils {
             (txid_snapshot_xmin(txid_current_snapshot()) % (2^32)::bigint) AS xmin_xid_value,
             txid_snapshot_xmin(txid_current_snapshot()) AS xmin_raw_value;
       """;
+public static final String MAX_CURSOR_VALUE_QUERY =
+    """
+      SELECT MAX(%s) FROM %s;
+    """;
 
   public static final String CTID_FULL_VACUUM_IN_PROGRESS_QUERY =
       """
@@ -78,6 +87,9 @@ public class PostgresQueryUtils {
   public static final String ROW_COUNT_RESULT_COL = "rowcount";
 
   public static final String TOTAL_BYTES_RESULT_COL = "totalbytes";
+
+
+
 
   /**
    * Logs the current xmin status : 1. The number of wraparounds the source DB has undergone. (These
@@ -100,6 +112,51 @@ public class PostgresQueryUtils {
         .withStateType(StateType.XMIN);
   }
 
+  public static Map<AirbyteStreamNameNamespacePair, StandardStatus> getStandardSyncStatusForStreams(final JdbcDatabase database,
+                                                                                                    final List<ConfiguredAirbyteStream> streams,
+                                                                                                    final StateManager stateManager) {
+
+    final Map<AirbyteStreamNameNamespacePair, StandardStatus> standardStatusMap = new HashMap<>();
+    streams.forEach(stream -> {
+      try {
+        final String name = stream.getStream().getName();
+        final String namespace = stream.getStream().getNamespace();
+        final Optional<CursorInfo> cursorInfoOptional =
+            stateManager.getCursorInfo(new io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair(name,namespace));
+        if (cursorInfoOptional.isEmpty()) {
+          standardStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), new StandardStatus());
+        }
+
+        final CursorInfo cursorInfo = cursorInfoOptional.get();
+        final String cursorField = cursorInfo.getCursorField();
+        final long cursorRecordCount = cursorInfo.getCursorRecordCount();
+        final String standardSyncStatusQuery = String.format(MAX_CURSOR_VALUE_QUERY,
+                                                             cursorInfo.getCursorField(),
+                                                             name);
+        LOGGER.info("Standard sync status query: {}", standardSyncStatusQuery);
+        final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(standardSyncStatusQuery).executeQuery(),
+                                                                         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+        Preconditions.checkState(jsonNodes.size() == 1);
+        final JsonNode result = jsonNodes.get(0);
+        LOGGER.info("RESULTTTT +++++: {}", result.toString());
+
+        final StandardStatus standardStatus = new StandardStatus().withStateType(StateType.STANDARD);
+
+        standardStatus.setCursorField(ImmutableList.of(cursorField));
+        standardStatus.setCursor(result.get("max").asText());
+        standardStatus.setCursorRecordCount(cursorRecordCount);
+        standardStatus.setStreamName(name);
+        standardStatus.setStreamNamespace(namespace);
+
+        standardStatusMap.put(new AirbyteStreamNameNamespacePair(name, namespace), standardStatus);
+      } catch (final SQLException e) {
+        throw new RuntimeException(e);
+      }
+    });
+
+    return standardStatusMap;
+  }
+
   static Map<AirbyteStreamNameNamespacePair, Long> fileNodeForStreams(final JdbcDatabase database,
                                                                       final List<ConfiguredAirbyteStream> streams,
                                                                       final String quoteString) {
@@ -112,6 +169,8 @@ public class PostgresQueryUtils {
     });
     return fileNodes;
   }
+
+
 
   public static long fileNodeForStreams(final JdbcDatabase database, final AirbyteStreamNameNamespacePair stream, final String quoteString) {
     try {
