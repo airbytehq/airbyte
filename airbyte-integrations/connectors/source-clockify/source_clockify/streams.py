@@ -12,15 +12,23 @@ from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from requests.auth import AuthBase
 
 
+DEFAULT_API_URL = "https://api.clockify.me"
+
+
 class ClockifyStream(HttpStream, ABC):
-    url_base = "https://api.clockify.me/api/v1/"
+    api_path = "/api/v1/"
     page_size = 50
     page = 1
     primary_key = None
 
-    def __init__(self, workspace_id: str, **kwargs):
+    def __init__(self, workspace_id: str, api_url: str, **kwargs):
         super().__init__(**kwargs)
+        self.api_url = api_url or DEFAULT_API_URL
         self.workspace_id = workspace_id
+
+    @property
+    def url_base(self) -> str:
+        return self.api_url + self.api_path
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.json()
@@ -76,11 +84,12 @@ class UserGroups(ClockifyStream):
 
 
 class TimeEntries(HttpSubStream, ClockifyStream):
-    def __init__(self, authenticator: AuthBase, workspace_id: Mapping[str, Any], **kwargs):
+    def __init__(self, authenticator: AuthBase, workspace_id: Mapping[str, Any], api_url: str, **kwargs):
         super().__init__(
             authenticator=authenticator,
             workspace_id=workspace_id,
-            parent=Users(authenticator=authenticator, workspace_id=workspace_id, **kwargs),
+            api_url=api_url,
+            parent=Users(authenticator=authenticator, workspace_id=workspace_id, api_url=api_url, **kwargs),
         )
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -90,7 +99,7 @@ class TimeEntries(HttpSubStream, ClockifyStream):
 
         so self._session.auth is used instead
         """
-        users_stream = Users(authenticator=self._session.auth, workspace_id=self.workspace_id)
+        users_stream = Users(authenticator=self._session.auth, workspace_id=self.workspace_id, api_url=self.api_url)
         for user in users_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"user_id": user["id"]}
 
@@ -100,11 +109,12 @@ class TimeEntries(HttpSubStream, ClockifyStream):
 
 
 class Tasks(HttpSubStream, ClockifyStream):
-    def __init__(self, authenticator: AuthBase, workspace_id: Mapping[str, Any], **kwargs):
+    def __init__(self, authenticator: AuthBase, workspace_id: Mapping[str, Any], api_url: str, **kwargs):
         super().__init__(
             authenticator=authenticator,
             workspace_id=workspace_id,
-            parent=Projects(authenticator=authenticator, workspace_id=workspace_id, **kwargs),
+            api_url=api_url,
+            parent=Projects(authenticator=authenticator, workspace_id=workspace_id, api_url=api_url, **kwargs),
         )
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -114,7 +124,7 @@ class Tasks(HttpSubStream, ClockifyStream):
 
         so self._session.auth is used instead
         """
-        projects_stream = Projects(authenticator=self._session.auth, workspace_id=self.workspace_id)
+        projects_stream = Projects(authenticator=self._session.auth, workspace_id=self.workspace_id, api_url=self.api_url)
         for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"project_id": project["id"]}
 

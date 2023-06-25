@@ -1,11 +1,12 @@
 {
   "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
   "properties": {
     "activeWorkspace": {
       "type": "string"
     },
     "customFields": {
-      "type": "array"
+      "type": ["null", "array"]
     },
     "defaultWorkspace": {
       "type": "string"
@@ -20,10 +21,10 @@
       "type": "array"
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "profilePicture": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "settings": {
       "properties": {
@@ -123,7 +124,7 @@
           "type": "boolean"
         }
       },
-      "type": "object"
+      "type": ["null", "object"]
     },
     "status": {
       "type": "string"
