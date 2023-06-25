@@ -21,7 +21,6 @@ public abstract class CtidStateManager {
     return pairToCtidStatus.get(pair);
   }
 
-
   public static boolean validateRelationFileNode(final CtidStatus ctidstatus,
       final AirbyteStreamNameNamespacePair pair,
       final Map<AirbyteStreamNameNamespacePair, Long> fileNodes) {

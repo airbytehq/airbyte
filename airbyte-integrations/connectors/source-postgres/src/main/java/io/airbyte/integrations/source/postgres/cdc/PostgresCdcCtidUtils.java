@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class PostgresCdcCtidUtils {
 
   public static CtidStreams streamsToSyncViaCtid(final CdcStateManager stateManager, final ConfiguredAirbyteCatalog fullCatalog,
-      boolean savedOffsetAfterReplicationSlotLSN) {
+      final boolean savedOffsetAfterReplicationSlotLSN) {
     if (!savedOffsetAfterReplicationSlotLSN) {
       return new CtidStreams(fullCatalog.getStreams(), new HashMap<>());
     }

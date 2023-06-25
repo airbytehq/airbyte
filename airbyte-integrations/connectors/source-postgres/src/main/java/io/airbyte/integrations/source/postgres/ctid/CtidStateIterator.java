@@ -19,7 +19,6 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.function.BiFunction;
 import javax.annotation.CheckForNull;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -93,7 +92,7 @@ public class CtidStateIterator extends AbstractIterator<AirbyteMessage> implemen
     } else if (!hasEmittedFinalState) {
       hasEmittedFinalState = true;
       final AirbyteStateMessage finalStateMessage = stateManager.createFinalStateMessage(pair, streamStateForIncrementalRun);
-      LOGGER.info("Emitting final state for stream {}, state is {}", pair, finalStateMessage);
+      LOGGER.info("Finished initial sync of stream {}, Emitting final state, state is {}", pair, finalStateMessage);
       return new AirbyteMessage()
           .withType(Type.STATE)
           .withState(finalStateMessage);

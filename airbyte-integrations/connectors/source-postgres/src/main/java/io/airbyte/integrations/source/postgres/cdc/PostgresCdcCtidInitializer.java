@@ -102,6 +102,7 @@ public class PostgresCdcCtidInitializer {
         savedOffsetAfterReplicationSlotLSN);
     final List<AutoCloseableIterator<AirbyteMessage>> ctidIterator = new ArrayList<>();
     if (!ctidStreams.streamsForCtidSync().isEmpty()) {
+      // This has an issue, we skip these streams but WAL from these streams would be processed and we would never complete the snapshot of these streams
       final List<AirbyteStreamNameNamespacePair> streamsUnderVacuum = streamsUnderVacuum(database,
           ctidStreams.streamsForCtidSync(), quoteString);
 
@@ -142,6 +143,8 @@ public class PostgresCdcCtidInitializer {
       return Collections.singletonList(incrementalIteratorSupplier.get());
     }
 
+    // This starts processing the WAL as soon as initial sync is complete, this is a bit different than the current cdc syncs.
+    // We finish the current CDC once the initial snapshot is complete and the next sync starts processing the WAL
     return Stream
         .of(ctidIterator, Collections.singletonList(AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null)))
         .flatMap(Collection::stream)
