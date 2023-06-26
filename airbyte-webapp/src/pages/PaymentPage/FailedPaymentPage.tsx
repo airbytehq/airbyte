@@ -4,6 +4,7 @@ import styled from "styled-components";
 
 import { BigButton, ButtonRows } from "components/base/Button/BigButton";
 import HeadTitle from "components/HeadTitle";
+import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
 
 import useRouter from "hooks/useRouter";
@@ -31,6 +32,7 @@ const FailedPaymentPage: React.FC = () => {
   const [planDetail, setPlanDetail] = useState<GetFailedPaymentDetail>();
   const { onFailedPaymentDetails, onUpdatePaymentMethodURL } = useAsyncAction();
   const [updatePaymentLoading, setUpdatePaymentLoading] = useState<boolean>(false);
+  const [fetchLoading, setFetchLoading] = useState<boolean>(false);
 
   useEffect(() => {
     setCurrentStep(PaymentSteps.BILLING_PAYMENT);
@@ -42,15 +44,15 @@ const FailedPaymentPage: React.FC = () => {
   };
 
   const failedPaymentDetails = () => {
-    setUpdatePaymentLoading(true);
+    setFetchLoading(true);
     onFailedPaymentDetails()
       .then((res: failedPaymentDetail) => {
         const planDetail = res?.data;
         setPlanDetail(planDetail);
-        setUpdatePaymentLoading(false);
+        setFetchLoading(false);
       })
       .catch(() => {
-        setUpdatePaymentLoading(false);
+        setFetchLoading(false);
       });
   };
 
@@ -70,15 +72,21 @@ const FailedPaymentPage: React.FC = () => {
     <MainPageWithScroll headTitle={<HeadTitle titles={[{ id: "payment.tabTitle" }]} />}>
       <PaymentNav steps={Object.values(PaymentSteps)} currentStep={currentStep} />
       <Content className={styles.pageContainer}>
-        <MainView>{planDetail && <BillingPaymentStep planDetail={planDetail} />}</MainView>
-        <ButtonRows top="40">
-          <BigButton secondary white onClick={onBack}>
-            <FormattedMessage id="form.button.back" />
-          </BigButton>
-          <BigButton isLoading={updatePaymentLoading} onClick={onUpdatePaymentMethod}>
-            <FormattedMessage id="plan.update.btn" />
-          </BigButton>
-        </ButtonRows>
+        {fetchLoading ? (
+          <LoadingPage />
+        ) : (
+          <>
+            <MainView>{planDetail && <BillingPaymentStep planDetail={planDetail} />}</MainView>
+            <ButtonRows top="40" background="transparent">
+              <BigButton secondary white onClick={onBack}>
+                <FormattedMessage id="form.button.back" />
+              </BigButton>
+              <BigButton isLoading={updatePaymentLoading} onClick={onUpdatePaymentMethod}>
+                <FormattedMessage id="plan.update.btn" />
+              </BigButton>
+            </ButtonRows>
+          </>
+        )}
       </Content>
     </MainPageWithScroll>
   );
