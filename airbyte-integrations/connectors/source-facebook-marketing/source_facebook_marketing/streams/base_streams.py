@@ -27,6 +27,8 @@ if TYPE_CHECKING:  # pragma: no cover
 logger = logging.getLogger("airbyte")
 
 FACEBOOK_BATCH_ERROR_CODE = 960
+FACEBOOK_PERMISSIONS_ERROR_CODE = 200
+IGNORED_ERRORS = [FACEBOOK_PERMISSIONS_ERROR_CODE]
 
 
 class FBMarketingStream(Stream, ABC):
@@ -69,6 +71,7 @@ class FBMarketingStream(Stream, ABC):
         """Execute list of requests in batches"""
         requests_q = Queue()
         batch_size = 0
+        batch_retries = {}
         records = []
         for r in pending_requests:
             requests_q.put(r)
@@ -81,7 +84,11 @@ class FBMarketingStream(Stream, ABC):
             # although it is Optional in the signature for compatibility, we need it always
             assert request, "Missing a request object"
             resp_body = response.json()
-            logger.warning(f"Batch request failed (will be retried) with response: {resp_body}")
+            req_path = request._path
+            logger.warning(f"Batch request to {req_path} failed (will be retried) with response: {resp_body}")
+            if not isinstance(resp_body, dict) or resp_body.get("error", {}).get("code") in IGNORED_ERRORS:
+                # response body is not a json object or the error code is different
+                raise RuntimeError(f"Batch request to {req_path} failed (aborted) with response: {resp_body}")
             requests_q.put(request)
             nonlocal batch_size
             # reduce current batch size
@@ -118,11 +125,11 @@ class FBMarketingStream(Stream, ABC):
                     job.value.clear()
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK"""
         records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
@@ -272,11 +279,11 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         return False
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK
         - save initial state
