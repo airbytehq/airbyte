@@ -30,7 +30,10 @@ class TypeformStream(HttpStream, ABC):
     def __init__(self, **kwargs: Mapping[str, Any]):
         super().__init__(authenticator=kwargs["authenticator"])
         self.config: Mapping[str, Any] = kwargs
-        self.start_date: DateTime = pendulum.from_format(kwargs["start_date"], self.date_format)
+        # if start_date is not provided during setup, use date from a year ago instead
+        self.start_date: DateTime = pendulum.today().subtract(years=1)
+        if kwargs.get("start_date"):
+            self.start_date: DateTime = pendulum.from_format(kwargs["start_date"], self.date_format)
 
         # changes page limit, this param is using for development and debugging
         if kwargs.get("page_size"):
