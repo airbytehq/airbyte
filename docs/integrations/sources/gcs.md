@@ -35,7 +35,7 @@ Use the service account ID from above, grant read access to your target bucket. 
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                     |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
-| 0.2.0   | 2023-06-26 | [27725](https://github.com/airbytehq/airbyte/pull/27725) | License Update: Elv2 Errors |
-| 0.1.0   | 2023-02-16 | [23186](https://github.com/airbytehq/airbyte/pull/23186) | New Source: GCS             |
+| Version | Date       | Pull Request                                             | Subject              |
+| :------ | :--------- | :------------------------------------------------------- | :------------------- |
+| 0.2.0   | 2023-06-26 | [27725](https://github.com/airbytehq/airbyte/pull/27725) | License Update: Elv2 |
+| 0.1.0   | 2023-02-16 | [23186](https://github.com/airbytehq/airbyte/pull/23186) | New Source: GCS      |
