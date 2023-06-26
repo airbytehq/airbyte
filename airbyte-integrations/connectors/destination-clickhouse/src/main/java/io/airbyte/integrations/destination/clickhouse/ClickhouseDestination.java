@@ -53,6 +53,8 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   public ClickhouseDestination() {
     super(DRIVER_CLASS, new ClickhouseSQLNameTransformer(), new ClickhouseSqlOperations());
+  }
+  
   private static void createCertificateFile(String fileName, String fileValue) throws IOException {
     try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
       out.print(fileValue);
