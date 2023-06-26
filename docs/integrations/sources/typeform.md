@@ -5,7 +5,6 @@ This page guides you through the process of setting up the Typeform source conne
 ## Prerequisites
 
 - [Typeform Account](https://www.typeform.com/)
-- Start Date - Date to start fetching Responses stream data from.
 - Form IDs (Optional) - If you want to sync data for specific forms, you'll need to have the IDs of those forms. If you want to sync data for all forms in your account you don't need any IDs. Form IDs can be found in the URLs to the forms in Typeform Admin Panel (for example, for URL `https://admin.typeform.com/form/12345/` a `12345` part would your Form ID)
 <!-- env:cloud -->
 **For Airbyte Cloud:**
@@ -21,7 +20,7 @@ This page guides you through the process of setting up the Typeform source conne
 
 ## Setup guide
 
-### Step 1: Set up Typeform
+### Step 1: Obtain an API token 
 
 <!-- env:oss -->
 **For Airbyte Open Source:**
@@ -37,7 +36,7 @@ To get the API token for your application follow this [steps](https://developer.
 
 <!-- env:cloud -->
 **For Airbyte Cloud:**
-* Authorize to your [Typeform Account](https://www.typeform.com/), it will be used during next step to authorize using OAuth.
+This step is not needed in Airbyte Cloud. Skip to the next step. 
 <!-- /env:cloud -->
 
 ### Step 2: Set up the source connector in Airbyte
