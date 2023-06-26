@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
-  dockerImageTag: 0.1.23
+  dockerImageTag: 0.1.24
   dockerRepository: airbyte/source-bing-ads
   githubIssueLabel: source-bing-ads
   icon: bingads.svg
