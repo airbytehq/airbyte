@@ -8,10 +8,9 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING
 
-import anyio
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.utils import get_file_contents
-from dagger import Directory, Secret
+from dagger import Secret
 
 if TYPE_CHECKING:
     from ci_connector_ops.pipelines.contexts import ConnectorContext
@@ -86,7 +85,7 @@ async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GC
     )
 
 
-async def get_connector_secrets(context: ConnectorContext) -> Directory:
+async def get_connector_secrets(context: ConnectorContext) -> dict[str, Secret]:
     """Download the secrets from GSM or use the local secrets directory for a connector.
 
     Args:
@@ -96,9 +95,7 @@ async def get_connector_secrets(context: ConnectorContext) -> Directory:
         Directory: A directory with the downloaded connector secrets.
     """
     if context.use_remote_secrets:
-        secrets_dir = await download(context)
+        connector_secrets = await download(context)
     else:
-        local_secrets_dir = anyio.Path(context.connector.code_directory) / "secrets"
-        await local_secrets_dir.mkdir(exist_ok=True)
-        secrets_dir = context.get_connector_dir(include=["secrets"]).directory("secrets").with_timestamps(1672531199)
-    return secrets_dir
+        raise NotImplementedError("Local secrets are not implemented yet. See https://github.com/airbytehq/airbyte/issues/25621")
+    return connector_secrets
