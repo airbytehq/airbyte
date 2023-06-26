@@ -4,6 +4,7 @@
 
 
 import json
+import logging
 import sys
 import tempfile
 import traceback
@@ -38,6 +39,9 @@ from yaml import safe_load
 from .utils import backoff_handler
 
 SSH_TIMEOUT = 60
+
+# Force the log level of the smart-open logger to ERROR - https://github.com/airbytehq/airbyte/pull/27157
+logging.getLogger("smart_open").setLevel(logging.ERROR)
 
 
 class ConfigurationError(Exception):

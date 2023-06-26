@@ -4,12 +4,27 @@ title: Postgres Models
 type: object
 description: Postgres Models
 properties:
-  state:
+  state_type:
+    "$ref": "#/definitions/StateType"
+  xmin_state:
     "$ref": "#/definitions/XminStatus"
+  ctid_state:
+    "$ref": "#/definitions/CtidStatus"
 definitions:
+  StateType:
+    description: Enum to define the sync mode of state.
+    type: string
+    enum:
+      - xmin
+      - ctid
   XminStatus:
     type: object
     properties:
+      version:
+        description: Version of state.
+        type: integer
+      state_type:
+        "$ref": "#/definitions/StateType"
       num_wraparound:
         description: Number of times the Xmin value has wrapped around.
         type: integer
@@ -18,4 +33,21 @@ definitions:
         type: integer
       xmin_raw_value:
         description: The raw value of the xmin snapshot. If no wraparound has occurred, this should be the same as 2.
+        type: integer
+  CtidStatus:
+    type: object
+    properties:
+      version:
+        description: Version of state.
+        type: integer
+      state_type:
+        "$ref": "#/definitions/StateType"
+      ctid:
+        description: ctid bookmark
+        type: string
+      incremental_state:
+        description: State to switch to after completion of ctid initial sync
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      relation_filenode:
         type: integer
