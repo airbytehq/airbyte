@@ -36,7 +36,9 @@ class StopConditionPaginationStrategyDecorator(PaginationStrategy):
         self._stop_condition = stop_condition
 
     def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Any]:
-        if last_records and any(self._stop_condition.is_met(record) for record in self._reversed(last_records)):
+        # We evaluate in reverse order because the assumption is that most of the APIs using data feed structure will return records in
+        # descending order. In terms of performance/memory, we return the records lazily
+        if last_records and any(self._stop_condition.is_met(record) for record in reversed(last_records)):
             return None
         return self._delegate.next_page_token(response, last_records)
 
@@ -45,12 +47,3 @@ class StopConditionPaginationStrategyDecorator(PaginationStrategy):
 
     def get_page_size(self) -> Optional[int]:
         return self._delegate.get_page_size()
-
-    @staticmethod
-    def _reversed(a_list: List[Any]) -> Iterable[Any]:
-        """
-        We evaluate in reverse order because the assumption is that most of the APIs using data feed structure will return records in
-        descending order. In terms of performance/memory, we return the records lazily
-        """
-        for index in reversed(range(len(a_list))):
-            yield a_list[index]
