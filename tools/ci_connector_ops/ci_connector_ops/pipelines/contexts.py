@@ -111,6 +111,7 @@ class PipelineContext:
         self.ci_github_access_token = ci_github_access_token
         self.started_at = None
         self.stopped_at = None
+        self.secrets_to_mask = []
         update_commit_status_check(**self.github_commit_status)
 
     @property
@@ -262,7 +263,6 @@ class PipelineContext:
             self.report = Report(self, steps_results=[])
 
         self.report.print()
-        self.logger.info(self.report.to_json())
 
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         if self.should_send_slack_message:
@@ -297,6 +297,7 @@ class ConnectorContext(PipelineContext):
         slack_webhook: Optional[str] = None,
         reporting_slack_channel: Optional[str] = None,
         pull_request: PullRequest = None,
+        should_save_report: bool = True,
     ):
         """Initialize a connector context.
 
@@ -326,6 +327,7 @@ class ConnectorContext(PipelineContext):
         self._secrets_dir = None
         self._updated_secrets_dir = None
         self.cdk_version = None
+        self.should_save_report = should_save_report
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -425,9 +427,9 @@ class ConnectorContext(PipelineContext):
             await secrets.upload(self)
 
         self.report.print()
-        self.logger.info(self.report.to_json())
 
-        await self.report.save()
+        if self.should_save_report:
+            await self.report.save()
 
         if self.report.should_be_commented_on_pr:
             self.report.post_comment_on_pr()
@@ -495,6 +497,7 @@ class PublishConnectorContext(ConnectorContext):
             slack_webhook=slack_webhook,
             reporting_slack_channel=reporting_slack_channel,
             ci_gcs_credentials=ci_gcs_credentials,
+            should_save_report=True,
         )
 
     @property
@@ -543,5 +546,5 @@ class PublishConnectorContext(ConnectorContext):
         if self.state is ContextState.SUCCESSFUL:
             message += f"⏲️ Run duration: {round(self.report.run_duration)}s\n"
         if self.state is ContextState.FAILURE:
-            message += "\ncc. <!channel>"
+            message += "\ncc. <!subteam^S0407GYHW4E>"  # @dev-connector-ops
         return message
