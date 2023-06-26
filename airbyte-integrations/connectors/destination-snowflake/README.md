@@ -1,11 +1,14 @@
 # Snowflake Destination
 
 ## Documentation
-* [User Documentation](https://docs.airbyte.io/integrations/destinations/snowflake)
+
+- [User Documentation](https://docs.airbyte.io/integrations/destinations/snowflake)
 
 ## Community Contributor
+
 1. Look at the integration documentation to see how to create a warehouse/database/schema/user/role for Airbyte to sync into.
 1. Create a file at `secrets/config.json` with the following format:
+
 ```
 {
   "host": "testhost.snowflakecomputing.com",
@@ -24,17 +27,16 @@
 
 Put the contents of the following LastPass secrets into corresponding files under the `secrets` directory:
 
-| LastPass Secret | File |
-| --- | --- |
-| `destination snowflake - test creds (secrets/config.json)` | `secrets/config.json` |
-| `destination snowflake - insert test creds (secrets/insert_config.json)` | `secrets/insert_config.json` |
-| `destination snowflake - internal staging test creds (secrets/internal_staging_config.json)` | `secrets/internal_staging_config.json` |
-| `destination snowflake - internal staging key pair (secrets/config_key_pair.json)` | `secrets/config_key_pair.json` |
+| LastPass Secret                                                                                        | File                                     |
+| ------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| `destination snowflake - test creds (secrets/config.json)`                                             | `secrets/config.json`                    |
+| `destination snowflake - insert test creds (secrets/insert_config.json)`                               | `secrets/insert_config.json`             |
+| `destination snowflake - internal staging test creds (secrets/internal_staging_config.json)`           | `secrets/internal_staging_config.json`   |
+| `destination snowflake - internal staging key pair (secrets/config_key_pair.json)`                     | `secrets/config_key_pair.json`           |
 | `destination snowflake - internal staging key pair encrypted (secrets/config_key_pair_encrypted.json)` | `secrets/config_key_pair_encrypted.json` |
-| `destination snowflake - s3 staging test creds (secrets/copy_s3_config.json)` | `secrets/copy_s3_config.json` |
-| `destination snowflake - s3 staging encrypted test creds (secrets/copy_s3_encrypted_config.json)` | `secrets/copy_s3_encrypted_config.json` |
-| `destination snowflake - gcs staging test creds (secrets/copy_gcs_config.json)` | `secrets/copy_gcs_config.json` |
-| `destination snowflake - azure blob staging test creds (secrets/copy_azure_blob_config.json)` | `secrets/copy_azure_blob_config.json` |
+| `destination snowflake - s3 staging test creds (secrets/copy_s3_config.json)`                          | `secrets/copy_s3_config.json`            |
+| `destination snowflake - s3 staging encrypted test creds (secrets/copy_s3_encrypted_config.json)`      | `secrets/copy_s3_encrypted_config.json`  |
+| `destination snowflake - gcs staging test creds (secrets/copy_gcs_config.json)`                        | `secrets/copy_gcs_config.json`           |
 
 The query timeout for insert data to table has been updated from 30 minutes to 3 hours.
 
@@ -84,6 +86,7 @@ DESC STORAGE INTEGRATION GCS_AIRBYTE_INTEGRATION;
 That last query (`DESC STORAGE`) will show a `STORAGE_GCP_SERVICE_ACCOUNT` property with an email as the property value. Add read/write permissions to your bucket with that email if it's not already there.
 
 If you ever need to start over, use this:
+
 ```sql
 DROP DATABASE IF EXISTS INTEGRATION_TEST_DESTINATION;
 DROP USER IF EXISTS INTEGRATION_TEST_USER_DESTINATION;

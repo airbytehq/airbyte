@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -24,7 +24,7 @@ MAIN_REQUIREMENTS = [
     "pyxlsb==1.0.9",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.2", "pytest-docker~=1.0.0", "pytest-mock~=3.6.1"]
+TEST_REQUIREMENTS = ["pytest~=6.2", "pytest-docker~=1.0.0", "pytest-mock~=3.6.1", "docker-compose"]
 
 setup(
     name="source_file",

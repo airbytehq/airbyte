@@ -1,12 +1,13 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
 
 public enum DatabricksStorageType {
 
-  S3,
+  MANAGED_TABLES_STORAGE,
+  S3_STORAGE,
   AZURE_BLOB_STORAGE;
 
 }

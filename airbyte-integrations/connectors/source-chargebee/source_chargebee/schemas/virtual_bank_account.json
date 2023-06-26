@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Customer",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "customer_id": {
+      "type": ["string", "null"]
+    },
+    "email": {
+      "type": ["string", "null"]
+    },
+    "scheme": {
+      "type": ["string", "null"],
+      "enum": ["ach_credit", "sepa_credit"]
+    },
+    "bank_name": {
+      "type": ["string", "null"]
+    },
+    "account_number": {
+      "type": ["string", "null"]
+    },
+    "routing_number": {
+      "type": ["string", "null"]
+    },
+    "swift_code": {
+      "type": ["string", "null"]
+    },
+    "gateway": {
+      "type": ["string", "null"],
+      "enum": [
+        "chargebee", "chargebee_payments", "stripe", "wepay", "braintree", "authorize_net", "paypal_pro", "pin",
+        "eway", "eway_rapid", "worldpay", "balanced_payments", "beanstream", "bluepay", "elavon", "first_data_global",
+        "hdfc", "migs", "nmi", "ogone", "paymill", "paypal_payflow_pro", "sage_pay", "tco", "wirecard",
+        "amazon_payments", "paypal_express_checkout", "gocardless", "adyen", "orbital", "moneris_us",
+        "moneris", "bluesnap", "cybersource", "vantiv", "checkout_com", "paypal", "ingenico_direct", "exact", "mollie",
+        "quickbooks", "razorpay", "global_payments", "bank_of_america", "not_applicable"
+      ]
+    },
+    "resource_version": {
+      "type": ["integer", "null"]
+    },
+    "updated_at": {
+      "type": ["integer", "null"]
+    },
+    "created_at": {
+      "type": ["integer", "null"]
+    },
+    "reference_id": {
+      "type": ["string", "null"]
+    },
+    "deleted": {
+      "type": ["boolean", "null"]
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

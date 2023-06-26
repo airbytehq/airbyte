@@ -17,6 +17,16 @@ As a community contributor, you will need access to Azure to run the integration
 - Replace the `config.json` under `sample_secrets`.
 - Rename the directory from `sample_secrets` to `secrets`.
 
+### Infra setup
+1. Log in to the [Azure portal](https://portal.azure.com/#home) using the `integration-test@airbyte.io` account
+1. Go to [Storage Accounts](https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Storage%2FStorageAccounts)
+1. Create a new storage account with a reasonable name (currently `airbyteteststorage`), under the `integration-test-rg` resource group.
+  1. In the `Redundancy` setting, choose `Locally-redundant storage (LRS)`.
+  1. Hit `Review` (you can leave all the other settings as the default) and then `Create`.
+1. Navigate into that storage account -> `Containers`. Make a new container with a reasonable name (currently `airbytetescontainername`).
+1. Then go back up to the storage account -> `Access keys`. This is the `azure_blob_storage_account_key` config field.
+  1. There are two keys; use the first one. We don't need 100% uptime on our integration tests, so there's no need to alternate between the two keys.
+
 ## Add New Output Format
 - Add a new enum in `AzureBlobStorageFormat'.
 - Modify `spec.json` to specify the configuration of this new format.

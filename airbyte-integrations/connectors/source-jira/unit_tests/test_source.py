@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock
@@ -20,7 +20,7 @@ def test_streams(config):
 def test_check_connection(config, projects_response, labels_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description",
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead",
         json=projects_response,
     )
     responses.add(

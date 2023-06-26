@@ -57,3 +57,10 @@ services:
       context: .
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
+  normalization-duckdb:
+    image: airbyte/normalization-duckdb:${VERSION}
+    build:
+      dockerfile: duckdb.Dockerfile
+      context: .
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}

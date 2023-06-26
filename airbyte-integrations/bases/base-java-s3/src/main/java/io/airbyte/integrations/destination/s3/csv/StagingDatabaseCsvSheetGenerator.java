@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.csv;
@@ -47,6 +47,14 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
   @Override
   public List<Object> getDataRow(final JsonNode formattedData) {
     return new LinkedList<>(Collections.singletonList(Jsons.serialize(formattedData)));
+  }
+
+  @Override
+  public List<Object> getDataRow(final UUID id, final String formattedString, final long emittedAt) {
+    return List.of(
+        id,
+        formattedString,
+        Timestamp.from(Instant.ofEpochMilli(emittedAt)));
   }
 
 }

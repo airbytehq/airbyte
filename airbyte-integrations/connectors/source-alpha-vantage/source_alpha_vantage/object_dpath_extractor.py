@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import dataclass
@@ -61,19 +61,19 @@ class ObjectDpathExtractor(DpathExtractor):
 
     inject_key_as_field: Union[str, InterpolatedString] = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self.inject_key_as_field = InterpolatedString.create(self.inject_key_as_field, options=options)
-        for pointer_index in range(len(self.field_pointer)):
-            if isinstance(self.field_pointer[pointer_index], str):
-                self.field_pointer[pointer_index] = InterpolatedString.create(self.field_pointer[pointer_index], options=options)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self.inject_key_as_field = InterpolatedString.create(self.inject_key_as_field, parameters=parameters)
+        for path_index in range(len(self.field_path)):
+            if isinstance(self.field_path[path_index], str):
+                self.field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
 
     def extract_records(self, response: requests.Response) -> list[Record]:
         response_body = self.decoder.decode(response)
-        if len(self.field_pointer) == 0:
+        if len(self.field_path) == 0:
             extracted = response_body
         else:
-            pointer = [pointer.eval(self.config) for pointer in self.field_pointer]
-            extracted = dpath.util.get(response_body, pointer, default=[])
+            path = [path.eval(self.config) for path in self.field_path]
+            extracted = dpath.util.get(response_body, path, default=[])
         if isinstance(extracted, list):
             return extracted
         elif isinstance(extracted, dict) and all(isinstance(v, dict) for v in extracted.values()):  # Ensure object is dict[Hashable, dict]

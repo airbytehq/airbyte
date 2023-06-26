@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -44,14 +44,14 @@ public class DateTimeConverter {
 
   public static String convertToTimeWithTimezone(final Object time) {
     if (time instanceof final java.time.OffsetTime timetz) {
-      return timetz.format(TIMETZ_FORMATTER);
+      return hasZeroSecondsAndNanos(timetz.toLocalTime()) ? timetz.format(TIMETZ_FORMATTER) : timetz.toString();
     } else {
       if (!loggedUnknownTimeWithTimeZoneClass) {
         LOGGER.info("Unknown class for Time with timezone data type" + time.getClass());
         loggedUnknownTimeWithTimeZoneClass = true;
       }
       final OffsetTime timetz = OffsetTime.parse(time.toString(), TIME_WITH_TIMEZONE_FORMATTER);
-      return timetz.format(TIMETZ_FORMATTER);
+      return hasZeroSecondsAndNanos(timetz.toLocalTime()) ? timetz.format(TIMETZ_FORMATTER) : timetz.toString();
     }
   }
 
@@ -98,15 +98,15 @@ public class DateTimeConverter {
     if (timestamp instanceof final Timestamp t) {
       // Snapshot mode
       final LocalDateTime localDateTime = t.toLocalDateTime();
-      final String value = localDateTime.format(TIMESTAMP_FORMATTER);
-      return resolveEra(t, value);
+      return resolveEra(t,
+          hasZeroSecondsAndNanos(localDateTime.toLocalTime()) ? localDateTime.format(TIMESTAMP_FORMATTER) : localDateTime.toString());
     } else if (timestamp instanceof final Instant i) {
       // Incremental mode
       return resolveEra(i.atZone(UTC).toLocalDate(), i.atOffset(UTC).toLocalDateTime().format(TIMESTAMP_FORMATTER));
     } else if (timestamp instanceof final LocalDateTime localDateTime) {
       final LocalDate date = localDateTime.toLocalDate();
-      final String value = localDateTime.format(TIMESTAMP_FORMATTER);
-      return resolveEra(date, value);
+      return resolveEra(date,
+          hasZeroSecondsAndNanos(localDateTime.toLocalTime()) ? localDateTime.format(TIMESTAMP_FORMATTER) : localDateTime.toString());
     } else {
       if (!loggedUnknownTimestampClass) {
         LOGGER.info("Unknown class for Timestamp data type" + timestamp.getClass());
@@ -114,8 +114,8 @@ public class DateTimeConverter {
       }
       final LocalDateTime localDateTime = LocalDateTime.parse(timestamp.toString());
       final LocalDate date = localDateTime.toLocalDate();
-      final String value = localDateTime.format(TIMESTAMP_FORMATTER);
-      return resolveEra(date, value);
+      return resolveEra(date,
+          hasZeroSecondsAndNanos(localDateTime.toLocalTime()) ? localDateTime.format(TIMESTAMP_FORMATTER) : localDateTime.toString());
     }
   }
 
@@ -143,18 +143,18 @@ public class DateTimeConverter {
 
   public static String convertToTime(final Object time) {
     if (time instanceof final Time sqlTime) {
-      return sqlTime.toLocalTime().format(TIME_FORMATTER);
+      return formatTime(sqlTime.toLocalTime());
     } else if (time instanceof final LocalTime localTime) {
-      return localTime.format(TIME_FORMATTER);
+      return formatTime(localTime);
     } else if (time instanceof java.time.Duration) {
       long value = ((Duration) time).toNanos();
       if (value >= 0 && value < TimeUnit.DAYS.toNanos(1)) {
-        return LocalTime.ofNanoOfDay(value).format(TIME_FORMATTER);
+        return formatTime(LocalTime.ofNanoOfDay(value));
       } else {
         final long updatedValue = Math.min(Math.abs(value), LocalTime.MAX.toNanoOfDay());
         LOGGER.debug("Time values must use number of nanoseconds greater than 0 and less than 86400000000000 but its {}, converting to {} ", value,
             updatedValue);
-        return LocalTime.ofNanoOfDay(updatedValue).format(TIME_FORMATTER);
+        return formatTime(LocalTime.ofNanoOfDay(updatedValue));
       }
     } else {
       if (!loggedUnknownTimeClass) {
@@ -165,10 +165,18 @@ public class DateTimeConverter {
       final String valueAsString = time.toString();
       if (valueAsString.startsWith("24")) {
         LOGGER.debug("Time value {} is above range, converting to 23:59:59", valueAsString);
-        return LocalTime.MAX.format(TIME_FORMATTER);
+        return LocalTime.MAX.toString();
       }
-      return LocalTime.parse(valueAsString).format(TIME_FORMATTER);
+      return formatTime(LocalTime.parse(valueAsString));
     }
+  }
+
+  private static String formatTime(LocalTime localTime) {
+    return hasZeroSecondsAndNanos(localTime) ? localTime.format(TIME_FORMATTER) : localTime.toString();
+  }
+
+  public static boolean hasZeroSecondsAndNanos(LocalTime localTime) {
+    return (localTime.getSecond() == 0 && localTime.getNano() == 0);
   }
 
   public static void putJavaSQLDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {

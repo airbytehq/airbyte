@@ -2,7 +2,7 @@
 
 ## **What do I need to get started using Airbyte?**
 
-You can deploy Airbyte in several ways, as [documented here](../../deploying-airbyte/README.md). Airbyte will then help you replicate data between a source and a destination. Airbyte offers pre-built connectors for both, you can see their list [here](../../project-overview/changelog/connectors.md). If you don’t see the connector you need, you can [build your connector yourself](../../connector-development) and benefit from Airbyte’s optional scheduling, orchestration and monitoring modules.
+You can deploy Airbyte in several ways, as [documented here](../../deploying-airbyte/README.md). Airbyte will then help you replicate data between a source and a destination. If you don’t see the connector you need, you can [build your connector yourself](../../connector-development) and benefit from Airbyte’s optional scheduling, orchestration and monitoring modules.
 
 ## **How long does it take to set up Airbyte?**
 
@@ -10,7 +10,7 @@ It depends on your source and destination. Check our setup guides to see the tas
 
 ## **What data sources does Airbyte offer connectors for?**
 
-We already offer 100+ connectors, and will focus all our effort in ramping up the number of connectors and strengthening them. View the [full list here](../../project-overview/changelog/connectors.md). If you don’t see a source you need, you can file a [connector request here](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=area%2Fintegration%2C+new-integration&template=new-integration-request.md&title=).
+We already offer 100+ connectors, and will focus all our effort in ramping up the number of connectors and strengthening them. If you don’t see a source you need, you can file a [connector request here](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=area%2Fintegration%2C+new-integration&template=new-integration-request.md&title=).
 
 ## **Where can I see my data in Airbyte?**
 

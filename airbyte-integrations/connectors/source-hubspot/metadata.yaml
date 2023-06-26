@@ -1,0 +1,23 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.hubapi.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
+  dockerImageTag: 0.8.4
+  dockerRepository: airbyte/source-hubspot
+  githubIssueLabel: source-hubspot
+  icon: hubspot.svg
+  license: MIT
+  name: HubSpot
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

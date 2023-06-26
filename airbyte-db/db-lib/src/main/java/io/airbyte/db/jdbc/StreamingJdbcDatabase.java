@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -107,9 +107,7 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
           LOGGER.error("SQLState: {}, Message: {}", e.getSQLState(), e.getMessage());
           streamException = e;
           isStreamFailed = true;
-          // throwing an exception in tryAdvance() method lead to the endless loop in Spliterator and stream
-          // will never close
-          return false;
+          throw new RuntimeException(e);
         }
       }
 

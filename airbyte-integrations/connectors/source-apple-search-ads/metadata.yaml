@@ -1,0 +1,21 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: e59c8416-c2fa-4bd3-9e95-52677ea281c1
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-apple-search-ads
+  githubIssueLabel: source-apple-search-ads
+  icon: apple.svg
+  license: MIT
+  name: Apple Search Ads
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/apple-search-ads
+  tags:
+    - language:low-code
+    - language:python
+metadataSpecVersion: "1.0"

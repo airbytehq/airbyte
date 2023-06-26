@@ -1,8 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
+import logging
 import re
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -16,7 +16,10 @@ from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.auth import AuthBase
+from source_freshdesk.availability_strategy import FreshdeskAvailabilityStrategy
 from source_freshdesk.utils import CallCredit
+
+logger = logging.getLogger("airbyte")
 
 
 class FreshdeskStream(HttpStream, ABC):
@@ -48,19 +51,12 @@ class FreshdeskStream(HttpStream, ABC):
         return parse.urljoin(f"https://{self.domain.rstrip('/')}", "/api/v2/")
 
     @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return FreshdeskAvailabilityStrategy()
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == requests.codes.too_many_requests:
             return float(response.headers.get("Retry-After", 0))
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == requests.codes.FORBIDDEN:
-            self.forbidden_stream = True
-            setattr(self, "raise_on_http_errors", False)
-            self.logger.warn(f"Stream `{self.name}` is not available. {response.text}")
-        return super().should_retry(response)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         link_header = response.headers.get("Link")
@@ -103,6 +99,15 @@ class FreshdeskStream(HttpStream, ABC):
         if self.forbidden_stream:
             return []
         return response.json() or []
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == requests.codes.FORBIDDEN:
+            # Issue: https://github.com/airbytehq/airbyte/issues/26717
+            # we should skip the stream if subscription level had changed during sync
+            self.forbidden_stream = True
+            setattr(self, "raise_on_http_errors", False)
+            logger.warning(f"Stream `{self.name}` is not available. {response.text}")
+        return super().should_retry(response)
 
 
 class IncrementalFreshdeskStream(FreshdeskStream, IncrementalMixin):

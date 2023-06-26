@@ -4,8 +4,6 @@
 
 The 3PL Central source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
-
 ### Output schema
 
 Several output streams are available from this source:

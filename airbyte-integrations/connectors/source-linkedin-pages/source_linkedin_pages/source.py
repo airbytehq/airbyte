@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -147,8 +147,6 @@ class SourceLinkedinPages(AbstractSource):
         return [
             OrganizationLookup(config),
             FollowerStatistics(config),
-            ShareStatistics(config),
-            TotalFollowerCount(config),
             ShareStatistics(config),
             TotalFollowerCount(config),
         ]

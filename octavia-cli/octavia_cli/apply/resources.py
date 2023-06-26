@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import abc
@@ -437,7 +437,6 @@ class BaseResource(abc.ABC):
 
 
 class SourceAndDestination(BaseResource):
-
     @property
     @abc.abstractmethod
     def definition(

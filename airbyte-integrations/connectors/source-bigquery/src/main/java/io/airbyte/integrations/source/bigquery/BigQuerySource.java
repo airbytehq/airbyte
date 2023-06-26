@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.bigquery;
@@ -15,6 +15,7 @@ import com.google.cloud.bigquery.Table;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.SqlDatabase;
@@ -26,13 +27,16 @@ import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,9 +67,12 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   }
 
   @Override
-  protected BigQueryDatabase createDatabase(final JsonNode config) {
-    dbConfig = Jsons.clone(config);
-    return new BigQueryDatabase(config.get(CONFIG_PROJECT_ID).asText(), config.get(CONFIG_CREDS).asText());
+  protected BigQueryDatabase createDatabase(final JsonNode sourceConfig) {
+    dbConfig = Jsons.clone(sourceConfig);
+    final BigQueryDatabase database = new BigQueryDatabase(sourceConfig.get(CONFIG_PROJECT_ID).asText(), sourceConfig.get(CONFIG_CREDS).asText());
+    database.setSourceConfig(sourceConfig);
+    database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
+    return database;
   }
 
   @Override
@@ -148,6 +155,8 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
         RelationalDbQueryUtils.enquoteIdentifierList(columnNames, getQuoteString()),
         getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()),
         cursorInfo.getCursorField()),
+        schemaName,
+        tableName,
         sourceOperations.getQueryParameter(cursorFieldType, cursorInfo.getCursor()));
   }
 
@@ -155,11 +164,14 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   protected AutoCloseableIterator<JsonNode> queryTableFullRefresh(final BigQueryDatabase database,
                                                                   final List<String> columnNames,
                                                                   final String schemaName,
-                                                                  final String tableName) {
+                                                                  final String tableName,
+                                                                  final SyncMode syncMode,
+                                                                  final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return queryTable(database, String.format("SELECT %s FROM %s",
         enquoteIdentifierList(columnNames, getQuoteString()),
-        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
+        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())),
+        tableName, schemaName);
   }
 
   @Override
@@ -169,15 +181,18 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   private AutoCloseableIterator<JsonNode> queryTableWithParams(final BigQueryDatabase database,
                                                                final String sqlQuery,
+                                                               final String schemaName,
+                                                               final String tableName,
                                                                final QueryParameterValue... params) {
+    final AirbyteStreamNameNamespacePair airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.query(sqlQuery, params);
-        return AutoCloseableIterators.fromStream(stream);
+        return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
-    });
+    }, airbyteStream);
   }
 
   private boolean isDatasetConfigured(final SqlDatabase database) {

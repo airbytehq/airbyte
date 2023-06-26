@@ -2,9 +2,9 @@
   "streams": [
     {
       "stream": {
-        "name": "users/table_1",
+        "name": "users/table_1/tblmrNtgqio9IWVGx",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },
@@ -16,9 +16,9 @@
     }, 
     {
       "stream": {
-        "name": "users/table_2",
+        "name": "users/table_2/tblCjIgm5yveWC4X5",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },
@@ -30,9 +30,9 @@
     },
     {
       "stream": {
-        "name": "users/table_6",
+        "name": "users/table_6/tblSXpxKHg0OiLxbI",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },
@@ -44,9 +44,9 @@
     },
     {
       "stream": {
-        "name": "users/field_type_test",
+        "name": "users/field_type_test/tblFcp5mncufoYaR9",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },
@@ -58,9 +58,9 @@
     },
     {
       "stream": {
-        "name": "users/50_columns",
+        "name": "users/50_columns/tbl01Hi93Tt6XJ0u5",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },
@@ -72,9 +72,9 @@
     },
     {
       "stream": {
-        "name": "users/checkboxes",
+        "name": "users/checkboxes/tbl81WIAUZg5nwGN8",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },
@@ -86,9 +86,9 @@
     },
     {
       "stream": {
-        "name": "untitled_base/table_1",
+        "name": "untitled_base/table_1/tblT7mnwDS5TVtfOh",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },

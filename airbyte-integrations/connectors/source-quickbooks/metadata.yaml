@@ -1,0 +1,26 @@
+data:
+  allowedHosts:
+    hosts:
+      - sandbox-quickbooks.api.intuit.com
+      - quickbooks.api.intuit.com
+      - oauth.platform.intuit.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: cf9c4355-b171-4477-8f2d-6c5cc5fc8b7e
+  dockerImageTag: 2.0.3
+  dockerRepository: airbyte/source-quickbooks
+  githubIssueLabel: source-quickbooks
+  icon: quickbooks.svg
+  license: MIT
+  name: QuickBooks
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/quickbooks
+  tags:
+    - language:low-code
+    - language:python
+metadataSpecVersion: "1.0"

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import dataclass
@@ -47,6 +47,7 @@ class EventsSimpleRetriever(SimpleRetriever):
             self.requester.get_request_params,
             self.paginator.get_request_params,
             self.stream_slicer.get_request_params,
+            self.requester.get_authenticator().get_request_body_json,
         )
 
 
@@ -69,9 +70,9 @@ class EventsCartesianProductStreamSlicer(CartesianProductStreamSlicer):
     Slicer also produces separate datetime slices for each project
     """
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         self._cursor = {}
-        self._options = options
+        self._parameters = parameters
 
     def get_stream_state(self) -> Mapping[str, Any]:
         return self._cursor or {}

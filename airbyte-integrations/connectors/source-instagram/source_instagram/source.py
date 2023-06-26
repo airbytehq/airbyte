@@ -1,11 +1,11 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from datetime import datetime
 from typing import Any, List, Mapping, Tuple
 
-from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
+from airbyte_cdk.models import AdvancedAuth, ConnectorSpecification, DestinationSyncMode, OAuthConfigSpecification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from pydantic import BaseModel, Field
@@ -24,7 +24,13 @@ class ConnectorConfig(BaseModel):
     )
 
     access_token: str = Field(
-        description='The value of the access token generated. See the <a href="https://docs.airbyte.com/integrations/sources/instagram">docs</a> for more information',
+        description=(
+            "The value of the access token generated with "
+            "<b>instagram_basic, instagram_manage_insights, pages_show_list, pages_read_engagement, Instagram Public Content Access</b> "
+            "permissions. "
+            'See the <a href="https://docs.airbyte.com/integrations/sources/instagram/#step-1-set-up-instagram">docs</a> for more '
+            "information"
+        ),
         airbyte_secret=True,
     )
 
@@ -79,10 +85,24 @@ class SourceInstagram(AbstractSource):
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),
-            authSpecification=AuthSpecification(
-                auth_type="oauth2.0",
-                oauth2Specification=OAuth2Specification(
-                    rootObject=[], oauthFlowInitParameters=[], oauthFlowOutputParameters=[["access_token"]]
+            advanced_auth=AdvancedAuth(
+                auth_flow_type="oauth2.0",
+                oauth_config_specification=OAuthConfigSpecification(
+                    complete_oauth_output_specification={
+                        "type": "object",
+                        "properties": {"access_token": {"type": "string", "path_in_connector_config": ["access_token"]}},
+                    },
+                    complete_oauth_server_input_specification={
+                        "type": "object",
+                        "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+                    },
+                    complete_oauth_server_output_specification={
+                        "type": "object",
+                        "properties": {
+                            "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
+                            "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
+                        },
+                    },
                 ),
             ),
         )

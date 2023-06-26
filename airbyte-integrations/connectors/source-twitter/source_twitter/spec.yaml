@@ -1,4 +1,4 @@
-documentationUrl: https://docsurl.com
+documentationUrl: https://docs.airbyte.com/integrations/sources/twitter
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Twitter Spec
@@ -9,19 +9,25 @@ connectionSpecification:
   additionalProperties: true
   properties:
     api_key:
-      title: API Key Token
-      description: API Key
       type: string
+      title: Access Token
+      description: App only Bearer Token. See the <a href="https://developer.twitter.com/en/docs/authentication/oauth-2-0/bearer-tokens">docs</a> for more information on how to obtain this token.
       airbyte_secret: true
+      order: 0
     query:
-      title: Twitter Search Query
-      description: Twitter Search query
       type: string
+      title: Search Query
+      description: Query for matching Tweets. You can learn how to build this query by reading <a href="https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query"> build a query guide </a>.
+      order: 1
     start_date:
+      type: string
       title: Start Date
-      description: From what date you want to start retrieving dta
-      type: string
+      description: "The start date for retrieving tweets cannot be more than 7 days in the past."
+      format: date-time
+      order: 2
     end_date:
-      title: End Date
-      description: End data to retrieve data
       type: string
+      title: End Date
+      description: "The end date for retrieving tweets must be a minimum of 10 seconds prior to the request time."
+      format: date-time
+      order: 3

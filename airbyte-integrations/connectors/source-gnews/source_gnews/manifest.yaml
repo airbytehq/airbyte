@@ -1,9 +1,9 @@
-version: "0.1.0"
+version: "0.29.0"
 
 definitions:
   selector:
     extractor:
-      field_pointer: ["articles"]
+      field_path: ["articles"]
   base_requester:
     url_base: "https://gnews.io/api/v4"
     http_method: "GET"
@@ -23,21 +23,21 @@ definitions:
             - class_name: "source_gnews.WaitUntilMidnightBackoffStrategy"
   base_retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
-    stream_slicer:
-      type: "DatetimeStreamSlicer"
-      start_datetime:
-        datetime: "{{ config['start_date'] or ' '.join(day_delta(-7).split('.')[0].split('T')) }}"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
-      end_datetime:
-        datetime: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d %H:%M:%S') }}"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
-      step: "P1W"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      cursor_granularity: "PT1S"
-      cursor_field: "{{ options['stream_cursor_field'] }}"
+  incremental_sync:
+    type: "DatetimeBasedCursor"
+    start_datetime:
+      datetime: "{{ config['start_date'] or ' '.join(day_delta(-7).split('.')[0].split('T')) }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+    end_datetime:
+      datetime: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d %H:%M:%S') }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+    step: "P1W"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    cursor_granularity: "PT1S"
+    cursor_field: "publishedAt"
   common_parameters:
     token: "{{ config['api_key'] }}"
     lang: "{{ config['language'] }}"
@@ -49,45 +49,46 @@ definitions:
     type: InlineSchemaLoader
   search_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-      schema: "*ref(schemas.search_stream_schema)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+      schema: "#/schemas/search_stream_schema"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+    $parameters:
       name: "search"
       primary_key: "url"
       path: "/search"
-      stream_cursor_field: "publishedAt"
+      cursor_field: "publishedAt"
     retriever:
-      $ref: "*ref(definitions.base_retriever)"
+      $ref: "#/definitions/base_retriever"
       requester:
-        $ref: "*ref(definitions.base_requester)"
-        request_options_provider:
-          request_parameters:
-            $ref: "*ref(definitions.common_parameters)"
-            q: "{{ config['query'] }}"
-            in: "{{ ','.join(config['in']) }}"
-            sortby: "{{ config['sortby'] }}"
+        $ref: "#/definitions/base_requester"
+        request_parameters:
+          $ref: "#/definitions/common_parameters"
+          q: "{{ config['query'] }}"
+          in: "{{ ','.join(config['in']) }}"
+          sortby: "{{ config['sortby'] }}"
   top_headlines_stream:
     schema_loader:
-      $ref: "*ref(definitions.schema_loader)"
-      schema: "*ref(schemas.top_headlines_stream_schema)"
-    $options:
+      $ref: "#/definitions/schema_loader"
+      schema: "#/schemas/top_headlines_stream_schema"
+    $parameters:
       name: "top_headlines"
       primary_key: "url"
       path: "/top-headlines"
-      stream_cursor_field: "publishedAt"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
-      $ref: "*ref(definitions.base_retriever)"
+      $ref: "#/definitions/base_retriever"
       requester:
-        $ref: "*ref(definitions.base_requester)"
-        request_options_provider:
-          request_parameters:
-            $ref: "*ref(definitions.common_parameters)"
-            topic: "{{ config['top_headlines_topic'] }}"
-            q: "{{ config['top_headlines_query'] }}"
+        $ref: "#/definitions/base_requester"
+        request_parameters:
+          $ref: "#/definitions/common_parameters"
+          topic: "{{ config['top_headlines_topic'] }}"
+          q: "{{ config['top_headlines_query'] }}"
 
 streams:
-  - "*ref(definitions.search_stream)"
-  - "*ref(definitions.top_headlines_stream)"
+  - "#/definitions/search_stream"
+  - "#/definitions/top_headlines_stream"
 
 check:
   stream_names:

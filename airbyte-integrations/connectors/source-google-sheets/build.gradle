@@ -5,6 +5,6 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'google_sheets_source'
+    moduleDirectory 'source_google_sheets'
 }
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import base64
@@ -22,6 +22,7 @@ from .streams import (
     PurchaseOrders,
     Releases,
     Requesters,
+    SatisfactionSurveyResponses,
     Software,
     Tickets,
     Vendors,
@@ -68,5 +69,6 @@ class SourceFreshservice(AbstractSource):
             Vendors(**kwargs),
             Assets(**kwargs),
             PurchaseOrders(**kwargs),
+            SatisfactionSurveyResponses(**kwargs),
             Software(**kwargs),
         ]

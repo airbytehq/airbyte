@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -24,12 +24,14 @@ from .streams import (
     SponsoredBrandsReportStream,
     SponsoredBrandsVideoReportStream,
     SponsoredDisplayAdGroups,
+    SponsoredDisplayBudgetRules,
     SponsoredDisplayCampaigns,
     SponsoredDisplayProductAds,
     SponsoredDisplayReportStream,
     SponsoredDisplayTargetings,
     SponsoredProductAdGroups,
     SponsoredProductAds,
+    SponsoredProductCampaignNegativeKeywords,
     SponsoredProductCampaigns,
     SponsoredProductKeywords,
     SponsoredProductNegativeKeywords,
@@ -55,6 +57,7 @@ class SourceAmazonAds(AbstractSource):
         if not config.get("look_back_window"):
             source_spec = self.spec(logging.getLogger("airbyte"))
             config["look_back_window"] = source_spec.connectionSpecification["properties"]["look_back_window"]["default"]
+        config["report_record_types"] = config.get("report_record_types", [])
         return config
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -97,10 +100,12 @@ class SourceAmazonAds(AbstractSource):
             SponsoredDisplayProductAds,
             SponsoredDisplayTargetings,
             SponsoredDisplayReportStream,
+            SponsoredDisplayBudgetRules,
             SponsoredProductCampaigns,
             SponsoredProductAdGroups,
             SponsoredProductKeywords,
             SponsoredProductNegativeKeywords,
+            SponsoredProductCampaignNegativeKeywords,
             SponsoredProductAds,
             SponsoredProductTargetings,
             SponsoredProductsReportStream,

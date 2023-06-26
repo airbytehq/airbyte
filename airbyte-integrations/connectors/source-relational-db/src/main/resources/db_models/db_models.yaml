@@ -1,6 +1,6 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml
+"$id": https://github.com/airbytehq/airbyte-protocol/blob/main/protocol-models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml
 title: SourceModels
 type: object
 description: Source Models

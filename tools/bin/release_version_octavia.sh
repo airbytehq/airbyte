@@ -19,6 +19,6 @@ docker login --username "${DOCKER_HUB_USERNAME}" --password "${DOCKER_HUB_PASSWO
 source ./tools/bin/bump_version.sh
 
 echo "Building and publishing OCTAVIA version ${NEW_VERSION} for git revision ${GIT_REVISION}..."
-VERSION=$NEW_VERSION SUB_BUILD=OCTAVIA_CLI ./gradlew clean build
+VERSION=$NEW_VERSION SUB_BUILD=OCTAVIA_CLI ./gradlew clean build --scan
 ./octavia-cli/publish.sh ${NEW_VERSION} ${GIT_REVISION}
 echo "Completed building and publishing OCTAVIA..."

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift.copiers;
@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
@@ -42,7 +42,7 @@ public class RedshiftStreamCopier extends S3StreamCopier {
                               final AmazonS3 client,
                               final JdbcDatabase db,
                               final S3CopyConfig config,
-                              final ExtendedNameTransformer nameTransformer,
+                              final StandardNameTransformer nameTransformer,
                               final SqlOperations sqlOperations,
                               final ConfiguredAirbyteStream configuredAirbyteStream) {
     this(
@@ -63,7 +63,7 @@ public class RedshiftStreamCopier extends S3StreamCopier {
                        final AmazonS3 client,
                        final JdbcDatabase db,
                        final S3CopyConfig config,
-                       final ExtendedNameTransformer nameTransformer,
+                       final StandardNameTransformer nameTransformer,
                        final SqlOperations sqlOperations,
                        final Timestamp uploadTime,
                        final ConfiguredAirbyteStream configuredAirbyteStream) {

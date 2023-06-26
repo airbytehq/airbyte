@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
@@ -88,6 +88,27 @@ public class ClickhouseDestinationSpecTest {
   void testJdbcAdditionalProperty() throws Exception {
     final ConnectorSpecification spec = new ClickhouseDestination().spec();
     assertNotNull(spec.getConnectionSpecification().get("properties").get(JdbcUtils.JDBC_URL_PARAMS_KEY));
+  }
+
+  @Test
+  void testHostMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("host");
+    assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testPortMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("port");
+    assertFalse(validator.test(schema, config));
+  }
+
+  @Test
+  void testUsernameMissing() {
+    final JsonNode config = Jsons.deserialize(CONFIGURATION);
+    ((ObjectNode) config).remove("username");
+    assertFalse(validator.test(schema, config));
   }
 
 }

@@ -1,0 +1,130 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/starburst-galaxy",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Starburst Galaxy Destination Spec",
+    "type": "object",
+    "required": [ "accept_terms", "server_hostname", "username", "password", "catalog", "staging_object_store" ],
+    "properties": {
+      "accept_terms": {
+        "title": "Agree to the Starburst Galaxy terms & conditions",
+        "type": "boolean",
+        "description": "You must agree to the Starburst Galaxy <a href=\"https://www.starburst.io/terms/\">terms & conditions</a> to use this connector.",
+        "default": false,
+        "order": 1
+      },
+      "server_hostname": {
+        "title": "Hostname",
+        "type": "string",
+        "description": "Starburst Galaxy cluster hostname.",
+        "examples": [ "abc-12345678-wxyz.trino.galaxy-demo.io" ],
+        "order": 2
+      },
+      "port": {
+        "title": "Port",
+        "type": "string",
+        "description": "Starburst Galaxy cluster port.",
+        "default": "443",
+        "examples": [ "443" ],
+        "order": 3
+      },
+      "username": {
+        "title": "User",
+        "type": "string",
+        "description": "Starburst Galaxy user.",
+        "examples": [ "user@example.com" ],
+        "order": 4
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "description": "Starburst Galaxy password for the specified user.",
+        "examples": [ "password" ],
+        "airbyte_secret": true,
+        "order": 5
+      },
+      "catalog": {
+        "title": "Amazon S3 catalog",
+        "type": "string",
+        "description": "Name of the Starburst Galaxy Amazon S3 catalog.",
+        "examples": [ "sample_s3_catalog" ],
+        "order": 6
+      },
+      "catalog_schema": {
+        "title": "Amazon S3 catalog schema",
+        "type": "string",
+        "description": "The default Starburst Galaxy Amazon S3 catalog schema where tables are written to if the source does not specify a namespace. Defaults to \"public\".",
+        "default": "public",
+        "examples": [ "public" ],
+        "order": 7
+      },
+      "staging_object_store": {
+        "title": "Staging object store",
+        "type": "object",
+        "description": "Temporary storage on which temporary Iceberg table is created.",
+        "oneOf": [ {
+          "title": "Amazon S3",
+          "required": [ "object_store_type", "s3_bucket_name", "s3_bucket_path", "s3_bucket_region", "s3_access_key_id", "s3_secret_access_key" ],
+          "properties": {
+            "object_store_type": {
+              "type": "string",
+              "enum": [ "S3" ],
+              "default": "S3",
+              "order": 1
+            },
+            "s3_bucket_name": {
+              "title": "S3 bucket name",
+              "type": "string",
+              "description": "Name of the S3 bucket",
+              "examples": [ "airbyte_staging" ],
+              "order": 1
+            },
+            "s3_bucket_path": {
+              "title": "S3 bucket path",
+              "type": "string",
+              "description": "Directory in the S3 bucket where staging data is stored.",
+              "examples": [ "temp_airbyte__sync/test" ],
+              "order": 2
+            },
+            "s3_bucket_region": {
+              "title": "S3 bucket region",
+              "type": "string",
+              "default": "us-east-1",
+              "description": "The region of the S3 bucket.",
+              "enum": [ "ap-northeast-1", "ap-southeast-1", "ap-southeast-2", "ca-central-1", "eu-central-1", "eu-west-1", "eu-west-2", "eu-west-3", "us-east-1", "us-east-2", "us-west-1", "us-west-2" ],
+              "order": 3
+            },
+            "s3_access_key_id": {
+              "title": "Access key",
+              "type": "string",
+              "description": "Access key with access to the bucket. Airbyte requires read and write permissions to a given bucket.",
+              "examples": [ "A012345678910EXAMPLE" ],
+              "airbyte_secret": true,
+              "order": 4
+            },
+            "s3_secret_access_key": {
+              "title": "Secret key",
+              "type": "string",
+              "description": "Secret key used with the specified access key.",
+              "examples": [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ],
+              "airbyte_secret": true,
+              "order": 5
+            }
+          }
+        } ],
+        "order": 8
+      },
+      "purge_staging_table": {
+        "title": "Purge staging Iceberg table",
+        "type": "boolean",
+        "description": "Defaults to 'true'. Switch to 'false' for debugging purposes.",
+        "default": true,
+        "order": 9
+      }
+    }
+  },
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": [ "overwrite", "append" ]
+}

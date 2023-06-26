@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.e2e_test;
@@ -24,12 +24,13 @@ public class TestingSilentDestinationAcceptanceTest extends DestinationAcceptanc
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.jsonNode(Collections.singletonMap("type", TestDestinationType.SILENT.name()));
+    return Jsons.jsonNode(
+        Collections.singletonMap("test_destination", Collections.singletonMap("test_destination_type", TestDestinationType.SILENT.name())));
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    return Jsons.jsonNode(Collections.singletonMap("type", "invalid"));
+    return Jsons.jsonNode(Collections.singletonMap("test_destination", Collections.singletonMap("test_destination_type", "invalid")));
   }
 
   @Override

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from __future__ import (  # Used to evaluate type hints at runtime, a NameError: name 'ConfigObserver' is not defined is thrown otherwise
@@ -68,10 +68,18 @@ def observe_connector_config(non_observed_connector_config: MutableMapping[str, 
 
 
 def emit_configuration_as_airbyte_control_message(config: MutableMapping):
+    """
+    WARNING: deprecated - emit_configuration_as_airbyte_control_message is being deprecated in favor of the MessageRepository mechanism.
+    See the airbyte_cdk.sources.message package
+    """
+    airbyte_message = create_connector_config_control_message(config)
+    print(airbyte_message.json(exclude_unset=True))
+
+
+def create_connector_config_control_message(config):
     control_message = AirbyteControlMessage(
         type=OrchestratorType.CONNECTOR_CONFIG,
         emitted_at=time.time() * 1000,
         connectorConfig=AirbyteControlConnectorConfigMessage(config=config),
     )
-    airbyte_message = AirbyteMessage(type=Type.CONTROL, control=control_message)
-    print(airbyte_message.json(exclude_unset=True))
+    return AirbyteMessage(type=Type.CONTROL, control=control_message)

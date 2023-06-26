@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.csv;
@@ -22,7 +22,7 @@ public class RootLevelFlatteningSheetGenerator extends BaseSheetGenerator implem
 
   public RootLevelFlatteningSheetGenerator(final JsonNode jsonSchema) {
     this.recordHeaders = MoreIterators.toList(jsonSchema.get("properties").fieldNames())
-        .stream().sorted().collect(Collectors.toList());;
+        .stream().sorted().collect(Collectors.toList());
   }
 
   @Override

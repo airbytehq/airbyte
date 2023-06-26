@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -37,14 +37,14 @@ def config_fixture():
     return {"start_date": "2021-01-10T00:00:00Z", "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"}}
 
 
+@pytest.fixture(name="config_invalid_date")
+def config_invalid_date_fixture():
+    return {"start_date": "2000-00-00T00:00:00Z", "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"}}
+
+
 @pytest.fixture(name="some_credentials")
 def some_credentials_fixture():
     return {"credentials_title": "Private App Credentials", "access_token": "wrong token"}
-
-
-@pytest.fixture(name="creds_with_wrong_permissions")
-def creds_with_wrong_permissions():
-    return {"credentials_title": "Private App Credentials", "access_token": "THIS-IS-THE-ACCESS_TOKEN"}
 
 
 @pytest.fixture(name="fake_properties_list")

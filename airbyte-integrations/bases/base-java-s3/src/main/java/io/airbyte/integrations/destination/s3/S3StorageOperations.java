@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -127,15 +127,16 @@ public class S3StorageOperations extends BlobStorageOperations {
       }
 
       try {
-        return loadDataIntoBucket(objectPath, recordsData);
+        final String fileName = loadDataIntoBucket(objectPath, recordsData);
+        LOGGER.info("Successfully loaded records to stage {} with {} re-attempt(s)", objectPath, exceptionsThrown.size());
+        return fileName;
       } catch (final Exception e) {
         LOGGER.error("Failed to upload records into storage {}", objectPath, e);
         exceptionsThrown.add(e);
       }
     }
     // Verifying that ALL exceptions are authentication related before assuming this is a configuration
-    // issue
-    // reduces risk of misidentifying errors or reporting a transient error.
+    // issue reduces risk of misidentifying errors or reporting a transient error.
     final boolean areAllExceptionsAuthExceptions = exceptionsThrown.stream().filter(e -> e instanceof AmazonS3Exception)
         .map(s3e -> ((AmazonS3Exception) s3e).getStatusCode())
         .filter(ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES::contains)

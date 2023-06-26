@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from .report_streams import ReportStream
@@ -19,11 +19,7 @@ METRICS_MAP = {
         "keywordText",
         "keywordBid",
         "keywordStatus",
-        "targetId",
         "searchTermImpressionRank",
-        "targetingExpression",
-        "targetingText",
-        "targetingType",
         "matchType",
         "impressions",
         "clicks",
@@ -42,6 +38,9 @@ METRICS_MAP = {
         "attributedUnitsOrderedNewToBrandPercentage14d",
         "unitsSold14d",
         "dpv14d",
+        "attributedBrandedSearches14d",
+        "keywordId",
+        "searchTermImpressionShare",
     ],
     "adGroups": [
         "campaignName",
@@ -68,6 +67,7 @@ METRICS_MAP = {
         "attributedUnitsOrderedNewToBrandPercentage14d",
         "unitsSold14d",
         "dpv14d",
+        "attributedBrandedSearches14d",
     ],
     "campaigns": [
         "campaignName",
@@ -95,6 +95,7 @@ METRICS_MAP = {
         "attributedUnitsOrderedNewToBrandPercentage14d",
         "unitsSold14d",
         "dpv14d",
+        "attributedBrandedSearches14d",
     ],
 }
 

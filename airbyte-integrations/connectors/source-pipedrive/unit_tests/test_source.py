@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from airbyte_cdk.logger import AirbyteLogger
@@ -22,7 +22,7 @@ def test_check_connection(requests_mock, config_token):
     body = {"success": "true", "data": [{"id": 1, "update_time": "2020-10-14T11:30:36.551Z"}]}
     response = setup_response(200, body)
     api_token = config_token["authorization"]["api_token"]
-    requests_mock.register_uri("GET", PIPEDRIVE_URL_BASE + "deals?limit=50&api_token=" + api_token, response)
+    requests_mock.register_uri("GET", PIPEDRIVE_URL_BASE + "recents?limit=50&api_token=" + api_token, response)
 
     ok, error = SourcePipedrive().check_connection(logger, config_token)
 
@@ -30,27 +30,10 @@ def test_check_connection(requests_mock, config_token):
     assert not error
 
 
-def test_check_connection_empty():
-    config = {}
-    ok, error = SourcePipedrive().check_connection(logger, config)
-
-    assert not ok
-    assert error
-
-
-def test_check_connection_error(config_token):
-    config_token.pop("replication_start_date")
-
-    ok, error = SourcePipedrive().check_connection(logger, config_token)
-
-    assert not ok
-    assert error
-
-
 def test_check_connection_exception(requests_mock, config_token):
     response = setup_response(400, {})
     api_token = config_token["authorization"]["api_token"]
-    requests_mock.register_uri("GET", PIPEDRIVE_URL_BASE + "deals?limit=50&api_token=" + api_token, response)
+    requests_mock.register_uri("GET", PIPEDRIVE_URL_BASE + "recents?limit=50&api_token=" + api_token, response)
 
     ok, error = SourcePipedrive().check_connection(logger, config_token)
 
@@ -61,7 +44,7 @@ def test_check_connection_exception(requests_mock, config_token):
 def test_streams(config_token):
     streams = SourcePipedrive().streams(config_token)
 
-    assert len(streams) == 12
+    assert len(streams) == 23
 
 
 def setup_response(status, body):
@@ -80,7 +63,7 @@ def test_read(config_token):
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
-                stream=AirbyteStream(name="deals", json_schema={}),
+                stream=AirbyteStream(name="deals", json_schema={}, supported_sync_modes=["full_refresh", "incremental"]),
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
             )

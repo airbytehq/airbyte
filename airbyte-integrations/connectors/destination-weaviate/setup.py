@@ -1,11 +1,11 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "weaviate-client==3.9.0"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "weaviate-client==3.11.0"]
 
 TEST_REQUIREMENTS = ["pytest~=6.2", "docker"]
 

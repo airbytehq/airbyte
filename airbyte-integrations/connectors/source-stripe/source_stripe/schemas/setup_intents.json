@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft-04/schema#",
+  "additionalProperties": true,
+  "$ref": "setup_intent.json"
+}

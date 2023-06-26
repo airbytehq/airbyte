@@ -1,25 +1,27 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import base64
 import logging
+from datetime import datetime
 from typing import Any, List, Mapping, Tuple
 
-import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from source_zendesk_support.streams import SourceZendeskException
+from source_zendesk_support.streams import DATETIME_FORMAT, SourceZendeskException
 
 from .streams import (
+    AuditLogs,
     Brands,
     CustomRoles,
     GroupMemberships,
     Groups,
     Macros,
     Organizations,
+    OrganizationMemberships,
     SatisfactionRatings,
     Schedules,
     SlaPolicies,
@@ -82,8 +84,9 @@ class SourceZendeskSupport(AbstractSource):
         auth = self.get_authenticator(config)
         settings = None
         try:
+            datetime.strptime(config["start_date"], DATETIME_FORMAT)
             settings = UserSettingsStream(config["subdomain"], authenticator=auth, start_date=None).get_settings()
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             return False, e
 
         active_features = [k for k, v in settings.get("active_features", {}).items() if v]
@@ -110,10 +113,12 @@ class SourceZendeskSupport(AbstractSource):
         """
         args = self.convert_config2stream_args(config)
         streams = [
+            AuditLogs(**args),
             GroupMemberships(**args),
             Groups(**args),
             Macros(**args),
             Organizations(**args),
+            OrganizationMemberships(**args),
             SatisfactionRatings(**args),
             SlaPolicies(**args),
             Tags(**args),

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.snowflake;
@@ -44,18 +44,21 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   }
 
   @Override
-  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
-    final var dataSource = createDataSource(config);
-    final var database = new StreamingJdbcDatabase(dataSource, new SnowflakeSourceOperations(), AdaptiveStreamingQueryConfig::new);
-    quoteString = database.getMetaData().getIdentifierQuoteString();
-    return database;
-  }
-
-  @Override
-  protected DataSource createDataSource(final JsonNode config) {
-    final DataSource dataSource = SnowflakeDataSourceUtils.createDataSource(config, airbyteEnvironment);
+  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
+    final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
+    // Create the data source
+    final DataSource dataSource = SnowflakeDataSourceUtils.createDataSource(sourceConfig, airbyteEnvironment);
     dataSources.add(dataSource);
-    return dataSource;
+
+    final JdbcDatabase database = new StreamingJdbcDatabase(
+        dataSource,
+        sourceOperations,
+        streamingQueryConfigProvider);
+
+    quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
+    database.setSourceConfig(sourceConfig);
+    database.setDatabaseConfig(jdbcConfig);
+    return database;
   }
 
   @Override

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -26,7 +26,7 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
         pytest.param(
             {
                 "type": "DeclarativeStream",
-                "retriever": {"type": "SimpleRetriever", "paginator": {}, "record_selector": {}, "requester": {}, "stream_slicer": {}},
+                "retriever": {"type": "SimpleRetriever", "paginator": {}, "record_selector": {}, "requester": {}},
             },
             {
                 "type": "DeclarativeStream",
@@ -35,19 +35,17 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
                     "paginator": {"type": "NoPagination"},
                     "record_selector": {"type": "RecordSelector"},
                     "requester": {"type": "HttpRequester"},
-                    "stream_slicer": {"type": "SingleSlice"},
                 },
             },
             id="test_simple_retriever",
         ),
         pytest.param(
-            {"type": "DeclarativeStream", "requester": {"type": "HttpRequester", "error_handler": {}, "request_options_provider": {}}},
+            {"type": "DeclarativeStream", "requester": {"type": "HttpRequester", "error_handler": {}}},
             {
                 "type": "DeclarativeStream",
                 "requester": {
                     "type": "HttpRequester",
                     "error_handler": {"type": "DefaultErrorHandler"},
-                    "request_options_provider": {"type": "InterpolatedRequestOptionsProvider"},
                 },
             },
             id="test_http_requester",
@@ -59,17 +57,17 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
                 "paginator": {
                     "type": "DefaultPaginator",
                     "page_size_option": {"type": "RequestOption"},
-                    "page_token_option": {"type": "RequestOption"},
+                    "page_token_option": {},
                 },
             },
             id="test_default_paginator",
         ),
         pytest.param(
-            {"type": "SimpleRetriever", "stream_slicer": {"type": "SubstreamSlicer", "parent_stream_configs": [{}, {}, {}]}},
+            {"type": "SimpleRetriever", "partition_router": {"type": "SubstreamPartitionRouter", "parent_stream_configs": [{}, {}, {}]}},
             {
                 "type": "SimpleRetriever",
-                "stream_slicer": {
-                    "type": "SubstreamSlicer",
+                "partition_router": {
+                    "type": "SubstreamPartitionRouter",
                     "parent_stream_configs": [
                         {"type": "ParentStreamConfig"},
                         {"type": "ParentStreamConfig"},
@@ -83,7 +81,7 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
 )
 def test_find_default_types(component, expected_component):
     transformer = ManifestComponentTransformer()
-    actual_component = transformer.propagate_types_and_options("", component, {})
+    actual_component = transformer.propagate_types_and_parameters("", component, {})
 
     assert actual_component == expected_component
 
@@ -126,24 +124,24 @@ def test_find_default_types(component, expected_component):
 )
 def test_transform_custom_components(component, expected_component):
     transformer = ManifestComponentTransformer()
-    actual_component = transformer.propagate_types_and_options("", component, {})
+    actual_component = transformer.propagate_types_and_parameters("", component, {})
 
     assert actual_component == expected_component
 
 
-def test_propagate_options_to_all_components():
+def test_propagate_parameters_to_all_components():
     component = {
         "type": "DeclarativeSource",
         "streams": [
             {
                 "type": "DeclarativeStream",
-                "$options": {"name": "roasters", "primary_key": "id"},
+                "$parameters": {"name": "roasters", "primary_key": "id"},
                 "retriever": {
                     "type": "SimpleRetriever",
-                    "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_pointer": []}},
+                    "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": []}},
                     "requester": {
                         "type": "HttpRequester",
-                        "name": '{{ options["name"] }}',
+                        "name": '{{ parameters["name"] }}',
                         "url_base": "https://coffee.example.io/v1/",
                         "http_method": "GET",
                     },
@@ -165,39 +163,39 @@ def test_propagate_options_to_all_components():
                         "type": "RecordSelector",
                         "extractor": {
                             "type": "DpathExtractor",
-                            "field_pointer": [],
+                            "field_path": [],
                             "name": "roasters",
                             "primary_key": "id",
-                            "$options": {"name": "roasters", "primary_key": "id"},
+                            "$parameters": {"name": "roasters", "primary_key": "id"},
                         },
                         "name": "roasters",
                         "primary_key": "id",
-                        "$options": {"name": "roasters", "primary_key": "id"},
+                        "$parameters": {"name": "roasters", "primary_key": "id"},
                     },
                     "requester": {
                         "type": "HttpRequester",
-                        "name": '{{ options["name"] }}',
+                        "name": '{{ parameters["name"] }}',
                         "url_base": "https://coffee.example.io/v1/",
                         "http_method": "GET",
                         "primary_key": "id",
-                        "$options": {"name": "roasters", "primary_key": "id"},
+                        "$parameters": {"name": "roasters", "primary_key": "id"},
                     },
-                    "$options": {"name": "roasters", "primary_key": "id"},
+                    "$parameters": {"name": "roasters", "primary_key": "id"},
                 },
                 "name": "roasters",
                 "primary_key": "id",
-                "$options": {"name": "roasters", "primary_key": "id"},
+                "$parameters": {"name": "roasters", "primary_key": "id"},
             }
         ],
     }
 
     transformer = ManifestComponentTransformer()
-    actual_component = transformer.propagate_types_and_options("", component, {})
+    actual_component = transformer.propagate_types_and_parameters("", component, {})
 
     assert actual_component == expected_component
 
 
-def test_component_options_take_precedence_over_parent_options():
+def test_component_parameters_take_precedence_over_parent_parameters():
     component = {
         "type": "DeclarativeStream",
         "retriever": {
@@ -208,11 +206,11 @@ def test_component_options_take_precedence_over_parent_options():
                 "url_base": "https://coffee.example.io/v1/",
                 "http_method": "GET",
                 "primary_key": "id",
-                "$options": {
+                "$parameters": {
                     "name": "high_priority",
                 },
             },
-            "$options": {
+            "$parameters": {
                 "name": "low_priority",
             },
         },
@@ -229,32 +227,32 @@ def test_component_options_take_precedence_over_parent_options():
                 "url_base": "https://coffee.example.io/v1/",
                 "http_method": "GET",
                 "primary_key": "id",
-                "$options": {
+                "$parameters": {
                     "name": "high_priority",
                 },
             },
-            "$options": {
+            "$parameters": {
                 "name": "low_priority",
             },
         },
     }
 
     transformer = ManifestComponentTransformer()
-    actual_component = transformer.propagate_types_and_options("", component, {})
+    actual_component = transformer.propagate_types_and_parameters("", component, {})
 
     assert actual_component == expected_component
 
 
-def test_do_not_propagate_options_that_have_the_same_field_name():
+def test_do_not_propagate_parameters_that_have_the_same_field_name():
     component = {
         "type": "DeclarativeStream",
         "streams": [
             {
                 "type": "DeclarativeStream",
-                "$options": {
+                "$parameters": {
                     "name": "roasters",
                     "primary_key": "id",
-                    "schema_loader": {"type": "JsonFileSchemaLoader", "file_path": './source_coffee/schemas/{{ options["name"] }}.json'},
+                    "schema_loader": {"type": "JsonFileSchemaLoader", "file_path": './source_coffee/schemas/{{ parameters["name"] }}.json'},
                 },
             }
         ],
@@ -269,45 +267,45 @@ def test_do_not_propagate_options_that_have_the_same_field_name():
                 "primary_key": "id",
                 "schema_loader": {
                     "type": "JsonFileSchemaLoader",
-                    "file_path": './source_coffee/schemas/{{ options["name"] }}.json',
+                    "file_path": './source_coffee/schemas/{{ parameters["name"] }}.json',
                     "name": "roasters",
                     "primary_key": "id",
-                    "$options": {
+                    "$parameters": {
                         "name": "roasters",
                         "primary_key": "id",
                     },
                 },
-                "$options": {
+                "$parameters": {
                     "name": "roasters",
                     "primary_key": "id",
-                    "schema_loader": {"type": "JsonFileSchemaLoader", "file_path": './source_coffee/schemas/{{ options["name"] }}.json'},
+                    "schema_loader": {"type": "JsonFileSchemaLoader", "file_path": './source_coffee/schemas/{{ parameters["name"] }}.json'},
                 },
             }
         ],
     }
 
     transformer = ManifestComponentTransformer()
-    actual_component = transformer.propagate_types_and_options("", component, {})
+    actual_component = transformer.propagate_types_and_parameters("", component, {})
 
     assert actual_component == expected_component
 
 
-def test_ignore_empty_options():
+def test_ignore_empty_parameters():
     component = {
         "type": "DeclarativeStream",
         "retriever": {
             "type": "SimpleRetriever",
-            "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_pointer": []}},
+            "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": []}},
         },
     }
 
     transformer = ManifestComponentTransformer()
-    actual_component = transformer.propagate_types_and_options("", component, {})
+    actual_component = transformer.propagate_types_and_parameters("", component, {})
 
     assert actual_component == component
 
 
-def test_only_propagate_options_to_components():
+def test_only_propagate_parameters_to_components():
     component = {
         "type": "ParentComponent",
         "component_with_object_properties": {
@@ -315,12 +313,12 @@ def test_only_propagate_options_to_components():
             "subcomponent": {
                 "type": "TestSubComponent",
                 "some_field": "high_priority",
-                "$options": {
+                "$parameters": {
                     "some_option": "already",
                 },
             },
-            "dictionary_field": {"details": "should_not_contain_options", "other": "no_options_as_fields"},
-            "$options": {
+            "dictionary_field": {"details": "should_not_contain_parameters", "other": "no_parameters_as_fields"},
+            "$parameters": {
                 "included": "not!",
             },
         },
@@ -335,17 +333,17 @@ def test_only_propagate_options_to_components():
                 "some_field": "high_priority",
                 "some_option": "already",
                 "included": "not!",
-                "$options": {"some_option": "already", "included": "not!"},
+                "$parameters": {"some_option": "already", "included": "not!"},
             },
-            "dictionary_field": {"details": "should_not_contain_options", "other": "no_options_as_fields"},
+            "dictionary_field": {"details": "should_not_contain_parameters", "other": "no_parameters_as_fields"},
             "included": "not!",
-            "$options": {
+            "$parameters": {
                 "included": "not!",
             },
         },
     }
 
     transformer = ManifestComponentTransformer()
-    actual_component = transformer.propagate_types_and_options("", component, {})
+    actual_component = transformer.propagate_types_and_parameters("", component, {})
 
     assert actual_component == expected_component

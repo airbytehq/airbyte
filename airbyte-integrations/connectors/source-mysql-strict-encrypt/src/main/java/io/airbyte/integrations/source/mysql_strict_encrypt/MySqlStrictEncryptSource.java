@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql_strict_encrypt;
@@ -31,6 +31,7 @@ public class MySqlStrictEncryptSource extends SpecModifyingSource implements Sou
   public static final String SSL_MODE = "ssl_mode";
   public static final String MODE = "mode";
   public static final String SSL_MODE_PREFERRED = "preferred";
+  public static final String SSL_MODE_REQUIRED = "required";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlStrictEncryptSource.class);
   private static final String SSL_MODE_DESCRIPTION = "SSL connection modes. " +
@@ -47,6 +48,7 @@ public class MySqlStrictEncryptSource extends SpecModifyingSource implements Sou
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
+    ((ObjectNode) spec.getConnectionSpecification().get("properties").get(SSL_MODE)).put("default", SSL_MODE_REQUIRED);
     return spec;
   }
 

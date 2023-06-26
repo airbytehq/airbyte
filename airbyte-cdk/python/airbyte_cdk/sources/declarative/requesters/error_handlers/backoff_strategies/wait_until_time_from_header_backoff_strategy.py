@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import numbers
@@ -13,11 +13,10 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.header_helper import get_numeric_value_from_header
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
 from airbyte_cdk.sources.declarative.types import Config
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy, JsonSchemaMixin):
+class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy):
     """
     Extract time at which we can retry the request from response header
     and wait for the difference between now and that time
@@ -29,16 +28,16 @@ class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy, JsonSchemaMixin):
     """
 
     header: Union[InterpolatedString, str]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     config: Config
     min_wait: Optional[Union[float, InterpolatedString, str]] = None
     regex: Optional[Union[InterpolatedString, str]] = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self.header = InterpolatedString.create(self.header, options=options)
-        self.regex = InterpolatedString.create(self.regex, options=options) if self.regex else None
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self.header = InterpolatedString.create(self.header, parameters=parameters)
+        self.regex = InterpolatedString.create(self.regex, parameters=parameters) if self.regex else None
         if not isinstance(self.min_wait, InterpolatedString):
-            self.min_wait = InterpolatedString.create(str(self.min_wait), options=options)
+            self.min_wait = InterpolatedString.create(str(self.min_wait), parameters=parameters)
 
     def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         now = time.time()

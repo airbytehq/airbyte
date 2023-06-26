@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.csv;
@@ -89,7 +89,7 @@ public class CsvDestination extends BaseConnector implements Destination {
       final Path finalPath = destinationDir.resolve(tableName + ".csv");
       csvFormat = CSVFormat.DEFAULT.withDelimiter(delimiter);
       csvFormat = csvFormat.withHeader(JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
-            JavaBaseConstants.COLUMN_NAME_DATA);
+          JavaBaseConstants.COLUMN_NAME_DATA);
       final DestinationSyncMode syncMode = stream.getDestinationSyncMode();
       if (syncMode == null) {
         throw new IllegalStateException("Undefined destination sync mode");
@@ -135,18 +135,18 @@ public class CsvDestination extends BaseConnector implements Destination {
    */
   protected Character getDelimiter(final JsonNode config) {
 
-      JsonNode tempConfig = config;
-      Character delimiter;
+    JsonNode tempConfig = config;
+    Character delimiter;
 
-      if (tempConfig.has(DELIMITER_TYPE)) {
-        String delimiter_as_text = tempConfig.get(DELIMITER_TYPE).get("delimiter").asText();
-        delimiter = (char) Integer.parseInt(delimiter_as_text.substring(2),16);
-        return delimiter;
-      } else {
-        delimiter = ',';
-      }
-      Preconditions.checkNotNull(delimiter);
+    if (tempConfig.has(DELIMITER_TYPE)) {
+      String delimiter_as_text = tempConfig.get(DELIMITER_TYPE).get("delimiter").asText();
+      delimiter = (char) Integer.parseInt(delimiter_as_text.substring(2), 16);
       return delimiter;
+    } else {
+      delimiter = ',';
+    }
+    Preconditions.checkNotNull(delimiter);
+    return delimiter;
   }
 
   /**

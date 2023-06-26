@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -251,10 +251,13 @@ def test_failed_reading(traceback, container_error, last_line, expected_error):
     line_lengths = [random.randint(0, 32) for _ in range(line_count)]
 
     with pytest.raises(ContainerError) as exc:
+        status = {"StatusCode": 1}
+        if container_error:
+            status["Error"] = container_error
         list(
             ConnectorRunner.read(
                 container=MockContainer(
-                    status={"StatusCode": 1, "Error": container_error}, iter_logs=binary_generator(line_lengths, traceback or last_line)
+                    status=status, iter_logs=binary_generator(line_lengths, traceback or last_line)
                 )
             )
         )

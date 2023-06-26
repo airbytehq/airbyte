@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.azure_blob_storage.writer;
@@ -26,9 +26,9 @@ public abstract class BaseAzureBlobStorageWriter implements AzureBlobStorageWrit
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseAzureBlobStorageWriter.class);
 
   protected final AzureBlobStorageDestinationConfig config;
-  protected final AppendBlobClient appendBlobClient;
   protected final AirbyteStream stream;
   protected final DestinationSyncMode syncMode;
+  protected AppendBlobClient appendBlobClient;
 
   protected BaseAzureBlobStorageWriter(final AzureBlobStorageDestinationConfig config,
                                        final AppendBlobClient appendBlobClient,
@@ -37,6 +37,10 @@ public abstract class BaseAzureBlobStorageWriter implements AzureBlobStorageWrit
     this.appendBlobClient = appendBlobClient;
     this.stream = configuredStream.getStream();
     this.syncMode = configuredStream.getDestinationSyncMode();
+  }
+
+  protected synchronized void reinitAppendBlobClient(AppendBlobClient appendBlobClient) {
+    this.appendBlobClient = appendBlobClient;
   }
 
   /**

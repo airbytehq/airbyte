@@ -497,7 +497,7 @@
             "type": "string"
           },
           "timezone": {
-            "description": "The timezone used in the Stripe Dashboard for this account. A list of possible time zone values is maintained at the [IANA Time Zone Database](http://www.iana.org/time-zones).",
+            "description": "The timezone used in the Stripe Dashboard for this account. A list of possible time zone values is maintained at the [IANA Time Zone Database](https://www.iana.org/time-zones).",
             "maxLength": 5000,
             "nullable": true,
             "type": "string"
@@ -5948,7 +5948,7 @@
         "type": "object"
       },
       "event": {
-        "description": "Events are our way of letting you know when something interesting happens in\nyour account. When an interesting event occurs, we create a new `Event`\nobject. For example, when a charge succeeds, we create a `charge.succeeded`\nevent; and when an invoice payment attempt fails, we create an\n`invoice.payment_failed` event. Note that many API requests may cause multiple\nevents to be created. For example, if you create a new subscription for a\ncustomer, you will receive both a `customer.subscription.created` event and a\n`charge.succeeded` event.\n\nEvents occur when the state of another API resource changes. The state of that\nresource at the time of the change is embedded in the event's data field. For\nexample, a `charge.succeeded` event will contain a charge, and an\n`invoice.payment_failed` event will contain an invoice.\n\nAs with other API resources, you can use endpoints to retrieve an\n[individual event](https://stripe.com/docs/api#retrieve_event) or a [list of events](https://stripe.com/docs/api#list_events)\nfrom the API. We also have a separate\n[webhooks](http://en.wikipedia.org/wiki/Webhook) system for sending the\n`Event` objects directly to an endpoint on your server. Webhooks are managed\nin your\n[account settings](https://dashboard.stripe.com/account/webhooks),\nand our [Using Webhooks](https://stripe.com/docs/webhooks) guide will help you get set up.\n\nWhen using [Connect](https://stripe.com/docs/connect), you can also receive notifications of\nevents that occur in connected accounts. For these events, there will be an\nadditional `account` attribute in the received `Event` object.\n\n**NOTE:** Right now, access to events through the [Retrieve Event API](https://stripe.com/docs/api#retrieve_event) is\nguaranteed only for 30 days.",
+        "description": "Events are our way of letting you know when something interesting happens in\nyour account. When an interesting event occurs, we create a new `Event`\nobject. For example, when a charge succeeds, we create a `charge.succeeded`\nevent; and when an invoice payment attempt fails, we create an\n`invoice.payment_failed` event. Note that many API requests may cause multiple\nevents to be created. For example, if you create a new subscription for a\ncustomer, you will receive both a `customer.subscription.created` event and a\n`charge.succeeded` event.\n\nEvents occur when the state of another API resource changes. The state of that\nresource at the time of the change is embedded in the event's data field. For\nexample, a `charge.succeeded` event will contain a charge, and an\n`invoice.payment_failed` event will contain an invoice.\n\nAs with other API resources, you can use endpoints to retrieve an\n[individual event](https://stripe.com/docs/api#retrieve_event) or a [list of events](https://stripe.com/docs/api#list_events)\nfrom the API. We also have a separate\n[webhooks](https://en.wikipedia.org/wiki/Webhook) system for sending the\n`Event` objects directly to an endpoint on your server. Webhooks are managed\nin your\n[account settings](https://dashboard.stripe.com/account/webhooks),\nand our [Using Webhooks](https://stripe.com/docs/webhooks) guide will help you get set up.\n\nWhen using [Connect](https://stripe.com/docs/connect), you can also receive notifications of\nevents that occur in connected accounts. For these events, there will be an\nadditional `account` attribute in the received `Event` object.\n\n**NOTE:** Right now, access to events through the [Retrieve Event API](https://stripe.com/docs/api#retrieve_event) is\nguaranteed only for 30 days.",
         "properties": {
           "account": {
             "description": "The connected account that originated the event.",
@@ -6397,7 +6397,7 @@
             "type": "string"
           },
           "timezone": {
-            "description": "Defaults to `Etc/UTC`. The output timezone for all timestamps in the report. A list of possible time zone values is maintained at the [IANA Time Zone Database](http://www.iana.org/time-zones). Has no effect on `interval_start` or `interval_end`.",
+            "description": "Defaults to `Etc/UTC`. The output timezone for all timestamps in the report. A list of possible time zone values is maintained at the [IANA Time Zone Database](https://www.iana.org/time-zones). Has no effect on `interval_start` or `interval_end`.",
             "maxLength": 5000,
             "type": "string"
           }
@@ -19800,7 +19800,7 @@
         "x-expandableFields": []
       },
       "sku": {
-        "description": "Stores representations of [stock keeping units](http://en.wikipedia.org/wiki/Stock_keeping_unit).\nSKUs describe specific product variations, taking into account any combination of: attributes,\ncurrency, and cost. For example, a product may be a T-shirt, whereas a specific SKU represents\nthe `size: large`, `color: red` version of that shirt.\n\nCan also be used to manage inventory.\n\nRelated guide: [Tax, Shipping, and Inventory](https://stripe.com/docs/orders).",
+        "description": "Stores representations of [stock keeping units](https://en.wikipedia.org/wiki/Stock_keeping_unit).\nSKUs describe specific product variations, taking into account any combination of: attributes,\ncurrency, and cost. For example, a product may be a T-shirt, whereas a specific SKU represents\nthe `size: large`, `color: red` version of that shirt.\n\nCan also be used to manage inventory.\n\nRelated guide: [Tax, Shipping, and Inventory](https://stripe.com/docs/orders).",
         "properties": {
           "active": {
             "description": "Whether the SKU is available for purchase.",

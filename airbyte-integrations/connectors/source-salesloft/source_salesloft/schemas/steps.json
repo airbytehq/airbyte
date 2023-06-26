@@ -14,7 +14,7 @@
       "format": "date-time"
     },
     "disabled": {
-      "type": ["null", "string"]
+      "type": ["null", "boolean"]
     },
     "type": {
       "type": ["null", "string"]
@@ -26,14 +26,14 @@
       "type": ["null", "string"]
     },
     "day": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "step_number": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "details": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "integer"]
@@ -45,7 +45,7 @@
     },
     "cadence": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "integer"]

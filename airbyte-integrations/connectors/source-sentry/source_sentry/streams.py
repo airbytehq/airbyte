@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -20,6 +20,8 @@ class SentryStream(HttpStream, ABC):
     def __init__(self, hostname: str, **kwargs):
         super().__init__(**kwargs)
         self._url_base = self.URL_TEMPLATE.format(hostname=hostname, api_version=self.API_VERSION)
+        # hardcode the start_date default value, since it's not present in spec.
+        self.start_date = "1900-01-01T00:00:00.0Z"
 
     @property
     def url_base(self) -> str:
@@ -69,14 +71,21 @@ class SentryIncremental(SentryStreamPagination, IncrementalMixin):
         super(SentryIncremental, self).__init__(*args, **kwargs)
         self._cursor_value = None
 
+    def validate_state_value(self, state_value: str = None) -> str:
+        none_or_empty = state_value == "None" if state_value else True
+        return self.start_date if none_or_empty else state_value
+
+    def get_state_value(self, stream_state: Mapping[str, Any] = None) -> str:
+        state_value = self.validate_state_value(stream_state.get(self.cursor_field, self.start_date) if stream_state else self.start_date)
+        return pendulum.parse(state_value)
+
     def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> Iterable:
         """
         Endpoint does not provide query filtering params, but they provide us
         cursor field in most cases, so we used that as incremental filtering
         during the parsing.
         """
-        start_date = "1900-01-01T00:00:00.0Z"
-        if pendulum.parse(record[self.cursor_field]) > pendulum.parse((stream_state or {}).get(self.cursor_field, start_date)):
+        if pendulum.parse(record[self.cursor_field]) > self.get_state_value(stream_state):
             # Persist state.
             # There is a bug in state setter: because of self._cursor_value is not defined it raises Attribute error
             # which is ignored in airbyte_cdk/sources/abstract_source.py:320 and we have an empty state in return
@@ -92,7 +101,7 @@ class SentryIncremental(SentryStreamPagination, IncrementalMixin):
 
     @property
     def state(self) -> Mapping[str, Any]:
-        return {self.cursor_field: str(self._cursor_value)}
+        return {self.cursor_field: self._cursor_value}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
@@ -100,9 +109,11 @@ class SentryIncremental(SentryStreamPagination, IncrementalMixin):
         Define state as a max between given value and current state
         """
         if not self._cursor_value:
-            self._cursor_value = value[self.cursor_field]
+            self._cursor_value = value.get(self.cursor_field)
         else:
-            self._cursor_value = max(value[self.cursor_field], self.state[self.cursor_field])
+            current_value = value.get(self.cursor_field) or self.start_date
+            current_state = str(self.get_state_value(self.state))
+            self._cursor_value = max(current_value, current_state)
 
 
 class Events(SentryIncremental):
@@ -208,3 +219,24 @@ class ProjectDetail(SentryStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield response.json()
+
+
+class Releases(SentryIncremental):
+    """
+    Docs: https://docs.sentry.io/api/releases/list-an-organizations-releases/
+    """
+
+    primary_key = "id"
+    cursor_field = "dateCreated"
+
+    def __init__(self, organization: str, project: str, **kwargs):
+        super().__init__(**kwargs)
+        self._organization = organization
+
+    def path(
+        self,
+        stream_state: Optional[Mapping[str, Any]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> str:
+        return f"organizations/{self._organization}/releases/"

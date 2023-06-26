@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.csv;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
+import io.airbyte.integrations.destination.s3.util.Flattening;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.List;
 import java.util.UUID;
@@ -18,9 +18,13 @@ public interface CsvSheetGenerator {
 
   List<String> getHeaderRow();
 
+  // TODO: (ryankfu) remove this and switch over all destinations to pass in serialized recordStrings,
+  // both for performance and lowers memory footprint
   List<Object> getDataRow(UUID id, AirbyteRecordMessage recordMessage);
 
   List<Object> getDataRow(JsonNode formattedData);
+
+  List<Object> getDataRow(UUID id, String formattedString, long emittedAt);
 
   final class Factory {
 

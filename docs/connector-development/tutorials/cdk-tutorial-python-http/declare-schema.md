@@ -1,6 +1,6 @@
 # Step 5: Declare the Schema
 
-The `discover` method of the Airbyte Protocol returns an `AirbyteCatalog`: an object which declares all the streams output by a connector and their schemas. It also declares the sync modes supported by the stream \(full refresh or incremental\). See the [catalog tutorial](https://docs.airbyte.io/understanding-airbyte/beginners-guide-to-catalog) for more information.
+The `discover` method of the Airbyte Protocol returns an `AirbyteCatalog`: an object which declares all the streams output by a connector and their schemas. It also declares the sync modes supported by the stream \(full refresh or incremental\). See the [catalog tutorial](https://docs.airbyte.com/understanding-airbyte/beginners-guide-to-catalog) for more information.
 
 This is a simple task with the Airbyte CDK. For each stream in our connector we'll need to: 
 
@@ -58,7 +58,7 @@ class SourcePythonHttpTutorial(AbstractSource):
         return [ExchangeRates(authenticator=auth)]
 ```
 
-Having created this stream in code, we'll put a file `exchange_rates.json` in the `schemas/` folder. You can download the JSON file describing the output schema [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/exchange_rates.json) for convenience and place it in `schemas/`.
+Having created this stream in code, we'll put a file `exchange_rates.json` in the `schemas/` folder. You can download the JSON file describing the output schema [here](./exchange_rates_schema.json) for convenience and place it in `schemas/`.
 
 With `.json` schema file in place, let's see if the connector can now find this schema and produce a valid catalog:
 

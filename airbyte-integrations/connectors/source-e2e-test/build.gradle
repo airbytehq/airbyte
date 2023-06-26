@@ -10,7 +10,7 @@ application {
 
 dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-json-validation')
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'com.networknt:json-schema-validator:1.0.72'

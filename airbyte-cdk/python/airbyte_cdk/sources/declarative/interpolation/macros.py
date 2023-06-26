@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import builtins
@@ -8,20 +8,11 @@ import numbers
 from typing import Union
 
 from dateutil import parser
+from isodate import parse_duration
 
 """
 This file contains macros that can be evaluated by a `JinjaInterpolation` object
 """
-
-
-def now_local() -> datetime.datetime:
-    """
-    Current local date and time.
-
-    Usage:
-    `"{{ now_local() }}"
-    """
-    return datetime.datetime.now()
 
 
 def now_utc():
@@ -60,7 +51,15 @@ def timestamp(dt: Union[numbers.Number, str]):
     if isinstance(dt, numbers.Number):
         return int(dt)
     else:
-        return int(parser.parse(dt).replace(tzinfo=datetime.timezone.utc).timestamp())
+        return _str_to_datetime(dt).astimezone(datetime.timezone.utc).timestamp()
+
+
+def _str_to_datetime(s: str) -> datetime.datetime:
+    parsed_date = parser.isoparse(s)
+    if not parsed_date.tzinfo:
+        # Assume UTC if the input does not contain a timezone
+        parsed_date = parsed_date.replace(tzinfo=datetime.timezone.utc)
+    return parsed_date.astimezone(datetime.timezone.utc)
 
 
 def max(*args):
@@ -83,7 +82,7 @@ def max(*args):
     return builtins.max(*args)
 
 
-def day_delta(num_days: int) -> str:
+def day_delta(num_days: int, format: str = "%Y-%m-%dT%H:%M:%S.%f%z") -> str:
     """
     Returns datetime of now() + num_days
 
@@ -93,10 +92,20 @@ def day_delta(num_days: int) -> str:
     :param num_days: number of days to add to current date time
     :return: datetime formatted as RFC3339
     """
-    return (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=num_days)).strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+    return (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=num_days)).strftime(format)
 
 
-def format_datetime(dt: Union[str, datetime.datetime], format: str):
+def duration(datestring: str) -> datetime.timedelta:
+    """
+    Converts ISO8601 duration to datetime.timedelta
+
+    Usage:
+    `"{{ now_utc() - duration('P1D') }}"`
+    """
+    return parse_duration(datestring)
+
+
+def format_datetime(dt: Union[str, datetime.datetime], format: str) -> str:
     """
     Converts datetime to another format
 
@@ -105,8 +114,8 @@ def format_datetime(dt: Union[str, datetime.datetime], format: str):
     """
     if isinstance(dt, datetime.datetime):
         return dt.strftime(format)
-    return parser.parse(dt).strftime(format)
+    return _str_to_datetime(dt).strftime(format)
 
 
-_macros_list = [now_local, now_utc, today_utc, timestamp, max, day_delta, format_datetime]
+_macros_list = [now_utc, today_utc, timestamp, max, day_delta, duration, format_datetime]
 macros = {f.__name__: f for f in _macros_list}

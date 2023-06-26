@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -15,15 +15,13 @@ import io.airbyte.db.Database;
 import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.integrations.base.ssh.SshHelpers;
-import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.HashMap;
@@ -38,7 +36,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @ExtendWith(SystemStubsExtension.class)
-public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends SourceAcceptanceTest {
+public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends AbstractPostgresSourceAcceptanceTest {
 
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
@@ -62,9 +60,10 @@ public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Standard")
         .build());
+
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
+        .put("host", HostPortResolver.resolveHost(container))
+        .put("port", HostPortResolver.resolvePort(container))
         .put("database", container.getDatabaseName())
         .put("schemas", Jsons.jsonNode(List.of("public")))
         .put("username", "postgres")
@@ -79,8 +78,8 @@ public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
+            container.getHost(),
+            container.getFirstMappedPort(),
             config.get("database").asText()),
         SQLDialect.POSTGRES)) {
       final Database database = new Database(dslContext);
@@ -101,16 +100,6 @@ public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     container.close();
-  }
-
-  @Override
-  protected String getImageName() {
-    return "airbyte/source-postgres:dev";
-  }
-
-  @Override
-  protected ConnectorSpecification getSpec() throws Exception {
-    return SshHelpers.getSpecAndInjectSsh();
   }
 
   @Override

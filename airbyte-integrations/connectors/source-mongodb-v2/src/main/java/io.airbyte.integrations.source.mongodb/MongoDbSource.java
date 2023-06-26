@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mongodb;
@@ -15,6 +15,7 @@ import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -26,8 +27,10 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -67,10 +70,13 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  protected MongoDatabase createDatabase(final JsonNode config) throws Exception {
-    final var dbConfig = toDatabaseConfig(config);
-    return new MongoDatabase(dbConfig.get("connectionString").asText(),
+  protected MongoDatabase createDatabase(final JsonNode sourceConfig) throws Exception {
+    final var dbConfig = toDatabaseConfig(sourceConfig);
+    final MongoDatabase database = new MongoDatabase(dbConfig.get("connectionString").asText(),
         dbConfig.get(JdbcUtils.DATABASE_KEY).asText());
+    database.setSourceConfig(sourceConfig);
+    database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
+    return database;
   }
 
   @Override
@@ -171,7 +177,9 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final MongoDatabase database,
                                                                final List<String> columnNames,
                                                                final String schemaName,
-                                                               final String tableName) {
+                                                               final String tableName,
+                                                               final SyncMode syncMode,
+                                                               final Optional<String> cursorField) {
     return queryTable(database, columnNames, tableName, null);
   }
 
@@ -199,14 +207,15 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
                                                      final List<String> columnNames,
                                                      final String tableName,
                                                      final Bson filter) {
+    final AirbyteStreamNameNamespacePair airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, null);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.read(tableName, columnNames, Optional.ofNullable(filter));
-        return AutoCloseableIterators.fromStream(stream);
+        return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
-    });
+    }, airbyteStream);
   }
 
   private String buildConnectionString(final JsonNode config, final String credentials) {

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, Callable, Dict
@@ -189,6 +189,80 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
             },
         },
         "should_fail": False,
+    },
+    {
+        "test_id": "all_good_nested",
+        "connector_spec": {
+            "type": "object",
+            "properties": {
+                "select_type": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "option_title": {"type": "string", "title": "Title", "const": "first option"},
+                                "something": {"type": "string"},
+                                "nest": {
+                                    "type": "object",
+                                    "oneOf": [
+                                        {"type": "object", "properties": {"t": {"type": "string", "const": "A"}}},
+                                        {"type": "object", "properties": {"t": {"type": "string", "const": "B"}}},
+                                    ],
+                                },
+                            },
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "option_title": {"type": "string", "title": "Title", "const": "second option"},
+                                "some_field": {"type": "boolean"},
+                            },
+                        },
+                    ],
+                },
+                "client_secret": {"type": "string"},
+                "access_token": {"type": "string"},
+            },
+        },
+        "should_fail": False,
+    },
+    {
+        "test_id": "fail_nested",
+        "connector_spec": {
+            "type": "object",
+            "properties": {
+                "select_type": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "option_title": {"type": "string", "title": "Title", "const": "first option"},
+                                "something": {"type": "string"},
+                                "nest": {
+                                    "type": "object",
+                                    "oneOf": [
+                                        {"type": "object", "properties": {"t": {"type": "string", "const": "A"}}},
+                                        {"type": "string"},
+                                    ],
+                                },
+                            },
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "option_title": {"type": "string", "title": "Title", "const": "second option"},
+                                "some_field": {"type": "boolean"},
+                            },
+                        },
+                    ],
+                },
+                "client_secret": {"type": "string"},
+                "access_token": {"type": "string"},
+            },
+        },
+        "should_fail": True,
     },
     {
         "test_id": "top_level_node_is_not_of_object_type",
@@ -751,6 +825,227 @@ def test_object_not_empty(mocker, connector_spec, should_fail):
     mocker.patch.object(conftest.pytest, "fail")
     t = _TestSpec()
     t.test_object_not_empty(ConnectorSpecification(connectionSpecification=connector_spec))
+    if should_fail:
+        conftest.pytest.fail.assert_called_once()
+    else:
+        conftest.pytest.fail.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "connector_spec, should_fail",
+    (
+        ({"type": "object", "properties": {"refresh_token": {"type": "boolean", "airbyte_secret": True}}}, False),
+        ({"type": "object", "properties": {"jwt": {"type": "object", "order": 1}, "token": {"type": "string", "order": 2}}}, False),
+        ({"type": "object", "properties": {"jwt": {"type": "object", "order": 2}, "token": {"type": "string", "order": 2}}}, True),
+        (
+            {
+                "type": "object",
+                "properties": {"jwt": {"type": "object", "order": 2}, "token": {"type": "string", "group": "x", "order": 2}},
+            },
+            False,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {"jwt": {"type": "object", "group": "y", "order": 2}, "token": {"type": "string", "group": "x", "order": 2}},
+            },
+            False,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "jwt": {"type": "object", "group": "y", "order": 2},
+                    "jwt2": {"type": "object", "group": "y", "order": 2},
+                    "token": {"type": "string", "group": "x", "order": 2},
+                },
+            },
+            True,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "jwt": {
+                        "type": "object",
+                        "order": 1,
+                        "oneOf": [
+                            {"type": "object", "properties": {"a": {"type": "string", "order": 1}}},
+                            {"type": "object", "properties": {"b": {"type": "string"}}},
+                        ],
+                    }
+                },
+            },
+            False,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "jwt": {
+                        "type": "object",
+                        "order": 1,
+                        "oneOf": [
+                            {"type": "object", "properties": {"a": {"type": "string", "order": 1}, "b": {"type": "string", "order": 1}}},
+                        ],
+                    }
+                },
+            },
+            True,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "jwt": {
+                        "type": "object",
+                        "order": 1,
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {"a": {"type": "string", "order": 1}, "b": {"type": "string", "order": 1, "group": "b"}},
+                            },
+                        ],
+                    }
+                },
+            },
+            False,
+        ),
+    ),
+)
+def test_duplicate_order(mocker, connector_spec, should_fail):
+    mocker.patch.object(conftest.pytest, "fail")
+    t = _TestSpec()
+    t.test_duplicate_order(ConnectorSpecification(connectionSpecification=connector_spec))
+    if should_fail:
+        conftest.pytest.fail.assert_called_once()
+    else:
+        conftest.pytest.fail.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "connector_spec, should_fail",
+    (
+        ({"type": "object", "properties": {"refresh_token": {"type": "boolean", "airbyte_secret": True}}}, False),
+        ({"type": "object", "properties": {"group": {"type": "boolean", "airbyte_secret": True}}}, False),
+        ({"type": "object", "properties": {"jwt": {"type": "object", "group": "a"}, "token": {"type": "string", "group": "b"}}}, False),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "jwt": {"type": "object", "properties": {"a": {"type": "string", "group": "x"}}},
+                    "token": {"type": "string"},
+                },
+            },
+            True,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "jwt": {
+                        "type": "object",
+                        "group": "s",
+                        "oneOf": [
+                            {"type": "object", "properties": {"b": {"type": "string"}}},
+                        ],
+                    }
+                },
+            },
+            False,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "jwt": {
+                        "type": "object",
+                        "oneOf": [
+                            {"type": "object", "properties": {"group": {"type": "string"}}},
+                        ],
+                    }
+                },
+            },
+            False,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "jwt": {
+                        "type": "object",
+                        "oneOf": [
+                            {"type": "object", "group": "x", "properties": {"b": {"type": "string"}}},
+                        ],
+                    }
+                },
+            },
+            True,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "jwt": {
+                        "type": "object",
+                        "order": 1,
+                        "oneOf": [
+                            {"type": "object", "properties": {"a": {"type": "string", "group": "a"}}},
+                        ],
+                    }
+                },
+            },
+            True,
+        ),
+    ),
+)
+def test_nested_group(mocker, connector_spec, should_fail):
+    mocker.patch.object(conftest.pytest, "fail")
+    t = _TestSpec()
+    t.test_nested_group(ConnectorSpecification(connectionSpecification=connector_spec))
+    if should_fail:
+        conftest.pytest.fail.assert_called_once()
+    else:
+        conftest.pytest.fail.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "connector_spec, should_fail",
+    (
+        ({"type": "object", "properties": {"refresh_token": {"type": "boolean", "airbyte_secret": True}}}, False),
+        ({"type": "object", "properties": {"prop": {"type": "boolean", "airbyte_secret": True, "always_show": True}}}, False),
+        (
+            {
+                "type": "object",
+                "required": ["prop"],
+                "properties": {"prop": {"type": "boolean", "airbyte_secret": True, "always_show": True}},
+            },
+            True,
+        ),
+        (
+            {"type": "object", "properties": {"jwt": {"type": "object", "properties": {"a": {"type": "string", "always_show": True}}}}},
+            False,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {"jwt": {"type": "object", "required": ["a"], "properties": {"a": {"type": "string", "always_show": True}}}},
+            },
+            True,
+        ),
+        (
+            {
+                "type": "object",
+                "properties": {"jwt": {"type": "object", "required": ["always_show"], "properties": {"always_show": {"type": "string"}}}},
+            },
+            False,
+        ),
+    ),
+)
+def test_required_always_show(mocker, connector_spec, should_fail):
+    mocker.patch.object(conftest.pytest, "fail")
+    t = _TestSpec()
+    t.test_required_always_show(ConnectorSpecification(connectionSpecification=connector_spec))
     if should_fail:
         conftest.pytest.fail.assert_called_once()
     else:

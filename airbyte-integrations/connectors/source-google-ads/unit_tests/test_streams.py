@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -223,6 +223,7 @@ def test_retry_transient_errors(mocker, config, customers, error_cls):
 
 def test_cyclic_sieve(caplog):
     original_logger = logging.getLogger("test")
+    original_logger.setLevel(logging.DEBUG)
     sieve = cyclic_sieve(original_logger, fraction=10)
     for _ in range(20):
         sieve.info("Ground Control to Major Tom")

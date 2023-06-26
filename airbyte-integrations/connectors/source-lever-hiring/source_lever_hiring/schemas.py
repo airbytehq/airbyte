@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, List, MutableMapping, Optional, Type
@@ -171,3 +171,5 @@ class User(BaseSchemaModel):
     deactivatedAt: int
     externalDirectoryId: str
     linkedContactIds: List[str]
+    jobTitle: str
+    managerId: str

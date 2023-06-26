@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from source_amazon_ads.schemas import Keywords, NegativeKeywords, ProductAd, ProductAdGroups, ProductCampaign, ProductTargeting
@@ -67,6 +67,16 @@ class SponsoredProductNegativeKeywords(SubProfilesStream):
 
     def path(self, **kvargs) -> str:
         return "v2/sp/negativeKeywords"
+
+
+class SponsoredProductCampaignNegativeKeywords(SponsoredProductNegativeKeywords):
+    """
+    This stream corresponds to Amazon Advertising API - Sponsored Products Negative Keywords
+    https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Negative%20keywords
+    """
+
+    def path(self, **kvargs) -> str:
+        return "v2/sp/campaignNegativeKeywords"
 
 
 class SponsoredProductAds(SubProfilesStream):
