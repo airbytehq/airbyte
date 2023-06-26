@@ -1,7 +1,36 @@
+"""
+Best docs: https://restapidocs.rmscloud.com/#tag/reservations
+
+*LoyaltyNo
+*Postcode These two fields are found
+in the guests data. If you use the GET/guests/{id} call and use
+the "model type" = full, you can pull the fields from the response
+body. Heres a link to that call on our documentation -
+https://app.swaggerhub.com/apis-docs/RMSHospitality/RMS_REST_API/1.4.18.1#/guests/getGuestsById
+
+*DateMade_medium
+*Nights I have logged a job for our developers
+to try and get these fields added to our reservation search
+call. The job reference for this is REST-1116. However the
+POST/auditTrail/search will also have this in the response
+body as "createdDate"
+
+*TotalGrand This is referring to the total value of a reservation.
+This can be pulled from the GET/reservations/{id}/actualAccount call.
+It will be in the response body as "totalRate". Heres a link to that
+call on our documentation -
+https://app.swaggerhub.com/apis-docs/RMSHospitality/RMS_REST_API/1.4.18.1#/reservations/getReservationActualAccount
+Hope this helps. Let us know if you have further questions on this.
+
+"""
+
+
 from __future__ import annotations
+from collections.abc import Iterator
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
+from itertools import islice
 from typing import (
     Dict,
     Generator,
@@ -179,11 +208,11 @@ class RmsCloudApiKapicheSource(Source):
 
         properties = self._fetch_properties(logger)
         categories = self._fetch_categories(logger, properties)
+
+        # TODO: add date_from here
         gen = self._fetch_nps(logger, properties, categories)
 
-        from itertools import islice
-
-        for record in islice(gen, 1):
+        for i, record in enumerate(gen):
             yield AirbyteMessage(
                 type=Type.RECORD,
                 record=AirbyteRecordMessage(
@@ -193,24 +222,37 @@ class RmsCloudApiKapicheSource(Source):
                     emitted_at=int(datetime.now().timestamp()) * 1000,
                 ),
             )
-            state["last_date"] = 456
+            state["last_date"] = record["Departure Date"]
 
-            yield AirbyteMessage(
-                type=Type.STATE,
-                state=AirbyteStateMessage(
-                    state_type=AirbyteStateType.STREAM,
-                    stream=AirbyteStreamState(
-                        stream_descriptor=StreamDescriptor(name=stream_name),
-                        stream_state=state,
+            if i % 10 == 0:
+                # Emit state record every 10th record.
+                yield AirbyteMessage(
+                    type=Type.STATE,
+                    state=AirbyteStateMessage(
+                        state_type=AirbyteStateType.STREAM,
+                        stream=AirbyteStreamState(
+                            stream_descriptor=StreamDescriptor(name=stream_name),
+                            stream_state=state,
+                        ),
                     ),
+                )
+
+        yield AirbyteMessage(
+            type=Type.STATE,
+            state=AirbyteStateMessage(
+                state_type=AirbyteStateType.STREAM,
+                stream=AirbyteStreamState(
+                    stream_descriptor=StreamDescriptor(name=stream_name),
+                    stream_state=state,
                 ),
-            )
+            ),
+        )
 
     def _get(self, url: str, payload: dict) -> dict:
         response = requests.get(url, headers={"authtoken": self.auth_token})
         return response.json()
 
-    def _post(self, url: str, payload: dict) -> dict:
+    def _post(self, url: str, payload: dict) -> dict | list:
         response = requests.post(
             url, json=payload, headers={"authtoken": self.auth_token}
         )
@@ -262,42 +304,89 @@ class RmsCloudApiKapicheSource(Source):
         https://app.swaggerhub.com/apis-docs/RMSHospitality/RMS_REST_API/1.4.16.1#/reports/npsResultsReport
 
         """
-        for prop_id, prop in properties.items():
-            logger.info(f"fetching data for {prop['name']}")
+        all_property_ids = list(properties)
+        logger.info(all_property_ids)
+        start_date = datetime(year=2022, month=8, day=1)
+        end_date = datetime(year=2022, month=8, day=31)
+
+        for date_from, date_to in date_ranges_generator(start_date, end=end_date):
+            logger.info(
+                f"Fetching for week {date_from.isoformat()} to {date_to.isoformat()}"
+            )
             data = self._post(
                 "https://restapi8.rmscloud.com/reports/npsResults",
                 payload={
-                    "propertyIds": [prop_id],
-                    "reportBy": "surveyDate",
-                    "dateFrom": "2022-01-01 00:00:00",
-                    "dateTo": "2023-06-15 00:00:00",
+                    "propertyIds": all_property_ids,
+                    "reportBy": "departDate",
+                    "dateFrom": date_to_rms_string(date_from),
+                    "dateTo": date_to_rms_string(date_to),
                     "npsRating": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
                 },
             )
             results = data["npsResults"]
-            for r in results:
+            logger.info(f"Got {len(results)} for date range")
+
+            # Collect all the reservation Ids upfront. We use this to fetch
+            # all reservation upfront so that we can look up reservation
+            # details during the construction of the output record later.
+            reservation_ids = [
+                s["reservationId"]
+                for property_result in results
+                for s in property_result.get("surveyDetails", [])
+            ]
+
+            # TODO: these can be fetched simultaneously
+            reservation_lookup = {
+                r["id"]: r for r in self._fetch_reservations(logger, reservation_ids)
+            }
+            reservation_account_lookup = {
+                r["reservationId"]: r
+                for r in self._fetch_reservation_accounts(logger, reservation_ids)
+            }
+
+            for result in results[:3]:
+                # logger.info(result)
                 # do_once('r', lambda: print(json.dumps(r, indent=2)))
                 # Each "npsResult" will correspond to a single category
-                surveys = r["surveyDetails"]
+                property_id = result["propertyId"]
+                surveys = result["surveyDetails"]
                 for s in surveys:
                     # Within that "npsResult" there are many survey
                     # responses known as "surveyDetails"
-                    cat = categories[s["categoryId"]]
-                    r = {
-                        "Property ID": prop["id"],
-                        "Park Name": prop["name"],
-                        "Reservation ID": s["reservationId"],
-                        "Comments": s["comments"],
-                        "Arrival Date": s["arrive"],
-                        "Departure Date": s["depart"],
-                        "Category Class": cat["categoryClass"],
-                        "Number of Areas": cat["numberOfAreas"],
-                        "Max Occupants Per Category": cat["maxOccupantsPerCategory"],
-                        "Category": cat["name"],
-                    }
-                    # Score (NPS, Service, Facility, Site, Value)
-                    for name, value in s["score"].items():
-                        r[f"{name.title()} Rating"] = value
+                    record = {}
+                    self.update_record_from_property(
+                        record,
+                        properties,
+                        property_id,
+                    )
+
+                    category_id = s["categoryId"]
+                    self.update_record_from_category(
+                        record,
+                        categories,
+                        category_id,
+                    )
+
+                    self.update_record_from_survey_detail(record, s)
+
+                    reservation_id = s.get("reservationId")
+                    if reservation_id:
+                        reservation = reservation_lookup.get(reservation_id)
+                        reservation_account = reservation_account_lookup.get(
+                            reservation_id, {}
+                        )
+                        if reservation:
+                            self.update_record_from_reservation(
+                                record,
+                                reservation,
+                                reservation_account,
+                            )
+                        else:
+                            logger.warning(
+                                f"{reservation_id=} not found in the lookup table. "
+                                f"Something might be wrong with how registrations are "
+                                f" being prefetched."
+                            )
 
                     # Fetch the specific reservation associated with the
                     # survey response.
@@ -317,22 +406,126 @@ class RmsCloudApiKapicheSource(Source):
                     r['Booking Source'] = res['bookingSourceName']
                     """
 
-                    yield r
+                    yield record
 
-    def reservation_data_by_id(self, logger: logging.Logger, reservation_ids: list[int]):
+    def reservation_data_by_id(
+        self, logger: logging.Logger, reservation_ids: list[int]
+    ):
         items = self._fetch_reservations(logger, reservation_ids)
         return {r["id"] for r in items}
 
+    def update_record_from_property(
+        self,
+        record: dict[str, Any],
+        properties: dict[int, dict[str, Any]],
+        property_id: int,
+    ) -> None:
+        record.update(
+            {
+                "Property ID": property_id,
+            }
+        )
+        prop = properties.get(property_id)
+        if prop:
+            record.update(
+                {
+                    "Property ID": prop["id"],
+                    "Park Name": prop.get("name"),
+                }
+            )
+
+    def update_record_from_category(
+        self,
+        record: dict[str, Any],
+        categories: dict[int, dict[str, Any]],
+        category_id: int,
+    ) -> None:
+        cat = categories.get(category_id)
+        if cat:
+            record.update(
+                {
+                    "Category Class": cat.get("categoryClass"),
+                    "Number of Areas": cat.get("numberOfAreas"),
+                    "Max Occupants Per Category": cat.get("maxOccupantsPerCategory"),
+                    "Category": cat.get("name"),
+                }
+            )
+
+    def update_record_from_reservation(
+        self,
+        record: dict[str, Any],
+        reservation: dict[str, Any],
+        reservation_account: dict[str, Any],
+    ) -> None:
+        record.update(
+            {
+                "Adults": reservation.get("adults"),
+                "Children": reservation.get("children"),
+                "Infants": reservation.get("infants"),
+                "Booking Source": reservation.get("bookingSourceName"),
+                "totalRate": reservation_account.get("totalRate"),
+            }
+        )
+
+    def update_record_from_survey_detail(
+        self,
+        record: dict[str, Any],
+        survey_details: dict[str, Any],
+    ) -> None:
+        s = survey_details
+        record.update(
+            {
+                "Reservation ID": s["reservationId"],
+                "Comments": s["comments"],
+                "Arrival Date": s["arrive"],
+                "Departure Date": s["depart"],
+            }
+        )
+        # Score (NPS, Service, Facility, Site, Value)
+        for name, value in s["score"].items():
+            record[f"{name.title()} Rating"] = value
+
     # @cache("_fetch_reservations")
     def _fetch_reservations(
-        self, logger: logging.Logger, reservation_ids: list[int]
+        self,
+        logger: logging.Logger,
+        reservation_ids: list[int],
+        chunk_size_must_be_500_or_less: int = 100,
     ) -> list[dict[str, Any]]:
-        response = requests.post(
-            "https://restapi8.rmscloud.com/reservations/search?modelType=basic",
-            headers={"authtoken": self.auth_token},
-            json=dict(reservationIds=reservation_ids),
-        )
-        return response.json()
+        results = []
+        limit = chunk_size_must_be_500_or_less
+        if limit > 500:
+            raise ValueError(f"The RMS API requires {limit=} to be" "500 or less.")
+        it = iter(reservation_ids)
+        while chunk := list(islice(it, limit)):
+            logger.debug(f"Fetching reservations chunk {len(chunk)=}")
+            response = self._post(
+                f"https://restapi8.rmscloud.com/reservations/search?modelType=basic&limit={limit}",
+                dict(reservationIds=chunk),
+            )
+            results.extend(response)
+
+        logger.debug("All reservation chunks complete.")
+        return results
+
+    def _fetch_reservation_accounts(
+        self,
+        logger: logging.Logger,
+        reservation_ids: list[int],
+    ) -> list[dict[str, Any]]:
+        results = []
+        limit = 50
+        it = iter(reservation_ids)
+        while chunk := list(islice(it, limit)):
+            logger.debug(f"Fetching reservations chunk {len(chunk)=}")
+            response = self._post(
+                "https://restapi8.rmscloud.com/reservations/actualAccount/search",
+                dict(ids=chunk),
+            )
+            results.extend(response)
+
+        logger.debug("All reservation chunks complete.")
+        return results
 
     @cache("_fetch_properties")
     def _fetch_properties(self, logger: logging.Logger) -> dict[int, dict]:
@@ -398,3 +591,40 @@ class RmsCloudApiKapicheSource(Source):
                 categories[c["id"]] = c
 
         return categories
+
+
+def date_to_rms_string(dt: datetime) -> str:
+    """See "Guidelines and Formatting at:
+    https://app.swaggerhub.com/apis/RMSHospitality/RMS_REST_API/1.4.18.1#/info
+    """
+    return datetime.strftime(dt, "%Y-%m-%d %H:%M:%S")
+
+
+def date_ranges_generator(
+    start_date: datetime,
+    end: Optional[datetime] = None,
+    span: Optional[dict[str, int]] = None,
+) -> Generator[tuple[datetime, datetime], None, None]:
+    """Generate a sequence of (from, to) dates."""
+    if span is None:
+        span = {"days": 7}
+
+    if end:
+        endf = lambda: end
+    else:
+        endf = lambda: datetime.now()
+
+    if any(v < 0 for v in span.values()):
+        raise ValueError("Only positive span values are allowed")
+
+    if start_date >= endf():
+        return
+
+    dt = timedelta(**span)
+
+    date0 = start_date
+    date1 = start_date + dt
+    while date0 < endf():
+        yield date0, date1
+        date0 = date1
+        date1 = date1 + dt

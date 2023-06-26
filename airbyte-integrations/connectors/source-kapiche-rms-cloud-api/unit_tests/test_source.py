@@ -1,13 +1,52 @@
 from unittest import mock
 from collections import defaultdict
 import logging
+from datetime import datetime
 
 import pytest
 from airbyte_cdk.models import Status
 
-from source.source import RmsCloudApiKapicheSource
+from source.source import RmsCloudApiKapicheSource, date_to_rms_string, date_ranges_generator
 
 logger = logging.getLogger("airbyte")
+
+
+def test_date_to_rms_string():
+    d = datetime(year=2022, month=1, day=25, hour=20, minute=30)
+    v = date_to_rms_string(d)
+    assert v == "2022-01-25 20:30:00"
+
+
+@pytest.mark.parametrize('start,end,span,first,last,n', [
+    pytest.param(
+        datetime(year=2022, month=1, day=1),
+        datetime(year=2022, month=6, day=30),
+        None,
+        ('2022-01-01 00:00:00', '2022-01-08 00:00:00'),
+        ('2022-06-25 00:00:00', '2022-07-02 00:00:00'),
+        26,
+        id="basic usage"
+    ),
+    pytest.param(
+        datetime(year=2222, month=1, day=1),
+        None,
+        None,
+        "doesn't matter",
+        "doesn't matter",
+        0,
+        id="start date is in the future"
+    ),
+])
+def test_date_ranges_generator(start, end, span, first, last, n):
+    items = list(date_ranges_generator(
+        start_date=start,
+        end=end,
+        span=span,
+    ))
+    assert len(items) == n
+    if items:
+        assert tuple(date_to_rms_string(x) for x in items[0]) == first
+        assert tuple(date_to_rms_string(x) for x in items[-1]) == last
 
 
 @pytest.mark.parametrize('side_effect,status', [
