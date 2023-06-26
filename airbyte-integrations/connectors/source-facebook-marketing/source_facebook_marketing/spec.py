@@ -200,6 +200,16 @@ class ConnectorConfig(BaseConfig):
         default=50,
     )
 
+    parallelism: Optional[PositiveInt] = Field(
+        title="Maximum number of parallel connections",
+        order=9,
+        description=(
+            "Maximum number of parallel connections."
+            "Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases."
+        ),
+        default=10,
+    )
+
     action_breakdowns_allow_empty: bool = Field(
         description="Allows action_breakdowns to be an empty list",
         default=True,

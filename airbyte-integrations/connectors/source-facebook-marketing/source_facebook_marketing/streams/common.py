@@ -9,6 +9,8 @@ from typing import Any
 
 import backoff
 import pendulum
+import requests
+import urllib3
 from facebook_business.exceptions import FacebookRequestError
 
 # The Facebook API error codes indicating rate-limiting are listed at
@@ -37,6 +39,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         _, exc, _ = sys.exc_info()
         if (
             details.get("kwargs", {}).get("params", {}).get("limit")
+            and isinstance(exc, FacebookRequestError)
             and exc.http_status() == http.client.INTERNAL_SERVER_ERROR
             and exc.api_error_message() == "Please reduce the amount of data you're asking for, then retry your request"
         ):

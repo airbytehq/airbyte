@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import itertools
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
@@ -9,6 +9,7 @@ from functools import partial
 from queue import Queue
 from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
 
+import gevent
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -16,7 +17,6 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
-from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 
 from .common import deep_merge
@@ -27,6 +27,8 @@ if TYPE_CHECKING:  # pragma: no cover
 logger = logging.getLogger("airbyte")
 
 FACEBOOK_BATCH_ERROR_CODE = 960
+FACEBOOK_PERMISSIONS_ERROR_CODE = 200
+IGNORED_ERRORS = [FACEBOOK_PERMISSIONS_ERROR_CODE]
 
 
 class FBMarketingStream(Stream, ABC):
@@ -65,12 +67,15 @@ class FBMarketingStream(Stream, ABC):
             if batch:
                 logger.info("Retry failed requests in batch")
 
-    def execute_in_batch(self, pending_requests: Iterable[FacebookRequest]) -> Iterable[MutableMapping[str, Any]]:
+    def execute_batch(self, pending_requests: Iterable[FacebookRequest]) -> Iterable[MutableMapping[str, Any]]:
         """Execute list of requests in batches"""
         requests_q = Queue()
+        batch_size = 0
+        batch_retries = {}
         records = []
         for r in pending_requests:
             requests_q.put(r)
+            batch_size += 1
 
         def success(response: FacebookResponse):
             records.append(response.json())
@@ -79,31 +84,52 @@ class FBMarketingStream(Stream, ABC):
             # although it is Optional in the signature for compatibility, we need it always
             assert request, "Missing a request object"
             resp_body = response.json()
-            if not isinstance(resp_body, dict) or resp_body.get("error", {}).get("code") != FACEBOOK_BATCH_ERROR_CODE:
+            req_path = request._path
+            logger.warning(f"Batch request to {req_path} failed (will be retried) with response: {resp_body}")
+            if not isinstance(resp_body, dict) or resp_body.get("error", {}).get("code") in IGNORED_ERRORS:
                 # response body is not a json object or the error code is different
-                raise RuntimeError(f"Batch request failed with response: {resp_body}")
+                raise RuntimeError(f"Batch request to {req_path} failed (aborted) with response: {resp_body}")
             requests_q.put(request)
+            nonlocal batch_size
+            # reduce current batch size
+            if batch_size > 1:
+                batch_size -= 1
+                logger.debug(f"Reducing batch size to {batch_size}")
 
         api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
-
         while not requests_q.empty():
             request = requests_q.get()
             api_batch.add_request(request, success=success, failure=partial(failure, request=request))
-            if len(api_batch) == self.max_batch_size or requests_q.empty():
-                # make a call for every max_batch_size items or less if it is the last call
+            if requests_q.empty() or len(api_batch) >= batch_size:
                 self._execute_batch(api_batch)
-                yield from records
-                records = []
                 api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
+        return records
 
-        yield from records
+    def execute_in_batch(self, pending_requests: Iterable[FacebookRequest]) -> Iterable[MutableMapping[str, Any]]:
+        requests_q = Queue()
+        for r in pending_requests:
+            requests_q.put(r)
+        jobs = []
+        batch = []
+        while not requests_q.empty():
+            batch.append(requests_q.get())
+            # make a batch for every max_batch_size items or less if it is the last call
+            if len(batch) == self.max_batch_size or requests_q.empty():
+                jobs.append(gevent.spawn(self.execute_batch, batch))
+                batch = []
+        with gevent.iwait(jobs) as completed_jobs:
+            for job in completed_jobs:
+                if job.value:
+                    yield from job.value
+                    # To force eager release of memory
+                    job.value.clear()
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK"""
         records_iter = self.list_objects(params=self.request_params(stream_state=stream_state))
@@ -201,8 +227,9 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         potentially_new_records_in_the_past = self._include_deleted and not stream_state.get("include_deleted", False)
         if potentially_new_records_in_the_past:
             self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
-            filter_value = self._start_date
-
+            filter_value = None
+        if not filter_value:
+            return {}
         return {
             "filtering": [
                 {
@@ -252,11 +279,11 @@ class FBMarketingReversedIncrementalStream(FBMarketingIncrementalStream, ABC):
         return False
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: List[str] = None,
+            stream_slice: Mapping[str, Any] = None,
+            stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK
         - save initial state
