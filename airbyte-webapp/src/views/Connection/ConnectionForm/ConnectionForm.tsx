@@ -64,8 +64,11 @@ export const RightFieldCol = styled.div`
   flex: 1;
 `;
 
-const StyledSection = styled.div`
+const StyledSection = styled.div<{
+  isCreateMode?: boolean;
+}>`
   padding: 34px 44px 10px 44px;
+  margin: 0 ${({ isCreateMode }) => (isCreateMode ? 90 : 26)}px;
   display: flex;
   flex-direction: column;
   background: #ffffff;
@@ -74,6 +77,7 @@ const StyledSection = styled.div`
 
 interface SectionProps {
   title?: React.ReactNode;
+  mode: ConnectionFormMode;
 }
 
 const ConfigurationsLabel = styled.div`
@@ -81,14 +85,16 @@ const ConfigurationsLabel = styled.div`
   font-size: 20px;
   line-height: 30px;
   margin-bottom: 4px;
+  padding-left: 90px;
 `;
 
 const SectionTitle = styled(H4)`
   margin-bottom: 30px;
 `;
 
-const Section: React.FC<SectionProps> = ({ title, children }) => (
-  <StyledSection>
+const Section: React.FC<SectionProps> = ({ title, mode, children }) => (
+  // <Card>
+  <StyledSection isCreateMode={mode === "create"}>
     {title && <SectionTitle bold>{title}</SectionTitle>}
     {children}
   </StyledSection>
@@ -98,6 +104,8 @@ const FormContainer = styled(Form)`
   display: flex;
   flex-direction: column;
   gap: 20px;
+  position: relative;
+  padding-bottom: 80px;
 `;
 
 export interface ConnectionFormSubmitResult {
@@ -221,7 +229,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
             </ConfigurationsLabel>
           )}
 
-          <Section title={<FormattedMessage id="connection.basicSettings" />}>
+          <Section title={<FormattedMessage id="connection.basicSettings" />} mode={mode}>
             {!isEditMode && (
               <Field name="name">
                 {({ field, meta }: FieldProps<string>) => (
@@ -282,7 +290,8 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
               )}
             </Field>
           </Section>
-          <Section title={<FormattedMessage id="connection.streamsSettings" />}>
+          {/* <Card> */}
+          <Section title={<FormattedMessage id="connection.streamsSettings" />} mode={mode}>
             <span style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
               <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
             </span>
@@ -375,7 +384,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
           {mode === "create" && (
             <>
               <OperationsSection
-                wrapper={({ children }) => <StyledSection>{children}</StyledSection>}
+                wrapper={({ children }) => <StyledSection isCreateMode={mode === "create"}>{children}</StyledSection>}
                 destDefinition={destDefinition}
                 onStartEditTransformation={toggleEditingTransformation}
                 onEndEditTransformation={toggleEditingTransformation}

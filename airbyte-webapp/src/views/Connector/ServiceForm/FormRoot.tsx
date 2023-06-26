@@ -73,6 +73,8 @@ const FormRoot: React.FC<FormRootProps> = ({
           isLoadSchema={isLoadingSchema}
           fetchingConnectorError={fetchingConnectorError}
           hasSuccess={hasSuccess}
+          isCopyMode={isCopyMode}
+          isEditMode={isEditMode}
           disabled={isEditMode || isCopyMode ? !isValid : !(isValid && dirty)}
           onBack={onBack}
         />

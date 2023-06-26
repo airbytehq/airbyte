@@ -8,6 +8,7 @@ import { H4 } from "components";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 import { DestinationDefinitionSpecificationRead } from "../../../../core/request/AirbyteClient";
+import { ConnectionFormMode } from "../ConnectionForm";
 import { useDefaultTransformation } from "../formConfig";
 import { NormalizationField } from "./NormalizationField";
 import { TransformationField } from "./TransformationField";
@@ -17,6 +18,7 @@ interface OperationsSectionProps {
   onStartEditTransformation?: () => void;
   onEndEditTransformation?: () => void;
   wrapper: React.ComponentType;
+  mode?: ConnectionFormMode;
 }
 
 const SectionTitle = styled(H4)`

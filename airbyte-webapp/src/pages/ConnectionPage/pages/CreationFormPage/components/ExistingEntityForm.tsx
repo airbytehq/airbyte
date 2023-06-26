@@ -18,6 +18,11 @@ interface IProps {
   placeholder?: string;
 }
 
+const Container = styled.div`
+  max-width: 900px;
+  margin: 0 auto;
+`;
+
 const FormTitle = styled.div`
   font-size: 18px;
   line-height: 24px;
@@ -60,7 +65,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit, value, placehold
   }
 
   return (
-    <>
+    <Container>
       <FormTitle>
         <FormattedMessage id={`form.select.existing.${type}`} />
       </FormTitle>
@@ -74,7 +79,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit, value, placehold
           onSubmit(item.value);
         }}
       />
-    </>
+    </Container>
   );
 };
 

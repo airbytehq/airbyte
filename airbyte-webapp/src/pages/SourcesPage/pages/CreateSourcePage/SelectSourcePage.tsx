@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useIntl, FormattedMessage } from "react-intl";
-import styled from "styled-components";
+// import styled from "styled-components";
 
 import { BigButton, ButtonRows } from "components/base/Button/BigButton";
 import { ConnectionStep } from "components/ConnectionStep";
 import DefinitionCard from "components/DataPanel";
 import HeadTitle from "components/HeadTitle";
+import { MainPageWithScroll } from "components/MainPageWithScroll";
 
 import { Action, Namespace } from "core/analytics";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
@@ -19,11 +20,11 @@ export interface ButtonItems {
   type: "cancel" | "disabled" | "active";
 }
 
-const Container = styled.div`
-  max-width: 758px;
-  margin: 0 auto 40px auto;
-  flex: 1;
-`;
+// const Container = styled.div`
+//   max-width: 900px;
+//   margin: 0 auto 108px auto;
+//   flex: 1;
+// `;
 
 const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: string } => {
   return (
@@ -66,9 +67,11 @@ const SelectNewSourceCard: React.FC = () => {
   };
   return (
     <>
-      <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
-      <ConnectionStep lightMode type="source" />
-      <Container>
+      <MainPageWithScroll
+        headTitle={<HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />}
+        pageTitle={<ConnectionStep lightMode type="source" />}
+      >
+        {/* <Container> */}
         <DefinitionCard
           onSelect={afterSelect}
           data={sourceDefinitions}
@@ -78,12 +81,13 @@ const SelectNewSourceCard: React.FC = () => {
             id: "form.setup.source",
           })}
         />
-        <ButtonRows>
-          <BigButton onClick={clickSelect} disabled={sourceDefinitionId ? false : true}>
-            <FormattedMessage id="form.button.selectContinue" />
-          </BigButton>
-        </ButtonRows>
-      </Container>
+        {/* </Container> */}
+      </MainPageWithScroll>
+      <ButtonRows top="0" position="absolute">
+        <BigButton onClick={clickSelect} disabled={sourceDefinitionId ? false : true}>
+          <FormattedMessage id="form.button.selectContinue" />
+        </BigButton>
+      </ButtonRows>
     </>
   );
 };

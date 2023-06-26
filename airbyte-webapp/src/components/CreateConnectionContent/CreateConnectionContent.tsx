@@ -4,6 +4,7 @@ import React, { Suspense, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components";
+import { BigButton } from "components/base/Button/BigButton";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import { Tooltip } from "components/base/Tooltip";
 import { JobItem } from "components/JobItem/JobItem";
@@ -95,10 +96,15 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   if (schemaErrorStatus) {
     const job = LogsRequestError.extractJobInfo(schemaErrorStatus);
     return (
-      <>
+      <div className={styles.errorContainer}>
         <TryAfterErrorBlock onClick={onDiscoverSchema} />
         {job && <JobItem job={job} />}
-      </>
+        <div className={styles.backButton}>
+          <BigButton secondary white onClick={onBack}>
+            <FormattedMessage id="form.button.back" />
+          </BigButton>
+        </div>
+      </div>
     );
   }
 
