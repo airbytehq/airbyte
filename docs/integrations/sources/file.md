@@ -191,6 +191,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
+| 0.3.12  | 2023-06-26 | [27157](https://github.com/airbytehq/airbyte/pull/27157)   | Test                                                                                                    |
 | 0.3.11  | 2023-06-08 | [27157](https://github.com/airbytehq/airbyte/pull/27157)   | Force smart open log level to ERROR                                                                     |
 | 0.3.10  | 2023-06-07 | [27107](https://github.com/airbytehq/airbyte/pull/27107)   | Make source-file testable in our new airbyte-ci pipelines                                               |
 | 0.3.9   | 2023-05-18 | [26275](https://github.com/airbytehq/airbyte/pull/26275)   | Add ParserError handling                                                                                |

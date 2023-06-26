@@ -23,4 +23,4 @@ def dropbox_force_download(url):
 
 
 def backoff_handler(details):
-    logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...")
+    logger.info(f"Caught  retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying...")
