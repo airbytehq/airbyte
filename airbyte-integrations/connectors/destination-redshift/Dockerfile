@@ -9,7 +9,7 @@
 FROM airbyte/integration-base-java:dev AS build
 
 # amazon linux 2 isn't compatible with urllib3 2.x, so force 1.26.15
-RUN yum install -y python3 python3-devel jq sshpass git && \
+RUN yum install -y python3 python3-devel jq sshpass git && yum clean all && \
   alternatives --install /usr/bin/python python /usr/bin/python3 60 && \
   python -m ensurepip --upgrade && \
   pip3 install dbt-redshift==1.0.0 "urllib3<2"
@@ -43,7 +43,7 @@ ENV APPLICATION destination-redshift
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.4.8
+LABEL io.airbyte.version=0.4.9
 LABEL io.airbyte.name=airbyte/destination-redshift
 
 ENV AIRBYTE_ENTRYPOINT "/airbyte/run_with_normalization.sh"

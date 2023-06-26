@@ -10,7 +10,7 @@ This connector supports Universal Analytics properties through the [Reporting AP
 
 Google is phasing out Universal Analytics in favor of Google Analytics 4 (GA4). In consequence, we are deprecating the Google Analytics (Universal Analytics) connector and recommend that you migrate to the [Google Analytics 4 (GA4) connector](https://docs.airbyte.com/integrations/sources/google-analytics-data-api) as soon as possible to ensure your syncs are not affected.
 
-Due to this deprecation, we will not be accepting new contributions for this source, and OAuth is no longer supported as an authentication method for new connections in Airbyte Cloud.
+Due to this deprecation, we will not be accepting new contributions for this source.
 
 For more information, see ["Universal Analytics is going away"](https://support.google.com/analytics/answer/11583528).
 
