@@ -124,3 +124,4 @@ runs:
         SPEC_CACHE_GCS_CREDENTIALS: ${{ inputs.spec_cache_gcs_credentials }}
         DOCKER_HUB_USERNAME: ${{ inputs.docker_hub_username }}
         DOCKER_HUB_PASSWORD: ${{ inputs.docker_hub_password }}
+        CI: "True"

@@ -297,7 +297,7 @@ class ConnectorContext(PipelineContext):
         slack_webhook: Optional[str] = None,
         reporting_slack_channel: Optional[str] = None,
         pull_request: PullRequest = None,
-        should_save_report: bool = False,
+        should_save_report: bool = True,
     ):
         """Initialize a connector context.
 
