@@ -24,6 +24,7 @@ dagster-cloud = "^1.2.6"
 grpcio = "^1.47.0"
 poetry2setup = "^1.1.0"
 slack-sdk = "^3.21.3"
+poetry = "^1.5.1"
 
 
 [tool.poetry.group.dev.dependencies]
