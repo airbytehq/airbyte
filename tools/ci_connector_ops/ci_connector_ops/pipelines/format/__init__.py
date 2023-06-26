@@ -8,9 +8,7 @@ from __future__ import annotations
 import sys
 from typing import List, Optional
 
-import anyio
 import dagger
-from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.bases import ConnectorReport, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.contexts import ConnectorContext
 from ci_connector_ops.pipelines.format import java_connectors, python_connectors
@@ -85,18 +83,9 @@ async def run_connectors_format_pipelines(
 ) -> List[ConnectorContext]:
 
     async with dagger.Connection(dagger.Config(log_output=sys.stderr, execute_timeout=execute_timeout)) as dagger_client:
-        requires_dind = any(context.connector.language == ConnectorLanguage.JAVA for context in contexts)
-        dockerd_service = environments.with_global_dockerd_service(dagger_client)
-        async with anyio.create_task_group() as tg_main:
-            if requires_dind:
-                tg_main.start_soon(dockerd_service.exit_code)
-                await anyio.sleep(10)  # Wait for the docker service to be ready
-            for context in contexts:
-                context.dagger_client = dagger_client.pipeline(f"Format - {context.connector.technical_name}")
-                context.dockerd_service = dockerd_service
-                await run_connector_format_pipeline(context)
-            # When the connectors pipelines are done, we can stop the dockerd service
-            tg_main.cancel_scope.cancel()
+        for context in contexts:
+            context.dagger_client = dagger_client.pipeline(f"Format - {context.connector.technical_name}")
+            await run_connector_format_pipeline(context)
 
         await run_report_complete_pipeline(dagger_client, contexts)
 
