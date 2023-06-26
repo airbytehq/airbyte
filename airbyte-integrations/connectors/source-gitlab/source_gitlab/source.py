@@ -4,9 +4,9 @@
 
 
 import os
-import pendulum
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
+import pendulum
 from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
