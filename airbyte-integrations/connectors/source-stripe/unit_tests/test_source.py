@@ -48,7 +48,9 @@ def test_source_streams():
 @pytest.fixture(name="config")
 def config_fixture():
     config = {"client_secret": "sk_test(live)_<secret>",
-              "account_id": "<account_id>", "start_date": "2020-05-01T00:00:00Z"}
+              "account_id": "<account_id>", "start_date":
+              "2020-05-01T00:00:00Z",
+              "api_version": "2017-08-15"}
     return config
 
 

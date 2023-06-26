@@ -29,11 +29,12 @@ class StripeStream(HttpStream, ABC):
     DEFAULT_SLICE_RANGE = 365
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    def __init__(self, start_date: int, account_id: str, slice_range: int = DEFAULT_SLICE_RANGE, **kwargs):
+    def __init__(self, start_date: int, account_id: str, api_version: str, slice_range: int = DEFAULT_SLICE_RANGE, **kwargs):
         super().__init__(**kwargs)
         self.account_id = account_id
         self.start_date = start_date
         self.slice_range = slice_range or self.DEFAULT_SLICE_RANGE
+        self.api_version = api_version
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
@@ -56,9 +57,10 @@ class StripeStream(HttpStream, ABC):
         return params
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        headers = {"Stripe-Version": self.api_version}
         if self.account_id:
-            return {"Stripe-Account": self.account_id}
-        return {}
+            headers["Stripe-Account"] = self.account_id
+        return headers
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()

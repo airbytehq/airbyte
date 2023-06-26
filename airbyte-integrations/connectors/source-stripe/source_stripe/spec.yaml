@@ -56,3 +56,9 @@ connectionSpecification:
         the less requests will be made and faster the sync will be. On the other hand, the more seldom
         the state is persisted.
       order: 4
+    api_version:
+      type: string
+      title: Stripe API Version to use
+      default: "2017-08-15"
+      description: >-
+        The API Version to use when sending requests to Stripe
