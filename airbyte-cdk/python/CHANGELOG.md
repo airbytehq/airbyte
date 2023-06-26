@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.43.1
+Fix availability check to handle HttpErrors which happen during slice extraction
+
+## 0.43.0
+Refactoring declarative state management
+
 ## 0.42.1
 Error message on state per partition state discrepancy
 
