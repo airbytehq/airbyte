@@ -145,7 +145,7 @@ public class BigQueryStagingConsumerFactory {
 
           final BigQueryWriteConfig writeConfig = new BigQueryWriteConfig(
               streamName,
-              internalTableNamespace,
+              stream.getNamespace(),
               internalTableNamespace,
               BigQueryUtils.getDatasetLocation(config),
               tmpTableNameTransformer.apply(streamName),
@@ -255,7 +255,7 @@ public class BigQueryStagingConsumerFactory {
       LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!writeConfigs.containsKey(pair)) {
         throw new IllegalArgumentException(
-            String.format("Message contained record from a stream that was not in the catalog. \ncatalog: %s", Jsons.serialize(catalog)));
+            String.format("Message contained record from a stream that was not in the catalog: %s.\nKeys: %s\ncatalog: %s", pair, writeConfigs.keySet(), Jsons.serialize(catalog)));
       }
 
       final BigQueryWriteConfig writeConfig = writeConfigs.get(pair);

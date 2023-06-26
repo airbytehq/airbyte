@@ -190,6 +190,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
     if (message.getType() == Type.RECORD) {
       final AirbyteRecordMessage record = message.getRecord();
+      // TODO maybe only do this in 1s1t mode?
       if (Strings.isNullOrEmpty(record.getNamespace())) {
         record.setNamespace(defaultNamespace);
       }
