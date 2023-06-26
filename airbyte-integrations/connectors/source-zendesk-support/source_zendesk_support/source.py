@@ -14,16 +14,16 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from source_zendesk_support.streams import DATETIME_FORMAT, SourceZendeskException
 
 from .streams import (
-    AuditLogs,
     AccountAttributes,
     AttributeDefinitions,
+    AuditLogs,
     Brands,
     CustomRoles,
     GroupMemberships,
     Groups,
     Macros,
-    Organizations,
     OrganizationMemberships,
+    Organizations,
     SatisfactionRatings,
     Schedules,
     SlaPolicies,

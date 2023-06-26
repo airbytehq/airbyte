@@ -20,6 +20,8 @@ from source_zendesk_support.streams import (
     DATETIME_FORMAT,
     END_OF_STREAM_KEY,
     LAST_END_TIME_KEY,
+    AccountAttributes,
+    AttributeDefinitions,
     AuditLogs,
     BaseSourceZendeskSupportStream,
     Brands,
@@ -27,8 +29,8 @@ from source_zendesk_support.streams import (
     GroupMemberships,
     Groups,
     Macros,
-    Organizations,
     OrganizationMemberships,
+    Organizations,
     SatisfactionRatings,
     Schedules,
     SlaPolicies,
@@ -43,8 +45,6 @@ from source_zendesk_support.streams import (
     Tickets,
     Users,
     UserSettingsStream,
-    AccountAttributes,
-    AttributeDefinitions
 )
 from test_data.data import TICKET_EVENTS_STREAM_RESPONSE
 from utils import read_full_refresh
